@@ -247,6 +247,29 @@ invalidated pass evidence, and a link whose replacement chain never reaches
 
 ## Review Focus
 
+Phase 2 package regressions must cover source and installed package validation,
+workflow/standalone precondition parity, missing/legacy/stale planning and
+repository evidence, unchanged worker evidence isolation, scope-before-severity,
+exact completed implementation/check role binding and complete worker-agent
+coverage,
+the four scope dispositions, all ten adequacy dimensions, blocking/non-blocking
+unverified items, four exit/consumer invariants, planning discriminator closure,
+finding-fix full rerun, failed/unfinished/stale/replacement/completed recovery,
+dirty/reviewed-path/post-commit freshness, legacy migration, and the single
+artifact owner. Distribution validation must compare canonical/shared/Codex/
+Claude/Cursor package bytes, preserve the frozen 43-entry upstream inventory,
+run dogfood apply/drift and sidecar checks, and exercise clean marketplace init,
+preview/switch, preset apply, installed invocation, `trellis update --force`,
+and workflow/preset reapply.
+
+Phase 2 regression coverage must also prove that empty provenance/handoff/docs/
+reviewed-path/command evidence, empty adequacy references, missing current or
+scope-change trigger references, unknown/incomplete evidence-source closure,
+and every incorrect recorder-derived semantic digest fail closed. A real Git
+post-commit fixture must include `agent-assignment.json` in implementation
+handoff and distinguish legal review assignment/status/completed/round metadata
+tail from implementation/check/recovery drift.
+
 Before Branch Review Gate, obtain an independent Agent review of the full branch
 diff from the task's intake base branch, then record the result with
 `review-branch.sh --review-source independent-agent`. Main-session self-review

@@ -406,6 +406,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 "codex",
                 "claude",
                 "cursor",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
             ],
         )
 
@@ -1214,7 +1218,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.16")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.17")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -1237,6 +1241,10 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-planning-approval", public_api["companion_scripts"])
         self.assertIn(
             "guru-planning-approval-2.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-phase2-check-2.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn("sync-base", public_api["companion_scripts"])
@@ -1263,6 +1271,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["active_skill_ids"],
             [
                 "guru-approve-task-plan",
+                "guru-check-task",
                 "guru-clarify-requirements",
                 "guru-create-task-commit",
                 "guru-create-task-workspace",

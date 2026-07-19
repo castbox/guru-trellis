@@ -425,7 +425,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.16`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.17`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -610,8 +610,18 @@ Branch Review Gate 结果、finish-work dry-run 和最终 archive/publish 回复
 `implement.md`、`review.md`、`pr-body.md` 五个 Markdown；缺失文件不生成 Markdown
 链接，`phase2-check.json`、`review-gate.json`、`agent-assignment.json` 等 JSON
 证据不进入默认表。
-`record-phase2-check.sh` / `check-phase2-check.sh` 在 commit 前记录并校验完整
-`trellis-check` 证据；验证命令只是 report 中的一部分，不等于完整 check 覆盖。
+Phase 2 在 unchanged official `trellis-check` / channel `check` 收集 raw evidence
+后 mandatory invoke active semantic Skill `guru-check-task`。该 Skill 是 scope
+qualification、adequacy、finding/full-rerun loop、Docs SSOT review、四出口和唯一
+`phase2-check.json` 的 owner；新 artifact 使用 closed schema
+`guru-phase2-check-2.0`。`record-phase2-check.sh` / `check-phase2-check.sh` 只记录和
+校验 AI-authored closed result 的确定性事实；worker 输出、coverage flags、验证命令
+或脚本成功都不能生成 Guru pass。
+V2 evidence 的 provenance/handoff/durable/reviewed-path/command collections 与
+每个 adequacy evidence refs 均非空，并闭合全部 known current-round source；current/scope-change
+candidate 必须有 trigger refs。Checker 从源字段重算全部 semantic 子 digest、Gate bindings、
+finding count 和 full-round digest。Handoff 内 task-local assignment 的合法 post-commit review
+metadata tail 使用 stable Phase 2 projection，不放宽 implementation/check/recovery freshness。
 Codex 项目默认使用 `codex.dispatch_mode: sub-agent`，由 main session 调度
 `trellis-implement` / `trellis-check`；sub-agent 通过 dispatch prompt 首行
 `Active task: <task path>` 或 `task.py current --source` 加载上下文。默认 sub-agent
@@ -656,9 +666,9 @@ failed、stale、unfinished 或 replacement partial output 未恢复到后续 `c
 manual/platform `terminated-unfinished` 的结构边。Validator 拒绝 unknown、duplicate、
 cross-agent、cycle/backward 和 tampered target，并且仍要求 replacement 链真实到达
 `completed`；自然语言说明本身不能修复 machine gate。
-`phase2-check.json` 是 Guru Team 固化 `trellis-check` AI check 结论、覆盖范围、
-验证结果、findings 和 `dirty_paths` 的 artifact，不是 Trellis 原生步骤本身，也不是
-脚本替代 AI check 的入口。
+`phase2-check.json` 是 Guru Team 固化 `guru-check-task` semantic check 结论、
+official worker/command evidence、scope qualification、adequacy、findings、unverified
+items 和 `dirty_paths` 的 artifact；脚本成功不能替代 Skill 的 AI Review Gate。
 `review-branch.sh` 只记录和校验已经
 完成的 AI/human review 结论，不替代真正的文档 + 代码 review。通过 gate 必须先写
 每轮 task-local `reviews/*.md` raw report，再写最终 `review.md` rollup；`review.md`

@@ -815,6 +815,26 @@ ledger, readiness, or marketplace artifact validators.
 
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
+- `record-phase2-check` now accepts one AI-authored closed input for
+  `guru-phase2-check-2.0`, rebuilds objective task/planning/ledger/agent/repository
+  projections, writes the single artifact, and never infers scope, severity,
+  adequacy, Docs SSOT consistency, semantic pass, or route intent;
+- `check-phase2-check` validates the published schema, digests, references,
+  current HEAD/diff/dirty snapshot, reviewed paths, planning linkage, recovery
+  closure, full-round identity, and the four-exit/consumer union;
+- entry artifact/path/command collections and adequacy references are
+  non-empty; reference closure covers every known current-round source, while
+  current/scope-change candidates require trigger references;
+- the checker recomputes execution/scope/adequacy digests, every Gate binding,
+  finding count, and full-round digest from source fields instead of trusting
+  recorder-derived values;
+- the retained command ids are compatibility API, but legacy
+  `--pass --coverage --checker --summary` invocation cannot produce v2 evidence
+  and returns stable migration guidance requiring full `guru-check-task`
+  re-entry;
+- command exit zero, coverage booleans, or official worker output are facts
+  only and cannot create a passed AI Gate.
+
 - `record-contract-wording-review.sh` and
   `check-contract-wording-review.sh` are the generic deterministic recorder and
   checker for `guru-review-contract-wording`. They rebuild the fixed profile
@@ -874,10 +894,13 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   Phase 2 evidence. Active schema 1.2 returns migration guidance. Later
   implementation HEAD/dirty drift does not block while the bound planning and
   authorities remain current.
-- `record-phase2-check.sh` records prior full-scope `trellis-check` evidence;
-  it must not replace check judgment with command exit codes.
-- `check-phase2-check.sh` validates coverage, validation evidence, findings,
-  hashes, and stale state before commit.
+- `record-phase2-check.sh` records the prior AI-authored full-scope
+  `guru-check-task` result, including unchanged official `trellis-check`
+  evidence; it must not replace semantic judgment with worker output or command
+  exit codes.
+- `check-phase2-check.sh` validates the v2 closed schema, objective linkage,
+  scope/finding references, exit/consumer union, hashes, and stale state before
+  commit.
 - `record-subagent-liveness-event.sh` records prior AI/human sub-agent
   assignment, public progress observation, status request outcome, stale
   assessment, resume/replacement, unfinished termination, completion, or failure
@@ -950,8 +973,8 @@ not decide phase sufficiency, and must not create links for missing files.
 
 `review-branch.sh --pass` must fail before writing Branch Review Gate when
 `phase2-check.json` is missing, stale, incomplete, or contains unresolved
-P0/P1/P2 findings. It must also fail when the Phase 3 review result contains
-any finding, including P3. A passed gate must include zero findings,
+current-scope findings at any P0/P1/P2/P3 severity. It must also fail when the
+Phase 3 review result contains any finding, including P3. A passed gate must include zero findings,
 `--review-source independent-agent` and a reviewer identity that is not a
 main-session/self-review identity, and `--review-report` must point to the
 task-local file named `review.md`. The script validates those objective
@@ -975,10 +998,19 @@ task-local Branch Review Gate / publish readiness metadata during this
 post-commit audit because final review and release readiness are produced after
 the work commit. The allowed mutable task-local digest entries are
 `issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`, `marketplace-verification.json`,
-`agent-assignment.json`, `review.md`, and `review-gate.json`; Branch Review
+`review.md`, and `review-gate.json`; Branch Review
 Gate or publish validators must revalidate the current files before passing.
+`agent-assignment.json` instead uses a Phase-2-stable projection of the
+implementation/check agents, events, liveness, corrections, recovery links,
+completed id sets, and recovery closure. Legal post-commit Branch Review
+metadata is outside that projection; Phase 2 agent/recovery drift is not. The
+Branch Review Gate still validates and records the complete current assignment.
 Any uncovered non-metadata committed path or current non-metadata dirty path
 must block the gate instead of encouraging a post-commit Phase 2 re-record.
+If the same assignment file is listed in implementation handoff artifacts, the
+post-commit audit preserves its recorded raw digest only for that legal
+ancestor-HEAD audit and relies on the stable projection for freshness. This is
+an ordinary metadata-tail compatibility rule, not a hostile-tamper exception.
 
 `review-branch.sh --pass` must receive `--agent-assignment <task-local
 agent-assignment.json>`. It validates that artifact and records its digest,

@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 130,
+    "url": "https://github.com/castbox/guru-trellis/issues/130",
+    "title": "实现 guru-check-task 闭环 Skill",
+    "reason": "当前 independently deliverable change request。",
+    "acceptance_evidence": [
+      "Finding-fix 后的全新完整 Phase 2 覆盖 Issue #130 的 R1-R10、AC1-AC16、guru-check-task package/schema/runtime/workflow/preset、五套平台分发、Docs SSOT 与 agent recovery；6 个定向回归、完整 673 passed/13 skipped、clean throwaway install/update/reapply、ownership 43、drift/equality/compile/syntax/task/diff/sidecar 均通过。",
+      "Branch Review Gate 绑定 reviewed HEAD 8acc2c4aec81996af2d7d34bcbcb4c57568c0617 与 origin/main...HEAD 全部 93 个路径；Round 001 的 P1/P2 与 metadata-tail correctness 缺陷已由 Round 002 closure，fresh Round 003 最终审查 P0/P1/P2/P3 findings 均为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "0707790858de2e89003bf92e8be30b045c484e8b458fdbe87eb738e42add1ea8",
+        "verified_content_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+        "remote_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+        "publish_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 130,
+      "url": "https://github.com/castbox/guru-trellis/issues/130",
+      "title": "实现 guru-check-task 闭环 Skill",
+      "reason": "本 task 完整覆盖 Phase 2 closed-loop Skill 的验收范围。",
+      "acceptance_evidence": [
+        "Finding-fix 后的全新完整 Phase 2 覆盖 Issue #130 的 R1-R10、AC1-AC16、guru-check-task package/schema/runtime/workflow/preset、五套平台分发、Docs SSOT 与 agent recovery；6 个定向回归、完整 673 passed/13 skipped、clean throwaway install/update/reapply、ownership 43、drift/equality/compile/syntax/task/diff/sidecar 均通过。",
+        "Branch Review Gate 绑定 reviewed HEAD 8acc2c4aec81996af2d7d34bcbcb4c57568c0617 与 origin/main...HEAD 全部 93 个路径；Round 001 的 P1/P2 与 metadata-tail correctness 缺陷已由 Round 002 closure，fresh Round 003 最终审查 P0/P1/P2/P3 findings 均为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "0707790858de2e89003bf92e8be30b045c484e8b458fdbe87eb738e42add1ea8",
+          "verified_content_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+          "remote_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+          "publish_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "父级集成范围；本 task 只交付其 Phase 2 子单元。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 81,
+      "url": "https://github.com/castbox/guru-trellis/issues/81",
+      "title": "v0.6.5-guru.3 发布门禁：全仓 Skill-first 收敛后的 tag-pinned 验证",
+      "reason": "后续 release/tag gate，不由 #130 关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 108,
+      "url": "https://github.com/castbox/guru-trellis/issues/108",
+      "title": "Guru Team：在 Phase 2 引入代码与 Docs SSOT 减法审计门禁",
+      "reason": "后续扩展具体 subtraction capability。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 131,
+      "url": "https://github.com/castbox/guru-trellis/issues/131",
+      "title": "实现 guru-review-branch 闭环 Skill",
+      "reason": "后续 post-commit Branch Review owner。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "后续最终 workflow/overlay 集成收敛。",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

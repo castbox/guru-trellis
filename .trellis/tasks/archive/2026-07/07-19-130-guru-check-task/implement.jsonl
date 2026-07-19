@@ -1,0 +1,8 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现guru-check-task semantic package、mode parity、typed exits与re-entry主合同。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"收敛Phase 2 global mandatory invocation与唯一consumer routing。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"演进phase2-check.json closed schema、linkage、finding、dirty snapshot与freshness合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束executor/recorder/validator只处理确定性事实。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现full rerun、scope-before-severity、agent recovery、distribution与upgrade测试合同。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"执行no-new-upstream-patch与43条frozen inventory门禁。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"保持Guru package additive distribution并禁止扩张upstream overlay。"}
+{"file":".trellis/tasks/07-19-130-guru-check-task/research/official-trellis-extension-contracts.md","reason":"使用2026-07-19核对的官方workflow、Skill、architecture与spec marketplace依据。"}

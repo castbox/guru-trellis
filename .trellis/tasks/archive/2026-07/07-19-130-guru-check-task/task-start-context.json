@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 130,
+    "url": "https://github.com/castbox/guru-trellis/issues/130",
+    "title": "实现 guru-check-task 闭环 Skill",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/130"
+  },
+  "task_slug": "130-guru-check-task",
+  "task_title": "#130 实现 guru-check-task 闭环 Skill",
+  "task_artifact_dir": ".trellis/tasks/07-19-130-guru-check-task",
+  "branch_name": "feat/130-guru-check-task",
+  "base_branch": "main",
+  "base_ref": "refs/remotes/origin/main",
+  "base_head_sha": "edbd762a93d2a06c8624b13681689e57106acda0",
+  "remote_head_sha": "edbd762a93d2a06c8624b13681689e57106acda0",
+  "workspace_slug": "130-guru-check-task",
+  "task_workspace_id": "130-guru-check-task",
+  "assignee": "wesleywu",
+  "actor": {
+    "login": "wesleywu"
+  },
+  "issue_scope_ledger_seed": {
+    "schema_version": "1.0",
+    "primary_issue": {
+      "number": 130,
+      "url": "https://github.com/castbox/guru-trellis/issues/130",
+      "title": "实现 guru-check-task 闭环 Skill",
+      "reason": "当前 independently deliverable change request。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 130,
+        "url": "https://github.com/castbox/guru-trellis/issues/130",
+        "title": "实现 guru-check-task 闭环 Skill",
+        "reason": "本 task 完整覆盖 Phase 2 closed-loop Skill 的验收范围。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 127,
+        "url": "https://github.com/castbox/guru-trellis/issues/127",
+        "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+        "reason": "父级集成范围；本 task 只交付其 Phase 2 子单元。",
+        "acceptance_evidence": []
+      }
+    ],
+    "followup_issues": [
+      {
+        "number": 81,
+        "url": "https://github.com/castbox/guru-trellis/issues/81",
+        "title": "v0.6.5-guru.3 发布门禁：全仓 Skill-first 收敛后的 tag-pinned 验证",
+        "reason": "后续 release/tag gate，不由 #130 关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 108,
+        "url": "https://github.com/castbox/guru-trellis/issues/108",
+        "title": "Guru Team：在 Phase 2 引入代码与 Docs SSOT 减法审计门禁",
+        "reason": "后续扩展具体 subtraction capability。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 131,
+        "url": "https://github.com/castbox/guru-trellis/issues/131",
+        "title": "实现 guru-review-branch 闭环 Skill",
+        "reason": "后续 post-commit Branch Review owner。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 132,
+        "url": "https://github.com/castbox/guru-trellis/issues/132",
+        "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+        "reason": "后续最终 workflow/overlay 集成收敛。",
+        "acceptance_evidence": []
+      }
+    ],
+    "rules": [
+      "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+      "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+      "followup_issues 表示新范围或后续任务，不能自动关闭。"
+    ]
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": true,
+      "selected_issue": 130
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "三个名称均绑定 issue #130 与 guru-check-task semantic action，并遵循现有 feat/<issue>-<action> 约定。"
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    },
+    "final_source_issue_binding": {
+      "repo": "castbox/guru-trellis",
+      "number": 130,
+      "url": "https://github.com/castbox/guru-trellis/issues/130",
+      "state": "open",
+      "title_sha256": "27f8474a861016bf98e01bc049dcb987f4bc834fc8fc7300efd04c8681e1f32a",
+      "body_sha256": "d76adcaf48a3067d15890892498de0c9054a8bd75927e25c0938294946d36526",
+      "updated_at": "2026-07-16T09:52:59Z",
+      "target_disposition_sha256": "3d67db727aacb27b1379e847e66c2d569b7425641031828e27765ddf7f90d03c",
+      "created_issue_binding_sha256": null
+    },
+    "prerequisite_evidence": {
+      "base": {
+        "skill_id": "guru-sync-base",
+        "schema_id": "guru-base-sync-result-1.0",
+        "typed_exit": "synced",
+        "payload_sha256": "c535c9192fd8b5816a5bdad824a6418bc37a500257e23575f46ee0bf96db7d6f",
+        "facts_sha256": "2b98940313d38d4373dd767d906d0aec4318c68b5ece087def5f5a9d5e2cf8ec",
+        "content_sha256": null,
+        "linkage_sha256": null
+      },
+      "context": {
+        "skill_id": "guru-discover-change-context",
+        "schema_id": "guru-context-discovery-1.0",
+        "typed_exit": "context_ready",
+        "payload_sha256": "4d4b45b78202e08417b0f633793906e169c382f845144788f082268c0c0ff3b6",
+        "facts_sha256": "a9befdcce5d29ee4bafe069e2bdc976f4621dbd7efdbd348371ee178d0dff5ff",
+        "content_sha256": "b14231cec62e9bcf4e36eb3a9a075cccfcbc43f3547fffbb239d44ed05da1fa6",
+        "linkage_sha256": "a9befdcce5d29ee4bafe069e2bdc976f4621dbd7efdbd348371ee178d0dff5ff"
+      },
+      "clarity": {
+        "skill_id": "guru-clarify-requirements",
+        "schema_id": "guru-requirements-clarification-2.0",
+        "typed_exit": "clear",
+        "payload_sha256": "d078875d9923661d86a55c617e98102caa089464935d0493237bcc6a7dab3092",
+        "facts_sha256": "2a99a8c5424deb65423c744a63f59ac87bb5044e88bae4e13fd7bd54f3b3ad00",
+        "content_sha256": "7d2f6b0be0d2896e8b16c0fd662b65f0afcbb07fbbb8f6c61b3eb2fb0f278049",
+        "linkage_sha256": "c0c870773bc6c07d3013a2afbcd2133415d5cd0ba5978efdde0fc0bc446198e0"
+      },
+      "wording": {
+        "skill_id": "guru-review-contract-wording",
+        "schema_id": "guru-contract-wording-review-1.0",
+        "typed_exit": "pass",
+        "payload_sha256": "ec1cdaf6108c189557cac51f34fb9c128ac2fcc527c40c9e3994b5d82d955024",
+        "facts_sha256": "d329cebb60cf5ade7fa78e785d1c49d9f939911277650b97da89297bd5be8270",
+        "content_sha256": "569dc6d0443862061ab501d1af34dfef33cfa70be2f875cf2c6664c6103ccd5b",
+        "linkage_sha256": "c7db0524b000460e73e5fdeeaf48823c3fc5561516789e922dcddd647b75f154"
+      },
+      "readiness": {
+        "skill_id": "guru-review-change-request",
+        "schema_id": "guru-change-request-review-1.0",
+        "typed_exit": "ready",
+        "payload_sha256": "424ee29bbc972aaca35db5f4d1f16e8597bcb3c7011447a3bb80864ad9345b09",
+        "facts_sha256": "b2bdfa13849d30d93614c81290d7d6d86229041ece11004d8f5398329099292e",
+        "content_sha256": "2b78b5a06292a4a53e3346501d38e2ec9dd0a3545aaaa4fec21bcf364a49510e",
+        "linkage_sha256": "d1dda6657cf37d1e3520cc00bffeda54325fe1e61931d780bedfbc020ac3ef1a"
+      }
+    }
+  }
+}

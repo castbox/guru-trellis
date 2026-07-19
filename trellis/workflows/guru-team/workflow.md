@@ -1032,52 +1032,28 @@ If implementation reveals that a long-term product, architecture, API, data, dep
 
 #### 2.2 Quality check `[required · repeatable]`
 
-Run `trellis-check` or dispatch the check agent. In default `sub-agent` mode, the main session must dispatch `trellis-check` or channel-runtime `check`; it may not directly run a few validations or inspect the diff and then present that as `阶段二检查代理` evidence. The final check before commit must cover the full task scope, not only the latest implementation chunk.
+In default `sub-agent` mode, dispatch the official unchanged `trellis-check` or
+channel-runtime `check` worker and record the assignment/recovery chain. Its
+report is raw evidence only; it never owns Guru pass, scope, severity, route, or
+`phase2-check.json`. Then load and invoke the active public Skill by stable id:
 
-Phase 2 check must consume the approved `Docs SSOT Plan` and verify the implementation handoff against it:
+<!-- guru-skill-invoke: {"skill":"guru-check-task","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"passed","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
+<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"planning_stale","consumer":{"kind":"workflow","id":"guru-task-check-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"blocked","consumer":{"kind":"stop","id":"task-check-blocked"}} -->
 
-- durable docs were updated, repaired, or deliberately left unchanged according to the recorded strategy;
-- `prd.md`, `design.md`, and `implement.md` do not conflict with the durable docs or the confirmed temporary task delta;
-- code/API/schema/config/deploy/test changes match durable docs or the approved task delta;
-- validation commands, test plans, or test cases cover the docs/code changes in scope;
-- `delta_first` completed durable docs merge before the final Phase 2 check;
-- `ssot_first` implementation used the revised durable docs / specs / workflow contracts as the primary input;
-- `bootstrap_or_repair_docs` completed the minimum repair, or records a bounded follow-up and current PR limitation;
-- `no_docs_update_needed` still has a concrete reason after reviewing the final diff.
+<!-- guru-workflow-target: {"id":"guru-resume-implementation"} -->
+<!-- guru-workflow-target: {"id":"guru-task-check-planning-router"} -->
+<!-- guru-stop-target: {"id":"task-check-blocked"} -->
 
-Phase 2 check must also review compatibility with the shared branch commit validator,
-but it must not draft or request human approval for a planned work message.
-The later `guru-create-task-commit` AI Review Gate owns the exact work candidate
-and validates it through the shared parser. The checker confirms Trellis metadata commits use
-`chore(trellis): #{primary_issue} 中文动作` with an empty body; and publish/merge
-readiness will produce `chore(merge): #{pull_request} 合并 #{primary_issue} 中文
-PR 摘要` plus the fixed merge body.
-
-If the check finds scope drift or a missing docs merge, return to implementation or Phase 1 planning as appropriate, update the plan/artifacts, and rerun Phase 2 check. Do not let Branch Review Gate or finish-work become the first semantic docs consistency check.
-
-When dispatching a Phase 2 check agent, record `阶段二检查代理` in `agent-assignment.json` before or immediately after the check handoff. This is separate from `phase2-check.json`: assignment records who took the logical role; `phase2-check.json` records the check judgment and evidence.
-
-Before recording a passing Phase 2 check, confirm the check did not rely on unfinished, failed, stale, or replacement partial output. If `agent-assignment.json.status_events[]` contains `failed`, `stale-assessed`, or `terminated-unfinished`, the same agent or a replacement must have continued the work and the active recovery chain must have reached `completed`; otherwise return to implementation/check handoff instead of recording a pass. A replacement `failed` is not a closed chain and requires further recovery.
-
-After the `trellis-check` AI check has completed, record the task-local check report:
-
-```bash
-.trellis/guru-team/scripts/bash/record-phase2-check.sh --json --pass \
-  --checker "trellis-check-agent" \
-  --summary "中文 trellis-check 结论" \
-  --coverage requirements \
-  --coverage design \
-  --coverage code \
-  --coverage tests \
-  --coverage spec_sync \
-  --coverage cross_layer \
-  --coverage docs_ssot \
-  --coverage deployment \
-  --validation "验证命令|结果摘要"
-.trellis/guru-team/scripts/bash/check-phase2-check.sh --json
-```
-
-Use `--finding 'P2|中文问题说明|path/to/file'` or `--findings-file findings.json` when check finds issues. P0/P1/P2 findings must be resolved before `--pass`. `record-phase2-check` is a recorder / validator; validation commands and script success are evidence inside the report, not a substitute for complete `trellis-check` coverage.
+The package owns all eleven entry checks, repository-command selection,
+scope-before-severity, adequacy, Docs SSOT review, finding/full-rerun loop, AI
+Review Gate, the single closed v2 artifact, recorder/checker entry, and exact
+route result. The planning router consumes only checker-validated discriminator
+`reapprove_plan` -> `guru-approve-task-plan` or `clarify_requirements` ->
+`guru-clarify-requirements`; it performs no new scope judgment. Unknown,
+multiple, unmapped, ambiguous, or consumer-mismatched results fail closed.
 
 Before the Phase 2 stop/completion reply, run:
 

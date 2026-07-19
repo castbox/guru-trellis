@@ -38,6 +38,16 @@
       "workflow_route_id": "phase-3-task-commit"
     },
     {
+      "id": "guru-check-task",
+      "state": "active",
+      "name": "guru-check-task",
+      "package": "packages/guru-check-task",
+      "interface": "packages/guru-check-task/interface.json",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "phase-2-task-check"
+    },
+    {
       "id": "guru-clarify-requirements",
       "state": "active",
       "name": "guru-clarify-requirements",

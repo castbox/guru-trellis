@@ -423,6 +423,18 @@ links. `format-merge-commit` must output the merge commit subject/body/command p
 maintainers do not rely on GitHub's default `Merge pull request #xx from ...`
 subject or a Chinese PR title such as `完成：#xx ... (#yy)`.
 
+The global Phase 2 route mandatory invokes active Skill `guru-check-task` after
+implementation and unchanged official `trellis-check` evidence gathering. The
+workflow owns only phase order, one invoke marker, four exit markers, their
+unique target/stop consumers, and global transitions. It must not repeat the
+Skill's check dimensions, repository-command selection, scope qualification,
+severity, finding/full-rerun loop, Docs SSOT review, AI Gate, recorder input, or
+freshness algorithm. `passed` routes to `guru-create-task-commit`;
+`implementation_required` routes to `guru-resume-implementation`;
+`planning_stale` routes through the checker-validated closed planning router;
+`blocked` stops at `task-check-blocked`. Unknown, multiple, unmapped, or
+consumer-mismatched results fail closed.
+
 Phase 2 check verifies implementation and message-relevant evidence, but it does
 not ask for manual approval of a planned work message. After a fresh final Phase
 2 pass, Phase 3.4 mandatory invokes `guru-create-task-commit`. The skill owns
@@ -510,11 +522,13 @@ Gate:
   planning/Docs SSOT/authority/wording content, so implementation HEAD or
   dirty-path changes after activation do not alone invalidate approval.
   `task.py start` is not proof of planning review.
-- `phase2-check.json` records complete `trellis-check` coverage before commit.
-  Passing validation commands alone is not proof that requirements, design,
-  implementation, tests, specs, docs, cross-layer flow, and deployment impact
-  were checked. It also records the pre-commit `dirty_paths` that the later
-  post-commit audit may accept as the task work commit.
+- `phase2-check.json` records the complete `guru-check-task` semantic round
+  before commit, including unchanged official `trellis-check` worker evidence.
+  Worker output and passing validation commands alone are not proof that
+  requirements, design, implementation, tests, specs, docs, cross-layer flow,
+  and deployment impact were checked. It also records the pre-commit
+  `dirty_paths` that the later post-commit audit may accept as the task work
+  commit.
 - `agent-assignment.json` records Chinese logical roles, technical `agent_id`,
   display-only platform nickname, HEAD evidence, review rounds, and
   reuse/replacement decisions for sub-agent-dispatch tasks. It is assignment
@@ -540,10 +554,11 @@ Gate:
   `phase2-check.json`, the main session must rerun
   `check-planning-approval.sh --json`; implement agents must also stop if that
   validator fails for the active task.
-- `phase2-check.json` is Guru Team evidence for a completed `trellis-check`
-  AI check. It records coverage, validations, findings, and dirty paths, but it
-  is not the Trellis-native check step itself and recorder/validator success is
-  not a substitute for the AI check judgment.
+- `phase2-check.json` is Guru Team evidence for a completed `guru-check-task`
+  semantic check. It records official worker evidence, commands, scope
+  qualification, adequacy, findings, unverified items, and dirty paths, but
+  recorder/validator success is not a substitute for the Skill's AI Review
+  Gate.
 - Branch Review sub-agents are review-only. They inspect the full committed
   diff, normally `origin/<base>...HEAD`, and report findings/observations/
   follow-up candidates. They do not continue implementation, patch missing

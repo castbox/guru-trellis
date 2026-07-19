@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.2",
+  "id": "guru-check-task",
+  "name": "guru-check-task",
+  "description": "Check a complete task through scope-first semantic review, full validation evidence, Docs SSOT reconciliation, finding reruns, and four typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["runtime_dependency", "task_workspace", "approved_planning", "requirement_provenance", "implementation_handoff", "repository_check_inputs", "docs_ssot_plan", "issue_scope_ledger", "agent_assignment_recovery", "repository_snapshot", "invocation_freshness"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["runtime_dependency", "task_workspace", "approved_planning", "requirement_provenance", "implementation_handoff", "repository_check_inputs", "docs_ssot_plan", "issue_scope_ledger", "agent_assignment_recovery", "repository_snapshot", "invocation_freshness"]}
+  },
+  "entry_preconditions": [
+    {"id": "runtime_dependency", "evidence": "installed extension manifest, dispatcher, active package inventory, schema, and phase2 record/check runtime commands", "binding": "complete compatible Guru Team preset runtime", "freshness": "run-skill-command validates before every command"},
+    {"id": "task_workspace", "evidence": "direct active task locator, task.json, ignored runtime workspace mapping, checkout, and source boundary facts", "binding": "one active task in its expected worktree", "freshness": "rebuilt before record and check"},
+    {"id": "approved_planning", "evidence": "checker-validated current guru-planning-approval-2.0 approved artifact and three planning documents", "binding": "exact approved planning inputs", "freshness": "planning checker and document digests rerun"},
+    {"id": "requirement_provenance", "evidence": "current approved load-bearing provenance and requirement authorities", "binding": "task scope and review triggers", "freshness": "linked planning projection remains current"},
+    {"id": "implementation_handoff", "evidence": "completed implement-agent handoff with files, Docs SSOT execution, tests, risks, and deferred validation", "binding": "implementation claimed for this task snapshot", "freshness": "reviewed in the current complete round"},
+    {"id": "repository_check_inputs", "evidence": "repository-defined lint, type, test, schema, generated, drift, install, and update commands plus explicit non-applicability", "binding": "applicable validation plan", "freshness": "commands and results belong to the current round"},
+    {"id": "docs_ssot_plan", "evidence": "approved strategy, durable paths, task delta, task-history-only content, and merge/no-update/follow-up boundary", "binding": "final docs reconciliation", "freshness": "locator and affected path digests are current"},
+    {"id": "issue_scope_ledger", "evidence": "current primary, close, related, follow-up, and decision categories", "binding": "accepted issue scope", "freshness": "semantic ledger digest rebuilt"},
+    {"id": "agent_assignment_recovery", "evidence": "implementation/check assignment and complete failed, unfinished, stale, replacement, and completed recovery chain", "binding": "only completed evidence enters pass", "freshness": "assignment checker rerun"},
+    {"id": "repository_snapshot", "evidence": "base, HEAD, diff range, complete dirty paths, reviewed paths and digests", "binding": "one full-scope check round", "freshness": "rebuilt around record and during check"},
+    {"id": "invocation_freshness", "evidence": "mode, all entry projections, scope candidates, adequacy, findings, unverified items, Gate, typed exit, route, consumer and facts digest", "binding": "one complete guru-check-task invocation", "freshness": "checker rejects stale, partial, multiple, or mismatched evidence"}
+  ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [{"id": "phase2_check_example", "path": "examples/phase2-check.json"}],
+  "schemas": [{"id": "phase2_check_schema", "path": "schemas/phase2-check.schema.json"}],
+  "validators": [
+    {"id": "phase2_check_recorder", "command": "scripts/record-phase2-check.sh", "runtime_command": "record-phase2-check", "objective_scope": "AI-authored closed input consumption; task, approved planning, ledger, agent, repository and reviewed-path fact rebuild; schema, reference, digest, full-round and exit/consumer validation; single artifact write"},
+    {"id": "phase2_check_checker", "command": "scripts/check-phase2-check.sh", "runtime_command": "check-phase2-check", "objective_scope": "published v2 schema, current task/planning/ledger/agent/HEAD/diff/dirty/reviewed-path facts, scope/finding references, full-round identity, Gate/exit/route/consumer union, artifact digest and post-commit coverage"}
+  ],
+  "external_exits": [
+    {"id": "passed", "evidence": "all adequacy dimensions passed, no open current-scope finding or blocking unverified item, complete recovery, and current full rerun", "consumer": {"kind": "skill", "id": "guru-create-task-commit"}},
+    {"id": "implementation_required", "evidence": "one or more open findings in current approved scope", "consumer": {"kind": "workflow", "id": "guru-resume-implementation"}},
+    {"id": "planning_stale", "evidence": "planning evidence is stale or a candidate requires requirement, authority, or scope change", "consumer": {"kind": "workflow", "id": "guru-task-check-planning-router"}},
+    {"id": "blocked", "evidence": "required evidence or an external dependency prevents a reliable complete check", "consumer": {"kind": "stop", "id": "task-check-blocked"}}
+  ],
+  "reentry": {"identity": "mode, task, approved planning, authorities, Docs SSOT plan, ledger, implementation/worker evidence, command results, repository snapshot, scope/adequacy/findings/unverified digests, full-round identity, Gate, exit, route, consumer and facts digest", "freshness": "every implementation fix or planning/authority/ledger/agent/repository drift reruns all eleven entry checks and the complete task scope", "stale_behavior": "fail_closed"},
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+}

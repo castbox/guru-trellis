@@ -165,6 +165,25 @@ CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = [
     "external_quotes_are_labeled_non_contract",
 ]
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
+PHASE2_CHECK_SKILL_ID = "guru-check-task"
+PHASE2_CHECK_SCHEMA_VERSION = "2.0"
+PHASE2_CHECK_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json"
+PHASE2_CHECK_DIMENSIONS = [
+    "requirements", "design", "implementation", "tests", "docs_ssot",
+    "cross_layer", "compatibility", "deployment_and_operations",
+    "agent_recovery", "verification_completeness",
+]
+PHASE2_CHECK_EVIDENCE_REFS = {
+    "planning", "requirement_provenance", "implementation_handoff",
+    "docs_ssot_plan", "repository_snapshot", "check_execution",
+    "agent_assignment",
+}
+PHASE2_CHECK_CONSUMERS = {
+    "passed": {"kind": "skill", "id": "guru-create-task-commit"},
+    "implementation_required": {"kind": "workflow", "id": "guru-resume-implementation"},
+    "planning_stale": {"kind": "workflow", "id": "guru-task-check-planning-router"},
+    "blocked": {"kind": "stop", "id": "task-check-blocked"},
+}
 TASK_COMMIT_SKILL_ID = "guru-create-task-commit"
 BASE_SYNC_SKILL_ID = "guru-sync-base"
 BASE_SYNC_SCHEMA_VERSION = "1.0"
@@ -9690,6 +9709,519 @@ def validate_planning_approval(
     return path, payload, errors
 
 
+def phase2_check_schema_path(root: Path) -> Path:
+    candidates = [
+        root / "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+        root / ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
+        root / ".agents/skills/guru-check-task/schemas/phase2-check.schema.json",
+    ]
+    for candidate in candidates:
+        if candidate.is_file() and not candidate.is_symlink():
+            return candidate
+    raise WorkflowError(
+        "guru-check-task schema is unavailable; install or upgrade the complete Guru Team preset.",
+        exit_code=2,
+        payload={"error_codes": ["phase2_check_schema_unavailable"]},
+    )
+
+
+def load_phase2_check_schema(root: Path) -> dict[str, Any]:
+    errors: list[str] = []
+    schema = skill_read_json(phase2_check_schema_path(root), "phase2 check schema", errors)
+    if (
+        errors
+        or schema is None
+        or schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or schema.get("$id") != PHASE2_CHECK_SCHEMA_ID
+    ):
+        raise WorkflowError(
+            "guru-check-task schema is incompatible.",
+            exit_code=2,
+            payload={"error_codes": ["phase2_check_schema_invalid"]},
+        )
+    return schema
+
+
+def phase2_path_digest(root: Path, path: Path) -> dict[str, Any]:
+    digest = file_digest(root, path)
+    return {
+        "path": digest["path"],
+        "sha256": digest["sha256"],
+        "size_bytes": digest["size_bytes"],
+    }
+
+
+def phase2_evidence_projection(
+    root: Path,
+    value: Any,
+    label: str,
+    *,
+    preserve_recorded_paths: set[str] | None = None,
+) -> dict[str, Any]:
+    if not isinstance(value, dict) or not str(value.get("summary") or "").strip():
+        raise WorkflowError(f"{label} must contain an AI-authored summary.", exit_code=2)
+    artifacts = value.get("artifacts")
+    if not isinstance(artifacts, list) or not artifacts:
+        raise WorkflowError(f"{label}.artifacts must be a non-empty array.", exit_code=2)
+    current: list[dict[str, Any]] = []
+    for item in artifacts:
+        path_value = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
+        if not path_value:
+            raise WorkflowError(f"{label} contains an invalid artifact path.", exit_code=2)
+        path = resolve_repo_path(root, path_value)
+        if not path.is_file() or path.is_symlink():
+            raise WorkflowError(f"{label} artifact is missing or invalid: {path_value}", exit_code=2)
+        if path_value in (preserve_recorded_paths or set()):
+            current.append({
+                "path": path_value,
+                "sha256": item.get("sha256"),
+                "size_bytes": item.get("size_bytes"),
+            })
+        else:
+            current.append(phase2_path_digest(root, path))
+    projection = {"summary": str(value["summary"]).strip(), "artifacts": current}
+    projection["facts_sha256"] = context_digest(projection)
+    return projection
+
+
+def phase2_docs_projection(root: Path, value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise WorkflowError("docs_ssot_plan must be an AI-authored object.", exit_code=2)
+    durable = value.get("durable_paths")
+    if not isinstance(durable, list) or not durable:
+        raise WorkflowError("docs_ssot_plan.durable_paths must be a non-empty array.", exit_code=2)
+    paths: list[dict[str, Any]] = []
+    for item in durable:
+        path_value = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
+        path = resolve_repo_path(root, path_value) if path_value else root / ".missing"
+        if not path.is_file() or path.is_symlink():
+            raise WorkflowError(f"Docs SSOT durable path is missing or invalid: {path_value}", exit_code=2)
+        paths.append(phase2_path_digest(root, path))
+    projection = {
+        "strategy": value.get("strategy"),
+        "durable_paths": paths,
+        "sync_result": value.get("sync_result"),
+        "task_delta_merged": value.get("task_delta_merged"),
+        "task_history_only": value.get("task_history_only"),
+        "no_update_reason": value.get("no_update_reason"),
+        "followup_or_pr_limit": value.get("followup_or_pr_limit"),
+    }
+    projection["facts_sha256"] = context_digest(projection)
+    return projection
+
+
+def phase2_repository_projection(
+    root: Path,
+    task_dir: Path,
+    task_context: dict[str, Any],
+    authored: Any,
+    additional_dirty_excluded: set[str] | None = None,
+) -> dict[str, Any]:
+    if (
+        not isinstance(authored, dict)
+        or not isinstance(authored.get("reviewed_paths"), list)
+        or not authored["reviewed_paths"]
+    ):
+        raise WorkflowError("repository_snapshot.reviewed_paths must be a non-empty array.", exit_code=2)
+    task = task_json(task_dir)
+    base_branch = str(task.get("base_branch") or task_context.get("base_branch") or "").strip()
+    if not base_branch:
+        raise WorkflowError("Phase 2 cannot resolve the selected base branch.", exit_code=2)
+    base_ref = str(task_context.get("base_ref") or diff_base_ref(root, base_branch)).strip()
+    base_head = str(ref_head(root, base_ref) or task_context.get("base_head_sha") or "").strip()
+    head = current_head(root)
+    if not re.fullmatch(r"[0-9a-f]{40}", base_head) or not re.fullmatch(r"[0-9a-f]{40}", head):
+        raise WorkflowError("Phase 2 requires full base and HEAD identities.", exit_code=2)
+    reviewed: list[dict[str, Any]] = []
+    for item in authored["reviewed_paths"]:
+        path_value = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
+        path = resolve_repo_path(root, path_value) if path_value else root / ".missing"
+        if not path.is_file() or path.is_symlink():
+            raise WorkflowError(f"Reviewed path is missing or invalid: {path_value}", exit_code=2)
+        reviewed.append(phase2_path_digest(root, path))
+    artifact_rel = repo_relative(root, phase2_check_path(task_dir))
+    dirty_excluded = {artifact_rel}
+    dirty_excluded.update(additional_dirty_excluded or set())
+    snapshot = {
+        "base_ref": base_ref,
+        "base_head": base_head,
+        "head": head,
+        "diff_range": diff_range(root, base_branch),
+        "dirty_paths": sorted(path for path in git_status_paths(root) if path not in dirty_excluded),
+        "reviewed_paths": reviewed,
+    }
+    snapshot["snapshot_sha256"] = context_digest(snapshot)
+    return snapshot
+
+
+def phase2_task_projection(root: Path, task_dir: Path, task_context: dict[str, Any]) -> dict[str, Any]:
+    task = task_json(task_dir)
+    planning = planning_task_projection(root, task_dir, task_context)
+    base_branch = str(task.get("base_branch") or task_context.get("base_branch") or "").strip()
+    return {
+        "task_dir": planning["task_dir"],
+        "task_id": str(task.get("id") or task_dir.name),
+        "branch": planning["branch"],
+        "base_branch": base_branch,
+        "issue_numbers": planning["issue_numbers"],
+        "task_identity_sha256": planning["task_identity_sha256"],
+    }
+
+
+def phase2_planning_projection(root: Path, task_dir: Path) -> dict[str, Any]:
+    path, approval, errors = validate_planning_approval(root, task_dir, required_exit="approved")
+    if errors:
+        raise WorkflowError(
+            "guru-check-task requires current approved guru-planning-approval-2.0 evidence.",
+            exit_code=2,
+            payload={"error_codes": errors},
+        )
+    reviewed = approval.get("reviewed_artifacts")
+    if not isinstance(reviewed, list) or len(reviewed) != 3:
+        raise WorkflowError("Planning approval does not bind exactly three reviewed artifacts.", exit_code=2)
+    current_reviewed = []
+    for item in reviewed:
+        path_value = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
+        artifact_path = resolve_repo_path(root, path_value) if path_value else root / ".missing"
+        if not artifact_path.is_file() or artifact_path.is_symlink():
+            raise WorkflowError(f"Reviewed planning artifact is missing: {path_value}", exit_code=2)
+        current_reviewed.append(phase2_path_digest(root, artifact_path))
+    return {
+        "schema_id": "guru-planning-approval-2.0",
+        "typed_exit": "approved",
+        "artifact": phase2_path_digest(root, path),
+        "reviewed_artifacts": current_reviewed,
+        "facts_sha256": approval.get("facts_sha256"),
+    }
+
+
+def phase2_agent_projection(root: Path, task_dir: Path, authored: Any) -> dict[str, Any]:
+    if not isinstance(authored, dict):
+        raise WorkflowError("agent_assignment must be an AI-authored object.", exit_code=2)
+    path = agent_assignment_path(task_dir)
+    artifact_path = repo_relative(root, path) if path.is_file() and not path.is_symlink() else None
+    recovery_errors = phase2_agent_assignment_errors(root, task_dir)
+    implementation_agent_ids = authored.get("implementation_agent_ids")
+    check_agent_ids = authored.get("check_agent_ids")
+    if artifact_path is None:
+        raise WorkflowError(
+            "guru-check-task requires a task-local agent-assignment.json artifact.",
+            exit_code=2,
+        )
+    if recovery_errors:
+        raise WorkflowError(
+            "guru-check-task requires a completed agent assignment recovery chain.",
+            exit_code=2,
+            payload={"errors": recovery_errors},
+        )
+    assignment = normalize_agent_assignment_for_task(root, task_dir, read_json(path))
+    phase2_roles = {"实现代理", "阶段二检查代理"}
+    phase2_agents = [
+        copy.deepcopy(item)
+        for item in assignment.get("agents", [])
+        if isinstance(item, dict) and item.get("logical_role") in phase2_roles
+    ]
+    phase2_agent_ids = {
+        str(item.get("agent_id") or "").strip()
+        for item in phase2_agents
+        if str(item.get("agent_id") or "").strip()
+    }
+    phase2_status_events = [
+        copy.deepcopy(item)
+        for item in assignment.get("status_events", [])
+        if isinstance(item, dict) and item.get("logical_role") in phase2_roles
+    ]
+    phase2_event_ids = {
+        str(item.get("event_id") or "").strip()
+        for item in phase2_status_events
+        if str(item.get("event_id") or "").strip()
+    }
+    stable_state = {
+        "schema_version": assignment.get("schema_version"),
+        "task": assignment.get("task"),
+        "agents": phase2_agents,
+        "liveness": {
+            agent_id: copy.deepcopy(entry)
+            for agent_id, entry in sorted((assignment.get("liveness") or {}).items())
+            if agent_id in phase2_agent_ids
+        },
+        "status_events": phase2_status_events,
+        "event_corrections": [
+            copy.deepcopy(item)
+            for item in assignment.get("event_corrections", [])
+            if isinstance(item, dict)
+            and str(item.get("target_event_id") or "").strip() in phase2_event_ids
+        ],
+        "recovery_links": [
+            copy.deepcopy(item)
+            for item in assignment.get("recovery_links", [])
+            if isinstance(item, dict)
+            and (
+                str(item.get("failed_event_id") or "").strip() in phase2_event_ids
+                or str(item.get("termination_event_id") or "").strip() in phase2_event_ids
+            )
+        ],
+    }
+    completed_by_role = {
+        role: {
+            str(item.get("agent_id") or "").strip()
+            for item in effective_status_events(assignment)
+            if isinstance(item, dict)
+            and item.get("event") == "completed"
+            and item.get("logical_role") == role
+            and str(item.get("agent_id") or "").strip()
+        }
+        for role in ("实现代理", "阶段二检查代理")
+    }
+    if (
+        not completed_by_role["实现代理"]
+        or set(implementation_agent_ids or []) != completed_by_role["实现代理"]
+    ):
+        raise WorkflowError(
+            "agent_assignment.implementation_agent_ids must exactly match completed implementation agents.",
+            exit_code=2,
+        )
+    if (
+        not completed_by_role["阶段二检查代理"]
+        or set(check_agent_ids or []) != completed_by_role["阶段二检查代理"]
+    ):
+        raise WorkflowError(
+            "agent_assignment.check_agent_ids must exactly match completed Phase 2 check agents.",
+            exit_code=2,
+        )
+    stable_state["completed_agent_ids"] = {
+        "implementation": sorted(completed_by_role["实现代理"]),
+        "check": sorted(completed_by_role["阶段二检查代理"]),
+    }
+    stable_state["recovery_complete"] = not recovery_errors
+    projection = {
+        "artifact_path": artifact_path,
+        "implementation_agent_ids": stable_state["completed_agent_ids"]["implementation"],
+        "check_agent_ids": stable_state["completed_agent_ids"]["check"],
+        "recovery_complete": not recovery_errors,
+        "phase2_state_sha256": context_digest(stable_state),
+    }
+    projection["facts_sha256"] = context_digest(projection)
+    return projection
+
+
+def phase2_semantic_projection(payload: dict[str, Any]) -> None:
+    execution = payload.get("check_execution")
+    scope = payload.get("scope_qualification")
+    review = payload.get("semantic_review")
+    if not isinstance(execution, dict) or not isinstance(scope, dict) or not isinstance(review, dict):
+        raise WorkflowError("Phase 2 semantic input is incomplete.", exit_code=2)
+    execution["execution_sha256"] = context_digest({key: value for key, value in execution.items() if key != "execution_sha256"})
+    scope["scope_sha256"] = context_digest(scope.get("candidates"))
+    dimensions = review.get("adequacy_dimensions")
+    review["adequacy_sha256"] = context_digest(dimensions)
+    gate = review.get("ai_review_gate")
+    if not isinstance(gate, dict):
+        raise WorkflowError("Phase 2 AI Review Gate is missing.", exit_code=2)
+    gate["planning_facts_sha256"] = payload["planning"]["facts_sha256"]
+    gate["snapshot_sha256"] = payload["repository_snapshot"]["snapshot_sha256"]
+    gate["scope_sha256"] = scope["scope_sha256"]
+    gate["adequacy_sha256"] = review["adequacy_sha256"]
+    findings = review.get("findings") if isinstance(review.get("findings"), list) else []
+    gate["findings_count"] = len(findings)
+    round_identity = {
+        "planning": payload["planning"]["facts_sha256"],
+        "snapshot": payload["repository_snapshot"]["snapshot_sha256"],
+        "execution": execution["execution_sha256"],
+        "scope": scope["scope_sha256"],
+        "adequacy": review["adequacy_sha256"],
+        "findings": findings,
+        "unverified_items": execution.get("unverified_items"),
+    }
+    gate["full_round_sha256"] = context_digest(round_identity)
+
+
+def phase2_semantic_errors(payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    scope = payload.get("scope_qualification") if isinstance(payload.get("scope_qualification"), dict) else {}
+    candidates = scope.get("candidates") if isinstance(scope.get("candidates"), list) else []
+    candidate_ids = [str(item.get("id") or "") for item in candidates if isinstance(item, dict)]
+    if any(not item for item in candidate_ids) or len(candidate_ids) != len(set(candidate_ids)):
+        errors.append("phase2_check_duplicate_or_missing_candidate_id")
+    candidate_by_id = {item.get("id"): item for item in candidates if isinstance(item, dict)}
+    scope_change_required = any(
+        item.get("disposition") == "scope_change_required"
+        for item in candidates
+        if isinstance(item, dict)
+    )
+    review = payload.get("semantic_review") if isinstance(payload.get("semantic_review"), dict) else {}
+    findings = review.get("findings") if isinstance(review.get("findings"), list) else []
+    finding_ids: set[str] = set()
+    finding_by_id = {
+        str(item.get("id") or ""): item
+        for item in findings
+        if isinstance(item, dict) and str(item.get("id") or "")
+    }
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        finding_id = str(finding.get("id") or "")
+        candidate = candidate_by_id.get(finding.get("candidate_id"))
+        if not finding_id or finding_id in finding_ids:
+            errors.append("phase2_check_duplicate_or_missing_finding_id")
+        finding_ids.add(finding_id)
+        if not isinstance(candidate, dict) or candidate.get("disposition") != "current_scope":
+            errors.append("phase2_check_finding_candidate_not_current_scope")
+        elif candidate.get("severity") != finding.get("severity") or candidate.get("finding_id") != finding_id:
+            errors.append("phase2_check_finding_candidate_link_mismatch")
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        if (
+            candidate.get("disposition") in {"current_scope", "scope_change_required"}
+            and not candidate.get("trigger_refs")
+        ):
+            errors.append("phase2_check_scope_candidate_trigger_refs_missing")
+        if candidate.get("disposition") != "current_scope":
+            continue
+        finding_id = str(candidate.get("finding_id") or "")
+        finding = finding_by_id.get(finding_id)
+        if (
+            not finding_id
+            or not isinstance(finding, dict)
+            or finding.get("candidate_id") != candidate.get("id")
+            or finding.get("severity") != candidate.get("severity")
+        ):
+            errors.append("phase2_check_current_scope_candidate_finding_link_missing")
+    dimensions = review.get("adequacy_dimensions") if isinstance(review.get("adequacy_dimensions"), list) else []
+    dimension_ids = [item.get("id") for item in dimensions if isinstance(item, dict)]
+    if dimension_ids != PHASE2_CHECK_DIMENSIONS:
+        errors.append("phase2_check_adequacy_dimension_order_mismatch")
+    evidence_refs = {
+        str(ref)
+        for dimension in dimensions
+        if isinstance(dimension, dict) and isinstance(dimension.get("evidence_refs"), list)
+        for ref in dimension["evidence_refs"]
+    }
+    if any(
+        not dimension.get("evidence_refs")
+        for dimension in dimensions
+        if isinstance(dimension, dict)
+    ):
+        errors.append("phase2_check_adequacy_evidence_refs_missing")
+    if not evidence_refs.issubset(PHASE2_CHECK_EVIDENCE_REFS):
+        errors.append("phase2_check_adequacy_evidence_ref_unknown")
+    if not PHASE2_CHECK_EVIDENCE_REFS.issubset(evidence_refs):
+        errors.append("phase2_check_adequacy_evidence_source_uncovered")
+    execution = payload.get("check_execution") if isinstance(payload.get("check_execution"), dict) else {}
+    if not execution.get("commands"):
+        errors.append("phase2_check_execution_commands_missing")
+    worker_evidence = execution.get("worker_evidence") if isinstance(execution.get("worker_evidence"), list) else []
+    check_agent_ids = set(payload.get("agent_assignment", {}).get("check_agent_ids") or [])
+    worker_agent_ids = {
+        str(item.get("agent_id") or "").strip()
+        for item in worker_evidence
+        if isinstance(item, dict) and str(item.get("agent_id") or "").strip()
+    }
+    if worker_agent_ids != check_agent_ids:
+        errors.append("phase2_check_worker_agent_not_completed_check_agent")
+    unverified = execution.get("unverified_items") if isinstance(execution.get("unverified_items"), list) else []
+    unverified_ids = [str(item.get("id") or "") for item in unverified if isinstance(item, dict)]
+    if any(not item for item in unverified_ids) or len(unverified_ids) != len(set(unverified_ids)):
+        errors.append("phase2_check_duplicate_or_missing_unverified_id")
+    dimension_finding_ids = {
+        str(item_id)
+        for dimension in dimensions
+        if isinstance(dimension, dict) and isinstance(dimension.get("finding_ids"), list)
+        for item_id in dimension["finding_ids"]
+    }
+    dimension_unverified_ids = {
+        str(item_id)
+        for dimension in dimensions
+        if isinstance(dimension, dict) and isinstance(dimension.get("unverified_ids"), list)
+        for item_id in dimension["unverified_ids"]
+    }
+    if not dimension_finding_ids.issubset(finding_ids):
+        errors.append("phase2_check_adequacy_references_unknown_finding")
+    if not dimension_unverified_ids.issubset(set(unverified_ids)):
+        errors.append("phase2_check_adequacy_references_unknown_unverified_item")
+    if finding_ids - dimension_finding_ids:
+        errors.append("phase2_check_finding_missing_adequacy_reference")
+    if set(unverified_ids) - dimension_unverified_ids:
+        errors.append("phase2_check_unverified_item_missing_adequacy_reference")
+    blocking_unverified = any(item.get("blocking") is True for item in unverified if isinstance(item, dict))
+    open_findings = any(item.get("status") == "open" for item in findings if isinstance(item, dict))
+    gate = review.get("ai_review_gate") if isinstance(review.get("ai_review_gate"), dict) else {}
+    typed_exit = payload.get("typed_exit")
+    if payload.get("consumer") != PHASE2_CHECK_CONSUMERS.get(str(typed_exit)):
+        errors.append("phase2_check_exit_consumer_mismatch")
+    if gate.get("status") != typed_exit:
+        errors.append("phase2_check_gate_exit_mismatch")
+    if typed_exit == "passed":
+        if any(item.get("status") != "passed" for item in dimensions if isinstance(item, dict)):
+            errors.append("phase2_check_pass_requires_all_dimensions")
+        if open_findings or blocking_unverified:
+            errors.append("phase2_check_pass_has_blocker")
+        if gate.get("full_rerun") is not True:
+            errors.append("phase2_check_pass_requires_full_rerun")
+        if payload.get("agent_assignment", {}).get("recovery_complete") is not True:
+            errors.append("phase2_check_pass_requires_complete_agent_recovery")
+    if open_findings and typed_exit != "implementation_required":
+        errors.append("phase2_check_open_finding_requires_implementation")
+    if typed_exit == "implementation_required" and not open_findings:
+        errors.append("phase2_check_implementation_required_without_open_finding")
+    if scope_change_required and typed_exit != "planning_stale":
+        errors.append("phase2_check_scope_change_requires_planning_stale")
+    if typed_exit == "planning_stale" and not scope_change_required:
+        errors.append("phase2_check_planning_stale_without_scope_change")
+    if typed_exit == "planning_stale" and payload.get("route") not in {"reapprove_plan", "clarify_requirements"}:
+        errors.append("phase2_check_planning_route_invalid")
+    if typed_exit == "blocked" and not blocking_unverified:
+        errors.append("phase2_check_blocked_without_verification_blocker")
+    if blocking_unverified and typed_exit != "blocked":
+        errors.append("phase2_check_verification_blocker_requires_blocked")
+    if typed_exit != "planning_stale" and payload.get("route") is not None:
+        errors.append("phase2_check_route_only_allowed_for_planning_stale")
+    derived = copy.deepcopy(payload)
+    try:
+        phase2_semantic_projection(derived)
+    except (KeyError, TypeError, WorkflowError):
+        errors.append("phase2_check_semantic_projection_invalid")
+    else:
+        comparisons = [
+            (execution.get("execution_sha256"), derived["check_execution"].get("execution_sha256"), "execution_sha256"),
+            (scope.get("scope_sha256"), derived["scope_qualification"].get("scope_sha256"), "scope_sha256"),
+            (review.get("adequacy_sha256"), derived["semantic_review"].get("adequacy_sha256"), "adequacy_sha256"),
+        ]
+        derived_gate = derived["semantic_review"].get("ai_review_gate", {})
+        for field in (
+            "planning_facts_sha256", "snapshot_sha256", "scope_sha256",
+            "adequacy_sha256", "findings_count", "full_round_sha256",
+        ):
+            comparisons.append((gate.get(field), derived_gate.get(field), f"gate_{field}"))
+        for actual, expected, field in comparisons:
+            if actual != expected:
+                errors.append(f"phase2_check_{field}_mismatch")
+    return errors
+
+
+def materialize_phase2_check_payload(
+    root: Path,
+    task_dir: Path,
+    task_context: dict[str, Any],
+    authored: dict[str, Any],
+) -> dict[str, Any]:
+    payload = copy.deepcopy(authored)
+    payload["schema_version"] = PHASE2_CHECK_SCHEMA_VERSION
+    payload["skill_id"] = PHASE2_CHECK_SKILL_ID
+    payload["generated_at"] = now_iso()
+    payload["task"] = phase2_task_projection(root, task_dir, task_context)
+    payload["planning"] = phase2_planning_projection(root, task_dir)
+    payload["requirement_provenance"] = phase2_evidence_projection(root, payload.get("requirement_provenance"), "requirement_provenance")
+    payload["docs_ssot_plan"] = phase2_docs_projection(root, payload.get("docs_ssot_plan"))
+    payload["implementation_handoff"] = phase2_evidence_projection(root, payload.get("implementation_handoff"), "implementation_handoff")
+    payload["agent_assignment"] = phase2_agent_projection(root, task_dir, payload.get("agent_assignment"))
+    payload["repository_snapshot"] = phase2_repository_projection(root, task_dir, task_context, payload.get("repository_snapshot"))
+    phase2_semantic_projection(payload)
+    payload["facts_sha256"] = context_digest({key: value for key, value in payload.items() if key not in {"generated_at", "facts_sha256"}})
+    return payload
+
+
 def normalize_coverage(items: list[str] | None) -> dict[str, bool]:
     coverage = {key: False for key in REQUIRED_PHASE2_COVERAGE}
     for item in items or []:
@@ -9847,87 +10379,110 @@ def validate_phase2_check(
         raise WorkflowError(f"Phase 2 check artifact not found: {path}", exit_code=2)
     payload = read_json(path)
     errors: list[str] = []
-    if not str(payload.get("check_summary") or "").strip():
-        errors.append("phase2-check.json 缺少 check_summary。")
-    if not str(payload.get("checker") or "").strip():
-        errors.append("phase2-check.json 缺少 checker。")
-    recorded_head = str(payload.get("head") or "")
+    if payload.get("schema_version") != PHASE2_CHECK_SCHEMA_VERSION or payload.get("skill_id") != PHASE2_CHECK_SKILL_ID:
+        return path, payload, [
+            "phase2_check_legacy_requires_complete_guru_check_task_reentry"
+        ]
+    schema = load_phase2_check_schema(root)
+    errors.extend(skill_json_schema_validation_errors(payload, schema, "phase2 check"))
+    errors.extend(phase2_semantic_errors(payload))
+
+    repository = payload.get("repository_snapshot") if isinstance(payload.get("repository_snapshot"), dict) else {}
+    recorded_head = str(repository.get("head") or "")
     head = current_head(root)
+    post_commit_audit_candidate = bool(
+        allow_committed_head
+        and recorded_head
+        and recorded_head != head
+        and is_ancestor(root, recorded_head, "HEAD")
+    )
+
+    task_context: dict[str, Any] | None = None
+    if not task_dir_is_archived(root, task_dir):
+        try:
+            task_context = load_task_start_context(task_dir, load_config(root))
+            current_task = phase2_task_projection(root, task_dir, task_context)
+            if payload.get("task") != current_task:
+                errors.append("phase2_check_task_projection_stale")
+            current_planning = phase2_planning_projection(root, task_dir)
+            if payload.get("planning") != current_planning:
+                errors.append("phase2_check_planning_projection_stale")
+            current_requirement = phase2_evidence_projection(root, payload.get("requirement_provenance"), "requirement_provenance")
+            if payload.get("requirement_provenance") != current_requirement:
+                errors.append("phase2_check_requirement_provenance_stale")
+            current_docs = phase2_docs_projection(root, payload.get("docs_ssot_plan"))
+            if payload.get("docs_ssot_plan") != current_docs:
+                errors.append("phase2_check_docs_ssot_stale")
+            preserved_handoff_paths = (
+                {repo_relative(root, agent_assignment_path(task_dir))}
+                if post_commit_audit_candidate
+                else set()
+            )
+            current_handoff = phase2_evidence_projection(
+                root,
+                payload.get("implementation_handoff"),
+                "implementation_handoff",
+                preserve_recorded_paths=preserved_handoff_paths,
+            )
+            if payload.get("implementation_handoff") != current_handoff:
+                errors.append("phase2_check_implementation_handoff_stale")
+            current_agent = phase2_agent_projection(root, task_dir, payload.get("agent_assignment"))
+            if payload.get("agent_assignment") != current_agent:
+                errors.append("phase2_check_agent_assignment_stale")
+        except WorkflowError as exc:
+            errors.append(f"phase2_check_current_facts_invalid:{exc}")
+
     accepted_committed_state = False
     committed_head_audit_performed = False
     if recorded_head != head:
-        if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
+        if post_commit_audit_candidate:
             committed_head_audit_performed = True
-            recorded_dirty = payload.get("dirty_paths")
+            recorded_dirty = repository.get("dirty_paths")
             if not isinstance(recorded_dirty, list):
-                errors.append("phase2-check.json 缺少 dirty_paths 数组。")
+                errors.append("phase2_check_dirty_paths_missing")
             committed_paths_covered, uncovered_paths = committed_paths_match_phase2_dirty_paths(
                 root,
                 recorded_head,
                 recorded_dirty if isinstance(recorded_dirty, list) else [],
             )
             if not committed_paths_covered:
-                errors.append(
-                    "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但之后提交了未被 dirty_paths 覆盖的非 Trellis metadata 变更: "
-                    + ", ".join(uncovered_paths[:20])
-                )
+                errors.append("phase2_check_post_commit_paths_uncovered:" + ",".join(uncovered_paths[:20]))
             has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
             if has_non_metadata:
-                errors.append(
-                    "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
-                    + ", ".join(non_metadata_paths[:20])
-                )
+                errors.append("phase2_check_post_commit_dirty_non_metadata:" + ",".join(non_metadata_paths[:20]))
             else:
                 accepted_committed_state = committed_paths_covered
         else:
-            errors.append(f"phase2-check.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
+            errors.append("phase2_check_head_stale")
     dirty_excluded = {repo_relative(root, phase2_check_path(task_dir))}
-    dirty_excluded.update(recorded_digest_paths(payload.get("checked_artifacts")))
     dirty_excluded.update(additional_dirty_excluded or task_commit_candidate_dirty_exclusions(root, task_dir))
-    dirty_now = dirty_paths_excluding(root, dirty_excluded)
-    recorded_dirty = payload.get("dirty_paths")
+    dirty_now = sorted(path for path in git_status_paths(root) if path not in dirty_excluded)
+    recorded_dirty = repository.get("dirty_paths")
     if not isinstance(recorded_dirty, list):
-        if "phase2-check.json 缺少 dirty_paths 数组。" not in errors:
-            errors.append("phase2-check.json 缺少 dirty_paths 数组。")
+        if "phase2_check_dirty_paths_missing" not in errors:
+            errors.append("phase2_check_dirty_paths_missing")
     elif accepted_committed_state or committed_head_audit_performed:
         pass
     elif sorted(str(item) for item in recorded_dirty) != sorted(dirty_now):
-        errors.append("phase2-check.json 记录的 dirty_paths 与当前 working tree 不一致。")
-    coverage = payload.get("coverage")
-    if not isinstance(coverage, dict):
-        errors.append("phase2-check.json 缺少 coverage。")
-    else:
-        for key in REQUIRED_PHASE2_COVERAGE:
-            if coverage.get(key) is not True:
-                errors.append(f"phase2-check.json coverage.{key} 不是 true。")
-    validation_commands = payload.get("validation_commands")
-    if not isinstance(validation_commands, list) or not validation_commands:
-        errors.append("phase2-check.json 缺少 validation_commands。")
-    checked_artifacts = payload.get("checked_artifacts")
-    if not isinstance(checked_artifacts, list) or not checked_artifacts:
-        errors.append("phase2-check.json 缺少 checked_artifacts。")
-    else:
-        for item in checked_artifacts:
-            artifact_path = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
-            if (
-                allow_committed_head
-                and committed_head_audit_performed
-                and is_phase2_post_commit_mutable_artifact_path(artifact_path)
-            ):
-                continue
-            errors.extend(digest_errors(root, item, "phase2 checked_artifacts"))
-    checked_specs = payload.get("checked_specs")
-    if isinstance(checked_specs, list):
-        for item in checked_specs:
-            errors.extend(digest_errors(root, item, "phase2 checked_specs"))
-    findings = payload.get("findings")
-    if not isinstance(findings, list):
-        errors.append("phase2-check.json 缺少 findings 数组。")
-    else:
-        blockers = unresolved_blocking_findings([item for item in findings if isinstance(item, dict)])
-        if blockers:
-            errors.append("phase2-check.json 存在未 resolved 的 P0/P1/P2 finding。")
-    errors.extend(phase2_agent_assignment_errors(root, task_dir))
+        errors.append("phase2_check_dirty_snapshot_stale")
+
+    if task_context is not None and not committed_head_audit_performed:
+        try:
+            current_repository = phase2_repository_projection(
+                root,
+                task_dir,
+                task_context,
+                repository,
+                additional_dirty_excluded=dirty_excluded,
+            )
+            if repository != current_repository:
+                errors.append("phase2_check_repository_snapshot_stale")
+        except WorkflowError as exc:
+            errors.append(f"phase2_check_repository_snapshot_invalid:{exc}")
+
+    expected_facts = context_digest({key: value for key, value in payload.items() if key not in {"generated_at", "facts_sha256"}})
+    if payload.get("facts_sha256") != expected_facts:
+        errors.append("phase2_check_facts_sha256_mismatch")
     return path, payload, errors
 
 
@@ -12078,50 +12633,27 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     task_dir = resolve_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
-    task = task_json(task_dir)
-    checker = str(args.checker or "").strip()
-    summary = str(args.summary or "").strip()
-    if not checker:
-        raise WorkflowError("record-phase2-check requires --checker identity metadata.", exit_code=2)
-    if not summary:
-        raise WorkflowError("record-phase2-check requires --summary with the trellis-check conclusion.", exit_code=2)
-    findings = load_findings(args)
-    payload = build_phase2_check_payload(
-        root=root,
-        task_dir=task_dir,
-        task_context=task_context,
-        task=task,
-        checker=checker,
-        check_summary=summary,
-        checked_artifacts=list(args.checked_artifact or []),
-        checked_specs=list(args.checked_spec or []),
-        coverage_items=list(args.coverage or []),
-        validation_items=list(args.validation or []),
-        findings=findings,
-    )
-    blockers = unresolved_blocking_findings(findings)
-    if args.pass_check and blockers:
-        raise WorkflowError("--pass cannot be used while unresolved P0/P1/P2 findings are present.", exit_code=2)
-    if args.pass_check and any(value is not True for value in payload["coverage"].values()):
-        missing = [key for key, value in payload["coverage"].items() if value is not True]
+    authored = contract_wording_read_input(root, args.input, "guru-check-task recorder")
+    payload = materialize_phase2_check_payload(root, task_dir, task_context, authored)
+    errors = skill_json_schema_validation_errors(payload, load_phase2_check_schema(root), "phase2 check")
+    errors.extend(phase2_semantic_errors(payload))
+    if errors:
         raise WorkflowError(
-            "record-phase2-check --pass requires every coverage key to be explicitly checked.",
+            "AI-authored guru-check-task input is structurally invalid.",
             exit_code=2,
-            payload={"missing_coverage": missing},
+            payload={"error_codes": sorted(set(errors))},
         )
-    if args.pass_check and not payload["validation_commands"]:
-        raise WorkflowError("record-phase2-check --pass requires at least one --validation evidence line.", exit_code=2)
-    if args.pass_check:
-        assignment_errors = phase2_agent_assignment_errors(root, task_dir)
-        if assignment_errors:
-            raise WorkflowError(
-                "record-phase2-check --pass blocked because agent assignment evidence is invalid.",
-                exit_code=2,
-                payload={"artifact_path": str(agent_assignment_path(task_dir)), "errors": assignment_errors},
-            )
     path = phase2_check_path(task_dir)
     if not args.dry_run:
         write_json(path, payload)
+        checked_path, checked_payload, checked_errors = validate_phase2_check(root, task_dir)
+        if checked_errors:
+            raise WorkflowError(
+                "Persisted guru-check-task artifact validation failed.",
+                exit_code=2,
+                payload={"artifact_path": str(checked_path), "errors": checked_errors},
+            )
+        payload = checked_payload
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
     return payload
@@ -12145,7 +12677,12 @@ def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_path": str(path),
         "task_dir": str(task_dir),
         "head": current_head(root),
-        "checked_head": payload.get("head"),
+        "checked_head": payload.get("repository_snapshot", {}).get("head"),
+        "typed_exit": payload.get("typed_exit"),
+        "route": payload.get("route"),
+        "consumer": payload.get("consumer"),
+        "facts_sha256": payload.get("facts_sha256"),
+        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
     }
 
 
@@ -12898,8 +13435,19 @@ def validate_task_commit_candidate(
         additional_dirty_excluded={candidate_relative},
     )
     errors.extend(f"Phase 2 check: {item}" for item in phase2_errors)
-    if str(phase2.get("head") or "") != current:
+    phase2_repository = (
+        phase2.get("repository_snapshot")
+        if isinstance(phase2.get("repository_snapshot"), dict)
+        else {}
+    )
+    phase2_head = phase2_repository.get("head") or phase2.get("head")
+    if str(phase2_head or "") != current:
         errors.append("task commit plan requires Phase 2 evidence recorded at pre_commit_head.")
+    if (
+        phase2.get("skill_id") == PHASE2_CHECK_SKILL_ID
+        and phase2.get("typed_exit") != "passed"
+    ):
+        errors.append("task commit plan requires guru-check-task typed_exit=passed.")
 
     current_snapshot = capture_task_commit_snapshot(root, {candidate_relative})
     snapshot = plan.get("dirty_snapshot") if isinstance(plan.get("dirty_snapshot"), dict) else {}
@@ -12966,12 +13514,14 @@ def validate_task_commit_candidate(
     reviewed_paths = {
         path for path, item in classification_by_path.items() if item.get("category") == "task-reviewed"
     }
+    phase2_dirty_paths = phase2_repository.get("dirty_paths", phase2.get("dirty_paths", []))
     phase2_covered_paths = {
-        str(item) for item in phase2.get("dirty_paths", []) if isinstance(item, str)
+        str(item) for item in phase2_dirty_paths if isinstance(item, str)
     }
+    phase2_covered_paths.update(recorded_digest_paths(phase2_repository.get("reviewed_paths")))
     phase2_covered_paths.update(recorded_digest_paths(phase2.get("checked_artifacts")))
-    # The recorder cannot include its own final bytes in checked_artifacts
-    # without creating a recursive digest. Candidate evidence binds those bytes.
+    # Phase 2 evidence cannot bind its own final bytes without a recursive
+    # digest. Candidate evidence authorizes those bytes for exact staging.
     phase2_covered_paths.add(repo_relative(root, phase2_check_path(task_dir)))
     uncovered_reviewed = sorted(reviewed_paths - {candidate_relative} - phase2_covered_paths)
     if uncovered_reviewed:
@@ -14786,6 +15336,13 @@ def skill_json_schema_validation_errors(
                 output.append(f"{label} violates oneOf at {path}")
             return
 
+        negated = node.get("not")
+        if negated is not None:
+            negated_errors: list[str] = []
+            validate(value, negated, path, negated_errors)
+            if not negated_errors:
+                output.append(f"{label} violates not at {path}")
+
         condition = node.get("if")
         if condition is not None:
             condition_errors: list[str] = []
@@ -14855,6 +15412,17 @@ def skill_json_schema_validation_errors(
             if item_schema is not None:
                 for index, item in enumerate(value):
                     validate(item, item_schema, f"{path}[{index}]", output)
+            contains_schema = node.get("contains")
+            if contains_schema is not None:
+                contains_match = False
+                for index, item in enumerate(value):
+                    branch_errors: list[str] = []
+                    validate(item, contains_schema, f"{path}[{index}]", branch_errors)
+                    if not branch_errors:
+                        contains_match = True
+                        break
+                if not contains_match:
+                    output.append(f"{label} violates contains at {path}")
 
         if isinstance(value, dict):
             required = node.get("required")
@@ -25759,15 +26327,11 @@ def build_parser() -> argparse.ArgumentParser:
     phase2.add_argument("--root")
     phase2.add_argument("--json", action="store_true")
     phase2.add_argument("--task")
-    phase2.add_argument("--pass", dest="pass_check", action="store_true")
-    phase2.add_argument("--checker", required=True, help="Checker name or AI/human check channel.")
-    phase2.add_argument("--summary", required=True, help="Chinese trellis-check conclusion.")
-    phase2.add_argument("--checked-artifact", action="append", help="Task-local artifact read by the check. Defaults to existing task planning/gate artifacts.")
-    phase2.add_argument("--checked-spec", action="append", help="Repo-relative .trellis/spec file read by the check.")
-    phase2.add_argument("--coverage", action="append", help="Coverage key. Required keys: requirements, design, code, tests, spec_sync, cross_layer, docs_ssot, deployment.")
-    phase2.add_argument("--validation", action="append", help="Validation command evidence as COMMAND or COMMAND|RESULT.")
-    phase2.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path]. Add status in findings-file for resolved blocking findings.")
-    phase2.add_argument("--findings-file", help="JSON list or object with findings[].")
+    phase2.add_argument(
+        "--input",
+        required=True,
+        help="AI-authored guru-phase2-check-2.0 input JSON file, or - for stdin. Legacy --pass/--coverage invocation is rejected.",
+    )
     phase2.add_argument("--dry-run", action="store_true")
 
     check_phase2 = sub.add_parser("check-phase2-check")

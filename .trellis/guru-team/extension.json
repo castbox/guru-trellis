@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.16",
+    "version": "0.6.5-guru.17",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -68,6 +68,7 @@
           "guru-change-request-review-1.0",
           "guru-context-discovery-1.0",
           "guru-contract-wording-review-1.0",
+          "guru-phase2-check-2.0",
           "guru-planning-approval-2.0",
           "guru-requirements-clarification-2.0",
           "guru-task-commit-plan-1.0",
@@ -76,6 +77,7 @@
         ],
         "active_skill_ids": [
           "guru-approve-task-plan",
+          "guru-check-task",
           "guru-clarify-requirements",
           "guru-create-task-commit",
           "guru-create-task-workspace",
@@ -146,11 +148,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-19T13:10:17Z",
+  "installed_at": "2026-07-19T20:08:32Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "feat/129-guru-approve-task-plan",
-    "commit": "56e32836376ae31d6e07862ca988c24f5654886d",
+    "ref": "feat/130-guru-check-task",
+    "commit": "a0ce7610c5e470efa9c08fee9fcc18fbd8993716",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -259,13 +261,14 @@
   "skill_packages": {
     "schema_version": "1.0",
     "status": "ok",
-    "canonical_registry_sha256": "b96ca20f7232c611ea2b0a92c7bd4fcb13ae1452f815e9f40f2f34af49513d56",
+    "canonical_registry_sha256": "7b90ab4171ee296defc8b781577223469aae4e569ec404710511843101232690",
     "registry_schema_version": "1.0",
     "reserved_ids": [
       "guru-create-work-commit"
     ],
     "active_ids": [
       "guru-approve-task-plan",
+      "guru-check-task",
       "guru-clarify-requirements",
       "guru-create-task-commit",
       "guru-create-task-workspace",
@@ -294,6 +297,11 @@
         "id": "guru-create-task-commit",
         "interface_sha256": "5b791f45f45b9b4df63ce62e6eb78519fe52f51b45a29441468fc3af3ed9adc9",
         "tree_sha256": "2d33c3d2c434e57f48b1d8f7448017d67ef0826f9ee60b0d037e356268a1e969"
+      },
+      {
+        "id": "guru-check-task",
+        "interface_sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "tree_sha256": "142a49904f9e634719c716c50638271c2e8bbea926cc9cc39dde93b18b9bfde0"
       },
       {
         "id": "guru-clarify-requirements",
@@ -325,7 +333,7 @@
       {
         "path": ".trellis/guru-team/skills/registry.json",
         "source": "trellis/skills/guru-team/registry.json",
-        "sha256": "b96ca20f7232c611ea2b0a92c7bd4fcb13ae1452f815e9f40f2f34af49513d56",
+        "sha256": "7b90ab4171ee296defc8b781577223469aae4e569ec404710511843101232690",
         "executable": false,
         "action": "unchanged"
       },
@@ -529,6 +537,62 @@
         "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
         "sha256": "6b5571bb545449fa61b9433774deb07f659087c818aff43dcb0b8b7688b5df50",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/phase2-check.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+        "sha256": "85a2d1af47f0fab2ff7872075ea81f8b0c2d3c547d0d9890332d6e9ca5c3ea20",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+        "sha256": "8582a3241d0606b91f48ee00b415a3ee05500aeeaaf2ce826dc3cbe2dbd00651",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "ba5c1594ce1f9c2a0d718f8a237db9b4966827e6f6488968d52f660a16bea7af",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/scripts/check-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/scripts/record-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
         "executable": false,
         "action": "unchanged"
       },
@@ -1572,6 +1636,230 @@
         "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
         "sha256": "6b5571bb545449fa61b9433774deb07f659087c818aff43dcb0b8b7688b5df50",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-check-task/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/phase2-check.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+        "sha256": "85a2d1af47f0fab2ff7872075ea81f8b0c2d3c547d0d9890332d6e9ca5c3ea20",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-check-task/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-check-task/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+        "sha256": "8582a3241d0606b91f48ee00b415a3ee05500aeeaaf2ce826dc3cbe2dbd00651",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/phase2-check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "ba5c1594ce1f9c2a0d718f8a237db9b4966827e6f6488968d52f660a16bea7af",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-check-task/scripts/check-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-check-task/scripts/record-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-check-task/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-check-task/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/phase2-check.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+        "sha256": "85a2d1af47f0fab2ff7872075ea81f8b0c2d3c547d0d9890332d6e9ca5c3ea20",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-check-task/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-check-task/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+        "sha256": "8582a3241d0606b91f48ee00b415a3ee05500aeeaaf2ce826dc3cbe2dbd00651",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/phase2-check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "ba5c1594ce1f9c2a0d718f8a237db9b4966827e6f6488968d52f660a16bea7af",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-check-task/scripts/check-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-check-task/scripts/record-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-check-task/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-check-task/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/phase2-check.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+        "sha256": "85a2d1af47f0fab2ff7872075ea81f8b0c2d3c547d0d9890332d6e9ca5c3ea20",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-check-task/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-check-task/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+        "sha256": "8582a3241d0606b91f48ee00b415a3ee05500aeeaaf2ce826dc3cbe2dbd00651",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/phase2-check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "ba5c1594ce1f9c2a0d718f8a237db9b4966827e6f6488968d52f660a16bea7af",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-check-task/scripts/check-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-check-task/scripts/record-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-check-task/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/phase2-check.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+        "sha256": "85a2d1af47f0fab2ff7872075ea81f8b0c2d3c547d0d9890332d6e9ca5c3ea20",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+        "sha256": "8582a3241d0606b91f48ee00b415a3ee05500aeeaaf2ce826dc3cbe2dbd00651",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/phase2-check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "ba5c1594ce1f9c2a0d718f8a237db9b4966827e6f6488968d52f660a16bea7af",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/scripts/check-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/scripts/record-phase2-check.sh",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
         "executable": false,
         "action": "unchanged"
       },

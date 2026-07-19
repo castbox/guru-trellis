@@ -77,11 +77,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(result["facts"]["planned_ids"], [])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-approve-task-plan", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
+            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 8)
-        self.assertEqual(result["facts"]["exit_markers"], 31)
-        self.assertEqual(result["facts"]["target_markers"], 17)
+        self.assertEqual(result["facts"]["invoke_markers"], 9)
+        self.assertEqual(result["facts"]["exit_markers"], 35)
+        self.assertEqual(result["facts"]["target_markers"], 20)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -1327,13 +1327,17 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
                 self.assertTrue((task_commit / "SKILL.md").is_file())
                 self.assertTrue((task_commit / "schemas/task-commit-plan.schema.json").is_file())
                 self.assertTrue(os.access(task_commit / "scripts/create-task-commit.sh", os.X_OK))
+                task_check = repo / root / "skills/guru-check-task"
+                self.assertTrue((task_check / "SKILL.md").is_file())
+                self.assertTrue((task_check / "schemas/phase2-check.schema.json").is_file())
+                self.assertTrue(os.access(task_check / "scripts/record-phase2-check.sh", os.X_OK))
                 sync_base = repo / root / "skills/guru-sync-base"
                 self.assertTrue((sync_base / "SKILL.md").is_file())
                 self.assertTrue((sync_base / "schemas/base-sync-result.schema.json").is_file())

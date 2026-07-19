@@ -579,6 +579,63 @@ Public plan/result stdout and examples contain no absolute workspace path; the
 checker derives the expected worktree from current repo config, reviewed slug,
 and live Git facts. Absolute mappings stay only in ignored runtime files.
 
+## Phase 2 Task Check Package
+
+`guru-check-task` is the only semantic owner of the complete Phase 2 task
+check and of the single task-local `phase2-check.json` artifact. It declares
+`judgment_mode=semantic`, the exact five-stage semantic profile, and identical
+workflow/standalone preconditions in this order: `runtime_dependency`,
+`task_workspace`, `approved_planning`, `requirement_provenance`,
+`implementation_handoff`, `repository_check_inputs`, `docs_ssot_plan`,
+`issue_scope_ledger`, `agent_assignment_recovery`, `repository_snapshot`, and
+`invocation_freshness`.
+
+The Skill owns repository check selection, scope qualification before severity,
+complete adequacy and Docs SSOT review, current-scope findings, full-rerun
+identity, the AI Review Gate, re-entry, and exactly four exits:
+`passed` -> active Skill `guru-create-task-commit`,
+`implementation_required` -> workflow target `guru-resume-implementation`,
+`planning_stale` -> workflow target `guru-task-check-planning-router`, and
+`blocked` -> stop `task-check-blocked`. The planning router consumes only the
+checker-validated `reapprove_plan` or `clarify_requirements` discriminator and
+maps it to one exact active Skill; it does not repeat semantic scope judgment.
+
+Official unchanged `trellis-check` workers provide review evidence only. They
+cannot own the Guru Gate, artifact, finding severity, or route. The package
+publishes closed schema `guru-phase2-check-2.0`; active legacy schema 1.0
+requires complete semantic re-entry, while archived artifacts remain historical.
+Recorder/checker runtime commands accept AI-authored closed input and validate
+only objective schema, linkage, digest, HEAD/diff/dirty, agent recovery,
+full-round, and exit/consumer invariants. Legacy `--pass --coverage` calls must
+fail closed rather than synthesize a semantic result.
+
+The entry evidence collections for requirement provenance, implementation
+handoff, Docs SSOT durable paths, repository reviewed paths, and executed
+commands are non-empty. Every adequacy dimension has a non-empty reference to
+a known current-round evidence source, the round covers planning, provenance,
+handoff, Docs SSOT, repository, execution, and agent evidence, and
+`current_scope` / `scope_change_required` candidates carry non-empty trigger
+references. These are objective existence and reference-closure checks; AI
+still owns semantic sufficiency.
+
+The checker recomputes execution/scope/adequacy digests, every Gate binding,
+finding count, and full-round digest from source fields and requires exact
+equality. If an implementation handoff lists task-local
+`agent-assignment.json`, a legal post-commit Branch Review metadata tail may
+retain the recorded raw file digest only while the independent Phase-2-stable
+agent projection remains equal; implementation/check/recovery drift fails
+closed.
+
+The objective agent projection requires task-local assignment evidence. Its
+non-empty implementation/check id sets exactly equal the effective completed
+events for those roles, and worker evidence covers exactly the completed check
+agent set. Missing, partial, failed, unfinished, stale, or replacement-only
+agent evidence fails entry before any typed exit can be recorded. The projection
+digests only Phase-2-stable implementation/check agents, status/liveness,
+corrections, recovery links, exact completed sets, and recovery closure. It
+excludes later Branch Review role/round/reuse metadata, while the Branch Review
+Gate separately validates the complete current assignment artifact and digest.
+
 ## Distribution And Managed Hashes
 
 The preset installs an audited canonical registry/schema/package copy under

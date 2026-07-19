@@ -46,6 +46,10 @@ Before editing workflow behavior:
   loop. Its shared recorder/checker consume AI-reviewed input and validate only
   schema, repository/planning facts, digests, freshness, and the typed-exit
   union for the single task-local `planning-approval.json` artifact.
+- `guru-check-task` owns the complete Phase 2 semantic check, scope-before-
+  severity classification, Docs SSOT review, finding full rerun, four typed
+  exits, and the single `phase2-check.json`; unchanged official `trellis-check`
+  workers provide evidence only.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 
 ## Required Validation
