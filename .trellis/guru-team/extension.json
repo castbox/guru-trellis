@@ -168,11 +168,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-20T06:46:41Z",
+  "installed_at": "2026-07-20T16:03:43Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/144-minimal-typed-handoff-io",
-    "commit": "535536dbd55427241d7ce88cc14629d47fb6d26c",
+    "commit": "b758893506e7298cd237d3284cfeda6edf4d4e8d",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -375,7 +375,7 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
-        "sha256": "fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e",
+        "sha256": "aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f",
         "executable": false,
         "action": "unchanged"
       },

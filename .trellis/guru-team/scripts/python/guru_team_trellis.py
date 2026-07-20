@@ -15014,7 +15014,7 @@ SKILL_INTERFACE_SCHEMAS = {
         "schema_path": Path("schemas/skill-interface-1.3.schema.json"),
         "interface_ref": "../../schemas/skill-interface-1.3.schema.json",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.3.json",
-        "sha256": "fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e",
+        "sha256": "aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f",
         "io_contract_state": "minimal_handoff",
     },
 }
@@ -15249,12 +15249,266 @@ def skill_json_equal(left: Any, right: Any) -> bool:
     return left == right
 
 
+def skill_json_schema_subset_errors(
+    schema: Any,
+    label: str,
+    *,
+    relative_root: Path | None = None,
+    boundary: Path | None = None,
+) -> list[str]:
+    errors: list[str] = []
+    local_ref_targets: dict[int, dict[str, Any]] = {}
+    allowed_keywords = {
+        "$schema", "$id", "$defs", "$ref", "title", "description",
+        "type", "const", "enum", "allOf", "anyOf", "oneOf", "not",
+        "if", "then", "else", "minLength", "maxLength", "pattern", "format",
+        "minimum", "maximum", "minItems", "maxItems", "uniqueItems", "items",
+        "contains", "properties", "required", "additionalProperties",
+    }
+    json_types = {"object", "array", "string", "boolean", "null", "integer", "number"}
+    supported_formats = {"date-time", "uri"}
+
+    def add(path: str, reason: str) -> None:
+        errors.append(f"[schema_subset] {label} schema {reason} at {path}")
+
+    def resolve_ref(reference: Any, path: str, node: dict[str, Any]) -> None:
+        if not isinstance(reference, str):
+            add(path, "has a non-string $ref")
+            return
+        if reference.startswith("#/"):
+            target: Any = schema
+            for encoded_part in reference[2:].split("/"):
+                part = encoded_part.replace("~1", "/").replace("~0", "~")
+                if not isinstance(target, dict) or part not in target:
+                    add(path, "has an unresolved $ref")
+                    return
+                target = target[part]
+            if not isinstance(target, dict):
+                add(path, "has a $ref that does not resolve to an object schema")
+            else:
+                local_ref_targets[id(node)] = target
+            return
+        relative = skill_safe_relative(reference)
+        if relative is None or relative_root is None or boundary is None:
+            add(path, "has a non-local or invalid $ref")
+            return
+        target_path = relative_root / relative
+        reference_errors: list[str] = []
+        if skill_lstat_path(
+            boundary,
+            target_path,
+            f"schema reference {reference}",
+            reference_errors,
+            kind="file",
+        ) is None:
+            add(path, "has an unsafe or unresolved package-local $ref")
+            return
+        try:
+            target = json.loads(target_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            add(path, "has an unreadable package-local $ref")
+            return
+        if not isinstance(target, dict):
+            add(path, "has a package-local $ref that does not resolve to an object schema")
+
+    def validate_nonnegative_integer(value: Any, path: str, keyword: str) -> None:
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            add(path, f"has an invalid {keyword}")
+
+    def validate_node(node: Any, path: str) -> None:
+        if not isinstance(node, dict):
+            add(path, "uses a boolean or non-object schema node")
+            return
+
+        for keyword in sorted(set(node) - allowed_keywords):
+            add(path, f"uses unsupported keyword {keyword}")
+
+        if "$schema" in node and node.get("$schema") != SKILL_SCHEMA_DIALECT:
+            add(path, "declares an unsupported $schema dialect")
+        for keyword in ("$id", "title", "description"):
+            if keyword in node and not isinstance(node.get(keyword), str):
+                add(path, f"has a non-string {keyword}")
+        if "$id" in node and path != "$":
+            add(path, "uses a non-root $id resource boundary")
+        if "$ref" in node:
+            resolve_ref(node.get("$ref"), path, node)
+
+        definitions = node.get("$defs")
+        if definitions is not None:
+            if not isinstance(definitions, dict):
+                add(path, "has a non-object $defs")
+            else:
+                for name, child in definitions.items():
+                    validate_node(child, f"{path}.$defs.{name}")
+
+        expected_type = node.get("type")
+        if expected_type is not None:
+            if isinstance(expected_type, str):
+                expected_types = [expected_type]
+            elif isinstance(expected_type, list):
+                expected_types = expected_type
+            else:
+                expected_types = []
+            if (
+                not expected_types
+                or any(not isinstance(item, str) or item not in json_types for item in expected_types)
+                or len(expected_types) != len(set(expected_types))
+            ):
+                add(path, "has an invalid type")
+
+        enum = node.get("enum")
+        if enum is not None:
+            if not isinstance(enum, list) or not enum:
+                add(path, "has an invalid enum")
+            elif any(
+                skill_json_equal(item, previous)
+                for index, item in enumerate(enum)
+                for previous in enum[:index]
+            ):
+                add(path, "has duplicate enum values")
+
+        for keyword in ("allOf", "anyOf", "oneOf"):
+            branches = node.get(keyword)
+            if branches is not None:
+                if not isinstance(branches, list) or not branches:
+                    add(path, f"has an invalid {keyword}")
+                else:
+                    for index, branch in enumerate(branches):
+                        validate_node(branch, f"{path}.{keyword}[{index}]")
+        for keyword in ("not", "if", "then", "else", "items", "contains"):
+            if keyword in node:
+                validate_node(node.get(keyword), f"{path}.{keyword}")
+
+        for keyword in ("minLength", "maxLength", "minItems", "maxItems"):
+            if keyword in node:
+                validate_nonnegative_integer(node.get(keyword), path, keyword)
+        if (
+            isinstance(node.get("minLength"), int)
+            and not isinstance(node.get("minLength"), bool)
+            and isinstance(node.get("maxLength"), int)
+            and not isinstance(node.get("maxLength"), bool)
+            and node["minLength"] > node["maxLength"]
+        ):
+            add(path, "has minLength greater than maxLength")
+        if (
+            isinstance(node.get("minItems"), int)
+            and not isinstance(node.get("minItems"), bool)
+            and isinstance(node.get("maxItems"), int)
+            and not isinstance(node.get("maxItems"), bool)
+            and node["minItems"] > node["maxItems"]
+        ):
+            add(path, "has minItems greater than maxItems")
+
+        pattern = node.get("pattern")
+        if pattern is not None:
+            if not isinstance(pattern, str):
+                add(path, "has a non-string pattern")
+            else:
+                try:
+                    re.compile(pattern)
+                except re.error:
+                    add(path, "has an invalid pattern")
+        expected_format = node.get("format")
+        if expected_format is not None:
+            if not isinstance(expected_format, str):
+                add(path, "has a non-string format")
+            elif expected_format not in supported_formats:
+                add(path, "has an unsupported format")
+
+        for keyword in ("minimum", "maximum"):
+            value = node.get(keyword)
+            if keyword in node and (
+                not isinstance(value, (int, float)) or isinstance(value, bool)
+            ):
+                add(path, f"has an invalid {keyword}")
+        if (
+            isinstance(node.get("minimum"), (int, float))
+            and not isinstance(node.get("minimum"), bool)
+            and isinstance(node.get("maximum"), (int, float))
+            and not isinstance(node.get("maximum"), bool)
+            and node["minimum"] > node["maximum"]
+        ):
+            add(path, "has minimum greater than maximum")
+
+        if "uniqueItems" in node and not isinstance(node.get("uniqueItems"), bool):
+            add(path, "has a non-boolean uniqueItems")
+        properties = node.get("properties")
+        if properties is not None:
+            if not isinstance(properties, dict):
+                add(path, "has non-object properties")
+            else:
+                for name, child in properties.items():
+                    validate_node(child, f"{path}.properties.{name}")
+        required = node.get("required")
+        if required is not None and (
+            not isinstance(required, list)
+            or any(not isinstance(item, str) for item in required)
+            or len(required) != len(set(required))
+        ):
+            add(path, "has an invalid required")
+        if "additionalProperties" in node and not isinstance(node.get("additionalProperties"), bool):
+            add(path, "has a non-boolean additionalProperties")
+
+    def schema_children(node: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
+        children: list[tuple[str, dict[str, Any]]] = []
+        for keyword in ("$defs", "properties"):
+            values = node.get(keyword)
+            if isinstance(values, dict):
+                children.extend(
+                    (f"{keyword}.{name}", child)
+                    for name, child in values.items()
+                    if isinstance(child, dict)
+                )
+        for keyword in ("allOf", "anyOf", "oneOf"):
+            values = node.get(keyword)
+            if isinstance(values, list):
+                children.extend(
+                    (f"{keyword}[{index}]", child)
+                    for index, child in enumerate(values)
+                    if isinstance(child, dict)
+                )
+        for keyword in ("not", "if", "then", "else", "items", "contains"):
+            child = node.get(keyword)
+            if isinstance(child, dict):
+                children.append((keyword, child))
+        return children
+
+    def detect_recursive_refs(
+        node: dict[str, Any],
+        path: str,
+        active: set[int],
+        complete: set[int],
+    ) -> None:
+        node_id = id(node)
+        if node_id in active:
+            add(path, "has a recursive $ref")
+            return
+        if node_id in complete:
+            return
+        active.add(node_id)
+        for child_label, child in schema_children(node):
+            detect_recursive_refs(child, f"{path}.{child_label}", active, complete)
+        target = local_ref_targets.get(node_id)
+        if target is not None:
+            detect_recursive_refs(target, f"{path}.$ref", active, complete)
+        active.remove(node_id)
+        complete.add(node_id)
+
+    validate_node(schema, "$")
+    if isinstance(schema, dict):
+        detect_recursive_refs(schema, "$", set(), set())
+    return errors
+
+
 def skill_json_schema_validation_errors(
     instance: Any,
     schema: dict[str, Any],
     label: str,
 ) -> list[str]:
-    errors: list[str] = []
+    errors = skill_json_schema_subset_errors(schema, label)
+    if errors:
+        return errors
+    active_references: set[str] = set()
 
     def resolve_ref(reference: Any, output: list[str], path: str) -> dict[str, Any] | None:
         if not isinstance(reference, str) or not reference.startswith("#/"):
@@ -15284,7 +15538,11 @@ def skill_json_schema_validation_errors(
         if expected == "null":
             return value is None
         if expected == "integer":
-            return isinstance(value, int) and not isinstance(value, bool)
+            return (
+                isinstance(value, int) and not isinstance(value, bool)
+            ) or (
+                isinstance(value, float) and value.is_integer()
+            )
         if expected == "number":
             return isinstance(value, (int, float)) and not isinstance(value, bool)
         return False
@@ -15315,10 +15573,17 @@ def skill_json_schema_validation_errors(
             output.append(f"{label} schema node is not an object at {path}")
             return
         if "$ref" in node:
-            target = resolve_ref(node.get("$ref"), output, path)
-            if target is not None:
-                validate(value, target, path, output)
-            return
+            reference = node.get("$ref")
+            target = resolve_ref(reference, output, path)
+            if target is not None and isinstance(reference, str):
+                if reference in active_references:
+                    output.append(f"{label} schema has a recursive reference at {path}")
+                else:
+                    active_references.add(reference)
+                    try:
+                        validate(value, target, path, output)
+                    finally:
+                        active_references.remove(reference)
         all_options = node.get("allOf")
         if all_options is not None:
             if not isinstance(all_options, list) or not all_options:
@@ -15351,7 +15616,6 @@ def skill_json_schema_validation_errors(
                     matches += 1
             if matches != 1:
                 output.append(f"{label} violates oneOf at {path}")
-            return
 
         negated = node.get("not")
         if negated is not None:
@@ -15448,11 +15712,12 @@ def skill_json_schema_validation_errors(
                     if isinstance(key, str) and key not in value:
                         output.append(f"{label} is missing required property at {path}.{key}")
             properties = node.get("properties")
+            if node.get("additionalProperties") is False:
+                declared_properties = properties if isinstance(properties, dict) else {}
+                for key in value:
+                    if key not in declared_properties:
+                        output.append(f"{label} has an additional property at {path}.{key}")
             if isinstance(properties, dict):
-                if node.get("additionalProperties") is False:
-                    for key in value:
-                        if key not in properties:
-                            output.append(f"{label} has an additional property at {path}.{key}")
                 for key, child_schema in properties.items():
                     if key in value:
                         validate(value[key], child_schema, f"{path}.{key}", output)
@@ -15616,6 +15881,7 @@ def skill_contract_asset(
     errors: list[str],
     *,
     schema: bool,
+    allow_package_relative_refs: bool = False,
 ) -> tuple[Path | None, dict[str, Any] | None]:
     if not isinstance(reference, dict):
         errors.append(f"[contract_asset_invalid] {label} reference must be an object")
@@ -15635,6 +15901,15 @@ def skill_contract_asset(
             errors.append(f"[contract_schema_dialect] {label} must use Draft 2020-12")
         if payload.get("$id") != reference.get("schema_id"):
             errors.append(f"[contract_schema_id] {label} does not match its declared schema id")
+        subset_errors = skill_json_schema_subset_errors(
+            payload,
+            label,
+            relative_root=path.parent if allow_package_relative_refs else None,
+            boundary=boundary if allow_package_relative_refs else None,
+        )
+        errors.extend(subset_errors)
+        if subset_errors:
+            return path, None
     return path, payload
 
 
@@ -15989,6 +16264,7 @@ def validate_skill_public_contracts(
             f"aggregate public input schema for {skill_id}",
             errors,
             schema=True,
+            allow_package_relative_refs=True,
         )
         branches = aggregate_schema.get("oneOf") if isinstance(aggregate_schema, dict) else None
         if not isinstance(branches, list) or len(branches) != len(profiles):
@@ -16191,6 +16467,22 @@ def validate_skill_public_contracts(
             )
             continue
         if contract_kind == "json_schema":
+            declared_path = contract.get("path")
+            consumer_relative = skill_safe_relative(declared_path)
+            expected_root = ("consumers", str(identity_kind or ""))
+            if (
+                not isinstance(declared_path, str)
+                or consumer_relative is None
+                or declared_path != consumer_relative.as_posix()
+                or len(consumer_relative.parts) < 3
+                or consumer_relative.parts[:2] != expected_root
+                or identity_kind not in {"workflow", "stop"}
+            ):
+                errors.append(
+                    f"[consumer_owner_root] consumer input {consumer_id} for {skill_id} must use a canonical "
+                    f"consumers/{identity_kind}/ schema path owned by its declared consumer"
+                )
+                continue
             _, schema = skill_contract_asset(
                 boundary, skills_root, contract, f"consumer input {consumer_id} for {skill_id}", errors, schema=True
             )

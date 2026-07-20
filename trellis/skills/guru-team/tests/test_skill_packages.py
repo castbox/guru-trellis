@@ -60,6 +60,16 @@ class SourceValidationTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def interface_schema_errors(self, payload: dict) -> list[str]:
+        schema = json.loads(
+            (self.root / "schemas/skill-interface-1.3.schema.json").read_text(encoding="utf-8")
+        )
+        return runtime.skill_json_schema_validation_errors(
+            payload,
+            schema,
+            "representative 1.3 interface",
+        )
+
     def read_sync_interface(self) -> dict:
         return json.loads(
             (self.root / "packages/guru-example-sync/interface.json").read_text(encoding="utf-8")
@@ -110,6 +120,44 @@ class SourceValidationTests(unittest.TestCase):
             "id": "rename_to_sync",
             "exit_id": "forwarded",
             "consumer_input_id": "sync_input",
+            "operation": "direct",
+        })
+        self.write_interface(interface)
+
+    def configure_structured_stop(self, contract_path: str = "consumers/stop/action-blocked.schema.json") -> None:
+        schema_path = self.root / contract_path
+        schema_path.parent.mkdir(parents=True, exist_ok=True)
+        schema_path.write_text(
+            json.dumps({
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "guru-fixture-stop-blocked-input-1.0",
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["exit_id"],
+                "properties": {"exit_id": {"const": "blocked"}},
+            }),
+            encoding="utf-8",
+        )
+        interface = self.read_interface()
+        consumer = next(
+            item for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "stop_blocked_input"
+        )
+        consumer["payload_kind"] = "structured_json"
+        consumer["contract"] = {
+            "kind": "json_schema",
+            "schema_id": "guru-fixture-stop-blocked-input-1.0",
+            "path": contract_path,
+        }
+        projection = next(
+            item for item in interface["public_contracts"]["projections"]
+            if item["id"] == "select_to_stop"
+        )
+        projection.clear()
+        projection.update({
+            "id": "select_to_stop",
+            "exit_id": "blocked",
+            "consumer_input_id": "stop_blocked_input",
             "operation": "direct",
         })
         self.write_interface(interface)
@@ -663,6 +711,205 @@ class SourceValidationTests(unittest.TestCase):
         self.assertTrue(any(
             "[projection_direct_contract]" in item
             for item in self.validate()["errors"]
+        ))
+
+    def test_workflow_consumer_rejects_producer_owned_output_schema(self) -> None:
+        interface = self.read_interface()
+        consumer = next(
+            item for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "workflow_completed_input"
+        )
+        consumer["contract"] = {
+            "kind": "json_schema",
+            "schema_id": "guru-fixture-action-completed-output-1.0",
+            "path": "packages/guru-example-action/schemas/action-completed-output.schema.json",
+        }
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[consumer_owner_root]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_non_skill_consumer_rejects_wrong_owner_root(self) -> None:
+        workflow_path = "consumers/stop/action-completed.schema.json"
+        target = self.root / workflow_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        schema = json.loads(
+            (self.root / "consumers/workflow/action-completed.schema.json").read_text(encoding="utf-8")
+        )
+        target.write_text(json.dumps(schema), encoding="utf-8")
+        interface = self.read_interface()
+        consumer = next(
+            item for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "workflow_completed_input"
+        )
+        consumer["contract"]["path"] = workflow_path
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[consumer_owner_root]" in item
+            for item in self.validate()["errors"]
+        ))
+
+        self.write_interface(json.loads(
+            (FIXTURE / "packages/guru-example-action/interface.json").read_text(encoding="utf-8")
+        ))
+        self.configure_structured_stop("consumers/workflow/action-blocked.schema.json")
+        self.assertTrue(any(
+            "[consumer_owner_root]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_non_skill_consumer_rejects_noncanonical_path_spelling(self) -> None:
+        for path in (
+            "./consumers/workflow/action-completed.schema.json",
+            "consumers//workflow/action-completed.schema.json",
+            "consumers/workflow/../workflow/action-completed.schema.json",
+        ):
+            with self.subTest(path=path):
+                interface = self.read_interface()
+                consumer = next(
+                    item for item in interface["public_contracts"]["consumer_inputs"]
+                    if item["id"] == "workflow_completed_input"
+                )
+                consumer["contract"]["path"] = path
+                self.assertTrue(self.interface_schema_errors(interface))
+                self.write_interface(interface)
+                self.assertTrue(any(
+                    "[consumer_owner_root]" in item
+                    for item in self.validate()["errors"]
+                ))
+                self.write_interface(json.loads(
+                    (FIXTURE / "packages/guru-example-action/interface.json").read_text(encoding="utf-8")
+                ))
+
+    def test_canonical_workflow_and_structured_stop_consumer_paths_pass(self) -> None:
+        self.assertEqual(self.interface_schema_errors(self.read_interface()), [])
+        self.assertEqual(self.validate()["status"], "passed")
+        self.configure_structured_stop()
+        self.assertEqual(self.interface_schema_errors(self.read_interface()), [])
+        result = self.validate()
+        self.assertEqual(result["status"], "passed", result["errors"])
+
+    def test_closed_schema_subset_rejects_unsupported_and_malformed_keywords(self) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-completed-output.schema.json"
+        original = json.loads(schema_path.read_text(encoding="utf-8"))
+
+        def add_nested_resource(schema: dict) -> None:
+            schema["$defs"] = {"target": {"type": "string"}}
+            schema["properties"]["result"].update({
+                "$id": "other.json",
+                "$ref": "#/$defs/target",
+            })
+
+        mutations = {
+            "pattern-properties": lambda schema: schema.update({
+                "patternProperties": {"^result$": {"const": "not the example"}},
+            }),
+            "nested-unsupported": lambda schema: schema["properties"]["result"].update({
+                "minProperties": 1,
+            }),
+            "keyword-type": lambda schema: schema["properties"]["result"].update({
+                "minLength": "1",
+            }),
+            "boolean-schema": lambda schema: schema["properties"].update({"result": False}),
+            "unresolved-ref": lambda schema: schema["properties"]["result"].update({
+                "$ref": "missing.schema.json",
+            }),
+            "remote-ref": lambda schema: schema["properties"]["result"].update({
+                "$ref": "https://example.com/schema.json",
+            }),
+            "recursive-ref": lambda schema: schema.update({
+                "$defs": {"loop": {"$ref": "#/$defs/loop"}},
+            }),
+            "nested-id-resource": add_nested_resource,
+            "format-type": lambda schema: schema["properties"]["result"].update({
+                "format": [],
+            }),
+            "unsupported-format": lambda schema: schema["properties"]["result"].update({
+                "format": "email",
+            }),
+            "invalid-pattern": lambda schema: schema["properties"]["result"].update({
+                "pattern": "(",
+            }),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+                schema = json.loads(json.dumps(original))
+                mutate(schema)
+                schema_path.write_text(json.dumps(schema), encoding="utf-8")
+                errors = self.validate()["errors"]
+                self.assertTrue(any("[schema_subset]" in item for item in errors), errors)
+        schema_path.write_text(json.dumps(original), encoding="utf-8")
+
+    def test_closed_schema_subset_accepts_recursive_supported_keywords(self) -> None:
+        schema = {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$defs": {
+                "payload": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["kind", "value"],
+                    "properties": {
+                        "kind": {"enum": ["alpha", "beta"]},
+                        "value": {
+                            "oneOf": [
+                                {"type": "string", "minLength": 1},
+                                {"type": "integer", "minimum": 1},
+                            ],
+                        },
+                    },
+                    "allOf": [{
+                        "if": {"properties": {"kind": {"const": "alpha"}}},
+                        "then": {"properties": {"value": {"type": "string"}}},
+                    }],
+                },
+            },
+            "$ref": "#/$defs/payload",
+        }
+        self.assertEqual(runtime.skill_json_schema_subset_errors(schema, "supported fixture"), [])
+        self.assertEqual(
+            runtime.skill_json_schema_validation_errors(
+                {"kind": "alpha", "value": "ready"},
+                schema,
+                "supported fixture",
+            ),
+            [],
+        )
+        self.assertTrue(any(
+            "wrong type" in item
+            for item in runtime.skill_json_schema_validation_errors(
+                {"kind": "alpha", "value": 1},
+                schema,
+                "supported fixture",
+            )
+        ))
+
+    def test_closed_schema_integer_uses_json_schema_number_semantics(self) -> None:
+        schema = {"type": "integer"}
+        self.assertEqual(
+            runtime.skill_json_schema_validation_errors(1.0, schema, "integer fixture"),
+            [],
+        )
+        for value in (1.5, True):
+            with self.subTest(value=value):
+                self.assertTrue(runtime.skill_json_schema_validation_errors(
+                    value,
+                    schema,
+                    "integer fixture",
+                ))
+        closed_empty_object = {"type": "object", "additionalProperties": False}
+        self.assertEqual(
+            runtime.skill_json_schema_validation_errors(
+                {},
+                closed_empty_object,
+                "closed empty object fixture",
+            ),
+            [],
+        )
+        self.assertTrue(runtime.skill_json_schema_validation_errors(
+            {"unexpected": "value"},
+            closed_empty_object,
+            "closed empty object fixture",
         ))
 
     def test_skill_consumer_requires_target_owned_matching_interface(self) -> None:

@@ -396,3 +396,140 @@ follow-up ownership。
   sample 不能冒充 immutable feature-ref pass。Trellis CLI 0.6.7 兼容性仍不在批准范围。
 - 本轮未运行 Phase 2 recorder/checker、Branch Review recorder/gate、commit、push、PR 或
   finish-work；这些步骤必须由后续独立角色按 workflow 执行。
+
+## 12. Round 4 finding-fix implementation handoff
+
+### 12.1 Finding closure
+
+- Round 4 `workflow/structured-stop consumer contract 未强制 consumer-owned locator` 已在
+  实现层关闭。Interface 1.3 将 workflow、skill、structured stop 与 zero-payload stop
+  consumer input 拆为不重叠 union；runtime 同时要求原始 locator 已是 canonical spelling，
+  并分别位于 `consumers/workflow/**` 或 `consumers/stop/**`。Producer package/output locator、
+  cross-kind root、`./`、重复分隔符、父目录与 symlink component 均 fail closed；zero-payload
+  stop 继续不携带 schema contract。
+- Round 4 `Draft 2020-12 schema 只按未闭合的自定义关键字子集执行` 已在实现层关闭。
+  Standard-library runtime 新增递归 closed-subset grammar validation，明确支持当前合同所需
+  的 core/applicator/validation 关键字，并拒绝所有未实现关键字、keyword 类型错误、boolean
+  schema、unsupported format、非法 regex、remote/unresolved ref 与 recursive ref。实例校验
+  同步处理 `$ref` 与 `oneOf` sibling constraints；只有 aggregate structured-input 的 exact
+  ordered profile index 允许 package-boundary-contained relative refs。
+
+上述是 implementer closure evidence，不替代 fresh full Phase 2 或新的 Branch Review 结论。
+
+### 12.2 Changed files and Docs SSOT
+
+- Canonical / installed runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`。
+- Canonical / fixture / installed interface schema：
+  `trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json`、
+  `trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json`、
+  `.trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json`。
+- Regression tests：`trellis/skills/guru-team/tests/test_skill_packages.py`。
+- Durable workflow SSOT：`.trellis/spec/workflow/skill-package-contract.md`、
+  `.trellis/spec/workflow/data-contracts.md`、`.trellis/spec/workflow/quality-guidelines.md`、
+  `.trellis/spec/workflow/companion-scripts.md`。
+- Generated dogfood provenance：`.trellis/guru-team/extension.json`；preset reapply 已刷新当前
+  dirty source snapshot，最终幂等 apply 未再产生 managed update/backup/sidecar。
+
+Docs state 继续为 `complete_docs`，strategy 继续为 `ssot_first`。本轮只补强既有 #144
+consumer ownership 与 schema validation 合同；九个 production Skill 仍为 1.2 + `legacy`，
+#145/#146 migration scope、workflow route 与 frozen overlays 均未改变。
+
+### 12.3 Validation
+
+- Round 4 focused tests、完整 Skill package suite：112/112 passed。
+- Preset installer：39/39 passed；upstream ownership：6/6 passed。
+- Shared runtime：548 passed、13 skipped。
+- External `Draft202012Validator.check_schema()` 与两个 representative fixture interface：
+  passed。
+- Source validation：passed，9 production legacy、0 production minimal；installed validation：
+  passed，384 managed files，0 sidecar/removal/conflict。
+- `apply.sh --repo . --all-platforms` 最终幂等：0 installed、0 updated managed、0 backup、
+  0 new copy、0 sidecar/removal；dogfood overlay drift 与 upstream ownership 均 passed。
+- Canonical/installed runtime 及 canonical/installed/fixture 1.3 schema bytes：一致；当前 1.3
+  schema SHA-256 为
+  `d04b0d8476cea2c33e9a1da1ab715b4576fedc514f3c8d4601847cbd78074b10`。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh`：exit 0；覆盖 clean
+  init、public marketplace discovery、local unpublished workflow/preset sample、workflow
+  preview/switch、初装、`trellis update`、preset reapply、source/installed/ownership/platform
+  checks 与最终零 sidecar。
+
+### 12.4 Security, deployment, and unverified boundaries
+
+- 本轮只收紧确定性 authoring/instance validation，没有引入 semantic route/review judgment、
+  hostile-input、竞态、锁、TOCTOU、fault injection 或 crash-consistency 范围。
+- 未读取或写入 token、secret、private key、`.env`、数据库 URL、签名 URL、客户数据或
+  敏感原始记录。
+- CI/CD、service、API、worker、container、Kubernetes/Kustomize、DB migration、Makefile
+  与部署配置均未修改；无部署或数据迁移影响。
+- 默认 exact feature-ref throwaway 仍预期 exit 2：当前 branch 尚未 push，远端无法解析
+  unpublished ref。Public sample 只证明安装/update 通路，不能冒充 immutable feature-ref
+  pass；该证据应在 reviewed branch push 后由 Remote Marketplace Verification Gate 补齐。
+- 本轮实现后尚未运行 fresh full Phase 2、finding-fix commit、closure Branch Review、push、
+  PR 或 finish-work。
+
+## 13. Replacement Phase 2 final-byte handoff
+
+### 13.1 Superseded evidence and finding closure
+
+- 本节是 replacement Phase 2 checker 在 Round 4 修复后的最终字节复核。§12.3 的
+  `112/112` Skill suite 与 1.3 schema SHA-256
+  `d04b0d8476cea2c33e9a1da1ab715b4576fedc514f3c8d4601847cbd78074b10`
+  已被后续机械修复和本节证据取代；最终结果为 `113/113`，最终 SHA-256 为
+  `aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f`。
+- 已关闭 P2：递归 grammar scan 现在遍历未被 example 触达的 `$defs` / local-ref graph，
+  未实现 keyword、非法或 unresolved/recursive ref 均 fail closed。
+- 已关闭 P2：consumer-owned locator 同时在 schema 与 runtime 拒绝 owner root 的 `./`、
+  `//`、`..`、producer root 与 cross-kind root。
+- 已关闭 P2：仅 root schema 允许 `$id`；nested `$id` 在 deterministic validation 中被拒绝。
+- 已关闭 P3：Draft integer semantics 接受数学整数 `1.0`，拒绝 `1.5` 与 boolean。
+- 已关闭 P3：非字符串 `format` 不再产生 `TypeError` traceback，而是稳定结构化 fail closed。
+- 已关闭 P2：`additionalProperties: false` 且未声明 `properties` 时，实例对象的任意字段
+  现在均被拒绝。
+- 六项 finding 均有正常路径回归测试并在最终全量轮次通过；当前 open P0/P1/P2/P3 均为 0。
+
+### 13.2 Final validation
+
+- Focused finding tests：7/7 passed；完整 Skill package suite：113/113 passed。
+- Shared runtime：548 passed、13 skipped；preset installer：39/39 passed；upstream
+  ownership：6/6 passed。
+- 外部 `Draft202012Validator.check_schema()` 加 canonical schema 与两个 1.3 fixture
+  interface：3 passed；另 7 个 instance-semantics comparison 全部一致。
+- 1.2 schema SHA-256 保持
+  `33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e`；
+  canonical / dogfood / representative fixture 三份 1.3 schema 字节一致，runtime canonical /
+  dogfood 字节一致。
+- Source validation：9 个 active production Skill 全部为 `1.2 + legacy`，0 production
+  minimal；installed validation：384 managed files，0 sidecar/removal/conflict。
+- `apply.sh --repo . --all-platforms` 连续两次通过；第二次 0 install/update/backup/new copy。
+  九个 Skill 的 canonical package 与 `.agents` / `.codex` / `.claude` / `.cursor` 五个生成
+  root 共 45 组字节比较通过，dogfood drift 与 43 frozen/active、13 managed claim ownership
+  检查通过。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` 最终 exit 0；覆盖
+  public marketplace discovery、local unpublished workflow sample、clean init、初装、preview /
+  switch、`trellis update`、preset reapply、initial/after-update/no-developer package smoke、
+  source/installed/ownership/platform checks 与最终零 sidecar。
+- 默认 exact-ref throwaway 仍按设计 exit 2：feature branch 尚未 push，远端无法解析当前
+  unpublished ref；未把 public sample 冒充 exact feature-ref pass。
+- 最终 `py_compile`、changed Bash `bash -n`、changed JSON `jq empty`、`task.py validate`、
+  workspace boundary、planning approval、`git diff --check origin/main`、recursive
+  `.new/.bak`、敏感路径/secret pattern 与 deployment-path scans 均通过。Source checkout
+  clean，`suspicious_source_artifacts=[]`。
+
+### 13.3 Docs SSOT, impact, and gate boundary
+
+- Docs state 仍为 `complete_docs`，strategy 仍为 `ssot_first`。最终 runtime/schema/tests 与
+  `.trellis/spec/workflow/{skill-package-contract,data-contracts,quality-guidelines,companion-scripts}.md`
+  的 consumer ownership、closed Draft subset 与 fail-closed 合同一致；task finding 历史只留在
+  task-local handoff，不成为 durable runtime SSOT。
+- #145/#146 继续拥有九个 production Skill 的业务 payload migration；本轮没有把它们吸收进
+  #144，也没有改变 frozen workflow route 或 public production package。
+- 未发现 secret/credential/signed URL/customer data；CI/CD、service、API、worker、container、
+  Kubernetes/Kustomize、DB migration、Makefile 与部署配置均无变更和部署影响。
+- Replacement checker 未调用 Phase 2 recorder/checker、Branch Review recorder/gate、commit、
+  push、PR 或 finish-work。仓库中现有已提交 `phase2-check.json` 绑定旧 snapshot HEAD
+  `535536dbd55427241d7ce88cc14629d47fb6d26c`，不代表本节 final-byte full round；Phase 2 owner
+  必须基于本节与 checker report 刷新正式 gate artifact。
+- 本轮语义结论建议 `typed_exit=passed`；唯一未完成项是分支 push 后由 Remote Marketplace
+  Verification Gate 执行 immutable exact feature-ref 验证，不构成当前实现 finding。

@@ -379,6 +379,25 @@ outputs/examples, consumer contracts, projections, and private-artifact
 locators. Expected failures use `code`, repo-relative `field_path`, and
 `remediation`; no absolute paths or raw contract bytes are persisted.
 
+Its structured non-Skill consumer contracts are a closed ownership union:
+`consumer.kind=workflow` requires a canonical schema locator below
+`consumers/workflow/`, while structured `consumer.kind=stop` requires one below
+`consumers/stop/`. A `zero_payload` stop carries no schema contract. Producer
+package/output locators, cross-kind consumer roots, non-normalized spellings,
+unsafe traversal, and missing or symlink-backed files are invalid.
+
+Schema dialect identity remains Draft 2020-12, while the portable companion
+implements a documented standard-library-only compatible closed subset rather
+than the complete vocabulary. The recursive grammar accepts a root-only `$id`
+and the validation keywords enumerated by `skill-package-contract.md`, including closed object,
+array, conditional, union, scalar, and resolvable local ref forms. Only the
+aggregate structured-input index may use exact package-relative refs to its
+independently validated profile schemas. Unknown or unimplemented keywords,
+boolean schemas, nested `$id` resource boundaries, invalid keyword types,
+unsupported formats, malformed regexes,
+and remote/unresolved/recursive refs fail
+closed before an example or interface can be accepted.
+
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
 such as `v0.6.5-guru.2`, not namespaced tags such as

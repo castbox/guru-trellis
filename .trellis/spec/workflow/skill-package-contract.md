@@ -146,12 +146,19 @@ filled with nullable fields.
 The consumer independently owns its input contract. A `kind=skill` consumer
 must use `contract.kind=skill_input`, and the referenced interface id must equal
 the declared consumer id; a producer-owned or third-party schema cannot stand
-in for the target Skill's input. A producer output may be passed directly only
-when it already matches that input exactly. Otherwise the workflow/runtime
-declares one thin deterministic projection from the selected exit output to the
-consumer input. The projection may select, rename, or normalize fields; it must
-not recover hidden semantics by reading Python source, replaying the producer's
-AI judgment, or understanding its private artifact.
+in for the target Skill's input. A structured `kind=workflow` consumer uses a
+canonical locator below `consumers/workflow/`; a structured `kind=stop`
+consumer uses one below `consumers/stop/`. The original locator must equal its
+normalized repo-relative spelling, include a file below that exact owner root,
+and must not use producer package/output paths, the other consumer root,
+absolute paths, parent traversal, `.` segments, repeated separators, or
+symlink-backed components. A zero-payload stop has no schema locator. A producer
+output may be passed directly only when it already matches the independently
+owned input exactly. Otherwise the workflow/runtime declares one thin
+deterministic projection from the selected exit output to the consumer input.
+The projection may select, rename, or normalize fields; it must not recover
+hidden semantics by reading Python source, replaying the producer's AI judgment,
+or understanding its private artifact.
 
 A deterministic Skill may use scalar CLI arguments instead of an input JSON
 schema when those arguments fully express the public call. Do not create an
@@ -288,8 +295,9 @@ required closed `public_contracts` object with exactly six owned sections:
 - `consumer_inputs`: locators owned by the target Skill, workflow transition,
   or stop response; a Skill locator exactly equals the canonical target
   interface path registered for that active target id, self-reentry points to a
-  distinct input profile of the same Skill, and a stop may explicitly declare
-  zero payload;
+  distinct input profile of the same Skill, structured workflow and stop
+  locators use their exact `consumers/workflow/` and `consumers/stop/` roots,
+  and a stop may explicitly declare zero payload;
 - `projections`: exactly one output/consumer projection using only `direct`,
   `select`, `rename`, or the closed deterministic `normalize` operations;
 - `private_artifacts`: only `runtime_checkpoint` or `gate_evidence`, with
@@ -318,6 +326,23 @@ exit constant, and its unique projection is `select` with an empty `mappings`
 array. Empty `select` is invalid for every non-zero consumer, and any additional
 zero-stop output field is an unconsumed public field rather than audit data to
 preserve.
+
+Every 1.3 public input, output, consumer, invocation-error, and private-artifact
+schema uses the standard-library Draft 2020-12-compatible closed subset. The
+accepted grammar is recursive and contains only `$schema`, root-only `$id`, `$defs`,
+local `$ref`, annotations, `type`,
+`const`, `enum`, `allOf|anyOf|oneOf|not|if|then|else`, string length/pattern and
+supported format constraints, numeric minimum/maximum, array
+length/uniqueness/items/contains, and object properties/required/boolean
+`additionalProperties`. Nested `$id` resource boundaries, boolean schema nodes,
+unresolved/remote/unsafe/recursive refs,
+unknown keywords such as `patternProperties`, malformed keyword values,
+unsupported formats, and invalid patterns fail source and installed validation.
+This is not a claim that the companion implements the complete Draft 2020-12
+vocabulary. The one package-relative exception is the aggregate structured
+input's exact ordered profile-schema index. Each target must be a regular
+non-symlink object-schema file within the same validated package boundary and
+is independently checked as a declared profile contract.
 
 ### 9. Discovery, Invocation, And Error Contract
 
@@ -958,9 +983,12 @@ The stable command is:
 ```
 
 `source` binds the canonical registry/interface Draft 2020-12 schemas by exact
-dialect, schema id, and contract digest, then applies every declared constraint
-to production and fixture instances. It also validates ids, paths, required
-package files, parseable package-local artifact schemas, safe existing
+dialect, schema id, and contract digest, validates their closed supported
+keyword grammar, then applies every accepted constraint to production and
+fixture instances. Interface 1.3 contract assets use the same recursive
+Draft 2020-12-compatible closed subset described above; unsupported standard
+vocabulary is rejected rather than ignored. Source also validates ids, paths,
+required package files, parseable package-local artifact schemas, safe existing
 artifact/schema/validator/test files, strict `SKILL.md` discovery frontmatter,
 workflow markers, and unique exit mappings.
 Every untrusted JSON value is type-checked before set, hash, path, or string

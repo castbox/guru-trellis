@@ -69,7 +69,12 @@ every output field's direct consumer use, Skill/workflow/stop consumers,
 self-reentry, `direct|select|rename|normalize` projection, and public/private
 schema-id and schema-path disjointness. Skill consumers prove target-owned
 `skill_input`, exact active-registry target interface path, and exact target
-interface identity. Non-`direct` projections and `direct` projections into
+interface identity. Structured workflow and stop consumers prove both
+interface-schema and runtime enforcement of canonical `consumers/workflow/`
+and `consumers/stop/` owner roots; negative cases cover a
+producer output locator, the other consumer root, and non-normalized path
+spellings. Both canonical structured roots pass, while the zero-payload stop
+retains its schema-free form. Non-`direct` projections and `direct` projections into
 `scalar_cli` prove required-source totality and all-valid-output compatibility,
 including a normalizer counterexample that passes the producer schema but fails after
 normalization when the proof constraint is removed. The stop case proves
@@ -90,6 +95,14 @@ consumer input, private-field projection, unknown/semantic projection
 operation, runtime-source import, comment/dead-code/local-output wrapper
 impersonation, 1.2/1.3 state mismatch, new
 non-allowlisted production legacy entry, and reserved/planned package install.
+Schema mutation cases must prove the recursive Draft 2020-12-compatible closed
+subset rejects an otherwise valid but unsupported `patternProperties`, a nested
+unsupported keyword, a malformed supported-keyword value, a boolean schema
+node, a nested `$id` resource boundary, an unsafe/unresolved/remote/recursive
+ref, an invalid regex, and an unsupported format. Existing
+`allOf`/`if`/`then`, `oneOf`, nested `properties`, and canonical package-local
+profile refs remain passing coverage; an accepted keyword must never be silently
+ignored by instance validation.
 Discovery tests cover stable help, legacy/minimal variants, unknown skill,
 version mismatch, missing asset, installed drift, and stable
 `code`/`field_path`/`remediation` errors.

@@ -109,6 +109,12 @@ and applies the declared consumer projection to the actual stdout object.
 `kind=skill` is accepted only with a target-owned `skill_input` whose
 `interface_path` exactly equals the active registry row's canonical target
 interface and whose referenced interface id equals the consumer id.
+Structured `kind=workflow` and `kind=stop` contracts are accepted only when the
+original locator is already canonical and resolves below the exact
+`consumers/workflow/` or `consumers/stop/` owner root. The runtime rejects
+producer-package reuse, cross-kind roots, `.`/`..`, repeated separators,
+absolute paths, missing files, and symlink components before loading the schema;
+zero-payload stops retain no contract locator.
 Non-`direct` projections and `direct` projections into `scalar_cli` additionally
 prove required-field totality and a conservative all-valid-output
 schema/normalizer relation; example-only compatibility is insufficient. Public
@@ -121,6 +127,18 @@ references and required discriminator constants; scalar input binds exact
 ordered typed argv in both public-input and invocation examples. Wrapper/handler failures,
 non-object or multiple stdout values, unknown exits, and output-schema mismatch
 fail with stable portable errors.
+
+Because the installed runtime is Python-standard-library-only, 1.3 contract
+validation implements a recursive Draft 2020-12-compatible closed subset, not
+the complete vocabulary. It validates the supported keyword grammar before
+validating any interface/example instance, rejects every unknown keyword,
+malformed keyword value, and nested `$id` resource boundary, and supports a
+root-only `$id`, local refs, plus the aggregate input's
+exact boundary-contained package-relative profile index. Boolean schemas, remote/unresolved/recursive refs,
+`patternProperties` and other unimplemented vocabulary, unsupported formats,
+and invalid regexes fail closed. The same grammar check applies to canonical
+registry/interface schemas and every 1.3 public/private contract asset, while
+the frozen 1.2 package payloads retain their compatibility validation path.
 
 Discovery failures use one closed object with `code`, repo-relative
 `field_path`, and `remediation`. Stable codes distinguish unknown skill,
