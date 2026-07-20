@@ -15638,6 +15638,32 @@ def skill_contract_asset(
     return path, payload
 
 
+def skill_validate_unique_contract_locators(
+    references: list[Any],
+    label: str,
+    errors: list[str],
+    *,
+    id_field: str,
+) -> None:
+    seen_ids: set[str] = set()
+    seen_paths: set[str] = set()
+    for reference in references:
+        if not isinstance(reference, dict):
+            continue
+        locator_id = reference.get(id_field)
+        if isinstance(locator_id, str) and locator_id:
+            if locator_id in seen_ids:
+                errors.append(f"[contract_asset_duplicate_id] {label} reuses locator id {locator_id}")
+            seen_ids.add(locator_id)
+        relative = skill_safe_relative(reference.get("path"))
+        if relative is None:
+            continue
+        locator_path = relative.as_posix()
+        if locator_path in seen_paths:
+            errors.append(f"[contract_asset_duplicate_path] {label} reuses locator path {locator_path}")
+        seen_paths.add(locator_path)
+
+
 def skill_closed_object_schema(
     schema: dict[str, Any] | None,
     label: str,
@@ -15894,6 +15920,7 @@ def validate_skill_public_contracts(
     *,
     boundary: Path,
     runtime_commands: set[str],
+    active_registry_entries: dict[str, dict[str, Any]],
 ) -> None:
     skill_id = str(interface.get("id") or "")
     contracts = interface.get("public_contracts")
@@ -15919,6 +15946,35 @@ def validate_skill_public_contracts(
     consumer_items = skill_unique_ids(consumers, f"{skill_id}.public_contracts.consumer_inputs", errors)
     projection_items = skill_unique_ids(projections, f"{skill_id}.public_contracts.projections", errors)
     private_items = skill_unique_ids(private_artifacts, f"{skill_id}.public_contracts.private_artifacts", errors)
+
+    schema_references = [
+        invocation.get("error_schema"),
+        *(item.get("schema") for item in output_items),
+        *(item.get("schema") for item in private_items),
+    ]
+    example_references = [
+        invocation.get("error_example"),
+        *(item.get("example") for item in output_items),
+    ]
+    if public_input.get("kind") == "structured_json":
+        schema_references.append(public_input.get("aggregate_schema"))
+        profiles = public_input.get("profiles")
+        for profile in profiles if isinstance(profiles, list) else []:
+            if isinstance(profile, dict):
+                schema_references.append(profile.get("schema"))
+                example_references.append(profile.get("example"))
+    skill_validate_unique_contract_locators(
+        schema_references,
+        f"package schema contracts for {skill_id}",
+        errors,
+        id_field="schema_id",
+    )
+    skill_validate_unique_contract_locators(
+        example_references,
+        f"package example contracts for {skill_id}",
+        errors,
+        id_field="id",
+    )
 
     input_kind = public_input.get("kind")
     input_profiles: dict[str, dict[str, Any]] = {}
@@ -16094,7 +16150,9 @@ def validate_skill_public_contracts(
         schema_ref = output.get("schema")
         if isinstance(schema_ref, dict):
             public_schema_ids.add(str(schema_ref.get("schema_id") or ""))
-            public_schema_paths.add(str(schema_ref.get("path") or ""))
+            schema_relative = skill_safe_relative(schema_ref.get("path"))
+            if schema_relative is not None:
+                public_schema_paths.add(schema_relative.as_posix())
         output_by_exit[exit_id] = (output, schema or {}, properties, example or {})
     if set(output_by_exit) != set(exits):
         errors.append(f"[output_exit_coverage] typed outputs for {skill_id} must cover external exits exactly")
@@ -16145,8 +16203,24 @@ def validate_skill_public_contracts(
                 set(required) if isinstance(required, list) else set(),
             )
         elif contract_kind == "skill_input":
-            interface_relative = skill_safe_relative(contract.get("interface_path"))
-            target_interface_path = skills_root / interface_relative if interface_relative is not None else skills_root
+            target_skill_id = str(identity.get("id") or "")
+            target_entry = active_registry_entries.get(target_skill_id)
+            target_interface_relative = (
+                target_entry.get("interface")
+                if isinstance(target_entry, dict)
+                else None
+            )
+            declared_interface_path = contract.get("interface_path")
+            interface_relative = skill_safe_relative(declared_interface_path)
+            if (
+                not isinstance(target_interface_relative, str)
+                or declared_interface_path != target_interface_relative
+            ):
+                errors.append(
+                    f"[consumer_skill_input] consumer input {consumer_id} must reference the exact active registry interface for {target_skill_id}"
+                )
+                continue
+            target_interface_path = skills_root / target_interface_relative
             target_interface = None
             if interface_relative is None or skill_lstat_path(
                 boundary, target_interface_path, f"consumer Skill interface {consumer_id}", errors, kind="file"
@@ -16266,14 +16340,22 @@ def validate_skill_public_contracts(
             if source_fields != set(output_properties):
                 errors.append(f"[public_output_unconsumed_field] typed output {exit_id} for {skill_id} has fields without direct consumer use")
         projected = skill_apply_projection(projection, example)
-        if operation != "direct":
+        if operation != "direct" or target_kind == "scalar_cli":
+            proof_mappings = mappings
+            if operation == "direct":
+                proof_mappings = [
+                    {"source": field, "target": field}
+                    for field in sorted(target_fields)
+                ]
             targets = {str(item.get("target") or "") for item in mappings if isinstance(item, dict)}
+            if operation == "direct":
+                targets = set(output_properties)
             if targets != target_fields:
                 errors.append(f"[projection_target] projection {projection.get('id')} does not populate the consumer input exactly")
             output_required = set(output_schema.get("required", [])) if isinstance(output_schema.get("required"), list) else set()
             mapping_by_target = {
                 str(item.get("target") or ""): item
-                for item in mappings
+                for item in proof_mappings
                 if isinstance(item, dict)
             }
             for target in sorted(target_required):
@@ -16355,7 +16437,9 @@ def validate_skill_public_contracts(
         skill_closed_object_schema(schema, f"private artifact {artifact.get('id')} for {skill_id}", errors)
         if isinstance(schema_ref, dict):
             private_schema_ids.add(str(schema_ref.get("schema_id") or ""))
-            private_schema_paths.add(str(schema_ref.get("path") or ""))
+            schema_relative = skill_safe_relative(schema_ref.get("path"))
+            if schema_relative is not None:
+                private_schema_paths.add(schema_relative.as_posix())
     overlapping_schema_ids = (public_schema_ids - {""}) & (private_schema_ids - {""})
     overlapping_schema_paths = (public_schema_paths - {""}) & (private_schema_paths - {""})
     if overlapping_schema_ids:
@@ -16442,6 +16526,7 @@ def validate_skill_interface(
     entry: dict[str, Any],
     errors: list[str],
     *,
+    active_registry_entries: dict[str, dict[str, Any]],
     boundary_root: Path | None = None,
     interface_schema: dict[str, Any] | None = None,
     runtime_capability: dict[str, Any] | None = None,
@@ -16700,6 +16785,7 @@ def validate_skill_interface(
             errors,
             boundary=boundary,
             runtime_commands=runtime_commands or set(),
+            active_registry_entries=active_registry_entries,
         )
     return interface
 
@@ -16851,6 +16937,11 @@ def _validate_skill_source(
         if registry.get("$schema") != "schemas/skill-registry.schema.json" or registry.get("schema_version") != "1.1":
             errors.append("skill registry has unknown schema id/version")
         entries = skill_unique_ids(registry.get("skills"), "skill registry", errors)
+        active_registry_entries = {
+            str(entry.get("id") or ""): entry
+            for entry in entries
+            if entry.get("state") == "active"
+        }
         for entry in entries:
             skill_id = str(entry.get("id") or "")
             if not SKILL_ID_PATTERN.fullmatch(skill_id):
@@ -16878,6 +16969,7 @@ def _validate_skill_source(
                     skills_root,
                     entry,
                     errors,
+                    active_registry_entries=active_registry_entries,
                     boundary_root=boundary,
                     interface_schema=interface_schemas.get(str(entry.get("interface_schema_id") or "")),
                     runtime_capability=runtime_capability,
@@ -27722,7 +27814,10 @@ def main() -> int:
             print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 1 if args.command == "backfill-finish-summary" and payload["errors"] else 0
     except WorkflowError as exc:
-        payload = {"status": "error", "error": str(exc), **exc.payload}
+        if args.command == "discover-skill-contract" and getattr(args, "json", False):
+            payload = dict(exc.payload)
+        else:
+            payload = {"status": "error", "error": str(exc), **exc.payload}
         if getattr(args, "json", False):
             print(json.dumps(payload, ensure_ascii=False, indent=2), file=sys.stderr)
         else:

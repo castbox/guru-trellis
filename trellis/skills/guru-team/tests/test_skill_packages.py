@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -78,6 +79,40 @@ class SourceValidationTests(unittest.TestCase):
 
     def write_skill(self, content: str) -> None:
         (self.root / "packages/guru-example-action/SKILL.md").write_text(content, encoding="utf-8")
+
+    def configure_action_direct_to_sync(
+        self,
+        item_schema: dict,
+        item_example: object,
+    ) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-forwarded-output.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema["required"] = ["exit_id", "item"]
+        schema["properties"] = {
+            "exit_id": {"const": "forwarded"},
+            "item": item_schema,
+        }
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+
+        example_path = self.root / "packages/guru-example-action/examples/action-forwarded-output.json"
+        example_path.write_text(
+            json.dumps({"exit_id": "forwarded", "item": item_example}),
+            encoding="utf-8",
+        )
+
+        interface = self.read_interface()
+        projection = next(
+            item for item in interface["public_contracts"]["projections"]
+            if item["id"] == "rename_to_sync"
+        )
+        projection.clear()
+        projection.update({
+            "id": "rename_to_sync",
+            "exit_id": "forwarded",
+            "consumer_input_id": "sync_input",
+            "operation": "direct",
+        })
+        self.write_interface(interface)
 
     def test_production_registry_preserves_tombstone_and_activates_public_skills(self) -> None:
         result = runtime.validate_skill_source(
@@ -428,6 +463,32 @@ class SourceValidationTests(unittest.TestCase):
         for error in (version_error, asset_error, installed_error):
             self.assertEqual(set(error.payload), {"code", "field_path", "remediation"})
 
+    def test_contract_discovery_cli_failure_is_closed(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"),
+                "discover-skill-contract",
+                "--root",
+                str(REPO),
+                "--mode",
+                "source",
+                "--skill",
+                "guru-missing-skill",
+                "--json",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(
+            set(json.loads(result.stderr)),
+            {"code", "field_path", "remediation"},
+        )
+
     def test_representative_wrappers_emit_distinct_exits_and_stable_errors(self) -> None:
         environment = dict(os.environ)
         environment["GURU_TEAM_DISPATCHER"] = str(self.root / "fixture-dispatcher.py")
@@ -636,9 +697,64 @@ class SourceValidationTests(unittest.TestCase):
         }
         self.write_interface(interface)
         self.assertTrue(any(
-            "[consumer_skill_input]" in item and "declared target Skill interface" in item
+            "[consumer_skill_input]" in item and "exact active registry interface" in item
             for item in self.validate()["errors"]
         ))
+
+    def test_skill_consumer_rejects_stale_same_id_interface_locator(self) -> None:
+        stale_path = self.root / "packages/guru-example-action/stale-sync-interface.json"
+        shutil.copyfile(
+            self.root / "packages/guru-example-sync/interface.json",
+            stale_path,
+        )
+        interface = self.read_interface()
+        consumer = next(
+            item for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "sync_input"
+        )
+        consumer["contract"]["interface_path"] = (
+            "packages/guru-example-action/stale-sync-interface.json"
+        )
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[consumer_skill_input]" in item
+            and "exact active registry interface" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_direct_scalar_projection_rejects_example_only_compatibility(self) -> None:
+        self.configure_action_direct_to_sync({"type": "string"}, "alpha")
+        self.assertTrue(any(
+            "[projection_contract_compatibility]" in item and "item" in item
+            for item in self.validate()["errors"]
+        ))
+
+        schema_path = self.root / "packages/guru-example-action/schemas/action-forwarded-output.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema["required"].remove("item")
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        self.assertTrue(any(
+            "[projection_required_source]" in item and "item" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_direct_scalar_projection_accepts_finite_compatible_values(self) -> None:
+        self.configure_action_direct_to_sync({"enum": ["alpha", "beta"]}, "alpha")
+        result = self.validate()
+        self.assertEqual(result["status"], "passed", result["errors"])
+
+    def test_direct_scalar_projection_accepts_positive_integer_domain(self) -> None:
+        self.configure_action_direct_to_sync(
+            {"type": "integer", "minimum": 1},
+            1,
+        )
+        target = self.read_sync_interface()
+        target["public_contracts"]["input"]["arguments"][1]["type"] = "positive_integer"
+        target["public_contracts"]["input"]["example_argv"][-1] = "1"
+        target["public_contracts"]["invocation"]["example_argv"][-1] = "1"
+        self.write_sync_interface(target)
+        result = self.validate()
+        self.assertEqual(result["status"], "passed", result["errors"])
 
     def test_non_direct_projection_requires_all_valid_outputs_to_be_consumable(self) -> None:
         forwarded_path = self.root / "packages/guru-example-action/schemas/action-forwarded-output.schema.json"
@@ -745,6 +861,28 @@ class SourceValidationTests(unittest.TestCase):
             "[public_private_overlap]" in item and "schema paths" in item
             for item in self.validate()["errors"]
         ))
+
+        interface = json.loads(
+            (FIXTURE / "packages/guru-example-action/interface.json").read_text(encoding="utf-8")
+        )
+        public_ref = interface["public_contracts"]["outputs"][2]["schema"]
+        interface["public_contracts"]["private_artifacts"][0]["schema"]["path"] = (
+            public_ref["path"].replace("schemas/", "schemas/./", 1)
+        )
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[public_private_overlap]" in item and "schema paths" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_package_contract_schema_locators_are_unique(self) -> None:
+        interface = self.read_interface()
+        artifacts = interface["public_contracts"]["private_artifacts"]
+        artifacts[1]["schema"] = dict(artifacts[0]["schema"])
+        self.write_interface(interface)
+        errors = self.validate()["errors"]
+        self.assertTrue(any("[contract_asset_duplicate_id]" in item for item in errors))
+        self.assertTrue(any("[contract_asset_duplicate_path]" in item for item in errors))
 
     def test_public_wrapper_cannot_read_runtime_source(self) -> None:
         wrapper = self.root / "packages/guru-example-action/scripts/invoke.sh"

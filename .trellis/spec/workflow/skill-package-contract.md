@@ -286,8 +286,10 @@ required closed `public_contracts` object with exactly six owned sections:
 - `outputs`: one independent schema and complete example for every declared
   external exit, plus non-empty direct consumer-use references;
 - `consumer_inputs`: locators owned by the target Skill, workflow transition,
-  or stop response; self-reentry points to a distinct input profile of the same
-  Skill, and a stop may explicitly declare zero payload;
+  or stop response; a Skill locator exactly equals the canonical target
+  interface path registered for that active target id, self-reentry points to a
+  distinct input profile of the same Skill, and a stop may explicitly declare
+  zero payload;
 - `projections`: exactly one output/consumer projection using only `direct`,
   `select`, `rename`, or the closed deterministic `normalize` operations;
 - `private_artifacts`: only `runtime_checkpoint` or `gate_evidence`, with
@@ -298,10 +300,11 @@ All ids and locators are unique, package paths are regular non-symlink files,
 and public output schema ids and paths are each independently disjoint from
 private artifact schema ids and paths. Projection source fields come only from
 the selected public output; target fields come only from the declared consumer
-input. Every non-`direct` projection must statically prove that each required
-consumer field comes from a required producer field and that every legal source
-value remains valid after the declared mapping/normalizer. The 1.3 proof grammar
-is deliberately conservative: exact property schemas, finite `const`/`enum`
+input. Every non-`direct` projection, and every `direct` projection into
+`scalar_cli`, must statically prove that each required consumer field comes from
+a required producer field and that every legal source value remains valid after
+the declared mapping/normalizer or direct same-name pass-through. The 1.3 proof
+grammar is deliberately conservative: exact property schemas, finite `const`/`enum`
 normalization, non-empty scalar strings, positive integers, and ASCII trim with
 an explicit non-blank source pattern are accepted; an unprovable relation fails
 activation even when one example passes. Runtime facts, private artifacts,

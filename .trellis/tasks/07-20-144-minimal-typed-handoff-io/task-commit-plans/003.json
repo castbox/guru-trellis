@@ -1,0 +1,485 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "144-minimal-typed-handoff-io",
+    "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io",
+    "status": "in_progress",
+    "branch": "codex/144-minimal-typed-handoff-io"
+  },
+  "issue": {
+    "primary_issue": 144,
+    "ledger_sha256": "f94bf4efee497a93c85162cbc409efd453a6963383e1d558e67750c56880fbf9"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "535536dbd55427241d7ce88cc14629d47fb6d26c"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/planning-approval.json",
+      "sha256": "80bdbb8ba524e2b14312a664c11b8074e0b6d7c96bcb3902d105e0808891671c",
+      "size": 30826
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+      "sha256": "0fac4ed322228742c0af23aa61d20c916ced9c27da09f31817e9943ee68d61b8",
+      "size": 45439
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-scope-ledger.json",
+      "sha256": "f94bf4efee497a93c85162cbc409efd453a6963383e1d558e67750c56880fbf9",
+      "size": 3223
+    },
+    "task": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task.json",
+      "sha256": "99897958836d1cc197f2d11846042cc70c6331c301c3edba905b667b023f838a",
+      "size": 694
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "89a9e638cb7935b44f515ff12d5bcebf8f5e9929",
+        "worktree_sha256": "fcfd74ab31ea91ba3928a1caa6d1502bdf68acf017cba938845ad928dea6d611",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5af871cb0fa1e898b40259e4141c1e4a2490a774",
+        "worktree_sha256": "a86a5cc61506e16a2f99be63f40f9c9c7ffd0fc7d1ba76f7e650c1379986dd61",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b6acfd077f39743e1f3e85231a8e52722a35f86d",
+        "worktree_sha256": "b0211b66f94ebee21585b9bedb4d0063462ca65479960e1a9915ed93a6607a70",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8fa118b768bfbe9bb7cbbdc7feb95a1e12d71b38",
+        "worktree_sha256": "4973a7a98d11c34a052bb1d3ed2c187024c740ff3f24eb7f3a8ba28b0c99c101",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "306b6a784a44b8fab7ffd6ad11c1f963a8708030",
+        "worktree_sha256": "3dc7699af061b51e6824d4dda00870abcd3b44aa59ba43ecf6d8b83fa126b910",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f52b2c0e137d59d50ab04896ac47452c98135768",
+        "worktree_sha256": "3edc1efe75d2f3698acda81a0823083098579a20eed56546ab947f25b5d0238d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a5377b814c9fd11dd0aa365bacc8112e75409cc9",
+        "worktree_sha256": "0a3620ece39705e1cd42bb52296581d216555f08c6b969eeb2459dc63da2d890",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cf78fe391a82d1009aa2f3b3d92a345b1580bc09",
+        "worktree_sha256": "0fac4ed322228742c0af23aa61d20c916ced9c27da09f31817e9943ee68d61b8",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "26081cd20f537e8a5417d0b964cf0e4bd654631a872cb23e0e616fea7656f38f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "cab95a3134a3735ce5079bbe889e3b33157e81dd725671a133b2adc1f770dc55",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-01-final-finding.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "a5959175e98a419198170b2733ad83016c3006619fc989df472c14475a066832",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-02-closure-finding.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "13354fceababb21e5fd272226b5bf1e7710bb68ca44a2f90fec11b61798455ff",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7b11f32cf2ae93ffc0465014e652c5e7a1cd2491",
+        "worktree_sha256": "1ce564db62d07f3c8ac2eafc2368e03e3791ace9add858daa0526a192d16807e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e08ea6222b8317605e686435b43b0ded7f284c70",
+        "worktree_sha256": "3faa7d626a0fb12144126a1b8b3c2b015e6b537f7eab425236ab32436428c989",
+        "mode": "100644"
+      },
+      {
+        "path": "README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0873383bbb45276f7c70481f522c96f22f1b7fdd",
+        "worktree_sha256": "32efe8c57a0559c4773aeb1e63e29f7f20d3bc8c01278d7cd32b0fd213e9d848",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dfc2ef4124eba515ef62dcb0d7941957db94129b",
+        "worktree_sha256": "02f5577026a5b148d93d979388b9be4d12aa69f0226bb1204cd6ec3b73d6030b",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f637b1054474a415fdeb591d5c16ef320255e92d",
+        "worktree_sha256": "4e8344b19de452f7d4b0ba79406af3966355ce481a6af3659783c8a5f41533f2",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b1851580bb6ab458703f3541d46f581bb2fb1a98",
+        "worktree_sha256": "6df8eaab6a4afc072fcd5aac66a981fb5d2f99599d8ec0fdaffa889123a8833f",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3b01cfdb5edb74963af1b19102f2399c6dc463d3",
+        "worktree_sha256": "e89d8c88fd6f17836040587fc73ba639ce03d43e56981bbfef445965d1d87caa",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "104bc1e84320d5e7b10c4405be261461a7a5cee7",
+        "worktree_sha256": "8849cad7cf2f5ef238ecb92a0fc6b06963be4171f82dbbd28b33c93d49c0d19a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5af871cb0fa1e898b40259e4141c1e4a2490a774",
+        "worktree_sha256": "a86a5cc61506e16a2f99be63f40f9c9c7ffd0fc7d1ba76f7e650c1379986dd61",
+        "mode": "100755"
+      }
+    ],
+    "digest": "bfb33d915350f382c24dab46e796389ce6967a7f07377b126b64daf49d6aa41b"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "实现或同步 #144 registry exact locator、direct scalar 全域证明、locator uniqueness 与 closed discovery error 修复，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "实现、Phase 2 与 Branch Review assignment/liveness 元数据按 trellis-continue 合同保留，不进入 task work commit。",
+      "coverage_source": "trellis-continue metadata preservation rule"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "记录 Round 2 finding-fix、最终 Phase 2 机械修复与 Docs SSOT 交接，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "当前 fresh Phase 2 recorder 输出，由提交候选 evidence 直接绑定最终字节。",
+      "coverage_source": "phase2-check candidate evidence"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "失败/闭环 Branch Review gate、rollup 与 raw report 按 trellis-continue 合同保留，不进入 task work commit。",
+      "coverage_source": "trellis-continue metadata preservation rule"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/review.md",
+      "category": "unrelated-preserved",
+      "reason": "失败/闭环 Branch Review gate、rollup 与 raw report 按 trellis-continue 合同保留，不进入 task work commit。",
+      "coverage_source": "trellis-continue metadata preservation rule"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-01-final-finding.md",
+      "category": "unrelated-preserved",
+      "reason": "失败/闭环 Branch Review gate、rollup 与 raw report 按 trellis-continue 合同保留，不进入 task work commit。",
+      "coverage_source": "trellis-continue metadata preservation rule"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-02-closure-finding.md",
+      "category": "unrelated-preserved",
+      "reason": "失败/闭环 Branch Review gate、rollup 与 raw report 按 trellis-continue 合同保留，不进入 task work commit。",
+      "coverage_source": "trellis-continue metadata preservation rule"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "已执行的历史 commit result 不由 003 重写或重新提交。",
+      "coverage_source": "guru-create-task-commit prior-result preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/002.json",
+      "category": "unrelated-preserved",
+      "reason": "已执行的历史 commit result 不由 003 重写或重新提交。",
+      "coverage_source": "guru-create-task-commit prior-result preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "当前 guru-create-task-commit 轮次的确定性计划 artifact。",
+      "coverage_source": "skill-artifact"
+    },
+    {
+      "path": "README.md",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": "docs/requirements/guru-team-trellis-flow.md",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": "docs/requirements/requirement-main.md",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": "trellis/presets/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "覆盖 #144 最终五项 finding-fix 与全部既有回归，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json check_execution + adequacy review"
+    },
+    {
+      "path": "trellis/workflows/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "属于 #144 最终 finding-fix 的 durable docs、public README 或 dogfood provenance 更新，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "实现或同步 #144 registry exact locator、direct scalar 全域证明、locator uniqueness 与 closed discovery error 修复，已由 fresh Phase 2 复核。",
+      "coverage_source": "phase2-check.json repository_snapshot + adequacy review"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/003.json",
+    "README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #144 完善 typed handoff 合同校验",
+    "body": "背景：\nRound 2 Branch Review 与最终 Phase 2 发现 target locator、scalar direct、locator uniqueness 和 discovery error 正常路径仍有缺口。\n\n变更：\n绑定 active registry exact target interface，补齐 direct-to-scalar 全域证明、schema/example locator 规范化与唯一性，以及 closed discovery error 输出。\n\n边界：\n九个 production Skill 继续保持 interface 1.2 legacy；#145/#146 继续负责后续迁移。\n\n验证：\n通过 106 项 Skill tests、548 项 shared runtime tests、39 项 installer tests、6 项 ownership tests，以及 source/installed、dogfood、六类 roots 和 clean throwaway 校验。\n\nRefs #144",
+    "bytes": "fix(trellis): #144 完善 typed handoff 合同校验\n\n背景：\nRound 2 Branch Review 与最终 Phase 2 发现 target locator、scalar direct、locator uniqueness 和 discovery error 正常路径仍有缺口。\n\n变更：\n绑定 active registry exact target interface，补齐 direct-to-scalar 全域证明、schema/example locator 规范化与唯一性，以及 closed discovery error 输出。\n\n边界：\n九个 production Skill 继续保持 interface 1.2 legacy；#145/#146 继续负责后续迁移。\n\n验证：\n通过 106 项 Skill tests、548 项 shared runtime tests、39 项 installer tests、6 项 ownership tests，以及 source/installed、dogfood、六类 roots 和 clean throwaway 校验。\n\nRefs #144\n",
+    "sha256": "49134b67e96981b568f349aafe08fdea54768f55cd50ae24d72034b84af0d707"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex main session /root",
+    "summary": "已审查 #144 最终 finding-fix 的 exact stage scope、fresh Phase 2 coverage、提交消息、issue refs、upgrade/distribution/deployment/security 边界与 metadata preservation；003 必须取得新的 exact-plan 授权后才能执行。",
+    "evidence": [
+      "当前 21 个 dirty path 已完整分类：14 个 task-reviewed、7 个 unrelated-preserved；候选 003.json 使用 skill-artifact coverage，共 15 个 exact stage path，无 blocking 分类。",
+      "fresh phase2-check.json typed_exit=passed、artifact_sha256=0fac4ed322228742c0af23aa61d20c916ced9c27da09f31817e9943ee68d61b8，绑定 pre-commit HEAD 535536dbd55427241d7ce88cc14629d47fb6d26c。",
+      "当前轮五项 resolved P2 覆盖 active registry exact target locator、direct-to-scalar 全域证明、locator path 规范化、package-owned schema/example 唯一性与 closed discovery CLI error。",
+      "终态验证包括 106 项 Skill tests、548 项 shared runtime tests、39 项 installer tests、6 项 ownership tests、source/installed、dogfood、六 roots、syntax/JSON/task/boundary 与 clean public-sample throwaway。",
+      "提交消息为中文 Conventional Commit，只用 Refs #144；#145/#146 保持 follow-up，不使用 close keyword。",
+      "exact stage 排除 agent-assignment.json、001/002 result、review-gate.json、review.md 与两轮 raw report，保留这 7 个 metadata 路径的当前 bytes。",
+      "变更影响 Guru Team workflow/preset/Skill runtime、测试与 durable docs；无 CI/CD、container、K8s、DB migration、Makefile 或业务部署影响，未发现 secret 或敏感数据。",
+      "远程 exact feature-ref marketplace 验证继续由 push 后 publish gate 补证；003 不会 push、创建 PR 或调用 finish-work。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-exact-plan-confirmation",
+    "evidence": "用户在看到完整 003 计划（15 个 exact stage path、7 个 preserved path 与精确提交消息）后回复“确认继续”；该确认仅授权创建这一个本地提交，不授权 push、PR 或 finish-work。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-20T07:21:52.019743Z",
+    "plan_digest": "83f7ed02424788b193727ec4d2daea434d997e0a63b96dc120910a60b0a7bb8e"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}
