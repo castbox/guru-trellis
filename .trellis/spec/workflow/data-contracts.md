@@ -397,6 +397,13 @@ boolean schemas, nested `$id` resource boundaries, invalid keyword types,
 unsupported formats, malformed regexes,
 and remote/unresolved/recursive refs fail
 closed before an example or interface can be accepted.
+The same boundary accepts only standard JSON with finite runtime numbers across
+registry/interface/schema/example/marker/ref/invocation/discovery ingress and
+public DTO egress. Its supported format set remains `date-time` and `uri`, with
+RFC 3339 calendar/offset/lowercase/leap-second handling and RFC 3986 ASCII
+scheme/component/percent-encoding validation as specified by
+`skill-package-contract.md`; malformed values produce the existing structured
+error rather than a traceback.
 
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,

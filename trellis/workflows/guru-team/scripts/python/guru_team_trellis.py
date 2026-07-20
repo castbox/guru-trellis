@@ -11,7 +11,9 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import ipaddress
 import json
+import math
 import os
 import re
 import shlex
@@ -15192,13 +15194,250 @@ def skill_file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def skill_json_loads(value: str) -> Any:
+    def reject_constant(constant: str) -> Any:
+        raise ValueError(f"non-standard JSON constant: {constant}")
+
+    def parse_finite_float(number: str) -> float:
+        parsed = float(number)
+        if not math.isfinite(parsed):
+            raise ValueError("JSON number is outside the finite runtime range")
+        return parsed
+
+    return json.loads(
+        value,
+        parse_constant=reject_constant,
+        parse_float=parse_finite_float,
+    )
+
+
+def skill_json_dumps(value: Any, *, indent: int | None = None) -> str:
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        indent=indent,
+        allow_nan=False,
+    )
+
+
+def skill_json_nonfinite_paths(value: Any, path: str = "$") -> list[str]:
+    if isinstance(value, float) and not math.isfinite(value):
+        return [path]
+    if isinstance(value, list):
+        return [
+            child_path
+            for index, item in enumerate(value)
+            for child_path in skill_json_nonfinite_paths(item, f"{path}[{index}]")
+        ]
+    if isinstance(value, dict):
+        return [
+            child_path
+            for key, item in value.items()
+            for child_path in skill_json_nonfinite_paths(item, f"{path}.{key}")
+        ]
+    return []
+
+
+def skill_rfc3339_date_time_matches(value: str) -> bool:
+    matched = re.fullmatch(
+        r"(?P<year>[0-9]{4})-(?P<month>[0-9]{2})-(?P<day>[0-9]{2})"
+        r"[Tt](?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})"
+        r"(?:\.[0-9]+)?(?P<zone>[Zz]|[+-][0-9]{2}:[0-9]{2})",
+        value,
+    )
+    if matched is None:
+        return False
+    values = {key: int(matched.group(key)) for key in (
+        "year", "month", "day", "hour", "minute", "second",
+    )}
+    zone = matched.group("zone")
+    if (
+        values["hour"] > 23
+        or values["minute"] > 59
+        or values["second"] > 60
+    ):
+        return False
+
+    def leap_year(year: int) -> bool:
+        return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
+    month_lengths = [
+        31,
+        29 if leap_year(values["year"]) else 28,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31,
+    ]
+    if (
+        values["month"] < 1
+        or values["month"] > 12
+        or values["day"] < 1
+        or values["day"] > month_lengths[values["month"] - 1]
+    ):
+        return False
+
+    if zone.lower() == "z":
+        offset_minutes = 0
+    else:
+        offset_hour = int(zone[1:3])
+        offset_minute = int(zone[4:6])
+        if offset_hour > 23 or offset_minute > 59:
+            return False
+        sign = 1 if zone[0] == "+" else -1
+        offset_minutes = sign * (offset_hour * 60 + offset_minute)
+    if values["second"] != 60:
+        return True
+
+    def days_before_year(year: int) -> int:
+        # RFC 3339 includes year 0000; count proleptic Gregorian years [0, year).
+        return (
+            365 * year
+            + (year + 3) // 4
+            - (year + 99) // 100
+            + (year + 399) // 400
+        )
+
+    def day_ordinal(year: int, month: int, day: int) -> int:
+        lengths = [
+            31,
+            29 if leap_year(year) else 28,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31,
+        ]
+        return days_before_year(year) + sum(lengths[:month - 1]) + day - 1
+
+    local_day = day_ordinal(values["year"], values["month"], values["day"])
+    utc_minutes = (
+        local_day * 24 * 60
+        + values["hour"] * 60
+        + values["minute"]
+        - offset_minutes
+    )
+    utc_day, utc_minute = divmod(utc_minutes, 24 * 60)
+    if utc_minute != 23 * 60 + 59:
+        return False
+    return any(
+        utc_day == day_ordinal(year, month, day)
+        for year in range(max(0, values["year"] - 1), min(9999, values["year"] + 1) + 1)
+        for month, day in ((6, 30), (12, 31))
+    )
+
+
+def skill_uri_matches(value: str) -> bool:
+    if not value or any(ord(character) < 0x21 or ord(character) > 0x7E for character in value):
+        return False
+    matched = re.match(r"(?P<scheme>[A-Za-z][A-Za-z0-9+.-]*):", value)
+    if matched is None:
+        return False
+    remainder = value[matched.end():]
+
+    unreserved = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+    sub_delimiters = set("!$&'()*+,;=")
+
+    def component_matches(component: str, extra: str = "") -> bool:
+        allowed = unreserved | sub_delimiters | set(extra)
+        index = 0
+        while index < len(component):
+            character = component[index]
+            if character == "%":
+                if (
+                    index + 2 >= len(component)
+                    or re.fullmatch(r"[0-9A-Fa-f]{2}", component[index + 1:index + 3]) is None
+                ):
+                    return False
+                index += 3
+                continue
+            if character not in allowed:
+                return False
+            index += 1
+        return True
+
+    if remainder.count("#") > 1:
+        return False
+    hierarchy_and_query, separator, fragment = remainder.partition("#")
+    if separator and not component_matches(fragment, ":@/?"):
+        return False
+    hierarchy, query_separator, query = hierarchy_and_query.partition("?")
+    if query_separator and not component_matches(query, ":@/?"):
+        return False
+
+    authority: str | None = None
+    path = hierarchy
+    if hierarchy.startswith("//"):
+        authority_and_path = hierarchy[2:]
+        authority, path_separator, path_tail = authority_and_path.partition("/")
+        path = f"/{path_tail}" if path_separator else ""
+    if not component_matches(path, ":@/"):
+        return False
+    if authority is None:
+        return True
+
+    if authority.count("@") > 1:
+        return False
+    userinfo, at, host_and_port = authority.rpartition("@")
+    if not at:
+        host_and_port = authority
+    elif not component_matches(userinfo, ":"):
+        return False
+
+    if host_and_port.startswith("["):
+        closing = host_and_port.find("]")
+        if closing < 0:
+            return False
+        literal = host_and_port[1:closing]
+        suffix = host_and_port[closing + 1:]
+        if suffix and (
+            not suffix.startswith(":")
+            or suffix[1:] and not suffix[1:].isdigit()
+        ):
+            return False
+        if re.fullmatch(r"[Vv][0-9A-Fa-f]+\.[A-Za-z0-9._~!$&'()*+,;=:-]+", literal) is None:
+            try:
+                ipaddress.IPv6Address(literal)
+            except ValueError:
+                return False
+        return True
+
+    if host_and_port.count(":") > 1:
+        return False
+    host, colon, port = host_and_port.rpartition(":")
+    if not colon:
+        host = host_and_port
+    elif port and not port.isdigit():
+        return False
+    return component_matches(host)
+
+
+def skill_format_matches(value: str, expected: str) -> bool:
+    if expected == "date-time":
+        return skill_rfc3339_date_time_matches(value)
+    if expected == "uri":
+        return skill_uri_matches(value)
+    return False
+
+
 def skill_read_json(path: Path, label: str, errors: list[str]) -> dict[str, Any] | None:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload = skill_json_loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         errors.append(f"missing {label}")
         return None
-    except (UnicodeDecodeError, json.JSONDecodeError):
+    except (UnicodeDecodeError, ValueError):
         errors.append(f"invalid JSON in {label}")
         return None
     if not isinstance(payload, dict):
@@ -15271,6 +15510,9 @@ def skill_json_schema_subset_errors(
     def add(path: str, reason: str) -> None:
         errors.append(f"[schema_subset] {label} schema {reason} at {path}")
 
+    for nonfinite_path in skill_json_nonfinite_paths(schema):
+        add(nonfinite_path, "contains a non-finite number")
+
     def resolve_ref(reference: Any, path: str, node: dict[str, Any]) -> None:
         if not isinstance(reference, str):
             add(path, "has a non-string $ref")
@@ -15304,8 +15546,8 @@ def skill_json_schema_subset_errors(
             add(path, "has an unsafe or unresolved package-local $ref")
             return
         try:
-            target = json.loads(target_path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            target = skill_json_loads(target_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, ValueError):
             add(path, "has an unreadable package-local $ref")
             return
         if not isinstance(target, dict):
@@ -15419,6 +15661,7 @@ def skill_json_schema_subset_errors(
             value = node.get(keyword)
             if keyword in node and (
                 not isinstance(value, (int, float)) or isinstance(value, bool)
+                or isinstance(value, float) and not math.isfinite(value)
             ):
                 add(path, f"has an invalid {keyword}")
         if (
@@ -15508,6 +15751,12 @@ def skill_json_schema_validation_errors(
     errors = skill_json_schema_subset_errors(schema, label)
     if errors:
         return errors
+    nonfinite_paths = skill_json_nonfinite_paths(instance)
+    if nonfinite_paths:
+        return [
+            f"{label} contains a non-finite number at {path}"
+            for path in nonfinite_paths
+        ]
     active_references: set[str] = set()
 
     def resolve_ref(reference: Any, output: list[str], path: str) -> dict[str, Any] | None:
@@ -15541,32 +15790,15 @@ def skill_json_schema_validation_errors(
             return (
                 isinstance(value, int) and not isinstance(value, bool)
             ) or (
-                isinstance(value, float) and value.is_integer()
+                isinstance(value, float) and math.isfinite(value) and value.is_integer()
             )
         if expected == "number":
-            return isinstance(value, (int, float)) and not isinstance(value, bool)
+            return (
+                isinstance(value, (int, float))
+                and not isinstance(value, bool)
+                and (not isinstance(value, float) or math.isfinite(value))
+            )
         return False
-
-    def format_matches(value: str, expected: str) -> bool:
-        if expected == "date-time":
-            if re.fullmatch(
-                r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
-                r"(?:\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})",
-                value,
-            ) is None:
-                return False
-            try:
-                datetime.fromisoformat(value.replace("Z", "+00:00"))
-            except ValueError:
-                return False
-            return True
-        if expected == "uri":
-            try:
-                parsed = urlsplit(value)
-            except ValueError:
-                return False
-            return bool(parsed.scheme and (parsed.netloc or parsed.path))
-        return True
 
     def validate(value: Any, node: Any, path: str, output: list[str]) -> None:
         if not isinstance(node, dict):
@@ -15666,7 +15898,7 @@ def skill_json_schema_validation_errors(
             if isinstance(pattern, str) and re.search(pattern, value) is None:
                 output.append(f"{label} violates pattern at {path}")
             expected_format = node.get("format")
-            if isinstance(expected_format, str) and not format_matches(value, expected_format):
+            if isinstance(expected_format, str) and not skill_format_matches(value, expected_format):
                 output.append(f"{label} violates format at {path}")
 
         if isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -16764,8 +16996,8 @@ def validate_skill_public_contracts(
             errors.append(f"[invocation_execution] representative invocation for {skill_id} could not execute")
         else:
             try:
-                payload = json.loads(proc.stdout)
-            except json.JSONDecodeError:
+                payload = skill_json_loads(proc.stdout)
+            except ValueError:
                 payload = None
             if proc.returncode != 0 or not isinstance(payload, dict) or proc.stdout.count("\n") > 1:
                 errors.append(f"[invocation_execution] representative invocation for {skill_id} did not return one typed-exit DTO")
@@ -17133,8 +17365,8 @@ def parse_skill_workflow_markers(
                 errors.append(f"invalid workflow skill marker at line {line_number}")
             continue
         try:
-            payload = json.loads(match.group(2) if kind == "target" else match.group(1))
-        except json.JSONDecodeError:
+            payload = skill_json_loads(match.group(2) if kind == "target" else match.group(1))
+        except ValueError:
             errors.append(f"invalid workflow skill marker JSON at line {line_number}")
             continue
         if not isinstance(payload, dict):
@@ -18072,6 +18304,23 @@ def skill_contract_error(
             "remediation": remediation,
         },
     )
+
+
+def skill_public_json_text(payload: Any, command: str) -> str:
+    try:
+        return skill_json_dumps(payload, indent=2)
+    except (TypeError, ValueError) as exc:
+        if command == "discover-skill-contract":
+            raise skill_contract_error(
+                "public_json_serialization_failed",
+                "stdout",
+                "Return one finite, standard-JSON typed contract DTO and retry discovery.",
+                "Skill contract discovery could not serialize a standard JSON result.",
+            ) from exc
+        raise WorkflowError(
+            "Command result is not a finite standard-JSON value.",
+            exit_code=2,
+        ) from exc
 
 
 def skill_contract_validation_error(
@@ -28103,7 +28352,7 @@ def main() -> int:
         if args.command == "backfill-finish-summary" and not args.json:
             print(render_finish_summary_backfill_table(payload))
         else:
-            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            print(skill_public_json_text(payload, args.command))
         return 1 if args.command == "backfill-finish-summary" and payload["errors"] else 0
     except WorkflowError as exc:
         if args.command == "discover-skill-contract" and getattr(args, "json", False):
@@ -28111,11 +28360,30 @@ def main() -> int:
         else:
             payload = {"status": "error", "error": str(exc), **exc.payload}
         if getattr(args, "json", False):
-            print(json.dumps(payload, ensure_ascii=False, indent=2), file=sys.stderr)
+            try:
+                error_text = skill_json_dumps(payload, indent=2)
+            except (TypeError, ValueError):
+                fallback = (
+                    {
+                        "code": "public_json_serialization_failed",
+                        "field_path": "stderr",
+                        "remediation": "Return one finite, standard-JSON error DTO and retry discovery.",
+                    }
+                    if args.command == "discover-skill-contract"
+                    else {
+                        "status": "error",
+                        "error": "Command error payload is not a finite standard-JSON value.",
+                    }
+                )
+                error_text = skill_json_dumps(fallback, indent=2)
+            print(error_text, file=sys.stderr)
         else:
             print(f"ERROR: {exc}", file=sys.stderr)
             if exc.payload:
-                print(json.dumps(exc.payload, ensure_ascii=False, indent=2), file=sys.stderr)
+                try:
+                    print(skill_json_dumps(exc.payload, indent=2), file=sys.stderr)
+                except (TypeError, ValueError):
+                    print("Error payload is not a finite standard-JSON value.", file=sys.stderr)
         return exc.exit_code
 
 

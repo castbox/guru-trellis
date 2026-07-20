@@ -103,6 +103,15 @@ ref, an invalid regex, and an unsupported format. Existing
 `allOf`/`if`/`then`, `oneOf`, nested `properties`, and canonical package-local
 profile refs remain passing coverage; an accepted keyword must never be silently
 ignored by instance validation.
+Strict-JSON cases must cover `NaN`, `Infinity`, `-Infinity`, and numeric overflow
+at static schema/example, package-local ref, workflow marker, invocation stdout,
+in-memory schema/instance, and public serialization boundaries. Supported-format
+cases must accept RFC 3339 lowercase `t`/`z`, valid calendar/offset values and a
+valid leap-second boundary, including the year `0000` domain, while rejecting
+invalid dates, clocks, offsets, and leap-second positions; RFC 3986 URI cases
+must cover ordinary hierarchical and opaque schemes, case-insensitive IPvFuture
+`v`, malformed/missing schemes, whitespace/control characters, percent
+encoding, authority, and ports.
 Discovery tests cover stable help, legacy/minimal variants, unknown skill,
 version mismatch, missing asset, installed drift, and stable
 `code`/`field_path`/`remediation` errors.

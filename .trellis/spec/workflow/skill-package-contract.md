@@ -344,6 +344,20 @@ input's exact ordered profile-schema index. Each target must be a regular
 non-symlink object-schema file within the same validated package boundary and
 is independently checked as a declared profile contract.
 
+All 1.3 registry, interface, schema, example, workflow-marker, package-local
+reference, invocation-stdout, and discovery JSON boundaries use standard JSON
+decoding. The runtime rejects `NaN`, `Infinity`, `-Infinity`, and JSON numbers
+that overflow its finite numeric range; the same finite guard applies to
+in-memory schema and instance values. Public DTO encoding rejects non-finite or
+otherwise non-serializable values and returns the existing structured error
+shape without a traceback. Supported `date-time` validates RFC 3339 calendar,
+clock, the `0000` through `9999` year domain, numeric-offset, lowercase `t`/`z`,
+and leap-second notation only at the corresponding UTC June/December month-end
+boundary. Supported `uri` validates the RFC 3986 ASCII generic syntax,
+including a required scheme, component and authority grammar, case-insensitive
+IPvFuture `v`, controls/whitespace, and percent encoding. These two formats
+remain the complete supported format set for this closed subset.
+
 ### 9. Discovery, Invocation, And Error Contract
 
 The extension public command id is `discover-skill-contract`. Its installed
@@ -991,9 +1005,10 @@ vocabulary is rejected rather than ignored. Source also validates ids, paths,
 required package files, parseable package-local artifact schemas, safe existing
 artifact/schema/validator/test files, strict `SKILL.md` discovery frontmatter,
 workflow markers, and unique exit mappings.
-Every untrusted JSON value is type-checked before set, hash, path, or string
-operations; malformed values return structured `failed` errors without a Python
-traceback. `installed` validates manifest provenance, selected roots, installed
+Every decoded JSON value is standard, finite where numeric, and type-checked
+before set, hash, path, or string operations; malformed values return
+structured `failed` errors without a Python traceback. `installed` validates
+manifest provenance, selected roots, installed
 file/package inventory, hashes and modes, reserved absence, unexpected or
 unknown platform copies, drift, and declared-versus-actual `.new`/`.bak` files.
 Both modes report objective facts and fail with

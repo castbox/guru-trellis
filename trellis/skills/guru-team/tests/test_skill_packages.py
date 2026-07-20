@@ -912,6 +912,204 @@ class SourceValidationTests(unittest.TestCase):
             "closed empty object fixture",
         ))
 
+    def test_contract_json_assets_reject_nonfinite_and_overflow_numbers(self) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-completed-output.schema.json"
+        original_schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        example_path = self.root / "packages/guru-example-action/examples/action-completed-output.json"
+        for number in ("NaN", "Infinity", "-Infinity", "1e400"):
+            with self.subTest(asset="schema", number=number):
+                schema = dict(original_schema)
+                schema["minimum"] = 0
+                raw = json.dumps(schema).replace('"minimum": 0', f'"minimum": {number}')
+                schema_path.write_text(raw, encoding="utf-8")
+                errors = self.validate()["errors"]
+                self.assertTrue(any("invalid JSON" in item for item in errors), errors)
+            schema_path.write_text(json.dumps(original_schema), encoding="utf-8")
+            with self.subTest(asset="example", number=number):
+                example_path.write_text(
+                    f'{{"exit_id":"completed","result":{number}}}',
+                    encoding="utf-8",
+                )
+                errors = self.validate()["errors"]
+                self.assertTrue(any("invalid JSON" in item for item in errors), errors)
+            shutil.copyfile(
+                FIXTURE / "packages/guru-example-action/examples/action-completed-output.json",
+                example_path,
+            )
+
+    def test_interface_and_registry_reject_nonfinite_and_overflow_numbers(self) -> None:
+        paths = (
+            self.root / "packages/guru-example-action/interface.json",
+            self.root / "registry.json",
+        )
+        originals = {path: path.read_text(encoding="utf-8") for path in paths}
+        for path in paths:
+            for number in ("NaN", "Infinity", "-Infinity", "1e400"):
+                with self.subTest(path=path.name, number=number):
+                    raw = originals[path].rstrip()
+                    path.write_text(
+                        raw[:-1] + f',"nonfinite_probe":{number}}}',
+                        encoding="utf-8",
+                    )
+                    errors = self.validate()["errors"]
+                    self.assertTrue(any("invalid JSON" in item for item in errors), errors)
+            path.write_text(originals[path], encoding="utf-8")
+
+    def test_package_local_schema_ref_rejects_nonfinite_and_overflow_numbers(self) -> None:
+        aggregate_path = self.root / "packages/guru-example-action/schemas/action-input.schema.json"
+        aggregate = json.loads(aggregate_path.read_text(encoding="utf-8"))
+        target_path = self.root / "packages/guru-example-action/schemas/action-initial-input.schema.json"
+        original_target = target_path.read_text(encoding="utf-8")
+        for number in ("NaN", "Infinity", "-Infinity", "1e400"):
+            with self.subTest(number=number):
+                target = json.loads(original_target)
+                target["minimum"] = 0
+                raw = json.dumps(target).replace('"minimum": 0', f'"minimum": {number}')
+                target_path.write_text(raw, encoding="utf-8")
+                errors = runtime.skill_json_schema_subset_errors(
+                    aggregate,
+                    "aggregate input",
+                    relative_root=aggregate_path.parent,
+                    boundary=self.root,
+                )
+                self.assertTrue(any("unreadable package-local $ref" in item for item in errors), errors)
+        target_path.write_text(original_target, encoding="utf-8")
+
+    def test_invocation_stdout_rejects_nonfinite_and_overflow_numbers(self) -> None:
+        dispatcher = self.root / "fixture-dispatcher.py"
+        for number in ("NaN", "Infinity", "-Infinity", "1e400"):
+            with self.subTest(number=number):
+                dispatcher.write_text(
+                    "#!/usr/bin/env python3\n"
+                    f"print('{{\"exit_id\":\"completed\",\"result\":{number}}}')\n",
+                    encoding="utf-8",
+                )
+                errors = self.validate()["errors"]
+                self.assertTrue(any(
+                    "[invocation_execution]" in item and "one typed-exit DTO" in item
+                    for item in errors
+                ), errors)
+
+    def test_workflow_contract_markers_reject_nonfinite_and_overflow_numbers(self) -> None:
+        original = self.workflow.read_text(encoding="utf-8")
+        for number in ("NaN", "Infinity", "-Infinity", "1e400"):
+            with self.subTest(number=number):
+                self.workflow.write_text(
+                    original.replace('"required":true', f'"required":{number}', 1),
+                    encoding="utf-8",
+                )
+                self.assertTrue(any(
+                    "invalid workflow skill marker JSON" in item
+                    for item in self.validate()["errors"]
+                ))
+
+    def test_in_memory_schema_and_instance_reject_nonfinite_numbers(self) -> None:
+        for value in (float("nan"), float("inf"), float("-inf")):
+            with self.subTest(location="schema", value=value):
+                errors = runtime.skill_json_schema_subset_errors(
+                    {"type": "number", "minimum": value},
+                    "numeric schema",
+                )
+                self.assertTrue(any("non-finite number" in item for item in errors), errors)
+            with self.subTest(location="instance", value=value):
+                errors = runtime.skill_json_schema_validation_errors(
+                    value,
+                    {"type": "number", "minimum": 0},
+                    "numeric instance",
+                )
+                self.assertTrue(any("non-finite number" in item for item in errors), errors)
+
+    def test_public_contract_serialization_fails_closed_on_nonfinite_numbers(self) -> None:
+        for value in (float("nan"), float("inf"), float("-inf")):
+            with self.subTest(value=value):
+                with self.assertRaises(runtime.WorkflowError) as raised:
+                    runtime.skill_public_json_text(
+                        {"status": "ok", "value": value},
+                        "discover-skill-contract",
+                    )
+                self.assertEqual(raised.exception.exit_code, 2)
+                self.assertEqual(
+                    raised.exception.payload,
+                    {
+                        "code": "public_json_serialization_failed",
+                        "field_path": "stdout",
+                        "remediation": "Return one finite, standard-JSON typed contract DTO and retry discovery.",
+                    },
+                )
+
+    def test_closed_schema_date_time_format_matches_rfc3339_subset(self) -> None:
+        schema = {"type": "string", "format": "date-time"}
+        valid = (
+            "0000-01-01T00:00:00Z",
+            "0000-02-29T00:00:00Z",
+            "2020-01-01T00:00:00Z",
+            "2020-01-01t00:00:00z",
+            "2020-02-29T23:59:59.123456+05:30",
+            "1990-12-31T23:59:60Z",
+            "1990-12-31T18:59:60-05:00",
+            "1991-01-01T00:59:60+01:00",
+        )
+        invalid = (
+            "0000-02-30T00:00:00Z",
+            "2021-02-29T00:00:00Z",
+            "2020-01-01T24:00:00Z",
+            "2020-01-01T00:00:00+24:00",
+            "2020-01-01T00:00:00",
+            "2020-01-01 00:00:00Z",
+            "1990-12-31T23:59:61Z",
+            "1990-12-31T23:59:60+01:00",
+            "2020-01-01T00:00:60Z",
+        )
+        for value in valid:
+            with self.subTest(valid=value):
+                self.assertEqual(
+                    runtime.skill_json_schema_validation_errors(value, schema, "date-time"),
+                    [],
+                )
+        for value in invalid:
+            with self.subTest(invalid=value):
+                self.assertTrue(runtime.skill_json_schema_validation_errors(
+                    value,
+                    schema,
+                    "date-time",
+                ))
+
+    def test_closed_schema_uri_format_matches_rfc3986_subset(self) -> None:
+        schema = {"type": "string", "format": "uri"}
+        valid = (
+            "https://example.com/a%20b?x=1#top",
+            "urn:isbn:0451450523",
+            "mailto:user@example.com",
+            "http://[2001:db8::1]:8080/path",
+            "http://[V1.a]:8080/path",
+            "custom:",
+        )
+        invalid = (
+            "relative/path",
+            "//example.com/path",
+            "1https://example.com",
+            "foo: bar",
+            "https://exa mple.com",
+            "https://example.com/%ZZ",
+            "https://example.com/%1",
+            "https://example.com/\x01",
+            "http://[invalid]/",
+            "http://host:port/path",
+        )
+        for value in valid:
+            with self.subTest(valid=value):
+                self.assertEqual(
+                    runtime.skill_json_schema_validation_errors(value, schema, "uri"),
+                    [],
+                )
+        for value in invalid:
+            with self.subTest(invalid=value):
+                self.assertTrue(runtime.skill_json_schema_validation_errors(
+                    value,
+                    schema,
+                    "uri",
+                ))
+
     def test_skill_consumer_requires_target_owned_matching_interface(self) -> None:
         interface = self.read_interface()
         consumer = next(
