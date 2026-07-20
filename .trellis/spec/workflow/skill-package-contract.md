@@ -100,6 +100,28 @@ workflow/standalone preconditions before a package command can run.
 
 ## Public Skill I/O And Private State
 
+### 0. Versioned Interface And Registry Migration
+
+`guru-team-skill-interface-1.2` is the frozen legacy contract. Its schema file,
+schema id, field meanings, and the nine current production package payloads are
+not reinterpreted by the minimal-handoff rollout. New or materially changed
+public Skill I/O targets the independent
+`guru-team-skill-interface-1.3` contract.
+
+Registry schema `guru-team-skill-registry-1.1` is the exact version selector.
+Every active row declares `interface_schema_id` and `io_contract_state`; only
+`1.2 + legacy` and `1.3 + minimal_handoff` are legal. Reserved and planned rows
+remain lifecycle-only and must not carry package or I/O contract fields. During
+the #144 migration window, all nine production active rows remain explicitly
+allowlisted `1.2 + legacy`; #145 and #146 own their payload migrations.
+
+The validator selects the interface schema from the registry row. It must not
+guess from optional fields, file presence, package content, or extension
+defaults. The extension publishes both supported ids, names 1.3 as current for
+new work, retains compatibility scalar `interface_schema_id=1.2` until #146,
+and keeps production public-input, typed-output, and private-artifact schema
+inventories empty while every production package remains legacy.
+
 ### 1. Scope And Trigger
 
 This contract applies whenever a new public Guru Team Skill is introduced or an
@@ -244,6 +266,77 @@ Correct producer exit output:
 The consumer's independently owned input schema may accept that object directly
 or declare a deterministic projection to its own field names. The producer's
 audit evidence and private checkpoint remain outside this public DTO.
+
+### 8. Interface 1.3 Closed Public Contracts
+
+Interface 1.3 keeps the closed-loop identity, modes, stages, validators,
+external exits, re-entry, tests, and platform destinations of 1.2 and adds one
+required closed `public_contracts` object with exactly six owned sections:
+
+- `input`: either `structured_json` profiles with package-local closed Draft
+  2020-12 schemas/examples and a discriminator plus aggregate `oneOf`, or
+  `scalar_cli` arguments with exact ordered argv and no artificial input JSON
+  schema;
+- `invocation`: one command id, package-local executable wrapper, exact input
+  binding, `single_typed_exit` stdout, stable closed error schema/example, and
+  one executable example argv;
+- `outputs`: one independent schema and complete example for every declared
+  external exit, plus non-empty direct consumer-use references;
+- `consumer_inputs`: locators owned by the target Skill, workflow transition,
+  or stop response; self-reentry points to a distinct input profile of the same
+  Skill, and a stop may explicitly declare zero payload;
+- `projections`: exactly one output/consumer projection using only `direct`,
+  `select`, `rename`, or the closed deterministic `normalize` operations;
+- `private_artifacts`: only `runtime_checkpoint` or `gate_evidence`, with
+  `stdout_only_pre_task`, `task_local_tracked`, or `ignored_runtime`
+  persistence.
+
+All ids and locators are unique, package paths are regular non-symlink files,
+and public output schema ids/paths are disjoint from private artifact schema
+ids/paths. Projection source fields come only from the selected public output;
+target fields come only from the declared consumer input. Runtime facts,
+private artifacts, arbitrary expressions, script paths, and semantic
+reconstruction are outside the projection grammar.
+
+An explicit `zero_payload` stop still receives the producer's typed-exit
+routing identity, but that identity is not forwarded as stop-response payload.
+Its output schema therefore contains only required `exit_id` with the matching
+exit constant, and its unique projection is `select` with an empty `mappings`
+array. Empty `select` is invalid for every non-zero consumer, and any additional
+zero-stop output field is an unconsumed public field rather than audit data to
+preserve.
+
+### 9. Discovery, Invocation, And Error Contract
+
+The extension public command id is `discover-skill-contract`. Its installed
+wrapper has the exact public form:
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh \
+  --root <repo> --mode <source|installed> --skill <guru-id> --json
+```
+
+Discovery resolves the exact registry row first. A 1.2 row returns a closed
+`legacy` variant with interface identity, migration state, and #145/#146
+boundary; it never fabricates 1.3 input/output contracts. A 1.3 row returns a
+closed `minimal_handoff` index locating input, invocation, every exit output,
+consumer contract, projection, examples, and private artifacts. Discovery
+returns metadata only and does not execute the semantic Skill.
+
+Unknown skill, version/state mismatch, missing/unsafe contract path, invalid
+schema/example, or installed drift exits non-zero with stable `code`,
+repo-relative `field_path`, and actionable `remediation`. Callers need only
+`SKILL.md`, `interface.json`, package-local public assets, and command help;
+they never import or read `guru_team_trellis.py`.
+
+Source validation executes the declared representative 1.3 example invocation,
+requires exactly one declared typed-exit object on stdout, and validates it
+with that exit's independent schema. The mixed test-only fixture contains one
+1.2 legacy package, one structured semantic 1.3 package, and one scalar CLI
+deterministic 1.3 package. It covers Skill/workflow/stop consumers,
+self-reentry, the closed projection operations, stdout-only and task-local
+private state, distinct exits, and stable errors, but never enters production
+registry, extension inventories, workflow routes, or installed platform roots.
 
 ## Workflow Markers And Typed Exits
 

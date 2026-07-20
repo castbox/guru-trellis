@@ -81,6 +81,45 @@ Guru Team preset, resolve `.new` / `.bak`, rerun source and installed package
 validation, and retry. There is no legacy-command fallback. Runtime compatibility
 is an objective precondition only and never becomes an AI Review Gate pass.
 
+## Skill Contract Discovery
+
+`scripts/bash/discover-skill-contract.sh` is the thin installed wrapper for
+the deterministic `discover-skill-contract` subcommand. Its public CLI is
+exactly:
+
+```bash
+discover-skill-contract --root <repo> --mode <source|installed> \
+  --skill <guru-id> --json
+```
+
+The command resolves the registry row, validates the exact registry/interface
+schema identity and version/state relation, then returns one closed variant.
+`legacy` reports only the 1.2 package/interface identity and #145/#146 migration
+boundary. `minimal_handoff` reports package-relative locators for the 1.3 input,
+invocation, every per-exit output/example, consumer input, projection, and
+private artifact. It does not execute the semantic Skill, infer migration
+state, read private artifact contents, or ask callers to import the Python
+runtime.
+
+Source package validation performs the separate representative invocation
+probe declared by each 1.3 fixture interface. It executes the package-local
+wrapper with its exact example argv, requires a single JSON object containing
+one declared exit, validates that object against the independent exit schema,
+and applies the declared consumer projection to the actual stdout object. A
+zero-payload stop accepts only the required exit routing identity and an empty
+`select` mapping; aggregate structured input binds exact ordered profile schema
+references and required discriminator constants; scalar input binds exact
+ordered typed argv in both public-input and invocation examples. Wrapper/handler failures,
+non-object or multiple stdout values, unknown exits, and output-schema mismatch
+fail with stable portable errors.
+
+Discovery failures use one closed object with `code`, repo-relative
+`field_path`, and `remediation`. Stable codes distinguish unknown skill,
+registry/interface version mismatch, missing or unsafe asset, invalid
+schema/example, and installed drift. These are deterministic contract facts;
+the command never decides semantic pass, scope, route intent, or migration
+priority.
+
 ### Planning Approval Record And Check
 
 `record-planning-approval` and `check-planning-approval` are the shared

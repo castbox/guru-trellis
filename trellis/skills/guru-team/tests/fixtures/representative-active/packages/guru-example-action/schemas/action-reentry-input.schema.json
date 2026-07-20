@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-fixture-action-reentry-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_exit", "profile", "topic"],
+  "properties": {
+    "source_exit": {"const": "repeat"},
+    "profile": {"const": "reentry"},
+    "topic": {"type": "string", "minLength": 1}
+  }
+}

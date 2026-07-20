@@ -60,6 +60,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/prepare-task.sh"),
     Path("scripts/bash/check-workspace-boundary.sh"),
     Path("scripts/bash/check-skill-packages.sh"),
+    Path("scripts/bash/discover-skill-contract.sh"),
     Path("scripts/bash/run-skill-command.sh"),
     Path("scripts/bash/sync-base.sh"),
     Path("scripts/bash/check-base-sync.sh"),
@@ -706,7 +707,12 @@ def install_skill_packages(
         (canonical_root / "registry.json", Path("registry.json")),
         (canonical_root / "schemas/skill-registry.schema.json", Path("schemas/skill-registry.schema.json")),
         (canonical_root / "schemas/skill-interface.schema.json", Path("schemas/skill-interface.schema.json")),
+        (canonical_root / "schemas/skill-interface-1.3.schema.json", Path("schemas/skill-interface-1.3.schema.json")),
     ]
+    consumer_root = canonical_root / "consumers"
+    if consumer_root.is_dir():
+        for source in skill_package_source_files(consumer_root):
+            source_files.append((source, source.relative_to(canonical_root)))
     packages: list[dict[str, Any]] = []
     for entry in active_entries:
         skill_id = str(entry["id"])
@@ -1278,6 +1284,7 @@ def install_assets(
         dst / "scripts/bash/prepare-task.sh",
         dst / "scripts/bash/check-workspace-boundary.sh",
         dst / "scripts/bash/check-skill-packages.sh",
+        dst / "scripts/bash/discover-skill-contract.sh",
         dst / "scripts/bash/run-skill-command.sh",
         dst / "scripts/bash/sync-base.sh",
         dst / "scripts/bash/check-base-sync.sh",

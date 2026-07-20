@@ -1,0 +1,28 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.2",
+  "id": "guru-example-legacy",
+  "name": "guru-example-legacy",
+  "description": "Proves interface 1.2 remains valid during the minimal handoff migration.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["fresh_input"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["fresh_input"]}
+  },
+  "entry_preconditions": [
+    {"id": "fresh_input", "evidence": "fixture input", "binding": "fixture identity", "freshness": "current fixture run"}
+  ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [{"id": "result", "path": "examples/legacy-result.json"}],
+  "schemas": [{"id": "result_schema", "path": "schemas/legacy-result.schema.json"}],
+  "validators": [{"id": "result_validator", "command": "scripts/validate-legacy-result.sh", "runtime_command": "fixture-runtime-command", "objective_scope": "Legacy fixture JSON shape only"}],
+  "external_exits": [
+    {"id": "completed", "evidence": "legacy result", "consumer": {"kind": "workflow", "id": "fixture-legacy-next"}},
+    {"id": "blocked", "evidence": "legacy result", "consumer": {"kind": "stop", "id": "fixture-legacy-stop"}}
+  ],
+  "reentry": {"identity": "fixture identity", "freshness": "current fixture run", "stale_behavior": "fail_closed"},
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+}

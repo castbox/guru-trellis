@@ -14997,8 +14997,27 @@ SKILL_INVOKE_RE = re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*
 SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
 SKILL_TARGET_RE = re.compile(r"^\s*<!--\s*guru-(workflow|stop)-target:\s*(\{.*\})\s*-->\s*$")
 SKILL_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
+# Compatibility aliases remain public until the legacy migration completes.
 SKILL_INTERFACE_SCHEMA_VERSION = "1.2"
 SKILL_INTERFACE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.2.json"
+SKILL_INTERFACE_SCHEMAS = {
+    "guru-team-skill-interface-1.2": {
+        "version": "1.2",
+        "schema_path": Path("schemas/skill-interface.schema.json"),
+        "interface_ref": "../../schemas/skill-interface.schema.json",
+        "id": SKILL_INTERFACE_SCHEMA_ID,
+        "sha256": "33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e",
+        "io_contract_state": "legacy",
+    },
+    "guru-team-skill-interface-1.3": {
+        "version": "1.3",
+        "schema_path": Path("schemas/skill-interface-1.3.schema.json"),
+        "interface_ref": "../../schemas/skill-interface-1.3.schema.json",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.3.json",
+        "sha256": "fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e",
+        "io_contract_state": "minimal_handoff",
+    },
+}
 SKILL_RUNTIME_DEPENDENCY = {
     "extension_id": "guru-team",
     "api_version": "1.0",
@@ -15019,13 +15038,11 @@ SKILL_RUNTIME_REMEDIATION = (
 )
 SKILL_CONTRACT_SCHEMAS = {
     "registry": {
-        "sha256": "e49bdcefbbb8c4c97aae90ab604c3ae90e5ba8cd08574fdbdf8e814bd6018081",
-        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.0.json",
+        "sha256": "8af401ec302f847533572afa79afda36846b1ef9432ca1f1fdeba741415f7343",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.1.json",
     },
-    "interface": {
-        "sha256": "33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e",
-        "id": SKILL_INTERFACE_SCHEMA_ID,
-    },
+    "interface-1.2": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.2"],
+    "interface-1.3": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.3"],
 }
 
 
@@ -15515,23 +15532,42 @@ def skill_extension_runtime_contract(
     errors: list[str],
     *,
     installed: bool,
-) -> tuple[dict[str, Any] | None, set[str]]:
+) -> tuple[dict[str, Any] | None, set[str], dict[str, Any] | None]:
     extension = manifest.get("extension") if installed and isinstance(manifest, dict) else manifest
     if not isinstance(extension, dict):
         errors.append(f"{label} has no extension contract")
-        return None, set()
+        return None, set(), None
     if extension.get("extension_id") != SKILL_RUNTIME_DEPENDENCY["extension_id"]:
         errors.append(f"{label} has an incompatible extension id")
     public_api = extension.get("public_api")
     if not isinstance(public_api, dict):
         errors.append(f"{label} has no public API contract")
-        return None, set()
+        return None, set(), None
     skill_contracts = public_api.get("skill_contracts")
-    if (
-        not isinstance(skill_contracts, dict)
-        or skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.2"
+    expected_supported = list(SKILL_INTERFACE_SCHEMAS)
+    if not isinstance(skill_contracts, dict):
+        skill_contracts = None
+    elif (
+        skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.2"
+        or skill_contracts.get("supported_interface_schema_ids") != expected_supported
+        or skill_contracts.get("current_interface_schema_id") != "guru-team-skill-interface-1.3"
+        or skill_contracts.get("registry_schema_id") != "guru-team-skill-registry-1.1"
     ):
         errors.append(f"{label} has an incompatible Skill interface schema id")
+    if isinstance(skill_contracts, dict):
+        for field in (
+            "legacy_skill_ids",
+            "public_input_schema_ids",
+            "typed_output_schema_ids",
+            "private_artifact_schema_ids",
+        ):
+            values = skill_contracts.get(field)
+            if (
+                not isinstance(values, list)
+                or any(not isinstance(item, str) or not item for item in values)
+                or len(values) != len(set(values))
+            ):
+                errors.append(f"{label} has an invalid {field} inventory")
     runtime = public_api.get("skill_runtime")
     if not isinstance(runtime, dict) or runtime != SKILL_RUNTIME_CAPABILITY:
         errors.append(f"{label} has an incompatible Skill runtime capability")
@@ -15548,7 +15584,9 @@ def skill_extension_runtime_contract(
         command_ids = set(commands)
         if SKILL_RUNTIME_DEPENDENCY["dispatcher"] not in command_ids:
             errors.append(f"{label} does not publish the Skill runtime dispatcher")
-    return runtime, command_ids
+        if "discover-skill-contract" not in command_ids:
+            errors.append(f"{label} does not publish Skill contract discovery")
+    return runtime, command_ids, skill_contracts
 
 
 def skill_default_extension_manifest_path(skills_root: Path, boundary: Path) -> Path:
@@ -15570,6 +15608,593 @@ def skill_runtime_command_maps_to_dispatcher(runtime_command: Any, dependency: A
     )
 
 
+def skill_contract_asset(
+    boundary: Path,
+    owner_root: Path,
+    reference: Any,
+    label: str,
+    errors: list[str],
+    *,
+    schema: bool,
+) -> tuple[Path | None, dict[str, Any] | None]:
+    if not isinstance(reference, dict):
+        errors.append(f"[contract_asset_invalid] {label} reference must be an object")
+        return None, None
+    relative = skill_safe_relative(reference.get("path"))
+    if relative is None:
+        errors.append(f"[contract_asset_path] {label} has an unsafe path")
+        return None, None
+    path = owner_root / relative
+    if skill_lstat_path(boundary, path, label, errors, kind="file") is None:
+        return None, None
+    payload = skill_read_schema(path, label, errors) if schema else skill_read_json(path, label, errors)
+    if payload is None:
+        return path, None
+    if schema:
+        if payload.get("$schema") != SKILL_SCHEMA_DIALECT:
+            errors.append(f"[contract_schema_dialect] {label} must use Draft 2020-12")
+        if payload.get("$id") != reference.get("schema_id"):
+            errors.append(f"[contract_schema_id] {label} does not match its declared schema id")
+    return path, payload
+
+
+def skill_closed_object_schema(
+    schema: dict[str, Any] | None,
+    label: str,
+    errors: list[str],
+) -> dict[str, Any]:
+    if not isinstance(schema, dict):
+        return {}
+    if schema.get("type") != "object" or schema.get("additionalProperties") is not False:
+        errors.append(f"[contract_schema_open] {label} must be a closed object schema")
+    properties = schema.get("properties")
+    if not isinstance(properties, dict):
+        errors.append(f"[contract_schema_properties] {label} must declare object properties")
+        return {}
+    return properties
+
+
+def skill_schema_contains_nullable(node: Any) -> bool:
+    if isinstance(node, dict):
+        node_type = node.get("type")
+        if node_type == "null" or (isinstance(node_type, list) and "null" in node_type):
+            return True
+        return any(skill_schema_contains_nullable(value) for value in node.values())
+    if isinstance(node, list):
+        return any(skill_schema_contains_nullable(value) for value in node)
+    return False
+
+
+def skill_scalar_value_matches(value: Any, value_type: Any) -> bool:
+    if value_type == "string":
+        return isinstance(value, str) and bool(value)
+    if value_type == "positive_integer":
+        return (
+            isinstance(value, int)
+            and not isinstance(value, bool)
+            and value > 0
+        ) or (
+            isinstance(value, str)
+            and re.fullmatch(r"[1-9][0-9]*", value) is not None
+        )
+    if value_type == "ascii_enum":
+        return (
+            isinstance(value, str)
+            and re.fullmatch(r"[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*", value) is not None
+        )
+    return False
+
+
+def skill_validate_scalar_argv(
+    arguments: list[dict[str, Any]],
+    argv: Any,
+    label: str,
+    errors: list[str],
+) -> dict[str, str]:
+    if not isinstance(argv, list) or any(not isinstance(value, str) for value in argv):
+        errors.append(f"[scalar_argument_argv] {label} must be an ordered string argv")
+        return {}
+    if len(argv) != len(arguments) * 2:
+        errors.append(f"[scalar_argument_argv] {label} must bind every argument exactly once in declared order")
+        return {}
+    values: dict[str, str] = {}
+    for index, argument in enumerate(arguments):
+        argument_id = str(argument.get("id") or "")
+        if argv[index * 2] != argument.get("flag"):
+            errors.append(f"[scalar_argument_argv] {label} does not use declared argument order")
+            continue
+        value = argv[index * 2 + 1]
+        if not skill_scalar_value_matches(value, argument.get("type")):
+            errors.append(f"[scalar_argument_value] {label} has an invalid value for {argument_id}")
+            continue
+        values[argument_id] = value
+    return values
+
+
+def skill_apply_projection(
+    projection: dict[str, Any],
+    output: dict[str, Any],
+) -> dict[str, Any]:
+    operation = projection.get("operation")
+    if operation == "direct":
+        return dict(output)
+    result: dict[str, Any] = {}
+    mappings = projection.get("mappings")
+    if not isinstance(mappings, list):
+        return result
+    for mapping in mappings:
+        if not isinstance(mapping, dict):
+            continue
+        source = mapping.get("source")
+        target = mapping.get("target")
+        if not isinstance(source, str) or not isinstance(target, str) or source not in output:
+            continue
+        value = output[source]
+        normalizer = mapping.get("normalizer")
+        if normalizer == "trim_ascii_outer_whitespace" and isinstance(value, str):
+            value = value.strip(" \t\r\n\f\v")
+        elif normalizer == "lowercase_ascii_enum" and isinstance(value, str):
+            value = value.lower()
+        elif normalizer == "positive_integer_canonicalization":
+            if isinstance(value, str) and re.fullmatch(r"[0-9]+", value):
+                value = int(value)
+        result[target] = value
+    return result
+
+
+def validate_skill_public_contracts(
+    skills_root: Path,
+    package: Path,
+    interface: dict[str, Any],
+    errors: list[str],
+    *,
+    boundary: Path,
+    runtime_commands: set[str],
+) -> None:
+    skill_id = str(interface.get("id") or "")
+    contracts = interface.get("public_contracts")
+    if not isinstance(contracts, dict):
+        errors.append(f"[public_contracts_missing] interface for {skill_id} has no public contracts")
+        return
+
+    public_input = contracts.get("input")
+    invocation = contracts.get("invocation")
+    outputs = contracts.get("outputs")
+    consumers = contracts.get("consumer_inputs")
+    projections = contracts.get("projections")
+    private_artifacts = contracts.get("private_artifacts")
+    if not all(isinstance(value, dict) for value in (public_input, invocation)):
+        errors.append(f"[public_contract_shape] interface for {skill_id} has invalid input/invocation")
+        return
+    output_items = skill_unique_ids(
+        [{"id": item.get("exit_id"), **item} if isinstance(item, dict) else item for item in outputs]
+        if isinstance(outputs, list) else outputs,
+        f"{skill_id}.public_contracts.outputs",
+        errors,
+    )
+    consumer_items = skill_unique_ids(consumers, f"{skill_id}.public_contracts.consumer_inputs", errors)
+    projection_items = skill_unique_ids(projections, f"{skill_id}.public_contracts.projections", errors)
+    private_items = skill_unique_ids(private_artifacts, f"{skill_id}.public_contracts.private_artifacts", errors)
+
+    input_kind = public_input.get("kind")
+    input_profiles: dict[str, dict[str, Any]] = {}
+    input_schema_ids: set[str] = set()
+    scalar_arguments: list[dict[str, Any]] = []
+    if input_kind == "structured_json":
+        profiles = skill_unique_ids(public_input.get("profiles"), f"{skill_id}.public input profiles", errors)
+        aggregate_path, aggregate_schema = skill_contract_asset(
+            boundary,
+            package,
+            public_input.get("aggregate_schema"),
+            f"aggregate public input schema for {skill_id}",
+            errors,
+            schema=True,
+        )
+        branches = aggregate_schema.get("oneOf") if isinstance(aggregate_schema, dict) else None
+        if not isinstance(branches, list) or len(branches) != len(profiles):
+            errors.append(f"[input_aggregate_oneof] aggregate input for {skill_id} must index every profile with oneOf")
+        if aggregate_path is not None and skill_schema_contains_nullable(aggregate_schema):
+            errors.append(f"[input_nullable_template] aggregate input for {skill_id} must not be nullable")
+        aggregate_refs: list[dict[str, str]] = []
+        discriminator_fields: set[str] = set()
+        discriminator_values: set[str] = set()
+        for profile in profiles:
+            profile_id = str(profile.get("id") or "")
+            input_profiles[profile_id] = profile
+            profile_schema_path, schema = skill_contract_asset(
+                boundary, package, profile.get("schema"), f"public input {profile_id} for {skill_id}", errors, schema=True
+            )
+            if aggregate_path is not None and profile_schema_path is not None:
+                aggregate_refs.append({
+                    "$ref": os.path.relpath(profile_schema_path, aggregate_path.parent).replace(os.sep, "/")
+                })
+            properties = skill_closed_object_schema(schema, f"public input {profile_id} for {skill_id}", errors)
+            if skill_schema_contains_nullable(schema):
+                errors.append(f"[input_nullable_template] public input {profile_id} for {skill_id} must not be nullable")
+            schema_ref = profile.get("schema")
+            if isinstance(schema_ref, dict):
+                input_schema_ids.add(str(schema_ref.get("schema_id") or ""))
+            _, example = skill_contract_asset(
+                boundary, package, profile.get("example"), f"public input example {profile_id} for {skill_id}", errors, schema=False
+            )
+            if schema is not None and example is not None:
+                errors.extend(skill_json_schema_validation_errors(example, schema, f"public input example {profile_id} for {skill_id}"))
+            discriminator = profile.get("discriminator")
+            if isinstance(discriminator, dict):
+                field = str(discriminator.get("field") or "")
+                value = str(discriminator.get("value") or "")
+                if field not in properties:
+                    errors.append(f"[input_discriminator] public input {profile_id} discriminator is not a schema property")
+                required = schema.get("required") if isinstance(schema, dict) else None
+                property_schema = properties.get(field)
+                if not isinstance(required, list) or field not in required:
+                    errors.append(f"[input_discriminator] public input {profile_id} discriminator must be required")
+                if not isinstance(property_schema, dict) or property_schema.get("const") != value:
+                    errors.append(f"[input_discriminator] public input {profile_id} discriminator must match its schema const")
+                discriminator_fields.add(field)
+                discriminator_values.add(value)
+        if aggregate_path is not None and isinstance(branches, list) and branches != aggregate_refs:
+            errors.append(f"[input_aggregate_oneof] aggregate input for {skill_id} must use the exact ordered profile schema references")
+        if len(profiles) > 1 and (
+            len(discriminator_fields) != 1 or len(discriminator_values) != len(profiles)
+        ):
+            errors.append(f"[input_discriminator] public input profiles for {skill_id} need one shared field and unique values")
+    elif input_kind == "scalar_cli":
+        scalar_arguments = skill_unique_ids(public_input.get("arguments"), f"{skill_id}.public scalar arguments", errors)
+        flags = [item.get("flag") for item in scalar_arguments]
+        if len(flags) != len(set(flags)):
+            errors.append(f"[scalar_argument_duplicate] public scalar input for {skill_id} has duplicate flags")
+        argv = public_input.get("example_argv")
+        skill_validate_scalar_argv(
+            scalar_arguments,
+            argv,
+            f"public scalar example for {skill_id}",
+            errors,
+        )
+        for item in argv if isinstance(argv, list) else []:
+            if isinstance(item, str) and os.path.isabs(item):
+                errors.append(f"[invocation_absolute_path] public scalar example for {skill_id} contains an absolute path")
+    else:
+        errors.append(f"[public_input_kind] interface for {skill_id} has unknown public input kind")
+
+    command_id = invocation.get("command_id")
+    if command_id not in runtime_commands:
+        errors.append(f"[invocation_command] public invocation for {skill_id} uses an unpublished command")
+    wrapper_relative = skill_safe_relative(invocation.get("wrapper"))
+    wrapper_path = package / wrapper_relative if wrapper_relative is not None else package
+    wrapper_stat = None
+    if wrapper_relative is None:
+        errors.append(f"[invocation_wrapper_path] public invocation wrapper for {skill_id} has an unsafe path")
+    else:
+        wrapper_stat = skill_lstat_path(boundary, wrapper_path, f"public invocation wrapper for {skill_id}", errors, kind="file")
+        if wrapper_stat is not None and not (wrapper_stat.st_mode & stat.S_IXUSR):
+            errors.append(f"[invocation_wrapper_mode] public invocation wrapper for {skill_id} is not executable")
+        if wrapper_stat is not None:
+            try:
+                wrapper_text = wrapper_path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                wrapper_text = ""
+            if "guru_team_trellis.py" in wrapper_text or re.search(r"\b(?:import|source)\b.*guru_team_trellis", wrapper_text):
+                errors.append(f"[runtime_source_dependency] public invocation wrapper for {skill_id} reads runtime source")
+            if "run-skill-command.sh" not in wrapper_text:
+                errors.append(f"[invocation_dispatcher] public invocation wrapper for {skill_id} does not route the shared dispatcher")
+    binding = invocation.get("input_binding")
+    if isinstance(binding, dict):
+        if input_kind == "structured_json" and (
+            binding.get("kind") != "structured_json" or binding.get("profile_id") not in input_profiles
+        ):
+            errors.append(f"[invocation_input_binding] invocation for {skill_id} has an unknown structured profile")
+        if input_kind == "scalar_cli":
+            argument_ids = [str(item.get("id") or "") for item in scalar_arguments]
+            if binding.get("kind") != "scalar_cli" or binding.get("argument_ids") != argument_ids:
+                errors.append(f"[invocation_input_binding] invocation for {skill_id} does not bind every scalar argument in order")
+    invocation_argv = invocation.get("example_argv")
+    if input_kind == "scalar_cli":
+        skill_validate_scalar_argv(
+            scalar_arguments,
+            invocation_argv,
+            f"invocation example for {skill_id}",
+            errors,
+        )
+        if invocation_argv != public_input.get("example_argv"):
+            errors.append(f"[scalar_invocation_example] invocation for {skill_id} must use the declared scalar example argv")
+    for value in invocation_argv if isinstance(invocation_argv, list) else []:
+        if isinstance(value, str) and os.path.isabs(value):
+            errors.append(f"[invocation_absolute_path] invocation example for {skill_id} contains an absolute path")
+    _, error_schema = skill_contract_asset(
+        boundary, package, invocation.get("error_schema"), f"invocation error schema for {skill_id}", errors, schema=True
+    )
+    error_properties = skill_closed_object_schema(error_schema, f"invocation error schema for {skill_id}", errors)
+    if set(error_properties) != {"code", "field_path", "remediation"} or set(error_schema.get("required", [])) != set(error_properties):
+        errors.append(f"[invocation_error_contract] invocation error schema for {skill_id} must contain exactly code, field_path, remediation")
+    _, error_example = skill_contract_asset(
+        boundary, package, invocation.get("error_example"), f"invocation error example for {skill_id}", errors, schema=False
+    )
+    if error_schema is not None and error_example is not None:
+        errors.extend(skill_json_schema_validation_errors(error_example, error_schema, f"invocation error example for {skill_id}"))
+
+    exit_items = interface.get("external_exits") if isinstance(interface.get("external_exits"), list) else []
+    exits = {str(item.get("id")): item for item in exit_items if isinstance(item, dict)}
+    output_by_exit: dict[str, tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]] = {}
+    public_schema_keys: set[tuple[str, str]] = set()
+    for output in output_items:
+        exit_id = str(output.get("exit_id") or "")
+        _, schema = skill_contract_asset(
+            boundary, package, output.get("schema"), f"typed output {exit_id} for {skill_id}", errors, schema=True
+        )
+        properties = skill_closed_object_schema(schema, f"typed output {exit_id} for {skill_id}", errors)
+        if skill_schema_contains_nullable(schema):
+            errors.append(f"[output_nullable_template] typed output {exit_id} for {skill_id} must not be nullable")
+        required_fields = schema.get("required") if isinstance(schema, dict) else None
+        exit_property = properties.get("exit_id")
+        if (
+            not isinstance(required_fields, list)
+            or "exit_id" not in required_fields
+            or not isinstance(exit_property, dict)
+            or exit_property.get("const") != exit_id
+        ):
+            errors.append(f"[output_exit_identity] typed output schema {exit_id} for {skill_id} must require its exact exit_id const")
+        _, example = skill_contract_asset(
+            boundary, package, output.get("example"), f"typed output example {exit_id} for {skill_id}", errors, schema=False
+        )
+        if schema is not None and example is not None:
+            errors.extend(skill_json_schema_validation_errors(example, schema, f"typed output example {exit_id} for {skill_id}"))
+        if isinstance(example, dict) and example.get("exit_id") != exit_id:
+            errors.append(f"[output_exit_identity] typed output example {exit_id} for {skill_id} lacks its exit_id")
+        schema_ref = output.get("schema")
+        if isinstance(schema_ref, dict):
+            public_schema_keys.add((str(schema_ref.get("schema_id") or ""), str(schema_ref.get("path") or "")))
+        output_by_exit[exit_id] = (output, schema or {}, properties, example or {})
+    if set(output_by_exit) != set(exits):
+        errors.append(f"[output_exit_coverage] typed outputs for {skill_id} must cover external exits exactly")
+
+    consumer_by_id = {str(item.get("id") or ""): item for item in consumer_items}
+    consumer_contracts: dict[str, tuple[dict[str, Any] | None, set[str], str]] = {}
+    consumer_scalar_arguments: dict[str, list[dict[str, Any]]] = {}
+    for consumer_id, consumer in consumer_by_id.items():
+        identity = consumer.get("consumer")
+        payload_kind = consumer.get("payload_kind")
+        if not isinstance(identity, dict):
+            errors.append(f"[consumer_identity] consumer input {consumer_id} for {skill_id} has no identity")
+            continue
+        if payload_kind == "zero_payload":
+            if identity.get("kind") != "stop":
+                errors.append(f"[consumer_zero_payload] only stop consumers may declare zero payload")
+            consumer_contracts[consumer_id] = (None, set(), "zero_payload")
+            continue
+        contract = consumer.get("contract")
+        if not isinstance(contract, dict):
+            errors.append(f"[consumer_input_missing] consumer input {consumer_id} for {skill_id} has no contract")
+            continue
+        if contract.get("kind") == "json_schema":
+            _, schema = skill_contract_asset(
+                boundary, skills_root, contract, f"consumer input {consumer_id} for {skill_id}", errors, schema=True
+            )
+            properties = set(skill_closed_object_schema(schema, f"consumer input {consumer_id} for {skill_id}", errors))
+            consumer_contracts[consumer_id] = (schema, properties, "structured_json")
+        elif contract.get("kind") == "skill_input":
+            interface_relative = skill_safe_relative(contract.get("interface_path"))
+            target_interface_path = skills_root / interface_relative if interface_relative is not None else skills_root
+            target_interface = None
+            if interface_relative is None or skill_lstat_path(
+                boundary, target_interface_path, f"consumer Skill interface {consumer_id}", errors, kind="file"
+            ) is None:
+                errors.append(f"[consumer_skill_input] consumer input {consumer_id} has an unsafe or missing Skill interface")
+            else:
+                target_interface = skill_read_json(target_interface_path, f"consumer Skill interface {consumer_id}", errors)
+            target_contracts = target_interface.get("public_contracts") if isinstance(target_interface, dict) else None
+            target_input = target_contracts.get("input") if isinstance(target_contracts, dict) else None
+            if not isinstance(target_input, dict) or target_input.get("kind") != contract.get("input_kind"):
+                errors.append(f"[consumer_skill_input] consumer input {consumer_id} does not match the target Skill input kind")
+                continue
+            if contract.get("input_kind") == "structured_json":
+                profile_id = contract.get("profile_id")
+                profiles = target_input.get("profiles") if isinstance(target_input.get("profiles"), list) else []
+                matches = [item for item in profiles if isinstance(item, dict) and item.get("id") == profile_id]
+                if len(matches) != 1:
+                    errors.append(f"[consumer_skill_input] consumer input {consumer_id} has an unknown target profile")
+                    continue
+                target_package = target_interface_path.parent
+                _, schema = skill_contract_asset(
+                    boundary, target_package, matches[0].get("schema"), f"consumer Skill input {consumer_id}", errors, schema=True
+                )
+                consumer_contracts[consumer_id] = (
+                    schema,
+                    set(skill_closed_object_schema(schema, f"consumer Skill input {consumer_id}", errors)),
+                    "structured_json",
+                )
+            else:
+                arguments = target_input.get("arguments") if isinstance(target_input.get("arguments"), list) else []
+                argument_ids = {str(item.get("id") or "") for item in arguments if isinstance(item, dict)}
+                consumer_contracts[consumer_id] = (None, argument_ids - {""}, "scalar_cli")
+                consumer_scalar_arguments[consumer_id] = [item for item in arguments if isinstance(item, dict)]
+        else:
+            errors.append(f"[consumer_input_kind] consumer input {consumer_id} for {skill_id} has an unknown contract kind")
+
+    private_field_names: set[str] = set()
+    for artifact in private_items:
+        _, private_schema = skill_contract_asset(
+            boundary,
+            package,
+            artifact.get("schema"),
+            f"private artifact {artifact.get('id')} for {skill_id}",
+            errors,
+            schema=True,
+        )
+        private_field_names.update(
+            skill_closed_object_schema(
+                private_schema,
+                f"private artifact {artifact.get('id')} for {skill_id}",
+                errors,
+            )
+        )
+
+    projection_by_pair: dict[tuple[str, str], dict[str, Any]] = {}
+    for projection in projection_items:
+        exit_id = str(projection.get("exit_id") or "")
+        consumer_id = str(projection.get("consumer_input_id") or "")
+        pair = (exit_id, consumer_id)
+        if pair in projection_by_pair:
+            errors.append(f"[projection_duplicate] output/consumer pair {exit_id}/{consumer_id} has multiple projections")
+        projection_by_pair[pair] = projection
+        if exit_id not in output_by_exit or consumer_id not in consumer_by_id:
+            errors.append(f"[projection_reference] projection {projection.get('id')} references an unknown output or consumer")
+            continue
+        external_consumer = exits.get(exit_id, {}).get("consumer")
+        if external_consumer != consumer_by_id[consumer_id].get("consumer"):
+            errors.append(f"[projection_consumer] projection {projection.get('id')} consumer does not match the external exit")
+        output, output_schema, output_properties, example = output_by_exit[exit_id]
+        operation = projection.get("operation")
+        mappings = projection.get("mappings") if isinstance(projection.get("mappings"), list) else []
+        mapping_targets = [
+            str(item.get("target") or "") for item in mappings if isinstance(item, dict)
+        ]
+        if len(mapping_targets) != len(set(mapping_targets)):
+            errors.append(f"[projection_target_duplicate] projection {projection.get('id')} writes a target field more than once")
+        if any(
+            isinstance(item, dict) and item.get("source") in private_field_names
+            for item in mappings
+        ):
+            errors.append(f"[projection_private_field] projection {projection.get('id')} reads a private artifact field")
+        target_schema, target_fields, target_kind = consumer_contracts.get(consumer_id, (None, set(), "missing"))
+        if target_kind == "zero_payload":
+            required_fields = output_schema.get("required") if isinstance(output_schema, dict) else None
+            exit_property = output_properties.get("exit_id")
+            if (
+                set(output_properties) != {"exit_id"}
+                or not isinstance(required_fields, list)
+                or set(required_fields) != {"exit_id"}
+                or not isinstance(exit_property, dict)
+                or exit_property.get("const") != exit_id
+            ):
+                errors.append(f"[projection_zero_payload_output] zero-payload exit {exit_id} may contain only its required routing identity")
+            if operation != "select" or mappings:
+                errors.append(f"[projection_zero_payload] zero-payload consumer {consumer_id} requires an empty select projection")
+            source_fields: set[str] = set()
+        else:
+            if operation == "select" and not mappings:
+                errors.append(f"[projection_empty_select] non-zero consumer {consumer_id} cannot use an empty select projection")
+            source_fields = set(output_properties) if operation == "direct" else {
+                str(item.get("source") or "") for item in mappings if isinstance(item, dict)
+            }
+            if source_fields != set(output_properties):
+                errors.append(f"[public_output_unconsumed_field] typed output {exit_id} for {skill_id} has fields without direct consumer use")
+        projected = skill_apply_projection(projection, example)
+        if operation != "direct":
+            targets = {str(item.get("target") or "") for item in mappings if isinstance(item, dict)}
+            if targets != target_fields:
+                errors.append(f"[projection_target] projection {projection.get('id')} does not populate the consumer input exactly")
+        if target_kind == "zero_payload" and projected:
+            errors.append(f"[projection_zero_payload] zero-payload consumer {consumer_id} received projected fields")
+        elif target_schema is not None:
+            errors.extend(skill_json_schema_validation_errors(projected, target_schema, f"projection {projection.get('id')} for {skill_id}"))
+            if operation == "direct":
+                output_contract = {key: value for key, value in output_schema.items() if key != "$id"}
+                target_contract = {key: value for key, value in target_schema.items() if key != "$id"}
+                if output_contract != target_contract:
+                    errors.append(f"[projection_direct_contract] direct projection {projection.get('id')} requires exact producer/consumer schema equality apart from $id")
+        elif target_kind == "scalar_cli" and set(projected) != target_fields:
+            errors.append(f"[projection_scalar_target] projection {projection.get('id')} does not populate scalar arguments exactly")
+        elif target_kind == "scalar_cli":
+            for argument in consumer_scalar_arguments.get(consumer_id, []):
+                argument_id = str(argument.get("id") or "")
+                if not skill_scalar_value_matches(projected.get(argument_id), argument.get("type")):
+                    errors.append(f"[projection_scalar_type] projection {projection.get('id')} has an invalid value for {argument_id}")
+        use_ids = output.get("consumer_use_ids")
+        if not isinstance(use_ids, list) or projection.get("id") not in use_ids:
+            errors.append(f"[consumer_use_missing] typed output {exit_id} does not reference projection {projection.get('id')}")
+    for exit_id, (output, _, _, _) in output_by_exit.items():
+        use_ids = output.get("consumer_use_ids") if isinstance(output.get("consumer_use_ids"), list) else []
+        actual = sorted(
+            str(projection.get("id"))
+            for (projection_exit, _), projection in projection_by_pair.items()
+            if projection_exit == exit_id
+        )
+        if sorted(use_ids) != actual or len(actual) != 1:
+            errors.append(f"[consumer_use_coverage] typed output {exit_id} must have one exact consumer projection")
+
+    private_schema_keys: set[tuple[str, str]] = set()
+    for artifact in private_items:
+        schema_ref = artifact.get("schema")
+        _, schema = skill_contract_asset(
+            boundary, package, schema_ref, f"private artifact {artifact.get('id')} for {skill_id}", errors, schema=True
+        )
+        skill_closed_object_schema(schema, f"private artifact {artifact.get('id')} for {skill_id}", errors)
+        if isinstance(schema_ref, dict):
+            private_schema_keys.add((str(schema_ref.get("schema_id") or ""), str(schema_ref.get("path") or "")))
+    if public_schema_keys & private_schema_keys:
+        errors.append(f"[public_private_overlap] public outputs and private artifacts overlap for {skill_id}")
+
+    fixture_dispatcher = skills_root / "fixture-dispatcher.py"
+    if wrapper_stat is not None and skill_lstat_path(
+        boundary, fixture_dispatcher, "representative fixture dispatcher", errors, kind="file", required=False
+    ) is not None:
+        environment = dict(os.environ)
+        environment["GURU_TEAM_DISPATCHER"] = os.path.abspath(fixture_dispatcher)
+        try:
+            proc = subprocess.run(
+                [os.path.abspath(wrapper_path), *invocation.get("example_argv", [])],
+                cwd=os.path.abspath(package),
+                env=environment,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                timeout=10,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            errors.append(f"[invocation_execution] representative invocation for {skill_id} could not execute")
+        else:
+            try:
+                payload = json.loads(proc.stdout)
+            except json.JSONDecodeError:
+                payload = None
+            if proc.returncode != 0 or not isinstance(payload, dict) or proc.stdout.count("\n") > 1:
+                errors.append(f"[invocation_execution] representative invocation for {skill_id} did not return one typed-exit DTO")
+            else:
+                exit_id = str(payload.get("exit_id") or "")
+                output_contract = output_by_exit.get(exit_id)
+                if output_contract is None:
+                    errors.append(f"[invocation_unknown_exit] representative invocation for {skill_id} returned an unknown exit")
+                else:
+                    output_item = output_contract[0]
+                    _, schema = skill_contract_asset(
+                        boundary, package, output_item.get("schema"), f"invoked output {exit_id} for {skill_id}", errors, schema=True
+                    )
+                    if schema is not None:
+                        errors.extend(skill_json_schema_validation_errors(payload, schema, f"invoked output {exit_id} for {skill_id}"))
+                    invocation_projections = [
+                        (consumer_id, projection)
+                        for (projection_exit, consumer_id), projection in projection_by_pair.items()
+                        if projection_exit == exit_id
+                    ]
+                    if len(invocation_projections) == 1:
+                        consumer_id, projection = invocation_projections[0]
+                        projected = skill_apply_projection(projection, payload)
+                        target_schema, target_fields, target_kind = consumer_contracts.get(
+                            consumer_id,
+                            (None, set(), "missing"),
+                        )
+                        if target_kind == "zero_payload" and projected:
+                            errors.append(f"[invocation_projection] invoked zero-payload exit {exit_id} projected fields")
+                        elif target_schema is not None:
+                            errors.extend(
+                                f"[invocation_projection] {error}"
+                                for error in skill_json_schema_validation_errors(
+                                    projected,
+                                    target_schema,
+                                    f"invoked projection {exit_id} for {skill_id}",
+                                )
+                            )
+                        elif target_kind == "scalar_cli":
+                            if set(projected) != target_fields:
+                                errors.append(f"[invocation_projection] invoked exit {exit_id} did not populate scalar arguments exactly")
+                            for argument in consumer_scalar_arguments.get(consumer_id, []):
+                                argument_id = str(argument.get("id") or "")
+                                if not skill_scalar_value_matches(projected.get(argument_id), argument.get("type")):
+                                    errors.append(f"[invocation_projection] invoked exit {exit_id} has an invalid scalar value for {argument_id}")
+
+
 def validate_skill_interface(
     skills_root: Path,
     entry: dict[str, Any],
@@ -15585,7 +16210,7 @@ def validate_skill_interface(
     expected_interface = f"{expected_package}/interface.json"
     required_entry = {
         "id", "state", "name", "package", "interface", "supported_platforms",
-        "validator_command", "workflow_route_id",
+        "interface_schema_id", "io_contract_state", "validator_command", "workflow_route_id",
     }
     if set(entry) != required_entry:
         errors.append(f"active registry entry {skill_id} has invalid fields")
@@ -15595,6 +16220,12 @@ def validate_skill_interface(
         errors.append(f"active registry entry {skill_id} has unknown validator command")
     if entry.get("name") != skill_id:
         errors.append(f"active registry entry {skill_id} name does not match the stable skill id")
+    interface_schema_id = entry.get("interface_schema_id")
+    schema_contract = SKILL_INTERFACE_SCHEMAS.get(interface_schema_id)
+    if schema_contract is None:
+        errors.append(f"active registry entry {skill_id} has an unknown interface_schema_id")
+    elif entry.get("io_contract_state") != schema_contract["io_contract_state"]:
+        errors.append(f"active registry entry {skill_id} has an incompatible interface version/state")
     if not SKILL_ROUTE_ID_PATTERN.fullmatch(str(entry.get("workflow_route_id") or "")):
         errors.append(f"active registry entry {skill_id} has invalid workflow route id")
     supported = entry.get("supported_platforms")
@@ -15638,11 +16269,17 @@ def validate_skill_interface(
         "entry_preconditions", "runtime_dependency", "ordered_stages", "artifacts", "schemas", "validators",
         "external_exits", "reentry", "tests", "platform_destinations",
     }
+    if entry.get("io_contract_state") == "minimal_handoff":
+        required_interface.add("public_contracts")
     if set(interface) != required_interface:
         errors.append(f"interface for {skill_id} has invalid fields")
-    if interface.get("$schema") != "../../schemas/skill-interface.schema.json":
+    if schema_contract is None or interface.get("$schema") != schema_contract["interface_ref"]:
         errors.append(f"interface for {skill_id} has unknown schema id")
-    if interface.get("schema_version") != SKILL_INTERFACE_SCHEMA_VERSION or interface.get("state") != "active":
+    if (
+        schema_contract is None
+        or interface.get("schema_version") != schema_contract["version"]
+        or interface.get("state") != "active"
+    ):
         errors.append(f"interface for {skill_id} has invalid lifecycle/schema version")
     if (
         interface.get("id") != skill_id
@@ -15813,6 +16450,15 @@ def validate_skill_interface(
     destinations = interface.get("platform_destinations")
     if not isinstance(destinations, list) or destinations != supported:
         errors.append(f"interface platform destinations for {skill_id} do not match registry")
+    if entry.get("io_contract_state") == "minimal_handoff":
+        validate_skill_public_contracts(
+            skills_root,
+            package,
+            interface,
+            errors,
+            boundary=boundary,
+            runtime_commands=runtime_commands or set(),
+        )
     return interface
 
 
@@ -15915,9 +16561,8 @@ def _validate_skill_source(
     registry_stat = skill_lstat_path(boundary, skills_root / "registry.json", "skill registry", errors, kind="file")
     registry = skill_read_json(skills_root / "registry.json", "skill registry", errors) if registry_stat is not None else None
     registry_schema_path = skills_root / "schemas/skill-registry.schema.json"
-    interface_schema_path = skills_root / "schemas/skill-interface.schema.json"
     registry_schema = None
-    interface_schema = None
+    interface_schemas: dict[str, dict[str, Any]] = {}
     if skill_lstat_path(boundary, registry_schema_path, "skill registry schema", errors, kind="file") is not None:
         registry_schema = skill_read_contract_schema(
             registry_schema_path,
@@ -15925,18 +16570,23 @@ def _validate_skill_source(
             "registry",
             errors,
         )
-    if skill_lstat_path(boundary, interface_schema_path, "skill interface schema", errors, kind="file") is not None:
-        interface_schema = skill_read_contract_schema(
-            interface_schema_path,
-            "skill interface schema",
-            "interface",
-            errors,
-        )
+    for interface_schema_id, contract in SKILL_INTERFACE_SCHEMAS.items():
+        interface_schema_path = skills_root / contract["schema_path"]
+        label = f"skill interface schema {contract['version']}"
+        if skill_lstat_path(boundary, interface_schema_path, label, errors, kind="file") is not None:
+            schema = skill_read_contract_schema(
+                interface_schema_path,
+                label,
+                f"interface-{contract['version']}",
+                errors,
+            )
+            if schema is not None:
+                interface_schemas[interface_schema_id] = schema
     extension_path = extension_manifest_path or skill_default_extension_manifest_path(skills_root, boundary)
     extension_manifest = None
     if skill_lstat_path(boundary, extension_path, "Skill runtime extension manifest", errors, kind="file") is not None:
         extension_manifest = skill_read_json(extension_path, "Skill runtime extension manifest", errors)
-    runtime_capability, runtime_commands = skill_extension_runtime_contract(
+    runtime_capability, runtime_commands, skill_contracts = skill_extension_runtime_contract(
         extension_manifest,
         "Skill runtime extension manifest",
         errors,
@@ -15956,7 +16606,7 @@ def _validate_skill_source(
             ))
         if set(registry) != {"$schema", "schema_version", "skills"}:
             errors.append("skill registry has invalid fields")
-        if registry.get("$schema") != "schemas/skill-registry.schema.json" or registry.get("schema_version") != "1.0":
+        if registry.get("$schema") != "schemas/skill-registry.schema.json" or registry.get("schema_version") != "1.1":
             errors.append("skill registry has unknown schema id/version")
         entries = skill_unique_ids(registry.get("skills"), "skill registry", errors)
         for entry in entries:
@@ -15987,7 +16637,7 @@ def _validate_skill_source(
                     entry,
                     errors,
                     boundary_root=boundary,
-                    interface_schema=interface_schema,
+                    interface_schema=interface_schemas.get(str(entry.get("interface_schema_id") or "")),
                     runtime_capability=runtime_capability,
                     runtime_commands=runtime_commands,
                 )
@@ -15995,6 +16645,41 @@ def _validate_skill_source(
                     interfaces[skill_id] = interface
             else:
                 errors.append(f"registry entry {skill_id} has unknown state")
+
+    if isinstance(skill_contracts, dict):
+        legacy_ids = sorted(
+            skill_id
+            for skill_id, entry in active.items()
+            if entry.get("io_contract_state") == "legacy"
+        )
+        if skill_contracts.get("legacy_skill_ids") != legacy_ids:
+            errors.append("extension legacy_skill_ids do not match registry migration state")
+        expected_public_inputs: set[str] = set()
+        expected_outputs: set[str] = set()
+        expected_private: set[str] = set()
+        for interface in interfaces.values():
+            public_contracts = interface.get("public_contracts")
+            if not isinstance(public_contracts, dict):
+                continue
+            public_input = public_contracts.get("input")
+            if isinstance(public_input, dict) and public_input.get("kind") == "structured_json":
+                for profile in public_input.get("profiles", []):
+                    if isinstance(profile, dict) and isinstance(profile.get("schema"), dict):
+                        expected_public_inputs.add(str(profile["schema"].get("schema_id") or ""))
+            for output in public_contracts.get("outputs", []):
+                if isinstance(output, dict) and isinstance(output.get("schema"), dict):
+                    expected_outputs.add(str(output["schema"].get("schema_id") or ""))
+            for artifact in public_contracts.get("private_artifacts", []):
+                if isinstance(artifact, dict) and isinstance(artifact.get("schema"), dict):
+                    expected_private.add(str(artifact["schema"].get("schema_id") or ""))
+        inventory_checks = {
+            "public_input_schema_ids": sorted(expected_public_inputs - {""}),
+            "typed_output_schema_ids": sorted(expected_outputs - {""}),
+            "private_artifact_schema_ids": sorted(expected_private - {""}),
+        }
+        for field, expected in inventory_checks.items():
+            if skill_contracts.get(field) != expected:
+                errors.append(f"extension {field} does not match active package contracts")
 
     workflow_stat = None
     if not require_workflow:
@@ -16154,6 +16839,14 @@ def _validate_skill_source(
             "reserved_ids": sorted(reserved),
             "planned_ids": sorted(planned),
             "active_ids": sorted(active),
+            "legacy_ids": sorted(
+                skill_id for skill_id, entry in active.items()
+                if entry.get("io_contract_state") == "legacy"
+            ),
+            "minimal_handoff_ids": sorted(
+                skill_id for skill_id, entry in active.items()
+                if entry.get("io_contract_state") == "minimal_handoff"
+            ),
             "invoke_markers": len(invokes),
             "exit_markers": len(exit_markers),
             "target_markers": len(target_markers),
@@ -16242,6 +16935,8 @@ def _validate_skill_installed(
     if skill_manifest.get("canonical_registry_sha256") != expected_registry_sha:
         errors.append("installed registry digest does not match provenance")
     facts = source_result["facts"]
+    if skill_manifest.get("registry_schema_version") != facts.get("schema_version"):
+        errors.append("installed registry schema version does not match provenance")
     if skill_manifest.get("reserved_ids") != facts.get("reserved_ids") or skill_manifest.get("active_ids") != facts.get("active_ids"):
         errors.append("installed registry lifecycle ids do not match provenance")
     selected = skill_manifest.get("selected_platforms")
@@ -16280,8 +16975,19 @@ def _validate_skill_installed(
         Path("registry.json"),
         Path("schemas/skill-registry.schema.json"),
         Path("schemas/skill-interface.schema.json"),
+        Path("schemas/skill-interface-1.3.schema.json"),
     ):
         add_expected(skills_root / relative, relative, skills_root / relative)
+    consumer_root = skills_root / "consumers"
+    consumer_files = skill_collect_tree_files(
+        root,
+        consumer_root,
+        "installed consumer contract root",
+        errors,
+    ) if os.path.lexists(consumer_root) else []
+    for consumer_file in consumer_files:
+        consumer_relative = consumer_file.relative_to(skills_root)
+        add_expected(consumer_file, consumer_relative, consumer_file)
 
     package_files_by_id: dict[str, list[Path]] = {}
     expected_packages: dict[str, dict[str, Any]] = {}
@@ -16640,7 +17346,7 @@ def resolve_skill_runtime_command(
 
     manifest_errors: list[str] = []
     manifest = skill_read_json(manifest_path, "installed extension manifest", manifest_errors)
-    capability, runtime_commands = skill_extension_runtime_contract(
+    capability, runtime_commands, _ = skill_extension_runtime_contract(
         manifest,
         "installed extension manifest",
         manifest_errors,
@@ -16723,6 +17429,177 @@ def cmd_check_skill_packages(args: argparse.Namespace) -> dict[str, Any]:
     if result["errors"]:
         raise WorkflowError("Skill package validation failed.", exit_code=2, payload=result)
     return result
+
+
+def skill_contract_error(
+    code: str,
+    field_path: str,
+    remediation: str,
+    message: str,
+) -> WorkflowError:
+    return WorkflowError(
+        message,
+        exit_code=2,
+        payload={
+            "code": code,
+            "field_path": field_path,
+            "remediation": remediation,
+        },
+    )
+
+
+def skill_contract_validation_error(
+    mode: str,
+    errors: list[str],
+) -> WorkflowError:
+    details = "\n".join(errors)
+    root = "trellis/skills/guru-team" if mode == "source" else ".trellis/guru-team/skills"
+    if any(
+        marker in details
+        for marker in (
+            "version/state",
+            "schema id/version",
+            "interface_schema_id",
+            "registry schema version",
+            "incompatible Skill interface schema id",
+        )
+    ):
+        return skill_contract_error(
+            "version_state_mismatch",
+            f"{root}/registry.json",
+            "Restore the exact registry/interface schema version and io_contract_state relation, then rerun package validation.",
+            "Skill contract discovery found an incompatible registry/interface version relation.",
+        )
+    if any(
+        marker in details
+        for marker in ("missing ", "unsafe ", "symlink component", "regular file", "absolute path")
+    ):
+        return skill_contract_error(
+            "contract_asset_invalid",
+            root,
+            "Restore every declared regular package asset under the validated Skill contract root.",
+            "Skill contract discovery found a missing or unsafe contract asset.",
+        )
+    if mode == "installed":
+        return skill_contract_error(
+            "installed_drift",
+            root,
+            "Reapply the complete preset, resolve sidecars, and rerun installed package validation.",
+            "Skill contract discovery found installed package or provenance drift.",
+        )
+    return skill_contract_error(
+        "contract_validation_failed",
+        root,
+        "Repair the invalid source schema, example, route, or contract and rerun package validation.",
+        "Skill contract discovery found an invalid source package contract.",
+    )
+
+
+def build_skill_contract_discovery(
+    skills_root: Path,
+    skill_id: str,
+) -> dict[str, Any]:
+    errors: list[str] = []
+    registry = skill_read_json(skills_root / "registry.json", "skill registry", errors)
+    entries = registry.get("skills") if isinstance(registry, dict) and isinstance(registry.get("skills"), list) else []
+    matches = [
+        entry for entry in entries
+        if isinstance(entry, dict) and entry.get("id") == skill_id and entry.get("state") == "active"
+    ]
+    if len(matches) != 1:
+        raise skill_contract_error(
+            "unknown_skill",
+            "skill",
+            "Choose one active stable Skill id from the validated registry.",
+            "Skill contract discovery could not find one active registry entry.",
+        )
+    entry = matches[0]
+    interface_relative = skill_safe_relative(entry.get("interface"))
+    interface = skill_read_json(
+        skills_root / interface_relative if interface_relative is not None else skills_root,
+        f"interface for {skill_id}",
+        errors,
+    )
+    if interface is None or errors:
+        raise skill_contract_error(
+            "contract_asset_invalid",
+            f"skills.{skill_id}.interface",
+            "Repair the registry/interface path and rerun Skill package validation.",
+            "Skill contract discovery could not read the selected interface.",
+        )
+    interface_schema_id = str(entry.get("interface_schema_id") or "")
+    io_contract_state = str(entry.get("io_contract_state") or "")
+    common = {
+        "status": "ok",
+        "skill_id": skill_id,
+        "interface_schema_id": interface_schema_id,
+        "io_contract_state": io_contract_state,
+    }
+    if io_contract_state == "legacy":
+        if interface_schema_id != "guru-team-skill-interface-1.2" or "public_contracts" in interface:
+            raise skill_contract_error(
+                "version_state_mismatch",
+                f"skills.{skill_id}.io_contract_state",
+                "Bind legacy only to interface 1.2 and do not synthesize minimal handoff contracts.",
+                "Legacy Skill contract identity is inconsistent.",
+            )
+        return {
+            **common,
+            "variant": "legacy",
+            "migration": {
+                "target_interface_schema_id": "guru-team-skill-interface-1.3",
+                "followup_issues": ["#145", "#146"],
+            },
+        }
+    if io_contract_state != "minimal_handoff" or interface_schema_id != "guru-team-skill-interface-1.3":
+        raise skill_contract_error(
+            "version_state_mismatch",
+            f"skills.{skill_id}.io_contract_state",
+            "Use the exact registry interface_schema_id/io_contract_state relation.",
+            "Minimal handoff Skill contract identity is inconsistent.",
+        )
+    contracts = interface.get("public_contracts")
+    if not isinstance(contracts, dict):
+        raise skill_contract_error(
+            "public_contracts_missing",
+            f"skills.{skill_id}.public_contracts",
+            "Declare all six interface 1.3 public/private contract sections.",
+            "Minimal handoff Skill has no public contracts.",
+        )
+    return {
+        **common,
+        "variant": "minimal_handoff",
+        "input": contracts.get("input"),
+        "invocation": contracts.get("invocation"),
+        "outputs": contracts.get("outputs"),
+        "consumer_inputs": contracts.get("consumer_inputs"),
+        "projections": contracts.get("projections"),
+        "private_artifacts": contracts.get("private_artifacts"),
+    }
+
+
+def cmd_discover_skill_contract(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    if args.mode == "source":
+        skills_root = root / "trellis/skills/guru-team"
+        result = validate_skill_source(
+            skills_root,
+            root / "trellis/workflows/guru-team/workflow.md",
+            require_workflow=False,
+            boundary_root=root,
+        )
+    else:
+        skills_root = root / ".trellis/guru-team/skills"
+        result = validate_skill_installed(
+            root,
+            skills_root,
+            root / ".trellis/workflow.md",
+            root / ".trellis/guru-team/extension.json",
+            require_workflow=False,
+        )
+    if result.get("status") != "passed":
+        raise skill_contract_validation_error(args.mode, result.get("errors", []))
+    return build_skill_contract_discovery(skills_root, args.skill)
 
 
 def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
@@ -26226,6 +27103,12 @@ def build_parser() -> argparse.ArgumentParser:
     skill_packages.add_argument("--workflow", help=argparse.SUPPRESS)
     skill_packages.add_argument("--manifest", help=argparse.SUPPRESS)
 
+    skill_discovery = sub.add_parser("discover-skill-contract")
+    skill_discovery.add_argument("--root", required=True)
+    skill_discovery.add_argument("--mode", required=True, choices=["source", "installed"])
+    skill_discovery.add_argument("--skill", required=True)
+    skill_discovery.add_argument("--json", action="store_true")
+
     skill_runtime = sub.add_parser("run-skill-command")
     skill_runtime.add_argument("--package-root", required=True)
     skill_runtime.add_argument("--validator", required=True)
@@ -26547,6 +27430,8 @@ def main() -> int:
             payload = cmd_check_workspace_boundary(args)
         elif args.command == "check-skill-packages":
             payload = cmd_check_skill_packages(args)
+        elif args.command == "discover-skill-contract":
+            payload = cmd_discover_skill_contract(args)
         elif args.command == "run-skill-command":
             payload = cmd_run_skill_command(args)
         elif args.command == "resolve-human-artifacts":

@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "实现 public Skill 1.2/1.3、minimal handoff、consumer ownership 与 public/private I/O 合同"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "实现 registry schema、extension inventory 与 version/state 关系"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "实现 deterministic discovery/invocation wrapper 与 stable error contract，并保持 AI/script 边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "实现 source/installed/fixture/throwaway/update-reapply 的可执行验证"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "实现 canonical 到 installed/platform copy 的 managed asset 与 upgrade 行为"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "同步 dogfood 和 selected-platform copies，并检查 overlay drift 与 sidecar"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "同步 public README 中的 discovery、migration 与验证命令"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "核对 schema、registry、runtime、manifest、installer 与平台副本的跨层数据流"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "避免在 wrapper/package 中复制 shared parser、projection 或 runtime 逻辑"}
+{"file": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/research/trellis-official-extension-boundaries.md", "reason": "按 Trellis 官方文档约束 workflow、marketplace、template 与 update 扩展边界"}

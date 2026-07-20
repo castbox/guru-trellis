@@ -1,18 +1,10 @@
-from __future__ import annotations
-
-import json
-import unittest
 from pathlib import Path
+import json
 
 
-class RepresentativePackageContractTests(unittest.TestCase):
-    def test_interface_points_to_this_test_evidence(self) -> None:
-        package = Path(__file__).resolve().parents[1]
-        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
-
-        self.assertEqual(interface["id"], "guru-example-action")
-        self.assertIn("tests/test_contract.py", interface["tests"])
-
-
-if __name__ == "__main__":
-    unittest.main()
+def test_action_examples() -> None:
+    root = Path(__file__).resolve().parents[1]
+    initial = json.loads((root / "examples/action-initial-input.json").read_text())
+    completed = json.loads((root / "examples/action-completed-output.json").read_text())
+    assert initial["profile"] == "initial"
+    assert completed["exit_id"] == "completed"

@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.17",
+    "version": "0.6.5-guru.18",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -61,8 +61,27 @@
       "skill_contracts": {
         "canonical_root": "trellis/skills/guru-team/",
         "installed_root": ".trellis/guru-team/skills/",
-        "registry_schema_id": "guru-team-skill-registry-1.0",
+        "registry_schema_id": "guru-team-skill-registry-1.1",
         "interface_schema_id": "guru-team-skill-interface-1.2",
+        "supported_interface_schema_ids": [
+          "guru-team-skill-interface-1.2",
+          "guru-team-skill-interface-1.3"
+        ],
+        "current_interface_schema_id": "guru-team-skill-interface-1.3",
+        "legacy_skill_ids": [
+          "guru-approve-task-plan",
+          "guru-check-task",
+          "guru-clarify-requirements",
+          "guru-create-task-commit",
+          "guru-create-task-workspace",
+          "guru-discover-change-context",
+          "guru-review-change-request",
+          "guru-review-contract-wording",
+          "guru-sync-base"
+        ],
+        "public_input_schema_ids": [],
+        "typed_output_schema_ids": [],
+        "private_artifact_schema_ids": [],
         "artifact_schema_ids": [
           "guru-base-sync-result-1.0",
           "guru-change-request-review-1.0",
@@ -111,6 +130,7 @@
         "prepare-task",
         "check-workspace-boundary",
         "check-skill-packages",
+        "discover-skill-contract",
         "run-skill-command",
         "sync-base",
         "check-base-sync",
@@ -148,11 +168,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-19T20:08:32Z",
+  "installed_at": "2026-07-20T02:09:47Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "feat/130-guru-check-task",
-    "commit": "a0ce7610c5e470efa9c08fee9fcc18fbd8993716",
+    "ref": "codex/144-minimal-typed-handoff-io",
+    "commit": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -231,6 +251,7 @@
       ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
       ".trellis/guru-team/scripts/bash/create-task-commit.sh",
       ".trellis/guru-team/scripts/bash/create-task-workspace.sh",
+      ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
       ".trellis/guru-team/scripts/bash/finish-work.sh",
       ".trellis/guru-team/scripts/bash/format-merge-commit.sh",
       ".trellis/guru-team/scripts/bash/prepare-task.sh",
@@ -261,8 +282,8 @@
   "skill_packages": {
     "schema_version": "1.0",
     "status": "ok",
-    "canonical_registry_sha256": "7b90ab4171ee296defc8b781577223469aae4e569ec404710511843101232690",
-    "registry_schema_version": "1.0",
+    "canonical_registry_sha256": "fba993aae6d6258670e619d74851aa7eb1253c3b169308d80c28585811181a55",
+    "registry_schema_version": "1.1",
     "reserved_ids": [
       "guru-create-work-commit"
     ],
@@ -333,14 +354,14 @@
       {
         "path": ".trellis/guru-team/skills/registry.json",
         "source": "trellis/skills/guru-team/registry.json",
-        "sha256": "7b90ab4171ee296defc8b781577223469aae4e569ec404710511843101232690",
+        "sha256": "fba993aae6d6258670e619d74851aa7eb1253c3b169308d80c28585811181a55",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-registry.schema.json",
-        "sha256": "e49bdcefbbb8c4c97aae90ab604c3ae90e5ba8cd08574fdbdf8e814bd6018081",
+        "sha256": "8af401ec302f847533572afa79afda36846b1ef9432ca1f1fdeba741415f7343",
         "executable": false,
         "action": "unchanged"
       },
@@ -348,6 +369,13 @@
         "path": ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-interface.schema.json",
         "sha256": "33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+        "sha256": "fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e",
         "executable": false,
         "action": "unchanged"
       },

@@ -346,6 +346,39 @@ The installed manifest should remain additive/backward-compatible for readers:
 Do not use `.trellis/guru-team/extension.json` as the canonical source of the
 team extension version. The canonical source is `trellis/guru-team-extension.json`.
 
+### Public Skill I/O Migration Fields
+
+The canonical and installed extension manifests publish one additive migration
+contract under `public_api.skill_contracts`:
+
+- compatibility `interface_schema_id` remains
+  `guru-team-skill-interface-1.2` through #145 and switches only after #146 has
+  removed every active `legacy` row;
+- `supported_interface_schema_ids` is the exact ordered set containing 1.2 and
+  1.3, while `current_interface_schema_id` is 1.3 for new or materially revised
+  public I/O;
+- `registry_schema_id` is `guru-team-skill-registry-1.1`;
+- `legacy_skill_ids` exactly equals active registry rows with
+  `io_contract_state=legacy`;
+- `public_input_schema_ids`, `typed_output_schema_ids`, and
+  `private_artifact_schema_ids` are exact inventories from active production
+  1.3 packages only. They are empty in #144 because all nine production
+  packages remain 1.2 legacy.
+
+Test fixture schema ids belong only to the fixture extension manifest and must
+not appear in production extension, installed production inventory, platform
+copies, or workflow mandatory routes. Registry schema 1.1 requires every
+active row to select exactly one legal pair: 1.2 with `legacy`, or 1.3 with
+`minimal_handoff`. Reserved/planned rows remain lifecycle-only.
+
+`public_api.companion_scripts` includes stable id
+`discover-skill-contract`. Its success DTO is a closed union selected by
+`io_contract_state`: `legacy` exposes only version/migration identity;
+`minimal_handoff` exposes package-relative public input, invocation, per-exit
+outputs/examples, consumer contracts, projections, and private-artifact
+locators. Expected failures use `code`, repo-relative `field_path`, and
+`remediation`; no absolute paths or raw contract bytes are persisted.
+
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
 such as `v0.6.5-guru.2`, not namespaced tags such as

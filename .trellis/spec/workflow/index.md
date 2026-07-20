@@ -36,6 +36,15 @@ Before editing workflow behavior:
   shared `sync-base` / `check-base-sync` runtime commands; `prepare-task` reuses
   that core and does not define a second resolver.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
+- Interface 1.2 remains the frozen legacy contract. Registry 1.1 selects exact
+  `interface_schema_id` plus `io_contract_state`; new or materially changed
+  public I/O uses interface 1.3 minimal handoff contracts, while #144 keeps all
+  nine production packages on 1.2 `legacy` and exercises 1.3 only through the
+  mixed test fixture.
+- `discover-skill-contract` is the stable deterministic public discovery
+  command. It returns a closed legacy/minimal variant and portable errors; the
+  exact package invocation remains package-owned and callers do not import the
+  companion Python source.
 - `guru-discover-change-context` owns the semantic Phase 0 current-state/history discovery loop; its deterministic runtime reads only archived `finish-summary.json:index.*` and persists no repo-level cache.
 - `guru-create-task-workspace` owns the final Intake mutation closed loop. Its
   recorder/executor/checker publish stdout plan/result contracts, create either
@@ -61,6 +70,7 @@ python3 -m json.tool trellis/index.json
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
 python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 python3 ./.trellis/scripts/task.py validate <task-dir>
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode installed --skill guru-sync-base --json
 git diff --check
 ```
 

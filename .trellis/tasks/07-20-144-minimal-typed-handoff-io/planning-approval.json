@@ -1,0 +1,611 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-20T01:02:37Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-20-144-minimal-typed-handoff-io",
+    "task_identity_sha256": "ad5ff61846bb137ffcd7824d6e4277f25aeda7eed0b0b7cd66e194ebc3a2657d",
+    "scope_ledger_sha256": "59e98be9779ae270ce67f792df21623f0ce85bf0ce511cf283db48d7a3088381",
+    "status": "in_progress",
+    "branch": "codex/144-minimal-typed-handoff-io",
+    "issue_numbers": [
+      144
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d",
+    "head": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d",
+    "dirty_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/registry.json",
+      ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/check.jsonl",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/context-discovery.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/contract-wording-review.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.jsonl",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-review.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-scope-ledger.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/research/trellis-official-extension-boundaries.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-start-context.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task.json",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+      "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/stop/action-blocked.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/action-completed.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/sync-completed.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/fixture-dispatcher.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/SKILL.md",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-blocked-output.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-completed-output.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-forwarded-output.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-initial-input.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-reentry-input.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-repeat-output.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/fixture-result.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/invocation-error.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/references/contract.md",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-blocked-output.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-checkpoint.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-completed-output.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-forwarded-output.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-gate-evidence.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-initial-input.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-input.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-reentry-input.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/fixture-result.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/invocation-error.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/validate-fixture-result.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/tests/test_contract.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/SKILL.md",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/examples/legacy-result.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/interface.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/references/contract.md",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/schemas/legacy-result.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/scripts/validate-legacy-result.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/tests/test_contract.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/SKILL.md",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/invocation-error.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/sync-output.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/interface.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/references/contract.md",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/invocation-error.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-checkpoint.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-output.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/tests/test_contract.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/registry.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-registry.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "captured_at": "2026-07-20T01:02:37Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:144",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/144",
+      "sha256": "d8910455d8c7608e6213b7226de6a3662576990a7e3bf7a42b655783676abf0d",
+      "updated_at": "2026-07-19T23:17:48Z"
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+      "sha256": "3f64e70a6274f1c556c153ee8749476f34ea13b380c8be77cb1455117714a824",
+      "size_bytes": 12334,
+      "modified_at": "2026-07-20T00:01:30.452338+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+      "sha256": "b28490a16e4a36ae3e263b6a3d231fbdb3fbdd828ff7a27610c8e12e880b8a6e",
+      "size_bytes": 19649,
+      "modified_at": "2026-07-20T00:03:35.832411+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+      "sha256": "447a581c0dd364289fcbe3f024b44da59fbf88ffd61fc49cb823475d78f5ba5f",
+      "size_bytes": 9749,
+      "modified_at": "2026-07-20T00:03:35.832874+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+      "sha256": "3f64e70a6274f1c556c153ee8749476f34ea13b380c8be77cb1455117714a824",
+      "size_bytes": 12334,
+      "modified_at": "2026-07-20T00:01:30.452338+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+      "sha256": "b28490a16e4a36ae3e263b6a3d231fbdb3fbdd828ff7a27610c8e12e880b8a6e",
+      "size_bytes": 19649,
+      "modified_at": "2026-07-20T00:03:35.832411+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+      "sha256": "447a581c0dd364289fcbe3f024b44da59fbf88ffd61fc49cb823475d78f5ba5f",
+      "size_bytes": 9749,
+      "modified_at": "2026-07-20T00:03:35.832874+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+    "locator": "## 12. Docs SSOT Plan",
+    "statement_sha256": "18f8abe4819a665d2ea9d568785497a4f9d941386978d24762a8074f5a14e71b",
+    "durable_paths": [
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/index.md",
+      "docs/requirements/requirement-main.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/README.md",
+      "README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md"
+    ]
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "4a54da05c2c9726d7be89bc24e2f3415bf942b8c400ad46ecb75a446071b10f0",
+    "facts_sha256": "da2ef4488f9ceb68ff7d2313f2686e114b4682f96831f7fae39b099ae26e905d",
+    "scope_sha256": "9d3333cfefe828464e6a0c84c0e1b32298f1ff7a9e20818488c1dec981dbdd5c",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session-planning-wording-review",
+    "summary": "已完整审核固定范围 prd.md、design.md、implement.md；最终扫描无受控词命中。三份规划保留 live issue #144 的 1.2/1.3 共存、九个 legacy、exact invocation/discovery、独立 consumer ownership、projection、fixture、分发与 follow-up 边界，条件路径、确定性门禁和验收结果均有明确触发及可观察结果。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "P1-version-coexistence",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P1 |",
+        "statement_sha256": "f72f3d0916d9341c514aabcb55891b0dc44c5bc54ae8750ec796c3bd6598a8f7",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 二次修订明确要求保留 1.2，并新增独立 1.3。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P2-registry-version-state",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P2 |",
+        "statement_sha256": "4740952298551469a76a543c5946553174e59a67959e9852f95b5cde99c5a519",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 明确要求 registry 使用 exact interface_schema_id 与 io_contract_state，并保持九个 active package 为 legacy。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P3-minimal-public-input",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P3 |",
+        "statement_sha256": "2b40d373620356c80524d90dd6fe3238598bb01d87d8eda63d738031539464aa",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 明确要求 structured 与 scalar CLI 两类 caller-owned minimal input。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P4-exact-invocation",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P4 |",
+        "statement_sha256": "bc039d07b3992c9c40f48de8437b81b8fe8085cd6f237effc904feb0fb01859c",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 要求 exact public invocation 被真实执行并只返回一个 declared typed exit。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P5-per-exit-output",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P5 |",
+        "statement_sha256": "247b6ada3fa15c91c0ba3370116230a71ffdadbe506af98388237def661c724a",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 要求每个 structurally distinct exit 独立 output schema/example，且字段均有直接 consumer use。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P6-consumer-projection",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P6 |",
+        "statement_sha256": "10ebbdb7dd1fa704e10105f9399bc84736f4ad1e44aaea9d115256336b0d25d3",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 明确三类 consumer、self-reentry 与 direct/select/rename/normalize projection 闭集。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P7-public-private-boundary",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P7 |",
+        "statement_sha256": "91acb35079317e09c1ff401963b52306f11d2c1520f23173af3f3eef92eeb725",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 与 durable contract 要求 public DTO、runtime checkpoint 和 gate evidence 明确分层。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P8-contract-discovery",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P8 |",
+        "statement_sha256": "918bd4bf0c3f7a6862bb3ef9fccf3ccec487274090bc0aa75bf58da95f306fac",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 明确 exact command id discover-skill-contract 及其正向 discovery 输出。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P9-extension-migration-fields",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P9 |",
+        "statement_sha256": "88356f0c08754dbc70fec7c9b0ab85045e41508abd185a75b4213e9fddb6f652",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "兼容 scalar 保持 1.2，同时新增 supported/current 字段，是满足分阶段迁移且不破坏现有 consumer 的必要选择。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "supported-current-with-legacy-scalar",
+              "tradeoff": "兼容现有 1.2 consumer，并显式发布 1.3 为新合同目标。"
+            },
+            {
+              "id": "switch-scalar-to-1.3-now",
+              "tradeoff": "会在九个 active package 尚未迁移时制造不真实兼容声明。"
+            },
+            {
+              "id": "remove-scalar-now",
+              "tradeoff": "形成未授权 breaking change。"
+            }
+          ],
+          "selected_id": "supported-current-with-legacy-scalar",
+          "selection_reason": "该选择精确承接 #144、#145、#146 的迁移时序并保持 public API 兼容。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P10-mixed-test-fixture",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P10 |",
+        "statement_sha256": "6aff4af9453308c401e0c96efa2b7480ffed41ab1b0134b6f71239e490fbc857",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "扩展既有 representative fixture 能验证 1.2/1.3 共存，又不会把 test-only contract 变成 production package。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "extend-representative-fixture",
+              "tradeoff": "以稳定仓库 fixture 覆盖 mixed-version 正向调用和负例。"
+            },
+            {
+              "id": "add-production-example-skill",
+              "tradeoff": "会把测试基础设施泄漏进 production registry 与安装 inventory。"
+            },
+            {
+              "id": "ephemeral-runtime-fixture-only",
+              "tradeoff": "无法提供可审查、可重复的 package-local schemas/examples。"
+            }
+          ],
+          "selected_id": "extend-representative-fixture",
+          "selection_reason": "满足 #144 的完整 fixture 覆盖与 production 隔离要求。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P11-negative-matrix",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P11 |",
+        "statement_sha256": "c0c1a908294b00c1299204b5dff1f560552000cdffa193fddf7e6762d5994be4",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "#144 明确要求 fail-closed negative fixture matrix。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P12-distribution-gates",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P12 |",
+        "statement_sha256": "dbb25b773ce79c8d4181db2824777a8d5fedebfd6d7543c7b8580c4895952dad",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144",
+          "repo:agents"
+        ],
+        "reason": "#144 验收与 AGENTS.md 共同要求 canonical、installed、platform、throwaway、update/reapply 和 sidecar 门禁。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P13-production-inventory-truth",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P13 |",
+        "statement_sha256": "d7d48460160f34cab2149b36ad5e26a6dcd8047420475254ec405f137a3838ad",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:144"
+        ],
+        "reason": "production inventory 为空且 fixture inventory 非空，才能同时表达当前 active package 仍为 1.2 与 fixture 已覆盖 1.3。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "exact-production-empty-fixture-nonempty",
+              "tradeoff": "分别反映 production 与 test-only package 的真实迁移状态。"
+            },
+            {
+              "id": "publish-fixture-schema-ids",
+              "tradeoff": "会把 test-only ids 泄漏成 production public API。"
+            },
+            {
+              "id": "count-legacy-schemas-as-1.3-inventory",
+              "tradeoff": "会伪报尚未存在的 minimal handoff contract。"
+            }
+          ],
+          "selected_id": "exact-production-empty-fixture-nonempty",
+          "selection_reason": "该选择保持 extension inventory 的 exact production 语义，并保留 fixture 自洽验证。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P14-docs-ssot-first",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P14 |",
+        "statement_sha256": "abbc247bacc0d836c45f738fa3b2a8676689934e678975fe73978f48d9ccdac9",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "repo:agents"
+        ],
+        "reason": "本任务改变长期 public contract，先更新 durable SSOT 再实现可防止 schema/runtime/docs 形成平行定义。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "ssot-first",
+              "tradeoff": "先稳定 durable contract，再承接 schema/runtime/installer 与生成副本。"
+            },
+            {
+              "id": "delta-first",
+              "tradeoff": "会让实现先于公共合同，并增加跨层返工与漂移风险。"
+            },
+            {
+              "id": "no-docs-update",
+              "tradeoff": "不满足公共 schema、command 和 migration contract 的长期文档责任。"
+            }
+          ],
+          "selected_id": "ssot-first",
+          "selection_reason": "该任务是公共扩展合同变更，ssot_first 与仓库 Docs SSOT 规则一致。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P15-scope-exclusions",
+        "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "locator": "| P15 |",
+        "statement_sha256": "81d34b25a6ab095dc2795f768bbd8a9a0a365f835dcf2be807efe1726c80d89a",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:144",
+          "repo:agents"
+        ],
+        "reason": "#144 非目标与 AGENTS.md 正常运行边界明确排除 #145/#146 payload migration 和异常加固。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      }
+    ],
+    "coverage": {
+      "reviewer": "codex-main-session-plan-review",
+      "summary": "P1-P15 覆盖 R1-R12、AC1-AC15、实现顺序、兼容、测试、分发、Docs SSOT、回滚与明确非目标；每个承重条款均绑定 current authority 或必要实现选择。",
+      "reviewed_entry_ids": [
+        "P1-version-coexistence",
+        "P2-registry-version-state",
+        "P3-minimal-public-input",
+        "P4-exact-invocation",
+        "P5-per-exit-output",
+        "P6-consumer-projection",
+        "P7-public-private-boundary",
+        "P8-contract-discovery",
+        "P9-extension-migration-fields",
+        "P10-mixed-test-fixture",
+        "P11-negative-matrix",
+        "P12-distribution-gates",
+        "P13-production-inventory-truth",
+        "P14-docs-ssot-first",
+        "P15-scope-exclusions"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "d14a4e2452fbd0c8fd452e31ceb75245b0f62b2dc48793c89e98aef8d83d9452"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "codex-main-session-plan-review",
+    "summary": "已检查 security/threat、malicious actor、TOCTOU/concurrency race、fault injection/crash consistency、cross-OS atomicity 与其它非标准场景；#144 和 AGENTS.md 均将这些加固排除，当前规划未引入相关机制，因此无候选、无专门确认需求。",
+    "candidates": [],
+    "unresolved_count": 0,
+    "review_sha256": "eec9afcdbcfbae5921c6f71f5bad5ddf6f90e8b8299f8acc951cd44eed3d5a11"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-plan-review",
+      "summary": "三份规划当前、充分、无歧义，完整承接 live #144 与仓库门禁；mutable durable docs 是实施目标而不是 requirement authority。上下文 manifests 已补齐且验证通过，无 finding、revision action、scope proposal 或 blocker。",
+      "reviewed_at": "2026-07-20T00:12:42Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-20T00:09:00Z",
+    "confirmed_at": "2026-07-20T00:12:42Z",
+    "evidence_summary": "已向用户展示 prd.md、design.md、implement.md 三个绝对链接，并明确实现仍阻塞；用户随后回复‘确认继续’，批准这三个当前 digest 不变的规划文档进入实现。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "当前三个规划文档 digest 与用户批准保持不变；requirement authority 收敛为稳定的 live #144 与 AGENTS.md，mutable durable docs 继续作为实施目标。",
+  "supersedes_facts_sha256": "37a6841f446f111a3ee9f3af0130d8cd0f8f82088d1867dd7d9a4db067a7526f",
+  "facts_sha256": "184bfeebbc7634420fc741975a3b29d538a7e535674376ecb81ffa97081daf3f"
+}

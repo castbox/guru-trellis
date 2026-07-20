@@ -233,7 +233,7 @@ package/interface/schema/route 验证的 `active` 项才会分发。当前 activ
 `guru-sync-base`、`guru-discover-change-context`、
 `guru-clarify-requirements`、`guru-review-contract-wording`、
 `guru-review-change-request`、`guru-create-task-workspace` 与
-`guru-create-task-commit`。Active package 的
+`guru-create-task-commit`，以及 `guru-approve-task-plan`、`guru-check-task`。Active package 的
 `SKILL.md` frontmatter `name`/`description` 必须与 stable id/interface 精确
 一致，`tests[]` 必须是 package-local `tests/<file>` 的真实 regular file，不能
 使用标签、虚构路径、越界路径或 symlink evidence。升级遇到已知
@@ -253,6 +253,26 @@ preset、extension manifest、shared runtime 与 managed package inventory。Pac
 统一经 `.trellis/guru-team/scripts/bash/run-skill-command.sh` 校验 runtime API 和 drift 后
 调用 companion command；缺失或不兼容时会在业务副作用前失败，并提示安装或升级完整
 preset、处理 `.new` / `.bak`、重跑 source/installed validation 后再试。
+
+Public Skill interface 采用独立版本共存：1.2 是冻结的 legacy contract，1.3 是新建或
+实质修改 I/O 的 minimal handoff target。Registry 1.1 的 active row 必须显式声明
+`interface_schema_id` 与 `io_contract_state=legacy|minimal_handoff`，validator 按该 exact
+pair 选 schema，不从文件或 optional 字段猜版本。#144 阶段九个 production Skills 全部维持
+`guru-team-skill-interface-1.2 + legacy`；#145/#146 才迁移业务 payload。
+
+Interface 1.3 分开声明 caller-owned structured/scalar input、package-local exact
+invocation、每个 typed exit 的独立 output schema/example、consumer-owned
+Skill/workflow/stop input、direct/select/rename/closed normalize projection，以及
+runtime checkpoint/gate evidence private artifact。使用稳定 discovery 命令查看合同：
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh \
+  --root . --mode installed --skill guru-sync-base --json
+```
+
+1.2 返回明确的 `legacy` variant；1.3 返回 `minimal_handoff` locator index。失败返回
+stable `code`、repo-relative `field_path` 与 `remediation`。Mixed 1.2/1.3 fixture 只用于
+contract tests，不进入 production registry、installed inventory 或 workflow route。
 
 Phase 0 的第一个 repo-changing hop 由 `guru-sync-base` 独占。Base 按以下固定顺序
 解析：显式 `--base`、非空 scalar `base_branch`、按 `base_branch_candidates` 声明顺序
@@ -425,7 +445,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.17`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.18`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录

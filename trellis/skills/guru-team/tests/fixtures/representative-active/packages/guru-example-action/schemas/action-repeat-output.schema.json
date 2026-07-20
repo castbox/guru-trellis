@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-fixture-action-repeat-output-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "profile", "next_topic"],
+  "properties": {
+    "exit_id": {"const": "repeat"},
+    "profile": {"const": "reentry"},
+    "next_topic": {"type": "string", "minLength": 1}
+  }
+}

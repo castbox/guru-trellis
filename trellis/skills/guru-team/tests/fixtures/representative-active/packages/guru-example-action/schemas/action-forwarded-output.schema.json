@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-fixture-action-forwarded-output-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "forwarded_item"],
+  "properties": {
+    "exit_id": {"const": "forwarded"},
+    "forwarded_item": {"type": "string", "minLength": 1}
+  }
+}

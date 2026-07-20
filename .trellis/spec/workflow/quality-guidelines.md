@@ -59,6 +59,40 @@ git diff --check
 
 Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
+
+For versioned public Skill I/O, the test matrix must keep the exact 1.2 schema
+bytes/identity as a regression fixture while validating independent interface
+1.3 and registry 1.1 schemas. One mixed test-only registry must contain 1.2
+`legacy`, structured semantic 1.3, and scalar deterministic 1.3 packages in the
+same run. Tests cover discriminator/`oneOf`, every per-exit schema/example,
+every output field's direct consumer use, Skill/workflow/stop consumers,
+self-reentry, `direct|select|rename|normalize` projection, and public/private
+schema disjointness. The stop case proves `zero_payload` with only routing
+`exit_id` and an empty `select`; negative cases reject extra stop payload and
+empty `select` for non-zero consumers. Aggregate branches bind the exact
+ordered profile schema references, discriminator fields are required constants,
+and scalar examples prove ordered flags, declared value types, binding order,
+and public-input/invocation argv equality.
+
+Source validation must execute representative package wrappers and revalidate
+their single typed-exit stdout. Negative cases cover missing exit schema or
+example, missing or non-constant exit identity, unknown public I/O fields,
+nullable mega-output authoring, unconsumed field, a direct consumer schema that
+is narrower than its producer schema, duplicate projection targets, missing
+consumer input, private-field projection, unknown/semantic projection
+operation, runtime-source import, 1.2/1.3 state mismatch, new
+non-allowlisted production legacy entry, and reserved/planned package install.
+Discovery tests cover stable help, legacy/minimal variants, unknown skill,
+version mismatch, missing asset, installed drift, and stable
+`code`/`field_path`/`remediation` errors.
+
+Distribution tests prove the new interface schema and executable discovery
+wrapper are present in canonical, installed, and selected-platform roots;
+production registry/extension inventories contain nine legacy ids and no
+fixture ids/schema ids. Fresh throwaway install and the post-`trellis update`
+workflow/preset reapply phase each run source/installed validation, legacy
+discovery smoke, mixed fixture invocation tests, and a final recursive zero
+`.new`/`.bak` scan.
 For `guru-discover-change-context`, tests must cover mode-precondition parity,
 stale-before-semantic-read ordering, exact/token score permutations, invalid
 isolation, deterministic sort/limit/projection, zero and 1-3 candidate paths,

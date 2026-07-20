@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-20T00:04:00Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-20-144-minimal-typed-handoff-io",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+        "size_bytes": 12334,
+        "content_sha256": "3f64e70a6274f1c556c153ee8749476f34ea13b380c8be77cb1455117714a824"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "size_bytes": 19649,
+        "content_sha256": "b28490a16e4a36ae3e263b6a3d231fbdb3fbdd828ff7a27610c8e12e880b8a6e"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+        "size_bytes": 9749,
+        "content_sha256": "447a581c0dd364289fcbe3f024b44da59fbf88ffd61fc49cb823475d78f5ba5f"
+      }
+    ],
+    "scope_sha256": "9d3333cfefe828464e6a0c84c0e1b32298f1ff7a9e20818488c1dec981dbdd5c"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-planning-wording-review",
+      "summary": "已完整审核固定范围 prd.md、design.md、implement.md；最终扫描无受控词命中。三份规划保留 live issue #144 的 1.2/1.3 共存、九个 legacy、exact invocation/discovery、独立 consumer ownership、projection、fixture、分发与 follow-up 边界，条件路径、确定性门禁和验收结果均有明确触发及可观察结果。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "最终 fixed-scope invocation 未修改当前规划内容，未改变产品语义，且 scan 无保留命中。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "da2ef4488f9ceb68ff7d2313f2686e114b4682f96831f7fae39b099ae26e905d"
+}

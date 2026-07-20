@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 144,
+    "url": "https://github.com/castbox/guru-trellis/issues/144",
+    "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+    "reason": "本任务唯一主交付单元。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 144,
+      "url": "https://github.com/castbox/guru-trellis/issues/144",
+      "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+      "reason": "本任务完整实现并验收该 issue。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+      "reason": "上游 Intake 编排背景，不由本任务关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 109,
+      "url": "https://github.com/castbox/guru-trellis/issues/109",
+      "title": "建立 Guru Team Skill-first 闭环流程模块化强制规范",
+      "reason": "提供 Skill-first 合同背景，不由本任务关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 115,
+      "url": "https://github.com/castbox/guru-trellis/issues/115",
+      "title": "按 Skill-first 重构 Guru Team task 收尾流程 umbrella",
+      "reason": "相关收尾流程 umbrella，不由本任务关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "相关流程收敛背景，不由本任务关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 131,
+      "url": "https://github.com/castbox/guru-trellis/issues/131",
+      "title": "实现 guru-review-branch 闭环 Skill",
+      "reason": "相关 public Skill package，不由本任务关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "相关集成与分发背景，不由本任务关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 145,
+      "url": "https://github.com/castbox/guru-trellis/issues/145",
+      "title": "迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+      "reason": "后续迁移 Stage 0 active packages。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 146,
+      "url": "https://github.com/castbox/guru-trellis/issues/146",
+      "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+      "reason": "后续迁移其余 active packages。",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

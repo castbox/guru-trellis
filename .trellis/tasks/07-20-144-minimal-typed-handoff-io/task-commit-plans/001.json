@@ -1,0 +1,1878 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "001",
+  "task": {
+    "id": "144-minimal-typed-handoff-io",
+    "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io",
+    "status": "in_progress",
+    "branch": "codex/144-minimal-typed-handoff-io"
+  },
+  "issue": {
+    "primary_issue": 144,
+    "ledger_sha256": "f94bf4efee497a93c85162cbc409efd453a6963383e1d558e67750c56880fbf9"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/planning-approval.json",
+      "sha256": "80bdbb8ba524e2b14312a664c11b8074e0b6d7c96bcb3902d105e0808891671c",
+      "size": 30826
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+      "sha256": "0eeb24335c1d1c5fa6119d237e42fd2d7a56bc62ddaa09983da1e570767f00f6",
+      "size": 49322
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-scope-ledger.json",
+      "sha256": "f94bf4efee497a93c85162cbc409efd453a6963383e1d558e67750c56880fbf9",
+      "size": 3223
+    },
+    "task": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task.json",
+      "sha256": "99897958836d1cc197f2d11846042cc70c6331c301c3edba905b667b023f838a",
+      "size": 694
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c0de58d32eb0d645cd9f0a24a483b106188a37cf",
+        "worktree_sha256": "9c8cd50f3f8aeebd716cdc13daf4531d284efbc20bc1fe071987768ec63f3fdd",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "549fb75bc37bb06b5bd382cbc22b38e8f21e4805c9b0d2add61cae2f4216c2cd",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "90161b85b5753a89cd7de306ea5f1e8f4cc3156e",
+        "worktree_sha256": "d4efa80eff70c2b376718c36b3b4c1b379d9924de6971fe00a9695de6a290adb",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/registry.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b9d2a1f4d56764e35cb833287bfd16c3762d99f6",
+        "worktree_sha256": "fba993aae6d6258670e619d74851aa7eb1253c3b169308d80c28585811181a55",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "22f64a0293450829395ab8d9344b8b86c12be9a5",
+        "worktree_sha256": "8af401ec302f847533572afa79afda36846b1ef9432ca1f1fdeba741415f7343",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b1865e5561d9206ac5dd592d4a4d6e77cba5f206",
+        "worktree_sha256": "a1205400e3b43f9f824346c7db0dc1bed435d2e5ae3f1444f73711818b6f7dda",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "12d905821da8f4707821aaeb935ce1d85a5b6afb",
+        "worktree_sha256": "3df5b4e489ed7590ef189ebd0695e32e6b846ed54cea25e174c6f9b561988528",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "584c8fe624fbc3fd071bbe13c18898b78abfd946",
+        "worktree_sha256": "2ad8eb279ca3b15e5f293e7470c5c89a68959a8012a69c890f0adbe74b7eb143",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "824c53339befc09e8efb2edc288368ecc8943348",
+        "worktree_sha256": "7985f39e439f2759d20a6d63112eb7690e079030f495eb268a8f55604097e4d3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "77c2610a3e877577c3dc3bcb322f31dd8bdb2b59",
+        "worktree_sha256": "c2a390bd9cce9c0b83b577adbacc9d2b7f924fa4a451778ee72d82d9e8ad1d59",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2f1c8226444ecffd37c0921cca1bf81bfbe5748dcf120fa85a91321a1ba5c831",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/check.jsonl",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "23e2fa873b7c2d20ee4ca15247598add1569e2b53aa9c1c469d1e11d350e3bb4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/context-discovery.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "85e3539bff26bd5e8201945324487a785187be56a7b445beabf5d261bd0227fe",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/contract-wording-review.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "4a54da05c2c9726d7be89bc24e2f3415bf942b8c400ad46ecb75a446071b10f0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "b28490a16e4a36ae3e263b6a3d231fbdb3fbdd828ff7a27610c8e12e880b8a6e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.jsonl",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "492e25340cb3526fff62dcc5d1c3559a037cc2516e61f1ee5eddf3ecb130b6e4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "447a581c0dd364289fcbe3f024b44da59fbf88ffd61fc49cb823475d78f5ba5f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "529e8d0b96ef68aa743abbadb22ac819effd93b8265e8a3248fe0582588f40c9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-review.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "045b8e453ada7f6a416fdcfe6f01675b21eebfad9d15f17ad98e86ecf15f9fc4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-scope-ledger.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f94bf4efee497a93c85162cbc409efd453a6963383e1d558e67750c56880fbf9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0eeb24335c1d1c5fa6119d237e42fd2d7a56bc62ddaa09983da1e570767f00f6",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/planning-approval.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "80bdbb8ba524e2b14312a664c11b8074e0b6d7c96bcb3902d105e0808891671c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "3f64e70a6274f1c556c153ee8749476f34ea13b380c8be77cb1455117714a824",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/research/trellis-official-extension-boundaries.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "55fac17dabb46906f4717082f2d798eefcddc14518d14826d2d363f406ae6f80",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-start-context.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "a6eee4dd9b68bf5e14180d4eaa2747563c0cb292b1460d6f3314c1309877c07f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "99897958836d1cc197f2d11846042cc70c6331c301c3edba905b667b023f838a",
+        "mode": "100644"
+      },
+      {
+        "path": "README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b0ad5bc83e432c2525409d9abd36b327d7ad2e26",
+        "worktree_sha256": "36902e1f56f6bd2fcd28c5fb4e8e51369bcb5e8d210b2340324bb05bcaa1562a",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "214db52be6a97e944a86c6b4b2ae16c32dfc2cc3",
+        "worktree_sha256": "00e0ed6ee432c2853cf2a7e602fdb4a4dc47380c1072902415db7c32d3ff0ed2",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6819555d5bf9f137ace9ec4e1944d864d0c6b2a2",
+        "worktree_sha256": "b9f79cff80116ac85a500a16ac18063f446b756958ff7636a63d2f517b550a09",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "267cc042fb3899d590a3c3fec7000bc91b47ab81",
+        "worktree_sha256": "352c812c427c009bbe39348d9d1f87e2e10e4bdc8ecf067ab1cd06635ad9bbe6",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a0945528a9e3ccd6332c2c6315ad0fbd20a3a5c",
+        "worktree_sha256": "8e109a841a61b741658bd19f5c43fa905438dc3e795bbcc5bd46315e91e2cb4e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bb8dd7ab6bcc88f28085d3cdc1f0bb192a0e1ca6",
+        "worktree_sha256": "90c43e4cf529684d6204f2362d6225590443f80ede5e69244a9a3a4e04481099",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fadef396a227b5d28a2e5e4b79e7750dd79b7faf",
+        "worktree_sha256": "751c439265ca59002ec702f1b3e6ebdc127f86cd9d79267cd5aadc48a55b344d",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "de9ec5b0ced98c4bb4e54e9592b61f7d50723664",
+        "worktree_sha256": "96d2e6e111c58432be78d714ef5625c5f6fc830f4ad19e096451380cf01da5d3",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "51447151f376474ed22f908ef9a368558be6b492",
+        "worktree_sha256": "cf416983f7556041ed9c26680d13067bd814c21c99eb5f581c6dedb89b25f421",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9cef3f3e48a46e3104f9265973e1e4e8d174db62",
+        "worktree_sha256": "2a6b43d6782d0656862234db1c69130385467e741e7d9be491444548d69fc888",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/registry.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b9d2a1f4d56764e35cb833287bfd16c3762d99f6",
+        "worktree_sha256": "fba993aae6d6258670e619d74851aa7eb1253c3b169308d80c28585811181a55",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "22f64a0293450829395ab8d9344b8b86c12be9a5",
+        "worktree_sha256": "8af401ec302f847533572afa79afda36846b1ef9432ca1f1fdeba741415f7343",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/action-completed.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7860de71f6bd3b0508dd71b697976fd0f103728ff085b3fb9094926c29258c7c",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/sync-completed.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "542d7faa8854db4c703b26e5fe9af6ca36cf1726abcf843e674e67edb6385680",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "217784834f92be95bc02cd2ed0e69b20ceb721cf",
+        "worktree_sha256": "7d5ca4e9635532aef1b40ae8cd54a94c46236f81cfddd1e5ce0810760d00161e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/fixture-dispatcher.py",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "beae2c658d90eb7fe5ca70880abd2db333f0e559acce3a093e98b0d8ec627310",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c8701dbd3365d8519415ebab697a2a9838765db6",
+        "worktree_sha256": "dcf05d1708c30f561a093a1fd73edba14ff777f6d68967ff7a592e871866c479",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-blocked-output.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-completed-output.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "9313d60c1fe2f9f6ad16919fa5c8e334d7f740f19a00bb2f8d5845995d29c5bd",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-forwarded-output.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f89827e21bfe96fea0fbfacaa15cff9a3c5fe8c31f2820b193f9f3fc59dbf812",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-initial-input.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "4178aeac0ae269fda795ceeb0d8c7c2d6b6d3222c9344a351f6b2d3ece1c4451",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-reentry-input.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c9363d46f8f138621f1ad18dbdebd8b0c077c0dbac658594dcb69e68aa1b98b3",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-repeat-output.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d85505e3f39dea013c13368c40945b9e727f103f5e5c321e591813154e3305ee",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/fixture-result.json",
+        "index_status": "",
+        "worktree_status": "D",
+        "untracked": false,
+        "deleted": true,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "396d718be0d9c2b06c505a6bc238dc71c530c6ad",
+        "worktree_sha256": null,
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/invocation-error.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "359f51290012e047ae85f6b8b351d983fdb259105d9318610ddaa51365f73296",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6d4c58948643f42a60996f3ed98afe6060d3fb2f",
+        "worktree_sha256": "4563d744257010b7a034775ac45a0ca1b92eab23362dcd24b59970cf93e4dd51",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "74d277ee1781920b0418089e275f79825ac783fd",
+        "worktree_sha256": "966cb1f6b18196c2e1e4763438a6e91d69d1a0bac19852750a280089b48b4eef",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-blocked-output.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "af8a984dade910f23f7fd9bb579bfd29ec2bec3a5f0a7639dc2fce59cd74a3ac",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-checkpoint.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "4b479727edf1ec0c16dfb13bceb95916276240acfe22b05e7557d9d7a08b7891",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-completed-output.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c56447a374e22aacda47701cfeb9698fb22052ffe18d10cdf5ff3662b7a4fe62",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-forwarded-output.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2ce97707c57d7c736162fbd3ac774eb96dbe69482ccd1028bb28bea7330153ca",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-gate-evidence.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "3cb387c266a38476e53d0e72a6a39764c46e8832020433719ff9a6d0b3723ae2",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-initial-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "214fd8151597ac32ba2479c2cf16f16c9a9c2e430f48122530c03af6d3e9639c",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "561c2b91dfd79da72c980eccd908fa51c2bdc7f05b92f294e0614d24e8435aa6",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-reentry-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c5a01c79d9fa50c22e5e37fa18cc749e22dcf269be3d050e277797e8e10a86cc",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ccd1fc695956b20078b5e250e4aa10acb7dce0a2aecfd727f708c7df8bc01e16",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/fixture-result.schema.json",
+        "index_status": "",
+        "worktree_status": "D",
+        "untracked": false,
+        "deleted": true,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cdd8776e77c81afce5de4d3c283509601e5eff70",
+        "worktree_sha256": null,
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/invocation-error.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f6a01547dced8ab8259e56ae662fceb75a3c4717a0ee52db3c8e693e8cc438ef",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7eca37d670d20a6765a10b8bada45a3f9a6e20a5e470bc1ca7893939425f11d0",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/validate-fixture-result.sh",
+        "index_status": "",
+        "worktree_status": "D",
+        "untracked": false,
+        "deleted": true,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "eb286c11afdf1c83ae909c2b27481b7d6822d187",
+        "worktree_sha256": null,
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a3897726b0d2997e9fc45efe329fa1a9a1a0b54e",
+        "worktree_sha256": "cd81b53cbcdb79ef6c3cc3a3c003f6ec473d8d97232ae349e0c97a01174e4435",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/SKILL.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0b025b9ce5e7e84f1fd655429d740761af01db8a598e4bd6ab5e955d2b4bc6fe",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/examples/legacy-result.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0cb87b61f0afab118ac222a0af92bc06c579959aeea208461294d16becf11b39",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/interface.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ac6f6babc96cd847085ce7e7376e7e81f4848f1c11977d5bc39f024d41a4241b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/references/contract.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2cd7974c6ec653c0b762186f97fb5b4c945b1a17a41a8ccd26313f8b18600c9b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/schemas/legacy-result.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "97e777ae155cf05249c2b8fff6da7e752d8de6be227cbeaf4dc6a524d0cac4f7",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/scripts/validate-legacy-result.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2d83a775434b01307dcac8fa6737c413771f8a37918334b0003be9b2411ac0f5",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/tests/test_contract.py",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "348248d5934232d7e4c4c2cd61cf49362f8b2aca50b2712a1621697d76264ca1",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/SKILL.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "65d4ca74fc0709bf78108030a43ccce8f9c89d52c65940ff73d979fb9059f050",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/invocation-error.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "e9c750aaaaca1f776c156e973523d25b84ab433942427283c3d298aa6f1b2258",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/sync-output.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "51da2190c9a82ecdabb91ad2476c925b693319d1f06b85d3946b37b8adab1936",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/interface.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "21639a3f206d648023786382f4a8b24df0d0ed45c8265ff4f96f3557e43c072f",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/references/contract.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "aed0467f5bc2d8a533a72dbed080b284597d848579aea124703bd3eaaea41595",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/invocation-error.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "e14ed666fae0e32e83d7727ef31bee636ca199367ad6a68ffc14d09195922123",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-checkpoint.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "51147e82c501dd731cc2b29b1e386a227ae29f2f5982c1c6f520a334f446b64a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-output.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "1db4cf7303d7acb7b3be65f2e5ae7ab2df4db33b2d11e6250f041e5d04239821",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7eca37d670d20a6765a10b8bada45a3f9a6e20a5e470bc1ca7893939425f11d0",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/tests/test_contract.py",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2e7c0d0e3aed942095283bd5632da4deda4cb6392440537a09b16b69c8241888",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/registry.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3b4d1ee766673342de6e06bc06c3e734433a8473",
+        "worktree_sha256": "6ac149dc1179aaed2431adb02d4991b9a7b6f750579b423b5918ed8705ff111a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-registry.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "22f64a0293450829395ab8d9344b8b86c12be9a5",
+        "worktree_sha256": "8af401ec302f847533572afa79afda36846b1ef9432ca1f1fdeba741415f7343",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4779c06b701bd3b3f866deab116bbebc7d167121",
+        "worktree_sha256": "db2824325795560a9e56950d74dacf0baea448f64c86754600a4cb80cee58f6e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c760f6cc2fb35f2320379d5f0c9f2d70829facd6",
+        "worktree_sha256": "9a4e6c46704063e7d4bd96c30d7bfd7dbe015e99e3cf62176b0de0a5f99727ae",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ce6e41ff2cc21d742fefcb3cb572f2f4eea96203",
+        "worktree_sha256": "e8a4b0411d452d12ebd9ec6c3e637bcafcb97f59c120daf6912ebd80d307d443",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "549fb75bc37bb06b5bd382cbc22b38e8f21e4805c9b0d2add61cae2f4216c2cd",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "90161b85b5753a89cd7de306ea5f1e8f4cc3156e",
+        "worktree_sha256": "d4efa80eff70c2b376718c36b3b4c1b379d9924de6971fe00a9695de6a290adb",
+        "mode": "100755"
+      }
+    ],
+    "digest": "fc114de23b5aa426c682acbf2ceefa882a75f19746718eae12ba3352efce2644"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "Dogfood 安装副本已与 #144 canonical 资产同步，并由 fresh Phase 2 与 drift gate 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
+      "category": "task-reviewed",
+      "reason": "Dogfood 安装副本已与 #144 canonical 资产同步，并由 fresh Phase 2 与 drift gate 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Dogfood 安装副本已与 #144 canonical 资产同步，并由 fresh Phase 2 与 drift gate 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/registry.json",
+      "category": "task-reviewed",
+      "reason": "Dogfood 安装副本已与 #144 canonical 资产同步，并由 fresh Phase 2 与 drift gate 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+      "category": "task-reviewed",
+      "reason": "Dogfood 安装副本已与 #144 canonical 资产同步，并由 fresh Phase 2 与 drift gate 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+      "category": "task-reviewed",
+      "reason": "Dogfood 安装副本已与 #144 canonical 资产同步，并由 fresh Phase 2 与 drift gate 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/index.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/check.jsonl",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/context-discovery.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/contract-wording-review.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.jsonl",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-review.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/planning-approval.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/research/trellis-official-extension-boundaries.md",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-start-context.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task.json",
+      "category": "task-reviewed",
+      "reason": "该 #144 task-local 产物已由 fresh Phase 2 语义审查覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "README.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "docs/requirements/README.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "docs/requirements/guru-team-trellis-flow.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "docs/requirements/requirement-main.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/guru-team-extension.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/registry.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/action-completed.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/sync-completed.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/fixture-dispatcher.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-blocked-output.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-completed-output.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-forwarded-output.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-initial-input.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-reentry-input.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-repeat-output.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/fixture-result.json",
+      "category": "task-reviewed",
+      "reason": "旧的单一 fixture result 资产已按 #144 设计由 per-exit typed output 资产替代，删除已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/invocation-error.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-blocked-output.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-checkpoint.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-completed-output.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-forwarded-output.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-gate-evidence.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-initial-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-reentry-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/fixture-result.schema.json",
+      "category": "task-reviewed",
+      "reason": "旧的单一 fixture result 资产已按 #144 设计由 per-exit typed output 资产替代，删除已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/invocation-error.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/validate-fixture-result.sh",
+      "category": "task-reviewed",
+      "reason": "旧的单一 fixture result 资产已按 #144 设计由 per-exit typed output 资产替代，删除已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/examples/legacy-result.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/interface.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/schemas/legacy-result.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/scripts/validate-legacy-result.sh",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/invocation-error.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/sync-output.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/interface.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/invocation-error.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-checkpoint.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-output.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/registry.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-registry.schema.json",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "#144 durable Docs SSOT 与公开文档变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "#144 canonical runtime/schema/fixture/installer/test 变更已由 fresh Phase 2 审查。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/001.json",
+      "category": "task-reviewed",
+      "reason": "本次 guru-create-task-commit 调用的候选证据。",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/registry.json",
+    ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+    ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/index.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/check.jsonl",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/context-discovery.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/contract-wording-review.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.jsonl",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-review.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-scope-ledger.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/planning-approval.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/research/trellis-official-extension-boundaries.md",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/001.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-start-context.json",
+    ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task.json",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/skills/guru-team/registry.json",
+    "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+    "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/action-completed.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/sync-completed.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/fixture-dispatcher.py",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/SKILL.md",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-blocked-output.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-completed-output.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-forwarded-output.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-initial-input.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-reentry-input.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-repeat-output.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/fixture-result.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/invocation-error.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/references/contract.md",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-blocked-output.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-checkpoint.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-completed-output.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-forwarded-output.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-gate-evidence.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-initial-input.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-input.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-reentry-input.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/fixture-result.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/invocation-error.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/validate-fixture-result.sh",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/tests/test_contract.py",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/SKILL.md",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/examples/legacy-result.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/interface.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/references/contract.md",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/schemas/legacy-result.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/scripts/validate-legacy-result.sh",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/tests/test_contract.py",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/SKILL.md",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/invocation-error.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/sync-output.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/interface.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/references/contract.md",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/invocation-error.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-checkpoint.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-output.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/tests/test_contract.py",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/registry.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-registry.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "feat(trellis): #144 增加最小 typed handoff I/O",
+    "body": "背景：\nGuru Team public Skill 需要在保留 1.2 legacy 合同的同时提供最小 typed handoff 基础设施。\n\n变更：\n新增 interface 1.3、registry 1.1、contract discovery 与 mixed fixture，补齐 installer、dogfood overlay、durable docs 和验证。\n\n边界：\n九个 production Skill 继续使用 1.2 legacy payload；1.3 仅由 test-only fixture 激活，issue 145 和 issue 146 承接后续迁移。\n\n验证：\n通过 95 项 Skill tests、39 项 installer tests、6 项 ownership tests，以及 source/installed、discovery、dogfood drift 和 clean throwaway 校验。\n\nRefs #144",
+    "bytes": "feat(trellis): #144 增加最小 typed handoff I/O\n\n背景：\nGuru Team public Skill 需要在保留 1.2 legacy 合同的同时提供最小 typed handoff 基础设施。\n\n变更：\n新增 interface 1.3、registry 1.1、contract discovery 与 mixed fixture，补齐 installer、dogfood overlay、durable docs 和验证。\n\n边界：\n九个 production Skill 继续使用 1.2 legacy payload；1.3 仅由 test-only fixture 激活，issue 145 和 issue 146 承接后续迁移。\n\n验证：\n通过 95 项 Skill tests、39 项 installer tests、6 项 ownership tests，以及 source/installed、discovery、dogfood drift 和 clean throwaway 校验。\n\nRefs #144\n",
+    "sha256": "6c5a2fb202536a7687b97dc749763e134fbc9cd23039fd249289e642a592c99c"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex main session /root",
+    "summary": "已审查 #144 的完整 stage scope、消息语义、issue 边界、兼容性、安装升级、安全与部署影响；计划可在取得 exact-plan 授权后执行。",
+    "evidence": [
+      "当前 94 个 dirty path 与 Phase 2 repository_snapshot 完全一致，唯一额外 dirty path 是 phase2-check.json 自身；候选 001.json 使用 skill-artifact coverage，共 95 个 exact stage path，无 unrelated-preserved、unreviewed-blocking 或 ambiguous-blocking。",
+      "三个删除项均为旧 fixture-result example/schema/validator，由 per-exit typed output fixture 替代；不存在未审查的删除、rename、copy、gitlink 或外部 staged path。",
+      "提交消息为中文 Conventional Commit，只以 Refs #144 关联主 issue，不含关闭关键字；issue 145 与 issue 146 仅作为后续 migration 边界，不在本提交关闭。",
+      "兼容边界保持九个 production Skill 的 interface 1.2 legacy payload 未迁移；interface 1.3 仅由 mixed test-only fixture 激活，不进入 production registry、installed inventory 或 mandatory route。",
+      "变更覆盖 canonical source、dogfood 安装副本、installer、schema、fixture、tests、durable Docs SSOT 与公开 README；source/installed、ownership、drift、update/reapply 和 clean throwaway 证据均已通过 Phase 2。",
+      "本提交不包含 secret、客户数据或签名 URL，不引入部署、数据库 migration、container、K8s、CI/CD 或 Makefile 变更；manifest 待发布版本更新属于 preset/package 分发资产。",
+      "远程 exact feature-ref marketplace 验证需在 reviewed branch 后续 push 后补证；当前默认 verifier 已按设计 fail closed，本阶段不会 push、建 PR 或声称该远程门禁已通过。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-exact-plan-confirmation",
+    "evidence": "用户在查看 001 计划的 95 个 exact stage path、三个删除项和精确中文提交消息后明确回复“确认继续”，授权按该计划提交。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-20T02:39:28.220597Z",
+    "plan_digest": "43248a74c61f18d331f67bb806e1ba826cd56b8e91ee621ca84ff231650711d9"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

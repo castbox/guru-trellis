@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -54,6 +55,17 @@ class SourceValidationTests(unittest.TestCase):
 
     def write_interface(self, payload: dict) -> None:
         (self.root / "packages/guru-example-action/interface.json").write_text(
+            json.dumps(payload),
+            encoding="utf-8",
+        )
+
+    def read_sync_interface(self) -> dict:
+        return json.loads(
+            (self.root / "packages/guru-example-sync/interface.json").read_text(encoding="utf-8")
+        )
+
+    def write_sync_interface(self, payload: dict) -> None:
+        (self.root / "packages/guru-example-sync/interface.json").write_text(
             json.dumps(payload),
             encoding="utf-8",
         )
@@ -345,6 +357,334 @@ class SourceValidationTests(unittest.TestCase):
     def test_representative_active_package_and_routes_pass(self) -> None:
         result = self.validate()
         self.assertEqual(result["status"], "passed", result["errors"])
+        self.assertEqual(result["facts"]["legacy_ids"], ["guru-example-legacy"])
+        self.assertEqual(
+            result["facts"]["minimal_handoff_ids"],
+            ["guru-example-action", "guru-example-sync"],
+        )
+        interface = self.read_interface()
+        consumers = {
+            item["id"]: item for item in interface["public_contracts"]["consumer_inputs"]
+        }
+        projections = {
+            item["id"]: item for item in interface["public_contracts"]["projections"]
+        }
+        self.assertEqual(consumers["stop_blocked_input"]["payload_kind"], "zero_payload")
+        self.assertNotIn("contract", consumers["stop_blocked_input"])
+        self.assertEqual(projections["select_to_stop"]["operation"], "select")
+        self.assertEqual(projections["select_to_stop"]["mappings"], [])
+        self.assertEqual(
+            {item["operation"] for item in projections.values()},
+            {"direct", "select", "rename", "normalize"},
+        )
+
+    def test_interface_12_contract_bytes_remain_published(self) -> None:
+        schema = SKILLS_ROOT / "schemas/skill-interface.schema.json"
+        self.assertEqual(
+            hashlib.sha256(schema.read_bytes()).hexdigest(),
+            "33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e",
+        )
+        self.assertEqual(runtime.SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.2"]["version"], "1.2")
+        self.assertEqual(runtime.SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.3"]["version"], "1.3")
+
+    def test_contract_discovery_distinguishes_legacy_and_minimal_variants(self) -> None:
+        legacy = runtime.build_skill_contract_discovery(self.root, "guru-example-legacy")
+        minimal = runtime.build_skill_contract_discovery(self.root, "guru-example-action")
+        scalar = runtime.build_skill_contract_discovery(self.root, "guru-example-sync")
+        self.assertEqual(legacy["variant"], "legacy")
+        self.assertNotIn("input", legacy)
+        self.assertEqual(minimal["variant"], "minimal_handoff")
+        self.assertEqual(minimal["input"]["kind"], "structured_json")
+        self.assertEqual(scalar["input"]["kind"], "scalar_cli")
+        with self.assertRaises(runtime.WorkflowError) as raised:
+            runtime.build_skill_contract_discovery(self.root, "guru-missing-skill")
+        self.assertEqual(raised.exception.payload["code"], "unknown_skill")
+        self.assertEqual(set(raised.exception.payload), {"code", "field_path", "remediation"})
+
+    def test_contract_discovery_validation_failures_use_distinct_stable_codes(self) -> None:
+        registry = self.read_registry()
+        action = next(item for item in registry["skills"] if item["id"] == "guru-example-action")
+        action["io_contract_state"] = "legacy"
+        self.write_registry(registry)
+        version_error = runtime.skill_contract_validation_error(
+            "source",
+            self.validate()["errors"],
+        )
+        self.assertEqual(version_error.payload["code"], "version_state_mismatch")
+
+        self.write_registry(json.loads((FIXTURE / "registry.json").read_text(encoding="utf-8")))
+        (self.root / "packages/guru-example-action/interface.json").unlink()
+        asset_error = runtime.skill_contract_validation_error(
+            "source",
+            self.validate()["errors"],
+        )
+        self.assertEqual(asset_error.payload["code"], "contract_asset_invalid")
+
+        installed_error = runtime.skill_contract_validation_error(
+            "installed",
+            ["installed platform package digest drift"],
+        )
+        self.assertEqual(installed_error.payload["code"], "installed_drift")
+        for error in (version_error, asset_error, installed_error):
+            self.assertEqual(set(error.payload), {"code", "field_path", "remediation"})
+
+    def test_representative_wrappers_emit_distinct_exits_and_stable_errors(self) -> None:
+        environment = dict(os.environ)
+        environment["GURU_TEAM_DISPATCHER"] = str(self.root / "fixture-dispatcher.py")
+        action = self.root / "packages/guru-example-action/scripts/invoke.sh"
+        sync = self.root / "packages/guru-example-sync/scripts/invoke.sh"
+        completed = subprocess.run(
+            [str(action), "--input", "examples/action-initial-input.json"],
+            cwd=action.parents[1], env=environment, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        synced = subprocess.run(
+            [str(sync), "--exit-id", "forwarded", "--item", "alpha"],
+            cwd=sync.parents[1], env=environment, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        invalid = subprocess.run(
+            [str(action)], cwd=action.parents[1], env=environment, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(json.loads(completed.stdout)["exit_id"], "completed")
+        self.assertEqual(json.loads(synced.stdout)["exit_id"], "synced")
+        self.assertNotEqual(invalid.returncode, 0)
+        self.assertEqual(
+            set(json.loads(invalid.stderr)),
+            {"code", "field_path", "remediation"},
+        )
+
+    def test_registry_version_state_mismatch_fails_closed(self) -> None:
+        registry = self.read_registry()
+        action = next(item for item in registry["skills"] if item["id"] == "guru-example-action")
+        action["io_contract_state"] = "legacy"
+        self.write_registry(registry)
+        self.assertTrue(any(
+            "incompatible interface version/state" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_unknown_public_contract_field_fails_schema_validation(self) -> None:
+        interface = self.read_interface()
+        interface["public_contracts"]["unknown"] = True
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "additional property" in item and "public_contracts.unknown" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_missing_per_exit_example_and_consumer_input_fail(self) -> None:
+        example = self.root / "packages/guru-example-action/examples/action-forwarded-output.json"
+        example.unlink()
+        self.assertTrue(any(
+            "missing typed output example forwarded" in item
+            for item in self.validate()["errors"]
+        ))
+
+        shutil.copyfile(
+            FIXTURE / "packages/guru-example-action/examples/action-forwarded-output.json",
+            example,
+        )
+        interface = self.read_interface()
+        interface["public_contracts"]["consumer_inputs"].pop(0)
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[projection_reference]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_nullable_aggregate_authoring_template_fails(self) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-input.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema["oneOf"].append({"type": "null"})
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        self.assertTrue(any(
+            "[input_nullable_template]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_aggregate_requires_exact_ordered_profile_references(self) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-input.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema["oneOf"].reverse()
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        self.assertTrue(any(
+            "[input_aggregate_oneof]" in item and "exact ordered" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_discriminator_requires_shared_required_field_and_matching_const(self) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-initial-input.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema["required"].remove("profile")
+        schema["properties"]["profile"]["const"] = "wrong"
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        errors = self.validate()["errors"]
+        self.assertTrue(any("[input_discriminator]" in item and "required" in item for item in errors))
+        self.assertTrue(any("[input_discriminator]" in item and "schema const" in item for item in errors))
+
+    def test_scalar_cli_requires_exact_ordered_typed_examples_and_binding(self) -> None:
+        interface = self.read_sync_interface()
+        interface["public_contracts"]["input"]["arguments"][1]["type"] = "positive_integer"
+        interface["public_contracts"]["invocation"]["input_binding"]["argument_ids"].reverse()
+        interface["public_contracts"]["invocation"]["example_argv"][-1] = "beta"
+        self.write_sync_interface(interface)
+        errors = self.validate()["errors"]
+        self.assertTrue(any("[scalar_argument_value]" in item for item in errors))
+        self.assertTrue(any("[invocation_input_binding]" in item for item in errors))
+        self.assertTrue(any("[scalar_invocation_example]" in item for item in errors))
+
+    def test_zero_payload_rejects_payload_fields_and_nonempty_projection(self) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-blocked-output.schema.json"
+        example_path = self.root / "packages/guru-example-action/examples/action-blocked-output.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema["properties"]["reason"] = {"type": "string"}
+        schema["required"].append("reason")
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        example = json.loads(example_path.read_text(encoding="utf-8"))
+        example["reason"] = "blocked"
+        example_path.write_text(json.dumps(example), encoding="utf-8")
+        interface = self.read_interface()
+        projection = next(
+            item for item in interface["public_contracts"]["projections"]
+            if item["id"] == "select_to_stop"
+        )
+        projection["mappings"] = [{"source": "exit_id", "target": "exit_id"}]
+        self.write_interface(interface)
+        errors = self.validate()["errors"]
+        self.assertTrue(any("[projection_zero_payload_output]" in item for item in errors))
+        self.assertTrue(any("[projection_zero_payload]" in item for item in errors))
+
+    def test_empty_select_is_reserved_for_zero_payload_stop(self) -> None:
+        interface = self.read_interface()
+        projection = next(
+            item for item in interface["public_contracts"]["projections"]
+            if item["id"] == "rename_to_sync"
+        )
+        projection["operation"] = "select"
+        projection["mappings"] = []
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[projection_empty_select]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_representative_invocation_validates_actual_consumer_projection(self) -> None:
+        input_path = self.root / "packages/guru-example-action/examples/action-initial-input.json"
+        input_payload = json.loads(input_path.read_text(encoding="utf-8"))
+        input_payload["topic"] = "beta"
+        input_path.write_text(json.dumps(input_payload), encoding="utf-8")
+        consumer_path = self.root / "consumers/workflow/action-completed.schema.json"
+        consumer = json.loads(consumer_path.read_text(encoding="utf-8"))
+        consumer["properties"]["result"]["const"] = "alpha complete"
+        consumer_path.write_text(json.dumps(consumer), encoding="utf-8")
+        self.assertTrue(any(
+            "[invocation_projection]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_nonzero_output_requires_matching_exit_identity_const(self) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-completed-output.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema["properties"]["exit_id"] = {"type": "string", "minLength": 1}
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        self.assertTrue(any(
+            "[output_exit_identity]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_direct_projection_requires_exact_consumer_schema(self) -> None:
+        consumer_path = self.root / "consumers/workflow/action-completed.schema.json"
+        consumer = json.loads(consumer_path.read_text(encoding="utf-8"))
+        consumer["properties"]["result"]["pattern"] = "^alpha complete$"
+        consumer_path.write_text(json.dumps(consumer), encoding="utf-8")
+        self.assertTrue(any(
+            "[projection_direct_contract]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_projection_rejects_duplicate_targets_when_example_values_alias(self) -> None:
+        example_path = self.root / "packages/guru-example-action/examples/action-forwarded-output.json"
+        example = json.loads(example_path.read_text(encoding="utf-8"))
+        example["forwarded_item"] = "forwarded"
+        example_path.write_text(json.dumps(example), encoding="utf-8")
+        interface = self.read_interface()
+        projection = next(
+            item for item in interface["public_contracts"]["projections"]
+            if item["id"] == "rename_to_sync"
+        )
+        projection["mappings"].append({"source": "forwarded_item", "target": "exit_id"})
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[projection_target_duplicate]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_unconsumed_output_field_fails_activation(self) -> None:
+        schema_path = self.root / "packages/guru-example-action/schemas/action-forwarded-output.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        schema["properties"]["unused"] = {"type": "string"}
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        self.assertTrue(any(
+            "[public_output_unconsumed_field]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_projection_private_field_and_unknown_operation_fail(self) -> None:
+        interface = self.read_interface()
+        projection = interface["public_contracts"]["projections"][0]
+        projection["mappings"][0]["source"] = "input_profile"
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[projection_private_field]" in item
+            for item in self.validate()["errors"]
+        ))
+
+        interface = self.read_interface()
+        projection = interface["public_contracts"]["projections"][0]
+        projection["operation"] = "evaluate"
+        self.write_interface(interface)
+        self.assertTrue(any("violates oneOf" in item for item in self.validate()["errors"]))
+
+    def test_public_output_cannot_reuse_private_artifact_schema(self) -> None:
+        interface = self.read_interface()
+        output_schema = interface["public_contracts"]["outputs"][2]["schema"]
+        interface["public_contracts"]["private_artifacts"][0]["schema"] = dict(output_schema)
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[public_private_overlap]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_public_wrapper_cannot_read_runtime_source(self) -> None:
+        wrapper = self.root / "packages/guru-example-action/scripts/invoke.sh"
+        wrapper.write_text(
+            wrapper.read_text(encoding="utf-8") + "\n# guru_team_trellis.py is forbidden here\n",
+            encoding="utf-8",
+        )
+        self.assertTrue(any(
+            "[runtime_source_dependency]" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_extension_registry_and_legacy_inventory_mismatch_fail(self) -> None:
+        extension_path = self.root / "extension.json"
+        extension = json.loads(extension_path.read_text(encoding="utf-8"))
+        extension["public_api"]["skill_contracts"]["registry_schema_id"] = "guru-team-skill-registry-1.0"
+        extension_path.write_text(json.dumps(extension), encoding="utf-8")
+        self.assertTrue(any(
+            "incompatible Skill interface schema id" in item
+            for item in self.validate()["errors"]
+        ))
+
+        extension = json.loads((FIXTURE / "extension.json").read_text(encoding="utf-8"))
+        extension["public_api"]["skill_contracts"]["legacy_skill_ids"] = []
+        extension_path.write_text(json.dumps(extension), encoding="utf-8")
+        self.assertTrue(any(
+            "legacy_skill_ids do not match" in item
+            for item in self.validate()["errors"]
+        ))
 
     def test_missing_mandatory_invoke_fails(self) -> None:
         text = self.workflow.read_text(encoding="utf-8")
@@ -425,7 +765,7 @@ class SourceValidationTests(unittest.TestCase):
         }
         self.write_interface(interface)
         workflow = self.workflow.read_text(encoding="utf-8").replace(
-            '{"kind":"workflow","id":"fixture-next"}',
+            '{"kind":"skill","id":"guru-example-sync"}',
             '{"kind":"skill","id":"guru-missing-consumer"}',
         )
         self.workflow.write_text(workflow, encoding="utf-8")
@@ -441,14 +781,11 @@ class SourceValidationTests(unittest.TestCase):
             "reason": "A later delivery owns this exact consumer package.",
         })
         self.write_registry(registry)
-        self.workflow.write_text(
-            workflow.replace(
-                '<!-- guru-workflow-target: {"id":"fixture-next"} -->\n',
-                "",
-            ),
-            encoding="utf-8",
-        )
-        self.assertEqual(self.validate()["status"], "passed", self.validate()["errors"])
+        self.assertEqual(self.validate()["status"], "failed")
+        self.assertTrue(any(
+            "projection rename_to_sync consumer does not match" in item
+            for item in self.validate()["errors"]
+        ))
 
         self.workflow.write_text(
             self.workflow.read_text(encoding="utf-8")
@@ -461,16 +798,16 @@ class SourceValidationTests(unittest.TestCase):
         ))
 
     def test_missing_declared_schema_fails(self) -> None:
-        (self.root / "packages/guru-example-action/schemas/fixture-result.schema.json").unlink()
+        (self.root / "packages/guru-example-action/schemas/action-completed-output.schema.json").unlink()
         self.assertTrue(any("missing schema" in item for item in self.validate()["errors"]))
 
     def test_invalid_declared_schema_json_fails(self) -> None:
-        schema = self.root / "packages/guru-example-action/schemas/fixture-result.schema.json"
+        schema = self.root / "packages/guru-example-action/schemas/action-completed-output.schema.json"
         schema.write_text("{invalid", encoding="utf-8")
         self.assertTrue(any("invalid JSON" in item for item in self.validate()["errors"]))
 
     def test_missing_validator_file_fails(self) -> None:
-        (self.root / "packages/guru-example-action/scripts/validate-fixture-result.sh").unlink()
+        (self.root / "packages/guru-example-action/scripts/invoke.sh").unlink()
         self.assertTrue(any("missing validator" in item for item in self.validate()["errors"]))
 
     def test_unsafe_artifact_path_fails(self) -> None:
@@ -586,7 +923,7 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(
             result["errors"],
             [
-                "interface for guru-example-action validator result_validator runtime_command "
+                "interface for guru-example-action validator public_invocation runtime_command "
                 "must not equal runtime_dependency.dispatcher"
             ],
         )
@@ -841,7 +1178,7 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue((self.repo / ".codex/skills/guru-example-action/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/guru-example-action/tests/test_contract.py").is_file())
         self.assertTrue((self.repo / ".codex/skills/guru-example-action/tests/test_contract.py").is_file())
-        self.assertTrue(os.access(self.repo / ".codex/skills/guru-example-action/scripts/validate-fixture-result.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".codex/skills/guru-example-action/scripts/invoke.sh", os.X_OK))
         self.assertFalse((self.repo / ".cursor/skills/guru-example-action").exists())
         self.assertFalse((self.repo / ".claude/skills/guru-example-action").exists())
         self.assertTrue(all(item["action"] == "installed" for item in result["files"]))
@@ -872,7 +1209,8 @@ class DistributionTests(unittest.TestCase):
         canonical = self.guru_root / "trellis/skills/guru-team"
         registry_path = canonical / "registry.json"
         registry = json.loads(registry_path.read_text(encoding="utf-8"))
-        registry["skills"][0]["supported_platforms"] = ["shared", "codex"]
+        action_entry = next(item for item in registry["skills"] if item["id"] == "guru-example-action")
+        action_entry["supported_platforms"] = ["shared", "codex"]
         registry_path.write_text(json.dumps(registry), encoding="utf-8")
         interface_path = canonical / "packages/guru-example-action/interface.json"
         interface = json.loads(interface_path.read_text(encoding="utf-8"))

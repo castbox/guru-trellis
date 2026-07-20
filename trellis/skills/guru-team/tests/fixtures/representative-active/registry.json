@@ -1,16 +1,42 @@
 {
   "$schema": "schemas/skill-registry.schema.json",
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "skills": [
+    {
+      "id": "guru-example-legacy",
+      "state": "active",
+      "name": "guru-example-legacy",
+      "package": "packages/guru-example-legacy",
+      "interface": "packages/guru-example-legacy/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "fixture-legacy-phase"
+    },
     {
       "id": "guru-example-action",
       "state": "active",
       "name": "guru-example-action",
       "package": "packages/guru-example-action",
       "interface": "packages/guru-example-action/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.3",
+      "io_contract_state": "minimal_handoff",
       "supported_platforms": ["shared", "codex", "cursor", "claude"],
       "validator_command": "check-skill-packages",
-      "workflow_route_id": "fixture-phase"
+      "workflow_route_id": "fixture-action-phase"
+    },
+    {
+      "id": "guru-example-sync",
+      "state": "active",
+      "name": "guru-example-sync",
+      "package": "packages/guru-example-sync",
+      "interface": "packages/guru-example-sync/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.3",
+      "io_contract_state": "minimal_handoff",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "fixture-sync-phase"
     }
   ]
 }
