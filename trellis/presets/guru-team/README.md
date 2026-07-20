@@ -231,6 +231,9 @@ Fixture source validation 强制 Skill consumer 使用 active registry exact can
 相同 target id 的 target-owned input，对非 direct projection 与 direct 到 scalar CLI 做
 required 与映射/normalizer 后全域兼容证明，分别检查 public/private
 schema id/path 互斥，并要求 wrapper 完整匹配 dispatcher-only template。
+1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
+grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
+pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
 
 Managed executable
 `.trellis/guru-team/scripts/bash/discover-skill-contract.sh` 提供 exact discovery：

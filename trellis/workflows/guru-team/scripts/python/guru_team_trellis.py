@@ -15490,6 +15490,230 @@ def skill_json_equal(left: Any, right: Any) -> bool:
     return left == right
 
 
+SKILL_ECMA_WHITESPACE_CLASS = (
+    r"\u0009-\u000d\u0020\u00a0\u1680\u2000-\u200a"
+    r"\u2028\u2029\u202f\u205f\u3000\ufeff"
+)
+SKILL_ECMA_DOT_CLASS = r"[^\n\r\u2028\u2029]"
+
+
+class SkillPortablePatternError(ValueError):
+    pass
+
+
+def skill_compile_portable_pattern(pattern: str) -> re.Pattern[str]:
+    """Compile the closed ASCII-source pattern subset with ECMA-262 semantics."""
+
+    def fail(reason: str, position: int) -> None:
+        raise SkillPortablePatternError(f"{reason} at offset {position}")
+
+    for position, character in enumerate(pattern):
+        if ord(character) > 0x7F:
+            fail("uses a non-ASCII pattern character", position)
+        if ord(character) < 0x20 or ord(character) == 0x7F:
+            fail("uses a raw control character", position)
+
+    control_escapes = {
+        "t": (r"\t", 0x09),
+        "n": (r"\n", 0x0A),
+        "v": (r"\v", 0x0B),
+        "f": (r"\f", 0x0C),
+        "r": (r"\r", 0x0D),
+    }
+    syntax_escapes = set(r"^$\.*+?()[]{}|/")
+
+    def parse_escape(
+        position: int,
+        *,
+        in_class: bool,
+    ) -> tuple[str, int | None, int]:
+        if position + 1 >= len(pattern):
+            fail("ends with an incomplete escape", position)
+        marker = pattern[position + 1]
+        if marker in control_escapes:
+            rendered, codepoint = control_escapes[marker]
+            return rendered, codepoint, position + 2
+        if marker == "u":
+            digits = pattern[position + 2:position + 6]
+            if len(digits) != 4 or re.fullmatch(r"[0-9A-Fa-f]{4}", digits) is None:
+                fail("has an invalid Unicode escape", position)
+            codepoint = int(digits, 16)
+            if codepoint > 0x7F:
+                fail("uses a non-ASCII Unicode escape", position)
+            return f"\\u{digits}", codepoint, position + 6
+        if marker == "s":
+            if in_class:
+                return SKILL_ECMA_WHITESPACE_CLASS, None, position + 2
+            return f"[{SKILL_ECMA_WHITESPACE_CLASS}]", None, position + 2
+        if marker == "S":
+            if in_class:
+                fail("uses \\S inside a character class", position)
+            return f"[^{SKILL_ECMA_WHITESPACE_CLASS}]", None, position + 2
+        allowed_syntax = syntax_escapes | ({"-"} if in_class else set())
+        if marker in allowed_syntax:
+            return re.escape(marker), ord(marker), position + 2
+        fail(f"uses unsupported escape \\{marker}", position)
+
+    def parse_class(position: int) -> tuple[str, int]:
+        cursor = position + 1
+        negated = cursor < len(pattern) and pattern[cursor] == "^"
+        if negated:
+            cursor += 1
+        parts: list[str] = []
+        saw_item = False
+
+        def parse_atom(atom_position: int) -> tuple[str, int | None, int]:
+            character = pattern[atom_position]
+            if character == "\\":
+                return parse_escape(atom_position, in_class=True)
+            if character == "[":
+                fail("uses a nested character class", atom_position)
+            if character == "-":
+                return r"\-", ord("-"), atom_position + 1
+            if character == "^":
+                return r"\^", ord("^"), atom_position + 1
+            return re.escape(character), ord(character), atom_position + 1
+
+        while cursor < len(pattern):
+            if pattern[cursor] == "]":
+                if not saw_item:
+                    fail("uses an empty character class", position)
+                prefix = "^" if negated else ""
+                return f"[{prefix}{''.join(parts)}]", cursor + 1
+            if pattern[cursor] == "-":
+                parts.append(r"\-")
+                saw_item = True
+                cursor += 1
+                continue
+
+            rendered, codepoint, next_cursor = parse_atom(cursor)
+            if (
+                next_cursor < len(pattern)
+                and pattern[next_cursor] == "-"
+                and next_cursor + 1 < len(pattern)
+                and pattern[next_cursor + 1] != "]"
+            ):
+                if codepoint is None:
+                    fail("uses a character-set escape as a range endpoint", cursor)
+                endpoint_rendered, endpoint_codepoint, endpoint_cursor = parse_atom(next_cursor + 1)
+                if endpoint_codepoint is None:
+                    fail("uses a character-set escape as a range endpoint", next_cursor + 1)
+                if codepoint > endpoint_codepoint:
+                    fail("uses a descending character range", cursor)
+                parts.append(f"{rendered}-{endpoint_rendered}")
+                cursor = endpoint_cursor
+            else:
+                parts.append(rendered)
+                cursor = next_cursor
+            saw_item = True
+
+        fail("has an unterminated character class", position)
+
+    translated: list[str] = []
+    group_kinds: list[str] = []
+    cursor = 0
+    can_quantify = False
+    while cursor < len(pattern):
+        character = pattern[cursor]
+        if character == "\\":
+            rendered, _, cursor = parse_escape(cursor, in_class=False)
+            translated.append(rendered)
+            can_quantify = True
+            continue
+        if character == "[":
+            rendered, cursor = parse_class(cursor)
+            translated.append(rendered)
+            can_quantify = True
+            continue
+        if character == "(":
+            if pattern.startswith("(?:", cursor):
+                translated.append("(?:")
+                group_kinds.append("group")
+                cursor += 3
+            elif pattern.startswith("(?!", cursor):
+                translated.append("(?!")
+                group_kinds.append("negative_lookahead")
+                cursor += 3
+            elif pattern.startswith("(?", cursor):
+                fail("uses an unsupported group or assertion", cursor)
+            else:
+                # Captures are deliberately erased because backreferences are outside the subset.
+                translated.append("(?:")
+                group_kinds.append("group")
+                cursor += 1
+            can_quantify = False
+            continue
+        if character == ")":
+            if not group_kinds:
+                fail("has an unmatched closing parenthesis", cursor)
+            group_kind = group_kinds.pop()
+            translated.append(")")
+            cursor += 1
+            can_quantify = group_kind == "group"
+            continue
+        if character == "|":
+            translated.append("|")
+            cursor += 1
+            can_quantify = False
+            continue
+        if character == "^":
+            translated.append("^")
+            cursor += 1
+            can_quantify = False
+            continue
+        if character == "$":
+            translated.append(r"\Z")
+            cursor += 1
+            can_quantify = False
+            continue
+        if character == ".":
+            translated.append(SKILL_ECMA_DOT_CLASS)
+            cursor += 1
+            can_quantify = True
+            continue
+        if character in "*+?":
+            if not can_quantify:
+                fail("uses a misplaced or repeated quantifier", cursor)
+            translated.append(character)
+            cursor += 1
+            can_quantify = False
+            continue
+        if character == "{":
+            if not can_quantify:
+                fail("uses a misplaced or repeated quantifier", cursor)
+            closing = pattern.find("}", cursor + 1)
+            if closing < 0:
+                fail("has an unterminated bounded quantifier", cursor)
+            body = pattern[cursor + 1:closing]
+            match = re.fullmatch(r"([0-9]+)(?:,([0-9]*))?", body)
+            if match is None:
+                fail("has an invalid bounded quantifier", cursor)
+            lower_text = match.group(1)
+            upper_text = match.group(2)
+            if len(lower_text) > 6 or upper_text is not None and len(upper_text) > 6:
+                fail("uses a bounded quantifier outside the portable range", cursor)
+            lower = int(lower_text)
+            if upper_text not in (None, "") and lower > int(upper_text):
+                fail("has a descending bounded quantifier", cursor)
+            translated.append(pattern[cursor:closing + 1])
+            cursor = closing + 1
+            can_quantify = False
+            continue
+        if character in "}]":
+            fail(f"has an unmatched {character}", cursor)
+
+        translated.append(re.escape(character))
+        cursor += 1
+        can_quantify = True
+
+    if group_kinds:
+        fail("has an unterminated group", len(pattern))
+    try:
+        return re.compile("".join(translated))
+    except re.error as error:
+        raise SkillPortablePatternError("cannot be represented by the portable pattern subset") from error
+
+
 def skill_json_schema_subset_errors(
     schema: Any,
     label: str,
@@ -15649,9 +15873,9 @@ def skill_json_schema_subset_errors(
                 add(path, "has a non-string pattern")
             else:
                 try:
-                    re.compile(pattern)
-                except re.error:
-                    add(path, "has an invalid pattern")
+                    skill_compile_portable_pattern(pattern)
+                except SkillPortablePatternError as error:
+                    add(path, f"has an invalid portable pattern ({error})")
         expected_format = node.get("format")
         if expected_format is not None:
             if not isinstance(expected_format, str):
@@ -15897,8 +16121,13 @@ def skill_json_schema_validation_errors(
             if isinstance(maximum, int) and len(value) > maximum:
                 output.append(f"{label} is longer than maxLength at {path}")
             pattern = node.get("pattern")
-            if isinstance(pattern, str) and re.search(pattern, value) is None:
-                output.append(f"{label} violates pattern at {path}")
+            if isinstance(pattern, str):
+                try:
+                    pattern_matches = skill_compile_portable_pattern(pattern).search(value) is not None
+                except SkillPortablePatternError:
+                    pattern_matches = False
+                if not pattern_matches:
+                    output.append(f"{label} violates pattern at {path}")
             expected_format = node.get("format")
             if isinstance(expected_format, str) and not skill_format_matches(value, expected_format):
                 output.append(f"{label} violates format at {path}")

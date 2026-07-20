@@ -831,6 +831,9 @@ class SourceValidationTests(unittest.TestCase):
             "invalid-pattern": lambda schema: schema["properties"]["result"].update({
                 "pattern": "(",
             }),
+            "python-only-pattern": lambda schema: schema["properties"]["result"].update({
+                "pattern": "(?P<result>[a-z]+)",
+            }),
         }
         for name, mutate in mutations.items():
             with self.subTest(name=name):
@@ -840,6 +843,129 @@ class SourceValidationTests(unittest.TestCase):
                 errors = self.validate()["errors"]
                 self.assertTrue(any("[schema_subset]" in item for item in errors), errors)
         schema_path.write_text(json.dumps(original), encoding="utf-8")
+
+    @staticmethod
+    def portable_pattern_cases() -> list[tuple[str, str, str, bool]]:
+        return [
+            ("empty-search", "", "anything", True),
+            ("unanchored", "beta", "alpha beta gamma", True),
+            ("anchored", "^[a-z]+$", "alpha", True),
+            ("strict-end-anchor", "^[a-z]+$", "a\n", False),
+            ("escaped-literal", r"config\.json", "config.json", True),
+            ("escaped-syntax", r"^\{ok\}$", "{ok}", True),
+            ("ascii-class", "^[A-Za-z0-9_-]+$", "Az_9-", True),
+            ("negated-class", "^[^0-9]{2,}$", "ab-", True),
+            ("class-range-and-hyphen", "^[-a-c]+$", "-cab", True),
+            ("capturing-alternation", "^(ab|cd)+$", "abcdab", True),
+            ("noncapturing-alternation", "^(?:foo|bar){2}$", "foobar", True),
+            ("star-and-optional-quantifiers", "^ab*c?$", "abbb", True),
+            ("exact-quantifier", "^a{2}$", "aa", True),
+            ("open-quantifier", "^a{2,}$", "aaaa", True),
+            ("bounded-quantifier", "^ab{2,4}c+$", "abbbcc", True),
+            ("negative-lookahead", "^(?!archive/).+$", "active/task", True),
+            ("negative-lookahead-reject", "^(?!archive/).+$", "archive/task", False),
+            ("control-escape", r"^\t$", "\t", True),
+            ("ascii-unicode-escape", r"^\u0041+$", "AAA", True),
+            ("class-whitespace-escape", r"^[\s]+$", "\u00a0", True),
+            ("dot-line-feed", "^.$", "\n", False),
+            ("dot-carriage-return", "^.$", "\r", False),
+            ("dot-line-separator", "^.$", "\u2028", False),
+            ("dot-paragraph-separator", "^.$", "\u2029", False),
+            ("dot-astral-code-point", "^.$", "\U0001f600", True),
+            ("ecma-whitespace", r"^\s+$", "\u00a0", True),
+            ("python-only-whitespace", r"^\s+$", "\u001c", False),
+            ("python-only-next-line", r"^\s+$", "\u0085", False),
+            ("ecma-non-whitespace", r"^\S+$", "\u001c", True),
+        ]
+
+    def test_closed_pattern_subset_rejects_dialect_divergent_constructs(self) -> None:
+        python_only = r"(?P<word>[a-z]+)"
+        self.assertIsNotNone(re.compile(python_only))
+        patterns = {
+            "python-only-group": python_only,
+            "python-only-anchor": r"\A[a-z]+",
+            "digit-shorthand": r"\d+",
+            "non-digit-shorthand": r"\D+",
+            "word-shorthand": r"\w+",
+            "non-word-shorthand": r"\W+",
+            "unicode-property": r"\p{L}+",
+            "hex-escape": r"\x41+",
+            "null-escape": r"\0+",
+            "word-boundary": r"\bword\b",
+            "unicode-literal": "é+",
+            "non-ascii-unicode-escape": r"\u00e9+",
+            "raw-control": "a\n",
+            "ecma-named-group": r"(?<word>[a-z]+)",
+            "positive-lookahead": r"(?=a)a",
+            "positive-lookbehind": r"(?<=a)b",
+            "negative-lookbehind": r"(?<!a)b",
+            "inline-flag": r"(?i:a)",
+            "numbered-backreference": r"(a)\1",
+            "lazy-quantifier": r"a+?",
+            "possessive-quantifier": r"a++",
+            "repeated-quantifier": r"a**",
+            "misplaced-quantifier": r"*a",
+            "empty-class": r"[]",
+            "nested-class": r"[[a]]",
+            "descending-class-range": r"[z-a]",
+            "set-class-range-endpoint": r"[\s-a]",
+            "class-complement-escape": r"[\S]",
+            "overlong-bounded-quantifier": r"a{1234567}",
+            "descending-bounded-quantifier": r"a{3,2}",
+            "malformed-bounded-quantifier": r"a{,2}",
+        }
+        for name, pattern in patterns.items():
+            with self.subTest(name=name):
+                errors = runtime.skill_json_schema_subset_errors(
+                    {"type": "string", "pattern": pattern},
+                    "portable pattern",
+                )
+                self.assertTrue(any("invalid portable pattern" in item for item in errors), errors)
+
+    def test_closed_pattern_subset_matches_expected_ecma_semantics(self) -> None:
+        for name, pattern, value, expected in self.portable_pattern_cases():
+            with self.subTest(name=name):
+                errors = runtime.skill_json_schema_validation_errors(
+                    value,
+                    {"type": "string", "pattern": pattern},
+                    "portable pattern",
+                )
+                self.assertEqual(not errors, expected, errors)
+
+    def test_closed_pattern_subset_matches_node_ecma_unicode_regexp(self) -> None:
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("Node.js is unavailable for the independent ECMA-262 comparison")
+        cases = self.portable_pattern_cases()
+        script = (
+            "const cases = JSON.parse(process.argv[1]);"
+            "process.stdout.write(JSON.stringify(cases.map((item) => "
+            "new RegExp(item.pattern, 'u').test(item.value))));"
+        )
+        completed = subprocess.run(
+            [
+                node,
+                "-e",
+                script,
+                json.dumps(
+                    [{"pattern": pattern, "value": value} for _, pattern, value, _ in cases],
+                    ensure_ascii=False,
+                ),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        ecma_results = json.loads(completed.stdout)
+        runtime_results = [
+            not runtime.skill_json_schema_validation_errors(
+                value,
+                {"type": "string", "pattern": pattern},
+                "portable pattern",
+            )
+            for _, pattern, value, _ in cases
+        ]
+        self.assertEqual(runtime_results, ecma_results)
 
     def test_closed_schema_subset_accepts_recursive_supported_keywords(self) -> None:
         schema = {

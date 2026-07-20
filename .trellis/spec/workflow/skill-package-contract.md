@@ -344,6 +344,65 @@ input's exact ordered profile-schema index. Each target must be a regular
 non-symlink object-schema file within the same validated package boundary and
 is independently checked as a declared profile contract.
 
+#### Portable Pattern Grammar
+
+The closed subset does not accept an arbitrary Python, PCRE, or ECMA regular
+expression. A `pattern` source is limited to printable ASCII `U+0020` through
+`U+007E`, and both schema validation and instance matching use this exact
+grammar (EBNF braces mean repetition; quoted braces are pattern characters):
+
+```text
+pattern             = alternative, { "|", alternative } ;
+alternative         = { term } ;
+term                = assertion | atom, [ quantifier ] ;
+assertion           = "^" | "$" | negative-lookahead ;
+negative-lookahead  = "(?!", pattern, ")" ;
+atom                = literal | "." | escape | character-class | group ;
+group               = "(", pattern, ")" | "(?:", pattern, ")" ;
+quantifier          = "*" | "+" | "?"
+                    | "{", decimal, "}"
+                    | "{", decimal, ",}"
+                    | "{", decimal, ",", decimal, "}" ;
+decimal             = digit, [ digit, [ digit, [ digit, [ digit, [ digit ] ] ] ] ] ;
+digit               = "0" | "1" | "2" | "3" | "4"
+                    | "5" | "6" | "7" | "8" | "9" ;
+```
+
+`literal` is one printable ASCII character other than
+`\ [ ] ( ) | ^ $ . * + ? { }`; those syntax characters are literals only
+through an allowed syntax escape. `escape` is exactly one of:
+
+- `\\t`, `\\n`, `\\v`, `\\f`, or `\\r`;
+- `\\u` plus exactly four hexadecimal digits whose value is at most `U+007F`;
+- `\\s` or `\\S` outside a character class;
+- a backslash followed by one of `^ $ \\ . * + ? ( ) [ ] { } | /`.
+
+A `character-class` is `[` plus optional leading `^`, one or more class items,
+and `]`. A class item is one ASCII code point, one ascending range of two ASCII
+code points, one allowed control/ASCII-`\\u`/syntax escape, or `\\s`. A raw `-`
+is a literal when it is not between two range endpoints; `\\-` is also allowed.
+Classes are non-empty, cannot nest, cannot use `\\S`, and cannot use a set escape
+as a range endpoint.
+
+Matching is unanchored search, equivalent to
+`new RegExp(pattern, "u").test(instance)`, unless the pattern supplies its own
+anchors. No multiline, ignore-case, or dot-all flag is available. `$` means
+strict end of input, including rejection before a final line terminator. `.`
+matches one Unicode-aware code point except `LF`, `CR`, `U+2028`, and `U+2029`.
+`\\s` is exactly `U+0009-U+000D`, `U+0020`, `U+00A0`, `U+1680`,
+`U+2000-U+200A`, `U+2028`, `U+2029`, `U+202F`, `U+205F`, `U+3000`, and
+`U+FEFF`; `\\S` is its complement. Capturing and non-capturing groups have the
+same matching behavior because backreferences are not in the grammar.
+
+The grammar rejects every other escape or group form, including `\\d`, `\\D`,
+`\\w`, `\\W`, Unicode property escapes, backreferences, named groups, positive
+lookahead, lookbehind, and inline flags. It also rejects non-ASCII source or
+`\\u` values, raw control characters, empty/nested/malformed classes, descending
+ranges, malformed or descending bounded quantifiers, a bound longer than six
+decimal digits, and lazy, possessive, misplaced, or repeated quantifiers. The
+runtime must fail closed at the schema grammar gate and must not fall back to
+Python `re.compile(pattern)` or `re.search(pattern, instance)`.
+
 All 1.3 registry, interface, schema, example, workflow-marker, package-local
 reference, invocation-stdout, and discovery JSON boundaries use standard JSON
 decoding. The runtime rejects `NaN`, `Infinity`, `-Infinity`, and JSON numbers

@@ -103,6 +103,21 @@ ref, an invalid regex, and an unsupported format. Existing
 `allOf`/`if`/`then`, `oneOf`, nested `properties`, and canonical package-local
 profile refs remain passing coverage; an accepted keyword must never be silently
 ignored by instance validation.
+Portable-pattern tests must exercise the exact grammar from
+`skill-package-contract.md`, including unanchored and anchored literals,
+capturing/non-capturing groups, alternation, negative lookahead, character
+classes/ranges/negation, every quantifier form, syntax/control/ASCII `\\u`
+escapes, and `\\s|\\S`. Grammar negatives must reject Python-only groups and
+anchors, `\\d|\\D|\\w|\\W`, Unicode properties or non-ASCII source/escape
+values, unsupported assertions/groups, backreferences, invalid classes, and
+malformed, descending, overlong, lazy, possessive, misplaced, or repeated
+quantifiers. Instance regressions must prove strict `$` rejection of a trailing
+newline, dot rejection of all four ECMA line terminators while accepting one
+astral code point in Unicode mode, and the exact ECMA whitespace domain,
+including acceptance of `U+00A0` and rejection of Python-only `U+001C` and
+`U+0085`. The full legal matching matrix must be compared with an independent
+Node `new RegExp(pattern, "u").test(value)` run; a Python-only expected-value
+table is insufficient.
 Strict-JSON cases must cover `NaN`, `Infinity`, `-Infinity`, and numeric overflow
 at static schema/example, package-local ref, workflow marker, invocation stdout,
 in-memory schema/instance, and public serialization boundaries. Supported-format

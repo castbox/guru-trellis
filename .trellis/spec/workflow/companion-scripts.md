@@ -139,6 +139,13 @@ exact boundary-contained package-relative profile index. Boolean schemas, remote
 and invalid regexes fail closed. The same grammar check applies to canonical
 registry/interface schemas and every 1.3 public/private contract asset, while
 the frozen 1.2 package payloads retain their compatibility validation path.
+The exact accepted syntax and ECMA Unicode-mode search semantics are owned by
+`skill-package-contract.md` under `Portable Pattern Grammar`. The runtime uses
+one portable compiler for both the schema grammar gate and instance matching;
+it translates strict end anchoring, dot line terminators, and the exact ECMA
+whitespace set to Python-standard-library equivalents. It never passes the
+original contract pattern to raw Python `re.compile` or `re.search` as a
+fallback.
 All 1.3 contract and route-marker JSON ingress, package-local refs, and executed
 invocation stdout reject non-standard constants and numbers outside the finite
 runtime range; in-memory schema/instance validation repeats the finite guard.
