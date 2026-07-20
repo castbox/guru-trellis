@@ -143,12 +143,15 @@ have different shapes, publish separate exit schemas; an optional aggregate
 schema may use `oneOf` only as a validator index, never as an authoring template
 filled with nullable fields.
 
-The consumer independently owns its input contract. A producer output may be
-passed directly only when it already matches that input exactly. Otherwise the
-workflow/runtime declares one thin deterministic projection from the selected
-exit output to the consumer input. The projection may select, rename, or
-normalize fields; it must not recover hidden semantics by reading Python source,
-replaying the producer's AI judgment, or understanding its private artifact.
+The consumer independently owns its input contract. A `kind=skill` consumer
+must use `contract.kind=skill_input`, and the referenced interface id must equal
+the declared consumer id; a producer-owned or third-party schema cannot stand
+in for the target Skill's input. A producer output may be passed directly only
+when it already matches that input exactly. Otherwise the workflow/runtime
+declares one thin deterministic projection from the selected exit output to the
+consumer input. The projection may select, rename, or normalize fields; it must
+not recover hidden semantics by reading Python source, replaying the producer's
+AI judgment, or understanding its private artifact.
 
 A deterministic Skill may use scalar CLI arguments instead of an input JSON
 schema when those arguments fully express the public call. Do not create an
@@ -292,11 +295,18 @@ required closed `public_contracts` object with exactly six owned sections:
   persistence.
 
 All ids and locators are unique, package paths are regular non-symlink files,
-and public output schema ids/paths are disjoint from private artifact schema
-ids/paths. Projection source fields come only from the selected public output;
-target fields come only from the declared consumer input. Runtime facts,
-private artifacts, arbitrary expressions, script paths, and semantic
-reconstruction are outside the projection grammar.
+and public output schema ids and paths are each independently disjoint from
+private artifact schema ids and paths. Projection source fields come only from
+the selected public output; target fields come only from the declared consumer
+input. Every non-`direct` projection must statically prove that each required
+consumer field comes from a required producer field and that every legal source
+value remains valid after the declared mapping/normalizer. The 1.3 proof grammar
+is deliberately conservative: exact property schemas, finite `const`/`enum`
+normalization, non-empty scalar strings, positive integers, and ASCII trim with
+an explicit non-blank source pattern are accepted; an unprovable relation fails
+activation even when one example passes. Runtime facts, private artifacts,
+arbitrary expressions, script paths, and semantic reconstruction are outside
+the projection grammar.
 
 An explicit `zero_payload` stop still receives the producer's typed-exit
 routing identity, but that identity is not forwarded as stop-response payload.
@@ -921,9 +931,13 @@ installer/validator walks every component with `lstat`. A regular, dangling,
 internal, external, or multilevel symlink at the target or any ancestor fails
 closed; no asset may be read from or written through it.
 
-Package command files are thin wrappers. They locate only the managed
-`run-skill-command` dispatcher, pass their package root and fixed validator id,
-and forward the original arguments. They must not locate an old companion
+Package command files are thin wrappers. Interface 1.3 source validation binds
+the invocation command to one declared validator and requires the complete
+wrapper bytes to match the supported dispatcher-only template; a dispatcher
+name in a comment, dead branch, or adjacent local output/behavior is not route
+evidence. Accepted wrappers locate only the managed `run-skill-command`
+dispatcher, pass their package root and fixed validator id, and forward the
+original arguments. They must not locate an old companion
 command directly, parse task/gate evidence, validate commit messages, stage Git
 content, or implement transaction/rollback behavior. Missing or incompatible
 runtime state fails before the target companion command and reports that the

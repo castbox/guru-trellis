@@ -1,5 +1,94 @@
 # #144 最小 typed handoff I/O 实现交接
 
+## 0. Round 1 Branch Review finding 修复交接
+
+状态：`Round 1 Finding Fix Complete`
+
+本轮以全新的实现代理身份修复 `reviews/round-01-final-finding.md` 中四项 current-scope
+P2；未修改或删除 `review.md`、`reviews/round-01-final-finding.md`、`review-gate.json`、
+`agent-assignment.json` 和 `task-commit-plans/001.json`。未执行 Phase 2 recorder、commit、
+push、PR、Branch Review recorder 或 finish-work。修复后必须重新执行完整 Phase 2 语义检查，
+再创建 finding-fix commit 和新一轮独立 Branch Review。
+
+### 四项 finding 修复
+
+1. Skill consumer ownership：`consumer.kind=skill` 现在只接受
+   `contract.kind=skill_input`，并要求被引用 `interface.json` 的 `id` 与
+   `consumer.id` 完全一致。Producer-owned `json_schema` 或错误 target interface 均阻断。
+2. Projection totality：所有非 `direct` projection 现在要求 consumer required field
+   来自 producer required field，并对每个 mapping 做保守静态全域兼容证明。支持 exact
+   property schema、有限 `const`/`enum` normalize、非空 scalar string、positive integer，
+   以及带显式 ASCII non-blank pattern 的 trim；无法证明时即使 example 通过也拒绝激活。
+   Representative repeat output 因此显式声明 trim 后仍非空的 pattern。
+3. Public/private disjointness：public output 与 private artifact 的 schema id 集合和 path
+   集合分别求交；复用相同 id/不同 path 或相同 path/不同 id 都会得到
+   `[public_private_overlap]`。
+4. Dispatcher-only wrapper：interface 1.3 invocation wrapper 必须绑定恰好一个 declared
+   validator，并以完整 bytes 匹配支持的 dispatcher-only template。仅在注释/死代码中出现
+   `run-skill-command.sh`，或 wrapper 自行 `printf` typed DTO，均不能通过。
+
+### 正常 authoring 负例
+
+- Skill consumer 改绑 producer output schema，或指向错误 Skill interface id。
+- 从 producer `required` 移除 scalar consumer 必填来源字段。
+- 去掉 trim non-blank proof 后让合法 producer example 为单个空格，normalize 后变为空串。
+- public/private 分别复用 schema id 或 schema path。
+- wrapper 只在注释写 dispatcher 名并本地输出合法 DTO。
+
+### 验证结果
+
+- Targeted 四 finding + representative happy path：5/5 passed。
+- `python3 -m unittest discover -s trellis/skills/guru-team/tests -p 'test_*.py'`：
+  99/99 passed。
+- Preset installer tests：39/39 passed；ownership tests：6/6 passed。
+- Source/installed `check-skill-packages`、legacy discovery、dogfood drift、upstream
+  ownership、canonical/installed byte equality、Python compile、Bash syntax、JSON parse、
+  task validation、workspace boundary、`git diff --check`：全部通过。
+- Dogfood apply 首轮只产生 runtime 的一个 known-managed `.bak`；核验新 installed bytes
+  与 canonical SHA-256 相同后删除，幂等 reapply 为零 `.new`/`.bak`、零 conflict/removal。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh`：通过 clean init、
+  workflow preview/switch、preset install、`trellis update`、reapply、mixed fixture smoke、
+  source/installed/ownership 与最终零 sidecar；最终为 384 managed files、9 legacy、
+  0 production minimal。
+
+### Docs SSOT 与范围
+
+- Durable Docs SSOT 已同步：`.trellis/spec/workflow/skill-package-contract.md`、
+  `companion-scripts.md`、`quality-guidelines.md`、`docs/requirements/requirement-main.md`、
+  `docs/requirements/guru-team-trellis-flow.md` 及三份 public README。
+- Durable contract 现在明确 target-owned Skill input、非 direct projection 全域证明、
+  schema id/path 分别互斥和 complete-byte dispatcher-only wrapper 规则。
+- Task-history-only：Round 1 raw finding、review rollup/gate、agent liveness/assignment、旧
+  commit plan、逐次命令原始输出、临时 throwaway 路径和本轮交接；这些不进入 durable
+  runtime contract。
+- 九个 production Skills 继续为 interface 1.2 + `legacy`，没有 payload/interface/route
+  迁移；mixed 1.3 fixture 仍为 test-only。#145/#146 继续是 follow-up，不由 #144 关闭。
+- 未修改 frozen overlay、CI/CD、container、K8s、DB migration 或 Makefile；无部署/数据库
+  迁移影响，未引入 hostile-input/并发/TOCTOU/锁/原子写入等排除范围。
+- Public marketplace sample 只证明公开 marketplace 通路和本地 unpublished canonical
+  bytes；它不是当前 feature ref 的 immutable remote evidence。Exact feature-ref marketplace
+  verification 仍须在 reviewed branch push 后由 finish/publish gate 补齐。
+
+### 本轮 implementation dirty paths
+
+- `.trellis/guru-team/extension.json`
+- `.trellis/guru-team/scripts/python/guru_team_trellis.py`
+- `.trellis/spec/workflow/companion-scripts.md`
+- `.trellis/spec/workflow/quality-guidelines.md`
+- `.trellis/spec/workflow/skill-package-contract.md`
+- `.trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md`
+- `README.md`
+- `docs/requirements/guru-team-trellis-flow.md`
+- `docs/requirements/requirement-main.md`
+- `trellis/presets/guru-team/README.md`
+- `trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json`
+- `trellis/skills/guru-team/tests/test_skill_packages.py`
+- `trellis/workflows/guru-team/README.md`
+- `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`
+
+Branch Review metadata 的既有 dirty paths 由主会话继续管理，不属于本轮 implementation
+dirty list，也未被本代理改写。
+
 ## 1. 实现状态
 
 `Implementation Complete`

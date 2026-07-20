@@ -7,6 +7,10 @@
   "properties": {
     "exit_id": {"const": "repeat"},
     "profile": {"const": "reentry"},
-    "next_topic": {"type": "string", "minLength": 1}
+    "next_topic": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "[^\\u0009-\\u000d\\u0020]"
+    }
   }
 }

@@ -81,8 +81,10 @@ evidence fail closed。
 Interface 1.3 的 closed `public_contracts` 分开声明 caller-owned input、exact
 package invocation、per-exit output、consumer-owned Skill/workflow/stop input、thin
 projection 与 runtime/gate private artifact。每个 output field 都必须有直接 consumer
-use，projection 只允许 direct/select/rename/closed normalize，public/private schema
-必须互斥。稳定 public discovery command 是：
+use；Skill consumer 只能引用相同 target id 的 `skill_input`；非 direct projection 必须
+静态证明 required source 与 normalizer 后的全域兼容，不能只验证 example；public/private
+schema id/path 分别互斥。Wrapper 完整 bytes 必须匹配 dispatcher-only template。稳定
+public discovery command 是：
 
 ```bash
 .trellis/guru-team/scripts/bash/discover-skill-contract.sh \

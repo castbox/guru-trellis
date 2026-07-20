@@ -105,7 +105,14 @@ Source package validation performs the separate representative invocation
 probe declared by each 1.3 fixture interface. It executes the package-local
 wrapper with its exact example argv, requires a single JSON object containing
 one declared exit, validates that object against the independent exit schema,
-and applies the declared consumer projection to the actual stdout object. A
+and applies the declared consumer projection to the actual stdout object.
+`kind=skill` is accepted only with a target-owned `skill_input` whose referenced
+interface id equals the consumer id. Non-`direct` projections additionally prove
+required-field totality and a conservative all-valid-output schema/normalizer
+relation; example-only compatibility is insufficient. Public output/private
+artifact schema ids and paths are checked as separate disjoint sets. The
+invocation wrapper must match the dispatcher-only template as complete bytes,
+so comments, dead code, or local `printf` cannot impersonate routing. A
 zero-payload stop accepts only the required exit routing identity and an empty
 `select` mapping; aggregate structured input binds exact ordered profile schema
 references and required discriminator constants; scalar input binds exact

@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-20T02:29:35Z",
+  "generated_at": "2026-07-20T04:09:45Z",
   "mode": "workflow",
   "task": {
     "task_dir": ".trellis/tasks/07-20-144-minimal-typed-handoff-io",
@@ -41,7 +41,7 @@
     "facts_sha256": "184bfeebbc7634420fc741975a3b29d538a7e535674376ecb81ffa97081daf3f"
   },
   "requirement_provenance": {
-    "summary": "已从零复核 live Issue #144、AGENTS.md、approved planning、P1-P15 provenance、官方 Trellis extension 边界与 #145/#146 follow-up 边界；当前实现只交付最小 typed handoff I/O 基础设施和 mixed fixture。",
+    "summary": "已复核 live #144/#145/#146、approved planning、官方 Trellis extension 边界与完整实现；当前只交付 #144 minimal typed handoff 基础设施。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
@@ -74,15 +74,15 @@
         "size_bytes": 1275
       }
     ],
-    "facts_sha256": "37f4d2300540d2e961c3ae0f45cfa6acb5a5c10acc0a78a90d1c9da4ce97f0c6"
+    "facts_sha256": "3854984c1e34423036dbf66b6fdf850ca71a30ab582feae80a7f82f43ab9f3f1"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
     "durable_paths": [
       {
         "path": ".trellis/spec/workflow/skill-package-contract.md",
-        "sha256": "c2a390bd9cce9c0b83b577adbacc9d2b7f924fa4a451778ee72d82d9e8ad1d59",
-        "size_bytes": 57075
+        "sha256": "f7aba5c985b50e4d401242d6454a0e3d3895dd07478f62e65a6cc11062f2ea2c",
+        "size_bytes": 58118
       },
       {
         "path": ".trellis/spec/workflow/data-contracts.md",
@@ -91,13 +91,13 @@
       },
       {
         "path": ".trellis/spec/workflow/companion-scripts.md",
-        "sha256": "a1205400e3b43f9f824346c7db0dc1bed435d2e5ae3f1444f73711818b6f7dda",
-        "size_bytes": 76598
+        "sha256": "f594e3d5c693cd231a329563634c0e5b604f24501f42738480c02e1d8731f49c",
+        "size_bytes": 77135
       },
       {
         "path": ".trellis/spec/workflow/quality-guidelines.md",
-        "sha256": "7985f39e439f2759d20a6d63112eb7690e079030f495eb268a8f55604097e4d3",
-        "size_bytes": 26071
+        "sha256": "0f0976607611d4ad3d645b12b4ea7da68083c47a14f554887df5297b8c3e3020",
+        "size_bytes": 26461
       },
       {
         "path": ".trellis/spec/workflow/index.md",
@@ -106,13 +106,13 @@
       },
       {
         "path": "docs/requirements/requirement-main.md",
-        "sha256": "352c812c427c009bbe39348d9d1f87e2e10e4bdc8ecf067ab1cd06635ad9bbe6",
-        "size_bytes": 64558
+        "sha256": "93a776d39b1df33d782c7cf03114b011d6f75970438ec5835737d9feb4b14597",
+        "size_bytes": 64836
       },
       {
         "path": "docs/requirements/guru-team-trellis-flow.md",
-        "sha256": "b9f79cff80116ac85a500a16ac18063f446b756958ff7636a63d2f517b550a09",
-        "size_bytes": 74816
+        "sha256": "da1508c35974a760e7dd7ccd14a793dbdb9b1ec46b2467ac5543794004f97ca2",
+        "size_bytes": 75134
       },
       {
         "path": "docs/requirements/README.md",
@@ -121,46 +121,46 @@
       },
       {
         "path": "README.md",
-        "sha256": "36902e1f56f6bd2fcd28c5fb4e8e51369bcb5e8d210b2340324bb05bcaa1562a",
-        "size_bytes": 70433
+        "sha256": "ff645ef69329991caaf1491feeb6880301935c9f9d33cc856b554631f4752336",
+        "size_bytes": 70673
       },
       {
         "path": "trellis/workflows/guru-team/README.md",
-        "sha256": "e8a4b0411d452d12ebd9ec6c3e637bcafcb97f59c120daf6912ebd80d307d443",
-        "size_bytes": 64739
+        "sha256": "1a7748b01360354bfde5639bd53247ed06b39d369474211cafc8af66a58bff11",
+        "size_bytes": 64931
       },
       {
         "path": "trellis/presets/guru-team/README.md",
-        "sha256": "90c43e4cf529684d6204f2362d6225590443f80ede5e69244a9a3a4e04481099",
-        "size_bytes": 60086
+        "sha256": "ef55120cc617283a61d7867375ad1946104f9074ff327254038b6d0989981328",
+        "size_bytes": 60371
       }
     ],
-    "sync_result": "ssot_first 已执行；1.2/1.3 共存、registry state、caller-owned input、exact invocation、per-exit output、consumer/projection、zero-payload、inventory、discovery、migration boundary 和安装/update 门禁已写入 durable specs、requirements 与 public README，并同步 Phase 2 四项 finding-fix 的 quality matrix。",
+    "sync_result": "ssot_first 已执行；target-owned input、projection 全域证明、public/private 分别互斥、complete-byte dispatcher-only wrapper、discovery 与 migration boundary 已同步 durable docs。",
     "task_delta_merged": true,
     "task_history_only": [
-      "Phase 0 evidence、planning confirmation digest、agent liveness、逐轮 finding reproduction、临时日志、throwaway 路径与 implementation handoff"
+      "Phase 0/planning evidence、agent liveness、Branch Review round、临时日志、throwaway 路径与 task-local handoff"
     ],
     "no_update_reason": null,
-    "followup_or_pr_limit": "#145/#146 继续负责九个 production Skill payload migration；exact feature-ref marketplace 安装在 reviewed branch push 后由 publish gate 补证。",
-    "facts_sha256": "f0e4d072a3f5fd0746bef3ace8bc4bf94bba6b94e4976b92ea8aa6372353399a"
+    "followup_or_pr_limit": "#145/#146 继续负责 production Skill migration；exact feature-ref marketplace evidence 在 reviewed branch push 后补证。",
+    "facts_sha256": "7af63a6a95ac6cc36429272825f59b127967dd9a0db37885683a8303a3f77d69"
   },
   "implementation_handoff": {
-    "summary": "实现代理完成 1.3 schema、registry 1.1、runtime/discovery、mixed fixture、installer、dogfood 与 durable docs；独立 Phase 2 代理随后修复并全量验证 direct schema compatibility、mapping target uniqueness、non-zero exit_id const 与 stable discovery error classification 四项 P2。",
+    "summary": "两轮实现代理完成 #144 与 Round 1 四项修复；全新阶段二代理又修复 wrapper root P2，最终完整验证通过。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
-        "sha256": "529e8d0b96ef68aa743abbadb22ac819effd93b8265e8a3248fe0582588f40c9",
-        "size_bytes": 15317
+        "sha256": "8ceaeb268fce341160214ab617a20d3d53da9855dd265318ae5cf2fb5fa306a2",
+        "size_bytes": 20942
       },
       {
         "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
-        "sha256": "2f1c8226444ecffd37c0921cca1bf81bfbe5748dcf120fa85a91321a1ba5c831",
-        "size_bytes": 44794
+        "sha256": "357e9da3bbf75417b32b0a15a9beef7a0dcd01ae76c75a281e922dfb413fec63",
+        "size_bytes": 71511
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "d4efa80eff70c2b376718c36b3b4c1b379d9924de6971fe00a9695de6a290adb",
-        "size_bytes": 1244810
+        "sha256": "607f378e9f9bf9696dd56a153bcab7ddd27607e277d363c5f7a190e6a8a160e5",
+        "size_bytes": 1254828
       },
       {
         "path": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
@@ -169,134 +169,94 @@
       },
       {
         "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
-        "sha256": "9a4e6c46704063e7d4bd96c30d7bfd7dbe015e99e3cf62176b0de0a5f99727ae",
-        "size_bytes": 89866
+        "sha256": "b711d5732d8c823c6b03d3c18ff902bb61c042a38581fe92581a395726a08a77",
+        "size_bytes": 97555
       },
       {
         "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
         "sha256": "751c439265ca59002ec702f1b3e6ebdc127f86cd9d79267cd5aadc48a55b344d",
         "size_bytes": 157086
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "93a776d39b1df33d782c7cf03114b011d6f75970438ec5835737d9feb4b14597",
+        "size_bytes": 64836
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "ef55120cc617283a61d7867375ad1946104f9074ff327254038b6d0989981328",
+        "size_bytes": 60371
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
+        "sha256": "f283b7cadff70eaba9d1a2e3b9b76d44326f8271b7340a6d2bb7ee4f5452ba88",
+        "size_bytes": 432
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+        "sha256": "1691d153a1e62ada5bb1f4d167d4afae191680fb469c9fe975ca2c4730d014de",
+        "size_bytes": 1159
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
+        "sha256": "b1a9f819a7e1cdbbf2f102ff8f2e4d35b5b6e698321487ea616bb2c9ac0a11f5",
+        "size_bytes": 1133
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "1a7748b01360354bfde5639bd53247ed06b39d369474211cafc8af66a58bff11",
+        "size_bytes": 64931
       }
     ],
-    "facts_sha256": "26889c7ba20119375cae9d0fb8572c18f0e6c07dede8fc29083454107d051cf9"
+    "facts_sha256": "3ac61a553e4db535b971bf1f0832cd87b0ee8dcfc697b9084a7a7c0924038e8a"
   },
   "agent_assignment": {
     "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
     "implementation_agent_ids": [
+      "/root/issue_144_finding_fix",
       "/root/issue_144_implement"
     ],
     "check_agent_ids": [
-      "/root/issue_144_phase2_check"
+      "/root/issue_144_phase2_check",
+      "/root/issue_144_phase2_recheck"
     ],
     "recovery_complete": true,
-    "phase2_state_sha256": "c824072e8864f1303c6642eb7f39c9f25e75c76b0ca0aba407803dece2fc50bd",
-    "facts_sha256": "b7e4b818cebec5324937cece2c6011b5c70d9e3d8339ad527d50ac27c1b0f939"
+    "phase2_state_sha256": "677042a0e2f8d4f651807ad92f6f748ce07e4320bc46832bb0453136b9e683b4",
+    "facts_sha256": "d4291bce32f4f56e72ea5de5327bb2b7f3000873d45f97ec953c40d98538d667"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d",
-    "head": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d",
+    "head": "66ddb16081672fbf778a3c91cefc62e38945a9a9",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
       ".trellis/guru-team/extension.json",
-      ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/guru-team/skills/registry.json",
-      ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
-      ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
       ".trellis/spec/workflow/companion-scripts.md",
-      ".trellis/spec/workflow/data-contracts.md",
-      ".trellis/spec/workflow/index.md",
       ".trellis/spec/workflow/quality-guidelines.md",
       ".trellis/spec/workflow/skill-package-contract.md",
       ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/check.jsonl",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/context-discovery.json",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/contract-wording-review.json",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.jsonl",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
       ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-review.json",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-scope-ledger.json",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/planning-approval.json",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/research/trellis-official-extension-boundaries.md",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-start-context.json",
-      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/review-gate.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/review.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-01-final-finding.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/001.json",
       "README.md",
-      "docs/requirements/README.md",
       "docs/requirements/guru-team-trellis-flow.md",
       "docs/requirements/requirement-main.md",
-      "trellis/guru-team-extension.json",
       "trellis/presets/guru-team/README.md",
-      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
-      "trellis/skills/guru-team/registry.json",
-      "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
-      "trellis/skills/guru-team/schemas/skill-registry.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/action-completed.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/consumers/workflow/sync-completed.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/fixture-dispatcher.py",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/SKILL.md",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-blocked-output.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-completed-output.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-forwarded-output.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-initial-input.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-reentry-input.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-repeat-output.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/fixture-result.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/invocation-error.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/references/contract.md",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-blocked-output.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-checkpoint.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-completed-output.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-forwarded-output.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-gate-evidence.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-initial-input.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-input.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-reentry-input.schema.json",
       "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/fixture-result.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/invocation-error.schema.json",
       "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/validate-fixture-result.sh",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/tests/test_contract.py",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/SKILL.md",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/examples/legacy-result.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/interface.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/references/contract.md",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/schemas/legacy-result.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/scripts/validate-legacy-result.sh",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-legacy/tests/test_contract.py",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/SKILL.md",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/invocation-error.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/sync-output.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/interface.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/references/contract.md",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/invocation-error.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-checkpoint.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-output.schema.json",
       "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/tests/test_contract.py",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/registry.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-registry.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
       "trellis/skills/guru-team/tests/test_skill_packages.py",
       "trellis/workflows/guru-team/README.md",
-      "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
       "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "reviewed_paths": [
       {
         "path": ".trellis/spec/workflow/skill-package-contract.md",
-        "sha256": "c2a390bd9cce9c0b83b577adbacc9d2b7f924fa4a451778ee72d82d9e8ad1d59",
-        "size_bytes": 57075
+        "sha256": "f7aba5c985b50e4d401242d6454a0e3d3895dd07478f62e65a6cc11062f2ea2c",
+        "size_bytes": 58118
       },
       {
         "path": ".trellis/spec/workflow/data-contracts.md",
@@ -305,23 +265,23 @@
       },
       {
         "path": ".trellis/spec/workflow/companion-scripts.md",
-        "sha256": "a1205400e3b43f9f824346c7db0dc1bed435d2e5ae3f1444f73711818b6f7dda",
-        "size_bytes": 76598
+        "sha256": "f594e3d5c693cd231a329563634c0e5b604f24501f42738480c02e1d8731f49c",
+        "size_bytes": 77135
       },
       {
         "path": ".trellis/spec/workflow/quality-guidelines.md",
-        "sha256": "7985f39e439f2759d20a6d63112eb7690e079030f495eb268a8f55604097e4d3",
-        "size_bytes": 26071
+        "sha256": "0f0976607611d4ad3d645b12b4ea7da68083c47a14f554887df5297b8c3e3020",
+        "size_bytes": 26461
       },
       {
         "path": "docs/requirements/guru-team-trellis-flow.md",
-        "sha256": "b9f79cff80116ac85a500a16ac18063f446b756958ff7636a63d2f517b550a09",
-        "size_bytes": 74816
+        "sha256": "da1508c35974a760e7dd7ccd14a793dbdb9b1ec46b2467ac5543794004f97ca2",
+        "size_bytes": 75134
       },
       {
         "path": "README.md",
-        "sha256": "36902e1f56f6bd2fcd28c5fb4e8e51369bcb5e8d210b2340324bb05bcaa1562a",
-        "size_bytes": 70433
+        "sha256": "ff645ef69329991caaf1491feeb6880301935c9f9d33cc856b554631f4752336",
+        "size_bytes": 70673
       },
       {
         "path": "trellis/guru-team-extension.json",
@@ -345,8 +305,8 @@
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "d4efa80eff70c2b376718c36b3b4c1b379d9924de6971fe00a9695de6a290adb",
-        "size_bytes": 1244810
+        "sha256": "607f378e9f9bf9696dd56a153bcab7ddd27607e277d363c5f7a190e6a8a160e5",
+        "size_bytes": 1254828
       },
       {
         "path": "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
@@ -365,8 +325,8 @@
       },
       {
         "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
-        "sha256": "9a4e6c46704063e7d4bd96c30d7bfd7dbe015e99e3cf62176b0de0a5f99727ae",
-        "size_bytes": 89866
+        "sha256": "b711d5732d8c823c6b03d3c18ff902bb61c042a38581fe92581a395726a08a77",
+        "size_bytes": 97555
       },
       {
         "path": "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
@@ -400,13 +360,13 @@
       },
       {
         "path": ".trellis/guru-team/extension.json",
-        "sha256": "9c8cd50f3f8aeebd716cdc13daf4531d284efbc20bc1fe071987768ec63f3fdd",
+        "sha256": "4faf9898bc28b849bc2fa6c6ce49d19fdfab58aa93652358c0b3388bb132528b",
         "size_bytes": 151814
       },
       {
         "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "d4efa80eff70c2b376718c36b3b4c1b379d9924de6971fe00a9695de6a290adb",
-        "size_bytes": 1244810
+        "sha256": "607f378e9f9bf9696dd56a153bcab7ddd27607e277d363c5f7a190e6a8a160e5",
+        "size_bytes": 1254828
       },
       {
         "path": ".trellis/guru-team/skills/registry.json",
@@ -420,16 +380,46 @@
       },
       {
         "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
-        "sha256": "529e8d0b96ef68aa743abbadb22ac819effd93b8265e8a3248fe0582588f40c9",
-        "size_bytes": 15317
+        "sha256": "8ceaeb268fce341160214ab617a20d3d53da9855dd265318ae5cf2fb5fa306a2",
+        "size_bytes": 20942
       },
       {
         "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
-        "sha256": "2f1c8226444ecffd37c0921cca1bf81bfbe5748dcf120fa85a91321a1ba5c831",
-        "size_bytes": 44794
+        "sha256": "357e9da3bbf75417b32b0a15a9beef7a0dcd01ae76c75a281e922dfb413fec63",
+        "size_bytes": 71511
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "93a776d39b1df33d782c7cf03114b011d6f75970438ec5835737d9feb4b14597",
+        "size_bytes": 64836
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "ef55120cc617283a61d7867375ad1946104f9074ff327254038b6d0989981328",
+        "size_bytes": 60371
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
+        "sha256": "f283b7cadff70eaba9d1a2e3b9b76d44326f8271b7340a6d2bb7ee4f5452ba88",
+        "size_bytes": 432
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+        "sha256": "1691d153a1e62ada5bb1f4d167d4afae191680fb469c9fe975ca2c4730d014de",
+        "size_bytes": 1159
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
+        "sha256": "b1a9f819a7e1cdbbf2f102ff8f2e4d35b5b6e698321487ea616bb2c9ac0a11f5",
+        "size_bytes": 1133
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "1a7748b01360354bfde5639bd53247ed06b39d369474211cafc8af66a58bff11",
+        "size_bytes": 64931
       }
     ],
-    "snapshot_sha256": "a96a55dc1d91ae7c279931a11dbf50b85e4751adf3542919e8333dbf14fa6948"
+    "snapshot_sha256": "5372535517cc7f170c8e32fb21719a275bbf600a4c9938ac7ccebfce471d29ea"
   },
   "check_execution": {
     "commands": [
@@ -448,9 +438,9 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "4a314cdae27e1663d7cb3f6393259311333fe8fbdcdbc97fb866dac8afcc4733",
-        "stderr_size_bytes": 195,
-        "summary": "最终 Skill package suite 95/95 通过，覆盖 mixed 1.2/1.3、四种 projection、三类 consumer、self-reentry、private persistence 与 finding 回归。"
+        "stderr_sha256": "9ebb9fa7206025369315da5d4ec494ef1bb62bbb8d3589e590a9e7f6fa15c03e",
+        "stderr_size_bytes": 201,
+        "summary": "Skill package suite 100/100 通过，覆盖四项 Round 1 mutation 负例与六种 wrapper root。"
       },
       {
         "id": "installer_tests",
@@ -461,7 +451,7 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "d6141d8c1d4c1bf45664630e7416a27fd036e59a5eb48690dd9e0fd2be54108a",
+        "stderr_sha256": "0e9124da00262e3275dabb52a841f03d59ef6c6ebc096e4b861efb9a4929a7a9",
         "stderr_size_bytes": 802,
         "summary": "Preset installer suite 39/39 通过。"
       },
@@ -474,9 +464,9 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "2e918ce327554ec3ec44b63e3f078d6c8f1841001de496b92cb7d3a867ecaf3a",
+        "stderr_sha256": "c14592d34a18593b316286ae2a7c90a90a19805855297357f52a2035470564e6",
         "stderr_size_bytes": 104,
-        "summary": "Upstream ownership unit suite 6/6 通过。"
+        "summary": "Upstream ownership suite 6/6 通过。"
       },
       {
         "id": "source_packages",
@@ -491,7 +481,7 @@
         "stdout_size_bytes": 943,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Canonical source package/registry/interface/runtime/workflow validation 通过，九个 production Skills 保持 1.2 legacy。"
+        "summary": "Canonical source validation 通过，production 为 9 legacy/0 minimal。"
       },
       {
         "id": "installed_packages",
@@ -506,7 +496,7 @@
         "stdout_size_bytes": 1131,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Dogfood installed package/platform/mode/managed inventory validation 通过，384 managed files 且无 sidecar/conflict/removal。"
+        "summary": "Installed validation 通过，384 managed，零 sidecar/conflict/removal。"
       },
       {
         "id": "dogfood_drift",
@@ -518,7 +508,7 @@
         "stdout_size_bytes": 1644,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Canonical preset 与 dogfood overlay 安装副本无漂移。"
+        "summary": "Canonical 与 dogfood 副本无漂移。"
       },
       {
         "id": "upstream_ownership",
@@ -533,7 +523,7 @@
         "stdout_size_bytes": 1585,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "43 条 frozen/active overlays 与 13 项 managed claims ownership 校验通过。"
+        "summary": "43 frozen overlays 与 13 managed claims 通过。"
       },
       {
         "id": "installed_discovery",
@@ -552,7 +542,7 @@
         "stdout_size_bytes": 314,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Installed discovery 精确返回 guru-sync-base 的 1.2 legacy 合同与迁移边界。"
+        "summary": "Installed discovery 返回 guru-sync-base 1.2 legacy 与迁移边界。"
       },
       {
         "id": "bash_syntax",
@@ -561,14 +551,16 @@
           "-n",
           "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
           "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
-          ".trellis/guru-team/scripts/bash/discover-skill-contract.sh"
+          ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
+          "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+          "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Changed Bash wrappers/verifier 语法检查通过。"
+        "summary": "Changed Bash verifier、discovery 与两个 1.3 wrapper 语法通过。"
       },
       {
         "id": "python_compile",
@@ -588,7 +580,7 @@
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Changed Python runtime/installer/tests/fixture 编译检查通过；仓库无独立 mypy/pyright gate。"
+        "summary": "Changed Python 编译通过；仓库无 mypy/pyright gate。"
       },
       {
         "id": "json_validation",
@@ -602,7 +594,7 @@
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "全部新增或修改且未删除的 JSON/schema/example/task artifact 解析通过。"
+        "summary": "全部新增/修改 JSON 与 schema 解析通过。"
       },
       {
         "id": "task_validate",
@@ -617,7 +609,7 @@
         "stdout_size_bytes": 325,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Task 及 10 条 implement/11 条 check curated manifest 校验通过。"
+        "summary": "Task 与 10 implement/11 check context 校验通过。"
       },
       {
         "id": "sidecar_scan",
@@ -631,7 +623,7 @@
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "仓库递归扫描未发现 unresolved .new/.bak sidecar。"
+        "summary": "仓库无 unresolved .new/.bak。"
       },
       {
         "id": "git_diff_check",
@@ -646,7 +638,7 @@
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "当前完整 tracked diff 无 whitespace error。"
+        "summary": "完整 tracked diff 无 whitespace error。"
       },
       {
         "id": "workspace_boundary",
@@ -657,11 +649,11 @@
           ".trellis/tasks/07-20-144-minimal-typed-handoff-io"
         ],
         "exit_code": 0,
-        "stdout_sha256": "d6461e7be3e93cbadd5ddcd541fae82974fe769fe661d1701dddc5912c1e9299",
-        "stdout_size_bytes": 9590,
+        "stdout_sha256": "e88014bd13e7d35074b865ba31619f5bfa43ce725e9775ac77e037c5cf725bb3",
+        "stdout_size_bytes": 2148,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Expected/actual task worktree 一致，source checkout clean 且无 suspicious artifacts。"
+        "summary": "Task worktree 边界一致，source checkout clean。"
       },
       {
         "id": "planning_approval",
@@ -674,11 +666,11 @@
           "approved"
         ],
         "exit_code": 0,
-        "stdout_sha256": "47ac9719e1355dc05f975f85939e8af8f5945b08289a6813d9542e40af9df967",
+        "stdout_sha256": "04c09bccabe4489b50e2d0c92048e4ea2b0d9d0cb9f111c1f1514c4c5b894f12",
         "stdout_size_bytes": 762,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Planning approval schema 2.0、approved exit、authority 与三份 planning digest 当前有效。"
+        "summary": "Planning approval 2.0 approved 与三份 digest 有效。"
       },
       {
         "id": "agent_assignment",
@@ -689,11 +681,11 @@
           ".trellis/tasks/07-20-144-minimal-typed-handoff-io"
         ],
         "exit_code": 0,
-        "stdout_sha256": "417930b7fc06edd25a1c647e018284d0a1aad258b6dc05de23e349b9f0f26b37",
-        "stdout_size_bytes": 1280,
+        "stdout_sha256": "20f7f93e7614b88afe8fae36bf76a53b53a9969376c2180a026b844aeac7fb07",
+        "stdout_size_bytes": 1314,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "实现/阶段二 assignment、liveness、failed/resume 与 completed recovery chain 校验通过。"
+        "summary": "两轮实现/阶段二 completed set 与 recovery chain 通过。"
       },
       {
         "id": "throwaway_exact_ref",
@@ -705,7 +697,7 @@
         "stdout_size_bytes": 595,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "当前 dirty 未推送 feature branch 无远程 exact ref，verifier 按设计 fail closed；该限制不冒充 pass。"
+        "summary": "未推送 feature ref 无远程 exact ref，按设计 exit 2；不冒充 pass。"
       },
       {
         "id": "throwaway_public_sample",
@@ -715,11 +707,11 @@
           "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
         ],
         "exit_code": 0,
-        "stdout_sha256": "a51c79483d703e64eeb8913a6227366c62429ec76a7955f968a2020a54fc69d9",
+        "stdout_sha256": "c62ff74e032ae65f3950a6a4b140dab9e8c5031aba6864f5f1e8fba42f22fdb0",
         "stdout_size_bytes": 636237,
-        "stderr_sha256": "6b78600d406c11329edb55e77a63ca95006491393189a9505b043a47b7a4552d",
+        "stderr_sha256": "537f150fa0eeadbe4e36fa5d5952b79c486b7996d12750aa9ce89b812e4a2259",
         "stderr_size_bytes": 929,
-        "summary": "最终字节的 clean throwaway 通过 public marketplace discovery 与本地 unpublished canonical sample，覆盖 init、preview/switch、update、preset reapply、source/installed/ownership/platform/mixed fixture 与零 sidecar。"
+        "summary": "Clean throwaway public-sample 完整流程 exit 0，末段 20/20，零 sidecar。"
       }
     ],
     "worker_evidence": [
@@ -729,88 +721,112 @@
         "summary": "独立 trellis-check 代理从零读取 approved planning、11 个 curated inputs、7,141 行 specs、official research、implementation handoff 与完整 dirty diff，按正常路径复现并修复 4 个 P2，随后重跑 95/39/6 tests、source/installed/discovery、byte/mode、ownership、dogfood、clean throwaway/update-reapply 与 final boundary；最终无 open P0-P3 finding。该报告只作为 raw worker evidence，scope、adequacy、Gate 与 typed exit 由 guru-check-task semantic owner 独立判断。",
         "evidence_only": true,
         "facts_sha256": "8bce5b9b1488d23dc981b436a73c99432c87b8d1a9df557d327624f7b6ca7a98"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_phase2_recheck",
+        "summary": "全新阶段二检查代理从零读取 planning/workflow/spec/task/ledger/完整 diff，复现 Round 1 四项 P2，发现并机械修复 wrapper root P2，随后全量重跑 100/39/6、source/installed/discovery、dogfood/ownership、clean throwaway/update-reapply 与 final boundary；最终无 open finding。该报告只提供 raw worker evidence，Gate 与 typed exit 由 guru-check-task owner 判断。",
+        "evidence_only": true,
+        "facts_sha256": "22fb847227578dcf19f14073849af35d01925772cb62a7aa36e83d2645a1ef7d"
       }
     ],
     "unverified_items": [
       {
         "id": "remote_exact_feature_ref",
-        "command_or_area": "clean marketplace install from the exact current feature ref",
-        "reason": "当前实现仍处于未提交、未推送的 reviewed worktree，远端不存在可解析的 exact feature ref；默认 verifier 已证明会 fail closed。",
-        "impact": "不影响本地 Phase 2 对 canonical/installed bytes、公开 marketplace 通路与 clean update/reapply 的验收；必须在 reviewed branch push 后由 Remote Marketplace Verification Gate 补证，才能发布 PR。",
+        "command_or_area": "clean marketplace install from exact current feature ref",
+        "reason": "当前 reviewed feature branch 尚未 push；默认 verifier 按设计 exit 2。",
+        "impact": "不影响 pre-commit Phase 2；reviewed branch push 后必须补证。",
         "blocking": false
       }
     ],
-    "execution_sha256": "b33803086ac0de14912546b5ed6a3b41e3695093f17cca2cb1621371d234d41e"
+    "execution_sha256": "ad360c376eeea43b44247a2a536b1d90c5b92830a624207da1bd220455fc87f5"
   },
   "scope_qualification": {
     "candidates": [
       {
-        "id": "p2-direct-schema-compatibility",
-        "summary": "direct projection 只验证 example，未证明 producer output schema 对 consumer schema 的全实例兼容。",
+        "id": "round1-skill-consumer-ownership",
+        "summary": "Skill consumer 未绑定 target-owned skill_input 与 target interface identity。",
+        "trigger_refs": [
+          "R3",
+          "R6",
+          "AC6",
+          "AC9"
+        ],
+        "normal_path_reproduction": "把 Skill consumer 改绑 producer output schema 或错误 target interface id，旧 validator 可接受。",
+        "disposition": "current_scope",
+        "route_basis": "#144 要求 consumer input 由 target Skill 拥有且 id 精确匹配。",
+        "severity": "P2",
+        "finding_id": "F-P2-005"
+      },
+      {
+        "id": "round1-projection-totality",
+        "summary": "非 direct projection 仅以 example 证明兼容。",
         "trigger_refs": [
           "R4",
           "R6",
           "AC6",
           "AC9"
         ],
-        "normal_path_reproduction": "在 test-only 1.3 package 中将 consumer schema 收窄为 result pattern，producer 仍允许任意非空字符串；example 和 representative stdout 偶合匹配时 source validator 错误通过。",
+        "normal_path_reproduction": "移除 required source 或允许 trim 后为空的合法字符串，example 偶合通过但存在不可消费的合法 producer output。",
         "disposition": "current_scope",
-        "route_basis": "Issue #144 明确要求 consumer projection 可以安全消费每个合法 producer output；这是正常 Skill authoring 路径的 contract activation bug。",
+        "route_basis": "#144 要求 projection 对 producer contract 全域可消费。",
         "severity": "P2",
-        "finding_id": "F-P2-001"
+        "finding_id": "F-P2-006"
       },
       {
-        "id": "p2-duplicate-projection-target",
-        "summary": "Projection mapping 允许重复 target，后写入值可覆盖前值。",
+        "id": "round1-public-private-disjointness",
+        "summary": "Public/private 只比较 schema id/path 整对。",
         "trigger_refs": [
-          "R6",
-          "AC6",
+          "R7",
+          "AC10"
+        ],
+        "normal_path_reproduction": "private artifact 单独复用 public schema id 或 path，旧 validator 可接受。",
+        "disposition": "current_scope",
+        "route_basis": "#144 要求 public handoff 与 private state identity/locator 分离。",
+        "severity": "P2",
+        "finding_id": "F-P2-007"
+      },
+      {
+        "id": "round1-dispatcher-only-wrapper",
+        "summary": "Wrapper 可用注释或本地输出冒充 dispatcher route。",
+        "trigger_refs": [
+          "R4",
+          "R5",
+          "AC7",
           "AC9"
         ],
-        "normal_path_reproduction": "在 test-only select/rename mapping 中让两个 source 指向同一 target；示例值偶合时 validator 通过，但另一个合法 producer instance 经顺序覆写生成无效 consumer DTO。",
+        "normal_path_reproduction": "wrapper 仅在注释写 dispatcher 并自行输出合法 DTO，旧 validator 通过。",
         "disposition": "current_scope",
-        "route_basis": "Issue #144 的 projection 闭集要求 deterministic、per-field consumer use 且 fail closed；重复 target 是受支持配置中的正常 authoring 错误。",
+        "route_basis": "#144 要求 wrapper 是 dispatcher-only adapter。",
         "severity": "P2",
-        "finding_id": "F-P2-002"
+        "finding_id": "F-P2-008"
       },
       {
-        "id": "p2-exit-id-const",
-        "summary": "非零 per-exit output schema 未强制 required exact exit_id const。",
+        "id": "phase2-wrapper-root-resolution",
+        "summary": "Fixed-depth wrapper 不能覆盖六种受支持 package roots。",
         "trigger_refs": [
-          "R3",
-          "R5",
-          "AC6",
-          "AC8"
+          "R4",
+          "R7",
+          "R12",
+          "AC7",
+          "AC13",
+          "AC14"
         ],
-        "normal_path_reproduction": "在 test-only non-zero completed output schema 中把 exit_id 从 exact const 放宽为任意非空字符串；其他字段与 example 保持有效时 source validator 错误通过。",
+        "normal_path_reproduction": "默认执行 fixture wrapper 定位到错误目录，canonical/installed/四平台深度也不同。",
         "disposition": "current_scope",
-        "route_basis": "Independent per-exit output 必须绑定稳定 typed-exit identity；否则不能作为 #144 的最小 handoff contract。",
+        "route_basis": "Mandatory wrapper 必须在所有正常安装位置定位 dispatcher。",
         "severity": "P2",
-        "finding_id": "F-P2-003"
-      },
-      {
-        "id": "p2-stable-discovery-codes",
-        "summary": "Discovery 将 version mismatch、missing asset 与 installed drift 压成同一 contract_validation_failed。",
-        "trigger_refs": [
-          "R8",
-          "AC8",
-          "AC11"
-        ],
-        "normal_path_reproduction": "两个独立正常临时 source repo 分别制造 registry/interface version mismatch 和缺失 package asset，CLI 都 exit 2 且返回同一 code，调用者无法区分恢复动作。",
-        "disposition": "current_scope",
-        "route_basis": "Issue #144 和 durable spec 明确要求稳定、可区分的 discovery error code；这是正常安装/作者失误路径。",
-        "severity": "P2",
-        "finding_id": "F-P2-004"
+        "finding_id": "F-P2-009"
       }
     ],
-    "scope_sha256": "430729630786faecdd7da77028ad2e7a6760becb8f1bdac13f48c10c69230df0"
+    "scope_sha256": "fa4e5c2f70c2ce72ae93ff8f19b246aa587a53134e27d4a081a079ff20f255bb"
   },
   "semantic_review": {
     "adequacy_dimensions": [
       {
         "id": "requirements",
         "status": "passed",
-        "summary": "R1-R12、AC1-AC15 与 P1-P15 均由 schema/runtime/fixture/installer/docs 或验证证据承接，#145/#146 未吸收。",
+        "summary": "R1-R12、AC1-AC15、P1-P15 均已承接，#145/#146 未吸收。",
         "evidence_refs": [
           "planning",
           "requirement_provenance"
@@ -822,7 +838,7 @@
       {
         "id": "design",
         "status": "passed",
-        "summary": "1.2/1.3 并存、registry-driven dispatch、closed public I/O、projection/private boundary 与 stable discovery 合同按 approved design 实现。",
+        "summary": "1.2/1.3、registry、closed I/O、projection/private 与 wrapper 符合设计。",
         "evidence_refs": [
           "planning",
           "repository_snapshot"
@@ -834,104 +850,106 @@
       {
         "id": "implementation",
         "status": "passed",
-        "summary": "Canonical/runtime/schema/registry/fixture/installer/dogfood 已同步，四项正常路径 validator gap 已修复并由 full rerun 闭环。",
+        "summary": "Canonical/runtime/schema/fixture/installer/dogfood 已同步，五项 P2 resolved。",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot"
         ],
-        "affected_sha256": "d4efa80eff70c2b376718c36b3b4c1b379d9924de6971fe00a9695de6a290adb",
+        "affected_sha256": "607f378e9f9bf9696dd56a153bcab7ddd27607e277d363c5f7a190e6a8a160e5",
         "finding_ids": [
-          "F-P2-001",
-          "F-P2-002",
-          "F-P2-003",
-          "F-P2-004"
+          "F-P2-005",
+          "F-P2-006",
+          "F-P2-007",
+          "F-P2-008",
+          "F-P2-009"
         ],
         "unverified_ids": []
       },
       {
         "id": "tests",
         "status": "passed",
-        "summary": "95/39/6 suites、四项 targeted regression、source/installed/discovery、static checks 与 clean throwaway/update-reapply 全部通过。",
+        "summary": "100/39/6、mutation、六 root、source/installed 与 throwaway 全通过。",
         "evidence_refs": [
           "check_execution"
         ],
-        "affected_sha256": "9a4e6c46704063e7d4bd96c30d7bfd7dbe015e99e3cf62176b0de0a5f99727ae",
+        "affected_sha256": "b711d5732d8c823c6b03d3c18ff902bb61c042a38581fe92581a395726a08a77",
         "finding_ids": [
-          "F-P2-001",
-          "F-P2-002",
-          "F-P2-003",
-          "F-P2-004"
+          "F-P2-005",
+          "F-P2-006",
+          "F-P2-007",
+          "F-P2-008",
+          "F-P2-009"
         ],
         "unverified_ids": []
       },
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "ssot_first 已完成，五份 workflow spec、三份 requirements 和三份 public README 与 finding-fix 后实现一致，task delta 已 merge。",
+        "summary": "ssot_first 完成，spec、requirements、README 与实现一致。",
         "evidence_refs": [
           "docs_ssot_plan"
         ],
-        "affected_sha256": "b9f79cff80116ac85a500a16ac18063f446b756958ff7636a63d2f517b550a09",
+        "affected_sha256": "93a776d39b1df33d782c7cf03114b011d6f75970438ec5835737d9feb4b14597",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "cross_layer",
         "status": "passed",
-        "summary": "Extension API、registry/interface、runtime validation、wrapper stdout、consumer projection、installer managed assets 和平台副本数据流闭合。",
+        "summary": "Extension、registry、runtime、wrapper、projection、installer、平台副本闭合。",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "c2a390bd9cce9c0b83b577adbacc9d2b7f924fa4a451778ee72d82d9e8ad1d59",
+        "affected_sha256": "f7aba5c985b50e4d401242d6454a0e3d3895dd07478f62e65a6cc11062f2ea2c",
         "finding_ids": [
-          "F-P2-001",
-          "F-P2-002",
-          "F-P2-003"
+          "F-P2-005",
+          "F-P2-006",
+          "F-P2-007",
+          "F-P2-008",
+          "F-P2-009"
         ],
         "unverified_ids": []
       },
       {
         "id": "compatibility",
         "status": "passed",
-        "summary": "冻结 1.2 digest 与九个 production package payload 未变，registry 九项保持 1.2 legacy；mixed fixture/inventory 与 production 隔离，stable discovery 分类已闭环。",
+        "summary": "1.2 digest 与九个 production payload 不变，9 legacy/0 minimal。",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
         "affected_sha256": "fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e",
-        "finding_ids": [
-          "F-P2-004"
-        ],
+        "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "deployment_and_operations",
         "status": "passed",
-        "summary": "变更只影响 Guru Team extension/preset/schema/runtime 分发；无 CI/CD、container、K8s/Kustomize、DB migration、Makefile、业务配置或 production Skill payload 变更。",
+        "summary": "无 CI/CD、container、K8s、DB migration 或 Makefile 影响。",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "8e109a841a61b741658bd19f5c43fa905438dc3e795bbcc5bd46315e91e2cb4e",
+        "affected_sha256": "4faf9898bc28b849bc2fa6c6ce49d19fdfab58aa93652358c0b3388bb132528b",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "agent_recovery",
         "status": "passed",
-        "summary": "实现代理 failed 后 same-agent resume 已闭环并 completed；独立阶段二检查代理完成 finding 发现、自修复、full rerun 与 completed，只有 completed evidence 进入本轮。",
+        "summary": "两轮实现和阶段二 completed set 与 recovery chain 通过。",
         "evidence_refs": [
           "agent_assignment"
         ],
-        "affected_sha256": "2f1c8226444ecffd37c0921cca1bf81bfbe5748dcf120fa85a91321a1ba5c831",
+        "affected_sha256": "357e9da3bbf75417b32b0a15a9beef7a0dcd01ae76c75a281e922dfb413fec63",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "所有适用 repo checks 均有 exact argv/exit/stdout/stderr digest/size；未推送 exact feature-ref 限制已 fail-closed 且有明确 publish consumer，不阻塞 pre-commit Phase 2。",
+        "summary": "适用命令均有 exact 机器证据；exact feature ref 由 publish gate 补证。",
         "evidence_refs": [
           "check_execution",
           "agent_assignment"
@@ -945,67 +963,76 @@
     ],
     "findings": [
       {
-        "id": "F-P2-001",
-        "candidate_id": "p2-direct-schema-compatibility",
+        "id": "F-P2-005",
+        "candidate_id": "round1-skill-consumer-ownership",
         "severity": "P2",
-        "summary": "已要求 direct producer/consumer schema 忽略各自 $id 后精确相等，并补收窄 consumer 负例。",
+        "summary": "已强制 target-owned skill_input 与 target interface.id。",
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
         "blocking": true,
         "status": "resolved"
       },
       {
-        "id": "F-P2-002",
-        "candidate_id": "p2-duplicate-projection-target",
+        "id": "F-P2-006",
+        "candidate_id": "round1-projection-totality",
         "severity": "P2",
-        "summary": "已拒绝重复 mapping target，并补示例偶合但其他合法 producer instance 失败的负例。",
+        "summary": "已要求 required source 并保守证明 schema/normalizer 全域兼容。",
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
         "blocking": true,
         "status": "resolved"
       },
       {
-        "id": "F-P2-003",
-        "candidate_id": "p2-exit-id-const",
+        "id": "F-P2-007",
+        "candidate_id": "round1-public-private-disjointness",
         "severity": "P2",
-        "summary": "已要求所有非零 typed output schema 绑定 required exact exit_id const。",
+        "summary": "已分别拒绝 schema id 与 path 交集。",
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
         "blocking": true,
         "status": "resolved"
       },
       {
-        "id": "F-P2-004",
-        "candidate_id": "p2-stable-discovery-codes",
+        "id": "F-P2-008",
+        "candidate_id": "round1-dispatcher-only-wrapper",
         "severity": "P2",
-        "summary": "已稳定区分 version_state_mismatch、contract_asset_invalid、installed_drift 与 generic validation failure，并补真实 CLI 集成负例。",
+        "summary": "已用 complete-byte template 拒绝注释、死代码和本地输出。",
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "F-P2-009",
+        "candidate_id": "phase2-wrapper-root-resolution",
+        "severity": "P2",
+        "summary": "已按六种 package root suffix 解析 repo root 并补回归。",
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
         "blocking": true,
         "status": "resolved"
       }
     ],
-    "adequacy_sha256": "0161f5d90c79d2c521b0de067a16bf02f4806d4282e35b47f95d5eca5023eff3",
+    "adequacy_sha256": "bbbd05fe9e6f936f48441177037e760f52af404482ae8669a500be822f879d7a",
     "ai_review_gate": {
       "status": "passed",
-      "summary": "完整 guru-check-task Phase 2 已覆盖 Issue #144 的 R1-R12、AC1-AC15、P1-P15、四项 current-scope P2 finding-fix、Docs SSOT、完整 dirty diff、agent recovery 与全部适用验证；无 open finding、scope change 或 blocking unverified item。",
+      "summary": "完整 Phase 2 已覆盖 #144 R/AC/P、Round 1 四项 P2、wrapper root P2、Docs SSOT、完整 diff/dirty state、agent recovery 与全部适用验证；五项均 resolved，无 open finding、scope change 或 blocking unverified。",
       "planning_facts_sha256": "184bfeebbc7634420fc741975a3b29d538a7e535674376ecb81ffa97081daf3f",
-      "snapshot_sha256": "a96a55dc1d91ae7c279931a11dbf50b85e4751adf3542919e8333dbf14fa6948",
-      "scope_sha256": "430729630786faecdd7da77028ad2e7a6760becb8f1bdac13f48c10c69230df0",
-      "adequacy_sha256": "0161f5d90c79d2c521b0de067a16bf02f4806d4282e35b47f95d5eca5023eff3",
-      "findings_count": 4,
+      "snapshot_sha256": "5372535517cc7f170c8e32fb21719a275bbf600a4c9938ac7ccebfce471d29ea",
+      "scope_sha256": "fa4e5c2f70c2ce72ae93ff8f19b246aa587a53134e27d4a081a079ff20f255bb",
+      "adequacy_sha256": "bbbd05fe9e6f936f48441177037e760f52af404482ae8669a500be822f879d7a",
+      "findings_count": 5,
       "full_rerun": true,
-      "full_round_sha256": "abcf33a891f3084a404b88dc074e5fe966dc28d11337a9be0487ccad9a06bd3d"
+      "full_round_sha256": "95281cec0e944d03234fd5610ac5db8604ca91cacbb44a3311b0cc6bd6901277"
     }
   },
   "human_confirmation": {
     "kind": "not-required",
     "status": "not_required",
-    "summary": "Phase 2 semantic pass 不含无条件 human confirmation；用户此前确认只用于 planning approval。",
+    "summary": "Phase 2 无无条件 human confirmation；planning confirmation 不替代本 Gate。",
     "confirmed_at": null
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "完整 Phase 2 semantic review 与全部适用验证通过，四项 current-scope P2 已闭环，无 blocking unverified、planning drift 或 scope change。",
+  "reason": "完整 Phase 2 semantic review 与最终字节验证通过，五项 current-scope P2 已闭环。",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
-  "facts_sha256": "23058b380e931c86b4f1448128a1914f69ec9d4720d907ada491203292451dad"
+  "facts_sha256": "901c163cc8e4830275ce76543575f61c10b47a13adce4638941ecbd1640d797f"
 }

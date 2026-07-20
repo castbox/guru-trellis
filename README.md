@@ -263,7 +263,10 @@ pair 选 schema，不从文件或 optional 字段猜版本。#144 阶段九个 p
 Interface 1.3 分开声明 caller-owned structured/scalar input、package-local exact
 invocation、每个 typed exit 的独立 output schema/example、consumer-owned
 Skill/workflow/stop input、direct/select/rename/closed normalize projection，以及
-runtime checkpoint/gate evidence private artifact。使用稳定 discovery 命令查看合同：
+runtime checkpoint/gate evidence private artifact。Skill consumer 必须引用相同 id 的
+target-owned input；非 direct projection 必须证明 required 与 normalizer 后全域兼容，
+public/private schema id/path 分别互斥；wrapper 必须完整匹配 dispatcher-only template。
+使用稳定 discovery 命令查看合同：
 
 ```bash
 .trellis/guru-team/scripts/bash/discover-skill-contract.sh \

@@ -67,7 +67,12 @@ bytes/identity as a regression fixture while validating independent interface
 same run. Tests cover discriminator/`oneOf`, every per-exit schema/example,
 every output field's direct consumer use, Skill/workflow/stop consumers,
 self-reentry, `direct|select|rename|normalize` projection, and public/private
-schema disjointness. The stop case proves `zero_payload` with only routing
+schema-id and schema-path disjointness. Skill consumers prove target-owned
+`skill_input` plus exact target interface identity. Non-`direct` projections
+prove required-source totality and all-valid-output compatibility, including a
+normalizer counterexample that passes the producer schema but fails after
+normalization when the proof constraint is removed. The stop case proves
+`zero_payload` with only routing
 `exit_id` and an empty `select`; negative cases reject extra stop payload and
 empty `select` for non-zero consumers. Aggregate branches bind the exact
 ordered profile schema references, discriminator fields are required constants,
@@ -80,7 +85,8 @@ example, missing or non-constant exit identity, unknown public I/O fields,
 nullable mega-output authoring, unconsumed field, a direct consumer schema that
 is narrower than its producer schema, duplicate projection targets, missing
 consumer input, private-field projection, unknown/semantic projection
-operation, runtime-source import, 1.2/1.3 state mismatch, new
+operation, runtime-source import, comment/dead-code/local-output wrapper
+impersonation, 1.2/1.3 state mismatch, new
 non-allowlisted production legacy entry, and reserved/planned package install.
 Discovery tests cover stable help, legacy/minimal variants, unknown skill,
 version mismatch, missing asset, installed drift, and stable

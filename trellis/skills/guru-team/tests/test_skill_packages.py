@@ -604,6 +604,69 @@ class SourceValidationTests(unittest.TestCase):
             for item in self.validate()["errors"]
         ))
 
+    def test_skill_consumer_requires_target_owned_matching_interface(self) -> None:
+        interface = self.read_interface()
+        consumer = next(
+            item for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "sync_input"
+        )
+        consumer["contract"] = {
+            "kind": "json_schema",
+            "schema_id": "guru-fixture-action-forwarded-output-1.0",
+            "path": "packages/guru-example-action/schemas/action-forwarded-output.schema.json",
+        }
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[consumer_skill_input]" in item and "target-owned" in item
+            for item in self.validate()["errors"]
+        ))
+
+        interface = json.loads(
+            (FIXTURE / "packages/guru-example-action/interface.json").read_text(encoding="utf-8")
+        )
+        consumer = next(
+            item for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "sync_input"
+        )
+        consumer["contract"] = {
+            "kind": "skill_input",
+            "interface_path": "packages/guru-example-action/interface.json",
+            "input_kind": "structured_json",
+            "profile_id": "initial",
+        }
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[consumer_skill_input]" in item and "declared target Skill interface" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_non_direct_projection_requires_all_valid_outputs_to_be_consumable(self) -> None:
+        forwarded_path = self.root / "packages/guru-example-action/schemas/action-forwarded-output.schema.json"
+        forwarded = json.loads(forwarded_path.read_text(encoding="utf-8"))
+        forwarded["required"].remove("forwarded_item")
+        forwarded_path.write_text(json.dumps(forwarded), encoding="utf-8")
+        self.assertTrue(any(
+            "[projection_required_source]" in item and "item" in item
+            for item in self.validate()["errors"]
+        ))
+
+        shutil.copyfile(
+            FIXTURE / "packages/guru-example-action/schemas/action-forwarded-output.schema.json",
+            forwarded_path,
+        )
+        repeat_path = self.root / "packages/guru-example-action/schemas/action-repeat-output.schema.json"
+        repeat = json.loads(repeat_path.read_text(encoding="utf-8"))
+        repeat["properties"]["next_topic"].pop("pattern")
+        repeat_path.write_text(json.dumps(repeat), encoding="utf-8")
+        repeat_example_path = self.root / "packages/guru-example-action/examples/action-repeat-output.json"
+        repeat_example = json.loads(repeat_example_path.read_text(encoding="utf-8"))
+        repeat_example["next_topic"] = " "
+        repeat_example_path.write_text(json.dumps(repeat_example), encoding="utf-8")
+        self.assertTrue(any(
+            "[projection_contract_compatibility]" in item and "next_topic" in item
+            for item in self.validate()["errors"]
+        ))
+
     def test_projection_rejects_duplicate_targets_when_example_values_alias(self) -> None:
         example_path = self.root / "packages/guru-example-action/examples/action-forwarded-output.json"
         example = json.loads(example_path.read_text(encoding="utf-8"))
@@ -657,6 +720,32 @@ class SourceValidationTests(unittest.TestCase):
             for item in self.validate()["errors"]
         ))
 
+    def test_public_private_schema_ids_and_paths_are_independently_disjoint(self) -> None:
+        interface = self.read_interface()
+        public_ref = interface["public_contracts"]["outputs"][2]["schema"]
+        private_ref = interface["public_contracts"]["private_artifacts"][0]["schema"]
+        private_path = self.root / "packages/guru-example-action" / private_ref["path"]
+        private_schema = json.loads(private_path.read_text(encoding="utf-8"))
+        private_schema["$id"] = public_ref["schema_id"]
+        private_path.write_text(json.dumps(private_schema), encoding="utf-8")
+        private_ref["schema_id"] = public_ref["schema_id"]
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[public_private_overlap]" in item and "schema ids" in item
+            for item in self.validate()["errors"]
+        ))
+
+        interface = json.loads(
+            (FIXTURE / "packages/guru-example-action/interface.json").read_text(encoding="utf-8")
+        )
+        public_ref = interface["public_contracts"]["outputs"][2]["schema"]
+        interface["public_contracts"]["private_artifacts"][0]["schema"]["path"] = public_ref["path"]
+        self.write_interface(interface)
+        self.assertTrue(any(
+            "[public_private_overlap]" in item and "schema paths" in item
+            for item in self.validate()["errors"]
+        ))
+
     def test_public_wrapper_cannot_read_runtime_source(self) -> None:
         wrapper = self.root / "packages/guru-example-action/scripts/invoke.sh"
         wrapper.write_text(
@@ -667,6 +756,77 @@ class SourceValidationTests(unittest.TestCase):
             "[runtime_source_dependency]" in item
             for item in self.validate()["errors"]
         ))
+
+    def test_public_wrapper_rejects_comment_only_dispatcher_and_local_output(self) -> None:
+        wrapper = self.root / "packages/guru-example-action/scripts/invoke.sh"
+        wrapper.write_text(
+            "#!/usr/bin/env bash\n"
+            "set -euo pipefail\n"
+            "# run-skill-command.sh\n"
+            "printf '%s\\n' '{\"exit_id\":\"completed\",\"result\":\"alpha complete\"}'\n",
+            encoding="utf-8",
+        )
+        self.assertTrue(any(
+            "[invocation_dispatcher]" in item and "dispatcher-only template" in item
+            for item in self.validate()["errors"]
+        ))
+
+        shutil.copyfile(
+            FIXTURE / "packages/guru-example-action/scripts/invoke.sh",
+            wrapper,
+        )
+        wrapper.write_text(
+            wrapper.read_text(encoding="utf-8")
+            + "printf '%s\\n' 'dead local output'\n",
+            encoding="utf-8",
+        )
+        self.assertTrue(any(
+            "[invocation_dispatcher]" in item and "dispatcher-only template" in item
+            for item in self.validate()["errors"]
+        ))
+
+    def test_public_wrapper_resolves_dispatcher_from_every_supported_package_root(self) -> None:
+        wrapper_bytes = (
+            FIXTURE / "packages/guru-example-action/scripts/invoke.sh"
+        ).read_bytes()
+        package_roots = [
+            Path("trellis/skills/guru-team/packages/guru-example-action"),
+            Path(".trellis/guru-team/skills/packages/guru-example-action"),
+            Path(".agents/skills/guru-example-action"),
+            Path(".codex/skills/guru-example-action"),
+            Path(".cursor/skills/guru-example-action"),
+            Path(".claude/skills/guru-example-action"),
+        ]
+        for package_relative in package_roots:
+            with self.subTest(package_root=str(package_relative)):
+                repo = self.root / "dispatcher-resolution" / package_relative.parts[0].replace(".", "dot")
+                package = repo / package_relative
+                wrapper = package / "scripts/invoke.sh"
+                wrapper.parent.mkdir(parents=True, exist_ok=True)
+                wrapper.write_bytes(wrapper_bytes)
+                wrapper.chmod(0o755)
+                dispatcher = repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+                dispatcher.parent.mkdir(parents=True, exist_ok=True)
+                dispatcher.write_text(
+                    "#!/usr/bin/env bash\n"
+                    "set -euo pipefail\n"
+                    "printf '%s\\n' '{\"exit_id\":\"completed\",\"result\":\"resolved\"}'\n",
+                    encoding="utf-8",
+                )
+                dispatcher.chmod(0o755)
+                environment = dict(os.environ)
+                environment.pop("GURU_TEAM_DISPATCHER", None)
+                result = subprocess.run(
+                    [str(wrapper), "--input", "examples/action-initial-input.json"],
+                    cwd=package,
+                    env=environment,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(json.loads(result.stdout)["result"], "resolved")
 
     def test_extension_registry_and_legacy_inventory_mismatch_fail(self) -> None:
         extension_path = self.root / "extension.json"

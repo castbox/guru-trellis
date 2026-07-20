@@ -15742,6 +15742,150 @@ def skill_apply_projection(
     return result
 
 
+SKILL_ASCII_TRIM_NON_BLANK_PATTERN = r"[^\u0009-\u000d\u0020]"
+
+
+def skill_projection_finite_values(schema: dict[str, Any]) -> list[Any] | None:
+    if "const" in schema:
+        return [schema["const"]]
+    values = schema.get("enum")
+    if isinstance(values, list) and values:
+        return values
+    return None
+
+
+def skill_projection_normalize_value(value: Any, normalizer: Any) -> Any:
+    if normalizer is None:
+        return value
+    projected = skill_apply_projection(
+        {
+            "operation": "normalize",
+            "mappings": [
+                {"source": "source", "target": "target", "normalizer": normalizer}
+            ],
+        },
+        {"source": value},
+    )
+    return projected.get("target")
+
+
+def skill_projection_schema_compatible(
+    source_schema: dict[str, Any],
+    target_schema: dict[str, Any],
+    normalizer: Any,
+) -> bool:
+    finite_values = skill_projection_finite_values(source_schema)
+    if finite_values is not None:
+        return all(
+            not skill_json_schema_validation_errors(
+                skill_projection_normalize_value(value, normalizer),
+                target_schema,
+                "projected finite value",
+            )
+            for value in finite_values
+        )
+    if normalizer is None:
+        return skill_json_equal(source_schema, target_schema)
+    if normalizer != "trim_ascii_outer_whitespace":
+        return False
+    if source_schema.get("type") != "string" or target_schema.get("type") != "string":
+        return False
+    if source_schema.get("pattern") != SKILL_ASCII_TRIM_NON_BLANK_PATTERN:
+        return False
+    if set(target_schema) - {"type", "minLength", "maxLength"}:
+        return False
+    target_minimum = target_schema.get("minLength", 0)
+    if not isinstance(target_minimum, int) or isinstance(target_minimum, bool) or target_minimum > 1:
+        return False
+    target_maximum = target_schema.get("maxLength")
+    if target_maximum is not None:
+        source_maximum = source_schema.get("maxLength")
+        if (
+            not isinstance(target_maximum, int)
+            or isinstance(target_maximum, bool)
+            or not isinstance(source_maximum, int)
+            or isinstance(source_maximum, bool)
+            or source_maximum > target_maximum
+        ):
+            return False
+    return True
+
+
+def skill_projection_scalar_compatible(
+    source_schema: dict[str, Any],
+    scalar_type: Any,
+    normalizer: Any,
+) -> bool:
+    finite_values = skill_projection_finite_values(source_schema)
+    if finite_values is not None:
+        return all(
+            skill_scalar_value_matches(
+                skill_projection_normalize_value(value, normalizer),
+                scalar_type,
+            )
+            for value in finite_values
+        )
+    if normalizer is not None:
+        return False
+    if scalar_type == "string":
+        minimum = source_schema.get("minLength")
+        return (
+            source_schema.get("type") == "string"
+            and isinstance(minimum, int)
+            and not isinstance(minimum, bool)
+            and minimum >= 1
+        )
+    if scalar_type == "positive_integer":
+        minimum = source_schema.get("minimum")
+        return (
+            source_schema.get("type") == "integer"
+            and isinstance(minimum, int)
+            and not isinstance(minimum, bool)
+            and minimum >= 1
+        )
+    return False
+
+
+def skill_validate_dispatcher_wrapper(
+    interface: dict[str, Any],
+    wrapper_relative: str,
+    wrapper_text: str,
+    skill_id: str,
+    errors: list[str],
+) -> None:
+    validator_ids = [
+        str(item.get("id") or "")
+        for item in interface.get("validators", [])
+        if isinstance(item, dict) and item.get("command") == wrapper_relative
+    ]
+    if len(validator_ids) != 1 or not validator_ids[0]:
+        errors.append(
+            f"[invocation_dispatcher] public invocation wrapper for {skill_id} must bind one declared validator"
+        )
+        return
+    expected = (
+        "#!/usr/bin/env bash\n"
+        "set -euo pipefail\n\n"
+        'SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"\n'
+        'PACKAGE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"\n'
+        'case "$PACKAGE_ROOT" in\n'
+        f'  */trellis/skills/guru-team/packages/{skill_id}) REPO_ROOT="${{PACKAGE_ROOT%/trellis/skills/guru-team/packages/{skill_id}}}" ;;\n'
+        f'  */.trellis/guru-team/skills/packages/{skill_id}) REPO_ROOT="${{PACKAGE_ROOT%/.trellis/guru-team/skills/packages/{skill_id}}}" ;;\n'
+        f'  */.agents/skills/{skill_id}) REPO_ROOT="${{PACKAGE_ROOT%/.agents/skills/{skill_id}}}" ;;\n'
+        f'  */.codex/skills/{skill_id}) REPO_ROOT="${{PACKAGE_ROOT%/.codex/skills/{skill_id}}}" ;;\n'
+        f'  */.cursor/skills/{skill_id}) REPO_ROOT="${{PACKAGE_ROOT%/.cursor/skills/{skill_id}}}" ;;\n'
+        f'  */.claude/skills/{skill_id}) REPO_ROOT="${{PACKAGE_ROOT%/.claude/skills/{skill_id}}}" ;;\n'
+        '  *) REPO_ROOT="" ;;\n'
+        'esac\n'
+        f'DISPATCHER="${{GURU_TEAM_DISPATCHER:-${{REPO_ROOT:?unsupported Skill package root for {skill_id}}}/.trellis/guru-team/scripts/bash/run-skill-command.sh}}"\n'
+        f'exec "$DISPATCHER" --package-root "$PACKAGE_ROOT" --validator {validator_ids[0]} -- "$@"\n'
+    )
+    if wrapper_text != expected:
+        errors.append(
+            f"[invocation_dispatcher] public invocation wrapper for {skill_id} must match the dispatcher-only template"
+        )
+
+
 def validate_skill_public_contracts(
     skills_root: Path,
     package: Path,
@@ -15876,8 +16020,13 @@ def validate_skill_public_contracts(
                 wrapper_text = ""
             if "guru_team_trellis.py" in wrapper_text or re.search(r"\b(?:import|source)\b.*guru_team_trellis", wrapper_text):
                 errors.append(f"[runtime_source_dependency] public invocation wrapper for {skill_id} reads runtime source")
-            if "run-skill-command.sh" not in wrapper_text:
-                errors.append(f"[invocation_dispatcher] public invocation wrapper for {skill_id} does not route the shared dispatcher")
+            skill_validate_dispatcher_wrapper(
+                interface,
+                str(wrapper_relative),
+                wrapper_text,
+                skill_id,
+                errors,
+            )
     binding = invocation.get("input_binding")
     if isinstance(binding, dict):
         if input_kind == "structured_json" and (
@@ -15916,7 +16065,8 @@ def validate_skill_public_contracts(
     exit_items = interface.get("external_exits") if isinstance(interface.get("external_exits"), list) else []
     exits = {str(item.get("id")): item for item in exit_items if isinstance(item, dict)}
     output_by_exit: dict[str, tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]] = {}
-    public_schema_keys: set[tuple[str, str]] = set()
+    public_schema_ids: set[str] = set()
+    public_schema_paths: set[str] = set()
     for output in output_items:
         exit_id = str(output.get("exit_id") or "")
         _, schema = skill_contract_asset(
@@ -15943,13 +16093,17 @@ def validate_skill_public_contracts(
             errors.append(f"[output_exit_identity] typed output example {exit_id} for {skill_id} lacks its exit_id")
         schema_ref = output.get("schema")
         if isinstance(schema_ref, dict):
-            public_schema_keys.add((str(schema_ref.get("schema_id") or ""), str(schema_ref.get("path") or "")))
+            public_schema_ids.add(str(schema_ref.get("schema_id") or ""))
+            public_schema_paths.add(str(schema_ref.get("path") or ""))
         output_by_exit[exit_id] = (output, schema or {}, properties, example or {})
     if set(output_by_exit) != set(exits):
         errors.append(f"[output_exit_coverage] typed outputs for {skill_id} must cover external exits exactly")
 
     consumer_by_id = {str(item.get("id") or ""): item for item in consumer_items}
-    consumer_contracts: dict[str, tuple[dict[str, Any] | None, set[str], str]] = {}
+    consumer_contracts: dict[
+        str,
+        tuple[dict[str, Any] | None, set[str], str, set[str]],
+    ] = {}
     consumer_scalar_arguments: dict[str, list[dict[str, Any]]] = {}
     for consumer_id, consumer in consumer_by_id.items():
         identity = consumer.get("consumer")
@@ -15960,19 +16114,37 @@ def validate_skill_public_contracts(
         if payload_kind == "zero_payload":
             if identity.get("kind") != "stop":
                 errors.append(f"[consumer_zero_payload] only stop consumers may declare zero payload")
-            consumer_contracts[consumer_id] = (None, set(), "zero_payload")
+            consumer_contracts[consumer_id] = (None, set(), "zero_payload", set())
             continue
         contract = consumer.get("contract")
         if not isinstance(contract, dict):
             errors.append(f"[consumer_input_missing] consumer input {consumer_id} for {skill_id} has no contract")
             continue
-        if contract.get("kind") == "json_schema":
+        identity_kind = identity.get("kind")
+        contract_kind = contract.get("kind")
+        if identity_kind == "skill" and contract_kind != "skill_input":
+            errors.append(
+                f"[consumer_skill_input] Skill consumer input {consumer_id} for {skill_id} must use the target-owned skill_input contract"
+            )
+            continue
+        if identity_kind != "skill" and contract_kind == "skill_input":
+            errors.append(
+                f"[consumer_skill_input] non-Skill consumer input {consumer_id} for {skill_id} cannot use a Skill-owned input contract"
+            )
+            continue
+        if contract_kind == "json_schema":
             _, schema = skill_contract_asset(
                 boundary, skills_root, contract, f"consumer input {consumer_id} for {skill_id}", errors, schema=True
             )
             properties = set(skill_closed_object_schema(schema, f"consumer input {consumer_id} for {skill_id}", errors))
-            consumer_contracts[consumer_id] = (schema, properties, "structured_json")
-        elif contract.get("kind") == "skill_input":
+            required = schema.get("required") if isinstance(schema, dict) else []
+            consumer_contracts[consumer_id] = (
+                schema,
+                properties,
+                "structured_json",
+                set(required) if isinstance(required, list) else set(),
+            )
+        elif contract_kind == "skill_input":
             interface_relative = skill_safe_relative(contract.get("interface_path"))
             target_interface_path = skills_root / interface_relative if interface_relative is not None else skills_root
             target_interface = None
@@ -15982,6 +16154,11 @@ def validate_skill_public_contracts(
                 errors.append(f"[consumer_skill_input] consumer input {consumer_id} has an unsafe or missing Skill interface")
             else:
                 target_interface = skill_read_json(target_interface_path, f"consumer Skill interface {consumer_id}", errors)
+            if isinstance(target_interface, dict) and target_interface.get("id") != identity.get("id"):
+                errors.append(
+                    f"[consumer_skill_input] consumer input {consumer_id} does not reference the declared target Skill interface"
+                )
+                continue
             target_contracts = target_interface.get("public_contracts") if isinstance(target_interface, dict) else None
             target_input = target_contracts.get("input") if isinstance(target_contracts, dict) else None
             if not isinstance(target_input, dict) or target_input.get("kind") != contract.get("input_kind"):
@@ -16002,11 +16179,17 @@ def validate_skill_public_contracts(
                     schema,
                     set(skill_closed_object_schema(schema, f"consumer Skill input {consumer_id}", errors)),
                     "structured_json",
+                    set(schema.get("required", [])) if isinstance(schema, dict) and isinstance(schema.get("required"), list) else set(),
                 )
             else:
                 arguments = target_input.get("arguments") if isinstance(target_input.get("arguments"), list) else []
                 argument_ids = {str(item.get("id") or "") for item in arguments if isinstance(item, dict)}
-                consumer_contracts[consumer_id] = (None, argument_ids - {""}, "scalar_cli")
+                consumer_contracts[consumer_id] = (
+                    None,
+                    argument_ids - {""},
+                    "scalar_cli",
+                    argument_ids - {""},
+                )
                 consumer_scalar_arguments[consumer_id] = [item for item in arguments if isinstance(item, dict)]
         else:
             errors.append(f"[consumer_input_kind] consumer input {consumer_id} for {skill_id} has an unknown contract kind")
@@ -16056,7 +16239,10 @@ def validate_skill_public_contracts(
             for item in mappings
         ):
             errors.append(f"[projection_private_field] projection {projection.get('id')} reads a private artifact field")
-        target_schema, target_fields, target_kind = consumer_contracts.get(consumer_id, (None, set(), "missing"))
+        target_schema, target_fields, target_kind, target_required = consumer_contracts.get(
+            consumer_id,
+            (None, set(), "missing", set()),
+        )
         if target_kind == "zero_payload":
             required_fields = output_schema.get("required") if isinstance(output_schema, dict) else None
             exit_property = output_properties.get("exit_id")
@@ -16084,6 +16270,52 @@ def validate_skill_public_contracts(
             targets = {str(item.get("target") or "") for item in mappings if isinstance(item, dict)}
             if targets != target_fields:
                 errors.append(f"[projection_target] projection {projection.get('id')} does not populate the consumer input exactly")
+            output_required = set(output_schema.get("required", [])) if isinstance(output_schema.get("required"), list) else set()
+            mapping_by_target = {
+                str(item.get("target") or ""): item
+                for item in mappings
+                if isinstance(item, dict)
+            }
+            for target in sorted(target_required):
+                mapping = mapping_by_target.get(target)
+                source = mapping.get("source") if isinstance(mapping, dict) else None
+                if not isinstance(source, str) or source not in output_required:
+                    errors.append(
+                        f"[projection_required_source] projection {projection.get('id')} cannot guarantee required consumer field {target}"
+                    )
+            for target, mapping in mapping_by_target.items():
+                source = mapping.get("source")
+                source_property = output_properties.get(source)
+                normalizer = mapping.get("normalizer")
+                compatible = False
+                if isinstance(source_property, dict):
+                    if target_kind == "structured_json" and isinstance(target_schema, dict):
+                        target_property = target_schema.get("properties", {}).get(target)
+                        if isinstance(target_property, dict):
+                            compatible = skill_projection_schema_compatible(
+                                source_property,
+                                target_property,
+                                normalizer,
+                            )
+                    elif target_kind == "scalar_cli":
+                        argument = next(
+                            (
+                                item
+                                for item in consumer_scalar_arguments.get(consumer_id, [])
+                                if item.get("id") == target
+                            ),
+                            None,
+                        )
+                        if isinstance(argument, dict):
+                            compatible = skill_projection_scalar_compatible(
+                                source_property,
+                                argument.get("type"),
+                                normalizer,
+                            )
+                if not compatible:
+                    errors.append(
+                        f"[projection_contract_compatibility] projection {projection.get('id')} cannot prove {source} produces valid {target} values"
+                    )
         if target_kind == "zero_payload" and projected:
             errors.append(f"[projection_zero_payload] zero-payload consumer {consumer_id} received projected fields")
         elif target_schema is not None:
@@ -16113,7 +16345,8 @@ def validate_skill_public_contracts(
         if sorted(use_ids) != actual or len(actual) != 1:
             errors.append(f"[consumer_use_coverage] typed output {exit_id} must have one exact consumer projection")
 
-    private_schema_keys: set[tuple[str, str]] = set()
+    private_schema_ids: set[str] = set()
+    private_schema_paths: set[str] = set()
     for artifact in private_items:
         schema_ref = artifact.get("schema")
         _, schema = skill_contract_asset(
@@ -16121,9 +16354,18 @@ def validate_skill_public_contracts(
         )
         skill_closed_object_schema(schema, f"private artifact {artifact.get('id')} for {skill_id}", errors)
         if isinstance(schema_ref, dict):
-            private_schema_keys.add((str(schema_ref.get("schema_id") or ""), str(schema_ref.get("path") or "")))
-    if public_schema_keys & private_schema_keys:
-        errors.append(f"[public_private_overlap] public outputs and private artifacts overlap for {skill_id}")
+            private_schema_ids.add(str(schema_ref.get("schema_id") or ""))
+            private_schema_paths.add(str(schema_ref.get("path") or ""))
+    overlapping_schema_ids = (public_schema_ids - {""}) & (private_schema_ids - {""})
+    overlapping_schema_paths = (public_schema_paths - {""}) & (private_schema_paths - {""})
+    if overlapping_schema_ids:
+        errors.append(
+            f"[public_private_overlap] public output and private artifact schema ids overlap for {skill_id}"
+        )
+    if overlapping_schema_paths:
+        errors.append(
+            f"[public_private_overlap] public output and private artifact schema paths overlap for {skill_id}"
+        )
 
     fixture_dispatcher = skills_root / "fixture-dispatcher.py"
     if wrapper_stat is not None and skill_lstat_path(
@@ -16171,9 +16413,9 @@ def validate_skill_public_contracts(
                     if len(invocation_projections) == 1:
                         consumer_id, projection = invocation_projections[0]
                         projected = skill_apply_projection(projection, payload)
-                        target_schema, target_fields, target_kind = consumer_contracts.get(
+                        target_schema, target_fields, target_kind, _ = consumer_contracts.get(
                             consumer_id,
-                            (None, set(), "missing"),
+                            (None, set(), "missing", set()),
                         )
                         if target_kind == "zero_payload" and projected:
                             errors.append(f"[invocation_projection] invoked zero-payload exit {exit_id} projected fields")

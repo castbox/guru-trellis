@@ -227,6 +227,9 @@ Active registry row 以 exact `interface_schema_id` / `io_contract_state` 选择
 `1.2+legacy` 或 `1.3+minimal_handoff`；#144 的九个 production packages 全部保持
 legacy。Mixed 1.2/1.3 representative fixture、fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
+Fixture source validation 强制 Skill consumer 使用相同 target id 的 target-owned input，
+对非 direct projection 做 required 与 normalizer 后全域兼容证明，分别检查 public/private
+schema id/path 互斥，并要求 wrapper 完整匹配 dispatcher-only template。
 
 Managed executable
 `.trellis/guru-team/scripts/bash/discover-skill-contract.sh` 提供 exact discovery：
