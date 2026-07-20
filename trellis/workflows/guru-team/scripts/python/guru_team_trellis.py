@@ -15407,6 +15407,8 @@ def skill_uri_matches(value: str) -> bool:
         ):
             return False
         if re.fullmatch(r"[Vv][0-9A-Fa-f]+\.[A-Za-z0-9._~!$&'()*+,;=:-]+", literal) is None:
+            if "%" in literal:
+                return False
             try:
                 ipaddress.IPv6Address(literal)
             except ValueError:

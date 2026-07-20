@@ -1094,6 +1094,9 @@ class SourceValidationTests(unittest.TestCase):
             "https://example.com/%1",
             "https://example.com/\x01",
             "http://[invalid]/",
+            "http://[fe80::1%eth0]/",
+            "http://[fe80::1%25eth0]/",
+            "http://[fe80::1%1]/",
             "http://host:port/path",
         )
         for value in valid:

@@ -688,3 +688,78 @@ consumer ownership 与 schema validation 合同；九个 production Skill 仍为
   issue close 或 finish-work。Phase 2 owner 应使用本节 final-byte evidence 刷新正式 gate
   artifact；分支 push 后仍由 Remote Marketplace Verification Gate 补 exact immutable
   feature-ref evidence。
+
+## 16. Round 8 `F-BR-P3-010` finding-fix implementation handoff
+
+### 16.1 Finding closure and exact implementation
+
+- `F-BR-P3-010` 可在正常 1.3 contract authoring 路径复现：Round 7 runtime 把非
+  IPvFuture IP-literal 直接交给 Python `ipaddress.IPv6Address`，因而错误接受 RFC 3986
+  `IPv6address` grammar 不允许的 scope/zone ID。修改前
+  `http://[fe80::1%eth0]/`、`http://[fe80::1%25eth0]/`、
+  `http://[fe80::1%1]/` 均返回零 validation error。
+- Canonical `skill_uri_matches()` 现在只在 literal 未匹配 IPvFuture 后、调用
+  `IPv6Address` 前拒绝任何 `%`。该位置精确覆盖 raw scope、percent-encoded scope 与数字
+  scope；合法 IPv6 不含 `%`，IPvFuture 仍由既有大小写不敏感 grammar 独立处理，reg-name、
+  path、query、fragment 的合法 percent encoding 仍由既有 component parser 处理。
+- URI targeted regression 在既有 RFC 3986 正反例矩阵中增加上述三个 negative case；
+  既有普通 IPv6、uppercase IPvFuture、percent-encoded path、authority 与 numeric port
+  passing cases保持不变。Installed/dogfood runtime 另以 3 valid + 3 zone-ID invalid 独立
+  语义探针复验。
+
+### 16.2 Changed files and managed synchronization
+
+- Canonical runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`。
+- Dogfood runtime 与 managed provenance：
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/extension.json`。Canonical/dogfood runtime SHA-256 均为
+  `0040a014d1cb5950d926b5aafa8e77ad4d84ecf32cf2bb83eccf53247fb7febe`。
+- Regression tests：`trellis/skills/guru-team/tests/test_skill_packages.py`，SHA-256
+  `2d0a788294c7ceab58a49a456b816539d5232e14be2d64609c05e6593cbdb563`。
+- Task-local history：仅追加本节 `implementation-handoff.md`。未修改
+  `agent-assignment.json`、`phase2-check.json`、`issue-scope-ledger.json`、
+  `task-commit-plans/*.json`、`review-gate.json`、`review.md`、`reviews/*.md`、planning
+  approval 或 PR artifacts。
+
+### 16.3 Validation evidence
+
+- Targeted URI regression：1/1 test method passed；该方法完整执行 6 个既有 valid URI、
+  现有 invalid URI 与新增 3 个 zone-ID negative URI。修改前的独立复现证明新增三例均被
+  错误接受，修改后 canonical 与 installed/dogfood 语义探针均证明三例被拒绝。
+- 完整 Skill package suite：122/122 passed；shared runtime：548 passed、13 skipped；
+  preset installer：39/39 passed；upstream ownership：6/6 passed。Shared runtime 最初一次
+  discovery 使用了仓库不存在的 `scripts/python/tests` 目录，未启动任何测试；随后使用实际
+  入口 `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py` 完整重跑并取得
+  上述 548/13 结果。
+- Source/installed validators 均 `status=passed`；九个 production Skills 仍全部为
+  `1.2 + legacy`，installed inventory 为 384 managed files、0
+  sidecar/removal/conflict。Dogfood overlay drift 与 43 frozen/active、13 managed claim
+  ownership 检查通过。
+- 首次 `apply.sh --repo . --all-platforms` 仅更新 dogfood runtime 并生成旧 managed runtime
+  `.bak`；该 sidecar 已逐字节证明等于 HEAD 上的旧 runtime，SHA-256 为
+  `de1f5a6d9fe96be3a4c1fabfd1868333e8b77e7159b6e1846e85079fffc0cd1d`，随后按零
+  sidecar 门禁删除。第二次 apply 为 0 install/update/backup/new copy，最终递归
+  `.new/.bak` scan 为空。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` exit 0，覆盖
+  public marketplace discovery、local unpublished workflow sample、clean init、initial
+  install、preview/switch、`trellis update`、preset reapply、initial/after-update/no-developer
+  package smoke、source/installed/ownership/platform checks 与最终零 sidecar。
+
+### 16.4 Docs SSOT, scope, and next gate
+
+- Docs state 继续为 `complete_docs`，strategy 继续为 `ssot_first`。Durable
+  `.trellis/spec/workflow/skill-package-contract.md` 已要求 `uri` 遵守 RFC 3986 ASCII generic
+  syntax、component 与 authority grammar；`data-contracts.md`、`companion-scripts.md`、
+  `quality-guidelines.md` 已引用同一合同并要求 authority regression。本轮没有新增或改变
+  durable contract，故无需再修改 spec 正文；实现修复的是 runtime 对既有 SSOT 的偏离。
+- 本轮没有新的 task delta 需要 merge 到 durable docs。`F-BR-P3-010` 的复现值、finding
+  lifecycle、执行命令、hash 与验证结果只保留在本 task-local handoff，作为 task history，
+  不成为第二份 runtime SSOT。
+- #145/#146 继续拥有九个 production Skill payload migration；本轮未修改 interface 1.2、
+  production typed exits、workflow route、schema/registry、CI/CD、container、K8s、DB
+  migration、Makefile 或部署配置，也不涉及 secret、客户数据或数据迁移。
+- Source checkout 保持 clean；所有编辑与测试均在 task worktree 执行。实现代理未调用
+  Phase 2 recorder/checker、Branch Review recorder/gate、commit、push、PR、issue close 或
+  finish-work。Public-sample throwaway 已通过；exact immutable feature-ref marketplace
+  verification 仍必须等分支 push 后由发布门禁执行，不构成当前实现 blocker。
