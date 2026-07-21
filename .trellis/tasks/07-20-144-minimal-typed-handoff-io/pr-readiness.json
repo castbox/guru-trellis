@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "codex/144-minimal-typed-handoff-io",
+    "reviewed_head_sha": "87bb90a4c5bd556ba25ca409acfc58ccbbbafa6b",
+    "title": "完成：#144 实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+    "body_source": "pr-body.md",
+    "body_sha256": "020db38406ea2c1260d156fd5a78039b4db056cd9656652bbd4e11346a38b1fe",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "6455093aa4597ba9be4542435ae47bc5d4585ed62754e9e3a0343b387f93e66f"
+  },
+  "publish_inputs_sha256": "47714e3b9a23811e3dd49efb9b4ead67d6925a671b0bfe37f87ac2e9ebed7a90"
+}

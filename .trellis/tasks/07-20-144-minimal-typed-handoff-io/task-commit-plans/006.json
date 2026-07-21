@@ -473,7 +473,86 @@
     "plan_digest": "fa8dd718bb1dd187dd8158e6b5eba6b5499d7c1c5f1a34fa4f2db17d8533bde8"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-20T20:08:52Z",
+    "commit_sha": "1338505df40aeb746af3a5f36c114a0877f85c2d",
+    "parent": "ced2c724d7fc69e2ccddf2a9cbdaf7d8a6cf0866",
+    "message_sha256": "996ec33b0d8d6d625de5d546474974294096378f2234cd296b0ec24bfc61be3f",
+    "committed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/006.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "d938befc00a965f6d5592ae5c08c5c117232ecb9",
+      "actual_tree": "d938befc00a965f6d5592ae5c08c5c117232ecb9",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "3a86eeefafa4e6fe91960cfc21d25ddf0fbfd0b1",
+          "expected_mode": "100644",
+          "actual_blob": "3a86eeefafa4e6fe91960cfc21d25ddf0fbfd0b1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "f6993341a0206d62dd5311353b44273a1bbee4c8",
+          "expected_mode": "100755",
+          "actual_blob": "f6993341a0206d62dd5311353b44273a1bbee4c8",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+          "expected_blob": "c5f7c562bcc8bc3b059ba18635faab8c9bc5f4c4",
+          "expected_mode": "100644",
+          "actual_blob": "c5f7c562bcc8bc3b059ba18635faab8c9bc5f4c4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+          "expected_blob": "1ec3c4036ddfe848f359f024418b3d8a91f231a5",
+          "expected_mode": "100644",
+          "actual_blob": "1ec3c4036ddfe848f359f024418b3d8a91f231a5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/006.json",
+          "expected_blob": "154077308aaf75e85970478319af5ee8972d0b31",
+          "expected_mode": "100644",
+          "actual_blob": "154077308aaf75e85970478319af5ee8972d0b31",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "393e008da97497ed46b9900543420dc7f5766a42",
+          "expected_mode": "100644",
+          "actual_blob": "393e008da97497ed46b9900543420dc7f5766a42",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "f6993341a0206d62dd5311353b44273a1bbee4c8",
+          "expected_mode": "100755",
+          "actual_blob": "f6993341a0206d62dd5311353b44273a1bbee4c8",
+          "actual_mode": "100755",
+          "matches": true
+        }
+      ]
+    }
   }
 }

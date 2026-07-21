@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team Skill 缺少可复用的最小 typed handoff I/O 基础设施，public handoff、consumer contract、projection 与 private artifact 边界无法被统一声明和验证。",
+    "outcome": "已建立 interface 1.3 registry、schema、discovery、validator、representative fixture 与分发验证，同时保留 production Skills 的 legacy payload 边界。",
+    "changed_behavior": [
+      "Skill package 可以声明精简 public input、逐出口 output、consumer input、薄 projection 与 private artifact。",
+      "Registry 与 discovery 按 interface compatibility 和 migration state 选择确定性 variant。",
+      "Validator 对 public/private ownership、projection、consumer compatibility 和 invocation evidence 执行闭环校验。",
+      "Portable pattern 按 ECMA Unicode 与 UTF-16 consuming/search-position 语义校验正常路径输入。",
+      "Representative action、sync、legacy packages 证明 active、mixed 和兼容性边界。",
+      "Canonical、installed、preset、overlay 与 throwaway update/reapply 证据保持一致。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "schema",
+        "name": "Skill interface 与 registry contract",
+        "paths": [],
+        "change": "新增最小 public/private I/O、consumer、projection、variant 与 migration state 合同。"
+      },
+      {
+        "kind": "script",
+        "name": "Shared discovery 与 validator runtime",
+        "paths": [],
+        "change": "按 registry 驱动发现 compatible variant，并确定性校验 schema、projection、format 与 portable pattern。"
+      },
+      {
+        "kind": "test",
+        "name": "Representative fixtures 与 compatibility matrix",
+        "paths": [],
+        "change": "覆盖 active action/sync、legacy、strict JSON、format、UTF-16 pattern、installed inventory 与失败边界。"
+      },
+      {
+        "kind": "preset",
+        "name": "Canonical distribution 与 installed copies",
+        "paths": [],
+        "change": "同步 workflow、preset、dogfood 和三平台产物，并验证 install、update 与 reapply 无漂移。"
+      },
+      {
+        "kind": "docs",
+        "name": "Guru Team workflow durable SSOT",
+        "paths": [],
+        "change": "收敛 public Skill I/O、private state、registry、runtime 与质量门禁的长期合同和导航。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Public Skill I/O And Private State",
+        "before": "Public handoff、consumer input、projection 与 private artifact 缺少统一 package-level 声明和最小化约束。",
+        "after": "Interface 1.3 分别声明 public input、逐 typed exit output、consumer input、薄 projection 与 private artifacts。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Registry variant discovery",
+        "before": "Registry 无法表达 interface compatibility、migration state 与 public/private inventory 的统一发现边界。",
+        "after": "Registry 驱动 compatible variant 选择并保持 production legacy package 的 exact discovery 结果。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Deterministic package validation",
+        "before": "跨 schema、consumer、projection、dispatcher 与 evidence 的一致性缺少完整确定性验证合同。",
+        "after": "Validator 对 ownership、兼容性、strict JSON、format、projection、dispatcher 和 invocation evidence fail closed。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Portable ECMA pattern semantics",
+        "before": "Python code-point regex 不能完整承接声明的 ECMA Unicode、UTF-16 search position 和 consuming 语义。",
+        "after": "Runtime 使用通用 UTF-16 projection 与 pair-aware translation，覆盖 valid pair、isolated surrogate 和零宽搜索。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Production migration boundary",
+        "before": "基础设施交付与 production payload migration 的边界需要可机器验证地保持分离。",
+        "after": "九个 production Skills 继续使用 interface 1.2 legacy，interface 1.3 只由 representative fixture 证明。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "discover-skill-contract.sh"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "public_inputs",
+        "typed_outputs",
+        "private_artifacts",
+        "consumer_contracts",
+        "projection",
+        "migration_state"
+      ],
+      "symbols": [
+        "skill_compile_portable_pattern",
+        "skill_validate_minimal_handoff_interface"
+      ],
+      "phrases": [
+        "最小 typed handoff I/O 基础设施已完成",
+        "skill_compile_portable_pattern 修复 Unicode 消费语义",
+        "discover-skill-contract.sh 支持兼容 variant 发现",
+        "production legacy payload 保留未迁移"
+      ]
+    }
+  }
+}

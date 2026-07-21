@@ -5,7 +5,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/144",
     "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
     "reason": "本任务唯一主交付单元。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Phase 2 typed exit 为 passed，十个 adequacy dimensions 全部通过；Skill 126/126、shared runtime 548 passed/13 skipped、installer 39/39、ownership 6/6、source/installed validators、dogfood drift 与 clean throwaway 验证通过。",
+      "Commit plan 008 已精确提交 reviewed implementation snapshot；expected/actual tree、十个 path blob/mode 与 parent 均匹配，hook_mutation=false。",
+      "Branch Review Gate 已绑定当前 reviewed HEAD；Round 14 finding owner closure 与 Round 15 fresh final review 的 P0/P1/P2/P3 均为 0，blocking findings 为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "459e5dea10a19c9ade7a481a0cf9175ad46cb69934d078013baa9effeacd43dc",
+        "verified_content_head": "87bb90a4c5bd556ba25ca409acfc58ccbbbafa6b",
+        "remote_head": "87bb90a4c5bd556ba25ca409acfc58ccbbbafa6b",
+        "publish_head": "87bb90a4c5bd556ba25ca409acfc58ccbbbafa6b",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,7 +28,22 @@
       "url": "https://github.com/castbox/guru-trellis/issues/144",
       "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
       "reason": "本任务完整实现并验收该 issue。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Phase 2 typed exit 为 passed，十个 adequacy dimensions 全部通过；Skill 126/126、shared runtime 548 passed/13 skipped、installer 39/39、ownership 6/6、source/installed validators、dogfood drift 与 clean throwaway 验证通过。",
+        "Commit plan 008 已精确提交 reviewed implementation snapshot；expected/actual tree、十个 path blob/mode 与 parent 均匹配，hook_mutation=false。",
+        "Branch Review Gate 已绑定当前 reviewed HEAD；Round 14 finding owner closure 与 Round 15 fresh final review 的 P0/P1/P2/P3 均为 0，blocking findings 为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "459e5dea10a19c9ade7a481a0cf9175ad46cb69934d078013baa9effeacd43dc",
+          "verified_content_head": "87bb90a4c5bd556ba25ca409acfc58ccbbbafa6b",
+          "remote_head": "87bb90a4c5bd556ba25ca409acfc58ccbbbafa6b",
+          "publish_head": "87bb90a4c5bd556ba25ca409acfc58ccbbbafa6b",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

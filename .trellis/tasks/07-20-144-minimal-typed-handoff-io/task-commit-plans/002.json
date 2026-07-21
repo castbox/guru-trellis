@@ -500,7 +500,185 @@
     "plan_digest": "1945d8d1de91df8391ec2f2839c798474dfa04fc2ad08ecf0970f830e04dc347"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-20T05:38:04Z",
+    "commit_sha": "535536dbd55427241d7ce88cc14629d47fb6d26c",
+    "parent": "66ddb16081672fbf778a3c91cefc62e38945a9a9",
+    "message_sha256": "e492b5e0d70f8152f051530eda319c36169f7704a39edf5a9499d77fd4c086eb",
+    "committed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/002.json",
+      "README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "849da73a75306ae9b0038f22e208bf38e6021492",
+      "actual_tree": "849da73a75306ae9b0038f22e208bf38e6021492",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "89a9e638cb7935b44f515ff12d5bcebf8f5e9929",
+          "expected_mode": "100644",
+          "actual_blob": "89a9e638cb7935b44f515ff12d5bcebf8f5e9929",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "5af871cb0fa1e898b40259e4141c1e4a2490a774",
+          "expected_mode": "100755",
+          "actual_blob": "5af871cb0fa1e898b40259e4141c1e4a2490a774",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/companion-scripts.md",
+          "expected_blob": "b6acfd077f39743e1f3e85231a8e52722a35f86d",
+          "expected_mode": "100644",
+          "actual_blob": "b6acfd077f39743e1f3e85231a8e52722a35f86d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "8fa118b768bfbe9bb7cbbdc7feb95a1e12d71b38",
+          "expected_mode": "100644",
+          "actual_blob": "8fa118b768bfbe9bb7cbbdc7feb95a1e12d71b38",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "306b6a784a44b8fab7ffd6ad11c1f963a8708030",
+          "expected_mode": "100644",
+          "actual_blob": "306b6a784a44b8fab7ffd6ad11c1f963a8708030",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+          "expected_blob": "a5377b814c9fd11dd0aa365bacc8112e75409cc9",
+          "expected_mode": "100644",
+          "actual_blob": "a5377b814c9fd11dd0aa365bacc8112e75409cc9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/phase2-check.json",
+          "expected_blob": "cf78fe391a82d1009aa2f3b3d92a345b1580bc09",
+          "expected_mode": "100644",
+          "actual_blob": "cf78fe391a82d1009aa2f3b3d92a345b1580bc09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/002.json",
+          "expected_blob": "e08ea6222b8317605e686435b43b0ded7f284c70",
+          "expected_mode": "100644",
+          "actual_blob": "e08ea6222b8317605e686435b43b0ded7f284c70",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "README.md",
+          "expected_blob": "0873383bbb45276f7c70481f522c96f22f1b7fdd",
+          "expected_mode": "100644",
+          "actual_blob": "0873383bbb45276f7c70481f522c96f22f1b7fdd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/guru-team-trellis-flow.md",
+          "expected_blob": "dfc2ef4124eba515ef62dcb0d7941957db94129b",
+          "expected_mode": "100644",
+          "actual_blob": "dfc2ef4124eba515ef62dcb0d7941957db94129b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/requirement-main.md",
+          "expected_blob": "f637b1054474a415fdeb591d5c16ef320255e92d",
+          "expected_mode": "100644",
+          "actual_blob": "f637b1054474a415fdeb591d5c16ef320255e92d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/README.md",
+          "expected_blob": "b1851580bb6ab458703f3541d46f581bb2fb1a98",
+          "expected_mode": "100644",
+          "actual_blob": "b1851580bb6ab458703f3541d46f581bb2fb1a98",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json",
+          "expected_blob": "9b8a769ee4e751c50b1e6d0ef596091ab4efa8ed",
+          "expected_mode": "100644",
+          "actual_blob": "9b8a769ee4e751c50b1e6d0ef596091ab4efa8ed",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/invoke.sh",
+          "expected_blob": "a6de31bf022b30e8f3793fa8a65c3b9a61fbc5e3",
+          "expected_mode": "100755",
+          "actual_blob": "a6de31bf022b30e8f3793fa8a65c3b9a61fbc5e3",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/scripts/invoke.sh",
+          "expected_blob": "d97b6010ffcd0b4cc2d776eb16f4378fb20ad875",
+          "expected_mode": "100755",
+          "actual_blob": "d97b6010ffcd0b4cc2d776eb16f4378fb20ad875",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "3b01cfdb5edb74963af1b19102f2399c6dc463d3",
+          "expected_mode": "100644",
+          "actual_blob": "3b01cfdb5edb74963af1b19102f2399c6dc463d3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "104bc1e84320d5e7b10c4405be261461a7a5cee7",
+          "expected_mode": "100644",
+          "actual_blob": "104bc1e84320d5e7b10c4405be261461a7a5cee7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "5af871cb0fa1e898b40259e4141c1e4a2490a774",
+          "expected_mode": "100755",
+          "actual_blob": "5af871cb0fa1e898b40259e4141c1e4a2490a774",
+          "actual_mode": "100755",
+          "matches": true
+        }
+      ]
+    }
   }
 }
