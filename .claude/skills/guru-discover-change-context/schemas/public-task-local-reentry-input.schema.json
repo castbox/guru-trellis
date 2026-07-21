@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-discover-change-context-input-task-local-reentry-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "repo_locator",
+    "base_branch",
+    "task_locator",
+    "prior_snapshot_locator",
+    "continuation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "task_local_reentry"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "repo_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prior_snapshot_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

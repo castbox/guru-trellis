@@ -1,0 +1,10 @@
+{
+  "profile": "task_local_reentry",
+  "source_exit": "start",
+  "mode": "workflow",
+  "repo_locator": "castbox/guru-trellis",
+  "base_branch": "main",
+  "task_locator": ".trellis/tasks/current",
+  "prior_snapshot_locator": "context-discovery.json",
+  "continuation_id": "stage0-current"
+}

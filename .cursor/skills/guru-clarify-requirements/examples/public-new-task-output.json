@@ -1,0 +1,6 @@
+{
+  "exit_id": "new_task",
+  "target_locator": "#145",
+  "confirmed_action_id": "confirmed-stage0-action",
+  "continuation_id": "stage0-current"
+}

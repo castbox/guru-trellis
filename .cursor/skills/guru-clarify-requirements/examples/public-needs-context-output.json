@@ -1,0 +1,8 @@
+{
+  "exit_id": "needs_context",
+  "handoff_profile": "pre_task",
+  "handoff_mode": "workflow",
+  "handoff_repo_locator": "stage0-handoff-repo-locator",
+  "handoff_base_branch": "stage0-handoff-base-branch",
+  "handoff_continuation_id": "stage0-handoff-continuation-id"
+}

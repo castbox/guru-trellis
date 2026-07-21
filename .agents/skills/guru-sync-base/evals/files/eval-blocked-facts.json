@@ -1,0 +1,1 @@
+{"scenario":"The selected base cannot be resolved to an existing local branch.","owner_evidence":{"formal_resolver":true,"expected_failure":"unresolved_base"},"public_invocation":{"arguments":["--source-exit","start","--mode","workflow","--repo-root",".","--base-branch","missing-stage0-eval-base","--route","repo_change"]}}

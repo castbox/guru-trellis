@@ -287,10 +287,10 @@ All three public README files document `discover-skill-evals` and
 the four run statuses, repo-external evidence, and the distinction between
 deterministic grading, external semantic grading, and human feedback. Examples
 use a caller-selected Interface 1.3 package and explicit external run root; they
-do not imply that the current nine legacy production packages already have
-corpora. Upgrade text states that #145/#146 add and close production coverage
-after this infrastructure, and requires source/installed/platform discovery
-plus zero-sidecar validation after update/reapply.
+use one of the six production Stage 0 packages after
+`stage0-minimal-handoff-v1` activation. Upgrade text states that #146 retains
+the three non-Stage-0 legacy packages, and requires source/installed/platform
+discovery plus zero-sidecar validation after update/reapply.
 
 The README usage contract also names the four installed executable wrappers,
 their `PATH`-resolved native commands, discovery capability reporting, the
@@ -305,3 +305,30 @@ execution and native context receives no canonical package/corpus/private
 runtime locator. A parseable native DTO without that receipt, or a projection
 that exposes eval/private runtime assets, is an `execution_error`; context
 construction or wrapper source scanning is not execution evidence.
+
+README eval guidance states that shared uses the preset-managed native executor,
+semantic cases reference repo-local checker-passed owner results, actual exit
+selects the output schema before expected-exit comparison, Codex uses a trusted
+Git root, Claude uses safe non-interactive input, and unauthenticated Cursor is
+`unsupported`.
+
+## Stage 0 Minimal Handoff Documentation
+
+All three public README files describe the production
+`stage0-minimal-handoff-v1` boundary: six Stage 0 packages and 24 exits use
+Interface 1.3 `minimal_handoff`, while `guru-approve-task-plan`,
+`guru-check-task`, and `guru-create-task-commit` remain Interface 1.2 `legacy`
+under #146. They name the migration manifest, the package-local discovery and
+public invocation boundary, and the rule that normal Agents do not read/import
+the shared Python runtime or receive private recorder/checker artifacts.
+They also document explicit boolean scalar `required`, optional
+`guru-sync-base.base_branch` resolver delegation, and the active-task-only null
+clarification disposition projection.
+
+Examples use actual production Skill ids and explicit source/installed mode.
+Validation text includes manifest/registry/workflow/extension set equality,
+six canonical corpora through the existing #147 runner, selected-platform byte
+identity, fresh install, pre-activation upgrade, `trellis update`, preset
+reapply, existing-task re-entry, archive read-only behavior, and recursive zero
+`.new`/`.bak` checks. README commands must run from a clean repository without
+machine-local hidden state.

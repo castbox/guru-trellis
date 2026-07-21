@@ -1,0 +1,9 @@
+{
+  "profile": "issue_only_recovery",
+  "source_exit": "start",
+  "mode": "workflow",
+  "target_locator": "#145",
+  "confirmed_action_id": "confirmed-stage0-action",
+  "prior_artifact_locator": "task-workspace-result.json",
+  "continuation_id": "stage0-current"
+}

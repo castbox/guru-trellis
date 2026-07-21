@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.2",
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
   "id": "guru-sync-base",
   "name": "guru-sync-base",
   "description": "Resolve, safely synchronize, and deterministically validate the selected Git base before Guru Team reads repository task context or starts intake side effects.",
@@ -77,12 +77,44 @@
     {
       "id": "base_sync_result_example",
       "path": "examples/base-sync-result.json"
+    },
+    {
+      "id": "public_invocation_error_example",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_output_synced_example",
+      "path": "examples/public-synced-output.json"
+    },
+    {
+      "id": "public_output_skipped_example",
+      "path": "examples/public-skipped-output.json"
+    },
+    {
+      "id": "public_output_blocked_example",
+      "path": "examples/public-blocked-output.json"
     }
   ],
   "schemas": [
     {
       "id": "base_sync_result_schema",
       "path": "schemas/base-sync-result.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_output_synced",
+      "path": "schemas/public-synced-output.schema.json"
+    },
+    {
+      "id": "public_output_skipped",
+      "path": "schemas/public-skipped-output.schema.json"
+    },
+    {
+      "id": "public_output_blocked",
+      "path": "schemas/public-blocked-output.schema.json"
     }
   ],
   "validators": [
@@ -97,6 +129,12 @@
       "command": "scripts/check-base-sync.sh",
       "runtime_command": "check-base-sync",
       "objective_scope": "Draft 2020-12 schema, pre/post resolution digests, facts digest, selected refs, clean checkout and live decision/local/remote HEAD equality"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-stage0-skill",
+      "objective_scope": "Caller-owned input validation and deterministic typed-exit serialization after the owner closed loop"
     }
   ],
   "external_exits": [
@@ -138,5 +176,228 @@
     "codex",
     "cursor",
     "claude"
-  ]
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "scalar_cli",
+      "arguments": [
+        {
+          "id": "source_exit",
+          "flag": "--source-exit",
+          "type": "ascii_enum",
+          "required": true
+        },
+        {
+          "id": "mode",
+          "flag": "--mode",
+          "type": "ascii_enum",
+          "required": true
+        },
+        {
+          "id": "repo_root",
+          "flag": "--repo-root",
+          "type": "string",
+          "required": true
+        },
+        {
+          "id": "base_branch",
+          "flag": "--base-branch",
+          "type": "string",
+          "required": false
+        },
+        {
+          "id": "route",
+          "flag": "--route",
+          "type": "ascii_enum",
+          "required": true
+        }
+      ],
+      "example_argv": [
+        "--source-exit",
+        "start",
+        "--mode",
+        "workflow",
+        "--repo-root",
+        ".",
+        "--base-branch",
+        "main",
+        "--route",
+        "repo_change"
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "scalar_cli",
+        "argument_ids": [
+          "source_exit",
+          "mode",
+          "repo_root",
+          "base_branch",
+          "route"
+        ]
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-stage0-sync-base-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--source-exit",
+        "start",
+        "--mode",
+        "workflow",
+        "--repo-root",
+        ".",
+        "--base-branch",
+        "main",
+        "--route",
+        "repo_change"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "synced",
+        "schema": {
+          "schema_id": "guru-stage0-sync-base-output-synced-1.0",
+          "path": "schemas/public-synced-output.schema.json"
+        },
+        "example": {
+          "id": "synced_output",
+          "path": "examples/public-synced-output.json"
+        },
+        "consumer_use_ids": [
+          "project_synced"
+        ]
+      },
+      {
+        "exit_id": "skipped",
+        "schema": {
+          "schema_id": "guru-stage0-sync-base-output-skipped-1.0",
+          "path": "schemas/public-skipped-output.schema.json"
+        },
+        "example": {
+          "id": "skipped_output",
+          "path": "examples/public-skipped-output.json"
+        },
+        "consumer_use_ids": [
+          "project_skipped"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-stage0-sync-base-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "synced_pre_task_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-discover-change-context"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input",
+          "interface_path": "packages/guru-discover-change-context/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "pre_task"
+        }
+      },
+      {
+        "id": "skipped_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "original-request-route"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-sync-base-workflow-skipped-input-1.0",
+          "path": "consumers/workflow/stage0/sync-base-skipped.schema.json"
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "base-sync-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_synced",
+        "exit_id": "synced",
+        "consumer_input_id": "synced_pre_task_input",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "handoff_profile",
+            "target": "profile"
+          },
+          {
+            "source": "handoff_mode",
+            "target": "mode"
+          },
+          {
+            "source": "handoff_repo_locator",
+            "target": "repo_locator"
+          },
+          {
+            "source": "handoff_base_branch",
+            "target": "base_branch"
+          },
+          {
+            "source": "handoff_continuation_id",
+            "target": "continuation_id"
+          }
+        ]
+      },
+      {
+        "id": "project_skipped",
+        "exit_id": "skipped",
+        "consumer_input_id": "skipped_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "base_sync_result",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json",
+          "path": "schemas/base-sync-result.schema.json"
+        },
+        "persistence": "stdout_only_pre_task"
+      }
+    ]
+  }
 }

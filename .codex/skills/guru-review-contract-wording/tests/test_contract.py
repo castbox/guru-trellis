@@ -111,7 +111,7 @@ class ContractWordingPackageTest(unittest.TestCase):
 
     def test_interface_declares_semantic_closed_loop_and_fixed_exits(self) -> None:
         interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
-        self.assertEqual(interface["schema_version"], "1.2")
+        self.assertEqual(interface["schema_version"], "1.3")
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(
             interface["ordered_stages"],

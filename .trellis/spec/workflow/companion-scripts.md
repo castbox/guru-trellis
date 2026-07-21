@@ -128,6 +128,49 @@ ordered typed argv in both public-input and invocation examples. Wrapper/handler
 non-object or multiple stdout values, unknown exits, and output-schema mismatch
 fail with stable portable errors.
 
+## Stage 0 Public Invocation Runtime
+
+Each package in `stage0-minimal-handoff-v1` owns one dispatcher-only public
+wrapper declared by Interface 1.3 `public_contracts.invocation`. The wrapper
+passes its package root, fixed `public_invocation` validator id, and public argv
+to `run-skill-command`; it contains no local business logic, semantic route
+selection, private artifact parser, fallback runtime, or typed-output fixture.
+
+`guru-sync-base` binds its declared scalar CLI arguments directly. The other
+five packages bind a closed structured profile and receive public input through
+either an exact declared package example or a repo-relative caller JSON path.
+Runtime validates caller-owned mode, profile, target/request locator,
+continuation, confirmation/action choice, and task-relative prior-artifact
+locator. For semantic packages the public wrapper runs only after the owner
+loop has recorded its result; it requires the repo-relative owner-result and
+supporting private locators, reruns the existing objective checker, and derives
+the route from that checker-passed result. It never accepts a caller-selected
+expected exit and never reads a public output example as production input.
+
+`guru-sync-base` executes the formal resolver, executor, and checker inside the
+public invocation. Its public `base_branch` scalar is optional: an explicit
+value keeps its existing priority, while omission passes an unspecified value
+to the formal underlying resolver, which continues to own configured scalar,
+candidate-order, and remote-default fallback. The wrapper does not implement a
+second fallback order. The other five
+packages' owner loops reread Git/GitHub/Trellis state and derive HEAD, digest,
+hash, size, mtime, absolute path, and freshness facts before serialization.
+Those runtime-derived facts are never required from the Agent-facing public
+input.
+
+The clarification serializer treats `target_disposition=null` as public
+`retained` only for a checker-passed `active_task_scope_change` clear result.
+Initial and standalone null dispositions continue to fail closed.
+
+The Agent remains the semantic owner of scope, adequacy, findings, confirmation,
+and typed route for semantic packages. Runtime may only validate the declared
+route and objective facts, execute the package's recorder/validator/executor,
+apply `direct|select|rename|normalize`, and serialize exactly one declared exit
+DTO. Public failures use only stable `code`, repo-relative `field_path`, and
+`remediation`. Normal invocation does not load `evals/**`, and an Agent or
+consumer must not read or import `guru_team_trellis.py` to perform discovery,
+invocation, projection, or error diagnosis.
+
 Because the installed runtime is Python-standard-library-only, 1.3 contract
 validation implements a recursive Draft 2020-12-compatible closed subset, not
 the complete vocabulary. It validates the supported keyword grammar before
@@ -1268,8 +1311,9 @@ Each closed descriptor names one executable wrapper and one native command.
 `run-skill-evals` resolves the wrapper below the selected source/installed
 `adapters/eval/` root, requires a regular executable file, and invokes it with
 the closed request. It never selects an adapter through an undocumented
-environment variable. The wrappers detect `guru-team-shared-eval`, `codex`,
-`claude`, or `cursor-agent` on `PATH`; shared uses the documented
+environment variable. The shared adapter resolves its preset-managed
+`guru-team-shared-eval` executable beside the adapter; Codex, Claude, and Cursor
+resolve their native commands from `PATH`. Shared uses the documented
 request/context/workdir argv, while the other three assemble their native
 non-interactive argv. Every wrapper materializes a repo-external public-only
 projection with exact `SKILL.md`, Interface, public wrapper, and invocation
@@ -1288,3 +1332,12 @@ Missing, incomplete, unbound, or output-mismatched receipts are
 `execution_error`. A projection containing `evals/` or private runtime also
 fails closed. Trace invariants are never inferred from wrapper source text or
 the mere presence of a parseable native DTO.
+
+Production semantic case staging supplies explicit public-wrapper arguments
+whose owner-result locators resolve inside the current repository. The private
+runtime boundary maps the repo-external public projection wrapper to the
+corresponding installed, validator-audited package before dispatch, reruns the
+owner checker, and returns the actual exit. Adapter and native requests omit
+`expected_exit`; only the runner reads it after wrapper completion. Codex runs
+from the installed runtime's trusted Git root, Claude uses safe non-interactive
+input, and missing Cursor authentication returns deterministic `unsupported`.

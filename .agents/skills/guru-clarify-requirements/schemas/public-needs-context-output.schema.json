@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-output-needs-context-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "handoff_profile",
+    "handoff_mode",
+    "handoff_repo_locator",
+    "handoff_base_branch",
+    "handoff_continuation_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "needs_context"
+    },
+    "handoff_profile": {
+      "const": "pre_task"
+    },
+    "handoff_mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "handoff_repo_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_base_branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-create-task-workspace",
+  "evals": [
+    {
+      "id": "created-route",
+      "prompt": "Review the staged confirmed issue-only plan after its exact executor and checker completed, then invoke guru-create-task-workspace with the public input plus private plan/result locators. Return the checker-derived route.",
+      "expected_exit": "created",
+      "expected_output": "The public DTO is the declared created route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "created"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-created-input.json", "evals/files/eval-created-facts.json"],
+      "input_profile_id": "issue_only_initial"
+    },
+    {
+      "id": "refresh-review-route",
+      "prompt": "Review the staged recovery plan whose target changed before mutation, complete its no-side-effect executor/checker result, then invoke guru-create-task-workspace with the private plan/result locators. Return the checker-derived route.",
+      "expected_exit": "refresh_review",
+      "expected_output": "The public DTO is the declared refresh_review route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "refresh_review"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-refresh-review-input.json", "evals/files/eval-refresh-review-facts.json"],
+      "input_profile_id": "issue_only_recovery"
+    },
+    {
+      "id": "cancelled-route",
+      "prompt": "Review the staged workspace plan whose exact confirmation was refused, complete its no-side-effect executor/checker result, then invoke guru-create-task-workspace with the private plan/result locators. Return the checker-derived route.",
+      "expected_exit": "cancelled",
+      "expected_output": "The public DTO is the declared cancelled route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "cancelled"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-cancelled-input.json", "evals/files/eval-cancelled-facts.json"],
+      "input_profile_id": "workspace_task_initial"
+    },
+    {
+      "id": "blocked-route",
+      "prompt": "Review the staged recovery plan with a current object conflict, complete its no-side-effect executor/checker result, then invoke guru-create-task-workspace with the private plan/result locators. Return the checker-derived route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "input_profile_id": "workspace_task_recovery"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"scenario":"The fixed scope still has an unchecked normative hit.","owner_evidence":{"semantic_gate":"blocked","checker_required":true,"unchecked_hits":1},"owner_staging":{"recipe":"wording-blocked"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

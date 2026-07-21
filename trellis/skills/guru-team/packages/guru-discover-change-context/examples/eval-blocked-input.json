@@ -1,0 +1,8 @@
+{
+  "profile": "pre_task",
+  "source_exit": "start",
+  "mode": "workflow",
+  "repo_locator": "castbox/guru-trellis",
+  "base_branch": "main",
+  "continuation_id": "stage0-current"
+}

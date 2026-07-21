@@ -1,0 +1,7 @@
+{
+  "exit_id": "review_wording",
+  "handoff_profile": "change_request",
+  "handoff_mode": "workflow",
+  "handoff_target_locator": "stage0-handoff-target-locator",
+  "handoff_continuation_id": "stage0-handoff-continuation-id"
+}

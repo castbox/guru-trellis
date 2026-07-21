@@ -652,7 +652,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 91)
+        self.assertEqual(len(managed_assets), 92)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -949,7 +949,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 91", verifier)
+        self.assertIn("assert len(assets) == 92", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
             self.assertIn(
@@ -1232,7 +1232,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.19")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.20")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -1270,9 +1270,16 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"],
         )
         self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
-        self.assertEqual(public_api["skill_contracts"]["public_input_schema_ids"], [])
-        self.assertEqual(public_api["skill_contracts"]["typed_output_schema_ids"], [])
-        self.assertEqual(public_api["skill_contracts"]["private_artifact_schema_ids"], [])
+        for field, expected_count in (
+            ("public_input_schema_ids", 15),
+            ("typed_output_schema_ids", 24),
+            ("private_artifact_schema_ids", 7),
+        ):
+            self.assertEqual(
+                public_api["skill_contracts"][field],
+                canonical["public_api"]["skill_contracts"][field],
+            )
+            self.assertEqual(len(public_api["skill_contracts"][field]), expected_count)
         self.assertEqual(public_api["skill_evals"]["schema_id"], "guru-team-skill-evals-1.0")
         self.assertEqual(public_api["skill_evals"]["adapter_ids"], ["shared", "codex", "claude", "cursor"])
         for relative in (

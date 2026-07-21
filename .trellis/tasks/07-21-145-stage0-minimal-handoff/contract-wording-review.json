@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-21T18:19:09Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-21-145-stage0-minimal-handoff",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-21-145-stage0-minimal-handoff/prd.md",
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/prd.md",
+        "size_bytes": 17582,
+        "content_sha256": "bd67f3dfec6c60cfcd4844685dddb77ed7502af369f0b7925bbdf3bee06bdb64"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-21-145-stage0-minimal-handoff/design.md",
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/design.md",
+        "size_bytes": 24716,
+        "content_sha256": "d52aafbbe36889421d36ba2528593ef33e68370f8c983afbffa11a84e65debb3"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-21-145-stage0-minimal-handoff/implement.md",
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/implement.md",
+        "size_bytes": 18362,
+        "content_sha256": "ee6bc7f0bce434e3a905e9d748c6351152fe4f97bcb3f3b300c831ac944ccbd5"
+      }
+    ],
+    "scope_sha256": "9a00448fbd2f9591f948e209b0a41c4f1d2ec661e3df4c32815cab7ff3f50eb2"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-145-scope-refresh-wording-review",
+      "summary": "已完整审核固定范围 prd.md、design.md、implement.md。三份规划保留 #145 的六个 Stage 0 Skills、24 exits、Interface 1.3 minimal_handoff、#146 legacy 与唯一 close issue 边界，并承接已确认的 #144 optional scalar 和 #147 production semantic eval runner/adapter closure。省略 base、显式 base、actual exit、owner checker、Codex、Claude、Cursor、shared adapter、install、upgrade 与 reapply 路径均有精确触发、唯一 owner 和可观察验收结果。扫描零命中不替代完整需求语义复核。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本轮 wording review 未修改扫描后的规划内容；scope mutation authority 已由独立 exact_source_action_and_scope 确认和 GitHub live reread 绑定。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "83642b1acd76d192448317dd84aa5b4d2d9023b16e78b84755b767f147d12c4e"
+}

@@ -64,6 +64,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/discover-skill-evals.sh"),
     Path("scripts/bash/run-skill-evals.sh"),
     Path("scripts/bash/run-skill-command.sh"),
+    Path("scripts/bash/invoke-stage0-skill.sh"),
     Path("scripts/bash/sync-base.sh"),
     Path("scripts/bash/check-base-sync.sh"),
     Path("scripts/bash/preview-change-context-history.sh"),
@@ -708,7 +709,7 @@ def install_skill_packages(
     source_files: list[tuple[Path, Path]] = [
         (canonical_root / "registry.json", Path("registry.json")),
     ]
-    for shared_root_name in ("schemas", "adapters"):
+    for shared_root_name in ("schemas", "adapters", "migrations"):
         shared_root = canonical_root / shared_root_name
         if shared_root.is_dir():
             for source in skill_package_source_files(shared_root):
@@ -1292,6 +1293,7 @@ def install_assets(
         dst / "scripts/bash/discover-skill-evals.sh",
         dst / "scripts/bash/run-skill-evals.sh",
         dst / "scripts/bash/run-skill-command.sh",
+        dst / "scripts/bash/invoke-stage0-skill.sh",
         dst / "scripts/bash/sync-base.sh",
         dst / "scripts/bash/check-base-sync.sh",
         dst / "scripts/bash/preview-change-context-history.sh",

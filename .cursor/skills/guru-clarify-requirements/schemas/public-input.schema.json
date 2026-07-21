@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-input-aggregate-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-initial-change-request-input.schema.json"
+    },
+    {
+      "$ref": "public-active-task-scope-change-input.schema.json"
+    },
+    {
+      "$ref": "public-standalone-review-input.schema.json"
+    }
+  ]
+}

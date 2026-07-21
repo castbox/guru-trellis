@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-change-request-input-standalone-request-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "target_locator",
+    "context_locator",
+    "clarity_locator",
+    "wording_locator",
+    "continuation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "standalone_request"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "const": "standalone"
+    },
+    "target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "clarity_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wording_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

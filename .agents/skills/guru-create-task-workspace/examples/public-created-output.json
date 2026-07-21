@@ -1,0 +1,10 @@
+{
+  "exit_id": "created",
+  "repo_locator": "castbox/guru-trellis",
+  "issue_locator": "#145",
+  "base_branch": "main",
+  "branch": "feat/145-stage0-minimal-handoff",
+  "worktree_locator": "worktrees/145-stage0-minimal-handoff",
+  "task_locator": ".trellis/tasks/current",
+  "continuation_id": "stage0-current"
+}

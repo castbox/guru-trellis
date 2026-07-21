@@ -35,10 +35,12 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
   current wording evidence、审查 planning adequacy/provenance/unusual proposals、取得所需
   confirmation，并通过四个 typed exits 交回 global workflow；shared runtime 只录制和校验
   deterministic facts。
-- Active issue #144 建立 interface 1.2/1.3 共存、registry 1.1 exact migration
+- Issue #144 建立 interface 1.2/1.3 共存、registry 1.1 exact migration
   state、minimal public input/per-exit output/consumer projection/private artifact 与
-  `discover-skill-contract` 基础设施。当前九个 production Skills 继续使用 1.2
-  `legacy`，#145/#146 才迁移业务 payload；1.3 representative fixture 保持 test-only。
+  `discover-skill-contract` 基础设施。#144 交付时，九个 production Skills 仍使用 1.2
+  `legacy`，1.3 representative fixture 仅用于测试；随后 #145 已把六个 Stage 0 Skills
+  及其 24 exits 原子迁移到 `1.3+minimal_handoff`，#146 的 planning/check/commit 三包仍保持
+  `1.2+legacy`。
 
 ## 扩展重要性分层
 
@@ -73,7 +75,9 @@ Active package 的 `SKILL.md` frontmatter 只允许 stable id `name` 与非空
 Interface schema 1.2 为已发布 legacy contract；interface 1.3 是新建或实质修改 public
 I/O 的 independent target。Registry 1.1 的每个 active row 必须 exact 选择
 `interface_schema_id` 和 `legacy|minimal_handoff`，不得从 optional 字段猜版本。
-当前九个 production rows 全部是 `1.2+legacy`。两版均为每个 mode 固定 `routing`，
+当前 `stage0-minimal-handoff-v1` 原子单元中的六个 Stage 0 production rows 已统一切换为
+`1.3+minimal_handoff`；`guru-approve-task-plan`、`guru-check-task`、
+`guru-create-task-commit` 三个 #146 rows 继续保持 `1.2+legacy`。两版均为每个 mode 固定 `routing`，
 声明 `judgment_mode`、`runtime_dependency` 与 validator `runtime_command`。`semantic` 使用五阶段，
 `deterministic` 使用三阶段；`standalone` 只表示平台可脱离
 global workflow routing 直接发现 Skill，不表示单目录 self-contained/portable；两种
@@ -93,6 +97,29 @@ private artifact。所有 public output 字段必须有直接 consumer use，pub
 schema 互斥。稳定命令 `discover-skill-contract` 返回 closed legacy/minimal variant；
 失败携带 stable code、repo-relative field path 与 remediation。Mixed fixture 不进入
 production registry、manifest、platform inventory 或 mandatory route。
+
+Stage 0 migration manifest 精确绑定六包、24 exits、全部 public input
+profiles/signature、per-exit output/example、consumer/projection、private artifact 与 eval case。
+Registry、Interface、workflow markers、extension inventories、manifest、canonical/installed
+packages 和 selected platform copies 必须双向集合相等；任何 missing/extra/duplicate/renamed/
+unknown 或 mixed 1.2/1.3 Stage 0 graph 均失败关闭。Preset 以一次完整 staging transaction
+安装该单元，upgrade/update/reapply 后仍须得到同一 graph、同一 corpus bytes/modes 与零
+`.new`/`.bak` sidecar。
+
+`guru-sync-base` 保持 scalar CLI；其余五包以 closed discriminator profiles 表达 pre-task、
+re-entry、target、scope-change 与 mutation initial/recovery。Agent 先在 owner loop 中完成
+semantic Gate 与 recorder/checker，再向 public wrapper 提交 caller-owned input 和
+repo-relative owner-result/supporting locators。Runtime 重跑现有 checker，并且只从
+checker-passed owner result 推导 typed route；调用方不得传 expected exit，public output
+example 也不是生产输入。每次 invocation 只返回一个 declared typed-exit DTO，normal Agent
+不读取/import `guru_team_trellis.py` 或 private artifact body。Existing active task 通过 owner
+profile re-entry，archived 1.2 artifacts 按旧 schema 只读且不回写。
+
+Interface 1.3 scalar argument 的 `required` 是显式 boolean；只有 `required=false` 可省略。
+`guru-sync-base --base-branch` 省略时复用 formal owner resolver，不在 wrapper 复制 fallback。
+Active-task scope-change clear 的 null disposition 固定投影为 `retained`，initial/standalone
+null 仍失败关闭。Production semantic eval 使用 repo-local checker-passed owner result；actual
+exit 选择 schema 后才比较 expected exit，四平台不接收 expected-exit oracle。
 
 Phase 0 base freshness 的正式 active 入口是 `guru-sync-base`。它固定使用
 explicit base、non-empty scalar `base_branch`、ordered `base_branch_candidates` 中首个
@@ -152,9 +179,10 @@ Closed but unmerged PR：
 
 #147 建立 Interface 1.3 package-local `evals/evals.json`、closed schema、真实
 public-wrapper runner、deterministic/external-semantic/human 三边界，以及
-shared/Codex/Claude/Cursor 四个薄 adapter。当前九个 production Skills 仍保持
-Interface 1.2 legacy；#145 负责迁移 corpus，#146 负责 active coverage closure。四个
-descriptor 必须绑定真实可执行 wrapper，并由 wrapper 从 `PATH` 检测 documented native
+shared/Codex/Claude/Cursor 四个薄 adapter。#147 交付时，九个 production Skills 仍保持
+Interface 1.2 legacy；随后 #145 已迁移六个 Stage 0 production corpora 并完成其 24 exits
+coverage，#146 继续负责 planning/check/commit 三个 legacy packages 的迁移与 coverage closure。
+四个 descriptor 必须绑定真实可执行 wrapper，并由 wrapper 从 `PATH` 检测 documented native
 command、组装平台 argv、加载 exact Skill/prompt/files、收集 public output/trace；隐藏
 executable 环境变量不能替代该公开安装路径。
 Runner 在 native execution 外读取 canonical corpus；CLI 只收到 repo/package 外 public-only

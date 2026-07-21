@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-output-new-task-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "target_locator",
+    "confirmed_action_id",
+    "continuation_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "new_task"
+    },
+    "target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confirmed_action_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-review-change-request",
+  "evals": [
+    {
+      "id": "ready-route",
+      "prompt": "Review the staged current issue whose ten readiness dimensions and prerequisites are current, complete the semantic owner result, and invoke guru-review-change-request with the private result, prerequisite, and request locators. Return the checker-derived route.",
+      "expected_exit": "ready",
+      "expected_output": "The public DTO is the declared ready route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-ready-input.json", "evals/files/eval-ready-facts.json"],
+      "input_profile_id": "current_issue"
+    },
+    {
+      "id": "clarify-requirements-route",
+      "prompt": "Review the staged proposed draft with unresolved load-bearing requirements, complete the semantic owner result, and invoke guru-review-change-request with the private result, prerequisite, and request locators. Return the checker-derived route.",
+      "expected_exit": "clarify_requirements",
+      "expected_output": "The public DTO is the declared clarify_requirements route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "clarify_requirements"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-clarify-requirements-input.json", "evals/files/eval-clarify-requirements-facts.json"],
+      "input_profile_id": "proposed_draft"
+    },
+    {
+      "id": "review-wording-route",
+      "prompt": "Review the staged standalone request whose controlled wording still needs review, complete the semantic owner result, and invoke guru-review-change-request with the private result, prerequisite, and request locators. Return the checker-derived route.",
+      "expected_exit": "review_wording",
+      "expected_output": "The public DTO is the declared review_wording route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "review_wording"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-review-wording-input.json", "evals/files/eval-review-wording-facts.json"],
+      "input_profile_id": "standalone_request"
+    },
+    {
+      "id": "refresh-context-route",
+      "prompt": "Review the staged current issue with stale context linkage, complete the semantic owner result, and invoke guru-review-change-request with the private result, prerequisite, and request locators. Return the checker-derived route.",
+      "expected_exit": "refresh_context",
+      "expected_output": "The public DTO is the declared refresh_context route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "refresh_context"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-refresh-context-input.json", "evals/files/eval-refresh-context-facts.json"],
+      "input_profile_id": "current_issue"
+    },
+    {
+      "id": "blocked-route",
+      "prompt": "Review the staged current issue whose semantic gate cannot pass safely, complete the semantic owner result, and invoke guru-review-change-request with the private result, prerequisite, and request locators. Return the checker-derived route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "input_profile_id": "current_issue"
+    }
+  ]
+}

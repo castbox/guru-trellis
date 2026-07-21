@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-discover-change-context",
+  "evals": [
+    {
+      "id": "context-ready-route",
+      "prompt": "Review the staged current-context scenario, complete the semantic owner result, and invoke guru-discover-change-context with its public input plus that private owner-result locator. Return the route derived by the checker.",
+      "expected_exit": "context_ready",
+      "expected_output": "The public DTO is the declared context_ready route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "context_ready"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-context-ready-input.json", "evals/files/eval-context-ready-facts.json"],
+      "input_profile_id": "pre_task"
+    },
+    {
+      "id": "refresh-base-route",
+      "prompt": "Review the staged stale-base re-entry scenario, complete the semantic owner result, and invoke guru-discover-change-context with its public input plus that private owner-result locator. Return the route derived by the checker.",
+      "expected_exit": "refresh_base",
+      "expected_output": "The public DTO is the declared refresh_base route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "refresh_base"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-refresh-base-input.json", "evals/files/eval-refresh-base-facts.json"],
+      "input_profile_id": "task_local_reentry"
+    },
+    {
+      "id": "blocked-route",
+      "prompt": "Review the staged unavailable-evidence scenario, complete the semantic owner result, and invoke guru-discover-change-context with its public input plus that private owner-result locator. Return the route derived by the checker.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "input_profile_id": "pre_task"
+    }
+  ]
+}

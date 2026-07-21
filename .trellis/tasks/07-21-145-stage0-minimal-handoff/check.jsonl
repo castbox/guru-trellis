@@ -1,0 +1,17 @@
+{"file":".trellis/spec/workflow/index.md","reason":"核对 workflow 变更范围与 required validation 基线。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核 mandatory invocation、typed exits、consumer 唯一性与 re-entry 语义。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"复核 Interface 1.3 minimal_handoff 的输入、per-exit 输出、projection、private artifact 与 legacy 边界。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核 public wrapper、runtime deterministic boundary 与 normal Agent 不读 private source。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核 schema、migration manifest、registry、extension 与 active/archive compatibility。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"执行 focused、full、distribution、four-platform、throwaway、update/reapply 与 diff checks。"}
+{"file":".trellis/spec/preset/index.md","reason":"复核 preset 实现必须覆盖的 installer、ownership 与 overlay 门禁。"}
+{"file":".trellis/spec/preset/installer.md","reason":"复核 atomic activation、fresh install、upgrade 和 zero sidecar 结果。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"复核 canonical/installed 所有权和 update 抗漂移。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"复核 dogfood 和四平台 installed copies 与 canonical bytes 一致。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"复核 specs、requirements docs、README 与可执行命令一致。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"复核 6 Skills、24 exits 跨层 producer-consumer-use 数据流。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复核共享常量、schema、validator 和平台副本无重复实现。"}
+{"file":"trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json","reason":"复核 required 仅接受显式 boolean，required:false 只允许声明的 scalar省略，既有 required:true 不回归。"}
+{"file":"trellis/workflows/guru-team/scripts/python/guru_team_trellis.py","reason":"复核 owner checker先于DTO serialization、actual exit决定schema、expected_exit未成为wrapper oracle。"}
+{"file":"trellis/skills/guru-team/tests/test_skill_packages.py","reason":"复核 optional fallback、repo-local owner result、shared/Codex/Claude/Cursor与24 exits正负例。"}
+{"file":"trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh","reason":"复核 clean/upgrade/update/reapply、四平台协议、零mixed graph与零sidecar。"}

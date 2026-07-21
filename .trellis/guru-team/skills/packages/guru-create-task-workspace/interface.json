@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.2",
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
   "id": "guru-create-task-workspace",
   "name": "guru-create-task-workspace",
   "description": "Create or exactly reuse a reviewed issue workspace and Trellis task through a semantic gate, scoped confirmation, deterministic execution, and four typed exits.",
@@ -9,24 +9,96 @@
   "modes": {
     "workflow": {
       "routing": "global_workflow",
-      "entry_precondition_ids": ["runtime_dependency", "base_evidence", "context_evidence", "clarity_evidence", "wording_evidence", "readiness_evidence", "target_authority", "naming_and_assignee", "side_effect_authorization", "invocation_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "base_evidence",
+        "context_evidence",
+        "clarity_evidence",
+        "wording_evidence",
+        "readiness_evidence",
+        "target_authority",
+        "naming_and_assignee",
+        "side_effect_authorization",
+        "invocation_freshness"
+      ]
     },
     "standalone": {
       "routing": "direct_discovery",
-      "entry_precondition_ids": ["runtime_dependency", "base_evidence", "context_evidence", "clarity_evidence", "wording_evidence", "readiness_evidence", "target_authority", "naming_and_assignee", "side_effect_authorization", "invocation_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "base_evidence",
+        "context_evidence",
+        "clarity_evidence",
+        "wording_evidence",
+        "readiness_evidence",
+        "target_authority",
+        "naming_and_assignee",
+        "side_effect_authorization",
+        "invocation_freshness"
+      ]
     }
   },
   "entry_preconditions": [
-    {"id": "runtime_dependency", "evidence": "installed extension manifest, dispatcher, active package inventory and three declared runtime commands", "binding": "complete compatible Guru Team preset runtime", "freshness": "validated by run-skill-command before every runtime command"},
-    {"id": "base_evidence", "evidence": "current guru-base-sync-result-1.0 synced result", "binding": "selected base, remote, post-sync resolution identity and decision/local/remote HEAD", "freshness": "shared resolver/sync rerun once before first confirmed mutation; changed identity refreshes review"},
-    {"id": "context_evidence", "evidence": "current guru-context-discovery-1.0 context_ready result", "binding": "same base, target, duplicate and current repository facts", "freshness": "checker-passed canonical bytes and snapshot digest remain current"},
-    {"id": "clarity_evidence", "evidence": "current guru-requirements-clarification-2.0 clear result", "binding": "final target, disposition, source action and scope decisions", "freshness": "target and authority bytes remain current"},
-    {"id": "wording_evidence", "evidence": "current guru-contract-wording-review-1.0 change_request pass result", "binding": "exact reviewed issue or draft title/body", "freshness": "fixed scope and scan digest remain current"},
-    {"id": "readiness_evidence", "evidence": "current guru-change-request-review-1.0 ready result", "binding": "same target/content/linkage and close/related/followup conclusion", "freshness": "facts digest and prerequisite linkage remain current"},
-    {"id": "target_authority", "evidence": "one final open issue or reviewed side-effect-free draft projected by clarification and readiness", "binding": "workspace Skill does not choose duplicates, retarget, reopen, or create follow-up scope", "freshness": "draft create uses exact 0/1/>1 live recovery; workflow-created open issue carries a checker-passed created-issue result"},
-    {"id": "naming_and_assignee", "evidence": "AI-reviewed semantic names, existing-object disposition, non-empty assignee and source evidence", "binding": "branch/workspace/task identity and fixed assignee resolution order", "freshness": "object and GitHub actor facts are rechecked before execution"},
-    {"id": "side_effect_authorization", "evidence": "AI Review Gate plus exactly one invocation-specific confirmation", "binding": "github_issue_mutation or workspace_and_task_mutation, never both", "freshness": "confirmation binds the current reviewable plan digest"},
-    {"id": "invocation_freshness", "evidence": "canonical plan, prerequisite bytes, target, base, object and confirmation digests", "binding": "one current recorder/executor/checker invocation", "freshness": "every digest and live fact is recomputed before typed exit"}
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension manifest, dispatcher, active package inventory and three declared runtime commands",
+      "binding": "complete compatible Guru Team preset runtime",
+      "freshness": "validated by run-skill-command before every runtime command"
+    },
+    {
+      "id": "base_evidence",
+      "evidence": "current guru-base-sync-result-1.0 synced result",
+      "binding": "selected base, remote, post-sync resolution identity and decision/local/remote HEAD",
+      "freshness": "shared resolver/sync rerun once before first confirmed mutation; changed identity refreshes review"
+    },
+    {
+      "id": "context_evidence",
+      "evidence": "current guru-context-discovery-1.0 context_ready result",
+      "binding": "same base, target, duplicate and current repository facts",
+      "freshness": "checker-passed canonical bytes and snapshot digest remain current"
+    },
+    {
+      "id": "clarity_evidence",
+      "evidence": "current guru-requirements-clarification-2.0 clear result",
+      "binding": "final target, disposition, source action and scope decisions",
+      "freshness": "target and authority bytes remain current"
+    },
+    {
+      "id": "wording_evidence",
+      "evidence": "current guru-contract-wording-review-1.0 change_request pass result",
+      "binding": "exact reviewed issue or draft title/body",
+      "freshness": "fixed scope and scan digest remain current"
+    },
+    {
+      "id": "readiness_evidence",
+      "evidence": "current guru-change-request-review-1.0 ready result",
+      "binding": "same target/content/linkage and close/related/followup conclusion",
+      "freshness": "facts digest and prerequisite linkage remain current"
+    },
+    {
+      "id": "target_authority",
+      "evidence": "one final open issue or reviewed side-effect-free draft projected by clarification and readiness",
+      "binding": "workspace Skill does not choose duplicates, retarget, reopen, or create follow-up scope",
+      "freshness": "draft create uses exact 0/1/>1 live recovery; workflow-created open issue carries a checker-passed created-issue result"
+    },
+    {
+      "id": "naming_and_assignee",
+      "evidence": "AI-reviewed semantic names, existing-object disposition, non-empty assignee and source evidence",
+      "binding": "branch/workspace/task identity and fixed assignee resolution order",
+      "freshness": "object and GitHub actor facts are rechecked before execution"
+    },
+    {
+      "id": "side_effect_authorization",
+      "evidence": "AI Review Gate plus exactly one invocation-specific confirmation",
+      "binding": "github_issue_mutation or workspace_and_task_mutation, never both",
+      "freshness": "confirmation binds the current reviewable plan digest"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "canonical plan, prerequisite bytes, target, base, object and confirmation digests",
+      "binding": "one current recorder/executor/checker invocation",
+      "freshness": "every digest and live fact is recomputed before typed exit"
+    }
   ],
   "runtime_dependency": {
     "extension_id": "guru-team",
@@ -36,31 +108,449 @@
     "distribution": "guru-team-preset",
     "package_portability": "not-self-contained"
   },
-  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
   "artifacts": [
-    {"id": "task_workspace_plan_example", "path": "examples/task-workspace-plan.json"},
-    {"id": "task_workspace_result_example", "path": "examples/task-workspace-result.json"}
+    {
+      "id": "task_workspace_plan_example",
+      "path": "examples/task-workspace-plan.json"
+    },
+    {
+      "id": "task_workspace_result_example",
+      "path": "examples/task-workspace-result.json"
+    },
+    {
+      "id": "public_input_issue_only_initial_example",
+      "path": "examples/public-issue-only-initial-input.json"
+    },
+    {
+      "id": "public_input_issue_only_recovery_example",
+      "path": "examples/public-issue-only-recovery-input.json"
+    },
+    {
+      "id": "public_input_workspace_task_initial_example",
+      "path": "examples/public-workspace-task-initial-input.json"
+    },
+    {
+      "id": "public_input_workspace_task_recovery_example",
+      "path": "examples/public-workspace-task-recovery-input.json"
+    },
+    {
+      "id": "public_invocation_error_example",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_output_created_example",
+      "path": "examples/public-created-output.json"
+    },
+    {
+      "id": "public_output_refresh_review_example",
+      "path": "examples/public-refresh-review-output.json"
+    },
+    {
+      "id": "public_output_cancelled_example",
+      "path": "examples/public-cancelled-output.json"
+    },
+    {
+      "id": "public_output_blocked_example",
+      "path": "examples/public-blocked-output.json"
+    }
   ],
   "schemas": [
-    {"id": "task_workspace_plan_schema", "path": "schemas/task-workspace-plan.schema.json"},
-    {"id": "task_workspace_result_schema", "path": "schemas/task-workspace-result.schema.json"}
+    {
+      "id": "task_workspace_plan_schema",
+      "path": "schemas/task-workspace-plan.schema.json"
+    },
+    {
+      "id": "task_workspace_result_schema",
+      "path": "schemas/task-workspace-result.schema.json"
+    },
+    {
+      "id": "public_input_issue_only_initial",
+      "path": "schemas/public-issue-only-initial-input.schema.json"
+    },
+    {
+      "id": "public_input_issue_only_recovery",
+      "path": "schemas/public-issue-only-recovery-input.schema.json"
+    },
+    {
+      "id": "public_input_workspace_task_initial",
+      "path": "schemas/public-workspace-task-initial-input.schema.json"
+    },
+    {
+      "id": "public_input_workspace_task_recovery",
+      "path": "schemas/public-workspace-task-recovery-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_output_created",
+      "path": "schemas/public-created-output.schema.json"
+    },
+    {
+      "id": "public_output_refresh_review",
+      "path": "schemas/public-refresh-review-output.schema.json"
+    },
+    {
+      "id": "public_output_cancelled",
+      "path": "schemas/public-cancelled-output.schema.json"
+    },
+    {
+      "id": "public_output_blocked",
+      "path": "schemas/public-blocked-output.schema.json"
+    }
   ],
   "validators": [
-    {"id": "task_workspace_plan_recorder", "command": "scripts/record-task-workspace-plan.sh", "runtime_command": "record-task-workspace-plan", "objective_scope": "closed schema, five prerequisite identities and digests, target/scope/base projection, confirmation and AI Gate binding, canonical plan digest, stdout-only zero-write postcondition"},
-    {"id": "task_workspace_exact_executor", "command": "scripts/create-task-workspace.sh", "runtime_command": "create-task-workspace", "objective_scope": "mutation-time shared base sync, exact issue recovery, current target/prerequisite/plan confirmation facts, issue-only or workspace/task-only mutations, object reuse identity, explicit assignee and four task-local artifacts without developer identity"},
-    {"id": "task_workspace_result_checker", "command": "scripts/check-task-workspace-result.sh", "runtime_command": "check-task-workspace-result", "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, exact artifact bytes/digests/trackability, ignored runtime, workspace boundary, no-developer and typed consumer"}
+    {
+      "id": "task_workspace_plan_recorder",
+      "command": "scripts/record-task-workspace-plan.sh",
+      "runtime_command": "record-task-workspace-plan",
+      "objective_scope": "closed schema, five prerequisite identities and digests, target/scope/base projection, confirmation and AI Gate binding, canonical plan digest, stdout-only zero-write postcondition"
+    },
+    {
+      "id": "task_workspace_exact_executor",
+      "command": "scripts/create-task-workspace.sh",
+      "runtime_command": "create-task-workspace",
+      "objective_scope": "mutation-time shared base sync, exact issue recovery, current target/prerequisite/plan confirmation facts, issue-only or workspace/task-only mutations, object reuse identity, explicit assignee and four task-local artifacts without developer identity"
+    },
+    {
+      "id": "task_workspace_result_checker",
+      "command": "scripts/check-task-workspace-result.sh",
+      "runtime_command": "check-task-workspace-result",
+      "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, exact artifact bytes/digests/trackability, ignored runtime, workspace boundary, no-developer and typed consumer"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-stage0-skill",
+      "objective_scope": "Caller-owned input validation and deterministic typed-exit serialization after the owner closed loop"
+    }
   ],
   "external_exits": [
-    {"id": "created", "evidence": "exact workspace, branch, active task, four task-local artifacts and ignored runtime mappings passed result checking", "consumer": {"kind": "workflow", "id": "guru-task-workspace-created"}},
-    {"id": "refresh_review", "evidence": "a reviewed issue was created or a prerequisite/live authority fact requires complete Intake refresh", "consumer": {"kind": "skill", "id": "guru-sync-base"}},
-    {"id": "cancelled", "evidence": "the user cancelled the exact plan before mutation and the zero-write snapshot passed", "consumer": {"kind": "stop", "id": "task-workspace-cancelled"}},
-    {"id": "blocked", "evidence": "semantic conflict, unresolved assignee, object identity conflict or deterministic execution/check failure", "consumer": {"kind": "stop", "id": "task-workspace-blocked"}}
+    {
+      "id": "created",
+      "evidence": "exact workspace, branch, active task, four task-local artifacts and ignored runtime mappings passed result checking",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-task-workspace-created"
+      }
+    },
+    {
+      "id": "refresh_review",
+      "evidence": "a reviewed issue was created or a prerequisite/live authority fact requires complete Intake refresh",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-sync-base"
+      }
+    },
+    {
+      "id": "cancelled",
+      "evidence": "the user cancelled the exact plan before mutation and the zero-write snapshot passed",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-workspace-cancelled"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "semantic conflict, unresolved assignee, object identity conflict or deterministic execution/check failure",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-workspace-blocked"
+      }
+    }
   ],
   "reentry": {
     "identity": "five prerequisite result digests, final target/disposition, complete created-issue provenance when applicable, scope, post-sync base identity, naming, assignee, side-effect scope, confirmation and plan digest",
     "freshness": "draft retry recovers one exact post-plan issue; complete Intake replay validates the checker-passed created-issue result; first mutation reruns shared base sync; workspace recovery only reuses identity-exact live objects and byte-identical artifacts",
     "stale_behavior": "fail_closed"
   },
-  "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-stage0-create-task-workspace-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "issue_only_initial",
+          "schema": {
+            "schema_id": "guru-stage0-create-task-workspace-input-issue-only-initial-1.0",
+            "path": "schemas/public-issue-only-initial-input.schema.json"
+          },
+          "example": {
+            "id": "issue_only_initial_input",
+            "path": "examples/public-issue-only-initial-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "issue_only_initial"
+          }
+        },
+        {
+          "id": "issue_only_recovery",
+          "schema": {
+            "schema_id": "guru-stage0-create-task-workspace-input-issue-only-recovery-1.0",
+            "path": "schemas/public-issue-only-recovery-input.schema.json"
+          },
+          "example": {
+            "id": "issue_only_recovery_input",
+            "path": "examples/public-issue-only-recovery-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "issue_only_recovery"
+          }
+        },
+        {
+          "id": "workspace_task_initial",
+          "schema": {
+            "schema_id": "guru-stage0-create-task-workspace-input-workspace-task-initial-1.0",
+            "path": "schemas/public-workspace-task-initial-input.schema.json"
+          },
+          "example": {
+            "id": "workspace_task_initial_input",
+            "path": "examples/public-workspace-task-initial-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "workspace_task_initial"
+          }
+        },
+        {
+          "id": "workspace_task_recovery",
+          "schema": {
+            "schema_id": "guru-stage0-create-task-workspace-input-workspace-task-recovery-1.0",
+            "path": "schemas/public-workspace-task-recovery-input.schema.json"
+          },
+          "example": {
+            "id": "workspace_task_recovery_input",
+            "path": "examples/public-workspace-task-recovery-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "workspace_task_recovery"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "issue_only_initial"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-stage0-create-task-workspace-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-issue-only-initial-input.json",
+        "--owner-result",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-result.json",
+        "--owner-plan",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-plan.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "created",
+        "schema": {
+          "schema_id": "guru-stage0-create-task-workspace-output-created-1.0",
+          "path": "schemas/public-created-output.schema.json"
+        },
+        "example": {
+          "id": "created_output",
+          "path": "examples/public-created-output.json"
+        },
+        "consumer_use_ids": [
+          "project_created"
+        ]
+      },
+      {
+        "exit_id": "refresh_review",
+        "schema": {
+          "schema_id": "guru-stage0-create-task-workspace-output-refresh-review-1.0",
+          "path": "schemas/public-refresh-review-output.schema.json"
+        },
+        "example": {
+          "id": "refresh_review_output",
+          "path": "examples/public-refresh-review-output.json"
+        },
+        "consumer_use_ids": [
+          "project_refresh_review"
+        ]
+      },
+      {
+        "exit_id": "cancelled",
+        "schema": {
+          "schema_id": "guru-stage0-create-task-workspace-output-cancelled-1.0",
+          "path": "schemas/public-cancelled-output.schema.json"
+        },
+        "example": {
+          "id": "cancelled_output",
+          "path": "examples/public-cancelled-output.json"
+        },
+        "consumer_use_ids": [
+          "project_cancelled"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-stage0-create-task-workspace-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "created_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-task-workspace-created"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-create-task-workspace-workflow-created-input-1.0",
+          "path": "consumers/workflow/stage0/create-task-workspace-created.schema.json"
+        }
+      },
+      {
+        "id": "refresh_review_sync_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-sync-base"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input",
+          "interface_path": "packages/guru-sync-base/interface.json",
+          "input_kind": "scalar_cli"
+        }
+      },
+      {
+        "id": "cancelled_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-workspace-cancelled"
+        },
+        "payload_kind": "zero_payload"
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-workspace-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_created",
+        "exit_id": "created",
+        "consumer_input_id": "created_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_refresh_review",
+        "exit_id": "refresh_review",
+        "consumer_input_id": "refresh_review_sync_input",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "handoff_mode",
+            "target": "mode"
+          },
+          {
+            "source": "handoff_repo_root",
+            "target": "repo_root"
+          },
+          {
+            "source": "handoff_base_branch",
+            "target": "base_branch"
+          },
+          {
+            "source": "handoff_route",
+            "target": "route"
+          }
+        ]
+      },
+      {
+        "id": "project_cancelled",
+        "exit_id": "cancelled",
+        "consumer_input_id": "cancelled_stop_input",
+        "operation": "select",
+        "mappings": []
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "task_workspace_plan",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-1.0.json",
+          "path": "schemas/task-workspace-plan.schema.json"
+        },
+        "persistence": "task_local_tracked"
+      },
+      {
+        "id": "task_workspace_result",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-1.0.json",
+          "path": "schemas/task-workspace-result.schema.json"
+        },
+        "persistence": "task_local_tracked"
+      }
+    ]
+  }
 }

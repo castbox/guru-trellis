@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.2",
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
   "id": "guru-review-contract-wording",
   "name": "guru-review-contract-wording",
   "description": "Review controlled contract wording through fixed change-request, planning-artifact, or explicit-path scope, semantic revision and classification, deterministic evidence, and typed exits.",
@@ -9,11 +9,23 @@
   "modes": {
     "workflow": {
       "routing": "global_workflow",
-      "entry_precondition_ids": ["runtime_dependency", "review_scope", "mutation_authority", "semantic_evidence", "invocation_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "review_scope",
+        "mutation_authority",
+        "semantic_evidence",
+        "invocation_freshness"
+      ]
     },
     "standalone": {
       "routing": "direct_discovery",
-      "entry_precondition_ids": ["runtime_dependency", "review_scope", "mutation_authority", "semantic_evidence", "invocation_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "review_scope",
+        "mutation_authority",
+        "semantic_evidence",
+        "invocation_freshness"
+      ]
     }
   },
   "entry_preconditions": [
@@ -56,12 +68,84 @@
     "distribution": "guru-team-preset",
     "package_portability": "not-self-contained"
   },
-  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
   "artifacts": [
-    {"id": "contract_wording_review_example", "path": "examples/contract-wording-review.json"}
+    {
+      "id": "contract_wording_review_example",
+      "path": "examples/contract-wording-review.json"
+    },
+    {
+      "id": "public_input_change_request_example",
+      "path": "examples/public-change-request-input.json"
+    },
+    {
+      "id": "public_input_planning_artifacts_example",
+      "path": "examples/public-planning-artifacts-input.json"
+    },
+    {
+      "id": "public_input_explicit_paths_example",
+      "path": "examples/public-explicit-paths-input.json"
+    },
+    {
+      "id": "public_invocation_error_example",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_output_pass_example",
+      "path": "examples/public-pass-output.json"
+    },
+    {
+      "id": "public_output_content_changed_example",
+      "path": "examples/public-content-changed-output.json"
+    },
+    {
+      "id": "public_output_blocked_example",
+      "path": "examples/public-blocked-output.json"
+    }
   ],
   "schemas": [
-    {"id": "contract_wording_review_schema", "path": "schemas/contract-wording-review.schema.json"}
+    {
+      "id": "contract_wording_review_schema",
+      "path": "schemas/contract-wording-review.schema.json"
+    },
+    {
+      "id": "public_input_change_request",
+      "path": "schemas/public-change-request-input.schema.json"
+    },
+    {
+      "id": "public_input_planning_artifacts",
+      "path": "schemas/public-planning-artifacts-input.schema.json"
+    },
+    {
+      "id": "public_input_explicit_paths",
+      "path": "schemas/public-explicit-paths-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_output_pass",
+      "path": "schemas/public-pass-output.schema.json"
+    },
+    {
+      "id": "public_output_content_changed",
+      "path": "schemas/public-content-changed-output.schema.json"
+    },
+    {
+      "id": "public_output_blocked",
+      "path": "schemas/public-blocked-output.schema.json"
+    }
   ],
   "validators": [
     {
@@ -75,23 +159,38 @@
       "command": "scripts/check-contract-wording-review.sh",
       "runtime_command": "check-contract-wording-review",
       "objective_scope": "published schema, fixed scope and scan completeness, selected-comment metadata, live issue payload/preimage/result binding, content freshness, classification structure, exact planning-profile dimension shape/value validation, Gate/exit biconditional and result digest validation"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-stage0-skill",
+      "objective_scope": "Caller-owned input validation and deterministic typed-exit serialization after the owner closed loop"
     }
   ],
   "external_exits": [
     {
       "id": "pass",
       "evidence": "current complete scope and scan, zero unchecked hits, passed AI Review Gate, and no unconsumed content revision",
-      "consumer": {"kind": "workflow", "id": "guru-contract-wording-pass-router"}
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-contract-wording-pass-router"
+      }
     },
     {
       "id": "content_changed",
       "evidence": "one or more authorized revisions are bound to rebuilt scope, current content hashes, a complete rescan, and a passed AI Review Gate",
-      "consumer": {"kind": "workflow", "id": "guru-contract-wording-change-router"}
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-contract-wording-change-router"
+      }
     },
     {
       "id": "blocked",
       "evidence": "missing scope or mutation authority, unconfirmed semantic change, refused required mutation, unchecked violation, or blocked AI Review Gate",
-      "consumer": {"kind": "stop", "id": "contract-wording-blocked"}
+      "consumer": {
+        "kind": "stop",
+        "id": "contract-wording-blocked"
+      }
     }
   ],
   "reentry": {
@@ -99,6 +198,204 @@
     "freshness": "every content mutation invalidates prior hits and semantic evidence; stale replacement is explicit, while a current content_changed/blocked result may be superseded only by a different, fully current same-profile result bound to its exact prior facts_sha256; identical results and current pass are protected",
     "stale_behavior": "fail_closed"
   },
-  "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-stage0-review-contract-wording-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "change_request",
+          "schema": {
+            "schema_id": "guru-stage0-review-contract-wording-input-change-request-1.0",
+            "path": "schemas/public-change-request-input.schema.json"
+          },
+          "example": {
+            "id": "change_request_input",
+            "path": "examples/public-change-request-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "change_request"
+          }
+        },
+        {
+          "id": "planning_artifacts",
+          "schema": {
+            "schema_id": "guru-stage0-review-contract-wording-input-planning-artifacts-1.0",
+            "path": "schemas/public-planning-artifacts-input.schema.json"
+          },
+          "example": {
+            "id": "planning_artifacts_input",
+            "path": "examples/public-planning-artifacts-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "planning_artifacts"
+          }
+        },
+        {
+          "id": "explicit_paths",
+          "schema": {
+            "schema_id": "guru-stage0-review-contract-wording-input-explicit-paths-1.0",
+            "path": "schemas/public-explicit-paths-input.schema.json"
+          },
+          "example": {
+            "id": "explicit_paths_input",
+            "path": "examples/public-explicit-paths-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "explicit_paths"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "planning_artifacts"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-stage0-review-contract-wording-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-planning-artifacts-input.json",
+        "--owner-result",
+        ".trellis/guru-team/skills/packages/guru-review-contract-wording/examples/contract-wording-review.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "pass",
+        "schema": {
+          "schema_id": "guru-stage0-review-contract-wording-output-pass-1.0",
+          "path": "schemas/public-pass-output.schema.json"
+        },
+        "example": {
+          "id": "pass_output",
+          "path": "examples/public-pass-output.json"
+        },
+        "consumer_use_ids": [
+          "project_pass"
+        ]
+      },
+      {
+        "exit_id": "content_changed",
+        "schema": {
+          "schema_id": "guru-stage0-review-contract-wording-output-content-changed-1.0",
+          "path": "schemas/public-content-changed-output.schema.json"
+        },
+        "example": {
+          "id": "content_changed_output",
+          "path": "examples/public-content-changed-output.json"
+        },
+        "consumer_use_ids": [
+          "project_content_changed"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-stage0-review-contract-wording-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "pass_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-contract-wording-pass-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-review-contract-wording-workflow-pass-input-1.0",
+          "path": "consumers/workflow/stage0/review-contract-wording-pass.schema.json"
+        }
+      },
+      {
+        "id": "content_changed_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-contract-wording-change-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-review-contract-wording-workflow-content_changed-input-1.0",
+          "path": "consumers/workflow/stage0/review-contract-wording-content-changed.schema.json"
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "contract-wording-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_pass",
+        "exit_id": "pass",
+        "consumer_input_id": "pass_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_content_changed",
+        "exit_id": "content_changed",
+        "consumer_input_id": "content_changed_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "wording_review",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json",
+          "path": "schemas/contract-wording-review.schema.json"
+        },
+        "persistence": "task_local_tracked"
+      }
+    ]
+  }
 }

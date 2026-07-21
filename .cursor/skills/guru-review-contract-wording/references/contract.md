@@ -205,3 +205,11 @@ also stale migration input, even when it uses schema id
 fresh AI review of all common and planning-specific dimensions, display the
 three planning documents, obtain fresh explicit post-planning confirmation,
 and record a new approval. Never patch the missing booleans into old evidence.
+
+## Interface 1.3 Public Handoff
+
+The public profiles remain the fixed `change_request`, `planning_artifacts`,
+and `explicit_paths` scopes. `scripts/invoke.sh --input ... --owner-result ...`
+runs only after the semantic owner loop, reruns the existing checker, and emits
+a router DTO containing the fixed profile selected by the checked owner result.
+The complete review artifact remains private gate evidence.

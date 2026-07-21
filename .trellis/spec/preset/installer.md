@@ -459,3 +459,25 @@ Apply, installed validation, and throwaway update/reapply verify every managed
 eval file digest/mode and reject missing, unexpected, drifted, symlink-backed,
 or sidecar state. Normal install/update never moves eval corpus into workflow
 prompt context or ordinary Skill invocation payloads.
+
+## Stage 0 Atomic Activation
+
+The preset stages `stage0-minimal-handoff-v1` as one managed transaction: the
+six production packages, registry, migration manifest and schema, public and
+consumer schemas/examples, package wrappers, shared runtime, extension
+inventories, eval corpora, and selected platform copies are validated together
+before target activation. The installed validator runs immediately after apply.
+Failure preserves the prior complete graph and reports conflicts or sidecars;
+it must not leave a runnable mixture of Stage 0 Interface 1.2 and 1.3 packages.
+
+The transaction includes the executable shared native evaluator and preserves
+its mode. Interface 1.3 accepts explicit boolean scalar `required`; the staged
+`guru-sync-base` package marks only `base_branch` optional, and fresh/upgrade
+probes execute both explicit and omitted-base paths through the same resolver.
+
+A pre-activation installation is a supported upgrade input. Reapply replaces
+the complete six-package activation unit while retaining the three #146 legacy
+packages and read-only archived artifact schemas. Fresh install, upgrade,
+`trellis update`, and repeated preset apply all end with the same manifest,
+registry, extension, package, corpus, and selected-platform bytes and modes.
+The verifier scans recursively for `.new` and `.bak` after each transition.

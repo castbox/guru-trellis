@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-review-contract-wording",
+  "evals": [
+    {
+      "id": "pass-route",
+      "prompt": "Review the staged fixed-scope wording scenario with a complete scan and no required revision, complete the semantic owner result, and invoke guru-review-contract-wording with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "expected_exit": "pass",
+      "expected_output": "The public DTO is the declared pass route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "pass"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-pass-input.json", "evals/files/eval-pass-facts.json"],
+      "input_profile_id": "change_request"
+    },
+    {
+      "id": "content-changed-route",
+      "prompt": "Review the staged authorized-revision scenario after its complete rescan, complete the semantic owner result and confirmation evidence, and invoke guru-review-contract-wording with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "expected_exit": "content_changed",
+      "expected_output": "The public DTO is the declared content_changed route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "content_changed"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-content-changed-input.json", "evals/files/eval-content-changed-facts.json"],
+      "input_profile_id": "planning_artifacts"
+    },
+    {
+      "id": "blocked-route",
+      "prompt": "Review the staged fixed-scope scenario with an unchecked normative finding, complete the semantic owner result, and invoke guru-review-contract-wording with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "input_profile_id": "explicit_paths"
+    }
+  ]
+}

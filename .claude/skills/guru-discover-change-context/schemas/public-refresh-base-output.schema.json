@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-discover-change-context-output-refresh-base-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "handoff_mode",
+    "handoff_repo_root",
+    "handoff_base_branch",
+    "handoff_route"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "refresh_base"
+    },
+    "handoff_mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "handoff_repo_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_base_branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_route": {
+      "enum": [
+        "repo_change",
+        "original_request"
+      ]
+    }
+  }
+}

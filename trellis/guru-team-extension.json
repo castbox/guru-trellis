@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.6.5-guru.19",
+  "version": "0.6.5-guru.20",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
   "target_trellis_cli": "0.6.5",
@@ -69,6 +69,75 @@
       "legacy_skill_ids": [
         "guru-approve-task-plan",
         "guru-check-task",
+        "guru-create-task-commit"
+      ],
+      "public_input_schema_ids": [
+        "guru-stage0-clarify-requirements-input-active-task-scope-change-1.0",
+        "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
+        "guru-stage0-clarify-requirements-input-standalone-review-1.0",
+        "guru-stage0-create-task-workspace-input-issue-only-initial-1.0",
+        "guru-stage0-create-task-workspace-input-issue-only-recovery-1.0",
+        "guru-stage0-create-task-workspace-input-workspace-task-initial-1.0",
+        "guru-stage0-create-task-workspace-input-workspace-task-recovery-1.0",
+        "guru-stage0-discover-change-context-input-pre-task-1.0",
+        "guru-stage0-discover-change-context-input-task-local-reentry-1.0",
+        "guru-stage0-review-change-request-input-current-issue-1.0",
+        "guru-stage0-review-change-request-input-proposed-draft-1.0",
+        "guru-stage0-review-change-request-input-standalone-request-1.0",
+        "guru-stage0-review-contract-wording-input-change-request-1.0",
+        "guru-stage0-review-contract-wording-input-explicit-paths-1.0",
+        "guru-stage0-review-contract-wording-input-planning-artifacts-1.0"
+      ],
+      "typed_output_schema_ids": [
+        "guru-stage0-clarify-requirements-output-blocked-1.0",
+        "guru-stage0-clarify-requirements-output-clear-1.0",
+        "guru-stage0-clarify-requirements-output-needs-context-1.0",
+        "guru-stage0-clarify-requirements-output-new-task-1.0",
+        "guru-stage0-clarify-requirements-output-refresh-context-1.0",
+        "guru-stage0-clarify-requirements-output-retarget-context-1.0",
+        "guru-stage0-create-task-workspace-output-blocked-1.0",
+        "guru-stage0-create-task-workspace-output-cancelled-1.0",
+        "guru-stage0-create-task-workspace-output-created-1.0",
+        "guru-stage0-create-task-workspace-output-refresh-review-1.0",
+        "guru-stage0-discover-change-context-output-blocked-1.0",
+        "guru-stage0-discover-change-context-output-context-ready-1.0",
+        "guru-stage0-discover-change-context-output-refresh-base-1.0",
+        "guru-stage0-review-change-request-output-blocked-1.0",
+        "guru-stage0-review-change-request-output-clarify-requirements-1.0",
+        "guru-stage0-review-change-request-output-ready-1.0",
+        "guru-stage0-review-change-request-output-refresh-context-1.0",
+        "guru-stage0-review-change-request-output-review-wording-1.0",
+        "guru-stage0-review-contract-wording-output-blocked-1.0",
+        "guru-stage0-review-contract-wording-output-content-changed-1.0",
+        "guru-stage0-review-contract-wording-output-pass-1.0",
+        "guru-stage0-sync-base-output-blocked-1.0",
+        "guru-stage0-sync-base-output-skipped-1.0",
+        "guru-stage0-sync-base-output-synced-1.0"
+      ],
+      "private_artifact_schema_ids": [
+        "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-1.0.json"
+      ],
+      "artifact_schema_ids": [
+        "guru-base-sync-result-1.0",
+        "guru-change-request-review-1.0",
+        "guru-context-discovery-1.0",
+        "guru-contract-wording-review-1.0",
+        "guru-phase2-check-2.0",
+        "guru-planning-approval-2.0",
+        "guru-requirements-clarification-2.0",
+        "guru-task-commit-plan-1.0",
+        "guru-task-workspace-plan-1.0",
+        "guru-task-workspace-result-1.0"
+      ],
+      "active_skill_ids": [
+        "guru-approve-task-plan",
+        "guru-check-task",
         "guru-clarify-requirements",
         "guru-create-task-commit",
         "guru-create-task-workspace",
@@ -77,15 +146,26 @@
         "guru-review-contract-wording",
         "guru-sync-base"
       ],
-      "public_input_schema_ids": [],
-      "typed_output_schema_ids": [],
-      "private_artifact_schema_ids": [],
-      "artifact_schema_ids": ["guru-base-sync-result-1.0", "guru-change-request-review-1.0", "guru-context-discovery-1.0", "guru-contract-wording-review-1.0", "guru-phase2-check-2.0", "guru-planning-approval-2.0", "guru-requirements-clarification-2.0", "guru-task-commit-plan-1.0", "guru-task-workspace-plan-1.0", "guru-task-workspace-result-1.0"],
-      "active_skill_ids": ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
       "planned_skill_ids": [],
-      "reserved_skill_ids": ["guru-create-work-commit"],
-      "registry_lifecycle": ["reserved", "planned", "active"],
-      "workflow_markers": ["guru-skill-invoke", "guru-skill-exit"]
+      "reserved_skill_ids": [
+        "guru-create-work-commit"
+      ],
+      "registry_lifecycle": [
+        "reserved",
+        "planned",
+        "active"
+      ],
+      "workflow_markers": [
+        "guru-skill-invoke",
+        "guru-skill-exit"
+      ],
+      "migration_manifests": [
+        {
+          "id": "stage0-minimal-handoff-v1",
+          "schema_id": "guru-team-stage0-migration-manifest-1.0",
+          "path": "migrations/stage0-minimal-handoff.json"
+        }
+      ]
     },
     "skill_runtime": {
       "api_version": "1.0",
@@ -99,8 +179,18 @@
       "native_trace_schema_id": "guru-team-skill-eval-native-trace-1.0",
       "native_trace_schema_path": "schemas/skill-eval-native-trace.schema.json",
       "adapter_root": "adapters/eval",
-      "adapter_ids": ["shared", "codex", "claude", "cursor"],
-      "run_statuses": ["passed", "evaluation_failed", "execution_error", "unsupported"]
+      "adapter_ids": [
+        "shared",
+        "codex",
+        "claude",
+        "cursor"
+      ],
+      "run_statuses": [
+        "passed",
+        "evaluation_failed",
+        "execution_error",
+        "unsupported"
+      ]
     },
     "companion_scripts": [
       "check-env",
@@ -112,6 +202,7 @@
       "discover-skill-evals",
       "run-skill-evals",
       "run-skill-command",
+      "invoke-stage0-skill",
       "sync-base",
       "check-base-sync",
       "preview-change-context-history",
