@@ -1,0 +1,375 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "002",
+  "task": {
+    "id": "147-skill-eval-runner-adapters",
+    "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters",
+    "status": "in_progress",
+    "branch": "codex/147-skill-eval-runner-adapters"
+  },
+  "issue": {
+    "primary_issue": 147,
+    "ledger_sha256": "d1afb28e28256923340c4fd63ef8bf5ba7c5623a50b292d1b06568f56b735a61"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "1cbf3dd85f8845441df2bb3172e82054568c30b5"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/planning-approval.json",
+      "sha256": "0b84d2254ffb15b372e668c57521bc3ca348049ecb7539ee23f30f6f052ee9f1",
+      "size": 32646
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/phase2-check.json",
+      "sha256": "17684ebde487c0d3751a6b65fcd94aaaec97d345821253afa46c2dc6f9775f7c",
+      "size": 27492
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-scope-ledger.json",
+      "sha256": "d1afb28e28256923340c4fd63ef8bf5ba7c5623a50b292d1b06568f56b735a61",
+      "size": 2434
+    },
+    "task": {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task.json",
+      "sha256": "523cd798670226af70c5834050f315c1ae3b8a83a40219540677e624eb7c5b8f",
+      "size": 719
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0ff0e836f7edb0ade15c3aa771ec46be97aff4fb",
+        "worktree_sha256": "70dc0355fd6b9f5cb86697f898c09363f3cf3792affc1d8cf74b1033f809aa82",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8c25b7d018be0327186a62ff103803cd6dc8c9d",
+        "worktree_sha256": "27a48ffccf5c1bc8f45039b347b92014c6feacfe0404d866f878c092cd7bb87b",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+        "worktree_sha256": "1550677e24c85dadc6bde3ff44fc6420b12661a360cf825dd39bf292a297fb14",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "46b73e2026d02fa9661cb7a76579e819659ba4c8",
+        "worktree_sha256": "83dcefb867d92cb365073fb1f5e7a97d5b15ce6a84b614f4533be4867f77e627",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b469eb6c57b502a56344bc6c3fd530c2d37a3256",
+        "worktree_sha256": "5bc48fbd4dbe332b74146c8eb3dc39ac96991f3cb08088603fe85aaec35c6738",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6d32751708d093b49658313f7fc32a52dc4baa43",
+        "worktree_sha256": "cb7dbbf4d37f80eb9fc68907b5e562bb00ea5ab5358d4e845ca1be4869fc40c5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "63ad0ed70a33d0f61bbfc409c37b1a79735b65f3",
+        "worktree_sha256": "17684ebde487c0d3751a6b65fcd94aaaec97d345821253afa46c2dc6f9775f7c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "aad98e67e439fa68ccefbe986657803245b5bcd048b30c9c4120b5d4d9d39af1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "4707c024023c58a4246c3a4a908c2d47d6cb8b9b4a388a05a1674c43f3d00b03",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/reviews/001-discovery.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d1147afd256ad003cef2cf707fc840c3d45690371deede1f2312c56f6aa4e915",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f0107b1e8c4577f6a217c9cc9d0b1183a8d3339",
+        "worktree_sha256": "18b6d0c6b106405597f74a3a21ee0be9341f8fe045bebe470a2c3bc7d7234e05",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+        "worktree_sha256": "1550677e24c85dadc6bde3ff44fc6420b12661a360cf825dd39bf292a297fb14",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+        "worktree_sha256": "1550677e24c85dadc6bde3ff44fc6420b12661a360cf825dd39bf292a297fb14",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b1591803b21dc5cf6f73ecef98d33ef11ff5bc07",
+        "worktree_sha256": "c7f15d6237d1b07c3e5f4ebef8694dbc0e2c398ac3d21bdbf8fce25a3579d4c5",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8c25b7d018be0327186a62ff103803cd6dc8c9d",
+        "worktree_sha256": "27a48ffccf5c1bc8f45039b347b92014c6feacfe0404d866f878c092cd7bb87b",
+        "mode": "100755"
+      }
+    ],
+    "digest": "cbfc844af416dff4808358b67b5e4727eb84ec309190dff59101179b7b7780de"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review metadata tail 不属于当前 finding-fix commit，必须原样保留给闭环审查与 finish-work。",
+      "coverage_source": "workflow-metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review metadata tail 不属于当前 finding-fix commit，必须原样保留给闭环审查与 finish-work。",
+      "coverage_source": "workflow-metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/review.md",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review metadata tail 不属于当前 finding-fix commit，必须原样保留给闭环审查与 finish-work。",
+      "coverage_source": "workflow-metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/reviews/001-discovery.md",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review metadata tail 不属于当前 finding-fix commit，必须原样保留给闭环审查与 finish-work。",
+      "coverage_source": "workflow-metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review metadata tail 不属于当前 finding-fix commit，必须原样保留给闭环审查与 finish-work。",
+      "coverage_source": "workflow-metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "当前 guru-create-task-commit finding-fix 轮次的确定性计划 artifact。",
+      "coverage_source": "skill-artifact"
+    },
+    {
+      "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Branch Review P1 finding closure 与 fresh 完整 Phase 2 evidence 覆盖该变更。",
+      "coverage_source": "phase2-check.json"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/tasks/07-21-147-skill-eval-runner-adapters/phase2-check.json",
+    ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-commit-plans/002.json",
+    "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #147 修正 Skill 对比侧调用绑定",
+    "body": "背景：\nBranch Review 发现 comparison side 复用 current package 的 invocation，合法 wrapper 变化与普通结构漂移不能可靠收敛。\n\n变更：\n- 对 current/comparison exact package 分别验证 Interface、public assets、corpus、fixtures 与 output schemas，并生成 side-local invocation DTO。\n- 让 adapter 执行各 side 自己声明的 wrapper，将 missing/unreadable outputs、fixture、Interface 等普通错误闭合为结构化 eval error。\n- 补充不同 wrapper 正例与缺失 outputs/fixture 负例，同步 canonical/installed/fixture mirrors 和 durable Docs SSOT。\n\n边界：\n本提交仅修复 current/comparison side-local package validation/invocation 与对应 tests/Docs；不提交 Branch Review metadata tail，不改变 issue close/ref scope，不涉及 CI/CD、container、K8s、DB migration、Makefile、secret、权限、生产配置或生产数据。exact remote branch marketplace 留待 publish gate。\n\n验证：\nWorkflow 548 passed/13 skipped，Skill packages 138 passed，preset 39 passed，ownership 6 passed；400 managed files、zero sidecar、full throwaway init/update/reapply 通过。\n\nRefs #147",
+    "bytes": "fix(trellis): #147 修正 Skill 对比侧调用绑定\n\n背景：\nBranch Review 发现 comparison side 复用 current package 的 invocation，合法 wrapper 变化与普通结构漂移不能可靠收敛。\n\n变更：\n- 对 current/comparison exact package 分别验证 Interface、public assets、corpus、fixtures 与 output schemas，并生成 side-local invocation DTO。\n- 让 adapter 执行各 side 自己声明的 wrapper，将 missing/unreadable outputs、fixture、Interface 等普通错误闭合为结构化 eval error。\n- 补充不同 wrapper 正例与缺失 outputs/fixture 负例，同步 canonical/installed/fixture mirrors 和 durable Docs SSOT。\n\n边界：\n本提交仅修复 current/comparison side-local package validation/invocation 与对应 tests/Docs；不提交 Branch Review metadata tail，不改变 issue close/ref scope，不涉及 CI/CD、container、K8s、DB migration、Makefile、secret、权限、生产配置或生产数据。exact remote branch marketplace 留待 publish gate。\n\n验证：\nWorkflow 548 passed/13 skipped，Skill packages 138 passed，preset 39 passed，ownership 6 passed；400 managed files、zero sidecar、full throwaway init/update/reapply 通过。\n\nRefs #147\n",
+    "sha256": "3f64bee298961d275e5878f3f03ea701747ec8402c8bf342725ab509176b6887"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex main session /root",
+    "summary": "已吸收 candidate validator 对固定 commit body 小节的 revision-required 反馈；重新审查 002 的 exact stage scope、fresh Phase 2、提交消息、Docs SSOT、metadata preservation 与部署/安全边界；用户在完整展示修订消息后确认继续，授权仅绑定当前 exact plan。",
+    "evidence": [
+      "当前 15 个 pre-candidate dirty paths 已逐一分类：10 个 finding-fix/Phase 2 path 为 task-reviewed，5 个 Branch Review metadata tail 为 unrelated-preserved；002 self 为 skill-artifact。",
+      "fresh phase2-check.json typed_exit=passed，facts_sha256=4d1122ad581a9ef1a71e3c0af154008c1242248230e445ce090ee8f7b1b326c0，绑定 pre-commit HEAD 1cbf3dd85f8845441df2bb3172e82054568c30b5 与完整 dirty paths。",
+      "独立完整 Phase 2 覆盖 R1-R12、AC1-AC15、Branch Review P1 closure、十个 adequacy dimension、Docs SSOT、agent recovery、full suites 与 throwaway；open finding 为 0。",
+      "finding-fix commit 只包含 side-local validation/runtime/adapter/tests/durable specs、fresh phase2-check 与 002 self；agent-assignment、001 result、review.md、reviews/001-discovery.md、failed review-gate 原样保留。",
+      "提交消息为中文 Conventional Commit，仅使用 Refs #147；#125/#127/#130 保持 related，#145/#146 保持 follow-up，不使用 close keyword。",
+      "无 CI/CD、container、K8s、DB migration、Makefile、secret、权限、生产配置或生产数据影响；exact remote branch marketplace 继续由 push 后 publish gate 验证。",
+      "source checkout clean；002 不会 push、创建 PR、关闭 issue 或调用 finish-work。",
+      "首次 candidate validator 仅报告正文缺少 `边界：`；未执行 staging、commit、push、PR 或 finish-work。",
+      "修订后正文按 背景/变更/边界/验证 固定顺序，边界明确 metadata preservation、issue scope、部署与 exact remote marketplace 限制。",
+      "用户已查看修订后的完整提交消息，并回复“确认继续”；该确认仅授权当前 002，不授权 push、PR、issue closure 或 finish-work。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-after-revised-002-review",
+    "evidence": "用户在完整展示修订后的 002 提交消息，并说明 11 个 exact stage paths 与 5 个 preserved paths 未变后回复“确认继续”；授权仅适用于当前 002，不包含 push、PR、issue closure 或 finish-work。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-21T10:22:00Z",
+    "plan_digest": "8df29a1bbebb3824566a3134af34ce6bdadeb42f41cf5237f266e3d5c6b15a6b"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

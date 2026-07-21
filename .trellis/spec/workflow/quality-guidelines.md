@@ -477,6 +477,10 @@ Python or shell.
   override. Both sides pass through one runner-resolved private runtime target,
   while every native-visible request/context/projection/receipt/boundary remains
   free of that locator.
++ Exact comparison also covers valid sides with different declared wrapper
+  paths and pre-execution closed failures for missing outputs, fixtures,
+  Interface fields, or public assets. One invalid side must not execute the
+  other side or escape through `KeyError`/`OSError`.
 + Adapter integration validates the repo-external native read/invocation
   receipt and rejects a native CLI that returns a schema-valid typed DTO without
   reading the Skill and invoking the public wrapper through the trace helper.

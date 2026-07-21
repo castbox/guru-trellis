@@ -2608,6 +2608,74 @@ class EvalRunnerTests(unittest.TestCase):
                         for path in projection_root.rglob("*") if path.is_file()
                     ))
 
+    def test_comparison_uses_each_valid_side_wrapper_and_fails_closed_on_side_drift(self) -> None:
+        current_package = self.skills / "packages/guru-example-sync"
+        comparison_package = Path(self.temp.name) / "different-wrapper/guru-example-sync"
+        shutil.copytree(current_package, comparison_package)
+        old_wrapper = comparison_package / "scripts/invoke.sh"
+        new_wrapper = comparison_package / "scripts/invoke-v2.sh"
+        old_wrapper.rename(new_wrapper)
+        interface_path = comparison_package / "interface.json"
+        interface = json.loads(interface_path.read_text(encoding="utf-8"))
+        interface["validators"][0]["command"] = "scripts/invoke-v2.sh"
+        interface["public_contracts"]["invocation"]["wrapper"] = "scripts/invoke-v2.sh"
+        interface_path.write_text(json.dumps(interface), encoding="utf-8")
+
+        run_root = Path(self.temp.name) / "different-wrapper-run"
+        result = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+            "--skill", "guru-example-sync", "--adapter", "shared", "--case", "sync-normal",
+            "--current-package", str(current_package),
+            "--comparison-package", str(comparison_package),
+            "--run-root", str(run_root), "--json",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "passed")
+        wrappers = {
+            case["comparison_side"]: Path(json.loads(
+                Path(case["transcript_locator"]).read_text(encoding="utf-8")
+            )["wrapper_path"]).name
+            for case in payload["cases"]
+        }
+        self.assertEqual(wrappers, {"current": "invoke.sh", "comparison": "invoke-v2.sh"})
+
+        missing_outputs = Path(self.temp.name) / "missing-outputs/guru-example-sync"
+        shutil.copytree(current_package, missing_outputs)
+        missing_outputs_interface_path = missing_outputs / "interface.json"
+        missing_outputs_interface = json.loads(missing_outputs_interface_path.read_text(encoding="utf-8"))
+        del missing_outputs_interface["public_contracts"]["outputs"]
+        missing_outputs_interface_path.write_text(json.dumps(missing_outputs_interface), encoding="utf-8")
+        missing_outputs_root = Path(self.temp.name) / "missing-outputs-run"
+        missing_outputs_result = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+            "--skill", "guru-example-sync", "--adapter", "shared",
+            "--current-package", str(current_package),
+            "--comparison-package", str(missing_outputs),
+            "--run-root", str(missing_outputs_root), "--json",
+        )
+        self.assertEqual(missing_outputs_result.returncode, 2)
+        self.assertEqual(json.loads(missing_outputs_result.stderr)["code"], "eval_side_interface_invalid")
+        self.assertNotIn("Traceback", missing_outputs_result.stderr)
+        self.assertFalse(missing_outputs_root.exists())
+
+        action_package = self.skills / "packages/guru-example-action"
+        missing_fixture = Path(self.temp.name) / "missing-fixture/guru-example-action"
+        shutil.copytree(action_package, missing_fixture)
+        (missing_fixture / "evals/files/context.txt").unlink()
+        missing_fixture_root = Path(self.temp.name) / "missing-fixture-run"
+        missing_fixture_result = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+            "--skill", "guru-example-action", "--adapter", "shared",
+            "--current-package", str(action_package),
+            "--comparison-package", str(missing_fixture),
+            "--run-root", str(missing_fixture_root), "--json",
+        )
+        self.assertEqual(missing_fixture_result.returncode, 2)
+        self.assertEqual(json.loads(missing_fixture_result.stderr)["code"], "eval_fixture_invalid")
+        self.assertNotIn("Traceback", missing_fixture_result.stderr)
+        self.assertFalse(missing_fixture_root.exists())
+
     def test_normal_public_wrappers_do_not_reference_eval_or_private_runtime_source(self) -> None:
         for skill_id in ("guru-example-action", "guru-example-sync"):
             wrapper = (self.skills / "packages" / skill_id / "scripts/invoke.sh").read_text(encoding="utf-8")

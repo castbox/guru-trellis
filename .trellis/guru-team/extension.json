@@ -190,11 +190,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-21T08:53:01Z",
+  "installed_at": "2026-07-21T10:04:42Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/147-skill-eval-runner-adapters",
-    "commit": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+    "commit": "1cbf3dd85f8845441df2bb3172e82054568c30b5",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -497,7 +497,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "37d66e968c7f79860c7e0587d226b20fcfbb41e8df88757835ce29e9df3895bc",
+        "sha256": "1550677e24c85dadc6bde3ff44fc6420b12661a360cf825dd39bf292a297fb14",
         "executable": false,
         "action": "unchanged"
       },

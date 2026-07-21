@@ -214,7 +214,12 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
         shutil.copy2(source, destination)
     if (projection_root / "evals").exists() or any(path.name == "guru_team_trellis.py" for path in projection_root.rglob("*")):
         raise ValueError("public projection contains eval or private runtime assets")
-    wrapper_relative = request["interface"]["public_invocation"]["wrapper"]
+    local_invocation = interface.get("public_contracts", {}).get("invocation")
+    request_interface = request.get("interface")
+    request_invocation = request_interface.get("public_invocation") if isinstance(request_interface, dict) else None
+    if not isinstance(local_invocation, dict) or request_invocation != local_invocation:
+        raise ValueError("side-local public invocation contract does not match exact package Interface")
+    wrapper_relative = local_invocation["wrapper"]
     wrapper_path = projection_root / wrapper_relative
     skill_path = projection_root / "SKILL.md"
     skill_sha256 = hashlib.sha256(skill_path.read_bytes()).hexdigest()

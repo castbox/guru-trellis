@@ -1131,8 +1131,15 @@ consumer projection, semantic judgment, or platform-specific corpus. Missing
 native capability returns `unsupported`. Comparison accepts only a pair of
 caller-resolved exact package paths, binds grading and feedback to each side
 independently, and never interprets floating refs. Before either side executes,
-the runner resolves one exact public runtime target from the selected
-source/installed extension context. Current and comparison adapters receive
+the runner independently validates each side's closed Interface 1.3 contract,
+byte-identical corpus, fixtures, and public invocation/output assets, then
+creates a side-local invocation and per-exit output-schema DTO. The adapter
+binds that DTO back to the exact package Interface and invokes that side's
+declared wrapper, so valid versions may use different wrapper paths. Missing
+outputs, fixtures, or public assets return a closed eval error/status rather
+than an uncaught runtime exception. The runner then resolves one exact public
+runtime target from the selected source/installed extension context. Current
+and comparison adapters receive
 that same locator only through their private adapter requests; neither exact
 package path is used to infer runtime location.
 

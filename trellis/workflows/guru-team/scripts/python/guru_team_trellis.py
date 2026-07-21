@@ -15449,6 +15449,9 @@ def skill_read_json(path: Path, label: str, errors: list[str]) -> dict[str, Any]
     except FileNotFoundError:
         errors.append(f"missing {label}")
         return None
+    except OSError:
+        errors.append(f"unreadable {label}")
+        return None
     except (UnicodeDecodeError, ValueError):
         errors.append(f"invalid JSON in {label}")
         return None
@@ -16728,6 +16731,7 @@ def validate_skill_public_contracts(
     boundary: Path,
     runtime_commands: set[str],
     active_registry_entries: dict[str, dict[str, Any]],
+    execute_fixture: bool = True,
 ) -> None:
     skill_id = str(interface.get("id") or "")
     contracts = interface.get("public_contracts")
@@ -16880,8 +16884,9 @@ def validate_skill_public_contracts(
         if wrapper_stat is not None:
             try:
                 wrapper_text = wrapper_path.read_text(encoding="utf-8")
-            except UnicodeDecodeError:
+            except (OSError, UnicodeDecodeError):
                 wrapper_text = ""
+                errors.append(f"[invocation_wrapper_unreadable] public invocation wrapper for {skill_id} is unreadable")
             if "guru_team_trellis.py" in wrapper_text or re.search(r"\b(?:import|source)\b.*guru_team_trellis", wrapper_text):
                 errors.append(f"[runtime_source_dependency] public invocation wrapper for {skill_id} reads runtime source")
             skill_validate_dispatcher_wrapper(
@@ -17274,6 +17279,9 @@ def validate_skill_public_contracts(
         errors.append(
             f"[public_private_overlap] public output and private artifact schema paths overlap for {skill_id}"
         )
+
+    if not execute_fixture:
+        return
 
     fixture_dispatcher = skills_root / "fixture-dispatcher.py"
     if wrapper_stat is not None and skill_lstat_path(
@@ -18881,7 +18889,7 @@ def skill_eval_validate_corpus(
             "Skill eval schema is missing or unsafe.",
         )
     schema = skill_read_schema(schema_path, "Skill eval schema", errors)
-    if skill_lstat_path(skills_root, corpus_path, "Skill eval corpus", errors, kind="file") is None:
+    if skill_lstat_path(package_root, corpus_path, "Skill eval corpus", errors, kind="file") is None:
         raise skill_eval_error(
             "eval_corpus_missing", "evals/evals.json",
             "Add a versioned package-local evals/evals.json corpus through #145/#146.",
@@ -18946,6 +18954,11 @@ def skill_eval_validate_corpus(
             fixture_errors: list[str] = []
             if skill_lstat_path(package_root, fixture_path, "Skill eval fixture", fixture_errors, kind="file") is None:
                 raise skill_eval_error("eval_fixture_invalid", f"{field}.files[{file_index}]", "Restore a regular non-symlink fixture below evals/files/.", "Skill eval fixture is missing or unsafe.")
+            try:
+                with fixture_path.open("rb") as fixture_stream:
+                    fixture_stream.read(1)
+            except OSError:
+                raise skill_eval_error("eval_fixture_invalid", f"{field}.files[{file_index}]", "Restore a readable regular non-symlink fixture below evals/files/.", "Skill eval fixture is unreadable.")
         assertions = case.get("assertions")
         if isinstance(assertions, dict):
             if not assertions or not any(assertions.get(kind) for kind in ("deterministic", "semantic")):
@@ -19206,7 +19219,7 @@ def skill_eval_public_runtime_target(root: Path) -> Path:
     return target
 
 
-def skill_eval_validate_comparison_pair(args: argparse.Namespace, selected_package: Path, corpus_sha256: str) -> list[tuple[str, Path]]:
+def skill_eval_comparison_sides(args: argparse.Namespace, selected_package: Path) -> list[tuple[str, Path]]:
     current = args.current_package
     comparison = args.comparison_package
     if bool(current) != bool(comparison):
@@ -19218,16 +19231,152 @@ def skill_eval_validate_comparison_pair(args: argparse.Namespace, selected_packa
         path = Path(value)
         if not path.is_absolute() or not path.is_dir() or any(token in path.name.lower() for token in ("latest", "previous")):
             raise skill_eval_error("eval_comparison_identity_invalid", f"comparison.{side}", "Provide a caller-resolved absolute package directory, not a floating ref.", "Skill eval comparison package identity is invalid.")
-        try:
-            if hashlib.sha256((path / "evals/evals.json").read_bytes()).hexdigest() != corpus_sha256:
-                raise OSError
-            interface = read_json(path / "interface.json")
-        except (OSError, WorkflowError):
-            raise skill_eval_error("eval_comparison_corpus_mismatch", f"comparison.{side}", "Use exact packages with byte-identical corpus and Interface identity.", "Skill eval comparison package does not share the canonical corpus.")
-        if interface.get("id") != args.skill or interface.get("schema_version") != "1.3":
-            raise skill_eval_error("eval_comparison_identity_mismatch", f"comparison.{side}", "Use exact packages for the selected Interface 1.3 Skill.", "Skill eval comparison package identity does not match.")
-        output.append((side, path))
+        output.append((side, Path(os.path.realpath(path))))
     return output
+
+
+def skill_eval_side_validation_context(
+    root: Path,
+    skills_root: Path,
+    mode: str,
+) -> tuple[dict[str, Any], set[str], dict[str, dict[str, Any]]]:
+    errors: list[str] = []
+    interface_schema = skill_read_contract_schema(
+        skills_root / SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.3"]["schema_path"],
+        "Skill Interface 1.3 schema",
+        "interface-1.3",
+        errors,
+    )
+    registry = skill_read_json(skills_root / "registry.json", "skill registry", errors)
+    entries = registry.get("skills") if isinstance(registry, dict) else None
+    active_entries = {
+        str(item.get("id") or ""): item
+        for item in entries if isinstance(item, dict) and item.get("state") == "active"
+    } if isinstance(entries, list) else {}
+    extension_path = (
+        root / ".trellis/guru-team/extension.json"
+        if mode == "installed"
+        else skill_default_extension_manifest_path(skills_root, root)
+    )
+    extension = skill_read_json(
+        extension_path,
+        "Skill runtime extension manifest",
+        errors,
+    )
+    _, runtime_commands, _ = skill_extension_runtime_contract(
+        extension,
+        "Skill runtime extension manifest",
+        errors,
+        installed=mode == "installed",
+    )
+    if errors or not isinstance(interface_schema, dict):
+        raise skill_eval_error(
+            "eval_side_validation_context_invalid",
+            "comparison",
+            "Restore the validated Interface schema, registry, and extension runtime inventory.",
+            "Skill eval runner could not prepare exact-side validation.",
+        )
+    return interface_schema, runtime_commands, active_entries
+
+
+def skill_eval_discover_side(
+    skills_root: Path,
+    package_root: Path,
+    skill_id: str,
+    side: str,
+    expected_corpus_sha256: str,
+    interface_schema: dict[str, Any],
+    runtime_commands: set[str],
+    active_registry_entries: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    errors: list[str] = []
+    if skill_lstat_path(package_root, package_root, f"{side} exact package", errors, kind="directory") is None:
+        raise skill_eval_error(
+            "eval_comparison_identity_invalid",
+            f"comparison.{side}",
+            "Provide a readable regular caller-resolved exact package directory.",
+            "Skill eval comparison package identity is invalid.",
+        )
+    interface_path = package_root / "interface.json"
+    if skill_lstat_path(package_root, interface_path, f"{side} Interface", errors, kind="file") is None:
+        interface = None
+    else:
+        interface = skill_read_json(interface_path, f"{side} Interface", errors)
+    if isinstance(interface, dict):
+        errors.extend(skill_json_schema_validation_errors(interface, interface_schema, f"{side} Interface"))
+        if interface.get("id") != skill_id or interface.get("schema_version") != "1.3":
+            errors.append(f"{side} Interface identity does not match the selected Interface 1.3 Skill")
+    if errors or not isinstance(interface, dict):
+        raise skill_eval_error(
+            "eval_side_interface_invalid",
+            f"comparison.{side}.interface",
+            "Restore the exact closed Interface 1.3 contract for this comparison side.",
+            "Skill eval comparison side failed Interface validation.",
+        )
+
+    contract_errors: list[str] = []
+    try:
+        validation_boundary = Path(os.path.commonpath([
+            os.path.abspath(skills_root),
+            os.path.abspath(package_root),
+        ]))
+    except ValueError:
+        raise skill_eval_error(
+            "eval_comparison_identity_invalid",
+            f"comparison.{side}",
+            "Place the exact package on a filesystem boundary addressable with the installed Skill contracts.",
+            "Skill eval comparison package cannot share a validation boundary with the installed contracts.",
+        )
+    validate_skill_public_contracts(
+        skills_root,
+        package_root,
+        interface,
+        contract_errors,
+        boundary=validation_boundary,
+        runtime_commands=runtime_commands,
+        active_registry_entries=active_registry_entries,
+        execute_fixture=False,
+    )
+    if contract_errors:
+        raise skill_eval_error(
+            "eval_side_public_contract_invalid",
+            f"comparison.{side}.public_contracts",
+            "Restore every declared public invocation, input, output, consumer, projection, and artifact contract before comparison.",
+            "Skill eval comparison side failed public contract and asset validation.",
+        )
+
+    _, corpus_bytes = skill_eval_validate_corpus(skills_root, package_root, interface)
+    corpus_sha256 = hashlib.sha256(corpus_bytes).hexdigest()
+    if corpus_sha256 != expected_corpus_sha256:
+        raise skill_eval_error(
+            "eval_comparison_corpus_mismatch",
+            f"comparison.{side}",
+            "Use exact packages with byte-identical corpus and independent valid Interface assets.",
+            "Skill eval comparison package does not share the canonical corpus.",
+        )
+    contracts = interface.get("public_contracts")
+    invocation = contracts.get("invocation") if isinstance(contracts, dict) else None
+    output_items = contracts.get("outputs") if isinstance(contracts, dict) else None
+    if not isinstance(invocation, dict) or not isinstance(output_items, list):
+        raise skill_eval_error(
+            "eval_side_public_contract_invalid",
+            f"comparison.{side}.public_contracts",
+            "Restore the side-local invocation and per-exit output contracts.",
+            "Skill eval comparison side has no usable invocation/output DTO.",
+        )
+    return {
+        "side": side,
+        "package_root": package_root,
+        "interface": {
+            "interface_schema_id": "guru-team-skill-interface-1.3",
+            "interface_version": interface["schema_version"],
+            "public_invocation": invocation,
+            "output_schemas": {
+                str(item.get("exit_id")): item.get("schema")
+                for item in output_items if isinstance(item, dict)
+            },
+        },
+    }
 
 
 def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
@@ -19243,10 +19392,26 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
     if not run_input.is_absolute():
         raise skill_eval_error("eval_run_root_invalid", "run_root", "Use an absolute temporary directory outside the repository.", "Skill eval run root is not absolute.")
     run_root = run_input.resolve(strict=False)
+    side_paths = skill_eval_comparison_sides(args, selected_package)
+    interface_schema, runtime_commands, active_registry_entries = skill_eval_side_validation_context(
+        root, skills_root, args.mode
+    )
+    sides = [
+        skill_eval_discover_side(
+            skills_root,
+            package_root,
+            args.skill,
+            side,
+            discovery["corpus_sha256"],
+            interface_schema,
+            runtime_commands,
+            active_registry_entries,
+        )
+        for side, package_root in side_paths
+    ]
     selected_cases = [case for case in corpus["evals"] if args.case is None or case["id"] == args.case]
     if not selected_cases:
         raise skill_eval_error("eval_case_unknown", "case", "Choose one case id returned by discovery.", "Skill eval runner could not select a case.")
-    sides = skill_eval_validate_comparison_pair(args, selected_package, discovery["corpus_sha256"])
     runtime_target = skill_eval_public_runtime_target(root)
     semantic = skill_eval_load_external(args.semantic_grading, skills_root / "schemas/skill-eval-semantic-grading.schema.json", "semantic_grading")
     feedback = skill_eval_load_external(args.human_feedback, skills_root / "schemas/skill-eval-human-feedback.schema.json", "human_feedback")
@@ -19263,7 +19428,7 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
             raise skill_eval_error("eval_human_feedback_duplicate", "human_feedback.items", "Provide at most one feedback item per selected case.", "Skill eval human feedback contains a duplicate case identity.")
         feedback_index.setdefault(key, []).append(item["feedback"])
     selected_case_ids = {case["id"] for case in selected_cases}
-    selected_sides = {side for side, _ in sides}
+    selected_sides = {item["side"] for item in sides}
     if any(side not in selected_sides or case_id not in selected_case_ids for side, case_id in feedback_index):
         raise skill_eval_error("eval_human_feedback_unknown", "human_feedback.items", "Attach feedback only to selected case identities.", "Skill eval human feedback contains an unknown case identity.")
     known_semantic = {
@@ -19274,7 +19439,10 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
     }
     if any(key not in known_semantic for key in semantic_index):
         raise skill_eval_error("eval_semantic_grading_unknown", "semantic_grading.results", "Grade only selected declared semantic assertion identities.", "Skill eval semantic grading contains an unknown identity.")
-    for boundary_label, boundary in [("repository", root), *[(f"comparison.{side}", package) for side, package in sides]]:
+    for boundary_label, boundary in [
+        ("repository", root),
+        *[(f"comparison.{item['side']}", item["package_root"]) for item in sides],
+    ]:
         try:
             run_root.relative_to(boundary.resolve())
         except ValueError:
@@ -19289,9 +19457,11 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
     if run_root.is_symlink() or not run_root.is_dir():
         raise skill_eval_error("eval_run_root_invalid", "run_root", "Use a regular external directory.", "Skill eval run root is unsafe.")
     case_results: list[dict[str, Any]] = []
-    for side, package_root in sides:
-        side_interface = read_json(package_root / "interface.json")
-        outputs = {item["exit_id"]: item["schema"] for item in side_interface["public_contracts"]["outputs"]}
+    for side_spec in sides:
+        side = side_spec["side"]
+        package_root = side_spec["package_root"]
+        side_interface = side_spec["interface"]
+        outputs = side_interface["output_schemas"]
         for case in selected_cases:
             case_root = run_root / side / case["id"]
             case_root.mkdir(parents=True, exist_ok=True)
@@ -19306,7 +19476,7 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
                 staged_files.append(value)
             request = {
                 "schema_version": "1.0", "adapter_id": args.adapter, "platform": args.adapter,
-                "skill_id": args.skill, "package_root": str(package_root), "interface": discovery,
+                "skill_id": args.skill, "package_root": str(package_root), "interface": side_interface,
                 "case_id": case["id"], "prompt": case["prompt"], "files": staged_files,
                 "workdir": str(execution_workdir), "corpus_path": str(package_root / "evals/evals.json"),
                 "corpus_sha256": discovery["corpus_sha256"], "runtime_target": str(runtime_target),
