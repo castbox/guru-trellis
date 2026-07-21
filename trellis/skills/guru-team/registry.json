@@ -1,6 +1,6 @@
 {
   "$schema": "schemas/skill-registry.schema.json",
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "skills": [
     {
       "id": "guru-create-work-commit",
@@ -13,6 +13,8 @@
       "name": "guru-approve-task-plan",
       "package": "packages/guru-approve-task-plan",
       "interface": "packages/guru-approve-task-plan/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": ["shared", "codex", "cursor", "claude"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-1-task-plan-approval"
@@ -23,6 +25,8 @@
       "name": "guru-create-task-workspace",
       "package": "packages/guru-create-task-workspace",
       "interface": "packages/guru-create-task-workspace/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": ["shared", "codex", "cursor", "claude"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-0-task-workspace"
@@ -33,6 +37,8 @@
       "name": "guru-create-task-commit",
       "package": "packages/guru-create-task-commit",
       "interface": "packages/guru-create-task-commit/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": ["shared", "codex", "cursor", "claude"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-3-task-commit"
@@ -43,6 +49,8 @@
       "name": "guru-check-task",
       "package": "packages/guru-check-task",
       "interface": "packages/guru-check-task/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": ["shared", "codex", "cursor", "claude"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-2-task-check"
@@ -53,6 +61,8 @@
       "name": "guru-clarify-requirements",
       "package": "packages/guru-clarify-requirements",
       "interface": "packages/guru-clarify-requirements/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": [
         "shared",
         "codex",
@@ -68,6 +78,8 @@
       "name": "guru-review-contract-wording",
       "package": "packages/guru-review-contract-wording",
       "interface": "packages/guru-review-contract-wording/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": [
         "shared",
         "codex",
@@ -83,6 +95,8 @@
       "name": "guru-review-change-request",
       "package": "packages/guru-review-change-request",
       "interface": "packages/guru-review-change-request/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": [
         "shared",
         "codex",
@@ -98,6 +112,8 @@
       "name": "guru-sync-base",
       "package": "packages/guru-sync-base",
       "interface": "packages/guru-sync-base/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": [
         "shared",
         "codex",
@@ -113,6 +129,8 @@
       "name": "guru-discover-change-context",
       "package": "packages/guru-discover-change-context",
       "interface": "packages/guru-discover-change-context/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "io_contract_state": "legacy",
       "supported_platforms": [
         "shared",
         "codex",

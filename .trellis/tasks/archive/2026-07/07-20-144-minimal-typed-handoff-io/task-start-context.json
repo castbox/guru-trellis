@@ -1,0 +1,183 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 144,
+    "url": "https://github.com/castbox/guru-trellis/issues/144",
+    "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/144"
+  },
+  "task_slug": "144-minimal-typed-handoff-io",
+  "task_title": "#144 实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+  "task_artifact_dir": ".trellis/tasks/07-20-144-minimal-typed-handoff-io",
+  "branch_name": "codex/144-minimal-typed-handoff-io",
+  "base_branch": "main",
+  "base_ref": "refs/remotes/origin/main",
+  "base_head_sha": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d",
+  "remote_head_sha": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d",
+  "workspace_slug": "144-minimal-typed-handoff-io",
+  "task_workspace_id": "144-minimal-typed-handoff-io",
+  "assignee": "wesleywu",
+  "actor": {
+    "login": "wesleywu"
+  },
+  "issue_scope_ledger_seed": {
+    "schema_version": "1.0",
+    "primary_issue": {
+      "number": 144,
+      "url": "https://github.com/castbox/guru-trellis/issues/144",
+      "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+      "reason": "本任务唯一主交付单元。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 144,
+        "url": "https://github.com/castbox/guru-trellis/issues/144",
+        "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+        "reason": "本任务完整实现并验收该 issue。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 98,
+        "url": "https://github.com/castbox/guru-trellis/issues/98",
+        "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+        "reason": "上游 Intake 编排背景，不由本任务关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 109,
+        "url": "https://github.com/castbox/guru-trellis/issues/109",
+        "title": "建立 Guru Team Skill-first 闭环流程模块化强制规范",
+        "reason": "提供 Skill-first 合同背景，不由本任务关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 115,
+        "url": "https://github.com/castbox/guru-trellis/issues/115",
+        "title": "按 Skill-first 重构 Guru Team task 收尾流程 umbrella",
+        "reason": "相关收尾流程 umbrella，不由本任务关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 127,
+        "url": "https://github.com/castbox/guru-trellis/issues/127",
+        "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+        "reason": "相关流程收敛背景，不由本任务关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 131,
+        "url": "https://github.com/castbox/guru-trellis/issues/131",
+        "title": "实现 guru-review-branch 闭环 Skill",
+        "reason": "相关 public Skill package，不由本任务关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 132,
+        "url": "https://github.com/castbox/guru-trellis/issues/132",
+        "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+        "reason": "相关集成与分发背景，不由本任务关闭。",
+        "acceptance_evidence": []
+      }
+    ],
+    "followup_issues": [
+      {
+        "number": 145,
+        "url": "https://github.com/castbox/guru-trellis/issues/145",
+        "title": "迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+        "reason": "后续迁移 Stage 0 active packages。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 146,
+        "url": "https://github.com/castbox/guru-trellis/issues/146",
+        "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+        "reason": "后续迁移其余 active packages。",
+        "acceptance_evidence": []
+      }
+    ],
+    "rules": [
+      "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+      "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+      "followup_issues 表示新范围或后续任务，不能自动关闭。"
+    ]
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": true,
+      "selected_issue": 144
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "名称同时绑定 issue 144 与最小 typed handoff I/O 基础设施交付语义。"
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    },
+    "final_source_issue_binding": {
+      "repo": "castbox/guru-trellis",
+      "number": 144,
+      "url": "https://github.com/castbox/guru-trellis/issues/144",
+      "state": "open",
+      "title_sha256": "023b5e3e6c1c73dcf2d215546a0a780656b7f283b312ac78c2e4d8f2c546dfbf",
+      "body_sha256": "4ba762b66bfa17a175584f5f7175e4d3b6f791d3d7c1873527809e348b49e128",
+      "updated_at": "2026-07-19T23:17:48Z",
+      "target_disposition_sha256": "9a575be49827f2ba1babfa652ad3f45ad63f4149a891ec8b8100de6276edaf8f",
+      "created_issue_binding_sha256": null
+    },
+    "prerequisite_evidence": {
+      "base": {
+        "skill_id": "guru-sync-base",
+        "schema_id": "guru-base-sync-result-1.0",
+        "typed_exit": "synced",
+        "payload_sha256": "f09c331da6e0728dbfeda79727ccdcfca870e2a004853605eb9e1c657db4bc8c",
+        "facts_sha256": "1c09295e46b515bd9b206631cc7746b2bb952226847548bf8ef7fc2e45dbfb9b",
+        "content_sha256": null,
+        "linkage_sha256": null
+      },
+      "context": {
+        "skill_id": "guru-discover-change-context",
+        "schema_id": "guru-context-discovery-1.0",
+        "typed_exit": "context_ready",
+        "payload_sha256": "85e3539bff26bd5e8201945324487a785187be56a7b445beabf5d261bd0227fe",
+        "facts_sha256": "f6a1881c7b90f1f7e928173a23cc2e56742e46d161d27de39e44ca5d76df4e0c",
+        "content_sha256": "b91be8ee0cd76d8fb58b0bffae6f6209cfd6f90e6d827a67c66f711b0e0b100d",
+        "linkage_sha256": "f6a1881c7b90f1f7e928173a23cc2e56742e46d161d27de39e44ca5d76df4e0c"
+      },
+      "clarity": {
+        "skill_id": "guru-clarify-requirements",
+        "schema_id": "guru-requirements-clarification-2.0",
+        "typed_exit": "clear",
+        "payload_sha256": "16e072b2f5520aaa9f351b29f3849d6a89c65923b36bccab363abb256d1d3a1b",
+        "facts_sha256": "8e0fb3709dcc7867aac5c9470f3d7a33c1c11e8862251e221c349638cab6e0d6",
+        "content_sha256": "f642bfc9e33d5fcad3e6d1d57cbf98a6767fc2069ec1c49e0681a2c884887d73",
+        "linkage_sha256": "8c590e66c2d3f9306f831d4efe9311fea71cd0d14937d1c10afddc16fc85ceb2"
+      },
+      "wording": {
+        "skill_id": "guru-review-contract-wording",
+        "schema_id": "guru-contract-wording-review-1.0",
+        "typed_exit": "pass",
+        "payload_sha256": "3968398f80ee287d0a78c5a8477d2019f92a0d517491f891c6dd0b55a8b1dca0",
+        "facts_sha256": "011fb225793b112b22246e56369388148d122c9e164d6ad2c06a4d7e54483760",
+        "content_sha256": "b535062bdbf39c442948d6290fc6c6c42a5e6cee3602c026a2f31ec0f330f647",
+        "linkage_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "readiness": {
+        "skill_id": "guru-review-change-request",
+        "schema_id": "guru-change-request-review-1.0",
+        "typed_exit": "ready",
+        "payload_sha256": "045b8e453ada7f6a416fdcfe6f01675b21eebfad9d15f17ad98e86ecf15f9fc4",
+        "facts_sha256": "383e29d84826a68eed6b822e1c8e104133099ad71ff73249d27992066c44148b",
+        "content_sha256": "e7ff2e0cb14c2f16afb4f1a394fd2d0d213df74598d50a3f7017fa7013424fad",
+        "linkage_sha256": "5ac3fb1c89732c4918c120b4870abc1be11d32161883de8054f661da8a3c88ee"
+      }
+    }
+  }
+}

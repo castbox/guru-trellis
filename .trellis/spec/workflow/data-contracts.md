@@ -346,6 +346,65 @@ The installed manifest should remain additive/backward-compatible for readers:
 Do not use `.trellis/guru-team/extension.json` as the canonical source of the
 team extension version. The canonical source is `trellis/guru-team-extension.json`.
 
+### Public Skill I/O Migration Fields
+
+The canonical and installed extension manifests publish one additive migration
+contract under `public_api.skill_contracts`:
+
+- compatibility `interface_schema_id` remains
+  `guru-team-skill-interface-1.2` through #145 and switches only after #146 has
+  removed every active `legacy` row;
+- `supported_interface_schema_ids` is the exact ordered set containing 1.2 and
+  1.3, while `current_interface_schema_id` is 1.3 for new or materially revised
+  public I/O;
+- `registry_schema_id` is `guru-team-skill-registry-1.1`;
+- `legacy_skill_ids` exactly equals active registry rows with
+  `io_contract_state=legacy`;
+- `public_input_schema_ids`, `typed_output_schema_ids`, and
+  `private_artifact_schema_ids` are exact inventories from active production
+  1.3 packages only. They are empty in #144 because all nine production
+  packages remain 1.2 legacy.
+
+Test fixture schema ids belong only to the fixture extension manifest and must
+not appear in production extension, installed production inventory, platform
+copies, or workflow mandatory routes. Registry schema 1.1 requires every
+active row to select exactly one legal pair: 1.2 with `legacy`, or 1.3 with
+`minimal_handoff`. Reserved/planned rows remain lifecycle-only.
+
+`public_api.companion_scripts` includes stable id
+`discover-skill-contract`. Its success DTO is a closed union selected by
+`io_contract_state`: `legacy` exposes only version/migration identity;
+`minimal_handoff` exposes package-relative public input, invocation, per-exit
+outputs/examples, consumer contracts, projections, and private-artifact
+locators. Expected failures use `code`, repo-relative `field_path`, and
+`remediation`; no absolute paths or raw contract bytes are persisted.
+
+Its structured non-Skill consumer contracts are a closed ownership union:
+`consumer.kind=workflow` requires a canonical schema locator below
+`consumers/workflow/`, while structured `consumer.kind=stop` requires one below
+`consumers/stop/`. A `zero_payload` stop carries no schema contract. Producer
+package/output locators, cross-kind consumer roots, non-normalized spellings,
+unsafe traversal, and missing or symlink-backed files are invalid.
+
+Schema dialect identity remains Draft 2020-12, while the portable companion
+implements a documented standard-library-only compatible closed subset rather
+than the complete vocabulary. The recursive grammar accepts a root-only `$id`
+and the validation keywords enumerated by `skill-package-contract.md`, including closed object,
+array, conditional, union, scalar, and resolvable local ref forms. Only the
+aggregate structured-input index may use exact package-relative refs to its
+independently validated profile schemas. Unknown or unimplemented keywords,
+boolean schemas, nested `$id` resource boundaries, invalid keyword types,
+unsupported formats, malformed regexes,
+and remote/unresolved/recursive refs fail
+closed before an example or interface can be accepted.
+The same boundary accepts only standard JSON with finite runtime numbers across
+registry/interface/schema/example/marker/ref/invocation/discovery ingress and
+public DTO egress. Its supported format set remains `date-time` and `uri`, with
+RFC 3339 calendar/offset/lowercase/leap-second handling and RFC 3986 ASCII
+scheme/component/percent-encoding validation as specified by
+`skill-package-contract.md`; malformed values produce the existing structured
+error rather than a traceback.
+
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
 such as `v0.6.5-guru.2`, not namespaced tags such as

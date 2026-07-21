@@ -59,6 +59,97 @@ git diff --check
 
 Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
+
+For versioned public Skill I/O, the test matrix must keep the exact 1.2 schema
+bytes/identity as a regression fixture while validating independent interface
+1.3 and registry 1.1 schemas. One mixed test-only registry must contain 1.2
+`legacy`, structured semantic 1.3, and scalar deterministic 1.3 packages in the
+same run. Tests cover discriminator/`oneOf`, every per-exit schema/example,
+every output field's direct consumer use, Skill/workflow/stop consumers,
+self-reentry, `direct|select|rename|normalize` projection, and public/private
+schema-id and schema-path disjointness. Skill consumers prove target-owned
+`skill_input`, exact active-registry target interface path, and exact target
+interface identity. Structured workflow and stop consumers prove both
+interface-schema and runtime enforcement of canonical `consumers/workflow/`
+and `consumers/stop/` owner roots; negative cases cover a
+producer output locator, the other consumer root, and non-normalized path
+spellings. Both canonical structured roots pass, while the zero-payload stop
+retains its schema-free form. Non-`direct` projections and `direct` projections into
+`scalar_cli` prove required-source totality and all-valid-output compatibility,
+including a normalizer counterexample that passes the producer schema but fails after
+normalization when the proof constraint is removed. The stop case proves
+`zero_payload` with only routing
+`exit_id` and an empty `select`; negative cases reject extra stop payload and
+empty `select` for non-zero consumers. Aggregate branches bind the exact
+ordered profile schema references, discriminator fields are required constants,
+and scalar examples prove ordered flags, declared value types, binding order,
+and public-input/invocation argv equality.
+
+Source validation must execute representative package wrappers and revalidate
+their single typed-exit stdout. Negative cases cover missing exit schema or
+example, missing or non-constant exit identity, unknown public I/O fields,
+nullable mega-output authoring, unconsumed field, a stale same-id Skill
+interface locator, a direct consumer schema or scalar domain that is narrower
+than its producer schema, duplicate projection targets, missing
+consumer input, private-field projection, unknown/semantic projection
+operation, runtime-source import, comment/dead-code/local-output wrapper
+impersonation, 1.2/1.3 state mismatch, new
+non-allowlisted production legacy entry, and reserved/planned package install.
+Schema mutation cases must prove the recursive Draft 2020-12-compatible closed
+subset rejects an otherwise valid but unsupported `patternProperties`, a nested
+unsupported keyword, a malformed supported-keyword value, a boolean schema
+node, a nested `$id` resource boundary, an unsafe/unresolved/remote/recursive
+ref, an invalid regex, and an unsupported format. Existing
+`allOf`/`if`/`then`, `oneOf`, nested `properties`, and canonical package-local
+profile refs remain passing coverage; an accepted keyword must never be silently
+ignored by instance validation.
+Portable-pattern tests must exercise the exact grammar from
+`skill-package-contract.md`, including unanchored and anchored literals,
+capturing/non-capturing groups, alternation, negative lookahead, character
+classes/ranges/negation, every quantifier form, syntax/control/ASCII `\\u`
+escapes, and `\\s|\\S`. Grammar negatives must reject Python-only groups and
+anchors, `\\d|\\D|\\w|\\W`, Unicode properties or non-ASCII source/escape
+values, unsupported assertions/groups, backreferences, invalid classes, and
+malformed, descending, overlong, lazy, possessive, misplaced, or repeated
+quantifiers. Instance regressions must prove strict `$` rejection of a trailing
+newline, dot rejection of all four ECMA line terminators while accepting one
+astral code point in Unicode mode, and the exact ECMA whitespace domain,
+including acceptance of `U+00A0` and rejection of Python-only `U+001C` and
+`U+0085`. Astral regressions must separately cover zero-width matches before,
+inside, and after a surrogate pair; negative lookahead, anchors, alternation,
+empty alternatives, and nullable quantifiers at those positions; and the rule
+that `.`, `\\S`, and negated classes consume a valid pair as one code point and
+cannot start at its interior low surrogate. Isolated-surrogate regressions must
+cover high and low surrogates standalone and on both sides of a BMP code unit,
+plus `.`, `\\S`, negated classes, anchors, quantifiers, nullable paths, and
+backtracking. The generated value set must include the seven surrogate edge
+values: isolated high and low alone, each before and after a BMP value, and one
+valid pair. Its JSON transport must preserve isolated surrogates as escapes.
+A deterministic generated set of accepted patterns must be compared across
+astral, isolated-surrogate, BMP, line-terminator, and mixed values. The full
+legal matching matrix must be compared with an independent Node
+`new RegExp(pattern, "u").test(value)` run; a Python-only expected-value table
+is insufficient.
+Strict-JSON cases must cover `NaN`, `Infinity`, `-Infinity`, and numeric overflow
+at static schema/example, package-local ref, workflow marker, invocation stdout,
+in-memory schema/instance, and public serialization boundaries. Supported-format
+cases must accept RFC 3339 lowercase `t`/`z`, valid calendar/offset values and a
+valid leap-second boundary, including the year `0000` domain, while rejecting
+invalid dates, clocks, offsets, and leap-second positions; RFC 3986 URI cases
+must cover ordinary hierarchical and opaque schemes, case-insensitive IPvFuture
+`v`, malformed/missing schemes, whitespace/control characters, percent
+encoding, authority, and ports.
+Discovery tests cover stable help, legacy/minimal variants, unknown skill,
+version mismatch, missing asset, installed drift, and stable
+`code`/`field_path`/`remediation` errors.
+
+Distribution tests prove the new interface schema and executable discovery
+wrapper are present in canonical, installed, and selected-platform roots;
+production registry/extension inventories contain nine legacy ids and no
+fixture ids/schema ids. Fresh throwaway install and the post-`trellis update`
+workflow/preset reapply phase each run source/installed validation, legacy
+discovery smoke, mixed fixture invocation tests, and a final recursive zero
+`.new`/`.bak` scan.
 For `guru-discover-change-context`, tests must cover mode-precondition parity,
 stale-before-semantic-read ordering, exact/token score permutations, invalid
 isolation, deterministic sort/limit/projection, zero and 1-3 candidate paths,

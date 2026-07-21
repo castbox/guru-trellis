@@ -81,6 +81,94 @@ Guru Team preset, resolve `.new` / `.bak`, rerun source and installed package
 validation, and retry. There is no legacy-command fallback. Runtime compatibility
 is an objective precondition only and never becomes an AI Review Gate pass.
 
+## Skill Contract Discovery
+
+`scripts/bash/discover-skill-contract.sh` is the thin installed wrapper for
+the deterministic `discover-skill-contract` subcommand. Its public CLI is
+exactly:
+
+```bash
+discover-skill-contract --root <repo> --mode <source|installed> \
+  --skill <guru-id> --json
+```
+
+The command resolves the registry row, validates the exact registry/interface
+schema identity and version/state relation, then returns one closed variant.
+`legacy` reports only the 1.2 package/interface identity and #145/#146 migration
+boundary. `minimal_handoff` reports package-relative locators for the 1.3 input,
+invocation, every per-exit output/example, consumer input, projection, and
+private artifact. It does not execute the semantic Skill, infer migration
+state, read private artifact contents, or ask callers to import the Python
+runtime.
+
+Source package validation performs the separate representative invocation
+probe declared by each 1.3 fixture interface. It executes the package-local
+wrapper with its exact example argv, requires a single JSON object containing
+one declared exit, validates that object against the independent exit schema,
+and applies the declared consumer projection to the actual stdout object.
+`kind=skill` is accepted only with a target-owned `skill_input` whose
+`interface_path` exactly equals the active registry row's canonical target
+interface and whose referenced interface id equals the consumer id.
+Structured `kind=workflow` and `kind=stop` contracts are accepted only when the
+original locator is already canonical and resolves below the exact
+`consumers/workflow/` or `consumers/stop/` owner root. The runtime rejects
+producer-package reuse, cross-kind roots, `.`/`..`, repeated separators,
+absolute paths, missing files, and symlink components before loading the schema;
+zero-payload stops retain no contract locator.
+Non-`direct` projections and `direct` projections into `scalar_cli` additionally
+prove required-field totality and a conservative all-valid-output
+schema/normalizer relation; example-only compatibility is insufficient. Public
+output/private artifact schema ids and paths are checked as separate disjoint sets. The
+invocation wrapper must match the dispatcher-only template as complete bytes,
+so comments, dead code, or local `printf` cannot impersonate routing. A
+zero-payload stop accepts only the required exit routing identity and an empty
+`select` mapping; aggregate structured input binds exact ordered profile schema
+references and required discriminator constants; scalar input binds exact
+ordered typed argv in both public-input and invocation examples. Wrapper/handler failures,
+non-object or multiple stdout values, unknown exits, and output-schema mismatch
+fail with stable portable errors.
+
+Because the installed runtime is Python-standard-library-only, 1.3 contract
+validation implements a recursive Draft 2020-12-compatible closed subset, not
+the complete vocabulary. It validates the supported keyword grammar before
+validating any interface/example instance, rejects every unknown keyword,
+malformed keyword value, and nested `$id` resource boundary, and supports a
+root-only `$id`, local refs, plus the aggregate input's
+exact boundary-contained package-relative profile index. Boolean schemas, remote/unresolved/recursive refs,
+`patternProperties` and other unimplemented vocabulary, unsupported formats,
+and invalid regexes fail closed. The same grammar check applies to canonical
+registry/interface schemas and every 1.3 public/private contract asset, while
+the frozen 1.2 package payloads retain their compatibility validation path.
+The exact accepted syntax and ECMA Unicode-mode search semantics are owned by
+`skill-package-contract.md` under `Portable Pattern Grammar`. The runtime uses
+one portable compiler for both the schema grammar gate and instance matching;
+it projects instance strings onto UTF-16 code units, preserves interior
+zero-width search positions, prevents Unicode-consuming atoms from splitting or
+starting inside a valid surrogate pair, and consumes isolated high/low
+surrogates independently even when a BMP code unit is adjacent. The single-unit
+guard excludes only a valid pair start or its interior low surrogate; it does
+not exclude an arbitrary BMP unit after an isolated high surrogate. The compiler
+also translates strict end anchoring, dot line terminators, and the exact ECMA
+whitespace set to Python-standard-library equivalents. It never passes the
+original contract pattern to raw Python `re.compile` or `re.search` as a
+fallback.
+All 1.3 contract and route-marker JSON ingress, package-local refs, and executed
+invocation stdout reject non-standard constants and numbers outside the finite
+runtime range; in-memory schema/instance validation repeats the finite guard.
+Public JSON egress disables non-finite encoding and preserves structured errors
+without tracebacks. The closed `date-time` and `uri` implementations follow the
+RFC 3339 and RFC 3986 normal syntax boundaries defined by
+`skill-package-contract.md`, including lowercase `t`/`z`, leap-second clock
+position, calendar/offset validation, required URI scheme, valid percent
+encoding, and rejection of whitespace/control characters.
+
+Discovery failures use one closed object with `code`, repo-relative
+`field_path`, and `remediation`. Stable codes distinguish unknown skill,
+registry/interface version mismatch, missing or unsafe asset, invalid
+schema/example, and installed drift. These are deterministic contract facts;
+the command never decides semantic pass, scope, route intent, or migration
+priority.
+
 ### Planning Approval Record And Check
 
 `record-planning-approval` and `check-planning-approval` are the shared

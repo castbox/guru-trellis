@@ -35,6 +35,10 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
   current wording evidence、审查 planning adequacy/provenance/unusual proposals、取得所需
   confirmation，并通过四个 typed exits 交回 global workflow；shared runtime 只录制和校验
   deterministic facts。
+- Active issue #144 建立 interface 1.2/1.3 共存、registry 1.1 exact migration
+  state、minimal public input/per-exit output/consumer projection/private artifact 与
+  `discover-skill-contract` 基础设施。当前九个 production Skills 继续使用 1.2
+  `legacy`，#145/#146 才迁移业务 payload；1.3 representative fixture 保持 test-only。
 
 ## 扩展重要性分层
 
@@ -66,8 +70,11 @@ Active package 的 `SKILL.md` frontmatter 只允许 stable id `name` 与非空
 `description`，并与 registry/interface 精确一致；`tests[]` 只能引用 package-local
 `tests/<file>` regular file，禁止标签、虚构路径、越界路径或 symlink evidence。
 
-Interface schema 1.2 为每个 mode 固定 `routing`，新增必填 `judgment_mode`，并声明
-`runtime_dependency` 与 validator `runtime_command`。`semantic` 使用五阶段，
+Interface schema 1.2 为已发布 legacy contract；interface 1.3 是新建或实质修改 public
+I/O 的 independent target。Registry 1.1 的每个 active row 必须 exact 选择
+`interface_schema_id` 和 `legacy|minimal_handoff`，不得从 optional 字段猜版本。
+当前九个 production rows 全部是 `1.2+legacy`。两版均为每个 mode 固定 `routing`，
+声明 `judgment_mode`、`runtime_dependency` 与 validator `runtime_command`。`semantic` 使用五阶段，
 `deterministic` 使用三阶段；`standalone` 只表示平台可脱离
 global workflow routing 直接发现 Skill，不表示单目录 self-contained/portable；两种
 mode 均依赖完整且兼容的 Guru Team preset、installed extension manifest、shared
@@ -78,6 +85,14 @@ Skill id、external exit id、schema/interface id、stable script command 和
 registry lifecycle 都是公共 API；破坏性变更必须新建 id 或给出迁移合同。
 `guru-create-work-commit` 保留为 reserved tombstone；正式 active 入口是
 `guru-create-task-commit`，不得重新解释旧 id。
+
+Interface 1.3 的 `public_contracts` 独立声明 caller-owned structured/scalar input、
+exact package invocation、per-exit schema/example、Skill/workflow/stop consumer input、
+direct/select/rename/closed normalize projection 和 runtime checkpoint/gate evidence
+private artifact。所有 public output 字段必须有直接 consumer use，public/private
+schema 互斥。稳定命令 `discover-skill-contract` 返回 closed legacy/minimal variant；
+失败携带 stable code、repo-relative field path 与 remediation。Mixed fixture 不进入
+production registry、manifest、platform inventory 或 mandatory route。
 
 Phase 0 base freshness 的正式 active 入口是 `guru-sync-base`。它固定使用
 explicit base、non-empty scalar `base_branch`、ordered `base_branch_candidates` 中首个

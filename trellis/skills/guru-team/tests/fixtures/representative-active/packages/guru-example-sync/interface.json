@@ -1,0 +1,62 @@
+{
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
+  "id": "guru-example-sync",
+  "name": "guru-example-sync",
+  "description": "Exercises deterministic scalar CLI input and typed output contracts.",
+  "state": "active",
+  "judgment_mode": "deterministic",
+  "modes": {
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["arguments_present"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["arguments_present"]}
+  },
+  "entry_preconditions": [
+    {"id": "arguments_present", "evidence": "required scalar flags", "binding": "exact argv", "freshness": "current invocation"}
+  ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
+  "ordered_stages": ["forward_behavior", "recorder_validator", "typed_exit"],
+  "artifacts": [{"id": "synced_example", "path": "examples/sync-output.json"}],
+  "schemas": [
+    {"id": "output", "path": "schemas/sync-output.schema.json"},
+    {"id": "invocation_error", "path": "schemas/invocation-error.schema.json"},
+    {"id": "checkpoint", "path": "schemas/sync-checkpoint.schema.json"}
+  ],
+  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "fixture-runtime-command", "objective_scope": "Deterministic scalar fixture serialization"}],
+  "external_exits": [
+    {"id": "synced", "evidence": "synced typed output", "consumer": {"kind": "workflow", "id": "fixture-sync-next"}}
+  ],
+  "reentry": {"identity": "exact scalar arguments", "freshness": "current invocation", "stale_behavior": "fail_closed"},
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "public_contracts": {
+    "input": {
+      "kind": "scalar_cli",
+      "arguments": [
+        {"id": "exit_id", "flag": "--exit-id", "type": "ascii_enum", "required": true},
+        {"id": "item", "flag": "--item", "type": "string", "required": true}
+      ],
+      "example_argv": ["--exit-id", "forwarded", "--item", "alpha"]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {"kind": "scalar_cli", "argument_ids": ["exit_id", "item"]},
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {"schema_id": "guru-fixture-sync-invocation-error-1.0", "path": "schemas/invocation-error.schema.json"},
+      "error_example": {"id": "missing_item_error", "path": "examples/invocation-error.json"},
+      "example_argv": ["--exit-id", "forwarded", "--item", "alpha"]
+    },
+    "outputs": [
+      {"exit_id": "synced", "schema": {"schema_id": "guru-fixture-sync-output-1.0", "path": "schemas/sync-output.schema.json"}, "example": {"id": "synced_output", "path": "examples/sync-output.json"}, "consumer_use_ids": ["direct_to_sync_workflow"]}
+    ],
+    "consumer_inputs": [
+      {"id": "sync_workflow_input", "consumer": {"kind": "workflow", "id": "fixture-sync-next"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-fixture-workflow-sync-input-1.0", "path": "consumers/workflow/sync-completed.schema.json"}}
+    ],
+    "projections": [
+      {"id": "direct_to_sync_workflow", "exit_id": "synced", "consumer_input_id": "sync_workflow_input", "operation": "direct"}
+    ],
+    "private_artifacts": [
+      {"id": "sync_checkpoint", "kind": "runtime_checkpoint", "schema": {"schema_id": "guru-fixture-sync-checkpoint-1.0", "path": "schemas/sync-checkpoint.schema.json"}, "persistence": "ignored_runtime"}
+    ]
+  }
+}

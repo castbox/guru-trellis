@@ -1,0 +1,1096 @@
+# #144 最小 typed handoff I/O 实现交接
+
+## 0. Round 1 Branch Review finding 修复交接
+
+状态：`Round 1 Finding Fix Complete`
+
+本轮以全新的实现代理身份修复 `reviews/round-01-final-finding.md` 中四项 current-scope
+P2；未修改或删除 `review.md`、`reviews/round-01-final-finding.md`、`review-gate.json`、
+`agent-assignment.json` 和 `task-commit-plans/001.json`。未执行 Phase 2 recorder、commit、
+push、PR、Branch Review recorder 或 finish-work。修复后必须重新执行完整 Phase 2 语义检查，
+再创建 finding-fix commit 和新一轮独立 Branch Review。
+
+### 四项 finding 修复
+
+1. Skill consumer ownership：`consumer.kind=skill` 现在只接受
+   `contract.kind=skill_input`，并要求被引用 `interface.json` 的 `id` 与
+   `consumer.id` 完全一致。Producer-owned `json_schema` 或错误 target interface 均阻断。
+2. Projection totality：所有非 `direct` projection 现在要求 consumer required field
+   来自 producer required field，并对每个 mapping 做保守静态全域兼容证明。支持 exact
+   property schema、有限 `const`/`enum` normalize、非空 scalar string、positive integer，
+   以及带显式 ASCII non-blank pattern 的 trim；无法证明时即使 example 通过也拒绝激活。
+   Representative repeat output 因此显式声明 trim 后仍非空的 pattern。
+3. Public/private disjointness：public output 与 private artifact 的 schema id 集合和 path
+   集合分别求交；复用相同 id/不同 path 或相同 path/不同 id 都会得到
+   `[public_private_overlap]`。
+4. Dispatcher-only wrapper：interface 1.3 invocation wrapper 必须绑定恰好一个 declared
+   validator，并以完整 bytes 匹配支持的 dispatcher-only template。仅在注释/死代码中出现
+   `run-skill-command.sh`，或 wrapper 自行 `printf` typed DTO，均不能通过。
+
+### 正常 authoring 负例
+
+- Skill consumer 改绑 producer output schema，或指向错误 Skill interface id。
+- 从 producer `required` 移除 scalar consumer 必填来源字段。
+- 去掉 trim non-blank proof 后让合法 producer example 为单个空格，normalize 后变为空串。
+- public/private 分别复用 schema id 或 schema path。
+- wrapper 只在注释写 dispatcher 名并本地输出合法 DTO。
+
+### 验证结果
+
+- Targeted 四 finding + representative happy path：5/5 passed。
+- `python3 -m unittest discover -s trellis/skills/guru-team/tests -p 'test_*.py'`：
+  99/99 passed。
+- Preset installer tests：39/39 passed；ownership tests：6/6 passed。
+- Source/installed `check-skill-packages`、legacy discovery、dogfood drift、upstream
+  ownership、canonical/installed byte equality、Python compile、Bash syntax、JSON parse、
+  task validation、workspace boundary、`git diff --check`：全部通过。
+- Dogfood apply 首轮只产生 runtime 的一个 known-managed `.bak`；核验新 installed bytes
+  与 canonical SHA-256 相同后删除，幂等 reapply 为零 `.new`/`.bak`、零 conflict/removal。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh`：通过 clean init、
+  workflow preview/switch、preset install、`trellis update`、reapply、mixed fixture smoke、
+  source/installed/ownership 与最终零 sidecar；最终为 384 managed files、9 legacy、
+  0 production minimal。
+
+### Docs SSOT 与范围
+
+- Durable Docs SSOT 已同步：`.trellis/spec/workflow/skill-package-contract.md`、
+  `companion-scripts.md`、`quality-guidelines.md`、`docs/requirements/requirement-main.md`、
+  `docs/requirements/guru-team-trellis-flow.md` 及三份 public README。
+- Durable contract 现在明确 target-owned Skill input、非 direct projection 全域证明、
+  schema id/path 分别互斥和 complete-byte dispatcher-only wrapper 规则。
+- Task-history-only：Round 1 raw finding、review rollup/gate、agent liveness/assignment、旧
+  commit plan、逐次命令原始输出、临时 throwaway 路径和本轮交接；这些不进入 durable
+  runtime contract。
+- 九个 production Skills 继续为 interface 1.2 + `legacy`，没有 payload/interface/route
+  迁移；mixed 1.3 fixture 仍为 test-only。#145/#146 继续是 follow-up，不由 #144 关闭。
+- 未修改 frozen overlay、CI/CD、container、K8s、DB migration 或 Makefile；无部署/数据库
+  迁移影响，未引入 hostile-input/并发/TOCTOU/锁/原子写入等排除范围。
+- Public marketplace sample 只证明公开 marketplace 通路和本地 unpublished canonical
+  bytes；它不是当前 feature ref 的 immutable remote evidence。Exact feature-ref marketplace
+  verification 仍须在 reviewed branch push 后由 finish/publish gate 补齐。
+
+### 本轮 implementation dirty paths
+
+- `.trellis/guru-team/extension.json`
+- `.trellis/guru-team/scripts/python/guru_team_trellis.py`
+- `.trellis/spec/workflow/companion-scripts.md`
+- `.trellis/spec/workflow/quality-guidelines.md`
+- `.trellis/spec/workflow/skill-package-contract.md`
+- `.trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md`
+- `README.md`
+- `docs/requirements/guru-team-trellis-flow.md`
+- `docs/requirements/requirement-main.md`
+- `trellis/presets/guru-team/README.md`
+- `trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/action-repeat-output.schema.json`
+- `trellis/skills/guru-team/tests/test_skill_packages.py`
+- `trellis/workflows/guru-team/README.md`
+- `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`
+
+Branch Review metadata 的既有 dirty paths 由主会话继续管理，不属于本轮 implementation
+dirty list，也未被本代理改写。
+
+## 1. 实现状态
+
+`Implementation Complete`
+
+Issue #144 的批准实现范围已经完成，等待独立 `trellis-check` 执行 Phase 2 语义复核。
+本代理未执行 `trellis-check`，未写 `phase2-check.json`，也未执行 commit、push、PR、
+Branch Review 或 finish-work。
+
+Expected task workspace 与 actual repository root 仍一致；source checkout 保持 clean。
+Planning approval 在实现收敛前复核为 `approved`，
+`facts_sha256=184bfeebbc7634420fc741975a3b29d538a7e535674376ecb81ffa97081daf3f`。
+
+## 2. Changed files
+
+### Durable SSOT 与公开文档
+
+- `.trellis/spec/workflow/skill-package-contract.md`
+- `.trellis/spec/workflow/data-contracts.md`
+- `.trellis/spec/workflow/companion-scripts.md`
+- `.trellis/spec/workflow/quality-guidelines.md`
+- `.trellis/spec/workflow/index.md`
+- `docs/requirements/requirement-main.md`
+- `docs/requirements/guru-team-trellis-flow.md`
+- `docs/requirements/README.md`
+- `README.md`
+- `trellis/workflows/guru-team/README.md`
+- `trellis/presets/guru-team/README.md`
+
+### Canonical schema、runtime、fixture、installer 与 tests
+
+- `trellis/guru-team-extension.json`
+- `trellis/skills/guru-team/registry.json`
+- `trellis/skills/guru-team/schemas/skill-registry.schema.json`
+- `trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json`
+- `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`
+- `trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh`
+- `trellis/skills/guru-team/tests/test_skill_packages.py`
+- `trellis/skills/guru-team/tests/fixtures/representative-active/**`
+- `trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py`
+- `trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py`
+- `trellis/presets/guru-team/scripts/python/test_upstream_ownership.py`
+- `trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`
+
+Representative fixture 中旧的单一 `fixture-result` example/schema/validator 被 1.2 legacy、
+1.3 semantic structured-input 和 1.3 deterministic scalar-CLI 三包混合 fixture 取代。
+
+### Preset 生成的 dogfood copies
+
+- `.trellis/guru-team/extension.json`
+- `.trellis/guru-team/skills/registry.json`
+- `.trellis/guru-team/skills/schemas/skill-registry.schema.json`
+- `.trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json`
+- `.trellis/guru-team/scripts/python/guru_team_trellis.py`
+- `.trellis/guru-team/scripts/bash/discover-skill-contract.sh`
+
+九个 production Skill package 及 `.agents`、`.codex`、`.claude`、`.cursor` 平台副本的
+payload bytes 未修改；preset apply 只同步本任务新增或升级的受管基础设施。
+
+### Task-local evidence
+
+- `.trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md`
+
+## 3. 需求与设计承接
+
+- R1-R2：保留 interface 1.2 文件、id、body digest 与现有 package payload；新增独立
+  interface 1.3，registry schema 升级为 1.1。九个 production active entry 全部显式为
+  `guru-team-skill-interface-1.2 + legacy`，runtime 按 registry exact version/state 分派。
+- R3-R7：1.3 使用 closed `public_contracts`，分别声明 structured/scalar input、exact
+  invocation、per-exit output、consumer input、projection 与 private artifact。Structured
+  aggregate 要求 exact ordered `$ref`、共享且 required 的 discriminator 及匹配 `const`；
+  scalar CLI 要求 exact argument order/flag/type、ordered binding 与相同 argv。
+- Zero-payload stop 保留 routing identity `exit_id`，response payload 为零；只允许空
+  `select` projection。非 zero-payload consumer 禁止空 `select`，zero-payload output 禁止
+  额外字段或非空 mapping。
+- R4-R6：representative invocation 真实执行 wrapper，stdout 必须是单一 declared exit，
+  再按 per-exit schema 和实际 consumer projection 复验。Projection 闭集为 `direct`、
+  `select`、`rename`、`normalize`，并验证非零 output 的 exact `exit_id const`、direct
+  producer/consumer schema equality、mapping target 唯一性、target value type、private-field
+  与 runtime-source 隔离。
+- R7：private artifact 只含 `runtime_checkpoint` / `gate_evidence`，fixture 覆盖
+  `stdout_only_pre_task`、`task_local_tracked` 与 `ignored_runtime` 三种 persistence。
+- R8-R9：extension public API 新增 `discover-skill-contract`，发布 1.2/1.3 supported ids、
+  current 1.3、兼容 scalar 1.2、registry 1.1、legacy allowlist 与 exact production
+  inventories。当前九个 production package 全部 legacy，因此三个 public/private schema
+  inventory 为空；fixture extension 使用自己的非空 test-only inventories。
+- R10-R11：mixed fixture 同时包含一个 1.2 legacy package、一个 1.3 semantic package 与
+  一个 1.3 deterministic scalar package；覆盖 Skill/workflow/stop consumer、self-reentry、
+  四种 projection、不同 exit、stable error 和 fail-closed negative matrix。Fixture ids 未
+  进入 production registry、extension inventory、安装平台或 mandatory workflow route。
+- R12：canonical、installer、dogfood、selected-platform、clean throwaway、update/reapply
+  均已承接；frozen upstream-owned overlays 和 43 条 ownership baseline 未修改。
+- P15 范围边界保持：没有迁移九个 production Skill；#145/#146 仍为 follow-up；没有把
+  semantic judgment 写入 Python/shell，也没有加入 hostile-input、锁、TOCTOU、压力、
+  fault injection、crash consistency 或跨 OS 原子性加固。
+
+## 4. AC1-AC15 实现证据
+
+| AC | 实现边界内证据 |
+| --- | --- |
+| AC1 | 1.2 schema SHA-256 固定为 `33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e`；1.2 schema 与九个 canonical production package 对 HEAD 无 diff。 |
+| AC2 | 独立 1.3 closed schema 覆盖 input、invocation、outputs、consumer inputs、projections、self-reentry、private artifacts；SHA-256 为 `fc808c8600f0e187b404fc27e7f07a0bfd252526af07545acbe55ceebfb3892e`。 |
+| AC3 | Registry 1.1 要求 active exact schema/state；live query 确认九项均为 1.2 + `legacy`。 |
+| AC4 | 95-test suite 与 mixed fixture 同时报告一个 legacy、两个 `minimal_handoff` package。 |
+| AC5 | Fixture 覆盖 structured discriminator/`oneOf`、scalar CLI、Skill/workflow/stop、self-reentry 及 `direct/select/rename/normalize`。 |
+| AC6 | 每个 exit 有独立 closed schema、example 和 consumer-use projection；missing/non-constant identity、unconsumed、zero-payload extra-field 与 narrower direct consumer negatives 均被拒绝。 |
+| AC7 | Validator 实际执行 action 与 sync wrappers，复验单一 stdout DTO、对应 exit schema 及实际 consumer projection。 |
+| AC8 | Invocation/discovery errors 固定为 `code`、`field_path`、`remediation`；unknown skill、version/state mismatch、missing asset 与 installed drift 使用可区分 stable codes。 |
+| AC9 | Duplicate target、private-field projection、unknown operation、runtime-source import/read 与 actual projection mismatch 均 fail closed。 |
+| AC10 | Interface、fixture extension、production extension、installed manifest、README 与 durable spec 对 public/private inventories 和 persistence 一致。 |
+| AC11 | Discovery command 已进入 extension API、canonical/installed executable wrapper、managed inventory、source/installed validator 与 throwaway smoke。 |
+| AC12 | Legacy allowlist、reserved/planned package prohibition、production/fixture inventory isolation 均有 validator 与 negative tests。 |
+| AC13 | Canonical/installed runtime、registry、registry schema、1.3 schema、discovery wrapper byte-equal；九包与四个平台副本 byte-equal；wrapper/runtime 为 executable、schema 为 non-executable。 |
+| AC14 | Throwaway clean init、workflow preview/switch、update、preset reapply、source/installed/ownership checks通过，repository 与 throwaway 最终均无 `.new/.bak`。 |
+| AC15 | 三份 README 的 discovery、source/installed 与 throwaway 命令已由 tests/throwaway 执行；current-branch remote marketplace 的未推送限制单独记录，不伪报为 exact-ref pass。 |
+
+上述是 implementation handoff evidence，不代替 `trellis-check` 的独立 semantic pass。
+
+## 5. Docs SSOT Reconciliation
+
+- Docs state：`complete_docs`。
+- Strategy：`ssot_first`。
+- Durable implementation inputs：三份 `docs/requirements/**`、五份
+  `.trellis/spec/workflow/**`、root/workflow/preset 三份 public README。
+- Task delta 已合并到 durable docs：1.2/1.3 共存、registry state、caller-owned input、
+  exact invocation、per-exit output、consumer/projection、zero-payload、public/private
+  inventories、discovery、#145/#146 migration boundary 与完整安装/update 门禁。
+- Durable docs sync：完成。实现先以修订后的 durable contract 为主输入，再同步
+  schema/runtime/fixture/registry/extension/installer/generated copies/tests；最终命令证据与
+  durable docs 一致。
+- Task-delta implementation inputs：批准的 `prd.md`、`design.md`、`implement.md` 继续提供
+  #144 scope、P1-P15 provenance、R1-R12/AC1-AC15 映射和执行边界；其中可复用合同已回写
+  durable docs，未把 task journal 当成运行时 SSOT。
+- Task-history-only：Phase 0 临时 evidence、planning confirmation digest、agent assignment/
+  liveness、逐轮 finding、首次 preset apply 的两个 known-managed `.bak` 核对、默认
+  exact-ref fail-closed 输出、命令原始日志、临时 throwaway 路径及本交接。它们不合并进
+  durable docs。
+- Middle-platform Knowledge Gate：不适用；本任务不涉及 go-guru、proto-guru、Unity、
+  Flutter 或中台 SDK/framework contract。
+
+## 6. 验证结果
+
+- `python3 -m unittest discover -s trellis/skills/guru-team/tests -p 'test_*.py'`：
+  95 tests passed。
+- `python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py`：
+  39 tests passed。
+- `python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py`：
+  6 tests passed。
+- `apply.sh --repo . --all-platforms`：最终幂等 apply `status=ok`；source/installed
+  validation passed，384 managed files，0 conflict、0 removal、0 sidecar。
+- 首轮 managed upgrade 只生成 runtime 与 1.3 schema 两个预期 `.bak`；逐项确认新目标
+  等于 canonical 后删除，第二次 apply 无 sidecar。当前 recursive `.new/.bak` 为 0。
+- `check-skill-packages --mode source`：passed，9 legacy、0 production minimal。
+- `check-skill-packages --mode installed`：passed，Claude/Codex/Cursor selected platforms，
+  sidecar/conflict/removal 均为 0。
+- Installed `guru-sync-base` discovery：`variant=legacy`，1.2 + `legacy`，migration 指向
+  1.3 与 #145/#146。
+- `check-dogfood-overlay-drift.sh`：passed。
+- `check-upstream-ownership.sh --json`：passed，43 frozen/active overlays identity 未变，
+  13 managed claims 全部已分类。
+- Canonical/installed bytes、四个平台 package copies 与 executable modes：passed。
+- Changed Bash `bash -n`、Python `py_compile`、JSON parse：passed。
+- Workspace boundary、planning approval 与 `task.py validate`：final passed；task context 为
+  10 条 implement entries、11 条 check entries。
+- `git diff --check`：handoff 写入后 final passed；source checkout clean，当前 task 未生成
+  `phase2-check.json`。
+- `verify-throwaway-install.sh` 默认 exact-ref：按设计 exit 2，因为 feature branch 尚未
+  commit/push，远端 marketplace 无法解析当前 dirty unpublished ref。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh`：exit 0；覆盖 clean
+  init、public marketplace discovery、local unpublished workflow/preset sample、workflow
+  preview/switch、初装、`trellis update`、preset reapply、mixed fixture invocation、
+  source/installed/ownership/platform checks 与最终零 sidecar。
+
+## 7. 开箱即用、升级与当前限制
+
+- Canonical source 位于 `trellis/`，dogfood `.trellis/guru-team/` 只是 installer 生成副本；
+  没有修改 Trellis upstream、全局 npm、`node_modules` 或 frozen overlay payload。
+- Extension version 为 `0.6.5-guru.18`，target/tested Trellis CLI baseline 为 0.6.5。
+  Throwaway 输出提示 npm latest 为 0.6.7；CLI baseline upgrade 不在 #144 范围。
+- Clean init 与 `trellis update` 后 reapply 均通过，证明新 wrapper/schema/runtime/manifest
+  可恢复，最终无 unresolved `.new/.bak`。
+- Exact current-branch marketplace install 尚未验证：当前 implementer 无 commit/push
+  authority，远端不存在可采样的 reviewed branch ref。Public `main` 只验证 marketplace
+  通路，本 worktree canonical bytes 验证本次实现；分支 push 后必须由后续 immutable
+  marketplace verification 补齐，不能把本轮 canary 记为 exact feature-ref pass。
+
+## 8. 安全与部署判断
+
+- Stable errors 只包含 code、field path 与 remediation；未写入 token、secret、private
+  key、`.env`、数据库 URL、签名 URL或用户数据。
+- 本任务不新增服务、API、worker、queue、schedule、数据库 migration、容器、Kubernetes、
+  Dockerfile、Compose、Kustomize、Makefile 或 CI/CD 发布行为；部署形态不变。
+- Public wrapper 不读取/import runtime source；projection 不执行 semantic judgment，也不
+  读取 private artifact。
+
+## 9. Trellis-check handoff
+
+Phase 2 checker 应独立完成以下重点，不复用本交接的 pass 断言代替审查：
+
+- 逐项绑定 R1-R12、AC1-AC15 与 P1-P15，确认 scope 只包含 #144 infrastructure/fixture，
+  #145/#146 migration 未混入。
+- 复核 1.2 digest、九包 typed exits/runtime commands/workflow routes 与 frozen overlay bytes，
+  确认 registry metadata 没有 reinterpret legacy behavior。
+- 重点审查 runtime 1.3 exact contract validation：aggregate refs/discriminator、scalar argv、
+  zero-payload、per-field consumer use、projection type/private boundary、实际 stdout projection
+  以及 stable errors。
+- 检查 mixed fixture 能证明三包共存、四种 projection、三类 consumer/self-reentry 与三种
+  private persistence，同时没有进入 production registry/manifest/platform route。
+- 复核 extension inventories、installer managed assets、selected-platform bytes/modes、
+  update/reapply 与 recursive sidecar 结果。
+- 对照五份 workflow spec、三份 requirements 和三份 public README，完成 Docs SSOT
+  reconciliation；task-local finding/log 不得反向覆盖 durable contract。
+- 明确把 unpublished exact-ref marketplace verification 记为后续 publish/finish gate 风险，
+  不把 public `main` sample 提升为 current-branch remote pass。
+
+## 10. Remaining risks / follow-ups
+
+- 实现边界内未发现未解决 blocker；Phase 2 semantic check、Branch Review 与 PR readiness
+  尚未执行。
+- Exact feature-ref marketplace install 待分支 reviewed commit/push 后补证。
+- #145、#146 继续负责九个 production Skill 的业务 payload migration 与 legacy scalar
+  最终切换；本任务不得提前关闭或吸收它们。
+- Trellis CLI 0.6.7 兼容性未验证，因为批准 baseline 固定为 0.6.5；若要升级 baseline，
+  应单独评审范围与官方变更。
+
+## 11. Round 2 finding-fix implementation handoff
+
+### 11.1 Finding closure
+
+- `F-BR-P2-001`：已在实现层关闭。1.3 `skill_input` consumer 现在从同一份 parsed active
+  registry 取得 target row，要求 producer 声明的 `interface_path` 与该 row 的 canonical
+  `interface` 字段逐字相等，随后才读取 target interface 并复核 interface id。新增正常
+  package copy/refactor 留下 stale same-id interface 的完整 source-validator 负例；该 locator
+  现在以 `[consumer_skill_input]` fail closed。
+- `F-BR-P2-005`：已在实现层关闭。`direct -> scalar_cli` 现在建立同名 identity mapping，
+  与非 direct projection 共用 required-source 和 conservative all-valid-output compatibility
+  proof；每个 target scalar argument 都必须由 required producer property 提供，并通过现有
+  finite `const`/`enum`、non-empty string、`positive_integer` 等 helper 证明。新增 producer
+  schema 允许空字符串但 example 为 `alpha` 的负例，以及 finite enum、positive integer
+  正常边界正例。
+
+上述是 implementer closure evidence，不替代 fresh Phase 2 semantic check 或新的 Branch
+Review 结论。
+
+### 11.2 Changed files
+
+- Runtime canonical / dogfood：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`。
+- Regression tests：`trellis/skills/guru-team/tests/test_skill_packages.py`。
+- Durable workflow SSOT：`.trellis/spec/workflow/companion-scripts.md`、
+  `.trellis/spec/workflow/skill-package-contract.md`、
+  `.trellis/spec/workflow/quality-guidelines.md`。
+- Requirements / public docs：`docs/requirements/guru-team-trellis-flow.md`、
+  `docs/requirements/requirement-main.md`、`README.md`、
+  `trellis/workflows/guru-team/README.md`、`trellis/presets/guru-team/README.md`。
+- Generated dogfood provenance：`.trellis/guru-team/extension.json`，由幂等 preset reapply
+  按当前 dirty source snapshot 刷新。
+- Task-local handoff：本文件。
+
+没有修改 1.2 interface schema、production Skill package、production registry、fixture
+registry/inventory、mandatory workflow route、review/gate recorder artifact 或 #145/#146
+follow-up ownership。
+
+### 11.3 Docs SSOT reconciliation
+
+- Docs state 继续为 `complete_docs`，strategy 继续为 `ssot_first`。
+- Durable contract 已明确：Skill consumer locator 必须等于 active registry target row 的
+  exact canonical interface path；非 direct projection 和 direct-to-scalar projection 都
+  必须证明 required-source totality 与全域兼容，单一 example 不能形成通过结果。
+- Requirements 与 root/workflow/preset README 已同步相同语义；task-local Round 2 raw report
+  保持审查历史，不反向成为 runtime SSOT。
+- 九个 production Skill 继续为 interface 1.2 + `legacy`，#145/#146 继续负责迁移。
+
+### 11.4 Validation
+
+- Focused mutation tests：7/7 passed；覆盖原 target-owned/id、stale same-id locator、
+  structured direct exact equality、non-direct totality，以及 scalar direct empty-string、
+  finite、positive-integer 边界。
+- Full Skill suite：104/104 passed。
+- Preset installer suite：39/39 passed。
+- Upstream ownership suite：6/6 passed。
+- Source validator：passed，9 legacy、0 production minimal。
+- Installed validator：passed，384 managed files，0 sidecar、0 conflict、0 removal。
+- `apply.sh --repo . --all-platforms`：`status=ok`，本轮 managed assets 全部 unchanged，
+  0 installed/update、0 backup、0 sidecar；source/installed/ownership 内嵌检查通过。
+- Dogfood overlay drift：passed；43 frozen/active overlays identity 与 13 managed claims
+  全部通过。
+- Canonical/dogfood runtime bytes：equal；两份 Python `py_compile`：passed；
+  `git diff --check`：passed。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh`：exit 0；覆盖
+  clean init、public marketplace discovery、local unpublished workflow/preset sample、
+  workflow preview/switch、初装、`trellis update`、preset reapply、source/installed/
+  ownership/platform checks 与最终零 sidecar。
+
+### 11.5 Security, deployment, and unverified boundaries
+
+- 本轮只收紧 deterministic package authoring validation；没有把 semantic judgment、review
+  或 route intent 写入脚本，也没有新增 hostile-input、竞态、锁、TOCTOU 或 fault-injection
+  范围。
+- 未读取或写入 token、secret、private key、`.env`、数据库 URL、签名 URL、客户数据或
+  敏感原始记录。
+- CI/CD、service、API、worker、container、Kubernetes/Kustomize、DB migration、Makefile
+  与部署配置均未修改；无部署和数据迁移影响。
+- Exact current feature-ref marketplace verification 仍未完成：branch 尚未 push，public
+  sample 不能冒充 immutable feature-ref pass。Trellis CLI 0.6.7 兼容性仍不在批准范围。
+- 本轮未运行 Phase 2 recorder/checker、Branch Review recorder/gate、commit、push、PR 或
+  finish-work；这些步骤必须由后续独立角色按 workflow 执行。
+
+## 12. Round 4 finding-fix implementation handoff
+
+### 12.1 Finding closure
+
+- Round 4 `workflow/structured-stop consumer contract 未强制 consumer-owned locator` 已在
+  实现层关闭。Interface 1.3 将 workflow、skill、structured stop 与 zero-payload stop
+  consumer input 拆为不重叠 union；runtime 同时要求原始 locator 已是 canonical spelling，
+  并分别位于 `consumers/workflow/**` 或 `consumers/stop/**`。Producer package/output locator、
+  cross-kind root、`./`、重复分隔符、父目录与 symlink component 均 fail closed；zero-payload
+  stop 继续不携带 schema contract。
+- Round 4 `Draft 2020-12 schema 只按未闭合的自定义关键字子集执行` 已在实现层关闭。
+  Standard-library runtime 新增递归 closed-subset grammar validation，明确支持当前合同所需
+  的 core/applicator/validation 关键字，并拒绝所有未实现关键字、keyword 类型错误、boolean
+  schema、unsupported format、非法 regex、remote/unresolved ref 与 recursive ref。实例校验
+  同步处理 `$ref` 与 `oneOf` sibling constraints；只有 aggregate structured-input 的 exact
+  ordered profile index 允许 package-boundary-contained relative refs。
+
+上述是 implementer closure evidence，不替代 fresh full Phase 2 或新的 Branch Review 结论。
+
+### 12.2 Changed files and Docs SSOT
+
+- Canonical / installed runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`。
+- Canonical / fixture / installed interface schema：
+  `trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json`、
+  `trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json`、
+  `.trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json`。
+- Regression tests：`trellis/skills/guru-team/tests/test_skill_packages.py`。
+- Durable workflow SSOT：`.trellis/spec/workflow/skill-package-contract.md`、
+  `.trellis/spec/workflow/data-contracts.md`、`.trellis/spec/workflow/quality-guidelines.md`、
+  `.trellis/spec/workflow/companion-scripts.md`。
+- Generated dogfood provenance：`.trellis/guru-team/extension.json`；preset reapply 已刷新当前
+  dirty source snapshot，最终幂等 apply 未再产生 managed update/backup/sidecar。
+
+Docs state 继续为 `complete_docs`，strategy 继续为 `ssot_first`。本轮只补强既有 #144
+consumer ownership 与 schema validation 合同；九个 production Skill 仍为 1.2 + `legacy`，
+#145/#146 migration scope、workflow route 与 frozen overlays 均未改变。
+
+### 12.3 Validation
+
+- Round 4 focused tests、完整 Skill package suite：112/112 passed。
+- Preset installer：39/39 passed；upstream ownership：6/6 passed。
+- Shared runtime：548 passed、13 skipped。
+- External `Draft202012Validator.check_schema()` 与两个 representative fixture interface：
+  passed。
+- Source validation：passed，9 production legacy、0 production minimal；installed validation：
+  passed，384 managed files，0 sidecar/removal/conflict。
+- `apply.sh --repo . --all-platforms` 最终幂等：0 installed、0 updated managed、0 backup、
+  0 new copy、0 sidecar/removal；dogfood overlay drift 与 upstream ownership 均 passed。
+- Canonical/installed runtime 及 canonical/installed/fixture 1.3 schema bytes：一致；当前 1.3
+  schema SHA-256 为
+  `d04b0d8476cea2c33e9a1da1ab715b4576fedc514f3c8d4601847cbd78074b10`。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh`：exit 0；覆盖 clean
+  init、public marketplace discovery、local unpublished workflow/preset sample、workflow
+  preview/switch、初装、`trellis update`、preset reapply、source/installed/ownership/platform
+  checks 与最终零 sidecar。
+
+### 12.4 Security, deployment, and unverified boundaries
+
+- 本轮只收紧确定性 authoring/instance validation，没有引入 semantic route/review judgment、
+  hostile-input、竞态、锁、TOCTOU、fault injection 或 crash-consistency 范围。
+- 未读取或写入 token、secret、private key、`.env`、数据库 URL、签名 URL、客户数据或
+  敏感原始记录。
+- CI/CD、service、API、worker、container、Kubernetes/Kustomize、DB migration、Makefile
+  与部署配置均未修改；无部署或数据迁移影响。
+- 默认 exact feature-ref throwaway 仍预期 exit 2：当前 branch 尚未 push，远端无法解析
+  unpublished ref。Public sample 只证明安装/update 通路，不能冒充 immutable feature-ref
+  pass；该证据应在 reviewed branch push 后由 Remote Marketplace Verification Gate 补齐。
+- 本轮实现后尚未运行 fresh full Phase 2、finding-fix commit、closure Branch Review、push、
+  PR 或 finish-work。
+
+## 13. Replacement Phase 2 final-byte handoff
+
+### 13.1 Superseded evidence and finding closure
+
+- 本节是 replacement Phase 2 checker 在 Round 4 修复后的最终字节复核。§12.3 的
+  `112/112` Skill suite 与 1.3 schema SHA-256
+  `d04b0d8476cea2c33e9a1da1ab715b4576fedc514f3c8d4601847cbd78074b10`
+  已被后续机械修复和本节证据取代；最终结果为 `113/113`，最终 SHA-256 为
+  `aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f`。
+- 已关闭 P2：递归 grammar scan 现在遍历未被 example 触达的 `$defs` / local-ref graph，
+  未实现 keyword、非法或 unresolved/recursive ref 均 fail closed。
+- 已关闭 P2：consumer-owned locator 同时在 schema 与 runtime 拒绝 owner root 的 `./`、
+  `//`、`..`、producer root 与 cross-kind root。
+- 已关闭 P2：仅 root schema 允许 `$id`；nested `$id` 在 deterministic validation 中被拒绝。
+- 已关闭 P3：Draft integer semantics 接受数学整数 `1.0`，拒绝 `1.5` 与 boolean。
+- 已关闭 P3：非字符串 `format` 不再产生 `TypeError` traceback，而是稳定结构化 fail closed。
+- 已关闭 P2：`additionalProperties: false` 且未声明 `properties` 时，实例对象的任意字段
+  现在均被拒绝。
+- 六项 finding 均有正常路径回归测试并在最终全量轮次通过；当前 open P0/P1/P2/P3 均为 0。
+
+### 13.2 Final validation
+
+- Focused finding tests：7/7 passed；完整 Skill package suite：113/113 passed。
+- Shared runtime：548 passed、13 skipped；preset installer：39/39 passed；upstream
+  ownership：6/6 passed。
+- 外部 `Draft202012Validator.check_schema()` 加 canonical schema 与两个 1.3 fixture
+  interface：3 passed；另 7 个 instance-semantics comparison 全部一致。
+- 1.2 schema SHA-256 保持
+  `33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e`；
+  canonical / dogfood / representative fixture 三份 1.3 schema 字节一致，runtime canonical /
+  dogfood 字节一致。
+- Source validation：9 个 active production Skill 全部为 `1.2 + legacy`，0 production
+  minimal；installed validation：384 managed files，0 sidecar/removal/conflict。
+- `apply.sh --repo . --all-platforms` 连续两次通过；第二次 0 install/update/backup/new copy。
+  九个 Skill 的 canonical package 与 `.agents` / `.codex` / `.claude` / `.cursor` 五个生成
+  root 共 45 组字节比较通过，dogfood drift 与 43 frozen/active、13 managed claim ownership
+  检查通过。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` 最终 exit 0；覆盖
+  public marketplace discovery、local unpublished workflow sample、clean init、初装、preview /
+  switch、`trellis update`、preset reapply、initial/after-update/no-developer package smoke、
+  source/installed/ownership/platform checks 与最终零 sidecar。
+- 默认 exact-ref throwaway 仍按设计 exit 2：feature branch 尚未 push，远端无法解析当前
+  unpublished ref；未把 public sample 冒充 exact feature-ref pass。
+- 最终 `py_compile`、changed Bash `bash -n`、changed JSON `jq empty`、`task.py validate`、
+  workspace boundary、planning approval、`git diff --check origin/main`、recursive
+  `.new/.bak`、敏感路径/secret pattern 与 deployment-path scans 均通过。Source checkout
+  clean，`suspicious_source_artifacts=[]`。
+
+### 13.3 Docs SSOT, impact, and gate boundary
+
+- Docs state 仍为 `complete_docs`，strategy 仍为 `ssot_first`。最终 runtime/schema/tests 与
+  `.trellis/spec/workflow/{skill-package-contract,data-contracts,quality-guidelines,companion-scripts}.md`
+  的 consumer ownership、closed Draft subset 与 fail-closed 合同一致；task finding 历史只留在
+  task-local handoff，不成为 durable runtime SSOT。
+- #145/#146 继续拥有九个 production Skill 的业务 payload migration；本轮没有把它们吸收进
+  #144，也没有改变 frozen workflow route 或 public production package。
+- 未发现 secret/credential/signed URL/customer data；CI/CD、service、API、worker、container、
+  Kubernetes/Kustomize、DB migration、Makefile 与部署配置均无变更和部署影响。
+- Replacement checker 未调用 Phase 2 recorder/checker、Branch Review recorder/gate、commit、
+  push、PR 或 finish-work。仓库中现有已提交 `phase2-check.json` 绑定旧 snapshot HEAD
+  `535536dbd55427241d7ce88cc14629d47fb6d26c`，不代表本节 final-byte full round；Phase 2 owner
+  必须基于本节与 checker report 刷新正式 gate artifact。
+- 本轮语义结论建议 `typed_exit=passed`；唯一未完成项是分支 push 后由 Remote Marketplace
+  Verification Gate 执行 immutable exact feature-ref 验证，不构成当前实现 finding。
+
+## 14. Round 6 finding-fix implementation handoff
+
+### 14.1 Superseding finding closure
+
+- 本节取代 §13 对当前 runtime/test 最终字节的描述，但不覆盖 §13 已关闭问题的历史。
+  Round 6 新增 `F-BR-P2-008` 与 `F-BR-P3-009` 的实现修复已完成；后续 Phase 2 和
+  Branch Review 必须以本节对应 dirty snapshot 重新审查，不能复用旧 `phase2-check.json`。
+- `F-BR-P2-008` 根因是 minimal handoff contract 的文件 loader、package-local `$ref`、
+  workflow marker 与 representative invocation stdout 使用 Python 默认 JSON 解码，且
+  in-memory number validator/public serializer 没有 finite guard。现在 contract 专用 loader
+  通过 `parse_constant` 拒绝 `NaN` / `Infinity` / `-Infinity`，并拒绝 `1e400` 等会超出
+  finite runtime range 的数字；registry、interface、schema、example、marker、local ref 与
+  invocation stdout 均复用该入口。Schema/instance 递归验证再次拒绝内存非有限数，public
+  DTO 使用 `allow_nan=false` 并在失败时返回既有 structured error，不泄露 traceback。
+- `F-BR-P3-009` 根因是 `date-time` 只接受 uppercase `T/Z` 且依赖不支持 leap second 的
+  `datetime.fromisoformat()`，`uri` 则把宽松 `urlsplit()` 的 scheme/path 存在性误当作
+  RFC 3986 validation。现在 `date-time` 用 stdlib grammar 加 calendar/clock/offset 校验，
+  接受 lowercase `t/z` 和仅位于对应 UTC 六月/十二月月末边界的 leap-second notation；
+  `uri` 校验 RFC 3986 ASCII scheme、hierarchy/path/query/fragment、authority、IPv6/IPvFuture、
+  port、control/whitespace 与 percent encoding。已声明的两个 format 均保留，没有缩减
+  public contract。
+
+### 14.2 Changed files and generated synchronization
+
+- Canonical runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`。
+- Dogfood runtime 与 managed provenance：
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/extension.json`。两份 runtime SHA-256 均为
+  `614b576f99ede68d611d21af4610ccdf8b678cf45f335292be52e93f95463301`；extension 只由
+  canonical preset apply 机械刷新安装时间、source HEAD/tree state 与 sidecar inventory。
+- Targeted/full regression：`trellis/skills/guru-team/tests/test_skill_packages.py`，SHA-256
+  `4893840bb1304d5671a03b52e3f28d4ac8a35c8559d9dbb5eedfdd09ee7db955`。
+- Durable SSOT：
+  `.trellis/spec/workflow/{skill-package-contract,companion-scripts,data-contracts,quality-guidelines}.md`。
+  `skill-package-contract.md` 拥有完整语义；其余文件只声明 companion 执行、data boundary
+  与 test matrix 责任，没有复制 task finding history。
+- Task-local history：仅追加本节 `implementation-handoff.md`；未修改 planning artifacts、
+  `phase2-check.json`、`agent-assignment.json`、`review.md`、`reviews/*.md`、
+  `review-gate.json`、`task-commit-plans/*.json` 或 `issue-scope-ledger.json`。
+
+### 14.3 Exact validation results
+
+- Targeted Round 6 regression：9/9 passed。覆盖 registry/interface、static schema/example、
+  package-local `$ref`、workflow marker、invocation stdout 的 `NaN` / `Infinity` /
+  `-Infinity` / overflow，内存 schema/instance finite guard、public serialization，以及
+  RFC 3339/RFC 3986 正反例。
+- 完整 Skill package suite：122/122 passed（原 113 项加本轮 9 项）。Shared runtime：
+  548 passed、13 skipped。Preset installer：39/39 passed。Upstream ownership：6/6 passed。
+- Source/installed validators 均 `status=passed`；九个 production Skills 仍全部为
+  `1.2 + legacy`，installed inventory 为 384 managed files、0 sidecar/removal/conflict。
+  Installed discovery 继续返回 `guru-sync-base` legacy variant 与 #145/#146 migration。
+- 首次 `apply.sh --repo . --all-platforms` 只更新 dogfood runtime，并按正常 managed-file
+  流程生成旧 runtime `.bak`。该 sidecar 的 SHA-256/size 已与 HEAD 旧文件逐字节证明一致
+  (`7fa505...`、1271256 bytes) 后移除；第二次 apply 为
+  `updated_managed=[]`、`managed_backups=[]`、`new_copies=[]`。Dogfood drift、43
+  frozen/active ownership、13 managed claims 与五个 generated package roots 全部通过。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` exit 0，覆盖 public
+  marketplace discovery、local unpublished workflow sample、clean init、初装、preview/switch、
+  `trellis update`、preset reapply、initial/after-update/no-developer smoke、source/installed /
+  ownership/platform checks 与最终零 sidecar。默认 exact-ref verifier exit 2，因为当前
+  feature branch 尚未 push；未把 public sample 冒充 immutable feature-ref pass。
+- `py_compile`、`task.py validate`、workspace boundary、planning approval、canonical/dogfood
+  `cmp`、installed discovery、`git diff --check origin/main`、JSON、recursive `.new/.bak`、
+  secret/sensitive-path/deployment scans 均通过；source checkout clean，
+  `suspicious_source_artifacts=[]`。本轮没有 Bash 代码变更。
+
+### 14.4 Docs, scope, and next gate
+
+- Docs state 保持 `complete_docs`，strategy 保持 `ssot_first`。严格 JSON/finite 和保留
+  `date-time|uri` 的 format semantics 已进入 durable SSOT；本节仅保留复现、finding lifecycle
+  与具体执行证据。
+- #145/#146 继续拥有九个 production Skill payload migration；本轮没有改变 1.2 schema、
+  production typed exits、mandatory workflow route 或 migration boundary。未发现 secret、
+  deployment、配置、容器、K8s、DB migration 或数据迁移影响。
+- 实现代理自检未发现新的 current-scope open finding，但这不替代 fresh Phase 2 或 Branch
+  Review。建议 Phase 2 输入把 `F-BR-P2-008`、`F-BR-P3-009` 各记录为 `resolved`，引用本节
+  9/122/548/39/6、source/installed、apply/drift/throwaway 证据，并重新计算当前 dirty
+  snapshot；若独立 checker 发现新问题，应按实际 finding 返回而非沿用本建议。
+- 本实现代理没有调用 Phase 2 recorder/checker、Branch Review recorder/gate、commit、push、
+  PR、issue close 或 finish-work。Reviewed branch push 后仍需 Remote Marketplace Verification
+  Gate 补 exact immutable feature-ref evidence。
+
+## 15. Round 7 fresh Phase 2 checker handoff
+
+### 15.1 New findings and mechanical closure
+
+- `F-P2-R7-P3-001`：`date-time` validator 依赖 Python `datetime` 的 `1..9999` year
+  domain，错误拒绝 RFC 3339 四位 year domain 中的 `0000`。Checker 将 calendar validation
+  改为纯 proleptic Gregorian 规则，并用 minute ordinal 判断 numeric offset 下的 UTC
+  June/December month-end leap-second boundary；`0000-02-29` 正常接受，非法 year-zero
+  calendar date 仍 fail closed。
+- `F-P2-R7-P3-002`：IPvFuture grammar 把 leading `v` 实现为大小写敏感，错误拒绝
+  RFC 3986 ABNF 下等价的 uppercase `V`。Checker 将该 token 收敛为 `[Vv]`，其余
+  version/address grammar、authority 与 port 校验保持不变。
+- 两项修复均属于现有 supported-format contract 的机械 correctness closure，没有新增
+  format、production Skill payload、workflow route 或异常加固范围。回归位于
+  `trellis/skills/guru-team/tests/test_skill_packages.py`；durable contract 同步到
+  `.trellis/spec/workflow/skill-package-contract.md` 与
+  `.trellis/spec/workflow/quality-guidelines.md`。
+- Canonical/runtime 同步文件为
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`；两份最终 SHA-256 均为
+  `de1f5a6d9fe96be3a4c1fabfd1868333e8b77e7159b6e1846e85079fffc0cd1d`。
+  测试文件最终 SHA-256 为
+  `a11a47a461d8f4e3e314a1531c8299e52c09c382da618ede2d4d8e61a5812b5d`；
+  dogfood `.trellis/guru-team/extension.json` 仅由 canonical preset apply 刷新 provenance。
+
+### 15.2 Final-byte validation
+
+- Targeted Round 6/7 format 与 strict-JSON regression：9/9 passed；fresh complete Skill
+  package suite：122/122 passed。
+- Fresh shared runtime：548 passed、13 skipped；preset installer：39/39 passed；upstream
+  ownership：6/6 passed。
+- 外部 `Draft202012Validator.check_schema()` 对 canonical 1.3 schema 与两个 representative
+  1.3 interface：3 passed；canonical/dogfood/fixture 1.3 schema bytes 一致。
+- Source/installed validators 均 `status=passed`；九个 active production Skills 全部仍为
+  `1.2 + legacy`，0 production minimal；installed inventory 为 384 managed files、0
+  sidecar/removal/conflict。Installed `guru-sync-base` discovery 继续返回 `legacy` variant，
+  migration follow-up 为 #145/#146。
+- `apply.sh --repo . --all-platforms` 第二次执行为完全幂等；dogfood drift、43 frozen/active
+  ownership、37 clean-init generated overlays、13 managed claims 与 45 组 generated package
+  roots 均通过。Checker 本轮首次 apply 产生的旧 runtime `.bak` 已证明是 apply 前 snapshot
+  后移除；最终 recursive `.new/.bak` scan 为空。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` 最终 exit 0，覆盖
+  public marketplace discovery、local unpublished workflow/preset、clean init、preview/switch、
+  initial/after-update/no-developer smoke、`trellis update`、reapply 与最终零 sidecar。默认
+  exact-ref verifier 按设计 exit 2，因为当前 feature branch 尚未 push；public sample 未被
+  冒充 immutable feature-ref pass。
+- Final `py_compile`、changed Bash `bash -n`、changed JSON `jq empty`、`task.py validate`、
+  `git diff --check origin/main`、canonical/dogfood runtime `cmp`、workspace boundary 与
+  planning approval 均通过。Expected workspace 与 actual root 均为本 task worktree；source
+  checkout clean，`suspicious_source_artifacts=[]`。
+- Added-line secret/credential/private-key/signed-URL/database-URL pattern、敏感路径与
+  deployment-path scans 均无命中；CI/CD、service、API、worker、container、Kubernetes /
+  Kustomize、DB migration、Makefile 和部署配置无修改，无部署或数据迁移影响。
+
+### 15.3 Docs SSOT and gate conclusion
+
+- Docs state 继续为 `complete_docs`，strategy 继续为 `ssot_first`。本轮 format correctness
+  delta 已先进入 durable `skill-package-contract.md` 与 `quality-guidelines.md`，runtime/tests /
+  dogfood 再与其同步；finding 生命周期、命令结果和 snapshot digest 只留在本 task-local
+  handoff。
+- `.trellis/spec/workflow/{skill-package-contract,data-contracts,quality-guidelines,companion-scripts}.md`
+  与最终 schema/runtime/fixture/installer 行为一致；#145/#146 继续拥有九个 production Skill
+  payload migration，未被 #144 吸收。
+- Reviewed committed HEAD 为 `61a78a90909db38bf18d59d32cf03dd712a21e1c`，上述证据绑定
+  该 HEAD 上的当前 dirty implementation snapshot。Round 6 两项 finding 与本轮两项 P3
+  finding 均已关闭，current-scope open P0/P1/P2/P3 为 0；本报告可支撑重新生成
+  `phase2-check.json`，建议 `typed_exit=passed`。
+- Checker 未调用 Phase 2 recorder/checker、Branch Review recorder/gate、commit、push、PR、
+  issue close 或 finish-work。Phase 2 owner 应使用本节 final-byte evidence 刷新正式 gate
+  artifact；分支 push 后仍由 Remote Marketplace Verification Gate 补 exact immutable
+  feature-ref evidence。
+
+## 16. Round 8 `F-BR-P3-010` finding-fix implementation handoff
+
+### 16.1 Finding closure and exact implementation
+
+- `F-BR-P3-010` 可在正常 1.3 contract authoring 路径复现：Round 7 runtime 把非
+  IPvFuture IP-literal 直接交给 Python `ipaddress.IPv6Address`，因而错误接受 RFC 3986
+  `IPv6address` grammar 不允许的 scope/zone ID。修改前
+  `http://[fe80::1%eth0]/`、`http://[fe80::1%25eth0]/`、
+  `http://[fe80::1%1]/` 均返回零 validation error。
+- Canonical `skill_uri_matches()` 现在只在 literal 未匹配 IPvFuture 后、调用
+  `IPv6Address` 前拒绝任何 `%`。该位置精确覆盖 raw scope、percent-encoded scope 与数字
+  scope；合法 IPv6 不含 `%`，IPvFuture 仍由既有大小写不敏感 grammar 独立处理，reg-name、
+  path、query、fragment 的合法 percent encoding 仍由既有 component parser 处理。
+- URI targeted regression 在既有 RFC 3986 正反例矩阵中增加上述三个 negative case；
+  既有普通 IPv6、uppercase IPvFuture、percent-encoded path、authority 与 numeric port
+  passing cases保持不变。Installed/dogfood runtime 另以 3 valid + 3 zone-ID invalid 独立
+  语义探针复验。
+
+### 16.2 Changed files and managed synchronization
+
+- Canonical runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`。
+- Dogfood runtime 与 managed provenance：
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/extension.json`。Canonical/dogfood runtime SHA-256 均为
+  `0040a014d1cb5950d926b5aafa8e77ad4d84ecf32cf2bb83eccf53247fb7febe`。
+- Regression tests：`trellis/skills/guru-team/tests/test_skill_packages.py`，SHA-256
+  `2d0a788294c7ceab58a49a456b816539d5232e14be2d64609c05e6593cbdb563`。
+- Task-local history：仅追加本节 `implementation-handoff.md`。未修改
+  `agent-assignment.json`、`phase2-check.json`、`issue-scope-ledger.json`、
+  `task-commit-plans/*.json`、`review-gate.json`、`review.md`、`reviews/*.md`、planning
+  approval 或 PR artifacts。
+
+### 16.3 Validation evidence
+
+- Targeted URI regression：1/1 test method passed；该方法完整执行 6 个既有 valid URI、
+  现有 invalid URI 与新增 3 个 zone-ID negative URI。修改前的独立复现证明新增三例均被
+  错误接受，修改后 canonical 与 installed/dogfood 语义探针均证明三例被拒绝。
+- 完整 Skill package suite：122/122 passed；shared runtime：548 passed、13 skipped；
+  preset installer：39/39 passed；upstream ownership：6/6 passed。Shared runtime 最初一次
+  discovery 使用了仓库不存在的 `scripts/python/tests` 目录，未启动任何测试；随后使用实际
+  入口 `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py` 完整重跑并取得
+  上述 548/13 结果。
+- Source/installed validators 均 `status=passed`；九个 production Skills 仍全部为
+  `1.2 + legacy`，installed inventory 为 384 managed files、0
+  sidecar/removal/conflict。Dogfood overlay drift 与 43 frozen/active、13 managed claim
+  ownership 检查通过。
+- 首次 `apply.sh --repo . --all-platforms` 仅更新 dogfood runtime 并生成旧 managed runtime
+  `.bak`；该 sidecar 已逐字节证明等于 HEAD 上的旧 runtime，SHA-256 为
+  `de1f5a6d9fe96be3a4c1fabfd1868333e8b77e7159b6e1846e85079fffc0cd1d`，随后按零
+  sidecar 门禁删除。第二次 apply 为 0 install/update/backup/new copy，最终递归
+  `.new/.bak` scan 为空。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` exit 0，覆盖
+  public marketplace discovery、local unpublished workflow sample、clean init、initial
+  install、preview/switch、`trellis update`、preset reapply、initial/after-update/no-developer
+  package smoke、source/installed/ownership/platform checks 与最终零 sidecar。
+
+### 16.4 Docs SSOT, scope, and next gate
+
+- Docs state 继续为 `complete_docs`，strategy 继续为 `ssot_first`。Durable
+  `.trellis/spec/workflow/skill-package-contract.md` 已要求 `uri` 遵守 RFC 3986 ASCII generic
+  syntax、component 与 authority grammar；`data-contracts.md`、`companion-scripts.md`、
+  `quality-guidelines.md` 已引用同一合同并要求 authority regression。本轮没有新增或改变
+  durable contract，故无需再修改 spec 正文；实现修复的是 runtime 对既有 SSOT 的偏离。
+- 本轮没有新的 task delta 需要 merge 到 durable docs。`F-BR-P3-010` 的复现值、finding
+  lifecycle、执行命令、hash 与验证结果只保留在本 task-local handoff，作为 task history，
+  不成为第二份 runtime SSOT。
+- #145/#146 继续拥有九个 production Skill payload migration；本轮未修改 interface 1.2、
+  production typed exits、workflow route、schema/registry、CI/CD、container、K8s、DB
+  migration、Makefile 或部署配置，也不涉及 secret、客户数据或数据迁移。
+- Source checkout 保持 clean；所有编辑与测试均在 task worktree 执行。实现代理未调用
+  Phase 2 recorder/checker、Branch Review recorder/gate、commit、push、PR、issue close 或
+  finish-work。Public-sample throwaway 已通过；exact immutable feature-ref marketplace
+  verification 仍必须等分支 push 后由发布门禁执行，不构成当前实现 blocker。
+
+## 17. Round 11 `F-BR-P3-011` finding-fix implementation handoff
+
+### 17.1 Finding closure and implementation strategy
+
+- `F-BR-P3-011` 的正常路径复现为 `pattern=^[a-z]+$`、instance=`"a\n"`：旧 runtime
+  直接调用 Python `re.search` 返回通过，而 Node/Ajv 的 ECMA pattern 拒绝同一字符串。
+- Canonical runtime 新增单一 portable pattern compiler，schema grammar gate 与 instance
+  matcher 共用该 compiler，不再存在 raw Python `re` fallback。Accepted grammar 限定为
+  ASCII source/escape、literal、dot、anchor、group/noncapturing group、alternation、negative
+  lookahead、ASCII character class/range 和 1-6 位标准 quantifier。
+- Compiler 把 ECMA `$` 映射为 strict `\Z`，把 dot 映射为排除完整 ECMA line terminator
+  集合的显式 class，并把 `\s`/`\S` 映射为 exact ECMA whitespace 域。Python-only flags、
+  lookbehind、backreference、`\d`/`\w`、Unicode/property escape、非 ASCII source、非法
+  class/group/quantifier 均在 grammar gate fail closed。
+- 该设计保持 Python standard-library-only，同时让 accepted pattern 的 grammar 和 matching
+  语义可与 Node `RegExp(..., "u")` 对照，不依赖目标仓库安装 Node 或第三方包。
+
+### 17.2 Changed files and Docs SSOT reconciliation
+
+- Canonical/installed runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`。
+- Regression tests：`trellis/skills/guru-team/tests/test_skill_packages.py`。
+- Durable Docs SSOT：`.trellis/spec/workflow/skill-package-contract.md` 独占 exact EBNF 与
+  semantic domain；`companion-scripts.md` 只说明 compiler/translation；
+  `quality-guidelines.md` 只定义 Node 对照与负例验证矩阵。
+- Public docs：`README.md`、`trellis/workflows/guru-team/README.md`、
+  `trellis/presets/guru-team/README.md` 只公开 portable ASCII pattern boundary，不复制 EBNF。
+- Managed provenance：`.trellis/guru-team/extension.json` 仅由 preset apply 刷新
+  `installed_at` 与 `source.commit`。最终 non-metadata dirty paths 共 10 个。
+- Docs state 继续为 `complete_docs`，strategy 继续为 `ssot_first`。Exact grammar 已先进入
+  durable SSOT，runtime/tests/installed copy 再承接；Round 10 finding、执行日志与逐轮证据
+  仅保留为 task-history-only。没有 no-update 或独立 follow-up 限制。
+- #145/#146 继续拥有九个 production Skill payload migration；本轮不修改 interface/
+  registry payload、production typed exits、mandatory routes、CI/CD、container、K8s、DB
+  migration、Makefile 或服务部署合同。
+
+### 17.3 Validation evidence
+
+- Focused portable pattern tests：5/5 passed；独立 Node `RegExp(..., "u")` matrix passed。
+- 完整 Skill package suite：125/125 passed；shared runtime：548 passed、13 skipped；preset
+  installer：39/39 passed；upstream ownership：6/6 passed。
+- Source/installed validators passed；installed inventory 为 384 managed files，平台为
+  Claude/Codex/Cursor，removal/conflict/sidecar 均为 0。Canonical/installed runtime bytes、
+  dogfood drift、`py_compile`、task validation 与 `git diff --check` 均通过。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` exit 0，覆盖 clean
+  init、workflow preview/switch、initial install、`trellis update`、preset reapply、
+  no-developer path、三平台 copies 和最终零 sidecar。
+- 首次 apply 因遗漏 `--all-platforms` 曾机械删除 76 个 Claude managed copies；代理没有用
+  Git revert，而是连续两次执行 authoritative `apply.sh --repo . --all-platforms` 恢复并
+  收敛 inventory。最终 `.claude/skills/**` 无 diff，apply 的 update/backup/new/removal/
+  conflict/sidecar 全部为 0。
+- Added-line secret/credential/private-key/signed-URL/database-URL scan 无命中；source checkout
+  clean。Exact immutable remote feature-ref marketplace verification 仅因 feature branch 尚未
+  push 而继续 deferred 到发布阶段，不冒充当前 pass。
+
+### 17.4 Handoff and next gate
+
+- 实现代理 `/root/issue_144_round11_pattern_implement` 已记录 `completed`，未编辑 task
+  metadata，未调用 Phase 2 recorder/checker、Branch Review recorder、commit、push、PR、
+  issue close 或 finish-work。
+- 本节与 approved durable docs、代码、tests、installed copy 和验证 evidence 一致，可供
+  新的 `trellis-check` 代理执行完整 Phase 2。建议重点核对 parser/EBNF 一致性、Node `u`
+  语义、installed provenance 与 `F-BR-P3-011` closure；若 current-scope findings 为空，
+  建议 `typed_exit=passed`。
+
+## 18. Round 11 Phase 2 semantic check handoff
+
+### 18.1 Review scope and semantic conclusion
+
+- 独立阶段二检查代理 `/root/issue_144_round11_phase2` 在
+  `HEAD=1338505df40aeb746af3a5f36c114a0877f85c2d`、
+  `origin/main@cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d` 上完成只读检查，覆盖
+  approved planning、`implementation-handoff.md` 第 17 节、Round 10 raw finding、
+  `origin/main...HEAD`、当前 dirty diff、11 项 curated spec/research、runtime、tests、
+  durable docs、public docs、installed manifest、installer 与三平台 copies。
+- `F-BR-P3-011` 被判定为 `current_scope`、`P3`、`resolved`：portable pattern compiler
+  同时服务 grammar gate 与 instance matcher，未发现 raw contract-pattern `re` fallback；
+  parser 与 durable EBNF 一致，accepted grammar 对 Node
+  `new RegExp(pattern, "u")` 可移植。
+- 本轮没有新的或未关闭的 current-scope finding。Phase 2 AI Gate 为 `passed`，
+  `typed_exit=passed`，唯一 consumer 为 `guru-create-task-commit`。按
+  `guru-phase2-check-2.0` 口径，artifact 保留一个已解决 finding，因此
+  `findings_count=1`、open current-scope findings 为 0。
+
+### 18.2 Independent code and compatibility evidence
+
+- 代理逐行检查 canonical runtime portable compiler、grammar gate 与 matcher：printable
+  ASCII source、literal/escape、capturing-to-noncapturing、alternation、negative lookahead、
+  class/range/negation、1-6 digit quantifier 与 assertion quantification 边界均承接 EBNF；
+  Python-only group/anchor、`\\d`/`\\w`、backreference、lookbehind、inline flag、Unicode/
+  property escape、非 ASCII source 继续 fail closed。
+- 独立 differential 生成 2,500 个 accepted patterns，并对 81 个 ASCII、Unicode、line
+  terminator 与 whitespace values 执行 202,500 次 Node `RegExp(..., "u")` 对照；Node
+  grammar rejection 为 0，matching mismatch 为 0，strict `$`、dot、`\\s`/`\\S` 边界一致。
+- Canonical/installed runtime bytes 一致。Installed manifest 最终保持
+  `selected_platforms=[claude,codex,cursor]`、`all_platforms=true`、384 managed files，
+  removals/conflicts/sidecars 均为 0，且 `.claude/**` 无 diff。首次遗漏
+  `--all-platforms` 的错误 apply 已由两次 authoritative apply 完整收敛，无残留。
+- 九个 production Skills 继续保持 interface 1.2 + `legacy`，production
+  `minimal_handoff` 仍为 0；#145/#146 的 payload migration 边界未被提前实现。
+
+### 18.3 Full validation evidence
+
+- Focused portable pattern tests 3/3；完整 Skill suite 125/125；shared runtime 548 passed、
+  13 skipped；preset installer 39/39；ownership 6/6；external
+  `Draft202012Validator.check_schema()` 3/3。
+- Source validator 为 9 active、9 legacy、0 production minimal、35 exits；installed
+  validator 为 384 managed files、Claude/Codex/Cursor、0 removals/conflicts/sidecars；
+  dogfood drift 与 43 frozen/active entries、13 managed claims 检查通过。
+- `cmp`、`py_compile`、task validation、`git diff --check origin/main`、递归
+  `.new/.bak`、source checkout clean、added-line credential/private-key/signed-URL/
+  database-URL/local-path 与 deployment-path scans 均通过或无命中。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` exit 0，覆盖
+  clean init、workflow preview/switch、initial install、`trellis update`、preset reapply、
+  no-developer path、三平台、384 files、20 项 after-update smoke 与最终零 sidecar。
+- Exact immutable remote feature-ref marketplace verification 因 feature branch 尚未 push，
+  继续由发布前 Remote Marketplace Verification Gate 唯一消费；它是一个非阻塞
+  unverified item，不冒充本轮已验证项。
+
+### 18.4 Docs SSOT and next gate
+
+- Docs state 继续为 `complete_docs`，strategy 继续为 `ssot_first`。Exact portable pattern
+  EBNF 仅由 `.trellis/spec/workflow/skill-package-contract.md` 拥有；
+  `companion-scripts.md`、`quality-guidelines.md` 和三份 README 只引用、规定验证矩阵或公开
+  概括，没有形成第二份 grammar SSOT。
+- Round 10 finding、Phase 2 命令结果、agent liveness 与逐轮 hash 仅保留为 task history。
+  本轮 durable docs、runtime、tests、installed copy 与 public docs 已一致，没有未合并的
+  current-scope task delta。
+- 阶段二检查代理已记录 `completed` event `evt-0225-3668e902d4`。旧 Round 8
+  `phase2-check.json` 不覆盖 Round 11 实现与本检查，必须由主会话根据本节、完整独立报告和
+  live assignment projection 重新 record/check；通过后才可 mandatory invoke
+  `guru-create-task-commit`。
+
+## 19. Round 11 UTF-16 search-position finding-fix implementation handoff
+
+### 19.1 `F-BR-P3-011` implementation closure
+
+- Round 11 closure review 的剩余正常路径复现为
+  `pattern="(?!^|$)"`、`instance="😀"`。Node `u` 在 UTF-16 index 1 的 surrogate-pair
+  内部边界找到零宽匹配；旧 Python matcher 只在 code-point 边界搜索，因此错误拒绝。
+- Canonical runtime 现在先通过 `utf-16-le` + `surrogatepass` 将 instance 投影为 UTF-16
+  code units，再由 `SkillPortablePattern.search()` 统一匹配。Grammar gate 与 instance
+  matcher 继续共用同一 compiler，accepted printable-ASCII grammar、strict `$`、ECMA
+  whitespace 与 stable error contract 均未改变。
+- `.`, `\\S` 与 negated class 使用同一 pair-aware consuming translation：valid surrogate
+  pair 作为一个 Unicode code point 消费，不能在回溯时拆分，也不能从内部 low surrogate
+  开始；零宽 assertion 仍可在 high/low 之间的 UTF-16 boundary 成功。ASCII literal、positive
+  class 与 `\\s` 保持原有 BMP-only translation。
+- 实现仍为 Python standard-library-only，未把 Node 引入 installed runtime，未增加 special-case
+  instance 判断、semantic judgment、锁、TOCTOU、hostile-input 或跨 OS 机制。
+
+### 19.2 Files changed and managed-copy result
+
+- Canonical runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`；installed/dogfood runtime：
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`。两者 SHA-256 均为
+  `a9990f469cd2bc71bec283777c27b2594b2930d8e0c35824ab9574d17df86d3d`。
+- Regression tests：`trellis/skills/guru-team/tests/test_skill_packages.py`，覆盖固定 astral
+  零宽/consuming cases 与 deterministic generated differential。
+- Durable Docs SSOT：`.trellis/spec/workflow/skill-package-contract.md`、
+  `.trellis/spec/workflow/companion-scripts.md`、
+  `.trellis/spec/workflow/quality-guidelines.md`。
+- Managed provenance：`.trellis/guru-team/extension.json` 仅由 authoritative preset apply
+  刷新 install time/source commit。首次 `apply.sh --repo . --all-platforms` 只更新 installed
+  runtime 并生成一个 known-managed `.bak`；其 bytes 已证明等于旧 HEAD runtime，随后按零
+  sidecar 门禁删除。第二次 apply 完全幂等，update/backup/new/removal/conflict/sidecar 均为 0。
+- 本节仅追加 task-local `implementation-handoff.md`。既有 `agent-assignment.json`、
+  `task-commit-plans/*.json`、`review.md`、`review-gate.json`、`reviews/*.md`、planning approval
+  与 issue ledger 均未由实现代理修改或回退。
+
+### 19.3 Docs SSOT and requirement/design carryover
+
+- Docs state 保持 `complete_docs`，批准策略保持 `ssot_first`。Exact grammar 继续只由
+  `skill-package-contract.md` 拥有；本轮把 UTF-16 zero-width search positions 与 pair-aware
+  consuming contract 先合并到该 SSOT，再由 companion/runtime 与 quality test matrix 承接。
+- `companion-scripts.md` 只记录 portable compiler 的实现边界；`quality-guidelines.md` 只规定
+  astral 固定回归和 generated Node differential，不复制 EBNF。三份 public README 已明确
+  printable-ASCII portable grammar、ECMA-262 Unicode-mode semantics 并指向 durable contract，
+  本轮不追加算法细节，避免形成第二份 SSOT。
+- `data-contracts.md`、workflow/preset index、requirements docs 与 public API/schema/registry
+  本轮无需更新：修复没有改变 interface 1.2/1.3 identity、registry 1.1、discovery DTO、
+  extension inventory、typed exits 或 workflow routes。它们仍是实现输入并已与当前 delta
+  复核一致。
+- Task delta 中需要长期保留的 UTF-16 semantic rule 与 generated differential obligation 已
+  全部 merge 到 durable docs。具体复现值、Node/V8 版本差异、命令输出、sidecar recovery、
+  finding lifecycle、hash 与逐轮审查证据仅保留为 task-history-only。
+- #145/#146 继续独占九个 production Skill payload migration；九个 active Skill 仍全部为
+  interface 1.2 + `legacy`，production `minimal_handoff=0`。Exact immutable remote feature-ref
+  marketplace verification 仍只能在分支 push 后由发布前门禁执行，是当前 PR 阶段限制而非
+  本地实现 blocker。
+
+### 19.4 Validation evidence
+
+- Focused portable-pattern regression 4/4 passed；完整 Skill package suite 126/126 passed。
+- Node 20.20.2 对原始 `new RegExp(pattern, "u")` 运行 4,081 个 accepted patterns × 26 个
+  astral/BMP/line-terminator/mixed values，共 106,106 次比较，0 mismatch。本机 Node 26.4.0
+  存在 `[^a]$` astral optimization regression；generated test 仅在 Node 26 对 oracle 使用
+  spec-equivalent `(?:pattern){1}`，runtime 没有 Node-version 分支，Node 20 exact run 使用
+  原始 pattern。
+- Shared runtime：548 passed、13 skipped；preset installer：39/39；upstream ownership：
+  6/6。Source/installed Skill validators 均 passed；installed inventory 为 384 managed files、
+  Claude/Codex/Cursor、0 removal/conflict/sidecar，legacy discovery smoke 正确返回 #145/#146。
+- Dogfood overlay drift、43 frozen/active ownership entries、13 managed claims、canonical/
+  installed runtime byte comparison、`py_compile`、`bash -n`、task validation、
+  `git diff --check` 与递归 `.new/.bak` scan 全部通过；source checkout clean。
+- `verify-throwaway-install.sh` 在 `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1` 下 exit 0，覆盖 public
+  marketplace sample、本地未发布 workflow、clean init、preview/switch、初装、installed
+  wrapper/package smoke、`trellis update`、workflow/preset reapply、initial/after-update/
+  no-developer fixtures、三平台 copies 与最终零 sidecar。
+
+### 19.5 Handoff to `trellis-check`
+
+- 下一轮完整 Phase 2 应重新核对 `F-BR-P3-011`：UTF-16 interior zero-width position、pair-aware
+  `.`, `\\S`, negated-class consumption、nullable quantifier/backtracking，以及 fixed/generated
+  Node `u` evidence；不得复用第 18 节之前的 `phase2-check.json` 结论。
+- 同时核对 canonical/installed byte equality、Node 26 oracle workaround 只存在于 tests、三份
+  durable docs 的 SSOT 分工、public README no-update 理由、九个 legacy production packages
+  与 #145/#146 scope boundary。
+- 实现阶段没有 intentionally skipped 的本地 suite。仅 deferred exact remote feature-ref
+  marketplace verification，因为 feature branch 尚未 push；Phase 2 应将其记录为发布前限制，
+  不应冒充已验证，也不应把它升级为本地 implementation finding。
+- 实现代理未调用 Phase 2 recorder/checker、Branch Review recorder/gate、commit、push、PR、
+  issue close 或 finish-work。新的 `trellis-check` 完整通过后，仍须由 main session 按 workflow
+  记录/校验正式 Phase 2 evidence，再进入 finding closure 与 fresh final review。
+
+## 20. Round 12 isolated-surrogate finding-fix implementation handoff
+
+### 20.1 `F-BR-P3-011` isolated-surrogate closure
+
+- Round 12 Phase 2 的正常路径最小复现为 `pattern="^..$"`、
+  `instance="\\ud800a"`：标准 JSON escaped isolated high surrogate 后接 BMP `a`，旧
+  runtime 返回 pattern violation，而 Node 20.20.2/26.4.0 Unicode RegExp 均返回 `true`。
+  4,081 个 accepted patterns 与七个 surrogate edge values 的独立对照共 28,567 次，
+  发现 154 mismatches，因此 Round 11 的 passing evidence 已失效。
+- 根因位于 `skill_ecma_code_point_complement()` 的 single-unit branch。旧
+  `(?<!high-surrogate)` 在任意 BMP code unit 前都检查前一 unit，因而把 isolated high
+  surrogate 后的普通 BMP 错当作 valid-pair interior。修复后的 guard 只拒绝 valid
+  high+low pair 起点以及前接 high 的 interior low；isolated high/low surrogate 均作为一个
+  independently consumable code point，前后相邻 BMP 不影响消费。
+- Valid pair 分支仍一次消费完整 pair。Single-unit 分支不能在其 high 起点抢先消费，也不能
+  从 interior low 开始；nullable path、alternation 或 quantifier backtracking 均不能拆 pair。
+  修复是通用 UTF-16 code-point translation，不含本例 special case。
+- Runtime 仍为 Python standard-library-only。Node 仅用于 tests 中的 independent oracle；
+  production runtime 没有 Node/version branch，也没有新增 semantic judgment、hostile-input、
+  lock、TOCTOU、fault injection 或跨 OS 加固。
+
+### 20.2 Tests and managed-copy synchronization
+
+- Fixed matrix 新增 isolated high/low standalone、各自在 BMP 前后、`.`, `\\S`、negated
+  class、anchors、quantifiers、nullable paths、alternation/backtracking，以及 valid pair
+  indivisibility/interior-start regressions。两个 Node argv matrix 都使用
+  `ensure_ascii=True`，保证 unpaired surrogate 通过标准 JSON escape 安全传输。
+- Generated differential 保持 4,081 个 accepted patterns，并在原 26 个 values 后准确增加
+  七个 surrogate edge values：isolated high/low standalone、各自在 BMP 前后、一个 valid
+  pair；最终 4,081 x 33 = 134,673 次比较。测试固定断言 pattern/value count，避免矩阵静默
+  缩小。
+- Canonical 与 installed runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`，最终 SHA-256 均为
+  `ab5d5df316f0cb2024c98d57b326d851f93ce08613775756c97ed70654509dd2`，byte comparison
+  通过。
+- 首次 authoritative `apply.sh --repo . --all-platforms` 只更新 installed runtime，并生成
+  一个 known-managed `.bak`。其 SHA-256 已证明等于同步前 runtime
+  `a9990f469cd2bc71bec283777c27b2594b2930d8e0c35824ab9574d17df86d3d`，处理后递归
+  sidecar 为零；第二次 apply 完全幂等，无 installed/update/backup/new/conflict/removal。
+  最终 installed extension SHA-256 为
+  `8d1f023470021dccf464db09c0b216476bee89a03beb27b5d1292ee8053c7f7f`。
+- 实现代理仍只修改 assignment 允许的八个 implementation-owned paths；未修改或回退
+  `agent-assignment.json`、`phase2-check.json`、`review*.md/json`、`reviews/**`、
+  `task-commit-plans/**`、planning approval、issue ledger 或其他主会话 metadata。
+
+### 20.3 Docs SSOT reconciliation
+
+- Docs state 保持 `complete_docs`，批准策略保持 `ssot_first`。Durable delta 已先合并到
+  `.trellis/spec/workflow/skill-package-contract.md`：valid pair 继续不可拆，而 isolated
+  high/low 与相邻 BMP 独立消费。
+- `.trellis/spec/workflow/companion-scripts.md` 只承接 single-unit guard 的实现边界；
+  `.trellis/spec/workflow/quality-guidelines.md` 只承接七个 surrogate edge values、固定回归、
+  JSON escaped transport 与 generated Node differential 义务，没有复制 exact EBNF。
+- `data-contracts.md` 无需更新：本轮没有改变 registry/interface/schema id、JSON DTO、
+  public/private inventory、typed exit、consumer/projection 或 persistence data contract；
+  portable pattern 的 exact matching semantics 已由 `skill-package-contract.md` 单一拥有。
+- Root/workflow/preset public README 无需更新：它们已经把 printable-ASCII portable grammar
+  和 ECMA Unicode-mode semantics 指向 durable contract；本轮只修复该既有合同下的
+  isolated-surrogate implementation/test gap，没有改变用户命令、安装方法、API、grammar
+  identity 或 migration timeline。Workflow/preset index 与 requirements docs 同理无需重复
+  algorithm detail。
+- 需要长期保留的 isolated-surrogate semantics 与 differential obligation 已全部 merge 到
+  durable docs。本轮复现值、28,567/154 失败统计、Node/V8 version、命令输出、hash、sidecar
+  recovery 与逐轮 finding lifecycle 仅保留为 task-history-only。
+- #145/#146 继续独占九个 production Skill payload migration；九个 active Skill 仍全部为
+  interface 1.2 + `legacy`，production `minimal_handoff=0`。Immutable exact remote
+  feature-ref marketplace verification 仍只能在 reviewed branch push 后由发布前门禁执行，
+  本轮未冒充已验证。
+
+### 20.4 Validation evidence
+
+- 原始 isolated-surrogate reproduction 现在返回零 validation error。Node 26.4.0 与 Node
+  20.20.2 下 portable-pattern focused suite 均 4/4 passed；两者 generated differential 均为
+  4,081 x 33 = 134,673 comparisons、0 mismatch。Node 20 使用原始 pattern；Node 26 的既有
+  spec-equivalent `{1}` oracle workaround 仍只存在于 test。
+- 完整 Skill package suite 126/126 passed；shared runtime 548 passed、13 skipped；preset
+  installer 39/39 passed；upstream ownership 6/6 passed。
+- Source/installed Skill validators passed：九个 legacy、零 production minimal，installed
+  inventory 384 managed files、Claude/Codex/Cursor、0 sidecar/removal/conflict。Dogfood
+  overlay drift、43 frozen/active ownership entries、13 managed claims 与 canonical/installed
+  runtime bytes 均通过。
+- `py_compile`、全部 workflow/preset Bash `bash -n`、task JSONL validation、
+  `git diff --check origin/main` 与递归 `.new/.bak` scan 均通过。Added-line secret scan、
+  deployment-path scan 为 clean；source checkout 保持 clean。
+- `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh` exit 0：覆盖 public
+  marketplace sample、本地未发布 workflow、clean init、preview/switch、初装、installed
+  wrapper/package smoke、完整 closeout、`trellis update`、workflow/preset reapply、
+  after-update closeout、initial/after-update/no-developer fixtures、三平台 copies 与最终零
+  sidecar。
+
+### 20.5 Handoff to the next full `trellis-check`
+
+- 下一轮必须重新执行完整 Phase 2，不能复用 SHA-256
+  `4804fc240b184faef5a78b9b627c2790a568e0d99dced0780bf71abac33d35d5` 的 Round 12
+  `implementation_required` artifact。重点复核 isolated high/low standalone/BMP adjacency、
+  valid-pair indivisibility/interior start、`.`, `\\S`, negated class、anchors、quantifiers、
+  nullable/backtracking 与 4,081 x 33 independent Node evidence。
+- 同时复核 production runtime 无 Node/version branch、canonical/installed byte equality、
+  三份 durable docs SSOT 分工、public README/data-contract no-update 理由、九个 legacy
+  production packages、#145/#146 boundary，以及 exact remote feature-ref 的发布前限制。
+- 实现阶段没有 intentionally skipped 的本地 suite。实现代理未调用 Phase 2
+  recorder/checker、Branch Review recorder/gate、task commit、push、PR、issue close 或
+  finish-work；这些步骤仍由 main session 按 mandatory workflow 顺序执行。

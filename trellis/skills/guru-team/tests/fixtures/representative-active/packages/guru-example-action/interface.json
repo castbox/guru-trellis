@@ -1,9 +1,9 @@
 {
-  "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.2",
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
   "id": "guru-example-action",
   "name": "guru-example-action",
-  "description": "Exercises the public closed-loop package contract without becoming a production skill.",
+  "description": "Exercises semantic structured input and minimal typed handoff contracts.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -11,18 +11,82 @@
     "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["fresh_input"]}
   },
   "entry_preconditions": [
-    {"id": "fresh_input", "evidence": "fixture-input.json", "binding": "sha256", "freshness": "current fixture invocation"}
+    {"id": "fresh_input", "evidence": "caller-owned fixture input", "binding": "profile discriminator", "freshness": "current invocation"}
   ],
   "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
   "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
-  "artifacts": [{"id": "result", "path": "examples/fixture-result.json"}],
-  "schemas": [{"id": "result_schema", "path": "schemas/fixture-result.schema.json"}],
-  "validators": [{"id": "result_validator", "command": "scripts/validate-fixture-result.sh", "runtime_command": "fixture-runtime-command", "objective_scope": "JSON shape and digest only"}],
-  "external_exits": [
-    {"id": "completed", "evidence": "fixture-result.json", "consumer": {"kind": "workflow", "id": "fixture-next"}},
-    {"id": "blocked", "evidence": "fixture-result.json", "consumer": {"kind": "stop", "id": "fixture-stop"}}
+  "artifacts": [{"id": "completed_example", "path": "examples/action-completed-output.json"}],
+  "schemas": [
+    {"id": "input_aggregate", "path": "schemas/action-input.schema.json"},
+    {"id": "input_initial", "path": "schemas/action-initial-input.schema.json"},
+    {"id": "input_reentry", "path": "schemas/action-reentry-input.schema.json"},
+    {"id": "output_completed", "path": "schemas/action-completed-output.schema.json"},
+    {"id": "output_forwarded", "path": "schemas/action-forwarded-output.schema.json"},
+    {"id": "output_repeat", "path": "schemas/action-repeat-output.schema.json"},
+    {"id": "output_blocked", "path": "schemas/action-blocked-output.schema.json"},
+    {"id": "invocation_error", "path": "schemas/invocation-error.schema.json"},
+    {"id": "checkpoint", "path": "schemas/action-checkpoint.schema.json"},
+    {"id": "gate_evidence", "path": "schemas/action-gate-evidence.schema.json"}
   ],
-  "reentry": {"identity": "fixture input digest", "freshness": "digest still matches", "stale_behavior": "fail_closed"},
+  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "fixture-runtime-command", "objective_scope": "Deterministic fixture input and typed-exit serialization"}],
+  "external_exits": [
+    {"id": "forwarded", "evidence": "forwarded typed output", "consumer": {"kind": "skill", "id": "guru-example-sync"}},
+    {"id": "repeat", "evidence": "re-entry typed output", "consumer": {"kind": "skill", "id": "guru-example-action"}},
+    {"id": "completed", "evidence": "completed typed output", "consumer": {"kind": "workflow", "id": "fixture-next"}},
+    {"id": "blocked", "evidence": "blocked typed output", "consumer": {"kind": "stop", "id": "fixture-stop"}}
+  ],
+  "reentry": {"identity": "re-entry profile payload", "freshness": "current invocation", "stale_behavior": "fail_closed"},
   "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {"schema_id": "guru-fixture-action-input-aggregate-1.0", "path": "schemas/action-input.schema.json"},
+      "profiles": [
+        {
+          "id": "initial",
+          "schema": {"schema_id": "guru-fixture-action-initial-input-1.0", "path": "schemas/action-initial-input.schema.json"},
+          "example": {"id": "initial_input", "path": "examples/action-initial-input.json"},
+          "discriminator": {"field": "profile", "value": "initial"}
+        },
+        {
+          "id": "reentry",
+          "schema": {"schema_id": "guru-fixture-action-reentry-input-1.0", "path": "schemas/action-reentry-input.schema.json"},
+          "example": {"id": "reentry_input", "path": "examples/action-reentry-input.json"},
+          "discriminator": {"field": "profile", "value": "reentry"}
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {"kind": "structured_json", "profile_id": "initial"},
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {"schema_id": "guru-fixture-invocation-error-1.0", "path": "schemas/invocation-error.schema.json"},
+      "error_example": {"id": "invalid_input_error", "path": "examples/invocation-error.json"},
+      "example_argv": ["--input", "examples/action-initial-input.json"]
+    },
+    "outputs": [
+      {"exit_id": "forwarded", "schema": {"schema_id": "guru-fixture-action-forwarded-output-1.0", "path": "schemas/action-forwarded-output.schema.json"}, "example": {"id": "forwarded_output", "path": "examples/action-forwarded-output.json"}, "consumer_use_ids": ["rename_to_sync"]},
+      {"exit_id": "repeat", "schema": {"schema_id": "guru-fixture-action-repeat-output-1.0", "path": "schemas/action-repeat-output.schema.json"}, "example": {"id": "repeat_output", "path": "examples/action-repeat-output.json"}, "consumer_use_ids": ["normalize_to_reentry"]},
+      {"exit_id": "completed", "schema": {"schema_id": "guru-fixture-action-completed-output-1.0", "path": "schemas/action-completed-output.schema.json"}, "example": {"id": "completed_output", "path": "examples/action-completed-output.json"}, "consumer_use_ids": ["direct_to_workflow"]},
+      {"exit_id": "blocked", "schema": {"schema_id": "guru-fixture-action-blocked-output-1.0", "path": "schemas/action-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/action-blocked-output.json"}, "consumer_use_ids": ["select_to_stop"]}
+    ],
+    "consumer_inputs": [
+      {"id": "sync_input", "consumer": {"kind": "skill", "id": "guru-example-sync"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input", "interface_path": "packages/guru-example-sync/interface.json", "input_kind": "scalar_cli"}},
+      {"id": "self_reentry_input", "consumer": {"kind": "skill", "id": "guru-example-action"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input", "interface_path": "packages/guru-example-action/interface.json", "input_kind": "structured_json", "profile_id": "reentry"}},
+      {"id": "workflow_completed_input", "consumer": {"kind": "workflow", "id": "fixture-next"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-fixture-workflow-completed-input-1.0", "path": "consumers/workflow/action-completed.schema.json"}},
+      {"id": "stop_blocked_input", "consumer": {"kind": "stop", "id": "fixture-stop"}, "payload_kind": "zero_payload"}
+    ],
+    "projections": [
+      {"id": "rename_to_sync", "exit_id": "forwarded", "consumer_input_id": "sync_input", "operation": "rename", "mappings": [{"source": "exit_id", "target": "exit_id"}, {"source": "forwarded_item", "target": "item"}]},
+      {"id": "normalize_to_reentry", "exit_id": "repeat", "consumer_input_id": "self_reentry_input", "operation": "normalize", "mappings": [{"source": "exit_id", "target": "source_exit", "normalizer": "lowercase_ascii_enum"}, {"source": "profile", "target": "profile", "normalizer": "lowercase_ascii_enum"}, {"source": "next_topic", "target": "topic", "normalizer": "trim_ascii_outer_whitespace"}]},
+      {"id": "direct_to_workflow", "exit_id": "completed", "consumer_input_id": "workflow_completed_input", "operation": "direct"},
+      {"id": "select_to_stop", "exit_id": "blocked", "consumer_input_id": "stop_blocked_input", "operation": "select", "mappings": []}
+    ],
+    "private_artifacts": [
+      {"id": "action_checkpoint", "kind": "runtime_checkpoint", "schema": {"schema_id": "guru-fixture-action-checkpoint-1.0", "path": "schemas/action-checkpoint.schema.json"}, "persistence": "stdout_only_pre_task"},
+      {"id": "action_gate_evidence", "kind": "gate_evidence", "schema": {"schema_id": "guru-fixture-action-gate-evidence-1.0", "path": "schemas/action-gate-evidence.schema.json"}, "persistence": "task_local_tracked"}
+    ]
+  }
 }

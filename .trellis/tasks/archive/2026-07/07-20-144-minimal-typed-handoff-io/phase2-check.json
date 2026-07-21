@@ -1,0 +1,1600 @@
+{
+  "mode": "workflow",
+  "requirement_provenance": {
+    "summary": "已核对 live Issue #144 approved planning、Issue #145/#146 follow-up 边界、Round 10-12 F-BR-P3-011 生命周期与 Trellis 官方扩展边界；Round 13 对 isolated surrogate finding-fix 执行完整全范围复核。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+        "sha256": "3f64e70a6274f1c556c153ee8749476f34ea13b380c8be77cb1455117714a824",
+        "size_bytes": 12334
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "sha256": "b28490a16e4a36ae3e263b6a3d231fbdb3fbdd828ff7a27610c8e12e880b8a6e",
+        "size_bytes": 19649
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+        "sha256": "447a581c0dd364289fcbe3f024b44da59fbf88ffd61fc49cb823475d78f5ba5f",
+        "size_bytes": 9749
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/issue-review.json",
+        "sha256": "045b8e453ada7f6a416fdcfe6f01675b21eebfad9d15f17ad98e86ecf15f9fc4",
+        "size_bytes": 11260
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/context-discovery.json",
+        "sha256": "85e3539bff26bd5e8201945324487a785187be56a7b445beabf5d261bd0227fe",
+        "size_bytes": 320811
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-10-replacement-finding.md",
+        "sha256": "e59c1590a0ee3181d801c8bac24bc8522b870b7e478aa78f85033e23b56ca356",
+        "size_bytes": 9607
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-11-closure-finding.md",
+        "sha256": "9c4b619a44afaa1f1107cadc32c7083a4e6a9b0f59696116af59bd587cb63c42",
+        "size_bytes": 10801
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/research/trellis-official-extension-boundaries.md",
+        "sha256": "55fac17dabb46906f4717082f2d798eefcddc14518d14826d2d363f406ae6f80",
+        "size_bytes": 1275
+      }
+    ],
+    "facts_sha256": "2b88da4071c9a82aefe932bee1763439ffd88917642e45a1c709e71791203246"
+  },
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "durable_paths": [
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "d19adb8b258a9eb2b3c568712d9234d6e47118e88d374f1463d200828e32d4d0",
+        "size_bytes": 65114
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "b172f7eee58956f57a0e425fc720b26982572cbe57d3c831305989779334e2b6",
+        "size_bytes": 102437
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "864f4ccdbe7f322e9d99c8f63f4b8772d247cfbadc4613197d203bd6432461b7",
+        "size_bytes": 80145
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "579ed33ebecfe022d8fd8d99db3b72cd54d9ecb151afc9d1c29430e7d28b24f1",
+        "size_bytes": 30182
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "sha256": "2ad8eb279ca3b15e5f293e7470c5c89a68959a8012a69c890f0adbe74b7eb143",
+        "size_bytes": 5208
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "4e8344b19de452f7d4b0ba79406af3966355ce481a6af3659783c8a5f41533f2",
+        "size_bytes": 64920
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "02f5577026a5b148d93d979388b9be4d12aa69f0226bb1204cd6ec3b73d6030b",
+        "size_bytes": 75238
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "sha256": "00e0ed6ee432c2853cf2a7e602fdb4a4dc47380c1072902415db7c32d3ff0ed2",
+        "size_bytes": 12961
+      },
+      {
+        "path": "README.md",
+        "sha256": "a01506a193b8ecf0a2a0fca3efbc23f3b5276e86207ac2d8aa4a81a1909d1e85",
+        "size_bytes": 71027
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "0e28a762173a9c27a8839ce7dbe726923e14bb6c464121b03d3caf8224459ca3",
+        "size_bytes": 65250
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "d852efc2723f0c8527360c29b8e4e50d7f32e9b04917e8f3157b84b5b2bd603e",
+        "size_bytes": 60715
+      }
+    ],
+    "sync_result": "complete_docs + ssot_first 成立：skill-package-contract.md 独占 exact portable pattern EBNF，companion/quality 仅定义脚本与验证口径；runtime、tests、installed copy 已与 durable SSOT 一致。",
+    "task_delta_merged": true,
+    "task_history_only": [
+      "Round 10-13 finding 生命周期、agent liveness、命令字节证据、Node differential 统计与采集命令纠正链"
+    ],
+    "no_update_reason": null,
+    "followup_or_pr_limit": "#145/#146 继续负责九个 production Skill payload migration；immutable remote feature-ref marketplace verification 在 reviewed branch push 后由发布门禁补证。",
+    "facts_sha256": "ccbbecf23524d8e893c5b6fa2b82f113acdfc45880901d1e20f788752c575ed6"
+  },
+  "implementation_handoff": {
+    "summary": "implementation-handoff.md 第 20 节记录 isolated-surrogate closure：pair guard 只阻止 valid pair 被拆分或从 interior low 开始，isolated high/low 可独立消费并可与 BMP 相邻；8 个 implementation-owned paths 已同步 runtime、tests、durable SSOT 与 installed provenance。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+        "sha256": "8939e5698c6d53d5dda801c25bd043fa6a696d15a2e01d90627ed168e26085d9",
+        "size_bytes": 76350
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+        "sha256": "9f64bc07cb89e79cb751cf0d080ac71f2b312d0fa42bbc4c7ea7d4ca82287a01",
+        "size_bytes": 301839
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-11-closure-finding.md",
+        "sha256": "9c4b619a44afaa1f1107cadc32c7083a4e6a9b0f59696116af59bd587cb63c42",
+        "size_bytes": 10801
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "8d1f023470021dccf464db09c0b216476bee89a03beb27b5d1292ee8053c7f7f",
+        "size_bytes": 151814
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "ab5d5df316f0cb2024c98d57b326d851f93ce08613775756c97ed70654509dd2",
+        "size_bytes": 1290421
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "864f4ccdbe7f322e9d99c8f63f4b8772d247cfbadc4613197d203bd6432461b7",
+        "size_bytes": 80145
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "579ed33ebecfe022d8fd8d99db3b72cd54d9ecb151afc9d1c29430e7d28b24f1",
+        "size_bytes": 30182
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "d19adb8b258a9eb2b3c568712d9234d6e47118e88d374f1463d200828e32d4d0",
+        "size_bytes": 65114
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "48eb3f48e31f1fa5c0db58d946a3e444ee7eff9246b3ae8f217b5a20aaecb8e8",
+        "size_bytes": 136339
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "ab5d5df316f0cb2024c98d57b326d851f93ce08613775756c97ed70654509dd2",
+        "size_bytes": 1290421
+      }
+    ],
+    "facts_sha256": "03f53f1e5c32c8e6f1ffdf8f4094a02c062b7e28675b3e652e0a1edb56e554ec"
+  },
+  "agent_assignment": {
+    "artifact_path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+    "implementation_agent_ids": [
+      "/root/issue_144_finding_fix",
+      "/root/issue_144_finding_fix_2",
+      "/root/issue_144_implement",
+      "/root/issue_144_round11_pattern_implement",
+      "/root/issue_144_round7_implement",
+      "/root/issue_144_round8_implement"
+    ],
+    "check_agent_ids": [
+      "/root/issue_144_phase2_check",
+      "/root/issue_144_phase2_recheck",
+      "/root/issue_144_phase2_recheck_2",
+      "/root/issue_144_phase2_recheck_4",
+      "/root/issue_144_round11_phase2",
+      "/root/issue_144_round12_phase2",
+      "/root/issue_144_round13_phase2",
+      "/root/issue_144_round7_phase2",
+      "/root/issue_144_round8_phase2"
+    ],
+    "recovery_complete": true,
+    "phase2_state_sha256": "b8dbde9d769c376279f8cc48d70155adefb9fbb14f072c6a6d50ab69b370bfb9",
+    "facts_sha256": "7b53363d9fc4a736e0a0a7892bac10fdbcdf7dbb695bfb835330ccff0b320e66"
+  },
+  "repository_snapshot": {
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "cbd0396a2ddb7dd0efa613be7b7d93790eb2e34d",
+    "head": "7f5a325896c2819b4353b2da2e1c5635182ec930",
+    "diff_range": "origin/main...HEAD",
+    "dirty_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/review-gate.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/review.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-01-final-finding.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-02-closure-finding.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-03-closure-pass.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-04-final-finding.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-05-closure-pass.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-06-final-finding.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-07-closure-finding.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-08-closure-pass.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-10-replacement-finding.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-11-closure-finding.md",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/001.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/002.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/003.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/004.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/005.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/006.json",
+      ".trellis/tasks/07-20-144-minimal-typed-handoff-io/task-commit-plans/007.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "reviewed_paths": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "8d1f023470021dccf464db09c0b216476bee89a03beb27b5d1292ee8053c7f7f",
+        "size_bytes": 151814
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "ab5d5df316f0cb2024c98d57b326d851f93ce08613775756c97ed70654509dd2",
+        "size_bytes": 1290421
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "864f4ccdbe7f322e9d99c8f63f4b8772d247cfbadc4613197d203bd6432461b7",
+        "size_bytes": 80145
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "b172f7eee58956f57a0e425fc720b26982572cbe57d3c831305989779334e2b6",
+        "size_bytes": 102437
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "579ed33ebecfe022d8fd8d99db3b72cd54d9ecb151afc9d1c29430e7d28b24f1",
+        "size_bytes": 30182
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "d19adb8b258a9eb2b3c568712d9234d6e47118e88d374f1463d200828e32d4d0",
+        "size_bytes": 65114
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md",
+        "sha256": "8939e5698c6d53d5dda801c25bd043fa6a696d15a2e01d90627ed168e26085d9",
+        "size_bytes": 76350
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/agent-assignment.json",
+        "sha256": "9f64bc07cb89e79cb751cf0d080ac71f2b312d0fa42bbc4c7ea7d4ca82287a01",
+        "size_bytes": 301839
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-11-closure-finding.md",
+        "sha256": "9c4b619a44afaa1f1107cadc32c7083a4e6a9b0f59696116af59bd587cb63c42",
+        "size_bytes": 10801
+      },
+      {
+        "path": "README.md",
+        "sha256": "a01506a193b8ecf0a2a0fca3efbc23f3b5276e86207ac2d8aa4a81a1909d1e85",
+        "size_bytes": 71027
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "d852efc2723f0c8527360c29b8e4e50d7f32e9b04917e8f3157b84b5b2bd603e",
+        "size_bytes": 60715
+      },
+      {
+        "path": "trellis/skills/guru-team/registry.json",
+        "sha256": "fba993aae6d6258670e619d74851aa7eb1253c3b169308d80c28585811181a55",
+        "size_bytes": 5116
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+        "sha256": "aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f",
+        "size_bytes": 15672
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/registry.json",
+        "sha256": "6ac149dc1179aaed2431adb02d4991b9a7b6f750579b423b5918ed8705ff111a",
+        "size_bytes": 1592
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json",
+        "sha256": "aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f",
+        "size_bytes": 15672
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "48eb3f48e31f1fa5c0db58d946a3e444ee7eff9246b3ae8f217b5a20aaecb8e8",
+        "size_bytes": 136339
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "0e28a762173a9c27a8839ce7dbe726923e14bb6c464121b03d3caf8224459ca3",
+        "size_bytes": 65250
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "ab5d5df316f0cb2024c98d57b326d851f93ce08613775756c97ed70654509dd2",
+        "size_bytes": 1290421
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "sha256": "96d2e6e111c58432be78d714ef5625c5f6fc830f4ad19e096451380cf01da5d3",
+        "size_bytes": 61575
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "751c439265ca59002ec702f1b3e6ebdc127f86cd9d79267cd5aadc48a55b344d",
+        "size_bytes": 157086
+      }
+    ],
+    "snapshot_sha256": "7b277d1512394cc5690e027d9b873819583dd98ff7e563919ec24c6a912695da"
+  },
+  "check_execution": {
+    "commands": [
+      {
+        "id": "005-head",
+        "argv": [
+          "git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "ccad6b342e5047ec709d4af25f700f07ee85edfa2a577f16dd64b783247f4939",
+        "stdout_size_bytes": 41,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "确认审查 HEAD。"
+      },
+      {
+        "id": "006-base",
+        "argv": [
+          "git",
+          "rev-parse",
+          "origin/main"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e2ce51e24de280daccf2f60bbbb0f77f56e73ecc04322619971bddc5b7a2403d",
+        "stdout_size_bytes": 41,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "确认 origin/main 基线。"
+      },
+      {
+        "id": "007-merge-base",
+        "argv": [
+          "git",
+          "merge-base",
+          "origin/main",
+          "HEAD"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e2ce51e24de280daccf2f60bbbb0f77f56e73ecc04322619971bddc5b7a2403d",
+        "stdout_size_bytes": 41,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "确认分支与 origin/main 的 merge-base。"
+      },
+      {
+        "id": "008-branch",
+        "argv": [
+          "git",
+          "branch",
+          "--show-current"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "9204df24dc644ffff49b97eabc829508d6eaba2dec3281d1c065ee1ffa0677e6",
+        "stdout_size_bytes": 35,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "确认 task feature branch。"
+      },
+      {
+        "id": "009-status",
+        "argv": [
+          "git",
+          "status",
+          "--porcelain=v1",
+          "--untracked-files=all"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "ff41ad8ccb43500da3128bc123699aa2001516d6252178f4840831949ca4d34d",
+        "stdout_size_bytes": 2163,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "采集完整 dirty worktree 状态。"
+      },
+      {
+        "id": "010-committed-paths",
+        "argv": [
+          "git",
+          "diff",
+          "--name-status",
+          "origin/main...HEAD"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "554f4ddd22df1870c491ad7cc02c71dd1a5e46c67ab376345b86d2d19dd5af77",
+        "stdout_size_bytes": 9043,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "采集 origin/main...HEAD committed 路径。"
+      },
+      {
+        "id": "011-committed-stat",
+        "argv": [
+          "git",
+          "diff",
+          "--stat",
+          "origin/main...HEAD"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "c6ecf59386e50f542916c42747150fd28f3252fe25cf843140f2e492cbd9d52f",
+        "stdout_size_bytes": 6231,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "采集 committed diff 统计。"
+      },
+      {
+        "id": "012-working-paths",
+        "argv": [
+          "git",
+          "diff",
+          "--name-status",
+          "origin/main"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "554f4ddd22df1870c491ad7cc02c71dd1a5e46c67ab376345b86d2d19dd5af77",
+        "stdout_size_bytes": 9043,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "采集当前 working diff 路径。"
+      },
+      {
+        "id": "013-working-stat",
+        "argv": [
+          "git",
+          "diff",
+          "--stat",
+          "origin/main"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "83cf7c4f296497a9e693a876bb88dae6671e3d6652a50b36a31c245c458f436e",
+        "stdout_size_bytes": 6253,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "采集当前 working diff 统计。"
+      },
+      {
+        "id": "014-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check",
+          "origin/main"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "git diff --check 通过。"
+      },
+      {
+        "id": "015-node20-version",
+        "argv": [
+          "npx",
+          "--yes",
+          "node@20.20.2",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "fa2f297fd185bb1c8acba036117f05240eaa1f42eeb8902e870982523ae06edf",
+        "stdout_size_bytes": 9,
+        "stderr_sha256": "f168abd5dbe173772be91675cab85207147ff833f5c2d9af3129c149085ec618",
+        "stderr_size_bytes": 618,
+        "summary": "确认 Node 20 oracle 版本为 v20.20.2。"
+      },
+      {
+        "id": "016-node20-differential",
+        "argv": [
+          "python3",
+          "/tmp/issue144-phase2-round13.gP755U/independent_pattern_differential.py",
+          "raw",
+          "npx",
+          "--yes",
+          "node@20.20.2"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "fc255d3168f4e6a1b2485119ce3229e6b9a1f2ff1bcda59fcb7f6cf569a765b7",
+        "stdout_size_bytes": 186,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Node 20 raw differential：134673 comparisons，0 mismatch。"
+      },
+      {
+        "id": "017-node26-workaround-differential",
+        "argv": [
+          "python3",
+          "/tmp/issue144-phase2-round13.gP755U/independent_pattern_differential.py",
+          "node26-workaround",
+          "node"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "463066e27e47c8bf2dbcfe47bddd91364c2e4e4fdd251794283e3b2f75965441",
+        "stdout_size_bytes": 189,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Node 26 test-only workaround differential：134673 comparisons，0 mismatch。"
+      },
+      {
+        "id": "018-node26-raw-diagnostic",
+        "argv": [
+          "python3",
+          "/tmp/issue144-phase2-round13.gP755U/independent_pattern_differential.py",
+          "raw-diagnostic",
+          "node"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "bac57fa3921aaaae48be52e359a80f32043b0401ee0cb38cba5c60bd688c03ef",
+        "stdout_size_bytes": 1019,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Node 26 raw diagnostic：10 个已知 V8 astral negated-class oracle 偏差。"
+      },
+      {
+        "id": "019-focused-node26",
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "SourceValidationTests.test_closed_pattern_subset_rejects_dialect_divergent_constructs",
+          "SourceValidationTests.test_closed_pattern_subset_matches_expected_ecma_semantics",
+          "SourceValidationTests.test_closed_pattern_subset_matches_node_ecma_unicode_regexp",
+          "SourceValidationTests.test_generated_closed_patterns_match_node_ecma_unicode_regexp"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "a5e1b6c5ece52900a8e9ccdf738b714c44002a7261e300645044df22841c2c54",
+        "stderr_size_bytes": 102,
+        "summary": "Node 26 focused portable-pattern tests 4/4。"
+      },
+      {
+        "id": "020-focused-node20",
+        "argv": [
+          "npx",
+          "--yes",
+          "--package",
+          "node@20.20.2",
+          "--call",
+          "python3 trellis/skills/guru-team/tests/test_skill_packages.py SourceValidationTests.test_closed_pattern_subset_rejects_dialect_divergent_constructs SourceValidationTests.test_closed_pattern_subset_matches_expected_ecma_semantics SourceValidationTests.test_closed_pattern_subset_matches_node_ecma_unicode_regexp SourceValidationTests.test_generated_closed_patterns_match_node_ecma_unicode_regexp"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "35f5562ee0dcc9a4bc9782fc78ddbb74b3e82a9262b5cb417169975b3b115d24",
+        "stderr_size_bytes": 720,
+        "summary": "Node 20 focused portable-pattern tests 4/4。"
+      },
+      {
+        "id": "021-skill-suite",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "trellis/skills/guru-team/tests",
+          "-p",
+          "test_*.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "90355e7945f5589013de8d5b038d43b5adc81b18c52eea2028b8e09a068d1f58",
+        "stderr_size_bytes": 227,
+        "summary": "完整 Skill package suite 126/126。"
+      },
+      {
+        "id": "022-shared-runtime",
+        "argv": [
+          "python3",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "675306b1c51bb6df1b3f12e0f302a726f39004e1f456cadb6d226db308c56314",
+        "stdout_size_bytes": 2548,
+        "stderr_sha256": "d2d948668c6b10979bb7a3d3d202207d0b5303854a897f91d48e40470c7e8f5d",
+        "stderr_size_bytes": 3693,
+        "summary": "shared runtime suite 548 passed，13 skipped。"
+      },
+      {
+        "id": "023-installer-suite",
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "3fe2bf552e40bde00de76ce8cc1dbf9149f44de9a4f46fd0113f86c56def0769",
+        "stderr_size_bytes": 802,
+        "summary": "preset installer suite 39/39。"
+      },
+      {
+        "id": "024-ownership-suite",
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "89846e03842a1676a97c5a79de7499bdd027c50211e169de25fc545e6a4605f1",
+        "stderr_size_bytes": 104,
+        "summary": "upstream ownership suite 6/6。"
+      },
+      {
+        "id": "025-source-validator",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--json",
+          "--mode",
+          "source"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "9169cf7eeae5e41552dcac3dad3c54cdbcf83f6280a3b23e8c29da1b09ddacda",
+        "stdout_size_bytes": 943,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "source Skill validator passed；9 active 均为 legacy。"
+      },
+      {
+        "id": "026-installed-validator",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--json",
+          "--mode",
+          "installed"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e513511bce5bda72f48feebdf2855c4014c836680dc8c7e7a2e1d96913a63260",
+        "stdout_size_bytes": 1131,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "installed validator passed；384 managed files，三平台，零 sidecar/removal/conflict。"
+      },
+      {
+        "id": "027-discovery",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-sync-base",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "5094e7d4be72772768e6ea1a482378362daa4bc62117ea589c0f632022bfd37c",
+        "stdout_size_bytes": 314,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "installed guru-sync-base discovery 返回 legacy 与 #145/#146 follow-up。"
+      },
+      {
+        "id": "028-dogfood-drift",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+          "--repo",
+          "."
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "983b55ee6ea4824b3a86576e1e7bb3489d0674bcb9e4e86778fa67b73f3b3d57",
+        "stdout_size_bytes": 1644,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "dogfood overlay drift 检查通过。"
+      },
+      {
+        "id": "029-upstream-ownership",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+          "--repo",
+          ".",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "42b69c7c9fe4c74d7ef0f08edb870df342fa581f023b8c5105f9074c390db064",
+        "stdout_size_bytes": 1585,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "43 个 frozen/active ownership 与 materialized identity 一致。"
+      },
+      {
+        "id": "030-runtime-cmp",
+        "argv": [
+          "cmp",
+          "-s",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical/installed runtime 逐字节一致。"
+      },
+      {
+        "id": "031-task-validate",
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-20-144-minimal-typed-handoff-io"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "53d96dd09e2e5358a747cae3703e57c42463901d3d4dae69548b9a0fd9de8e8b",
+        "stdout_size_bytes": 325,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "task JSONL/context validation 通过。"
+      },
+      {
+        "id": "032-sidecars",
+        "argv": [
+          "find",
+          ".",
+          "-type",
+          "f",
+          "(",
+          "-name",
+          "*.new",
+          "-o",
+          "-name",
+          "*.bak",
+          ")",
+          "-print"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "递归 .new/.bak 扫描无命中。"
+      },
+      {
+        "id": "033-runtime-node-scan",
+        "argv": [
+          "rg",
+          "-n",
+          "process\\.versions\\.node|process\\.version|node@20|node26|NODE_VERSION|shutil\\.which\\(\"node\"\\)",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "exit_code": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "预期 exit 1：production runtime 无 Node/version 分支。"
+      },
+      {
+        "id": "034-runtime-doc-test-sha",
+        "argv": [
+          "sha256sum",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          "trellis/skills/guru-team/tests/test_skill_packages.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "fc3fe8a8f551443d9964ccd0bae099ce36690ada70858a5731dd5f93c940089c",
+        "stdout_size_bytes": 707,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "采集 runtime、durable docs 与 tests SHA-256。"
+      },
+      {
+        "id": "035-pycompile",
+        "argv": [
+          "python3",
+          "-m",
+          "py_compile",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Python runtime py_compile 通过。"
+      },
+      {
+        "id": "036-bash-syntax",
+        "argv": [
+          "bash",
+          "-c",
+          "find trellis/workflows/guru-team/scripts/bash trellis/presets/guru-team/scripts/bash .trellis/guru-team/scripts/bash -type f -name '*.sh' -print0 | xargs -0 bash -n"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "workflow/preset/installed Bash syntax 全部通过。"
+      },
+      {
+        "id": "037-json-assets",
+        "argv": [
+          "bash",
+          "-c",
+          "python3 -m json.tool trellis/guru-team-extension.json >/dev/null && python3 -m json.tool .trellis/guru-team/extension.json >/dev/null && python3 -m json.tool trellis/skills/guru-team/registry.json >/dev/null && python3 -m json.tool trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json >/dev/null && python3 -m json.tool trellis/skills/guru-team/schemas/skill-registry.schema.json >/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "核心 JSON assets 解析通过。"
+      },
+      {
+        "id": "038-pattern-minimal-probes",
+        "argv": [
+          "python3",
+          "-c",
+          "import importlib.util,json; p='trellis/workflows/guru-team/scripts/python/guru_team_trellis.py'; s=importlib.util.spec_from_file_location('m',p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); cases=[('^..$','\\ud800a'),('^..$','a\\ud800'),('^..$','\\udc00a'),('^..$','a\\udc00'),('^.$','\\ud83d\\ude00'),('^..$','\\ud83d\\ude00'),('(?!^|$)','\\ud83d\\ude00'),('(?!^|$).$','\\ud83d\\ude00')]; print(json.dumps([{'pattern':p,'value':v,'match':not m.skill_json_schema_validation_errors(v,{'type':'string','pattern':p},'probe')} for p,v in cases],ensure_ascii=True))"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e2cac8d7be7b46284dd7c4c9f95a71f17b47958fcf568622a3b56d6d2ce7a560",
+        "stdout_size_bytes": 478,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "isolated surrogate、valid pair 与 interior start 最小探针通过。"
+      },
+      {
+        "id": "039-throwaway",
+        "argv": [
+          "/usr/bin/env",
+          "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "d4daf8cd277fe9c00b0402bcc280e9d1ed81788247bf2cd62065dcc0778ffea7",
+        "stdout_size_bytes": 636237,
+        "stderr_sha256": "3f2d56b1b1bb4f8afa4fc8e911a66e93e7a4a18886eb6702e834052ca19ca57c",
+        "stderr_size_bytes": 929,
+        "summary": "clean init、preview/switch、preset install、update/reapply 与三平台 throwaway 验证通过。"
+      },
+      {
+        "id": "040-source-status",
+        "argv": [
+          "/usr/bin/git",
+          "status",
+          "--short"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "source checkout clean。"
+      },
+      {
+        "id": "041-interface-schema-hashes",
+        "argv": [
+          "/usr/bin/shasum",
+          "-a",
+          "256",
+          "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+          ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
+          "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface.schema.json",
+          "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+          ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+          "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "da493ae18360fdffc00a87c45d2f606fac85984fc50b38c9e9cdbd46697ccdad",
+        "stdout_size_bytes": 850,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "1.2 与 1.3 schema 的 canonical/installed/fixture hashes 各自一致。"
+      },
+      {
+        "id": "042-interface13-byte-equality",
+        "argv": [
+          "/bin/bash",
+          "-c",
+          "cmp -s trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json .trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json && cmp -s trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "1.3 schema canonical/installed/fixture 逐字节一致。"
+      },
+      {
+        "id": "043-legacy12-no-diff",
+        "argv": [
+          "/usr/bin/git",
+          "diff",
+          "--exit-code",
+          "origin/main",
+          "--",
+          "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace",
+          "trellis/skills/guru-team/packages/guru-create-task-commit",
+          "trellis/skills/guru-team/packages/guru-check-task",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording",
+          "trellis/skills/guru-team/packages/guru-review-change-request",
+          "trellis/skills/guru-team/packages/guru-sync-base",
+          "trellis/skills/guru-team/packages/guru-discover-change-context"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "frozen 1.2 schema 与九个 production package 相对 origin/main 无 diff。"
+      },
+      {
+        "id": "044-production-registry-invariants",
+        "argv": [
+          "/usr/bin/jq",
+          "-e",
+          "([.skills[] | select(.state == \"active\")] | length) == 9 and ([.skills[] | select(.state == \"active\" and .interface_schema_id == \"guru-team-skill-interface-1.2\" and .io_contract_state == \"legacy\")] | length) == 9 and ([.skills[] | select(.state == \"active\" and .io_contract_state == \"minimal_handoff\")] | length) == 0",
+          "trellis/skills/guru-team/registry.json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a17fcf0a2f50e2d495e4f90ce263410edc183add6c62699a2facbccf60410f74",
+        "stdout_size_bytes": 5,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "production registry 为 9 active legacy、0 minimal_handoff。"
+      },
+      {
+        "id": "045-extension-inventories",
+        "argv": [
+          "/usr/bin/jq",
+          "-e",
+          "-s",
+          "all(.[]; (.extension.public_api.skill_contracts.legacy_skill_ids | length) == 9 and (.extension.public_api.skill_contracts.public_input_schema_ids | length) == 0 and (.extension.public_api.skill_contracts.typed_output_schema_ids | length) == 0 and (.extension.public_api.skill_contracts.private_artifact_schema_ids | length) == 0 and .extension.public_api.skill_contracts.interface_schema_id == \"guru-team-skill-interface-1.2\" and .extension.public_api.skill_contracts.current_interface_schema_id == \"guru-team-skill-interface-1.3\")",
+          "trellis/guru-team-extension.json",
+          ".trellis/guru-team/extension.json"
+        ],
+        "exit_code": 1,
+        "stdout_sha256": "2ed27c1421e6928dbe13dbfdb5c59e1045b30341fe7ebe05700006bc5ac572c0",
+        "stdout_size_bytes": 6,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "采集表达式误把 canonical/installed JSON 层级视为相同；由 052 替代，不是产品失败。"
+      },
+      {
+        "id": "046-ebnf-ownership",
+        "argv": [
+          "/usr/bin/rg",
+          "-n",
+          "Portable Pattern Grammar|pattern[[:space:]]*::=",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          "README.md",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/presets/guru-team/README.md"
+        ],
+        "exit_code": 127,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "05b331ad624bc7cdd9d32e322b873ec1bf0c69a624f8b543b753f7cdc831bdc0",
+        "stderr_size_bytes": 100,
+        "summary": "采集命令使用不存在的 /usr/bin/rg；由 053 替代，不是产品失败。"
+      },
+      {
+        "id": "047-round20-docs-boundary",
+        "argv": [
+          "/usr/bin/sed",
+          "-n",
+          "1039,1062p",
+          ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "393f48b7959c6139611beed151967070bd89653177eeca225ea3fd4b7b9a9506",
+        "stdout_size_bytes": 1887,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "采集 handoff §20 Docs SSOT/no-update/follow-up 边界。"
+      },
+      {
+        "id": "048-added-secret-scan",
+        "argv": [
+          "/bin/bash",
+          "-o",
+          "pipefail",
+          "-c",
+          "if git diff --unified=0 origin/main -- . | rg -q \"^\\\\+.*(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}|(api[_-]?key|access[_-]?token|client[_-]?secret|password)[[:space:]]*[:=][[:space:]]*[^[:space:]$<{]{8,})\"; then exit 1; else exit 0; fi"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "新增行 secret pattern 扫描无命中。"
+      },
+      {
+        "id": "049-sensitive-path-scan",
+        "argv": [
+          "/bin/bash",
+          "-o",
+          "pipefail",
+          "-c",
+          "if git diff --name-only origin/main -- . | rg -q \"(^|/)(\\\\.env($|\\\\.)|id_rsa|id_ed25519|[^/]+\\\\.(pem|p12|pfx|key|crt)$|credentials?($|[./])|secrets?($|[./]))\"; then exit 1; else exit 0; fi"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "敏感文件路径扫描无命中。"
+      },
+      {
+        "id": "050-deployment-path-scan",
+        "argv": [
+          "/bin/bash",
+          "-o",
+          "pipefail",
+          "-c",
+          "if git diff --name-only origin/main -- . | rg -q \"(^|/)(\\\\.github/workflows|Dockerfile|docker-compose[^/]*|Makefile|k8s|kubernetes|charts|helm|migrations?|deploy|terraform)(/|$|\\\\.)\"; then exit 1; else exit 0; fi"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "CI/CD、container、K8s、DB migration、Makefile/deploy 路径无变更。"
+      },
+      {
+        "id": "051-public-doc-portable-summary",
+        "argv": [
+          "/usr/bin/rg",
+          "-n",
+          "portable|printable ASCII|ECMA|skill-package-contract",
+          "README.md",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/presets/guru-team/README.md"
+        ],
+        "exit_code": 127,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "05b331ad624bc7cdd9d32e322b873ec1bf0c69a624f8b543b753f7cdc831bdc0",
+        "stderr_size_bytes": 100,
+        "summary": "采集命令使用不存在的 /usr/bin/rg；由 054 替代，不是产品失败。"
+      },
+      {
+        "id": "052-extension-inventories-corrected",
+        "argv": [
+          "/usr/bin/jq",
+          "-e",
+          "-s",
+          "([.[0].public_api.skill_contracts, .[1].extension.public_api.skill_contracts] | all(.[]; (.legacy_skill_ids | length) == 9 and (.public_input_schema_ids | length) == 0 and (.typed_output_schema_ids | length) == 0 and (.private_artifact_schema_ids | length) == 0 and .interface_schema_id == \"guru-team-skill-interface-1.2\" and .current_interface_schema_id == \"guru-team-skill-interface-1.3\")) and .[0].public_api.skill_contracts == .[1].extension.public_api.skill_contracts",
+          "trellis/guru-team-extension.json",
+          ".trellis/guru-team/extension.json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a17fcf0a2f50e2d495e4f90ce263410edc183add6c62699a2facbccf60410f74",
+        "stdout_size_bytes": 5,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical/installed extension inventories 一致：9 legacy，public/private 1.3 production inventories 为空。"
+      },
+      {
+        "id": "053-ebnf-ownership-corrected",
+        "argv": [
+          "/opt/homebrew/bin/rg",
+          "-n",
+          "Portable Pattern Grammar|pattern[[:space:]]*::=",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          "README.md",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/presets/guru-team/README.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3fab2d60c089145de2e3e6fed66c3f5decf00f9afb884374bfed03a5475ce31",
+        "stdout_size_bytes": 210,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "exact EBNF 仅由 skill-package-contract.md 拥有。"
+      },
+      {
+        "id": "054-public-doc-portable-summary-corrected",
+        "argv": [
+          "/opt/homebrew/bin/rg",
+          "-n",
+          "portable|printable ASCII|ECMA|skill-package-contract",
+          "README.md",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/presets/guru-team/README.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "8ceae0f01afd6b13b433fa2fafb08ecaa476daab402d0cebe9ce8ca7bff2a113",
+        "stdout_size_bytes": 1691,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "三份 public README 仅概括 portable ECMA boundary，不复制 EBNF。"
+      },
+      {
+        "id": "055-pwd",
+        "argv": [
+          "/bin/pwd"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "b94fa59d2654de7f64e65f2d690f951927b3b771f64f8a1babab70e5fa3400e1",
+        "stdout_size_bytes": 89,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "终态确认 task worktree cwd。"
+      },
+      {
+        "id": "056-git-root",
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "--show-toplevel"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "b94fa59d2654de7f64e65f2d690f951927b3b771f64f8a1babab70e5fa3400e1",
+        "stdout_size_bytes": 89,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "终态确认 task worktree Git root。"
+      },
+      {
+        "id": "057-boundary-final",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-20-144-minimal-typed-handoff-io"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "345cfda6e3350eaadb3e900369f982f7f102b82d785dcb4c5b86e9ce0850f4c4",
+        "stdout_size_bytes": 2985,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "终态 workspace boundary validator 通过，source clean 且无 suspicious artifacts。"
+      },
+      {
+        "id": "058-planning-final",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-planning-approval.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-20-144-minimal-typed-handoff-io"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "0a98af8769fff1f3cca79ebc0449e716a13c3a3deaa735184fa30be23e89f952",
+        "stdout_size_bytes": 762,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "终态 planning approval validator 通过。"
+      },
+      {
+        "id": "059-final-status",
+        "argv": [
+          "/usr/bin/git",
+          "status",
+          "--short"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "ee3bfe67eda719f6a55678529e79256d91924a64140d6b12cd8f6bd48d609d71",
+        "stdout_size_bytes": 1346,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "终态采集 worktree dirty 状态；本轮未修改 tracked 文件。"
+      },
+      {
+        "id": "060-typecheck-config-scan",
+        "argv": [
+          "/bin/bash",
+          "-o",
+          "pipefail",
+          "-c",
+          "if rg --files -g \"pyproject.toml\" -g \"mypy.ini\" -g \".mypy.ini\" -g \"setup.cfg\" -g \"tox.ini\" -g \"package.json\" -g \"Makefile\" | rg -q .; then exit 1; else exit 0; fi"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "仓库无配置的 Python/JS type checker 入口，TypeCheck 不适用。"
+      },
+      {
+        "id": "061-added-skip-todo-scan",
+        "argv": [
+          "/bin/bash",
+          "-o",
+          "pipefail",
+          "-c",
+          "if git diff --unified=0 origin/main -- trellis .trellis/spec README.md docs | rg -q \"^\\\\+.*(TODO|FIXME|pytest\\\\.skip|@unittest\\\\.skip|xfail|NotImplementedError)\"; then exit 1; else exit 0; fi"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "新增实现/docs 无 TODO、FIXME、skip 或 xfail。"
+      },
+      {
+        "id": "062-fixture-production-isolation",
+        "argv": [
+          "/bin/bash",
+          "-o",
+          "pipefail",
+          "-c",
+          "if jq -r \".skills[].id\" trellis/skills/guru-team/registry.json | rg -q \"guru-example\"; then exit 1; elif jq -r \".public_api.skill_contracts | [.legacy_skill_ids[], .public_input_schema_ids[], .typed_output_schema_ids[], .private_artifact_schema_ids[]] | .[]\" trellis/guru-team-extension.json | rg -q \"guru-fixture|guru-example\"; then exit 1; else exit 0; fi"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "fixture id/schema id 未进入 production registry/extension inventories。"
+      }
+    ],
+    "worker_evidence": [
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_phase2_check",
+        "summary": "首轮独立 checker 覆盖 approved planning、完整实现、Docs SSOT 与安装矩阵，并形成 finding-fix evidence。",
+        "evidence_only": true,
+        "facts_sha256": "9525e5931cf7b88fc8b4933f506fcef337f8b782e80a68420dccfaaf6565ca93"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_phase2_recheck",
+        "summary": "Round 1 finding-fix checker 完成完整复核。",
+        "evidence_only": true,
+        "facts_sha256": "ebdac1ba3b44c4d61de80121fa6dcde2779f60a1a2731f084bd102be36fb1ec3"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_phase2_recheck_2",
+        "summary": "Round 2 finding-fix checker 完成完整复核。",
+        "evidence_only": true,
+        "facts_sha256": "4eda872ef1abf45e3f0c62d4a05715843eb1d6c4f7605bda52ba2199b8f781de"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_phase2_recheck_4",
+        "summary": "Replacement checker 在前任平台失败后完成 Phase 2 与 public-sample 安装链路验证。",
+        "evidence_only": true,
+        "facts_sha256": "43b6c7c211e129ca7d7e4de0dfd4d281ed5a332ba555b3df51b7c43ac2988515"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_round11_phase2",
+        "summary": "Round 11 checker 对 UTF-16 search-position 实现执行完整 Phase 2；该轮 passing 结论随后被 Round 12 正常路径复现反驳。",
+        "evidence_only": true,
+        "facts_sha256": "ae26d14986e054608be1425e924f69a12af47076db0e3706b9676ff8a0d99b5f"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_round12_phase2",
+        "summary": "Round 12 checker 完成全 task scope 检查，在 28,567 次 isolated-surrogate differential 中发现 154 mismatches，返回 implementation_required。",
+        "evidence_only": true,
+        "facts_sha256": "88916a7d62e22569f5ef06d32f6046fcebd8751c714721f6b9383af952e43a06"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_round13_phase2",
+        "summary": "Round 13 checker 完整覆盖 approved scope、8 个 implementation dirty paths、Docs SSOT、agent recovery、兼容性、部署安全、三平台安装升级与 58 条 exact command evidence；F-BR-P3-011 resolved，open finding 为零。",
+        "evidence_only": true,
+        "facts_sha256": "045405abb817ec83035b4db866e28da8fdee5c798784774e6f8e8dee183c5f60"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_round7_phase2",
+        "summary": "Round 7 checker 完成 strict JSON、RFC 与安装回归复核。",
+        "evidence_only": true,
+        "facts_sha256": "593622d5b30f053ba3a577fd84632d424384bd9b52e9ebcfe78a2fe611812fe5"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue_144_round8_phase2",
+        "summary": "Round 8 checker 完成完整 Phase 2 与安装、update/reapply、Docs SSOT 门禁。",
+        "evidence_only": true,
+        "facts_sha256": "2e5a2e12b6e09fc16b755e3728068107eb7826bc6136940130ed686bf3fa4db7"
+      }
+    ],
+    "unverified_items": [
+      {
+        "id": "UNV-R13-EXACT-FEATURE-REF",
+        "command_or_area": "Remote Marketplace Verification Gate 的 immutable remote feature-ref install/update/reapply verification",
+        "reason": "当前 feature branch 尚未 push，远端不可解析 exact immutable feature ref。",
+        "impact": "不阻塞 pre-commit Phase 2；reviewed content push 后必须在 draft PR 创建前由唯一发布门禁补证，否则发布 fail closed。",
+        "blocking": false
+      }
+    ],
+    "execution_sha256": "2fa64dce8ceb463122dab2fb89b188c80a6f44c9bd5f519d1af532e2a20b3c42"
+  },
+  "scope_qualification": {
+    "candidates": [
+      {
+        "id": "C-R13-F-BR-P3-011",
+        "summary": "Portable pattern compiler 的 isolated-surrogate consuming 偏差已由 pair-aware guard 与 fixed/generated regression 闭环。",
+        "trigger_refs": [
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implementation-handoff.md#20",
+          ".trellis/tasks/07-20-144-minimal-typed-handoff-io/reviews/round-11-closure-finding.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "normal_path_reproduction": "Round 12 的 pattern='^..$'、instance='\\ud800a' 旧实现复现已关闭；Round 13 Node 20 raw 与 Node 26 test-only wrapped oracle 各执行 4,081 patterns x 33 values = 134,673 comparisons，均为 0 mismatch，fixed Node 20/26 tests 各 4/4。",
+        "disposition": "current_scope",
+        "route_basis": "标准 JSON escaped isolated surrogate 属于 Issue #144 accepted pattern 等价合同；本轮实现、固定回归、全量 differential 与 installed copy 均已覆盖。",
+        "severity": "P3",
+        "finding_id": "F-BR-P3-011"
+      },
+      {
+        "id": "C-R13-NODE26-RAW-V8",
+        "summary": "Node 26.4.0 raw Unicode RegExp 对十个 surrogate-edge comparisons 的行为偏离 Node 20 与项目 test-only normalized oracle。",
+        "trigger_refs": [],
+        "normal_path_reproduction": "命令 018-node26-raw-diagnostic 在 134,673 comparisons 中报告 10 mismatches；命令 016 的 Node 20 raw 与命令 017 的 Node 26 test-only wrapped oracle 均为 0 mismatch。",
+        "disposition": "out_of_scope",
+        "route_basis": "这是外部 Node 26 V8 observation；production runtime 不依赖 Node 或版本分支，项目仅在 tests 中规范化 oracle，当前 supported runtime contract 无可归责实现缺陷。",
+        "severity": null,
+        "finding_id": null
+      },
+      {
+        "id": "C-R13-EXACT-FEATURE-REF",
+        "summary": "尚未推送的 feature branch 无法执行 immutable remote feature-ref marketplace verification。",
+        "trigger_refs": [],
+        "normal_path_reproduction": "当前分支只存在本地且工作树含未提交实现；远端不存在可解析的 exact feature ref，因此发布门禁尚不能绑定 immutable remote content。",
+        "disposition": "followup_proposal",
+        "route_basis": "该验证的唯一 consumer 是 reviewed branch push 后、draft PR 创建前的 Remote Marketplace Verification Gate，不属于 pre-commit Phase 2 阻塞项。",
+        "severity": null,
+        "finding_id": null
+      }
+    ],
+    "scope_sha256": "6d8bfa7c494e562037c223db5a7ec016673add3f1ac25559d491d11101b2e433"
+  },
+  "semantic_review": {
+    "adequacy_dimensions": [
+      {
+        "id": "requirements",
+        "status": "passed",
+        "summary": "Approved R1-R12、AC1-AC15、P1-P15 与 #145/#146 follow-up 边界保持一致；F-BR-P3-011 属于既有 accepted pattern requirement 且已闭环。",
+        "evidence_refs": [
+          "planning",
+          "requirement_provenance"
+        ],
+        "affected_sha256": "3f64e70a6274f1c556c153ee8749476f34ea13b380c8be77cb1455117714a824",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "design",
+        "status": "passed",
+        "summary": "1.2/1.3 并存与 portable ECMA pattern boundary 未变；pair-aware UTF-16 consuming 实现承接既有设计，无新 scope 或 authority 变化。",
+        "evidence_refs": [
+          "planning",
+          "docs_ssot_plan"
+        ],
+        "affected_sha256": "b28490a16e4a36ae3e263b6a3d231fbdb3fbdd828ff7a27610c8e12e880b8a6e",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "implementation",
+        "status": "passed",
+        "summary": "Canonical/installed runtime 使用同一通用 pair-aware guard；isolated high/low 可独立消费且与 BMP 相邻，valid pair 不能被拆分或从 interior low 开始。",
+        "evidence_refs": [
+          "implementation_handoff",
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "ab5d5df316f0cb2024c98d57b326d851f93ce08613775756c97ed70654509dd2",
+        "finding_ids": [
+          "F-BR-P3-011"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "tests",
+        "status": "passed",
+        "summary": "Node 20 raw 与 Node 26 wrapped differential 各 134,673/134,673 零 mismatch；focused 各 4/4、Skill 126/126、shared 548 passed/13 skipped、installer 39/39、ownership 6/6。",
+        "evidence_refs": [
+          "check_execution",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "48eb3f48e31f1fa5c0db58d946a3e444ee7eff9246b3ae8f217b5a20aaecb8e8",
+        "finding_ids": [
+          "F-BR-P3-011"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "docs_ssot",
+        "status": "passed",
+        "summary": "complete_docs + ssot_first 已收敛：exact EBNF 仅在 skill-package-contract.md，companion/quality 与 public README 未复制或漂移，task delta 已 merge。",
+        "evidence_refs": [
+          "docs_ssot_plan",
+          "implementation_handoff",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "d19adb8b258a9eb2b3c568712d9234d6e47118e88d374f1463d200828e32d4d0",
+        "finding_ids": [
+          "F-BR-P3-011"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "cross_layer",
+        "status": "passed",
+        "summary": "Grammar acceptance、UTF-16 matcher、fixed/generated tests、canonical/installed runtime 与 installer inventory 对 isolated surrogate 和 valid pair 行为一致。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution",
+          "docs_ssot_plan"
+        ],
+        "affected_sha256": "ab5d5df316f0cb2024c98d57b326d851f93ce08613775756c97ed70654509dd2",
+        "finding_ids": [
+          "F-BR-P3-011"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "compatibility",
+        "status": "passed",
+        "summary": "九个 production Skills 保持 1.2 legacy、0 production minimal_handoff；1.3 canonical/installed/fixture bytes 一致，Node 26 raw observation 未进入 production runtime。",
+        "evidence_refs": [
+          "requirement_provenance",
+          "implementation_handoff",
+          "check_execution"
+        ],
+        "affected_sha256": "8d1f023470021dccf464db09c0b216476bee89a03beb27b5d1292ee8053c7f7f",
+        "finding_ids": [
+          "F-BR-P3-011"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "deployment_and_operations",
+        "status": "passed",
+        "summary": "无 CI/CD、container、K8s/Kustomize、DB migration、Makefile、服务配置或数据迁移影响；secret、敏感路径、TODO/skip 与 sidecar 扫描均无命中。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "8d1f023470021dccf464db09c0b216476bee89a03beb27b5d1292ee8053c7f7f",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "agent_recovery",
+        "status": "passed",
+        "summary": "六名实现代理与九名阶段二检查代理的 effective completed 集合、liveness 与 recovery chain 已由 agent-assignment validator 校验；Round 13 completed event 为 evt-0261-67f70af592。",
+        "evidence_refs": [
+          "agent_assignment",
+          "implementation_handoff"
+        ],
+        "affected_sha256": "9f64bc07cb89e79cb751cf0d080ac71f2b312d0fa42bbc4c7ea7d4ca82287a01",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "verification_completeness",
+        "status": "passed",
+        "summary": "58 条命令均保留 exact NUL argv、exit、stdout/stderr digest 与 size；source/installed inventory 384、clean throwaway init/preview/switch/install/update/reapply 均通过，仅 exact remote feature ref 留给发布门禁。",
+        "evidence_refs": [
+          "planning",
+          "requirement_provenance",
+          "implementation_handoff",
+          "docs_ssot_plan",
+          "repository_snapshot",
+          "check_execution",
+          "agent_assignment"
+        ],
+        "affected_sha256": "045405abb817ec83035b4db866e28da8fdee5c798784774e6f8e8dee183c5f60",
+        "finding_ids": [],
+        "unverified_ids": [
+          "UNV-R13-EXACT-FEATURE-REF"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "id": "F-BR-P3-011",
+        "candidate_id": "C-R13-F-BR-P3-011",
+        "severity": "P3",
+        "summary": "Pair-aware consuming 已只拒绝 valid pair 的拆分和 interior-low 起点；isolated high/low 与相邻 BMP 的 fixed/generated Node 20/26 evidence 全部通过。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      }
+    ],
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "Round 13 full Phase 2 覆盖完整 #144 scope、8 个 implementation dirty paths、Docs SSOT、agent recovery、兼容性、部署安全及全部适用验证；F-BR-P3-011 resolved，open current-scope finding 与 blocking unverified 均为零。",
+      "full_rerun": true,
+      "planning_facts_sha256": "184bfeebbc7634420fc741975a3b29d538a7e535674376ecb81ffa97081daf3f",
+      "snapshot_sha256": "7b277d1512394cc5690e027d9b873819583dd98ff7e563919ec24c6a912695da",
+      "scope_sha256": "6d8bfa7c494e562037c223db5a7ec016673add3f1ac25559d491d11101b2e433",
+      "adequacy_sha256": "6188d4b5cb29fdfcf1e6ae1512ff73d620a87a2ca015d1d7a092265133d37497",
+      "findings_count": 1,
+      "full_round_sha256": "3948d3a034ab6658f1c61e428b4b5a3a31d8c54a08c5b6dd4d87ad2a2474c403"
+    },
+    "adequacy_sha256": "6188d4b5cb29fdfcf1e6ae1512ff73d620a87a2ca015d1d7a092265133d37497"
+  },
+  "human_confirmation": {
+    "kind": "not-required",
+    "status": "not_required",
+    "summary": "Phase 2 semantic pass 不含无条件 human confirmation；本轮只记录已完成检查结论且不执行提交或发布副作用。",
+    "confirmed_at": null
+  },
+  "typed_exit": "passed",
+  "route": null,
+  "reason": "Round 13 完整 semantic review 与全部适用验证通过；F-BR-P3-011 已闭环，无 open finding、blocking unverified、planning drift 或 scope change。",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-commit"
+  },
+  "schema_version": "2.0",
+  "skill_id": "guru-check-task",
+  "task": {
+    "task_dir": ".trellis/tasks/07-20-144-minimal-typed-handoff-io",
+    "task_id": "144-minimal-typed-handoff-io",
+    "branch": "codex/144-minimal-typed-handoff-io",
+    "base_branch": "main",
+    "issue_numbers": [
+      144
+    ],
+    "task_identity_sha256": "ad5ff61846bb137ffcd7824d6e4277f25aeda7eed0b0b7cd66e194ebc3a2657d"
+  },
+  "planning": {
+    "schema_id": "guru-planning-approval-2.0",
+    "typed_exit": "approved",
+    "artifact": {
+      "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/planning-approval.json",
+      "sha256": "80bdbb8ba524e2b14312a664c11b8074e0b6d7c96bcb3902d105e0808891671c",
+      "size_bytes": 30826
+    },
+    "reviewed_artifacts": [
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/prd.md",
+        "sha256": "3f64e70a6274f1c556c153ee8749476f34ea13b380c8be77cb1455117714a824",
+        "size_bytes": 12334
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/design.md",
+        "sha256": "b28490a16e4a36ae3e263b6a3d231fbdb3fbdd828ff7a27610c8e12e880b8a6e",
+        "size_bytes": 19649
+      },
+      {
+        "path": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/implement.md",
+        "sha256": "447a581c0dd364289fcbe3f024b44da59fbf88ffd61fc49cb823475d78f5ba5f",
+        "size_bytes": 9749
+      }
+    ],
+    "facts_sha256": "184bfeebbc7634420fc741975a3b29d538a7e535674376ecb81ffa97081daf3f"
+  },
+  "generated_at": "2026-07-21T02:15:21Z",
+  "facts_sha256": "8c924982e2dde6772f05687fd900edc3567add3b9dbdc06875c093e49d8fe5a9"
+}

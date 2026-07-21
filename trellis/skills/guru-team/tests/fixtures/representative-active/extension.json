@@ -4,7 +4,30 @@
   "version": "fixture",
   "public_api": {
     "skill_contracts": {
-      "interface_schema_id": "guru-team-skill-interface-1.2"
+      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "supported_interface_schema_ids": [
+        "guru-team-skill-interface-1.2",
+        "guru-team-skill-interface-1.3"
+      ],
+      "current_interface_schema_id": "guru-team-skill-interface-1.3",
+      "registry_schema_id": "guru-team-skill-registry-1.1",
+      "legacy_skill_ids": ["guru-example-legacy"],
+      "public_input_schema_ids": [
+        "guru-fixture-action-initial-input-1.0",
+        "guru-fixture-action-reentry-input-1.0"
+      ],
+      "typed_output_schema_ids": [
+        "guru-fixture-action-blocked-output-1.0",
+        "guru-fixture-action-completed-output-1.0",
+        "guru-fixture-action-forwarded-output-1.0",
+        "guru-fixture-action-repeat-output-1.0",
+        "guru-fixture-sync-output-1.0"
+      ],
+      "private_artifact_schema_ids": [
+        "guru-fixture-action-checkpoint-1.0",
+        "guru-fixture-action-gate-evidence-1.0",
+        "guru-fixture-sync-checkpoint-1.0"
+      ]
     },
     "skill_runtime": {
       "api_version": "1.0",
@@ -12,6 +35,7 @@
       "manifest_path": ".trellis/guru-team/extension.json"
     },
     "companion_scripts": [
+      "discover-skill-contract",
       "fixture-runtime-command",
       "run-skill-command"
     ]

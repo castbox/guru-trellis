@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-fixture-action-checkpoint-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input_profile"],
+  "properties": {"input_profile": {"enum": ["initial", "reentry"]}}
+}

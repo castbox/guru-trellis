@@ -1387,6 +1387,7 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/sync-base.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
@@ -1423,10 +1424,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.17"
+assert extension["version"] == "0.6.5-guru.18"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 88
+assert len(assets) == 89
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -1437,7 +1438,7 @@ for artifact in (
 for command in (
     "resolve-human-artifacts", "record-subagent-liveness-event",
     "check-subagent-liveness", "check-commit-messages",
-    "create-task-commit", "run-skill-command", "sync-base", "check-base-sync",
+    "create-task-commit", "discover-skill-contract", "run-skill-command", "sync-base", "check-base-sync",
     "preview-change-context-history", "record-context-discovery", "check-context-discovery",
     "record-requirements-clarification", "check-requirements-clarification",
     "record-contract-wording-review", "check-contract-wording-review",
@@ -1462,6 +1463,13 @@ assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_sche
 assert "guru-task-workspace-plan-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-workspace-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.2"
+assert api["skill_contracts"]["registry_schema_id"] == "guru-team-skill-registry-1.1"
+assert api["skill_contracts"]["supported_interface_schema_ids"] == ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"]
+assert api["skill_contracts"]["current_interface_schema_id"] == "guru-team-skill-interface-1.3"
+assert len(api["skill_contracts"]["legacy_skill_ids"]) == 9
+assert api["skill_contracts"]["public_input_schema_ids"] == []
+assert api["skill_contracts"]["typed_output_schema_ids"] == []
+assert api["skill_contracts"]["private_artifact_schema_ids"] == []
 assert api["skill_runtime"] == {
     "api_version": "1.0",
     "dispatcher": "run-skill-command",
@@ -1479,9 +1487,13 @@ registry = json.loads((root / ".trellis/guru-team/skills/registry.json").read_te
 planned = [entry for entry in registry["skills"] if entry.get("state") == "planned"]
 assert planned == []
 PY
+test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-interface.schema.json"
+test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json"
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
 python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":9,"exit_markers":35,"target_markers":20,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+LEGACY_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
+python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "legacy"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.2"' <<<"$LEGACY_CONTRACT_JSON"
 test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
 test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
 test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
@@ -1556,7 +1568,10 @@ test ! -e "$TARGET/.agents/skills/guru-example-action"
 test ! -e "$TARGET/.codex/skills/guru-example-action"
 test ! -e "$TARGET/.cursor/skills/guru-example-action"
 test ! -e "$TARGET/.claude/skills/guru-example-action"
-(cd "$REPO_ROOT" && python3 -m unittest trellis.skills.guru-team.tests.test_skill_packages.DistributionTests.test_unchanged_reapply)
+(cd "$REPO_ROOT" && python3 -m unittest \
+  trellis.skills.guru-team.tests.test_skill_packages.DistributionTests.test_unchanged_reapply \
+  trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_active_package_and_routes_pass \
+  trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_wrappers_emit_distinct_exits_and_stable_errors)
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 mkdir -p "$TARGET/.trellis/tasks/archive"
 BACKFILL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
@@ -2951,6 +2966,7 @@ test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/sync-base.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
@@ -3010,6 +3026,7 @@ test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-wo
 test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
+"$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json >/dev/null
 DISCOVERY_AFTER_UPDATE_JSON="$(
   "$TARGET/.agents/skills/guru-discover-change-context/scripts/preview-change-context-history.sh" \
     --root "$TARGET" \

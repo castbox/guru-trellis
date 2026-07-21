@@ -100,6 +100,28 @@ workflow/standalone preconditions before a package command can run.
 
 ## Public Skill I/O And Private State
 
+### 0. Versioned Interface And Registry Migration
+
+`guru-team-skill-interface-1.2` is the frozen legacy contract. Its schema file,
+schema id, field meanings, and the nine current production package payloads are
+not reinterpreted by the minimal-handoff rollout. New or materially changed
+public Skill I/O targets the independent
+`guru-team-skill-interface-1.3` contract.
+
+Registry schema `guru-team-skill-registry-1.1` is the exact version selector.
+Every active row declares `interface_schema_id` and `io_contract_state`; only
+`1.2 + legacy` and `1.3 + minimal_handoff` are legal. Reserved and planned rows
+remain lifecycle-only and must not carry package or I/O contract fields. During
+the #144 migration window, all nine production active rows remain explicitly
+allowlisted `1.2 + legacy`; #145 and #146 own their payload migrations.
+
+The validator selects the interface schema from the registry row. It must not
+guess from optional fields, file presence, package content, or extension
+defaults. The extension publishes both supported ids, names 1.3 as current for
+new work, retains compatibility scalar `interface_schema_id=1.2` until #146,
+and keeps production public-input, typed-output, and private-artifact schema
+inventories empty while every production package remains legacy.
+
 ### 1. Scope And Trigger
 
 This contract applies whenever a new public Guru Team Skill is introduced or an
@@ -121,12 +143,22 @@ have different shapes, publish separate exit schemas; an optional aggregate
 schema may use `oneOf` only as a validator index, never as an authoring template
 filled with nullable fields.
 
-The consumer independently owns its input contract. A producer output may be
-passed directly only when it already matches that input exactly. Otherwise the
-workflow/runtime declares one thin deterministic projection from the selected
-exit output to the consumer input. The projection may select, rename, or
-normalize fields; it must not recover hidden semantics by reading Python source,
-replaying the producer's AI judgment, or understanding its private artifact.
+The consumer independently owns its input contract. A `kind=skill` consumer
+must use `contract.kind=skill_input`, and the referenced interface id must equal
+the declared consumer id; a producer-owned or third-party schema cannot stand
+in for the target Skill's input. A structured `kind=workflow` consumer uses a
+canonical locator below `consumers/workflow/`; a structured `kind=stop`
+consumer uses one below `consumers/stop/`. The original locator must equal its
+normalized repo-relative spelling, include a file below that exact owner root,
+and must not use producer package/output paths, the other consumer root,
+absolute paths, parent traversal, `.` segments, repeated separators, or
+symlink-backed components. A zero-payload stop has no schema locator. A producer
+output may be passed directly only when it already matches the independently
+owned input exactly. Otherwise the workflow/runtime declares one thin
+deterministic projection from the selected exit output to the consumer input.
+The projection may select, rename, or normalize fields; it must not recover
+hidden semantics by reading Python source, replaying the producer's AI judgment,
+or understanding its private artifact.
 
 A deterministic Skill may use scalar CLI arguments instead of an input JSON
 schema when those arguments fully express the public call. Do not create an
@@ -244,6 +276,187 @@ Correct producer exit output:
 The consumer's independently owned input schema may accept that object directly
 or declare a deterministic projection to its own field names. The producer's
 audit evidence and private checkpoint remain outside this public DTO.
+
+### 8. Interface 1.3 Closed Public Contracts
+
+Interface 1.3 keeps the closed-loop identity, modes, stages, validators,
+external exits, re-entry, tests, and platform destinations of 1.2 and adds one
+required closed `public_contracts` object with exactly six owned sections:
+
+- `input`: either `structured_json` profiles with package-local closed Draft
+  2020-12 schemas/examples and a discriminator plus aggregate `oneOf`, or
+  `scalar_cli` arguments with exact ordered argv and no artificial input JSON
+  schema;
+- `invocation`: one command id, package-local executable wrapper, exact input
+  binding, `single_typed_exit` stdout, stable closed error schema/example, and
+  one executable example argv;
+- `outputs`: one independent schema and complete example for every declared
+  external exit, plus non-empty direct consumer-use references;
+- `consumer_inputs`: locators owned by the target Skill, workflow transition,
+  or stop response; a Skill locator exactly equals the canonical target
+  interface path registered for that active target id, self-reentry points to a
+  distinct input profile of the same Skill, structured workflow and stop
+  locators use their exact `consumers/workflow/` and `consumers/stop/` roots,
+  and a stop may explicitly declare zero payload;
+- `projections`: exactly one output/consumer projection using only `direct`,
+  `select`, `rename`, or the closed deterministic `normalize` operations;
+- `private_artifacts`: only `runtime_checkpoint` or `gate_evidence`, with
+  `stdout_only_pre_task`, `task_local_tracked`, or `ignored_runtime`
+  persistence.
+
+All ids and locators are unique, package paths are regular non-symlink files,
+and public output schema ids and paths are each independently disjoint from
+private artifact schema ids and paths. Projection source fields come only from
+the selected public output; target fields come only from the declared consumer
+input. Every non-`direct` projection, and every `direct` projection into
+`scalar_cli`, must statically prove that each required consumer field comes from
+a required producer field and that every legal source value remains valid after
+the declared mapping/normalizer or direct same-name pass-through. The 1.3 proof
+grammar is deliberately conservative: exact property schemas, finite `const`/`enum`
+normalization, non-empty scalar strings, positive integers, and ASCII trim with
+an explicit non-blank source pattern are accepted; an unprovable relation fails
+activation even when one example passes. Runtime facts, private artifacts,
+arbitrary expressions, script paths, and semantic reconstruction are outside
+the projection grammar.
+
+An explicit `zero_payload` stop still receives the producer's typed-exit
+routing identity, but that identity is not forwarded as stop-response payload.
+Its output schema therefore contains only required `exit_id` with the matching
+exit constant, and its unique projection is `select` with an empty `mappings`
+array. Empty `select` is invalid for every non-zero consumer, and any additional
+zero-stop output field is an unconsumed public field rather than audit data to
+preserve.
+
+Every 1.3 public input, output, consumer, invocation-error, and private-artifact
+schema uses the standard-library Draft 2020-12-compatible closed subset. The
+accepted grammar is recursive and contains only `$schema`, root-only `$id`, `$defs`,
+local `$ref`, annotations, `type`,
+`const`, `enum`, `allOf|anyOf|oneOf|not|if|then|else`, string length/pattern and
+supported format constraints, numeric minimum/maximum, array
+length/uniqueness/items/contains, and object properties/required/boolean
+`additionalProperties`. Nested `$id` resource boundaries, boolean schema nodes,
+unresolved/remote/unsafe/recursive refs,
+unknown keywords such as `patternProperties`, malformed keyword values,
+unsupported formats, and invalid patterns fail source and installed validation.
+This is not a claim that the companion implements the complete Draft 2020-12
+vocabulary. The one package-relative exception is the aggregate structured
+input's exact ordered profile-schema index. Each target must be a regular
+non-symlink object-schema file within the same validated package boundary and
+is independently checked as a declared profile contract.
+
+#### Portable Pattern Grammar
+
+The closed subset does not accept an arbitrary Python, PCRE, or ECMA regular
+expression. A `pattern` source is limited to printable ASCII `U+0020` through
+`U+007E`, and both schema validation and instance matching use this exact
+grammar (EBNF braces mean repetition; quoted braces are pattern characters):
+
+```text
+pattern             = alternative, { "|", alternative } ;
+alternative         = { term } ;
+term                = assertion | atom, [ quantifier ] ;
+assertion           = "^" | "$" | negative-lookahead ;
+negative-lookahead  = "(?!", pattern, ")" ;
+atom                = literal | "." | escape | character-class | group ;
+group               = "(", pattern, ")" | "(?:", pattern, ")" ;
+quantifier          = "*" | "+" | "?"
+                    | "{", decimal, "}"
+                    | "{", decimal, ",}"
+                    | "{", decimal, ",", decimal, "}" ;
+decimal             = digit, [ digit, [ digit, [ digit, [ digit, [ digit ] ] ] ] ] ;
+digit               = "0" | "1" | "2" | "3" | "4"
+                    | "5" | "6" | "7" | "8" | "9" ;
+```
+
+`literal` is one printable ASCII character other than
+`\ [ ] ( ) | ^ $ . * + ? { }`; those syntax characters are literals only
+through an allowed syntax escape. `escape` is exactly one of:
+
+- `\\t`, `\\n`, `\\v`, `\\f`, or `\\r`;
+- `\\u` plus exactly four hexadecimal digits whose value is at most `U+007F`;
+- `\\s` or `\\S` outside a character class;
+- a backslash followed by one of `^ $ \\ . * + ? ( ) [ ] { } | /`.
+
+A `character-class` is `[` plus optional leading `^`, one or more class items,
+and `]`. A class item is one ASCII code point, one ascending range of two ASCII
+code points, one allowed control/ASCII-`\\u`/syntax escape, or `\\s`. A raw `-`
+is a literal when it is not between two range endpoints; `\\-` is also allowed.
+Classes are non-empty, cannot nest, cannot use `\\S`, and cannot use a set escape
+as a range endpoint.
+
+Matching is unanchored search, equivalent to
+`new RegExp(pattern, "u").test(instance)`, unless the pattern supplies its own
+anchors. Search probes UTF-16 code-unit boundaries, so a zero-width assertion
+may succeed between the high and low surrogate of one astral code point. A
+consuming Unicode atom still treats that valid surrogate pair as one code point,
+cannot split it through backtracking, and cannot start at the interior low
+surrogate boundary. An isolated high or low surrogate is one independently
+consumable code point. A neighboring BMP code unit does not make it part of a
+pair: an isolated high surrogate before a BMP code unit and an isolated low
+surrogate after a BMP code unit remain two independently consumable code points.
+No multiline, ignore-case, or dot-all flag is available.
+`$` means strict end of input, including rejection before a final line
+terminator. `.` matches one Unicode-aware code point except `LF`, `CR`,
+`U+2028`, and `U+2029`.
+`\\s` is exactly `U+0009-U+000D`, `U+0020`, `U+00A0`, `U+1680`,
+`U+2000-U+200A`, `U+2028`, `U+2029`, `U+202F`, `U+205F`, `U+3000`, and
+`U+FEFF`; `\\S` is its complement. Capturing and non-capturing groups have the
+same matching behavior because backreferences are not in the grammar.
+
+The grammar rejects every other escape or group form, including `\\d`, `\\D`,
+`\\w`, `\\W`, Unicode property escapes, backreferences, named groups, positive
+lookahead, lookbehind, and inline flags. It also rejects non-ASCII source or
+`\\u` values, raw control characters, empty/nested/malformed classes, descending
+ranges, malformed or descending bounded quantifiers, a bound longer than six
+decimal digits, and lazy, possessive, misplaced, or repeated quantifiers. The
+runtime must fail closed at the schema grammar gate and must not fall back to
+Python `re.compile(pattern)` or `re.search(pattern, instance)`.
+
+All 1.3 registry, interface, schema, example, workflow-marker, package-local
+reference, invocation-stdout, and discovery JSON boundaries use standard JSON
+decoding. The runtime rejects `NaN`, `Infinity`, `-Infinity`, and JSON numbers
+that overflow its finite numeric range; the same finite guard applies to
+in-memory schema and instance values. Public DTO encoding rejects non-finite or
+otherwise non-serializable values and returns the existing structured error
+shape without a traceback. Supported `date-time` validates RFC 3339 calendar,
+clock, the `0000` through `9999` year domain, numeric-offset, lowercase `t`/`z`,
+and leap-second notation only at the corresponding UTC June/December month-end
+boundary. Supported `uri` validates the RFC 3986 ASCII generic syntax,
+including a required scheme, component and authority grammar, case-insensitive
+IPvFuture `v`, controls/whitespace, and percent encoding. These two formats
+remain the complete supported format set for this closed subset.
+
+### 9. Discovery, Invocation, And Error Contract
+
+The extension public command id is `discover-skill-contract`. Its installed
+wrapper has the exact public form:
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh \
+  --root <repo> --mode <source|installed> --skill <guru-id> --json
+```
+
+Discovery resolves the exact registry row first. A 1.2 row returns a closed
+`legacy` variant with interface identity, migration state, and #145/#146
+boundary; it never fabricates 1.3 input/output contracts. A 1.3 row returns a
+closed `minimal_handoff` index locating input, invocation, every exit output,
+consumer contract, projection, examples, and private artifacts. Discovery
+returns metadata only and does not execute the semantic Skill.
+
+Unknown skill, version/state mismatch, missing/unsafe contract path, invalid
+schema/example, or installed drift exits non-zero with stable `code`,
+repo-relative `field_path`, and actionable `remediation`. Callers need only
+`SKILL.md`, `interface.json`, package-local public assets, and command help;
+they never import or read `guru_team_trellis.py`.
+
+Source validation executes the declared representative 1.3 example invocation,
+requires exactly one declared typed-exit object on stdout, and validates it
+with that exit's independent schema. The mixed test-only fixture contains one
+1.2 legacy package, one structured semantic 1.3 package, and one scalar CLI
+deterministic 1.3 package. It covers Skill/workflow/stop consumers,
+self-reentry, the closed projection operations, stdout-only and task-local
+private state, distinct exits, and stable errors, but never enters production
+registry, extension inventories, workflow routes, or installed platform roots.
 
 ## Workflow Markers And Typed Exits
 
@@ -828,9 +1041,13 @@ installer/validator walks every component with `lstat`. A regular, dangling,
 internal, external, or multilevel symlink at the target or any ancestor fails
 closed; no asset may be read from or written through it.
 
-Package command files are thin wrappers. They locate only the managed
-`run-skill-command` dispatcher, pass their package root and fixed validator id,
-and forward the original arguments. They must not locate an old companion
+Package command files are thin wrappers. Interface 1.3 source validation binds
+the invocation command to one declared validator and requires the complete
+wrapper bytes to match the supported dispatcher-only template; a dispatcher
+name in a comment, dead branch, or adjacent local output/behavior is not route
+evidence. Accepted wrappers locate only the managed `run-skill-command`
+dispatcher, pass their package root and fixed validator id, and forward the
+original arguments. They must not locate an old companion
 command directly, parse task/gate evidence, validate commit messages, stage Git
 content, or implement transaction/rollback behavior. Missing or incompatible
 runtime state fails before the target companion command and reports that the
@@ -848,14 +1065,18 @@ The stable command is:
 ```
 
 `source` binds the canonical registry/interface Draft 2020-12 schemas by exact
-dialect, schema id, and contract digest, then applies every declared constraint
-to production and fixture instances. It also validates ids, paths, required
-package files, parseable package-local artifact schemas, safe existing
+dialect, schema id, and contract digest, validates their closed supported
+keyword grammar, then applies every accepted constraint to production and
+fixture instances. Interface 1.3 contract assets use the same recursive
+Draft 2020-12-compatible closed subset described above; unsupported standard
+vocabulary is rejected rather than ignored. Source also validates ids, paths,
+required package files, parseable package-local artifact schemas, safe existing
 artifact/schema/validator/test files, strict `SKILL.md` discovery frontmatter,
 workflow markers, and unique exit mappings.
-Every untrusted JSON value is type-checked before set, hash, path, or string
-operations; malformed values return structured `failed` errors without a Python
-traceback. `installed` validates manifest provenance, selected roots, installed
+Every decoded JSON value is standard, finite where numeric, and type-checked
+before set, hash, path, or string operations; malformed values return
+structured `failed` errors without a Python traceback. `installed` validates
+manifest provenance, selected roots, installed
 file/package inventory, hashes and modes, reserved absence, unexpected or
 unknown platform copies, drift, and declared-versus-actual `.new`/`.bak` files.
 Both modes report objective facts and fail with

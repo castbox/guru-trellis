@@ -1,11 +1,10 @@
 ---
 name: guru-example-action
-description: Exercises the public closed-loop package contract without becoming a production skill.
+description: Exercises semantic structured input and minimal typed handoff contracts.
 ---
 
-# Representative Fixture
+# Semantic Minimal Handoff Fixture
 
-Validate entry evidence, execute the package-local reference contract, and fail
-closed unless exactly one declared typed exit can be returned.
-
-This fixture is never a production install asset.
+The package has initial and re-entry inputs, four distinct typed exits, and
+Skill, workflow, stop, and self-reentry consumers. Its wrapper only routes the
+shared `run-skill-command` dispatcher.

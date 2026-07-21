@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-fixture-sync-invocation-error-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code", "field_path", "remediation"],
+  "properties": {
+    "code": {"type": "string", "minLength": 1},
+    "field_path": {"type": "string", "minLength": 1},
+    "remediation": {"type": "string", "minLength": 1}
+  }
+}

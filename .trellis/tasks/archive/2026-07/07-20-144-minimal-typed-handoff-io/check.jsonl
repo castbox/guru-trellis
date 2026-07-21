@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "检查 1.2 compatibility、1.3 public contracts、consumer ownership 与最小 handoff 一致性"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 registry/interface/manifest schema id、inventory 与 migration state 一致性"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查 discovery/invocation/error 行为与确定性脚本职责边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "执行 negative matrix、source/installed/dogfood/platform/throwaway/update-reapply 门禁"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 managed inventory、executable mode、upgrade、reapply 与 fixture exclusion"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical、dogfood 与平台副本无漂移且无 unresolved sidecar"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "检查改动保持 Guru-owned extension 面且不覆盖 Trellis upstream-owned 文件"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查三份 public README 的 command、migration timeline 与安装说明可执行且一致"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 interface 到 installed runtime 的完整跨层承接"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查 wrapper 和 fixture 未复制 shared runtime 或引入平行实现"}
+{"file": ".trellis/tasks/07-20-144-minimal-typed-handoff-io/research/trellis-official-extension-boundaries.md", "reason": "复核实现未偏离官方 workflow/marketplace/template/update 扩展边界"}

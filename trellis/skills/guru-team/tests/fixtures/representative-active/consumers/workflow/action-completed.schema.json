@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-fixture-workflow-completed-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "result"],
+  "properties": {
+    "exit_id": {"const": "completed"},
+    "result": {"type": "string", "minLength": 1}
+  }
+}
