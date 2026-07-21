@@ -1,0 +1,267 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-07-21T04:24:38Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "castbox/guru-trellis",
+    "issue_number": 147,
+    "url": "https://github.com/castbox/guru-trellis/issues/147",
+    "updated_at": "2026-07-20T20:04:45Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "360cc09d3815415b42406e016a055a1ea4083e00f0ba3c3f71d5f731eb27b359",
+    "body_sha256": "ef54d68756c9b0010c78d9ca8e6cbe73f611e48bc56a1b76ba3d57fabe71b3af",
+    "side_effect_free": false,
+    "identity_sha256": "89d3d674b619ae486afaad54e74b908c6cf0b40c54541445c1e1bac799880415",
+    "content_sha256": "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "f4b4ade3842ec61602b72c9e14620e7c5a3feaf60e20c966d06e6a42f2ca05b9",
+      "snapshot_sha256": "89b2d436389bef0e9bb245158b70a1cfae09d4ea291df5e184c14b4ceb19358d",
+      "base_sync_facts_sha256": "84ee6ba8208f0a2d98765a21f47627a9fec9d95339091f94d232c3626c82c017",
+      "base_head": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+      "live_target_sha256": "1f177a64e48776f826ed00fdf2f43d84e5f9b27eb7a86d5b37e9323a672e0794",
+      "query_sha256": "7c6a46728b49888ce065d4db725ded1e9f77d8b2d4aa2a2ce6c648991b737e3a",
+      "current_state_sha256": "e00adf5a8b53ebf2ca5cf3184bcbab1b2ab0fc6849648a4842b1f1655d493753",
+      "history_sha256": "ce1640f54e0e7207ad1b10c0655c494f00c377541fdf2f13ef4d0d49d9d3c7ca",
+      "duplicate_sha256": "45c615bbe8c6bb2c4e487f3b93669dee9cdd5f234bd7efcb6ed047a6078a4f77",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-2.0",
+      "typed_exit": "clear",
+      "payload_sha256": "2de104c343e50e6ec601d5187822cbb501e70298da319654bcb438370808073d",
+      "facts_sha256": "f5168ce26afc7ebc145abc66c0675f9a0027574da82dace310860134a637d4a7",
+      "target_sha256": "46297e003d67b4ec155b8ff9bb51dfa1e20a8404b90bab995c0244c34f55d35d",
+      "disposition_sha256": "5e3810cfe0fb00a952899cfeca6d1e53b5bc770df711aabd67024872f20e89ed",
+      "content_sha256": "beba14a8a3b29ea4172ae338c237bdb03aa9ade7115827b8446fbea9d67e66aa",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "b1042f04715c8c6127e6f71f386b4b4f883cac50f88d5243480c8e7c30091ecd",
+      "facts_sha256": "83ed6ce83b53a9608c65dcc5a92d526f7a722d35278cd07ddabb5795cc6a77da",
+      "scope_sha256": "e76074cbd03e8889e4c80d3fb551ab915107403f31e5f36e8c4360961aab54a1",
+      "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "target_content_sha256": "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "89d3d674b619ae486afaad54e74b908c6cf0b40c54541445c1e1bac799880415",
+    "target_content_sha256": "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc",
+    "base_head": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+    "current_state_sha256": "e00adf5a8b53ebf2ca5cf3184bcbab1b2ab0fc6849648a4842b1f1655d493753",
+    "history_sha256": "ce1640f54e0e7207ad1b10c0655c494f00c377541fdf2f13ef4d0d49d9d3c7ca",
+    "duplicate_sha256": "45c615bbe8c6bb2c4e487f3b93669dee9cdd5f234bd7efcb6ed047a6078a4f77",
+    "clarity_facts_sha256": "f5168ce26afc7ebc145abc66c0675f9a0027574da82dace310860134a637d4a7",
+    "clarity_disposition_sha256": "5e3810cfe0fb00a952899cfeca6d1e53b5bc770df711aabd67024872f20e89ed",
+    "wording_facts_sha256": "83ed6ce83b53a9608c65dcc5a92d526f7a722d35278cd07ddabb5795cc6a77da",
+    "linkage_sha256": "f065ca9b6429aa722107857e075e6a1031f51f78bb95f9c9a3c80553fedab16d"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "requirement_completeness",
+        "status": "passed",
+        "summary": "目标、corpus、runner/grader、adapter、evidence、验收与非目标完整。",
+        "evidence_refs": [
+          "target"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "delivery_unit_consistency",
+        "status": "passed",
+        "summary": "横向基础设施是一个 delivery unit，production migrations 明确外置。",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "implementation_target_evidence",
+        "status": "passed",
+        "summary": "Docs、Interface 1.3 fixtures、runtime tests、extension/preset/throwaway 入口均已定位。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "claimed_behavior_current",
+        "status": "passed",
+        "summary": "当前仓库确有 contract discovery/invocation 基础，但尚无 eval corpus/runner commands。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "current_implementation_gap",
+        "status": "passed",
+        "summary": "缺失 eval schema、discovery/run、grader boundary、四 adapter 与临时 evidence。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "docs_code_tests_consistency",
+        "status": "passed",
+        "summary": "Durable SSOT、fixtures、tests 与 install harness 对现状描述一致。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "archived_history_constraints",
+        "status": "passed",
+        "summary": "#144 的版本、public/private、distribution 与 migration 边界已纳入。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "duplicate_reuse_validity",
+        "status": "passed",
+        "summary": "无 duplicate；#145/#146 是明确后续任务。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "target_authority_current",
+        "status": "passed",
+        "summary": "Live #147 title/body/update time 与 wording scope 当前一致。",
+        "evidence_refs": [
+          "target"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "prerequisite_hash_linkage",
+        "status": "passed",
+        "summary": "Context、clarity、wording 与 target/content hashes 完整链接。",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc"
+        ],
+        "finding_ids": []
+      }
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "Live #147、current prerequisite evidence 与 closed #144 共同固定横向 eval 基础设施范围。",
+      "delivery_unit_id": "guru-skill-eval-infrastructure-147",
+      "close_issues": [
+        147
+      ],
+      "related_issues": [
+        127,
+        125,
+        130
+      ],
+      "followup_issues": [
+        145,
+        146
+      ],
+      "duplicate_reuse_decision": "没有 open duplicate 替代 #147；#145/#146 是 downstream migration。",
+      "implementation_target": "trellis/skills/guru-team 的 eval schema/representative fixtures、shared runtime public commands、extension API、preset inventory、platform adapters 与 durable Docs SSOT。",
+      "current_gap": "当前具备 Interface 1.3 discovery/invocation 基础，但没有 package-local eval corpus schema、实际 invocation runner、typed grader boundary、四平台 adapter 或临时 runner evidence contract。",
+      "archived_constraints": [
+        "保持 Interface 1.2 legacy 与 Interface 1.3 public contract 语义。",
+        "复用 #144 exact public invocation、per-exit output schema、consumer/private-state 边界。",
+        "不得迁移 production Skills；#145/#146 独占迁移与 coverage closure。",
+        "canonical-first、dogfood/platform 同步、throwaway install/update/reapply 与零 sidecar 门禁。"
+      ],
+      "risk_boundary": [
+        "只处理 honest-but-fallible 正常执行、普通错误、stale/mismatch、平台兼容与行为回归。",
+        "semantic pass 由 AI/semantic grader 决定，确定性脚本只执行机械 assertions 与结构校验。"
+      ],
+      "excluded_scope": [
+        "九个 active Skills 的完整 corpus 与 payload migration。",
+        "factory 专有 package/release/checksum/provenance 字段。",
+        "Trellis upstream、全局 npm、node_modules 修改。",
+        "恶意伪造、攻击模型、锁、TOCTOU、压力与额外 fault injection。"
+      ]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-readiness-review",
+      "reviewed_linkage_sha256": "f065ca9b6429aa722107857e075e6a1031f51f78bb95f9c9a3c80553fedab16d",
+      "summary": "已按固定十维审查 #147；三份 prerequisite current，delivery unit 独立，当前 gap 与排除范围明确，无阻塞 finding。",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "9ccd73c72a1a97d9f91f568512ed20f82e4e4011530e56e9a5786534cf7a1313"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "没有需要改变已确认产品语义的新提案。",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "#147 已具备创建独立 task workspace 的完整 current evidence。",
+  "affected_evidence": [
+    {
+      "ref": "evidence_linkage",
+      "sha256": "f065ca9b6429aa722107857e075e6a1031f51f78bb95f9c9a3c80553fedab16d",
+      "summary": "完整 context/clarity/wording/target linkage。"
+    },
+    {
+      "ref": "target",
+      "sha256": "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc",
+      "summary": "Live #147 title/body content。"
+    }
+  ],
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-workspace"
+  },
+  "facts_sha256": "1e7ec06ecd79b710efc5bb05a8128b7618073c8e06251b7483d28e47fd7cdc27"
+}

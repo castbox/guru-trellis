@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-21T04:41:34Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-21-147-skill-eval-runner-adapters",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "size_bytes": 14867,
+        "content_sha256": "f99756248dac32405e5f056ca03cd903bc119ec360c8a7c33dd7805308d3ca5a"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+        "size_bytes": 16773,
+        "content_sha256": "9fa7bfda13bcec1d24dd54b9e43d8327812051973deb85baa44a7f5decea9004"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+        "size_bytes": 12056,
+        "content_sha256": "81a69d521af23dccdf6e4be17cecc6df2ab34a4ed1962bc3c4065185051e6925"
+      }
+    ],
+    "scope_sha256": "dc34a7cea622b657568cf8b719c3e4da32ec20142ca2a8becd0983eb205b2c14"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-147-planning-wording-review",
+      "summary": "已完整审核固定范围 prd.md、design.md、implement.md；最终扫描无受控词命中。三份规划保持 live issue #147 的横向评测基础设施边界，明确 Interface 1.3、actual typed exit、per-exit schema、deterministic/semantic/human 分层、四个薄 adapter、comparison exact pair、repo 外 evidence、九个 production Skills 不迁移及 #145/#146 follow-up 关系。条件路径、唯一实现 owner、机器门禁和 AC1-AC15 均有明确触发与可观察结果。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本次 fixed-scope 正式审查未继续修改当前规划内容，未改变产品语义，且最终扫描没有保留命中。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "68bb4245e227fe75122477f16947f99125794c46bfc0e0f30620cc7f2477ce57"
+}

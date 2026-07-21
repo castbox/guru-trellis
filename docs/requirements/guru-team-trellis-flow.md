@@ -761,3 +761,37 @@ PR readiness 要求：
 ## Push 后远端 Marketplace 门禁
 
 修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。
+
+## Skill Eval 横向流程
+
+```mermaid
+flowchart LR
+  C[package evals/evals.json] --> D[discover-skill-evals]
+  I[Interface 1.3] --> D
+  D --> R[run-skill-evals]
+  R --> A[shared / codex / claude / cursor adapter]
+  A --> W[public Skill wrapper]
+  W --> G[exit schema + deterministic grader]
+  S[external semantic grading] --> G
+  H[human feedback] --> G
+  G --> E[repo-external run evidence]
+```
+
+四个 adapter 节点不是 descriptor-only 标签：runner 从 descriptor 解析并执行
+`shared.sh|codex.sh|claude.sh|cursor.sh`，wrapper 再检测对应 native command，组装不同
+非交互 argv，并将 public-only Skill projection/prompt/files 与 public output/trace 留在 repo 外隔离目录。
+native command 缺失时该侧稳定返回 `unsupported`。
+每个 native CLI 必须通过 repo 外 trace helper 读取 exact `SKILL.md` 并调用 exact public
+wrapper。Runner 在边界外读取 canonical corpus，native request/context 不包含 canonical
+package/corpus/private runtime locator；wrapper 通过 runner-owned public invocation boundary
+使用 runtime。Runner 在 current/comparison 执行前从当前 source/installed extension context
+只解析一次 public runtime target，并仅通过私有 adapter request 交给两侧 broker；不得根据
+任一 exact package path 反推，也不得把该 locator 放入 native 可见边界。
+`guru-team-skill-eval-native-trace-1.0` receipt 与 request、projection、exact
+Skill/wrapper digest、wrapper argv/return code、
+stdout DTO 绑定后才产生三类 trace invariant；只有合法 DTO 而没有 receipt 时 fail closed 为
+`execution_error`。四平台 raw read projection 中 eval/private runtime 必须实际失败，不得扫描
+wrapper 源文本或依赖提示词代替执行边界。
+
+普通 Skill 调用不经过此支路。#147 只交付基础设施与 representative fixture；
+#145/#146 才迁移 production corpus 与完成 coverage closure。

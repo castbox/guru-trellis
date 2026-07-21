@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-adapter-response-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "capability_status", "corpus_sha256", "public_stdout", "public_stderr", "trace_events", "transcript_locator", "native_trace_locator", "timing_ms"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "capability_status": {"enum": ["executed", "unsupported", "execution_error"]}, "corpus_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "public_stdout": {"type": "string"}, "public_stderr": {"type": "string"}, "trace_events": {"type": "array", "items": {"enum": ["public_invocation", "evals_not_loaded", "private_runtime_not_read"]}}, "transcript_locator": {"type": "string", "minLength": 1}, "native_trace_locator": {"type": "string", "minLength": 1}, "timing_ms": {"type": "integer", "minimum": 0}
+  }
+}

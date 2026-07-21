@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "codex/147-skill-eval-runner-adapters",
+    "reviewed_head_sha": "889387cdfcdf0b0ca8f3e32028c91d19548c3349",
+    "title": "完成：#147 实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
+    "body_source": "pr-body.md",
+    "body_sha256": "8db7b51c7d605953acfa312bfe78063b7f2717d3a9d2a9269eec2643b0621a41",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "a918452917eaae8de367824a0d6944d0b9c7941b088d9701439d71960127bd6f"
+  },
+  "publish_inputs_sha256": "3f17f7c71c447ebce36e442d4ed6fb78e410055e63e2d1e39f09edf483b8c42e"
+}

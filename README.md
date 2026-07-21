@@ -452,7 +452,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.18`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.19`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -882,3 +882,33 @@ sidecar 都不构成 ownership 或迁移授权。
 ## Push 后远端 Marketplace 门禁
 
 修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。
+
+### Skill 行为评测（#147）
+
+Guru Team extension 提供 versioned package-local eval contract 与两个稳定命令：
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-evals.sh --root . --mode installed --skill <interface-1.3-skill> --json
+run_root="$(mktemp -d)"
+.trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill <interface-1.3-skill> --adapter shared --run-root "$run_root" --json
+```
+
+Schema id 为 `guru-team-skill-evals-1.0`；adapter 为 `shared|codex|claude|cursor`；
+status 为 `passed|evaluation_failed|execution_error|unsupported`。Deterministic
+grader 不生成 semantic pass，human feedback 不能覆盖机械失败，run evidence
+只写显式 repo 外临时目录。Runner 从已安装 descriptor 执行对应的
+`shared.sh|codex.sh|claude.sh|cursor.sh`，再从 `PATH` 检测
+`guru-team-shared-eval|codex|claude|cursor-agent`；不需要隐藏
+`GURU_TEAM_*_EVAL_EXECUTABLE`。`shared` 要求 caller 提供实现 documented request/context
+CLI 的 `guru-team-shared-eval`，其它三者使用各自非交互 native CLI。Discovery 的
+`native_available` 可用于预检；缺失 native command 返回 `unsupported`。Runner 在 native
+execution 外读取 canonical corpus；Adapter 只将 repo/package 外 public-only Skill projection、
+prompt、staged files 与最小 request 写入隔离 context，不传 canonical package/corpus/private
+runtime locator。Native CLI 通过 trace helper 读取 projected `SKILL.md`、调用 exact wrapper。
+只有 request/projection/Skill/wrapper-digest-bound receipt 的
+wrapper stdout 与返回 DTO 一致时才产生 trace invariant；合法 DTO 无 receipt 为
+`execution_error`。Schema id 为 `guru-team-skill-eval-native-trace-1.0`，transcript 记录
+native argv、stdout/stderr、context 与 receipt locator；四平台 projection 内 eval/private
+runtime raw read 必须真实失败。当前九个 production Skills 尚未迁移 corpus，#145
+与 #146 分别负责迁移和 coverage closure。执行 `trellis update` 后需重新应用
+workflow/preset，运行 source/installed/platform checks 并清理所有 `.new`/`.bak`。

@@ -15,15 +15,17 @@
   ],
   "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
   "ordered_stages": ["forward_behavior", "recorder_validator", "typed_exit"],
-  "artifacts": [{"id": "synced_example", "path": "examples/sync-output.json"}],
+  "artifacts": [{"id": "synced_example", "path": "examples/sync-output.json"}, {"id": "blocked_example", "path": "examples/sync-blocked-output.json"}],
   "schemas": [
     {"id": "output", "path": "schemas/sync-output.schema.json"},
     {"id": "invocation_error", "path": "schemas/invocation-error.schema.json"},
-    {"id": "checkpoint", "path": "schemas/sync-checkpoint.schema.json"}
+    {"id": "checkpoint", "path": "schemas/sync-checkpoint.schema.json"},
+    {"id": "blocked_output", "path": "schemas/sync-blocked-output.schema.json"}
   ],
   "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "fixture-runtime-command", "objective_scope": "Deterministic scalar fixture serialization"}],
   "external_exits": [
-    {"id": "synced", "evidence": "synced typed output", "consumer": {"kind": "workflow", "id": "fixture-sync-next"}}
+    {"id": "synced", "evidence": "synced typed output", "consumer": {"kind": "workflow", "id": "fixture-sync-next"}},
+    {"id": "blocked", "evidence": "blocked typed output", "consumer": {"kind": "stop", "id": "fixture-sync-stop"}}
   ],
   "reentry": {"identity": "exact scalar arguments", "freshness": "current invocation", "stale_behavior": "fail_closed"},
   "tests": ["tests/test_contract.py"],
@@ -47,13 +49,16 @@
       "example_argv": ["--exit-id", "forwarded", "--item", "alpha"]
     },
     "outputs": [
-      {"exit_id": "synced", "schema": {"schema_id": "guru-fixture-sync-output-1.0", "path": "schemas/sync-output.schema.json"}, "example": {"id": "synced_output", "path": "examples/sync-output.json"}, "consumer_use_ids": ["direct_to_sync_workflow"]}
+      {"exit_id": "synced", "schema": {"schema_id": "guru-fixture-sync-output-1.0", "path": "schemas/sync-output.schema.json"}, "example": {"id": "synced_output", "path": "examples/sync-output.json"}, "consumer_use_ids": ["direct_to_sync_workflow"]},
+      {"exit_id": "blocked", "schema": {"schema_id": "guru-fixture-sync-blocked-output-1.0", "path": "schemas/sync-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/sync-blocked-output.json"}, "consumer_use_ids": ["select_to_sync_stop"]}
     ],
     "consumer_inputs": [
-      {"id": "sync_workflow_input", "consumer": {"kind": "workflow", "id": "fixture-sync-next"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-fixture-workflow-sync-input-1.0", "path": "consumers/workflow/sync-completed.schema.json"}}
+      {"id": "sync_workflow_input", "consumer": {"kind": "workflow", "id": "fixture-sync-next"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-fixture-workflow-sync-input-1.0", "path": "consumers/workflow/sync-completed.schema.json"}},
+      {"id": "sync_stop_input", "consumer": {"kind": "stop", "id": "fixture-sync-stop"}, "payload_kind": "zero_payload"}
     ],
     "projections": [
-      {"id": "direct_to_sync_workflow", "exit_id": "synced", "consumer_input_id": "sync_workflow_input", "operation": "direct"}
+      {"id": "direct_to_sync_workflow", "exit_id": "synced", "consumer_input_id": "sync_workflow_input", "operation": "direct"},
+      {"id": "select_to_sync_stop", "exit_id": "blocked", "consumer_input_id": "sync_stop_input", "operation": "select", "mappings": []}
     ],
     "private_artifacts": [
       {"id": "sync_checkpoint", "kind": "runtime_checkpoint", "schema": {"schema_id": "guru-fixture-sync-checkpoint-1.0", "path": "schemas/sync-checkpoint.schema.json"}, "persistence": "ignored_runtime"}

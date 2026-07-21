@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-example-action",
+  "evals": [
+    {
+      "id": "complete-normal",
+      "prompt": "Complete the representative alpha action using the initial profile.",
+      "expected_exit": "completed",
+      "expected_output": "The public DTO reports completed and an alpha completion result.",
+      "input_profile_id": "initial",
+      "files": ["evals/files/context.txt"],
+      "assertions": {
+        "deterministic": [
+          {"id": "result-contains-complete", "kind": "json_path", "pointer": "/result", "operation": "contains", "expected": "complete"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ],
+        "semantic": [
+          {"id": "completion-is-relevant", "criterion": "The result addresses the requested alpha action without adding unrelated behavior.", "evidence_selector": "output"}
+        ]
+      }
+    },
+    {
+      "id": "repeat-reentry",
+      "prompt": "Repeat the representative beta action through the reentry profile.",
+      "expected_exit": "repeat",
+      "expected_output": "The public DTO reports repeat with profile reentry and topic beta.",
+      "input_profile_id": "reentry",
+      "assertions": {"deterministic": [{"id": "profile-reentry", "kind": "json_path", "pointer": "/profile", "operation": "equals", "expected": "reentry"}]}
+    },
+    {
+      "id": "blocked-family",
+      "prompt": "Block the representative gamma action through the initial profile.",
+      "expected_exit": "blocked",
+      "expected_output": "The expected stop-family typed exit is blocked.",
+      "input_profile_id": "initial",
+      "assertions": {"deterministic": [{"id": "blocked-exit", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}]}
+    }
+  ]
+}

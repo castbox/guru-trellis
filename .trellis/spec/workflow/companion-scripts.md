@@ -1232,3 +1232,59 @@ content or secrets.
 For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
 
 `issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to task-relative `marketplace-verification.json`, and explicitly does not satisfy final publish. Formal closeout pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts, then commits the immutable plan/readiness/verifier/ledger evidence allowlist and pushes it before binding a draft PR. The final summary is created once in the active task with that draft identity and is included only in the archive transaction; no post-PR or post-archive metadata tail is allowed. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. No release tag is created by this gate.
+
+## Skill Eval Discovery And Runner
+
+`discover-skill-evals.sh` and `run-skill-evals.sh` are thin wrappers for the
+deterministic `discover-skill-evals` and `run-skill-evals` subcommands.
+Discovery validates source/installed registry and Interface 1.3 state before it
+loads the fixed package-local corpus, then validates corpus identity, profile
+and exit references, fixtures, assertions, adapter inventory, and exact public
+invocation. Legacy/no-corpus packages return a stable unsupported error rather
+than a fabricated empty corpus.
+
+The runner requires an absolute `--run-root` outside the repository/package,
+executes each selected case through the public wrapper, captures one DTO,
+records the actual exit, validates its per-exit output schema, applies only the
+closed deterministic assertion grammar, and mechanically binds external
+semantic grading and separate human feedback to each comparison side. It never imports or reads
+`guru_team_trellis.py` to construct Skill input or interpret output, never
+generates semantic pass, and never turns static corpus shape into behavior
+success. Exact comparison package paths must be supplied as a pair; floating
+version/ref resolution belongs to the caller. The runner resolves one exact
+public runtime target from its selected source/installed extension context
+before iterating either comparison side and writes it only to the private
+adapter request. Current and repo-external comparison packages use the same
+target; adapters never derive runtime location from a compared package path.
+
+The shared/Codex/Claude/Cursor adapter descriptors use one request/response
+protocol. Native argv assembly is adapter-local; corpus/schema/grader/status
+policy stays in the shared runtime. Missing CLI/capability is `unsupported`,
+launch or malformed-output failure is `execution_error`, and behavior or
+grading mismatch is `evaluation_failed`. Expected non-success typed exits are
+ordinary passing behavior when their declared contract succeeds.
+
+Each closed descriptor names one executable wrapper and one native command.
+`run-skill-evals` resolves the wrapper below the selected source/installed
+`adapters/eval/` root, requires a regular executable file, and invokes it with
+the closed request. It never selects an adapter through an undocumented
+environment variable. The wrappers detect `guru-team-shared-eval`, `codex`,
+`claude`, or `cursor-agent` on `PATH`; shared uses the documented
+request/context/workdir argv, while the other three assemble their native
+non-interactive argv. Every wrapper materializes a repo-external public-only
+projection with exact `SKILL.md`, Interface, public wrapper, and invocation
+schemas/examples plus a separate case workdir. Canonical package/corpus and
+private runtime locators stay outside native execution. The wrapper records
+case prompt and staged files,
+then records native argv, stdout/stderr, context, output, and trace in the
+transcript locator. Discovery reports deterministic `native_available` facts;
+absence remains `unsupported` without creating run output inside the repo.
+The context gives the native CLI a repo-external trace helper and exact
+read/invoke commands instead of inlining `SKILL.md`. The helper receipt is
+validated against `guru-team-skill-eval-native-trace-1.0`, the minimal native
+request digest, projection root, exact Skill/wrapper bytes, public wrapper
+path/argv/return code, and returned DTO bytes.
+Missing, incomplete, unbound, or output-mismatched receipts are
+`execution_error`. A projection containing `evals/` or private runtime also
+fails closed. Trace invariants are never inferred from wrapper source text or
+the mere presence of a parseable native DTO.

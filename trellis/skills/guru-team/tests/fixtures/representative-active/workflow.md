@@ -16,4 +16,6 @@
 
 <!-- guru-skill-invoke: {"skill":"guru-example-sync","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-example-sync","exit":"synced","consumer":{"kind":"workflow","id":"fixture-sync-next"}} -->
+<!-- guru-skill-exit: {"skill":"guru-example-sync","exit":"blocked","consumer":{"kind":"stop","id":"fixture-sync-stop"}} -->
 <!-- guru-workflow-target: {"id":"fixture-sync-next"} -->
+<!-- guru-stop-target: {"id":"fixture-sync-stop"} -->

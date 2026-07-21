@@ -456,3 +456,24 @@ discovery、task 或 worktree 创建。
 ## Push 后远端 Marketplace 门禁
 
 修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。
+
+## Skill 行为评测合同
+
+Guru Team extension 必须从 Interface 1.3 发现 exact public invocation、input
+profile、declared exits 与 per-exit output schema，并对 package-local versioned
+corpus 的每个 case 实际执行公开 wrapper。Runner 只做确定性 parsing、schema、
+exit、closed assertions、external grading binding 与 evidence 汇总；semantic
+pass 只能来自显式外部 grader，human feedback 独立。结果状态为
+`passed|evaluation_failed|execution_error|unsupported`，run evidence 仅写 repo
+外临时目录。shared/Codex/Claude/Cursor adapter 使用同一 corpus bytes，普通
+workflow/standalone invocation 不读取任何 eval asset。每个 adapter descriptor 绑定一个
+安装时校验 executable mode 的 wrapper；runner 只从 descriptor path 调用它。Wrapper
+从 `PATH` 检测 documented native command，传递 exact `SKILL.md`、public wrapper、prompt
+与 staged files，并收集平台 argv、public output 和 trace；native 缺失为 `unsupported`。
+Runner 在 native execution 外读取 canonical corpus，并只向 native 提供 repo/package 外
+public-only projection、case workdir 与最小 request；canonical package/corpus/private runtime
+locator 均不进入 native context。Trace evidence 使用
+`guru-team-skill-eval-native-trace-1.0`：native CLI 必须经 repo 外 helper 完成 projected exact
+Skill read 与 exact wrapper invocation，receipt 绑定 request、projection、Skill/wrapper digest、
+argv、return code 和 DTO output。合法 DTO 缺 receipt，或 projection 暴露 eval/private runtime，
+均为 `execution_error`。

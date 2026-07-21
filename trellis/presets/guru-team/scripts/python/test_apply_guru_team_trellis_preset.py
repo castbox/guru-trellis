@@ -420,6 +420,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertFalse(payload["all_platforms"])
         self.assertIn(Path("scripts/bash/check-workspace-boundary.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/discover-skill-contract.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/discover-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/run-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-command.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/sync-base.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-base-sync.sh"), preset.MANAGED_ASSET_PATHS)
@@ -442,6 +444,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-evals.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-evals.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/sync-base.sh", os.X_OK))
@@ -648,7 +652,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 89)
+        self.assertEqual(len(managed_assets), 91)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -945,7 +949,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 89", verifier)
+        self.assertIn("assert len(assets) == 91", verifier)
+        self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
+        for adapter_id in ("shared", "codex", "claude", "cursor"):
+            self.assertIn(
+                f'test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/{adapter_id}.sh"',
+                verifier,
+            )
+        self.assertIn("EvalRunnerTests.test_four_adapters_execute_same_corpus_and_expected_non_success_exits", verifier)
         self.assertNotIn('trellis init -y -u', verifier)
         self.assertIn('DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256', verifier)
         self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "initial preset apply"', verifier)
@@ -1221,7 +1232,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.18")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.19")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -1240,6 +1251,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-commit-messages", public_api["companion_scripts"])
         self.assertIn("create-task-commit", public_api["companion_scripts"])
         self.assertIn("discover-skill-contract", public_api["companion_scripts"])
+        self.assertIn("discover-skill-evals", public_api["companion_scripts"])
+        self.assertIn("run-skill-evals", public_api["companion_scripts"])
         self.assertIn("run-skill-command", public_api["companion_scripts"])
         self.assertIn("record-planning-approval", public_api["companion_scripts"])
         self.assertIn("check-planning-approval", public_api["companion_scripts"])
@@ -1260,6 +1273,20 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(public_api["skill_contracts"]["public_input_schema_ids"], [])
         self.assertEqual(public_api["skill_contracts"]["typed_output_schema_ids"], [])
         self.assertEqual(public_api["skill_contracts"]["private_artifact_schema_ids"], [])
+        self.assertEqual(public_api["skill_evals"]["schema_id"], "guru-team-skill-evals-1.0")
+        self.assertEqual(public_api["skill_evals"]["adapter_ids"], ["shared", "codex", "claude", "cursor"])
+        for relative in (
+            "schemas/skill-evals.schema.json",
+            "schemas/skill-eval-adapter-request.schema.json",
+            "schemas/skill-eval-adapter-response.schema.json",
+            "schemas/skill-eval-native-trace.schema.json",
+            "schemas/skill-eval-run.schema.json",
+            "adapters/eval/shared.json",
+            "adapters/eval/codex.json",
+            "adapters/eval/claude.json",
+            "adapters/eval/cursor.json",
+        ):
+            self.assertTrue((self.repo / ".trellis/guru-team/skills" / relative).is_file(), relative)
         self.assertIn("sync-base", public_api["companion_scripts"])
         self.assertIn("check-base-sync", public_api["companion_scripts"])
         self.assertIn("preview-change-context-history", public_api["companion_scripts"])

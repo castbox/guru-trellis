@@ -204,3 +204,21 @@ Before changing preset ownership facts:
 5. run installer, dogfood, and throwaway validation;
 6. prove both workflow files and all unchanged overlay payloads match the
    reviewed base.
+
+## Eval Infrastructure Ownership
+
+The eval schema root `trellis/skills/guru-team/schemas/`, adapter root
+`trellis/skills/guru-team/adapters/eval/`, package-local `evals/**`, public
+eval wrappers, and installed `.trellis/guru-team/**` copies are Guru-owned
+additive assets. They do not expand or mutate the frozen 43-path transitional
+overlay baseline.
+The descriptor JSON, four executable adapter wrappers, and shared native
+adapter runtime are one Guru-owned package inventory; adding them does not
+claim `codex`, `claude`, `cursor-agent`, or a caller-provided shared CLI as
+managed upstream files.
+The repo-external trace helper and receipt are per-run temporary data; only the
+closed native trace schema and helper implementation source are managed assets.
+The public-only staged projection, minimal native request, and runner-owned
+public invocation boundary are likewise per-run external data. Canonical corpus
+and private runtime remain Guru-owned source/installed assets outside native
+execution, not platform-owned adapter payload.

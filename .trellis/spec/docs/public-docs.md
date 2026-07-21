@@ -279,3 +279,29 @@ asset lists:
 find trellis/presets/guru-team/overlays -type f | sort
 rg "MANAGED_ASSET_PATHS|Installed Files" trellis/presets/guru-team trellis/workflows/guru-team
 ```
+
+## Skill Eval Public Documentation
+
+All three public README files document `discover-skill-evals` and
+`run-skill-evals`, schema id `guru-team-skill-evals-1.0`, the four adapter ids,
+the four run statuses, repo-external evidence, and the distinction between
+deterministic grading, external semantic grading, and human feedback. Examples
+use a caller-selected Interface 1.3 package and explicit external run root; they
+do not imply that the current nine legacy production packages already have
+corpora. Upgrade text states that #145/#146 add and close production coverage
+after this infrastructure, and requires source/installed/platform discovery
+plus zero-sidecar validation after update/reapply.
+
+The README usage contract also names the four installed executable wrappers,
+their `PATH`-resolved native commands, discovery capability reporting, the
+shared command requirement, and the repo-external native argv/context/output/
+trace transcript. It must not present hidden `GURU_TEAM_*` executable variables
+as the adapter implementation.
+It also names the closed native trace-helper receipt boundary: trace assertions
+are emitted only after a minimal native request, public-only projection, exact
+Skill/wrapper digests, exact public-wrapper invocation, and returned output are
+bound. Public docs state that the runner reads canonical corpus outside native
+execution and native context receives no canonical package/corpus/private
+runtime locator. A parseable native DTO without that receipt, or a projection
+that exposes eval/private runtime assets, is an `execution_error`; context
+construction or wrapper source scanning is not execution evidence.

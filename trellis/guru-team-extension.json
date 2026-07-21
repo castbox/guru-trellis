@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.6.5-guru.18",
+  "version": "0.6.5-guru.19",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
   "target_trellis_cli": "0.6.5",
@@ -92,6 +92,16 @@
       "dispatcher": "run-skill-command",
       "manifest_path": ".trellis/guru-team/extension.json"
     },
+    "skill_evals": {
+      "schema_id": "guru-team-skill-evals-1.0",
+      "schema_version": "1.0",
+      "schema_path": "schemas/skill-evals.schema.json",
+      "native_trace_schema_id": "guru-team-skill-eval-native-trace-1.0",
+      "native_trace_schema_path": "schemas/skill-eval-native-trace.schema.json",
+      "adapter_root": "adapters/eval",
+      "adapter_ids": ["shared", "codex", "claude", "cursor"],
+      "run_statuses": ["passed", "evaluation_failed", "execution_error", "unsupported"]
+    },
     "companion_scripts": [
       "check-env",
       "version",
@@ -99,6 +109,8 @@
       "check-workspace-boundary",
       "check-skill-packages",
       "discover-skill-contract",
+      "discover-skill-evals",
+      "run-skill-evals",
       "run-skill-command",
       "sync-base",
       "check-base-sync",

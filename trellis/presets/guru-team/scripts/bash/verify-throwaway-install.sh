@@ -1388,6 +1388,8 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-evals.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/sync-base.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
@@ -1424,10 +1426,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.18"
+assert extension["version"] == "0.6.5-guru.19"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 89
+assert len(assets) == 91
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -1438,7 +1440,7 @@ for artifact in (
 for command in (
     "resolve-human-artifacts", "record-subagent-liveness-event",
     "check-subagent-liveness", "check-commit-messages",
-    "create-task-commit", "discover-skill-contract", "run-skill-command", "sync-base", "check-base-sync",
+    "create-task-commit", "discover-skill-contract", "discover-skill-evals", "run-skill-evals", "run-skill-command", "sync-base", "check-base-sync",
     "preview-change-context-history", "record-context-discovery", "check-context-discovery",
     "record-requirements-clarification", "check-requirements-clarification",
     "record-contract-wording-review", "check-contract-wording-review",
@@ -1470,6 +1472,8 @@ assert len(api["skill_contracts"]["legacy_skill_ids"]) == 9
 assert api["skill_contracts"]["public_input_schema_ids"] == []
 assert api["skill_contracts"]["typed_output_schema_ids"] == []
 assert api["skill_contracts"]["private_artifact_schema_ids"] == []
+assert api["skill_evals"]["schema_id"] == "guru-team-skill-evals-1.0"
+assert api["skill_evals"]["adapter_ids"] == ["shared", "codex", "claude", "cursor"]
 assert api["skill_runtime"] == {
     "api_version": "1.0",
     "dispatcher": "run-skill-command",
@@ -1489,11 +1493,30 @@ assert planned == []
 PY
 test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-interface.schema.json"
 test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json"
+test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-evals.schema.json"
+test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-eval-adapter-request.schema.json"
+test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-eval-adapter-response.schema.json"
+test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-eval-run.schema.json"
+test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/shared.json"
+test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/codex.json"
+test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/claude.json"
+test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.json"
+test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"
+test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/shared.sh"
+test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/codex.sh"
+test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/claude.sh"
+test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
 python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":9,"exit_markers":35,"target_markers":20,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 LEGACY_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "legacy"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.2"' <<<"$LEGACY_CONTRACT_JSON"
+legacy_eval_error="$(mktemp)"
+if "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json 2>"$legacy_eval_error"; then
+  echo "Legacy production Skill unexpectedly exposed an eval corpus" >&2
+  exit 1
+fi
+python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["code"] == "evals_unsupported"' "$legacy_eval_error"
 test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
 test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
 test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
@@ -1571,7 +1594,8 @@ test ! -e "$TARGET/.claude/skills/guru-example-action"
 (cd "$REPO_ROOT" && python3 -m unittest \
   trellis.skills.guru-team.tests.test_skill_packages.DistributionTests.test_unchanged_reapply \
   trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_active_package_and_routes_pass \
-  trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_wrappers_emit_distinct_exits_and_stable_errors)
+  trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_wrappers_emit_distinct_exits_and_stable_errors \
+  trellis.skills.guru-team.tests.test_skill_packages.EvalRunnerTests.test_four_adapters_execute_same_corpus_and_expected_non_success_exits)
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 mkdir -p "$TARGET/.trellis/tasks/archive"
 BACKFILL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
@@ -2967,7 +2991,14 @@ test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-evals.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
+test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"
+test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/shared.sh"
+test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/codex.sh"
+test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/claude.sh"
+test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/sync-base.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/preview-change-context-history.sh"

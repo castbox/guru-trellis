@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0",
+  "results": [
+    {"case_id": "complete-normal", "comparison_side": "current", "assertion_id": "completion-is-relevant", "passed": true, "summary": "External semantic grader confirmed relevance."}
+  ]
+}

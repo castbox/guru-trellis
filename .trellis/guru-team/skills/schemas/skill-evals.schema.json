@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "$id", "schema_version", "skill_name", "evals"],
+  "properties": {
+    "$schema": {"const": "https://json-schema.org/draft/2020-12/schema"},
+    "$id": {"const": "guru-team-skill-evals-1.0"},
+    "schema_version": {"const": "1.0"},
+    "skill_name": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
+    "evals": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/case"}}
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "prompt", "expected_exit", "expected_output"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "prompt": {"type": "string", "minLength": 1},
+        "expected_exit": {"type": "string", "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"},
+        "expected_output": {"type": "string", "minLength": 1},
+        "input_profile_id": {"type": "string", "minLength": 1},
+        "files": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^evals/files/[A-Za-z0-9._/-]+$"}},
+        "assertions": {"$ref": "#/$defs/assertions"}
+      }
+    },
+    "assertions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deterministic": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/deterministic"}},
+        "semantic": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/semantic"}}
+      }
+    },
+    "deterministic": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["id", "kind", "pointer", "operation"],
+          "properties": {
+            "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+            "kind": {"const": "json_path"},
+            "pointer": {"type": "string", "pattern": "^(?:/(?:[^~/]|~0|~1)*)*$"},
+            "operation": {"enum": ["exists", "equals", "contains"]},
+            "expected": {"not": {"type": "null"}}
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["id", "kind", "path", "operation"],
+              "properties": {
+                "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+                "kind": {"const": "file"},
+                "path": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
+                "operation": {"const": "exists"}
+              }
+            },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["id", "kind", "path", "operation", "expected"],
+              "properties": {
+                "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+                "kind": {"const": "file"},
+                "path": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
+                "operation": {"enum": ["json_schema", "text_equals"]},
+                "expected": {"type": "string", "minLength": 1}
+              }
+            }
+          ]
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["id", "kind", "invariant"],
+          "properties": {
+            "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+            "kind": {"const": "trace"},
+            "invariant": {"enum": ["public_invocation_only", "evals_not_loaded_by_skill", "private_runtime_not_read_by_agent"]}
+          }
+        }
+      ]
+    },
+    "semantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "criterion", "evidence_selector"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "criterion": {"type": "string", "minLength": 1},
+        "evidence_selector": {"enum": ["output", "trace", "transcript", "files"]}
+      }
+    }
+  }
+}

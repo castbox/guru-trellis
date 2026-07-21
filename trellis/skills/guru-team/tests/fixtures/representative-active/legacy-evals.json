@@ -1,0 +1,11 @@
+{
+  "skill_name": "guru-example-action",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Legacy factory-style prompt",
+      "expected_output": "Legacy human-readable result",
+      "expectations": ["The result should be relevant."]
+    }
+  ]
+}
