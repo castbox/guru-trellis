@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.18",
+    "version": "0.6.5-guru.19",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -124,6 +124,26 @@
         "dispatcher": "run-skill-command",
         "manifest_path": ".trellis/guru-team/extension.json"
       },
+      "skill_evals": {
+        "schema_id": "guru-team-skill-evals-1.0",
+        "schema_version": "1.0",
+        "schema_path": "schemas/skill-evals.schema.json",
+        "native_trace_schema_id": "guru-team-skill-eval-native-trace-1.0",
+        "native_trace_schema_path": "schemas/skill-eval-native-trace.schema.json",
+        "adapter_root": "adapters/eval",
+        "adapter_ids": [
+          "shared",
+          "codex",
+          "claude",
+          "cursor"
+        ],
+        "run_statuses": [
+          "passed",
+          "evaluation_failed",
+          "execution_error",
+          "unsupported"
+        ]
+      },
       "companion_scripts": [
         "check-env",
         "version",
@@ -131,6 +151,8 @@
         "check-workspace-boundary",
         "check-skill-packages",
         "discover-skill-contract",
+        "discover-skill-evals",
+        "run-skill-evals",
         "run-skill-command",
         "sync-base",
         "check-base-sync",
@@ -168,11 +190,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-21T01:17:32Z",
+  "installed_at": "2026-07-21T08:53:01Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/144-minimal-typed-handoff-io",
-    "commit": "7f5a325896c2819b4353b2da2e1c5635182ec930",
+    "ref": "codex/147-skill-eval-runner-adapters",
+    "commit": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -252,6 +274,7 @@
       ".trellis/guru-team/scripts/bash/create-task-commit.sh",
       ".trellis/guru-team/scripts/bash/create-task-workspace.sh",
       ".trellis/guru-team/scripts/bash/discover-skill-contract.sh",
+      ".trellis/guru-team/scripts/bash/discover-skill-evals.sh",
       ".trellis/guru-team/scripts/bash/finish-work.sh",
       ".trellis/guru-team/scripts/bash/format-merge-commit.sh",
       ".trellis/guru-team/scripts/bash/prepare-task.sh",
@@ -269,6 +292,7 @@
       ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh",
       ".trellis/guru-team/scripts/bash/review-branch.sh",
       ".trellis/guru-team/scripts/bash/run-skill-command.sh",
+      ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
       ".trellis/guru-team/scripts/bash/sync-base.sh",
       ".trellis/guru-team/scripts/bash/verify-marketplace.sh",
       ".trellis/guru-team/scripts/bash/version.sh",
@@ -359,9 +383,58 @@
         "action": "unchanged"
       },
       {
-        "path": ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
-        "source": "trellis/skills/guru-team/schemas/skill-registry.schema.json",
-        "sha256": "8af401ec302f847533572afa79afda36846b1ef9432ca1f1fdeba741415f7343",
+        "path": ".trellis/guru-team/skills/schemas/skill-eval-adapter-request.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-eval-adapter-request.schema.json",
+        "sha256": "c5881c97def3895ff4cb16080b33fe4e0a80e53e48841287bf80f3dffa964ffd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-eval-adapter-response.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-eval-adapter-response.schema.json",
+        "sha256": "2cd94a851de0a285e637a59e07e40f50bd545c2671985cc297242f4e9adf2dd2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-eval-human-feedback.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-eval-human-feedback.schema.json",
+        "sha256": "2252c17495ab109fb65c6460d970c0a03d59b5db3de0739fb960e5aa6c6f19e1",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-eval-native-trace.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json",
+        "sha256": "3cb07f30dbd4763bf9bd8df2a1d0a51976174a92784265f63f537d0155b15fc3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-eval-run.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-eval-run.schema.json",
+        "sha256": "33b672ded449278c97abe823e0b98d3e1aad72111623a1eeb1879862dfa8f972",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-eval-semantic-grading.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-eval-semantic-grading.schema.json",
+        "sha256": "50ccd7f9a8a57c4aa6552669c559942342568d2435f8fe2270cf1c98523ca680",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-evals.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-evals.schema.json",
+        "sha256": "4f99eab0afe74b93d14b55d2a23c8f4791018241d21a4e41e2c0017ad5e63afc",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+        "sha256": "aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f",
         "executable": false,
         "action": "unchanged"
       },
@@ -373,10 +446,73 @@
         "action": "unchanged"
       },
       {
-        "path": ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
-        "source": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
-        "sha256": "aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f",
+        "path": ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+        "sha256": "8af401ec302f847533572afa79afda36846b1ef9432ca1f1fdeba741415f7343",
         "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/claude.json",
+        "source": "trellis/skills/guru-team/adapters/eval/claude.json",
+        "sha256": "86df65796b1cd5a95ddcce299d0eb68f30f86b7ccbd652b997e8a6e2a9b691a1",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/claude.sh",
+        "source": "trellis/skills/guru-team/adapters/eval/claude.sh",
+        "sha256": "c4f45d79e25ae55c9084fefb32a13e38704a7200dc303ac3f4794ecdad1cbfa6",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/codex.json",
+        "source": "trellis/skills/guru-team/adapters/eval/codex.json",
+        "sha256": "5525bf9c14169990f7bc5c2c30f600efb08fc1b69553d123bd49c79f8b6edc3c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/codex.sh",
+        "source": "trellis/skills/guru-team/adapters/eval/codex.sh",
+        "sha256": "440a203888d6542b3acc752f778fb2dc57a60fb087ee996f80ad6d2ba3dd06c6",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/cursor.json",
+        "source": "trellis/skills/guru-team/adapters/eval/cursor.json",
+        "sha256": "bb2374cf94a321f6e187db7085c95380d65532bdf1231bfcf0d0bc8e2cd15770",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/cursor.sh",
+        "source": "trellis/skills/guru-team/adapters/eval/cursor.sh",
+        "sha256": "424428c223e32ebea89faa8cb2eabbd1199df28b705817e34f1338303d3b7d40",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "37d66e968c7f79860c7e0587d226b20fcfbb41e8df88757835ce29e9df3895bc",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/shared.json",
+        "source": "trellis/skills/guru-team/adapters/eval/shared.json",
+        "sha256": "e2e46f06d6d117c85b197b10e4a425ba56e76fa67c26a0184aba174d9868e340",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/shared.sh",
+        "source": "trellis/skills/guru-team/adapters/eval/shared.sh",
+        "sha256": "d00535428f03eee19788c08c8de6dba18a1fa6b1158d1e4c2458d451f0211c6e",
+        "executable": true,
         "action": "unchanged"
       },
       {

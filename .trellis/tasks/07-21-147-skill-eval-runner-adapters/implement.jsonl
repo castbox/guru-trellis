@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "实现 eval corpus、Interface 引用、runner/grader/adapter/evidence 与 normal invocation zero-impact 合同"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "实现 eval schema、extension public API、artifact 与 inventory 一致性"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "实现 deterministic discovery/run/adapter dispatch/stable error，并保持 AI 与脚本边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "实现 corpus/runner/adapter negative matrix 和 source/installed/platform/throwaway/update-reapply 门禁"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "实现 canonical eval assets 到 installed/runtime/platform 的 managed distribution 与 executable mode"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "同步 dogfood/selected-platform copies，处理 drift 与 sidecar"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "确保 eval infrastructure 留在 Guru-owned extension surface"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "同步公开 README 的 eval commands、status、adapter 与验证说明"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "核对 corpus 到 Interface、runner、adapter、manifest、installer 和 evidence 的跨层数据流"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复用 Interface discovery/path/schema helpers，避免 adapter/wrapper 复制 policy"}
+{"file": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/research/eval-contract-evidence.md", "reason": "使用 live issue、官方 Trellis、#144 与 factory schema 的规划证据"}

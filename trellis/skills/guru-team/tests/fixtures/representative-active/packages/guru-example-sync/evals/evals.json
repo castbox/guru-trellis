@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-example-sync",
+  "evals": [
+    {
+      "id": "sync-normal",
+      "prompt": "Synchronize the representative alpha item.",
+      "expected_exit": "synced",
+      "expected_output": "The public DTO reports synced with item alpha.",
+      "assertions": {"deterministic": [{"id": "item-alpha", "kind": "json_path", "pointer": "/item", "operation": "equals", "expected": "alpha"}]}
+    },
+    {
+      "id": "sync-blocked-family",
+      "prompt": "Return the expected blocked family exit for the representative item.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO reports the expected blocked stop-family exit.",
+      "assertions": {"deterministic": [{"id": "blocked-exit", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}]}
+    }
+  ]
+}

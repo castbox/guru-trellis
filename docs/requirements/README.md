@@ -147,3 +147,19 @@ dogfood 副本当成唯一来源。
 Closed but unmerged PR：
 
 - PR #21：`#20` 的早期实现尝试，已关闭并由 PR #22 替代。
+
+## Skill 行为评测基础设施（#147）
+
+#147 建立 Interface 1.3 package-local `evals/evals.json`、closed schema、真实
+public-wrapper runner、deterministic/external-semantic/human 三边界，以及
+shared/Codex/Claude/Cursor 四个薄 adapter。当前九个 production Skills 仍保持
+Interface 1.2 legacy；#145 负责迁移 corpus，#146 负责 active coverage closure。四个
+descriptor 必须绑定真实可执行 wrapper，并由 wrapper 从 `PATH` 检测 documented native
+command、组装平台 argv、加载 exact Skill/prompt/files、收集 public output/trace；隐藏
+executable 环境变量不能替代该公开安装路径。
+Runner 在 native execution 外读取 canonical corpus；CLI 只收到 repo/package 外 public-only
+projection、case workdir 与不含 canonical package/corpus/private runtime locator 的最小 request。
+Native trace 使用 closed `guru-team-skill-eval-native-trace-1.0` receipt：CLI 必须通过
+repo 外 helper 读取 projected exact `SKILL.md` 并调用 exact public wrapper，receipt 与 request、
+projection、Skill/wrapper digest、wrapper result 和返回 DTO 不匹配或缺失时为
+`execution_error`。四平台直接读取 projection 内 eval/private runtime 必须真实失败，不能靠提示词。

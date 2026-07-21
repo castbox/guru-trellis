@@ -1,0 +1,766 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-21T04:46:59Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-21-147-skill-eval-runner-adapters",
+    "task_identity_sha256": "10410c75199f265f61c7e9e2872dc15072bbed2143d450d166a98aa3ee559f27",
+    "scope_ledger_sha256": "d32b8cdc7f93fee66793e2d3ff99748ed9642073881d2a7a9fc45a7264a81f2a",
+    "status": "planning",
+    "branch": "codex/147-skill-eval-runner-adapters",
+    "issue_numbers": [
+      147
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+    "head": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+    "dirty_paths": [
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/check.jsonl",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/context-discovery.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/contract-wording-review.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.jsonl",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-review.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-scope-ledger.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/research/eval-contract-evidence.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-start-context.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task.json"
+    ],
+    "captured_at": "2026-07-21T04:46:59Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:147",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/147",
+      "sha256": "081c6634c570ee12cfc189c3c663400d93708acbb83dd56919f0ff8cff4b86a7",
+      "updated_at": "2026-07-20T20:04:45Z"
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+      "sha256": "f99756248dac32405e5f056ca03cd903bc119ec360c8a7c33dd7805308d3ca5a",
+      "size_bytes": 14867,
+      "modified_at": "2026-07-21T04:38:56.779243+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+      "sha256": "9fa7bfda13bcec1d24dd54b9e43d8327812051973deb85baa44a7f5decea9004",
+      "size_bytes": 16773,
+      "modified_at": "2026-07-21T04:38:56.779644+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+      "sha256": "81a69d521af23dccdf6e4be17cecc6df2ab34a4ed1962bc3c4065185051e6925",
+      "size_bytes": 12056,
+      "modified_at": "2026-07-21T04:38:56.779950+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+      "sha256": "f99756248dac32405e5f056ca03cd903bc119ec360c8a7c33dd7805308d3ca5a",
+      "size_bytes": 14867,
+      "modified_at": "2026-07-21T04:38:56.779243+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+      "sha256": "9fa7bfda13bcec1d24dd54b9e43d8327812051973deb85baa44a7f5decea9004",
+      "size_bytes": 16773,
+      "modified_at": "2026-07-21T04:38:56.779644+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+      "sha256": "81a69d521af23dccdf6e4be17cecc6df2ab34a4ed1962bc3c4065185051e6925",
+      "size_bytes": 12056,
+      "modified_at": "2026-07-21T04:38:56.779950+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+    "locator": "## 13. Docs SSOT Plan",
+    "durable_paths": [
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/docs/public-docs.md",
+      "docs/requirements/README.md",
+      "docs/requirements/requirement-main.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md"
+    ],
+    "statement_sha256": "3a2164229ad885e0cb9bc6eff52f8e1e4d2f67f7f7090982d895ba176c9bb296"
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "5a4046944d1a9202584f83c3575e6863627ff47eb1b550327f246a4143a07ed8",
+    "facts_sha256": "68bb4245e227fe75122477f16947f99125794c46bfc0e0f30620cc7f2477ce57",
+    "scope_sha256": "dc34a7cea622b657568cf8b719c3e4da32ec20142ca2a8becd0983eb205b2c14",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session-issue-147-planning-wording-review",
+    "summary": "已完整审核固定范围 prd.md、design.md、implement.md；最终扫描无受控词命中。三份规划保持 live issue #147 的横向评测基础设施边界，明确 Interface 1.3、actual typed exit、per-exit schema、deterministic/semantic/human 分层、四个薄 adapter、comparison exact pair、repo 外 evidence、九个 production Skills 不迁移及 #145/#146 follow-up 关系。条件路径、唯一实现 owner、机器门禁和 AC1-AC15 均有明确触发与可观察结果。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "R1-corpus-identity",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R1. Eval corpus 身份与位置",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 明确固定 package-local corpus、版本、稳定字符串 id 与 closed validation。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "681b0cbf3d95060e57afa1a4442a4980df8504af7b578b0db3d584016fe8d134"
+      },
+      {
+        "id": "R2-case-input",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R2. Case 输入与 expected contract",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 明确 case 必填字段、Interface profile 引用与 fixture 路径边界。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "9f2d38cd36322cc3f16782814d26f967fdbad0a1cbf0c7ca7d7b3af9848c39fa"
+      },
+      {
+        "id": "R3-assertion-migration",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R3. Assertion 与 legacy migration",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 明确 deterministic、semantic、human 分层及 expectations 单向迁移。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "da460e7b16119b080963380a5d1c535464feb975c26b55f68c697672906a3773"
+      },
+      {
+        "id": "R4-discovery-command",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R4. Eval discovery public command",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 要求 extension 注册稳定 discovery command 并验证完整引用链。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "573bfedd61147a5cbe74111b902a3af1841817381ef7fa530eb079ed6bc55ca1"
+      },
+      {
+        "id": "R5-run-command",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R5. Eval run public command",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 要求真实执行 Interface 1.3 public invocation 并按 actual exit 校验 output。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "3503bb74d9da5e43e596a6a0f5f76958567333d45f6a612e6da7a191b8080253"
+      },
+      {
+        "id": "R6-run-status",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R6. 运行状态与错误分类",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 固定四种 run status，并要求预期非成功 exit 能成为 behavior pass。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "1cf369612b12c312731f1097713f7d366d39d3481928e567d9024f450d1282fc"
+      },
+      {
+        "id": "R7-grader-boundary",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R7. Grader 边界",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "#147 与 AGENTS.md 共同要求脚本不生成 semantic pass。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "b8100cdaeea0e02c04f0c5741001821e5a27b6d89d2d8b69c8c6c804358e6962"
+      },
+      {
+        "id": "R8-thin-adapters",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R8. 四个薄 Adapter",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 固定 shared、Codex、Claude、Cursor 四个薄 adapter 与 byte identity。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "1d410586554364ce97ce42e65b43d74cd828bbcd139f5cb354b820d250c1804f"
+      },
+      {
+        "id": "R9-comparison",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R9. Comparison mode",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 要求 caller-resolved exact package pair 并排除浮动 ref 解释。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "f10703d45434072f7df0d8ef7a51ba178af24c9d9fcacdf9c666cdac26e031c1"
+      },
+      {
+        "id": "R10-run-evidence",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R10. Runner evidence",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "#147 固定 repo/package 外临时 evidence 和非 gate/public-I/O 边界。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "186a757feaeb3c169d9fecbd3eb40860d88d4e835befa6629cefc6c2362e2ebc"
+      },
+      {
+        "id": "R11-zero-impact",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R11. 正常运行零影响",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 要求普通 invocation 不加载 eval corpus 且 production contracts 不变。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "3bfb67d37b14316d7bbe2440071d51d89fa67a3a4167563b08b0e2c05845f644"
+      },
+      {
+        "id": "R12-distribution-docs-upgrade",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "### R12. 分发、文档与升级",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "#147 与 AGENTS.md 要求 canonical-first、dogfood/platform 同步及 fresh install/update/reapply。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "9df96319208695c1652d878dab0344635733d5c88a9fa808291673c71bd7d911"
+      },
+      {
+        "id": "AC1-schema",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC1：Closed eval schema",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收 eval schema 的位置、版本、id、字段与 closed 行为。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "1cc933d3501ad7c33ea3d55565b9f8e1d2082f7f1c79770a9f69e391b9222677"
+      },
+      {
+        "id": "AC2-exact-refs",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC2：Input profile",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收 Interface/package exact refs 与稳定路径错误。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "f913ec9059e35c0030ac39e554001bafbdf53b308e773671872f66f9c78bc91e"
+      },
+      {
+        "id": "AC3-assertion-boundaries",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC3：Canonical `assertions`",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收 canonical assertions、legacy migration 与三类 judgment 边界。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "0775d19c331cd0ae38b6ed0c41f2bc961959b15fef16e63a85ad045efe15fdf4"
+      },
+      {
+        "id": "AC4-public-commands",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC4：`discover-skill-evals`",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收两个 public commands 的 API、inventory、help 与双模式 validation。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "be861da6911c75bea734bb3db11c1010eaf2e7246bb5a4b05284aa89638e0a29"
+      },
+      {
+        "id": "AC5-real-invocation",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC5：Runner 对每个 case",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收真实 public invocation、actual exit 与 per-exit schema。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "5ca12592e39ae7770dff478374eb9cc70327986a4a6ce781b634d91c4088ce42"
+      },
+      {
+        "id": "AC6-status-classification",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC6：Run status",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收四状态与预期非成功 exit 的分类。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "a5d37b773caca36c745d181c287ec319d41fd746d382268e690ab6a308926219"
+      },
+      {
+        "id": "AC7-semantic-boundary",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC7：Deterministic grader",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "验收 deterministic runtime 不越界做 semantic judgment。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "468a0668502c00195550905d63484a8acc37da54c8949492a851d45e13c2be9f"
+      },
+      {
+        "id": "AC8-adapter-identity",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC8：Shared、Codex",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收四 adapter 薄边界和 byte-identical corpus。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "078d7293a2b4c7fddc9a20b22194915d16c819dfbb6f7c5d49d99a470152c1ac"
+      },
+      {
+        "id": "AC9-comparison-pair",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC9：Comparison",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收 exact package pair 且不解释浮动 refs。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "a761326f685922c1aa52d24db7310f7664d37d92a4233b0a83de46f15e9507e2"
+      },
+      {
+        "id": "AC10-external-evidence",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC10：Runner evidence",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "验收 repo 外 evidence 与字段闭集。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "613e9de55e45b2154707d179e74b4534aaedc278c633400c0b512a7f7ab4b6c8"
+      },
+      {
+        "id": "AC11-normal-trace",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC11：Normal workflow/standalone",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收普通 invocation 零 eval/private-runtime 读取。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "d98ca7040820aba399930144184cece8e830dfb04b499c09d242eab3b2d2183f"
+      },
+      {
+        "id": "AC12-representative-only",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC12：Representative semantic/deterministic",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "验收 representative packages 的 exit family，且不迁移 production Skills。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "1ccd9c75ce17cbafd9326a8862f7177659c6efde134aa6bf6f031348ab2f4191"
+      },
+      {
+        "id": "AC13-distribution-bytes",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC13：Canonical、installed",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "验收 canonical/installed/dogfood/platform bytes 与 mode。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "196f3f179212edf54001ffec5a13ab8c29d2e07c808e6dc364b7e3b0d817abd1"
+      },
+      {
+        "id": "AC14-full-validation",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC14：Targeted unit/integration/negative",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "验收测试、validator、preset、drift 与 throwaway update/reapply 全链路。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "7ba3c8af8372683326d7bd7ec981700159fc361c827b96ac60cbad431c67ddac"
+      },
+      {
+        "id": "AC15-sidecars-readme",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "locator": "AC15：最终递归扫描",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "验收零 sidecar 与 README 命令可执行。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "4c6d62fe457ce5231905ca727570d38cfba956a5da043b5fbe29c3a7bcd0a5cf"
+      },
+      {
+        "id": "P1-ordered-implementation",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+        "locator": "## 2. 有序实现步骤",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "先合同/schema，再 fixture/runtime/adapter/distribution/docs/全量验证，是保持 canonical-first 和逐层可验证的必要顺序。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "contract-first-ordered",
+              "tradeoff": "先稳定 durable contract 和 schema，再逐层实现并验证。"
+            },
+            {
+              "id": "runtime-first",
+              "tradeoff": "会使 public contract 滞后于代码并增加跨层返工。"
+            }
+          ],
+          "selected_id": "contract-first-ordered",
+          "selection_reason": "符合 AGENTS.md 的 canonical 与 Docs SSOT 门禁，同时让每层有独立 checkpoint。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "16297e6d1ee201e13a2d23911c234dc22165614d3237c31743710fd48edade00"
+      },
+      {
+        "id": "P2-fake-adapter-executables",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+        "locator": "| 用 fake executables 覆盖 adapter integration",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "injected fake executables 是在不依赖开发机四套 native CLI 的前提下稳定验证统一 adapter protocol 的必要选择。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "injected-fake-executables",
+              "tradeoff": "稳定覆盖 request/response、byte identity 和状态分类，native absence 另走 unsupported。"
+            },
+            {
+              "id": "require-all-native-clis",
+              "tradeoff": "让测试依赖本机隐藏状态，无法形成可重复门禁。"
+            }
+          ],
+          "selected_id": "injected-fake-executables",
+          "selection_reason": "同时满足跨平台协议验证和 README/CI 不依赖本机隐藏状态。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "2ef383d3b844efff74147628ef8f4e389173f83b1ca94be8bf1054d1a449b7a9"
+      },
+      {
+        "id": "P3-compatibility-migration",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+        "locator": "## 10. Compatibility 与迁移",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147"
+        ],
+        "reason": "#147 明确保持 Interface 1.2/1.3 与九个 production Skills 状态，并把迁移留给 #145/#146。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "1e6a39e8d9b67f69ad32282cf07aca5c4471296d71a96c258e9366154783dc32"
+      },
+      {
+        "id": "P4-rollout-rollback",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+        "locator": "## 11. Rollout 与 rollback",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:147",
+          "repo:agents"
+        ],
+        "reason": "计划给出 canonical 到安装/升级的 rollout，以及不破坏 Interface/production behavior 的 rollback。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "e12194d685bd9ea845d00b40a52c2bc9c7ef1868530c4b45e14409f7d5fa9fee"
+      },
+      {
+        "id": "P5-docs-ssot",
+        "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+        "locator": "## 13. Docs SSOT Plan",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "repo:agents"
+        ],
+        "reason": "公共 schema、commands、adapter/evidence 和升级合同必须先进入 durable docs，不能只留在 task artifact。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "ssot-first",
+              "tradeoff": "先更新 durable contract，再实现和同步生成副本。"
+            },
+            {
+              "id": "task-delta-only",
+              "tradeoff": "会形成 task-local 平行长期定义。"
+            }
+          ],
+          "selected_id": "ssot-first",
+          "selection_reason": "与仓库 Docs SSOT、canonical source 和 upgrade/update 门禁一致。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "3a2164229ad885e0cb9bc6eff52f8e1e4d2f67f7f7090982d895ba176c9bb296"
+      }
+    ],
+    "coverage": {
+      "reviewer": "codex-main-session-issue-147-plan-review",
+      "summary": "R1-R12、AC1-AC15、实现顺序、adapter integration 选择、兼容迁移、rollout/rollback 与 Docs SSOT 均已绑定 current authority；全部承重条款都有唯一实现路径和可观察验证结果。",
+      "reviewed_entry_ids": [
+        "R1-corpus-identity",
+        "R2-case-input",
+        "R3-assertion-migration",
+        "R4-discovery-command",
+        "R5-run-command",
+        "R6-run-status",
+        "R7-grader-boundary",
+        "R8-thin-adapters",
+        "R9-comparison",
+        "R10-run-evidence",
+        "R11-zero-impact",
+        "R12-distribution-docs-upgrade",
+        "AC1-schema",
+        "AC2-exact-refs",
+        "AC3-assertion-boundaries",
+        "AC4-public-commands",
+        "AC5-real-invocation",
+        "AC6-status-classification",
+        "AC7-semantic-boundary",
+        "AC8-adapter-identity",
+        "AC9-comparison-pair",
+        "AC10-external-evidence",
+        "AC11-normal-trace",
+        "AC12-representative-only",
+        "AC13-distribution-bytes",
+        "AC14-full-validation",
+        "AC15-sidecars-readme",
+        "P1-ordered-implementation",
+        "P2-fake-adapter-executables",
+        "P3-compatibility-migration",
+        "P4-rollout-rollback",
+        "P5-docs-ssot"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "f380e56727db2c96e7a9b92d98bda22b828b978bb77b9c3acfacbfa85a22bcc9"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "codex-main-session-issue-147-plan-review",
+    "summary": "已检查 security/threat、malicious actor、TOCTOU/concurrency race、fault injection/crash consistency、cross-OS atomicity 与其它非标准场景；live #147 和 AGENTS.md 均明确排除这些扩展，当前规划未引入对应机制，因此无候选和专门确认项。",
+    "candidates": [],
+    "unresolved_count": 0,
+    "review_sha256": "b435f815d1eef36ea897fa8a98fca73a8eae1b7f6c422dd291b7d53daaa71bcc"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-147-plan-review",
+      "summary": "九项前置条件均当前有效；三份规划充分承接 live #147、#144 基线和仓库门禁，R1-R12、AC1-AC15、实现顺序、验证、兼容、rollback 与 durable docs ownership 完整，无歧义、finding、revision action、scope proposal 或 blocker。",
+      "reviewed_at": "2026-07-21T04:43:56Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-21T04:42:00Z",
+    "confirmed_at": "2026-07-21T04:43:56Z",
+    "evidence_summary": "已向用户展示 prd.md、design.md、implement.md 三个绝对链接并明确实现尚未启动；用户随后回复“确认继续”，批准这三个当前 digest 不变的规划文档进入实现。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "当前三份规划、Docs SSOT、wording pass、live #147、scope ledger 与 repository snapshot 均已审查并由用户独立确认，可进入 task activation。",
+  "supersedes_facts_sha256": null,
+  "facts_sha256": "e1602d8136c2ad853e3ee4bda54ce952378cda548b4695089c1b60b2700d15c1"
+}

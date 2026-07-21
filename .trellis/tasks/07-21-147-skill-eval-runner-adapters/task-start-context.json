@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 147,
+    "url": "https://github.com/castbox/guru-trellis/issues/147",
+    "title": "实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/147"
+  },
+  "task_slug": "147-skill-eval-runner-adapters",
+  "task_title": "#147 实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
+  "task_artifact_dir": ".trellis/tasks/07-21-147-skill-eval-runner-adapters",
+  "branch_name": "codex/147-skill-eval-runner-adapters",
+  "base_branch": "main",
+  "base_ref": "refs/remotes/origin/main",
+  "base_head_sha": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+  "remote_head_sha": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+  "workspace_slug": "147-skill-eval-runner-adapters",
+  "task_workspace_id": "147-skill-eval-runner-adapters",
+  "assignee": "wesleywu",
+  "actor": {
+    "login": "wesleywu"
+  },
+  "issue_scope_ledger_seed": {
+    "schema_version": "1.0",
+    "primary_issue": {
+      "number": 147,
+      "url": "https://github.com/castbox/guru-trellis/issues/147",
+      "title": "实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
+      "reason": "本 task 的唯一主要交付单元。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 147,
+        "url": "https://github.com/castbox/guru-trellis/issues/147",
+        "title": "实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
+        "reason": "本 task 完整验收并关闭 #147。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 127,
+        "url": "https://github.com/castbox/guru-trellis/issues/127",
+        "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+        "reason": "提供 Skill-first 与 upstream 边界背景，不由本 task 关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 125,
+        "url": "https://github.com/castbox/guru-trellis/issues/125",
+        "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+        "reason": "提供 standalone runtime 依赖合同，不由本 task 关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 130,
+        "url": "https://github.com/castbox/guru-trellis/issues/130",
+        "title": "实现 guru-check-task 闭环 Skill",
+        "reason": "提供闭环检查与证据消费背景，不由本 task 关闭。",
+        "acceptance_evidence": []
+      }
+    ],
+    "followup_issues": [
+      {
+        "number": 145,
+        "url": "https://github.com/castbox/guru-trellis/issues/145",
+        "title": "迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+        "reason": "后续迁移 production Stage 0 Skills。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 146,
+        "url": "https://github.com/castbox/guru-trellis/issues/146",
+        "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+        "reason": "后续迁移 planning、Phase 2 与 task commit Skills。",
+        "acceptance_evidence": []
+      }
+    ],
+    "rules": [
+      "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+      "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+      "followup_issues 表示新范围或后续任务，不能自动关闭。"
+    ]
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": true,
+      "selected_issue": 147
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "名称绑定 issue #147 与 Skill eval runner、grader、跨 Agent adapter 横向基础设施语义。"
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    },
+    "final_source_issue_binding": {
+      "repo": "castbox/guru-trellis",
+      "number": 147,
+      "url": "https://github.com/castbox/guru-trellis/issues/147",
+      "state": "open",
+      "title_sha256": "360cc09d3815415b42406e016a055a1ea4083e00f0ba3c3f71d5f731eb27b359",
+      "body_sha256": "ef54d68756c9b0010c78d9ca8e6cbe73f611e48bc56a1b76ba3d57fabe71b3af",
+      "updated_at": "2026-07-20T20:04:45Z",
+      "target_disposition_sha256": "21044ad99a3d29087ab00cf4b160e144df3c1d9f63800e1a75032345e91de495",
+      "created_issue_binding_sha256": null
+    },
+    "prerequisite_evidence": {
+      "base": {
+        "skill_id": "guru-sync-base",
+        "schema_id": "guru-base-sync-result-1.0",
+        "typed_exit": "synced",
+        "payload_sha256": "5581ced6760059341e8c2c44ce99ffc1b53df6d3f756396ef7aa591959ef1435",
+        "facts_sha256": "84ee6ba8208f0a2d98765a21f47627a9fec9d95339091f94d232c3626c82c017",
+        "content_sha256": null,
+        "linkage_sha256": null
+      },
+      "context": {
+        "skill_id": "guru-discover-change-context",
+        "schema_id": "guru-context-discovery-1.0",
+        "typed_exit": "context_ready",
+        "payload_sha256": "c895df48772137e0732c8467cb218278ed4b578bb7f9cbbf527b28e6f5b16d0e",
+        "facts_sha256": "89b2d436389bef0e9bb245158b70a1cfae09d4ea291df5e184c14b4ceb19358d",
+        "content_sha256": "1f177a64e48776f826ed00fdf2f43d84e5f9b27eb7a86d5b37e9323a672e0794",
+        "linkage_sha256": "89b2d436389bef0e9bb245158b70a1cfae09d4ea291df5e184c14b4ceb19358d"
+      },
+      "clarity": {
+        "skill_id": "guru-clarify-requirements",
+        "schema_id": "guru-requirements-clarification-2.0",
+        "typed_exit": "clear",
+        "payload_sha256": "4fadee2a14f93c45077fbb35b073e62bee1f8922518bda4b687535ddef63ce0a",
+        "facts_sha256": "f5168ce26afc7ebc145abc66c0675f9a0027574da82dace310860134a637d4a7",
+        "content_sha256": "beba14a8a3b29ea4172ae338c237bdb03aa9ade7115827b8446fbea9d67e66aa",
+        "linkage_sha256": "06c78bcd62d474e1a93f211c82f78cf3276920a6c44689a8e4526728f6cdf952"
+      },
+      "wording": {
+        "skill_id": "guru-review-contract-wording",
+        "schema_id": "guru-contract-wording-review-1.0",
+        "typed_exit": "pass",
+        "payload_sha256": "27efe4de70ba77fab41c8336c67690daabdaa39b513de54556f16ef2552ba5b3",
+        "facts_sha256": "83ed6ce83b53a9608c65dcc5a92d526f7a722d35278cd07ddabb5795cc6a77da",
+        "content_sha256": "e76074cbd03e8889e4c80d3fb551ab915107403f31e5f36e8c4360961aab54a1",
+        "linkage_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "readiness": {
+        "skill_id": "guru-review-change-request",
+        "schema_id": "guru-change-request-review-1.0",
+        "typed_exit": "ready",
+        "payload_sha256": "fd71191e29aa349fc15e0e75aee0760d292090d86e6f0e32fea2a6b16a81824d",
+        "facts_sha256": "1e7ec06ecd79b710efc5bb05a8128b7618073c8e06251b7483d28e47fd7cdc27",
+        "content_sha256": "7d4cb7e37b35e82bacd74972c3e4b0ca56560b85013c663a84dfb03ea84b7abc",
+        "linkage_sha256": "f065ca9b6429aa722107857e075e6a1031f51f78bb95f9c9a3c80553fedab16d"
+      }
+    }
+  }
+}

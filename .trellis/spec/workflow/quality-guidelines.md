@@ -456,3 +456,39 @@ Python or shell.
 - Leaving `.new` or `.bak` installer outputs unresolved in committed changes.
 - Committing local identity files, `.env`, tokens, signed URLs, or private
   provider output.
+
+## Skill Eval Quality Matrix
+
++ Skill eval tests use the mixed representative Interface 1.2/1.3 fixture and
+  execute real public wrappers.
++ Negative coverage includes unknown/null fields, duplicate or non-string ids,
+  profile/exit drift, unsafe/missing/symlink fixtures, unknown assertions,
+  canonical legacy `expectations`, missing external semantic grading, feedback
+  overriding deterministic failure, one-sided/floating comparison, internal
+  run root, platform corpus drift, and malformed public output.
++ Adapter integration injects fake shared/Codex/Claude/Cursor executables to
+  exercise the real descriptor-selected adapter wrappers, prove four distinct
+  native argv shapes, exact Skill/prompt/staged-file context, public output and
+  trace collection, and byte-identical corpus without local CLI assumptions;
+  native absence separately returns `unsupported`. A fake adapter may not
+  replace the four real wrappers in this integration test.
++ Four-platform comparison covers a repo current package and a repo-external
+  byte-identical exact package with native commands available and no dispatcher
+  override. Both sides pass through one runner-resolved private runtime target,
+  while every native-visible request/context/projection/receipt/boundary remains
+  free of that locator.
++ Adapter integration validates the repo-external native read/invocation
+  receipt and rejects a native CLI that returns a schema-valid typed DTO without
+  reading the Skill and invoking the public wrapper through the trace helper.
+  Wrapper-source scanning or unconditional synthetic trace events cannot
+  satisfy the three public-invocation trace invariants.
++ All four native envelopes receive only the public staged projection. Raw
+  reads of projection-relative `evals/evals.json` and private runtime source
+  must produce real filesystem denial evidence and `execution_error`; native
+  request/context must contain no canonical package/corpus/private-runtime
+  locator while the runner grades canonical corpus outside execution.
++ Fresh install and post-`trellis update` preset reapply rerun source/installed
+  discovery and run smoke, selected-platform byte/mode checks, dogfood drift,
+  and recursive zero `.new`/`.bak` scans.
++ A normal public invocation trace proves no eval corpus/descriptor/evidence or
+  private runtime source enters ordinary Skill context.

@@ -61,6 +61,8 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-workspace-boundary.sh"),
     Path("scripts/bash/check-skill-packages.sh"),
     Path("scripts/bash/discover-skill-contract.sh"),
+    Path("scripts/bash/discover-skill-evals.sh"),
+    Path("scripts/bash/run-skill-evals.sh"),
     Path("scripts/bash/run-skill-command.sh"),
     Path("scripts/bash/sync-base.sh"),
     Path("scripts/bash/check-base-sync.sh"),
@@ -705,10 +707,12 @@ def install_skill_packages(
     active_ids = sorted(str(entry.get("id")) for entry in active_entries)
     source_files: list[tuple[Path, Path]] = [
         (canonical_root / "registry.json", Path("registry.json")),
-        (canonical_root / "schemas/skill-registry.schema.json", Path("schemas/skill-registry.schema.json")),
-        (canonical_root / "schemas/skill-interface.schema.json", Path("schemas/skill-interface.schema.json")),
-        (canonical_root / "schemas/skill-interface-1.3.schema.json", Path("schemas/skill-interface-1.3.schema.json")),
     ]
+    for shared_root_name in ("schemas", "adapters"):
+        shared_root = canonical_root / shared_root_name
+        if shared_root.is_dir():
+            for source in skill_package_source_files(shared_root):
+                source_files.append((source, source.relative_to(canonical_root)))
     consumer_root = canonical_root / "consumers"
     if consumer_root.is_dir():
         for source in skill_package_source_files(consumer_root):
@@ -1285,6 +1289,8 @@ def install_assets(
         dst / "scripts/bash/check-workspace-boundary.sh",
         dst / "scripts/bash/check-skill-packages.sh",
         dst / "scripts/bash/discover-skill-contract.sh",
+        dst / "scripts/bash/discover-skill-evals.sh",
+        dst / "scripts/bash/run-skill-evals.sh",
         dst / "scripts/bash/run-skill-command.sh",
         dst / "scripts/bash/sync-base.sh",
         dst / "scripts/bash/check-base-sync.sh",

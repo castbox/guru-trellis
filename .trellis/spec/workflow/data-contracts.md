@@ -1668,3 +1668,40 @@ python3 -m json.tool trellis/workflows/guru-team/schemas/task-start-context.sche
 - Adding a new task-start-context field required by code but absent from the strict JSON schema.
 - Letting PR generation close `related_issues` or `followup_issues`.
 - Recording review-gate evidence that does not mention deployment impact.
+
+## Skill Evaluation Data Contracts
+
+`public_api.skill_evals` publishes schema id `guru-team-skill-evals-1.0`, native
+trace schema id `guru-team-skill-eval-native-trace-1.0`, the four adapter ids,
+the closed run-status set, and the repo-relative canonical
+schema/adapter roots. `public_api.companion_scripts` publishes
+`discover-skill-evals` and `run-skill-evals`. These inventories are additive
+extension API; they do not add eval schema ids to production Skill public input,
+typed output, or private artifact inventories.
+
+Each closed descriptor contains exact adapter/platform identity, one
+package-relative executable basename, one non-empty `PATH`-resolved native
+command, and the fixed capability list. Discovery may report current
+`native_available` as a live machine fact. The request remains byte-identical
+across adapters; platform-specific argv/context and native output envelopes are
+private adapter execution details retained through the transcript locator. The
+native trace locator identifies a repo-external closed receipt whose events are
+bound to the minimal native request digest, public projection root, exact
+Skill/wrapper digests, request-bound reads, and one exact projected wrapper
+invocation. The native request contains only projection/workdir/prompt/files/
+invocation locators; canonical package, corpus, adapter request, and private
+runtime locators stay runner-private. The closed adapter request carries the
+runner-resolved public runtime target; every side in one comparison receives
+the same value, and no native request, context, argv, projection, receipt, or
+boundary client contains that locator. The receipt is not public Skill I/O or
+a semantic verdict.
+
+The corpus schema, semantic grading input, human feedback input, adapter
+request/response, native trace, and run evidence are separate closed contracts. The corpus
+contains references and expectations but no output-schema/private-artifact
+locator. Semantic grading contains exact comparison-side/case/assertion identity
+plus an external verdict; human feedback uses comparison-side/case identity and
+cannot carry a grader verdict. Run evidence
+contains only corpus/interface/package/platform/adapter/comparison identity,
+actual exit, assertion results, status, transcript locator, timing, and
+feedback. It forbids gate/checkpoint/audit/release/provenance fields.

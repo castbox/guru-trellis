@@ -66,8 +66,11 @@ def main() -> int:
     elif package.name == "guru-example-sync":
         exit_id = option(forwarded, "--exit-id")
         item = option(forwarded, "--item")
+        if exit_id == "blocked":
+            print(json.dumps({"exit_id": "blocked"}, separators=(",", ":")))
+            return 0
         if exit_id != "forwarded":
-            return fail("invalid_argument", "arguments.exit_id", "Use --exit-id forwarded for the representative sync invocation.")
+            return fail("invalid_argument", "arguments.exit_id", "Use --exit-id forwarded or blocked for the representative sync invocation.")
         if not item:
             return fail("missing_argument", "arguments.item", "Provide --item with a non-empty value.")
         result = {"exit_id": "synced", "item": item}

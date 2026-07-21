@@ -368,3 +368,24 @@ Keep platform-specific command names only where needed, such as
 - Mentioning publish as a separate user-facing step.
 - Adding an upstream namespace overlay or managed-path claim outside the frozen
   ownership inventory.
+
+## Eval Distribution Boundary
+
+Skill eval infrastructure is Guru-owned additive content under canonical
+`trellis/skills/guru-team/`, workflow companion scripts, and installed
+`.trellis/guru-team/**` plus `guru-*` discovery roots. It does not authorize a
+new or changed upstream-owned overlay. Preset apply is the only dogfood sync
+path; after an eval schema/adapter/wrapper inventory change, reapply and run
+dogfood drift plus selected-platform byte/mode validation. Unknown local edits
+retain the standard `.new` fail-closed behavior and known upgrades retain the
+managed `.bak` contract until explicitly resolved.
+Descriptor-selected adapter executables and their shared native runtime remain
+under this Guru-owned canonical/installed path; platform discovery copies do
+not fork adapter argv, context, corpus, or grading behavior.
+The native trace schema and trace-helper protocol move with that managed asset
+set; an old response schema or adapter runtime paired with a new trace schema is
+installed drift.
+The managed adapter also preserves public-only projection semantics: canonical
+package/corpus/private runtime never enter the native request or context, while
+the receipt binds projection root plus exact Skill/wrapper digests. Platform
+copies may not re-expose canonical roots for convenience.

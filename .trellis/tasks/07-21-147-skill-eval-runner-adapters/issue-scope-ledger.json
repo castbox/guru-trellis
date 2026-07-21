@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 147,
+    "url": "https://github.com/castbox/guru-trellis/issues/147",
+    "title": "实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
+    "reason": "本 task 的唯一主要交付单元。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 147,
+      "url": "https://github.com/castbox/guru-trellis/issues/147",
+      "title": "实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
+      "reason": "本 task 完整验收并关闭 #147。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "提供 Skill-first 与 upstream 边界背景，不由本 task 关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 125,
+      "url": "https://github.com/castbox/guru-trellis/issues/125",
+      "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+      "reason": "提供 standalone runtime 依赖合同，不由本 task 关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 130,
+      "url": "https://github.com/castbox/guru-trellis/issues/130",
+      "title": "实现 guru-check-task 闭环 Skill",
+      "reason": "提供闭环检查与证据消费背景，不由本 task 关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 145,
+      "url": "https://github.com/castbox/guru-trellis/issues/145",
+      "title": "迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+      "reason": "后续迁移 production Stage 0 Skills。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 146,
+      "url": "https://github.com/castbox/guru-trellis/issues/146",
+      "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+      "reason": "后续迁移 planning、Phase 2 与 task commit Skills。",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

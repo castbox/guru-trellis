@@ -1094,3 +1094,83 @@ and clean throwaway update/reapply.
 Public packages, fixtures, manifests, and examples must not contain active task
 state, workspace journals, platform prompts, project-private data, secrets,
 signed URLs, `.env` values, or machine-specific absolute paths.
+
+## Package-Local Skill Evaluation Contract
+
+Interface 1.3 packages may publish a behavior corpus only at
+`<skill-root>/evals/evals.json`. The closed schema id is
+`guru-team-skill-evals-1.0`: `schema_version=1.0`, exact `skill_name`, and a
+non-empty `evals[]` whose case ids are unique stable strings. Each case owns a
+prompt, expected typed exit, human-readable expected output, optional exact
+input-profile reference, optional non-empty regular files below `evals/files/`,
+and optional non-empty deterministic/semantic assertion groups. Unknown fields,
+`null`, unsafe paths, symlinks, unknown profile/exit/assertion references, and
+canonical `expectations` fail closed. Legacy `expectations[]` is accepted only
+by the one-way migration adapter and never written as canonical corpus.
+
+The eval runner discovers the Interface 1.3 public invocation and executes its
+declared wrapper for every selected case. It records the actual typed exit and
+validates the DTO against that exit's independent output schema. Deterministic
+grading is limited to closed JSON-pointer, isolated-file, and public-invocation
+trace operations. Semantic assertions can pass only through complete external
+grading bound to comparison-side/case/assertion identity; human feedback is separate and cannot
+override a deterministic failure. Status is exactly `passed`,
+`evaluation_failed`, `execution_error`, or `unsupported`; an expected blocked,
+refresh, re-entry, or stop exit is a pass when its exit/schema/assertions pass.
+
+The stable adapter ids are `shared`, `codex`, `claude`, and `cursor`. The runner
+reads the canonical corpus outside native execution. Adapters then create a
+repo/package-external public-only projection containing exact `SKILL.md`,
+`interface.json`, the exact public wrapper, and only the public Interface
+schemas/examples needed for invocation. Native execution receives that
+projection, staged files, prompt, helper, and a minimal native request; it does
+not receive the canonical package root, corpus locator, adapter request, or
+private runtime source. Adapters return stdout/stderr/trace/timing locators.
+They consume the same corpus bytes and do not own schema, grading,
+consumer projection, semantic judgment, or platform-specific corpus. Missing
+native capability returns `unsupported`. Comparison accepts only a pair of
+caller-resolved exact package paths, binds grading and feedback to each side
+independently, and never interprets floating refs. Before either side executes,
+the runner resolves one exact public runtime target from the selected
+source/installed extension context. Current and comparison adapters receive
+that same locator only through their private adapter requests; neither exact
+package path is used to infer runtime location.
+
+Every adapter descriptor owns an executable package-relative wrapper and a
+non-empty native command. Source/installed discovery validates the descriptor,
+regular executable mode, and exact adapter identity before use. The runner
+always calls that wrapper; it does not use a hidden executable environment
+override as an alternate implementation. `shared.sh`, `codex.sh`, `claude.sh`,
+and `cursor.sh` delegate only platform capability detection, native argv,
+isolated context, output unwrapping, and trace collection to the shared adapter
+runtime. The native context includes only projected Skill/public-wrapper
+locators, case prompt, staged files, and helper read/invoke commands, never
+canonical package/corpus locators, inline Skill bytes, private runtime source,
+corpus assertions, grader policy, or the runner-private runtime target.
+Wrappers reach required runtime only through the runner-owned public invocation
+boundary. An explicit compatibility/test dispatcher override may select the
+runner-private target, but normal execution never depends on an environment
+override.
+
+Native execution trace is the independent closed
+`guru-team-skill-eval-native-trace-1.0` contract. The repo-external adapter
+context supplies a trace helper instead of embedding `SKILL.md` content. The
+receipt binds the minimal native request digest, projection root, and exact
+Skill/wrapper content digests. A
+native CLI must use that helper to read the exact Skill contract and invoke the
+exact public wrapper. The helper binds read/invocation events to the adapter
+request and records path/content identity, wrapper argv/return code, and
+normalized stdout/stderr identity. Only a complete receipt whose wrapper stdout
+matches the returned typed DTO may produce trace invariants. A valid DTO with
+no verified wrapper receipt is `execution_error`, not behavior success. The
+projection physically omits `evals/` and private runtime source; four-platform
+negative execution proves direct reads through received package/context
+locators fail at that boundary rather than relying on prompt instructions.
+
+Every writable run result lives below an explicit absolute temporary run root
+outside the repository and package. Closed evidence is diagnostic comparison
+data, not public Skill I/O, a consumer handoff, gate, checkpoint, audit chain,
+or release proof. Normal workflow and standalone invocation never read eval
+corpus, fixtures, adapter descriptors, or runner evidence; production public
+I/O, exits, routes, and the nine legacy package states remain unchanged until
+#145/#146.

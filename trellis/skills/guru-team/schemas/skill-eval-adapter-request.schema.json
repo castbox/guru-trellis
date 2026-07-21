@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-adapter-request-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "adapter_id", "platform", "skill_id", "package_root", "interface", "case_id", "prompt", "files", "workdir", "corpus_path", "corpus_sha256", "runtime_target"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "adapter_id": {"enum": ["shared", "codex", "claude", "cursor"]}, "platform": {"enum": ["shared", "codex", "claude", "cursor"]}, "skill_id": {"type": "string", "minLength": 1}, "package_root": {"type": "string", "minLength": 1}, "interface": {"type": "object"}, "case_id": {"type": "string", "minLength": 1}, "prompt": {"type": "string", "minLength": 1}, "files": {"type": "array", "items": {"type": "string"}}, "workdir": {"type": "string", "minLength": 1}, "corpus_path": {"type": "string", "minLength": 1}, "corpus_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "runtime_target": {"type": "string", "minLength": 1}
+  }
+}

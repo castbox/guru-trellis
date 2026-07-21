@@ -21,6 +21,7 @@
         "guru-fixture-action-completed-output-1.0",
         "guru-fixture-action-forwarded-output-1.0",
         "guru-fixture-action-repeat-output-1.0",
+        "guru-fixture-sync-blocked-output-1.0",
         "guru-fixture-sync-output-1.0"
       ],
       "private_artifact_schema_ids": [
@@ -34,9 +35,21 @@
       "dispatcher": "run-skill-command",
       "manifest_path": ".trellis/guru-team/extension.json"
     },
+    "skill_evals": {
+      "schema_id": "guru-team-skill-evals-1.0",
+      "schema_version": "1.0",
+      "schema_path": "schemas/skill-evals.schema.json",
+      "native_trace_schema_id": "guru-team-skill-eval-native-trace-1.0",
+      "native_trace_schema_path": "schemas/skill-eval-native-trace.schema.json",
+      "adapter_root": "adapters/eval",
+      "adapter_ids": ["shared", "codex", "claude", "cursor"],
+      "run_statuses": ["passed", "evaluation_failed", "execution_error", "unsupported"]
+    },
     "companion_scripts": [
       "discover-skill-contract",
+      "discover-skill-evals",
       "fixture-runtime-command",
+      "run-skill-evals",
       "run-skill-command"
     ]
   }

@@ -428,3 +428,34 @@ or disposable copy and verify:
 - Treating `.new` as success without telling the user to review it.
 - Copying assets from installed target directories instead of the canonical
   workflow source under `trellis/workflows/guru-team/`.
+
+## Skill Evaluation Assets
+
+Canonical eval schemas, adapter descriptors/wrappers, public command wrappers,
+and shared runtime live under `trellis/`. The preset installs them below
+`.trellis/guru-team/`, preserving executable mode for wrappers. Package-local
+`evals/` directories are part of the package tree inventory and therefore copy
+byte-for-byte to the installed package and each selected shared/Codex/Claude/
+Cursor discovery root. Test-only representative packages remain outside the
+production registry and production platform installation.
+
+Every installed adapter descriptor names an executable in the same
+`adapters/eval/` directory. Apply and installed validation require that file to
+be regular and executable; the runner may not bypass the managed executable
+with a machine-local hidden environment override. The shared adapter runtime
+and all four thin wrappers are therefore part of fresh-install and
+update/reapply inventory, not documentation-only descriptors.
+`skill-eval-native-trace.schema.json`, the adapter response schema, and the
+shared native adapter runtime are one managed protocol version: canonical,
+fixture, installed, dogfood, and selected-platform checks must reject a partial
+update.
+That runtime stages a repo/package-external public-only package projection and
+keeps canonical adapter request, corpus locator, and private runtime outside
+native execution. Fresh-install and update/reapply tests prove the projection
+omits `evals/`/private runtime on all four adapters while exact Skill/wrapper
+bytes and the public invocation boundary still execute.
+
+Apply, installed validation, and throwaway update/reapply verify every managed
+eval file digest/mode and reject missing, unexpected, drifted, symlink-backed,
+or sidecar state. Normal install/update never moves eval corpus into workflow
+prompt context or ordinary Skill invocation payloads.

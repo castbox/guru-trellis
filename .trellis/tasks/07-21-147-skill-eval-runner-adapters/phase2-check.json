@@ -1,0 +1,720 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-check-task",
+  "generated_at": "2026-07-21T09:09:27Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-21-147-skill-eval-runner-adapters",
+    "task_id": "147-skill-eval-runner-adapters",
+    "branch": "codex/147-skill-eval-runner-adapters",
+    "base_branch": "main",
+    "issue_numbers": [
+      147
+    ],
+    "task_identity_sha256": "10410c75199f265f61c7e9e2872dc15072bbed2143d450d166a98aa3ee559f27"
+  },
+  "planning": {
+    "schema_id": "guru-planning-approval-2.0",
+    "typed_exit": "approved",
+    "artifact": {
+      "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/planning-approval.json",
+      "sha256": "0b84d2254ffb15b372e668c57521bc3ca348049ecb7539ee23f30f6f052ee9f1",
+      "size_bytes": 32646
+    },
+    "reviewed_artifacts": [
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "sha256": "f99756248dac32405e5f056ca03cd903bc119ec360c8a7c33dd7805308d3ca5a",
+        "size_bytes": 14867
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+        "sha256": "9fa7bfda13bcec1d24dd54b9e43d8327812051973deb85baa44a7f5decea9004",
+        "size_bytes": 16773
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+        "sha256": "81a69d521af23dccdf6e4be17cecc6df2ab34a4ed1962bc3c4065185051e6925",
+        "size_bytes": 12056
+      }
+    ],
+    "facts_sha256": "e1602d8136c2ad853e3ee4bda54ce952378cda548b4695089c1b60b2700d15c1"
+  },
+  "requirement_provenance": {
+    "summary": "已从零复核 live Issue #147、批准后的 prd/design/implement、issue review、context discovery 与 eval contract research；当前实现严格限于 #147，#145/#146 保持 follow-up。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+        "sha256": "f99756248dac32405e5f056ca03cd903bc119ec360c8a7c33dd7805308d3ca5a",
+        "size_bytes": 14867
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+        "sha256": "9fa7bfda13bcec1d24dd54b9e43d8327812051973deb85baa44a7f5decea9004",
+        "size_bytes": 16773
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+        "sha256": "81a69d521af23dccdf6e4be17cecc6df2ab34a4ed1962bc3c4065185051e6925",
+        "size_bytes": 12056
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-review.json",
+        "sha256": "fd71191e29aa349fc15e0e75aee0760d292090d86e6f0e32fea2a6b16a81824d",
+        "size_bytes": 11595
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/context-discovery.json",
+        "sha256": "c895df48772137e0732c8467cb218278ed4b578bb7f9cbbf527b28e6f5b16d0e",
+        "size_bytes": 332980
+      },
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/research/eval-contract-evidence.md",
+        "sha256": "df559f34cddd4e53ce8bf40f7bea4654c3d7289b91b504a2aab384cb7bb103f1",
+        "size_bytes": 2422
+      }
+    ],
+    "facts_sha256": "1e729f8c2ab5560d95c1b3df6e757e3e55796c51859bdde0392ca739a50977ec"
+  },
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "durable_paths": [
+      {
+        "path": "README.md",
+        "sha256": "e8f4fd6abb771193fbe6136d564799d4ecf9f6f9fa3ceeb77acd675abdc4ca67",
+        "size_bytes": 73165
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "sha256": "b5cbbbc1706fbc1eaeec971df0bddfdafbffd0143dfcad8c75ddb817335e8b95",
+        "size_bytes": 14232
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "8023a8fb74cd4c115b2b385ecc8b5d22bc6fa86ae9e0cfeb203dc394036a54d8",
+        "size_bytes": 77172
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "462ab3c045c1f96ee9c289190a1e0e55eadfbb42e492b7183312127ea04b1b18",
+        "size_bytes": 66535
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "46681df6ea0f2855dc7769ca824598d2e7096f5c2458e79a425db8fee59f1c66",
+        "size_bytes": 18034
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "2af065e9b4cf4ded23d2a18a7932c257404c39196a9d945b010c859ce77de9f7",
+        "size_bytes": 24595
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "fd803b1cad8e8b3581abf41a20df86a4248840bf82324154f39dbad890123761",
+        "size_bytes": 23269
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "c6aac65829cc94154779749e22618149d8686cc5a96213617bb52b22d88c820f",
+        "size_bytes": 11055
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "0f3b3e27ce6626a3a54c7068140def379bc3f95150e4e62bdbe0eef0aa0dc059",
+        "size_bytes": 83823
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "3a26d9dbe06d4be0f9c354eeb7cab5ce82db8b8a890fbfaa8ab37e37ced0a90c",
+        "size_bytes": 104791
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "ad46e7612dec6121ce5e6715ec9d2f887cbd5a96aaee835abf5412e97ffd6769",
+        "size_bytes": 32554
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "44a96a7354e330bf8d7191a5dc81abfc687e70067f9fc85209e2600a1bf0252d",
+        "size_bytes": 70428
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "0069a1142d832336bf20caa698349476145785d714183e667faaaeed1283b76b",
+        "size_bytes": 66758
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "98b408125ab28bb552b5b354d14295f30e9008eb836bcd89986a6ceb2f2e5ee3",
+        "size_bytes": 61807
+      }
+    ],
+    "sync_result": "ssot_first 已完成；durable requirements、spec 与公开 README 已承接 corpus、runner、adapter、isolation、comparison、evidence、distribution 和 update/reapply 合同，并与第五轮 finding closure 后的实现一致。",
+    "task_delta_merged": true,
+    "task_history_only": [
+      "规划批准与逐轮 finding 生命周期",
+      "implementation/check agent handoff 与临时验证输出"
+    ],
+    "no_update_reason": null,
+    "followup_or_pr_limit": "未发布分支的 exact remote marketplace install 需在 push 后由后续 publish gate 验证；当前仅记录 public marketplace discovery 加 local unpublished source 的通过证据。",
+    "facts_sha256": "b907cfce34ec0645df4d115eda8ae231817c2394102fde247ec1088839887ac3"
+  },
+  "implementation_handoff": {
+    "summary": "实现代理完成完整 eval corpus/runner/adapters/isolation/comparison/distribution，并闭环四轮 Phase 2 findings；第五轮检查代理完整复审后无剩余 semantic finding。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/agent-assignment.json",
+        "sha256": "366c59e203bd9a855fb37271a23857efe615cc837b9fc6f315c70cd8daf6dd37",
+        "size_bytes": 52809
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "251d3a80b8338e6d26c5573e731cb8017e5e40005aa931105b4ec7f2a565aa87",
+        "size_bytes": 1330158
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "37d66e968c7f79860c7e0587d226b20fcfbb41e8df88757835ce29e9df3895bc",
+        "size_bytes": 27849
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "707a07002dab9b696d87943b75cbe1a3d7a283d1970959419d0c3dfa6926e3d6",
+        "size_bytes": 166704
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "sha256": "0ec7b97f7bdbd98b998b70fec6ecba440fbe2a25397bf61bf8a849782856231c",
+        "size_bytes": 61725
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "8023a8fb74cd4c115b2b385ecc8b5d22bc6fa86ae9e0cfeb203dc394036a54d8",
+        "size_bytes": 77172
+      }
+    ],
+    "facts_sha256": "da3f3dd7447ca8be8ced1ba31d33a0fdb36a9b80b866cf2c3772c912cdea4efc"
+  },
+  "agent_assignment": {
+    "artifact_path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/agent-assignment.json",
+    "implementation_agent_ids": [
+      "/root/issue147_implementation"
+    ],
+    "check_agent_ids": [
+      "/root/issue147_phase2_check"
+    ],
+    "recovery_complete": true,
+    "phase2_state_sha256": "9e1f59d969e71146f6d365e0664c7dba7ce8f2af3878fbf82d657b5228fe7a81",
+    "facts_sha256": "ff31ae147aaac12ab0750dd72600fca931ada989f9a96086ee3e4a09c4b469d0"
+  },
+  "repository_snapshot": {
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+    "head": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+    "diff_range": "origin/main...HEAD",
+    "dirty_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/bash/discover-skill-evals.sh",
+      ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/claude.json",
+      ".trellis/guru-team/skills/adapters/eval/claude.sh",
+      ".trellis/guru-team/skills/adapters/eval/codex.json",
+      ".trellis/guru-team/skills/adapters/eval/codex.sh",
+      ".trellis/guru-team/skills/adapters/eval/cursor.json",
+      ".trellis/guru-team/skills/adapters/eval/cursor.sh",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/adapters/eval/shared.json",
+      ".trellis/guru-team/skills/adapters/eval/shared.sh",
+      ".trellis/guru-team/skills/schemas/skill-eval-adapter-request.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-adapter-response.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-human-feedback.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-native-trace.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-run.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-semantic-grading.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-evals.schema.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/agent-assignment.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/check.jsonl",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/context-discovery.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/contract-wording-review.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.jsonl",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-review.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-scope-ledger.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/planning-approval.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/research/eval-contract-evidence.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-start-context.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task.json",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/skills/guru-team/adapters/eval/claude.json",
+      "trellis/skills/guru-team/adapters/eval/claude.sh",
+      "trellis/skills/guru-team/adapters/eval/codex.json",
+      "trellis/skills/guru-team/adapters/eval/codex.sh",
+      "trellis/skills/guru-team/adapters/eval/cursor.json",
+      "trellis/skills/guru-team/adapters/eval/cursor.sh",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/adapters/eval/shared.json",
+      "trellis/skills/guru-team/adapters/eval/shared.sh",
+      "trellis/skills/guru-team/schemas/skill-eval-adapter-request.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-adapter-response.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-human-feedback.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-run.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-semantic-grading.schema.json",
+      "trellis/skills/guru-team/schemas/skill-evals.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/claude.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/claude.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/codex.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/codex.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/cursor.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/cursor.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/shared.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/shared.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/fake-native-cli.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/fixture-dispatcher.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/human-feedback.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/legacy-evals.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/evals/evals.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/evals/files/context.txt",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-block-input.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/evals/evals.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/sync-blocked-output.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/interface.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-blocked-output.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-adapter-request.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-adapter-response.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-human-feedback.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-native-trace.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-run.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-semantic-grading.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-evals.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/semantic-grading.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/discover-skill-evals.sh",
+      "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "reviewed_paths": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "c2243c223459e53474c9905b13f96d452a0c6d4ed524eaf7a801e619398a33bc",
+        "size_bytes": 157730
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "251d3a80b8338e6d26c5573e731cb8017e5e40005aa931105b4ec7f2a565aa87",
+        "size_bytes": 1330158
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "44a96a7354e330bf8d7191a5dc81abfc687e70067f9fc85209e2600a1bf0252d",
+        "size_bytes": 70428
+      },
+      {
+        "path": "README.md",
+        "sha256": "e8f4fd6abb771193fbe6136d564799d4ecf9f6f9fa3ceeb77acd675abdc4ca67",
+        "size_bytes": 73165
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "8023a8fb74cd4c115b2b385ecc8b5d22bc6fa86ae9e0cfeb203dc394036a54d8",
+        "size_bytes": 77172
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "sha256": "dcab61cd77302d2f3414901904e7350220f63ff1a68e497ae74739a9217ee827",
+        "size_bytes": 5398
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "98b408125ab28bb552b5b354d14295f30e9008eb836bcd89986a6ceb2f2e5ee3",
+        "size_bytes": 61807
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "b4a9c6fd79a284e048b9114cc44fdbb9d508e1573f6605b8b9aedc5c20ddcde6",
+        "size_bytes": 159451
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "sha256": "0ec7b97f7bdbd98b998b70fec6ecba440fbe2a25397bf61bf8a849782856231c",
+        "size_bytes": 61725
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "sha256": "e3d23031777897e0f19c038debbacf470b8c67ba78e2b10593d5fac7d9dd5ed8",
+        "size_bytes": 80786
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "37d66e968c7f79860c7e0587d226b20fcfbb41e8df88757835ce29e9df3895bc",
+        "size_bytes": 27849
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/skill-eval-adapter-request.schema.json",
+        "sha256": "c5881c97def3895ff4cb16080b33fe4e0a80e53e48841287bf80f3dffa964ffd",
+        "size_bytes": 1053
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/skill-eval-run.schema.json",
+        "sha256": "33b672ded449278c97abe823e0b98d3e1aad72111623a1eeb1879862dfa8f972",
+        "size_bytes": 2029
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/skill-evals.schema.json",
+        "sha256": "4f99eab0afe74b93d14b55d2a23c8f4791018241d21a4e41e2c0017ad5e63afc",
+        "size_bytes": 4061
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/fake-native-cli.py",
+        "sha256": "59e70db6464b8d14389e875afc170488bb5ef70b06f5033f20b7c75bc385f6f0",
+        "size_bytes": 5425
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "707a07002dab9b696d87943b75cbe1a3d7a283d1970959419d0c3dfa6926e3d6",
+        "size_bytes": 166704
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "0069a1142d832336bf20caa698349476145785d714183e667faaaeed1283b76b",
+        "size_bytes": 66758
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "251d3a80b8338e6d26c5573e731cb8017e5e40005aa931105b4ec7f2a565aa87",
+        "size_bytes": 1330158
+      }
+    ],
+    "snapshot_sha256": "f92235fd5507b81c5af3c7af247bdc0bb8d6dfcc82ed50fd4533a3152398acb4"
+  },
+  "check_execution": {
+    "commands": [
+      {
+        "id": "workflow_runtime",
+        "argv": [
+          "bash",
+          "-lc",
+          "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Workflow runtime full suite 通过；独立检查报告计数为 548 passed、13 skipped。"
+      },
+      {
+        "id": "skill_packages",
+        "argv": [
+          "bash",
+          "-lc",
+          "python3 trellis/skills/guru-team/tests/test_skill_packages.py >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Skill package full suite 通过；独立检查报告计数为 137 passed。"
+      },
+      {
+        "id": "preset_installer",
+        "argv": [
+          "bash",
+          "-lc",
+          "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Preset installer suite 39 tests 通过。"
+      },
+      {
+        "id": "upstream_ownership",
+        "argv": [
+          "bash",
+          "-lc",
+          "python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Upstream ownership suite 6 tests 通过。"
+      },
+      {
+        "id": "git_diff_check",
+        "argv": [
+          "bash",
+          "-lc",
+          "git diff --check >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "完整 working-tree diff 无 whitespace error。"
+      },
+      {
+        "id": "task_validate",
+        "argv": [
+          "bash",
+          "-lc",
+          "python3 .trellis/scripts/task.py validate .trellis/tasks/07-21-147-skill-eval-runner-adapters >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Task implement/check curated manifests 验证通过。"
+      },
+      {
+        "id": "workspace_boundary",
+        "argv": [
+          "bash",
+          "-lc",
+          ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task .trellis/tasks/07-21-147-skill-eval-runner-adapters >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Task worktree boundary 正确且 source checkout 干净。"
+      },
+      {
+        "id": "planning_approval",
+        "argv": [
+          "bash",
+          "-lc",
+          ".trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-21-147-skill-eval-runner-adapters >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Planning approval 2.0、三份 planning digest 与 explicit post-planning evidence 有效。"
+      },
+      {
+        "id": "overlay_drift",
+        "argv": [
+          "bash",
+          "-lc",
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh >/dev/null 2>/dev/null"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Canonical 与 dogfood overlay 无漂移。"
+      }
+    ],
+    "worker_evidence": [
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue147_phase2_check",
+        "summary": "第五轮独立 Phase 2 检查从零重读批准 scope、R1-R12、AC1-AC15、完整 dirty diff、Docs SSOT、runtime/schema/adapters/tests/preset/distribution；复核四轮 finding closure 后无剩余 semantic finding，完整套件、400-file 分发和 throwaway sample 通过。",
+        "evidence_only": true,
+        "facts_sha256": "dd423270fd2323dc602d8c8c3a0b612edcec44000e1b7edb835ed1a6c76d274d"
+      }
+    ],
+    "unverified_items": [
+      {
+        "id": "remote-branch-marketplace",
+        "command_or_area": "exact remote branch marketplace install",
+        "reason": "当前分支尚未 push，严格 verifier 正确 fail closed；已验证 public marketplace discovery 加 current local unpublished source 的 fresh/update/reapply 全链。",
+        "impact": "不影响当前本地实现与 Phase 2 semantic acceptance；push 后 publish gate 必须验证 exact remote branch。",
+        "blocking": false
+      }
+    ],
+    "execution_sha256": "54b0e6402e8d80e504f3212768b2719225e01cfb3e6f98b5dca36d66eaea26d4"
+  },
+  "scope_qualification": {
+    "candidates": [],
+    "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "adequacy_dimensions": [
+      {
+        "id": "requirements",
+        "status": "passed",
+        "summary": "R1-R12 与 AC1-AC15 已由 corpus、runner、adapter、isolation、comparison、evidence、distribution 和验证完整承接。",
+        "evidence_refs": [
+          "planning",
+          "requirement_provenance"
+        ],
+        "affected_sha256": "8e05f747f5257b86630ac843ea6a5fee091269c8c793265e0905f83bc87be2ba",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "design",
+        "status": "passed",
+        "summary": "Markdown/AI semantic boundary、closed schemas/status、public-only projection、private runtime target 与 exact comparison 均按批准设计实现。",
+        "evidence_refs": [
+          "planning",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "c1f63777082f16fdb5cd4bf768afc0a7e00f06eaa6a4bdf1397fb6cec2904aaf",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "implementation",
+        "status": "passed",
+        "summary": "Canonical runtime、schemas、四 adapter、fixture、preset 与 installed mirrors 一致，四轮 current-scope findings 已闭环。",
+        "evidence_refs": [
+          "implementation_handoff",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "8b368c2a89ab153ee4080a3107cd6b2ac1ac45e9736291f5de04ea69490b4eea",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "tests",
+        "status": "passed",
+        "summary": "Workflow 548、Skill 137、preset 39、ownership 6、四平台正负例、external exact comparison 与 throwaway sample 全部通过。",
+        "evidence_refs": [
+          "check_execution"
+        ],
+        "affected_sha256": "5b742a5be583c7ca42905949d9e8c03686782410688fa97310bffc0508a7f710",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "docs_ssot",
+        "status": "passed",
+        "summary": "ssot_first 已执行，durable requirements/spec/README 与最终 runtime/schema/tests 一致，task delta 已 merge。",
+        "evidence_refs": [
+          "docs_ssot_plan"
+        ],
+        "affected_sha256": "3b28b006c3b23f9dc1f1dafdb9bd2697c570f5a832bf0fbb6d5e726a30d7c769",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "cross_layer",
+        "status": "passed",
+        "summary": "Corpus discovery、adapter private request、native public projection、socket broker、typed output、grader、comparison 与 evidence 数据流闭合。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "d65f10717a6fe31db017aeb308b5b0a0c76f955c9fef8d44c2e605f787bf4bcb",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "compatibility",
+        "status": "passed",
+        "summary": "Legacy migration、四平台同 corpus、exact external comparison、source/installed bytes、upgrade/update reapply 与 production Skill zero-impact 均验证。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "45e117028161ea129133ab203b91e21b0a058f64ea27a88bbbbc59e639001e96",
+        "finding_ids": [],
+        "unverified_ids": [
+          "remote-branch-marketplace"
+        ]
+      },
+      {
+        "id": "deployment_and_operations",
+        "status": "passed",
+        "summary": "仅影响 Guru Team extension/preset/scripts/schemas/docs；无 CI/CD、container、K8s/Kustomize、DB migration、Makefile、secret、权限或生产数据影响。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "53795b23b7898ee54444a2c3753e90a79d89e591f777724afba0330544534b9f",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "agent_recovery",
+        "status": "passed",
+        "summary": "实现与检查代理的所有 re-entry/finding closure 均有 completed evidence；没有未闭环 failed、unfinished 或 stale chain。",
+        "evidence_refs": [
+          "agent_assignment"
+        ],
+        "affected_sha256": "4a9d15815f446638396908325bbaf1dc6aefb03c65c4a32bb30124511f5d22e5",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "verification_completeness",
+        "status": "passed",
+        "summary": "第五轮为全量 rerun，所有适用本地与 throwaway 门禁有明确结果；唯一未验证项是 push 后专属的 exact remote branch marketplace，非当前 blocking item。",
+        "evidence_refs": [
+          "check_execution",
+          "agent_assignment"
+        ],
+        "affected_sha256": "64e8f7afa5fb7370f99ca41662f2fe7ede8dbc1790b59ddff817d3acf9c0d645",
+        "finding_ids": [],
+        "unverified_ids": [
+          "remote-branch-marketplace"
+        ]
+      }
+    ],
+    "findings": [],
+    "adequacy_sha256": "7d81fa06cc06c7c1c61b0e081d593ed1c38ff610cf21265ce666e2da3419fd8f",
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "第五轮完整 guru-check-task 覆盖 R1-R12、AC1-AC15、四轮 finding closure、Docs SSOT、完整 dirty diff、agent recovery 与全部适用验证；无 open finding、scope drift 或 blocking unverified。",
+      "planning_facts_sha256": "e1602d8136c2ad853e3ee4bda54ce952378cda548b4695089c1b60b2700d15c1",
+      "snapshot_sha256": "f92235fd5507b81c5af3c7af247bdc0bb8d6dfcc82ed50fd4533a3152398acb4",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "adequacy_sha256": "7d81fa06cc06c7c1c61b0e081d593ed1c38ff610cf21265ce666e2da3419fd8f",
+      "findings_count": 0,
+      "full_rerun": true,
+      "full_round_sha256": "7947dea788974a75f9b9de742f607a68918ae9c1e164916927b9514bcf94f5f9"
+    }
+  },
+  "human_confirmation": {
+    "kind": "not-required",
+    "status": "not_required",
+    "summary": "Phase 2 semantic pass 不含无条件 human confirmation；用户此前确认仅用于 planning approval。",
+    "confirmed_at": null
+  },
+  "typed_exit": "passed",
+  "route": null,
+  "reason": "第五轮完整 Phase 2 semantic review 与全部适用验证通过，current-scope findings 已闭环，无 blocking unverified 或 planning drift。",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-commit"
+  },
+  "facts_sha256": "3baaad99cd78f851dfd8814f9b4f1c7dee4dd0fcb53eefc9af97e11b4bab02bb"
+}

@@ -2169,6 +2169,480 @@ class SourceValidationTests(unittest.TestCase):
                 self.assertEqual(result["status"], "failed")
                 self.assertTrue(result["errors"])
 
+    def test_eval_corpus_discovery_and_legacy_migration_contract(self) -> None:
+        discovery = runtime.build_skill_eval_discovery(self.root, "guru-example-action")
+        self.assertEqual(discovery["corpus_schema_id"], "guru-team-skill-evals-1.0")
+        self.assertEqual(discovery["case_ids"], ["complete-normal", "repeat-reentry", "blocked-family"])
+        self.assertEqual([item["id"] for item in discovery["adapters"]], ["shared", "codex", "claude", "cursor"])
+        descriptors = runtime.skill_eval_descriptor_index(self.root)
+        self.assertEqual(
+            {adapter_id: item["executable"] for adapter_id, item in descriptors.items()},
+            {"shared": "shared.sh", "codex": "codex.sh", "claude": "claude.sh", "cursor": "cursor.sh"},
+        )
+        self.assertTrue(all((self.root / "adapters/eval" / item["executable"]).stat().st_mode & 0o100 for item in descriptors.values()))
+        with self.assertRaises(runtime.WorkflowError) as unsupported:
+            runtime.build_skill_eval_discovery(self.root, "guru-example-legacy")
+        self.assertEqual(unsupported.exception.payload["code"], "evals_unsupported")
+
+        legacy = json.loads((self.root / "legacy-evals.json").read_text(encoding="utf-8"))
+        migrated = runtime.migrate_legacy_skill_evals(legacy, "guru-example-action", "completed")
+        self.assertNotIn("expectations", json.dumps(migrated))
+        self.assertEqual(migrated["evals"][0]["assertions"]["semantic"][0]["id"], "legacy-expectation-1")
+        schema = json.loads((self.root / "schemas/skill-evals.schema.json").read_text(encoding="utf-8"))
+        self.assertEqual(runtime.skill_json_schema_validation_errors(migrated, schema, "migrated evals"), [])
+
+    def test_eval_corpus_negative_matrix_uses_stable_errors(self) -> None:
+        package = self.root / "packages/guru-example-action"
+        corpus_path = package / "evals/evals.json"
+        original = json.loads(corpus_path.read_text(encoding="utf-8"))
+        mutations = {
+            "unknown-field": (lambda value: value.__setitem__("unknown", True), "eval_schema_invalid"),
+            "null": (lambda value: value["evals"][0].__setitem__("prompt", None), "eval_schema_invalid"),
+            "duplicate-case": (lambda value: value["evals"].append(dict(value["evals"][0])), "eval_case_duplicate"),
+            "unknown-profile": (lambda value: value["evals"][0].__setitem__("input_profile_id", "missing"), "eval_input_profile_unknown"),
+            "unknown-exit": (lambda value: value["evals"][0].__setitem__("expected_exit", "missing"), "eval_expected_exit_unknown"),
+            "absolute-file": (lambda value: value["evals"][0].__setitem__("files", ["/tmp/nope"]), "eval_schema_invalid"),
+            "missing-file": (lambda value: value["evals"][0].__setitem__("files", ["evals/files/missing.txt"]), "eval_fixture_invalid"),
+            "canonical-expectations": (lambda value: value["evals"][0].__setitem__("expectations", ["legacy"]), "eval_schema_invalid"),
+            "unknown-assertion": (lambda value: value["evals"][0]["assertions"]["deterministic"][0].__setitem__("kind", "script"), "eval_schema_invalid"),
+            "null-expected": (lambda value: value["evals"][0]["assertions"]["deterministic"][0].__setitem__("expected", None), "eval_schema_invalid"),
+        }
+        interface = self.read_interface()
+        for label, (mutate, expected_code) in mutations.items():
+            with self.subTest(label=label):
+                corpus = json.loads(json.dumps(original))
+                mutate(corpus)
+                corpus_path.write_text(json.dumps(corpus), encoding="utf-8")
+                with self.assertRaises(runtime.WorkflowError) as raised:
+                    runtime.skill_eval_validate_corpus(self.root, package, interface)
+                self.assertEqual(raised.exception.payload["code"], expected_code)
+                self.assertEqual(set(raised.exception.payload), {"code", "field_path", "remediation"})
+        corpus_path.write_text(json.dumps(original), encoding="utf-8")
+
+
+class EvalRunnerTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.temp.name) / "repo"
+        self.skills = self.repo / "trellis/skills/guru-team"
+        self.workflow = self.repo / "trellis/workflows/guru-team/workflow.md"
+        self.workflow.parent.mkdir(parents=True)
+        shutil.copytree(FIXTURE, self.skills)
+        shutil.copyfile(FIXTURE / "workflow.md", self.workflow)
+        self.runtime_target = self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        self.runtime_target.parent.mkdir(parents=True)
+        shutil.copyfile(self.skills / "fixture-dispatcher.py", self.runtime_target)
+        self.runtime_target.chmod(0o755)
+        subprocess.run(["git", "init", "-q"], cwd=self.repo, check=True)
+        self.runtime = REPO / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+        self.native_bin = Path(self.temp.name) / "native-bin"
+        self.native_bin.mkdir()
+        native_fixture = self.skills / "fake-native-cli.py"
+        for command in ("guru-team-shared-eval", "codex", "claude", "cursor-agent"):
+            target = self.native_bin / command
+            shutil.copyfile(native_fixture, target)
+            target.chmod(0o755)
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def run_cli(
+        self,
+        *arguments: str,
+        native: bool = True,
+        native_direct_read: str | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        environment = dict(os.environ)
+        environment["PATH"] = f"{self.native_bin}{os.pathsep}{environment['PATH']}" if native else "/usr/bin:/bin"
+        environment.pop("GURU_TEAM_FAKE_NATIVE_DISPATCHER", None)
+        environment.pop("GURU_TEAM_DISPATCHER", None)
+        if native_direct_read is not None:
+            environment["GURU_TEAM_FAKE_NATIVE_DIRECT_READ"] = native_direct_read
+        return subprocess.run(
+            [sys.executable, str(self.runtime), *arguments],
+            cwd=self.repo, env=environment, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+
+    def test_four_adapters_execute_same_corpus_and_expected_non_success_exits(self) -> None:
+        discovery_process = self.run_cli(
+            "discover-skill-evals", "--root", str(self.repo), "--mode", "source",
+            "--skill", "guru-example-action", "--json",
+        )
+        self.assertEqual(discovery_process.returncode, 0, discovery_process.stderr)
+        discovery = json.loads(discovery_process.stdout)
+        self.assertTrue(all(item["native_available"] for item in discovery["adapters"]))
+        self.assertEqual(
+            {item["id"]: item["native_command"] for item in discovery["adapters"]},
+            {"shared": "guru-team-shared-eval", "codex": "codex", "claude": "claude", "cursor": "cursor-agent"},
+        )
+        for adapter in ("shared", "codex", "claude", "cursor"):
+            with self.subTest(adapter=adapter):
+                run_root = Path(self.temp.name) / f"run-{adapter}"
+                result = self.run_cli(
+                    "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+                    "--skill", "guru-example-action", "--adapter", adapter,
+                    "--run-root", str(run_root), "--semantic-grading", str(self.skills / "semantic-grading.json"),
+                    "--human-feedback", str(self.skills / "human-feedback.json"),
+                    "--json",
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload["status"], "passed")
+                self.assertEqual({item["actual_exit"] for item in payload["cases"]}, {"completed", "repeat", "blocked"})
+                self.assertTrue(Path(payload["evidence_path"]).resolve().is_relative_to(Path(self.temp.name).resolve()))
+                self.assertFalse(Path(payload["evidence_path"]).resolve().is_relative_to(self.repo.resolve()))
+                expected_command = {"shared": "guru-team-shared-eval", "codex": "codex", "claude": "claude", "cursor": "cursor-agent"}[adapter]
+                for case in payload["cases"]:
+                    transcript = json.loads(Path(case["transcript_locator"]).read_text(encoding="utf-8"))
+                    self.assertEqual(Path(transcript["argv"][0]).name, expected_command)
+                    context = Path(transcript["context_path"]).read_text(encoding="utf-8")
+                    native_request = json.loads(Path(transcript["native_request_path"]).read_text(encoding="utf-8"))
+                    projection_root = Path(transcript["projection_root"])
+                    self.assertIn("First read the exact Skill contract with:", context)
+                    self.assertIn("native-trace-helper.py", context)
+                    self.assertNotIn("Exact SKILL.md:", context)
+                    self.assertIn("scripts/invoke.sh", context)
+                    self.assertIn("Case prompt:", context)
+                    self.assertEqual(set(native_request), {
+                        "schema_version", "skill_id", "case_id", "prompt", "files",
+                        "workdir", "public_package_root", "public_invocation",
+                    })
+                    self.assertEqual(Path(native_request["public_package_root"]), projection_root)
+                    self.assertNotIn(str(self.skills.resolve()), context)
+                    self.assertNotIn(str(self.skills.resolve()), json.dumps(native_request))
+                    boundary = Path(transcript["protocol_path"]).with_name("public-invocation-boundary.sh")
+                    boundary_text = boundary.read_text(encoding="utf-8")
+                    compile(boundary_text, str(boundary), "exec")
+                    self.assertNotIn(str(self.repo.resolve()), boundary_text)
+                    self.assertNotIn(str((self.skills / "fixture-dispatcher.py").resolve()), boundary_text)
+                    self.assertNotIn("guru_team_trellis.py", boundary_text)
+                    self.assertFalse((projection_root / "evals").exists())
+                    self.assertFalse(any(path.name == "guru_team_trellis.py" for path in projection_root.rglob("*")))
+                    native_trace = json.loads(Path(transcript["native_trace_path"]).read_text(encoding="utf-8"))
+                    self.assertEqual(Path(native_trace["projection_root"]), projection_root)
+                    self.assertEqual(native_trace["skill_sha256"], hashlib.sha256((projection_root / "SKILL.md").read_bytes()).hexdigest())
+                    self.assertEqual(native_trace["wrapper_sha256"], hashlib.sha256((projection_root / "scripts/invoke.sh").read_bytes()).hexdigest())
+                    self.assertEqual(native_trace["events"][0]["kind"], "read")
+                    self.assertEqual(native_trace["events"][0]["target_kind"], "skill_contract")
+                    self.assertEqual(Path(native_trace["events"][0]["path"]).name, "SKILL.md")
+                    self.assertEqual(native_trace["events"][-1]["kind"], "invoke")
+                    self.assertEqual(Path(native_trace["events"][-1]["wrapper_path"]).name, "invoke.sh")
+                    if case["case_id"] == "complete-normal":
+                        self.assertIn("evals/files/context.txt", context)
+                        self.assertIn("Representative non-sensitive context", context)
+                argv = json.loads(Path(payload["cases"][0]["transcript_locator"]).read_text(encoding="utf-8"))["argv"]
+                if adapter == "codex":
+                    self.assertIn("exec", argv)
+                    self.assertIn("--output-last-message", argv)
+                elif adapter in {"claude", "cursor"}:
+                    self.assertIn("--print", argv)
+                    self.assertIn("--output-format", argv)
+                else:
+                    self.assertIn("--request", argv)
+                    self.assertIn("--context", argv)
+
+    def test_adapter_descriptor_drives_native_command(self) -> None:
+        descriptor_path = self.skills / "adapters/eval/shared.json"
+        descriptor = json.loads(descriptor_path.read_text(encoding="utf-8"))
+        descriptor["native_command"] = "descriptor-selected-native"
+        descriptor_path.write_text(json.dumps(descriptor), encoding="utf-8")
+        shutil.copyfile(self.skills / "fake-native-cli.py", self.native_bin / "descriptor-selected-native")
+        (self.native_bin / "descriptor-selected-native").chmod(0o755)
+
+        result = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+            "--skill", "guru-example-sync", "--adapter", "shared", "--case", "sync-normal",
+            "--run-root", str(Path(self.temp.name) / "descriptor-native"), "--json",
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "passed")
+        transcript = json.loads(Path(payload["cases"][0]["transcript_locator"]).read_text(encoding="utf-8"))
+        self.assertEqual(transcript["native_command"], "descriptor-selected-native")
+        self.assertEqual(Path(transcript["argv"][0]).name, "descriptor-selected-native")
+
+    def test_native_failures_and_adapter_corpus_mismatch_are_execution_errors(self) -> None:
+        native = self.native_bin / "guru-team-shared-eval"
+        run_arguments = (
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+            "--skill", "guru-example-sync", "--adapter", "shared", "--case", "sync-normal",
+        )
+
+        native.write_text("#!/bin/sh\nexit 7\n", encoding="utf-8")
+        native.chmod(0o755)
+        launch_failure = self.run_cli(
+            *run_arguments, "--run-root", str(Path(self.temp.name) / "launch-failure"), "--json",
+        )
+        self.assertEqual(json.loads(launch_failure.stdout)["status"], "execution_error")
+
+        native.write_text("#!/bin/sh\nprintf 'not-json\\n'\n", encoding="utf-8")
+        native.chmod(0o755)
+        malformed = self.run_cli(
+            *run_arguments, "--run-root", str(Path(self.temp.name) / "malformed-output"), "--json",
+        )
+        self.assertEqual(json.loads(malformed.stdout)["status"], "execution_error")
+
+        native.write_text(
+            "#!/bin/sh\nprintf '%s\\n' '{\"exit_id\":\"synced\",\"item\":\"alpha\"}'\n",
+            encoding="utf-8",
+        )
+        native.chmod(0o755)
+        dto_without_wrapper = self.run_cli(
+            *run_arguments, "--run-root", str(Path(self.temp.name) / "dto-without-wrapper"), "--json",
+        )
+        dto_without_wrapper_payload = json.loads(dto_without_wrapper.stdout)
+        self.assertEqual(dto_without_wrapper_payload["status"], "execution_error")
+        self.assertEqual(dto_without_wrapper_payload["cases"][0]["deterministic_results"], [])
+        self.assertFalse(
+            Path(dto_without_wrapper_payload["cases"][0]["transcript_locator"])
+            .with_name("native-trace.json")
+            .exists()
+        )
+
+        shutil.copyfile(self.skills / "fake-native-cli.py", native)
+        native.chmod(0o755)
+        adapter_runtime = self.skills / "adapters/eval/native_adapter.py"
+        adapter_text = adapter_runtime.read_text(encoding="utf-8")
+        adapter_runtime.write_text(
+            adapter_text.replace(
+                '"corpus_sha256": corpus_sha256,',
+                '"corpus_sha256": "0" * 64,',
+                1,
+            ),
+            encoding="utf-8",
+        )
+        corpus_mismatch = self.run_cli(
+            *run_arguments, "--run-root", str(Path(self.temp.name) / "corpus-mismatch"), "--json",
+        )
+        corpus_mismatch_payload = json.loads(corpus_mismatch.stdout)
+        self.assertEqual(corpus_mismatch_payload["status"], "execution_error")
+        self.assertEqual(
+            corpus_mismatch_payload["cases"][0]["deterministic_results"],
+            [{"id": "corpus-byte-identity", "passed": False, "detail": "adapter corpus bytes mismatch"}],
+        )
+
+    def test_four_native_platforms_cannot_read_evals_or_private_runtime_from_projection(self) -> None:
+        commands = {
+            "shared": "guru-team-shared-eval", "codex": "codex",
+            "claude": "claude", "cursor": "cursor-agent",
+        }
+        for adapter, command in commands.items():
+            with self.subTest(adapter=adapter):
+                result = self.run_cli(
+                    "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+                    "--skill", "guru-example-sync", "--adapter", adapter,
+                    "--case", "sync-normal", "--run-root",
+                    str(Path(self.temp.name) / f"projection-access-{adapter}"), "--json",
+                    native_direct_read="both",
+                )
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload["status"], "execution_error")
+                self.assertEqual(payload["cases"][0]["deterministic_results"], [])
+                transcript = json.loads(Path(payload["cases"][0]["transcript_locator"]).read_text(encoding="utf-8"))
+                self.assertEqual(Path(transcript["argv"][0]).name, command)
+                projection_root = Path(transcript["projection_root"])
+                self.assertFalse((projection_root / "evals/evals.json").exists())
+                self.assertFalse((projection_root / "runtime/guru_team_trellis.py").exists())
+                self.assertIn("native_projection_access_denied", transcript["stderr"])
+                self.assertIn(str(projection_root / "evals/evals.json"), transcript["stderr"])
+                self.assertIn(str(projection_root / "runtime/guru_team_trellis.py"), transcript["stderr"])
+                trace = json.loads(Path(transcript["native_trace_path"]).read_text(encoding="utf-8"))
+                self.assertEqual([event["kind"] for event in trace["events"]], ["read"])
+                self.assertEqual(Path(trace["events"][0]["path"]), projection_root / "SKILL.md")
+
+    def test_all_native_output_envelopes_require_verified_wrapper_receipt(self) -> None:
+        script = (
+            "#!/usr/bin/env python3\n"
+            "import json, sys\n"
+            "from pathlib import Path\n"
+            "dto = '{\\\"exit_id\\\":\\\"synced\\\",\\\"item\\\":\\\"alpha\\\"}'\n"
+            "command = Path(sys.argv[0]).name\n"
+            "if command == 'codex':\n"
+            "    output = Path(sys.argv[sys.argv.index('--output-last-message') + 1])\n"
+            "    output.write_text(dto, encoding='utf-8')\n"
+            "    print(json.dumps({'type': 'turn.completed'}))\n"
+            "elif command in {'claude', 'cursor-agent'}:\n"
+            "    print(json.dumps({'result': dto}))\n"
+            "else:\n"
+            "    print(dto)\n"
+        )
+        commands = {
+            "shared": "guru-team-shared-eval", "codex": "codex",
+            "claude": "claude", "cursor": "cursor-agent",
+        }
+        for adapter, command in commands.items():
+            with self.subTest(adapter=adapter):
+                native = self.native_bin / command
+                native.write_text(script, encoding="utf-8")
+                native.chmod(0o755)
+                result = self.run_cli(
+                    "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+                    "--skill", "guru-example-sync", "--adapter", adapter,
+                    "--case", "sync-normal", "--run-root",
+                    str(Path(self.temp.name) / f"dto-without-receipt-{adapter}"), "--json",
+                )
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload["status"], "execution_error")
+                self.assertEqual(payload["cases"][0]["deterministic_results"], [])
+
+    def test_semantic_feedback_status_unsupported_comparison_and_run_root_boundaries(self) -> None:
+        missing_grade = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source", "--skill", "guru-example-action",
+            "--adapter", "shared", "--case", "complete-normal", "--run-root", str(Path(self.temp.name) / "missing-grade"),
+            "--human-feedback", str(self.skills / "human-feedback.json"), "--json",
+        )
+        self.assertEqual(json.loads(missing_grade.stdout)["status"], "evaluation_failed")
+
+        unsupported = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source", "--skill", "guru-example-sync",
+            "--adapter", "shared", "--run-root", str(Path(self.temp.name) / "unsupported"), "--json", native=False,
+        )
+        self.assertEqual(json.loads(unsupported.stdout)["status"], "unsupported")
+        unavailable_discovery = self.run_cli(
+            "discover-skill-evals", "--root", str(self.repo), "--mode", "source",
+            "--skill", "guru-example-sync", "--json", native=False,
+        )
+        shared = next(item for item in json.loads(unavailable_discovery.stdout)["adapters"] if item["id"] == "shared")
+        self.assertFalse(shared["native_available"])
+
+        package = self.skills / "packages/guru-example-sync"
+        comparison = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source", "--skill", "guru-example-sync",
+            "--adapter", "shared", "--run-root", str(Path(self.temp.name) / "comparison"),
+            "--current-package", str(package), "--comparison-package", str(package),
+            "--json",
+        )
+        comparison_payload = json.loads(comparison.stdout)
+        self.assertEqual(comparison_payload["status"], "passed")
+        self.assertEqual({item["comparison_side"] for item in comparison_payload["cases"]}, {"current", "comparison"})
+
+        semantic_package = self.skills / "packages/guru-example-action"
+        comparison_grading = Path(self.temp.name) / "comparison-grading.json"
+        comparison_grading.write_text(json.dumps({
+            "schema_version": "1.0",
+            "results": [
+                {"case_id": "complete-normal", "comparison_side": "current", "assertion_id": "completion-is-relevant", "passed": True, "summary": "Current package passed."},
+                {"case_id": "complete-normal", "comparison_side": "comparison", "assertion_id": "completion-is-relevant", "passed": False, "summary": "Comparison package failed."},
+            ],
+        }), encoding="utf-8")
+        semantic_comparison = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source", "--skill", "guru-example-action",
+            "--adapter", "shared", "--case", "complete-normal", "--run-root", str(Path(self.temp.name) / "semantic-comparison"),
+            "--semantic-grading", str(comparison_grading), "--current-package", str(semantic_package),
+            "--comparison-package", str(semantic_package), "--json",
+        )
+        semantic_payload = json.loads(semantic_comparison.stdout)
+        self.assertEqual(semantic_payload["status"], "evaluation_failed")
+        self.assertEqual(
+            {item["comparison_side"]: item["semantic_results"][0]["passed"] for item in semantic_payload["cases"]},
+            {"current": True, "comparison": False},
+        )
+
+        one_sided = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source", "--skill", "guru-example-sync",
+            "--adapter", "shared", "--run-root", str(Path(self.temp.name) / "one-sided"),
+            "--current-package", str(package), "--json",
+        )
+        self.assertEqual(json.loads(one_sided.stderr)["code"], "eval_comparison_pair_required")
+
+        internal = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source", "--skill", "guru-example-sync",
+            "--adapter", "shared", "--run-root", str(self.repo / "eval-output"), "--json",
+        )
+        self.assertEqual(json.loads(internal.stderr)["code"], "eval_run_root_inside_repo")
+
+        external_package = Path(self.temp.name) / "external-package"
+        shutil.copytree(package, external_package)
+        comparison_run_root = external_package / "eval-output"
+        inside_comparison = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "source", "--skill", "guru-example-sync",
+            "--adapter", "shared", "--run-root", str(comparison_run_root),
+            "--current-package", str(external_package), "--comparison-package", str(external_package), "--json",
+        )
+        self.assertEqual(json.loads(inside_comparison.stderr)["code"], "eval_run_root_inside_package")
+        self.assertFalse(comparison_run_root.exists())
+
+    def test_four_adapters_share_runner_runtime_target_for_external_exact_comparison(self) -> None:
+        current_package = self.skills / "packages/guru-example-sync"
+        comparison_package = Path(self.temp.name) / "exact-comparison/guru-example-sync"
+        shutil.copytree(current_package, comparison_package)
+        for adapter in ("shared", "codex", "claude", "cursor"):
+            with self.subTest(adapter=adapter):
+                run_root = Path(self.temp.name) / f"external-comparison-{adapter}"
+                result = self.run_cli(
+                    "run-skill-evals", "--root", str(self.repo), "--mode", "source",
+                    "--skill", "guru-example-sync", "--adapter", adapter,
+                    "--current-package", str(current_package),
+                    "--comparison-package", str(comparison_package),
+                    "--run-root", str(run_root), "--json",
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload["status"], "passed")
+                self.assertEqual({case["comparison_side"] for case in payload["cases"]}, {"current", "comparison"})
+                self.assertTrue(all(case["status"] == "passed" for case in payload["cases"]))
+                for case in payload["cases"]:
+                    transcript_path = Path(case["transcript_locator"])
+                    transcript = json.loads(transcript_path.read_text(encoding="utf-8"))
+                    private_request = json.loads((transcript_path.parent / "adapter-request.json").read_text(encoding="utf-8"))
+                    native_request = json.loads(Path(transcript["native_request_path"]).read_text(encoding="utf-8"))
+                    context = Path(transcript["context_path"]).read_text(encoding="utf-8")
+                    protocol = Path(transcript["protocol_path"]).read_text(encoding="utf-8")
+                    native_trace = Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
+                    boundary = Path(transcript["protocol_path"]).with_name("public-invocation-boundary.sh")
+                    boundary_text = boundary.read_text(encoding="utf-8")
+                    projection_root = Path(transcript["projection_root"])
+                    runtime_locator = private_request["runtime_target"]
+                    self.assertEqual(Path(runtime_locator).resolve(), self.runtime_target.resolve())
+                    self.assertNotIn("runtime_target", native_request)
+                    self.assertNotIn(runtime_locator, json.dumps(native_request))
+                    self.assertNotIn(runtime_locator, json.dumps(transcript["argv"]))
+                    self.assertNotIn(runtime_locator, context)
+                    self.assertNotIn(runtime_locator, protocol)
+                    self.assertNotIn(runtime_locator, native_trace)
+                    self.assertNotIn(runtime_locator, boundary_text)
+                    self.assertNotIn("guru_team_trellis.py", boundary_text)
+                    self.assertFalse(any(
+                        runtime_locator.encode("utf-8") in path.read_bytes()
+                        for path in projection_root.rglob("*") if path.is_file()
+                    ))
+
+    def test_normal_public_wrappers_do_not_reference_eval_or_private_runtime_source(self) -> None:
+        for skill_id in ("guru-example-action", "guru-example-sync"):
+            wrapper = (self.skills / "packages" / skill_id / "scripts/invoke.sh").read_text(encoding="utf-8")
+            self.assertNotIn("evals/", wrapper)
+            self.assertNotIn("guru_team_trellis.py", wrapper)
+
+    def test_installed_runner_consumes_managed_descriptor_executable(self) -> None:
+        destination = self.repo / ".trellis/guru-team"
+        result = preset.install_skill_packages(
+            self.repo,
+            self.repo,
+            destination,
+            {"codex", "cursor", "claude"},
+            None,
+        )
+        (self.repo / ".trellis/workflow.md").write_bytes((self.skills / "workflow.md").read_bytes())
+        extension = json.loads((self.skills / "extension.json").read_text(encoding="utf-8"))
+        (destination / "extension.json").write_text(
+            json.dumps({"extension": extension, "skill_packages": result}),
+            encoding="utf-8",
+        )
+        run = self.run_cli(
+            "run-skill-evals", "--root", str(self.repo), "--mode", "installed",
+            "--skill", "guru-example-sync", "--adapter", "codex", "--case", "sync-normal",
+            "--run-root", str(Path(self.temp.name) / "installed-run"), "--json",
+        )
+        self.assertEqual(run.returncode, 0, run.stderr)
+        payload = json.loads(run.stdout)
+        self.assertEqual(payload["status"], "passed")
+        transcript = json.loads(Path(payload["cases"][0]["transcript_locator"]).read_text(encoding="utf-8"))
+        self.assertEqual(Path(transcript["argv"][0]).name, "codex")
+        self.assertTrue(os.access(destination / "skills/adapters/eval/codex.sh", os.X_OK))
+        for platform in (".agents", ".codex", ".cursor", ".claude"):
+            self.assertTrue((self.repo / platform / "skills/guru-example-sync/evals/evals.json").is_file())
+
 
 class DistributionTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -2218,6 +2692,11 @@ class DistributionTests(unittest.TestCase):
         self.assertFalse((self.repo / ".claude/skills/guru-example-action").exists())
         self.assertTrue(all(item["action"] == "installed" for item in result["files"]))
         self.assertTrue(any(item["source"].endswith("tests/test_contract.py") for item in result["files"]))
+        for adapter_id in ("shared", "codex", "claude", "cursor"):
+            descriptor = json.loads((self.dst / f"skills/adapters/eval/{adapter_id}.json").read_text(encoding="utf-8"))
+            executable = self.dst / "skills/adapters/eval" / descriptor["executable"]
+            self.assertTrue(executable.is_file())
+            self.assertTrue(os.access(executable, os.X_OK))
 
     def test_python_cache_is_not_a_managed_package_asset(self) -> None:
         cache = self.guru_root / "trellis/skills/guru-team/packages/guru-example-action/tests/__pycache__"

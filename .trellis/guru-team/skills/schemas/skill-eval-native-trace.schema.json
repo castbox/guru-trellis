@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-native-trace-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_sha256", "projection_root", "skill_sha256", "wrapper_sha256", "events"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "projection_root": {"type": "string", "minLength": 1},
+    "skill_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "wrapper_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "events": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "target_kind", "path", "sha256", "request_sha256"],
+            "properties": {
+              "kind": {"const": "read"},
+              "target_kind": {"enum": ["skill_contract", "case_file"]},
+              "path": {"type": "string", "minLength": 1},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "wrapper_path", "argv", "returncode", "stdout_sha256", "stderr_sha256", "request_sha256"],
+            "properties": {
+              "kind": {"const": "invoke"},
+              "wrapper_path": {"type": "string", "minLength": 1},
+              "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+              "returncode": {"type": "integer"},
+              "stdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "stderr_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          }
+        ]
+      }
+    }
+  }
+}

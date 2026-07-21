@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "检查 eval corpus ownership、Interface refs、grader/adapter/evidence 和 normal invocation 边界"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 schema ids、public commands、extension/installed inventories 与 closed evidence 一致性"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查 runner 实际执行 public invocation 且脚本不生成 semantic pass"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "执行 PRD 场景矩阵、四状态、expected non-success exit、negative 和完整分发门禁"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 managed asset、executable mode、selected-platform bytes、upgrade/reapply"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical/dogfood/platform 无漂移且无 unresolved sidecar"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "检查未修改 Trellis upstream-owned overlay 或全局 runtime"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查三份 public README 的命令、状态、adapter 与验证说明可执行且一致"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 corpus-discovery-run-adapter-grade-evidence-distribution 的完整承接"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查 wrapper/adapter 未复制 shared schema、grader 或 semantic policy"}
+{"file": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/research/eval-contract-evidence.md", "reason": "复核实现仍符合 live #147、官方扩展边界、#144 前置与 factory 仅单向参考结论"}

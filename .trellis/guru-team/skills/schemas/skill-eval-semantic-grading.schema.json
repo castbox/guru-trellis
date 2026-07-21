@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-semantic-grading-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "results"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "results": {"type": "array", "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["case_id", "comparison_side", "assertion_id", "passed", "summary"], "properties": {"case_id": {"type": "string", "minLength": 1}, "comparison_side": {"enum": ["current", "comparison"]}, "assertion_id": {"type": "string", "minLength": 1}, "passed": {"type": "boolean"}, "summary": {"type": "string", "minLength": 1}}}}
+  }
+}
