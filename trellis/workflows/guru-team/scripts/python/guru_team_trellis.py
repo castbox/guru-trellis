@@ -15494,14 +15494,52 @@ SKILL_ECMA_WHITESPACE_CLASS = (
     r"\u0009-\u000d\u0020\u00a0\u1680\u2000-\u200a"
     r"\u2028\u2029\u202f\u205f\u3000\ufeff"
 )
-SKILL_ECMA_DOT_CLASS = r"[^\n\r\u2028\u2029]"
+SKILL_UTF16_HIGH_SURROGATE = r"[\ud800-\udbff]"
+SKILL_UTF16_LOW_SURROGATE = r"[\udc00-\udfff]"
+SKILL_UTF16_SURROGATE_PAIR = r"[\ud800-\udbff][\udc00-\udfff]"
+
+
+def skill_ecma_code_point_complement(excluded_class: str) -> str:
+    """Match one ECMA Unicode code point outside a BMP-only character class."""
+
+    return (
+        rf"(?:{SKILL_UTF16_SURROGATE_PAIR}|"
+        rf"(?!{SKILL_UTF16_SURROGATE_PAIR})"
+        rf"(?:(?<!{SKILL_UTF16_HIGH_SURROGATE})(?={SKILL_UTF16_LOW_SURROGATE})|"
+        rf"(?!{SKILL_UTF16_LOW_SURROGATE}))[^{excluded_class}])"
+    )
+
+
+SKILL_ECMA_DOT_PATTERN = skill_ecma_code_point_complement(r"\n\r\u2028\u2029")
 
 
 class SkillPortablePatternError(ValueError):
     pass
 
 
-def skill_compile_portable_pattern(pattern: str) -> re.Pattern[str]:
+def skill_utf16_code_units(value: str) -> str:
+    """Project a Python Unicode string onto JavaScript UTF-16 code units."""
+
+    encoded = value.encode("utf-16-le", errors="surrogatepass")
+    return "".join(
+        chr(encoded[position] | encoded[position + 1] << 8)
+        for position in range(0, len(encoded), 2)
+    )
+
+
+class SkillPortablePattern:
+    def __init__(self, compiled: re.Pattern[str]):
+        self._compiled = compiled
+
+    @property
+    def pattern(self) -> str:
+        return self._compiled.pattern
+
+    def search(self, value: str) -> re.Match[str] | None:
+        return self._compiled.search(skill_utf16_code_units(value))
+
+
+def skill_compile_portable_pattern(pattern: str) -> SkillPortablePattern:
     """Compile the closed ASCII-source pattern subset with ECMA-262 semantics."""
 
     def fail(reason: str, position: int) -> None:
@@ -15548,7 +15586,11 @@ def skill_compile_portable_pattern(pattern: str) -> re.Pattern[str]:
         if marker == "S":
             if in_class:
                 fail("uses \\S inside a character class", position)
-            return f"[^{SKILL_ECMA_WHITESPACE_CLASS}]", None, position + 2
+            return (
+                skill_ecma_code_point_complement(SKILL_ECMA_WHITESPACE_CLASS),
+                None,
+                position + 2,
+            )
         allowed_syntax = syntax_escapes | ({"-"} if in_class else set())
         if marker in allowed_syntax:
             return re.escape(marker), ord(marker), position + 2
@@ -15578,8 +15620,10 @@ def skill_compile_portable_pattern(pattern: str) -> re.Pattern[str]:
             if pattern[cursor] == "]":
                 if not saw_item:
                     fail("uses an empty character class", position)
-                prefix = "^" if negated else ""
-                return f"[{prefix}{''.join(parts)}]", cursor + 1
+                class_body = "".join(parts)
+                if negated:
+                    return skill_ecma_code_point_complement(class_body), cursor + 1
+                return f"[{class_body}]", cursor + 1
             if pattern[cursor] == "-":
                 parts.append(r"\-")
                 saw_item = True
@@ -15667,7 +15711,7 @@ def skill_compile_portable_pattern(pattern: str) -> re.Pattern[str]:
             can_quantify = False
             continue
         if character == ".":
-            translated.append(SKILL_ECMA_DOT_CLASS)
+            translated.append(SKILL_ECMA_DOT_PATTERN)
             cursor += 1
             can_quantify = True
             continue
@@ -15709,7 +15753,7 @@ def skill_compile_portable_pattern(pattern: str) -> re.Pattern[str]:
     if group_kinds:
         fail("has an unterminated group", len(pattern))
     try:
-        return re.compile("".join(translated))
+        return SkillPortablePattern(re.compile("".join(translated)))
     except re.error as error:
         raise SkillPortablePatternError("cannot be represented by the portable pattern subset") from error
 

@@ -168,11 +168,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-20T21:55:25Z",
+  "installed_at": "2026-07-21T01:17:32Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/144-minimal-typed-handoff-io",
-    "commit": "1338505df40aeb746af3a5f36c114a0877f85c2d",
+    "commit": "7f5a325896c2819b4353b2da2e1c5635182ec930",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

@@ -142,7 +142,13 @@ the frozen 1.2 package payloads retain their compatibility validation path.
 The exact accepted syntax and ECMA Unicode-mode search semantics are owned by
 `skill-package-contract.md` under `Portable Pattern Grammar`. The runtime uses
 one portable compiler for both the schema grammar gate and instance matching;
-it translates strict end anchoring, dot line terminators, and the exact ECMA
+it projects instance strings onto UTF-16 code units, preserves interior
+zero-width search positions, prevents Unicode-consuming atoms from splitting or
+starting inside a valid surrogate pair, and consumes isolated high/low
+surrogates independently even when a BMP code unit is adjacent. The single-unit
+guard excludes only a valid pair start or its interior low surrogate; it does
+not exclude an arbitrary BMP unit after an isolated high surrogate. The compiler
+also translates strict end anchoring, dot line terminators, and the exact ECMA
 whitespace set to Python-standard-library equivalents. It never passes the
 original contract pattern to raw Python `re.compile` or `re.search` as a
 fallback.

@@ -115,9 +115,21 @@ quantifiers. Instance regressions must prove strict `$` rejection of a trailing
 newline, dot rejection of all four ECMA line terminators while accepting one
 astral code point in Unicode mode, and the exact ECMA whitespace domain,
 including acceptance of `U+00A0` and rejection of Python-only `U+001C` and
-`U+0085`. The full legal matching matrix must be compared with an independent
-Node `new RegExp(pattern, "u").test(value)` run; a Python-only expected-value
-table is insufficient.
+`U+0085`. Astral regressions must separately cover zero-width matches before,
+inside, and after a surrogate pair; negative lookahead, anchors, alternation,
+empty alternatives, and nullable quantifiers at those positions; and the rule
+that `.`, `\\S`, and negated classes consume a valid pair as one code point and
+cannot start at its interior low surrogate. Isolated-surrogate regressions must
+cover high and low surrogates standalone and on both sides of a BMP code unit,
+plus `.`, `\\S`, negated classes, anchors, quantifiers, nullable paths, and
+backtracking. The generated value set must include the seven surrogate edge
+values: isolated high and low alone, each before and after a BMP value, and one
+valid pair. Its JSON transport must preserve isolated surrogates as escapes.
+A deterministic generated set of accepted patterns must be compared across
+astral, isolated-surrogate, BMP, line-terminator, and mixed values. The full
+legal matching matrix must be compared with an independent Node
+`new RegExp(pattern, "u").test(value)` run; a Python-only expected-value table
+is insufficient.
 Strict-JSON cases must cover `NaN`, `Infinity`, `-Infinity`, and numeric overflow
 at static schema/example, package-local ref, workflow marker, invocation stdout,
 in-memory schema/instance, and public serialization boundaries. Supported-format

@@ -386,9 +386,18 @@ as a range endpoint.
 
 Matching is unanchored search, equivalent to
 `new RegExp(pattern, "u").test(instance)`, unless the pattern supplies its own
-anchors. No multiline, ignore-case, or dot-all flag is available. `$` means
-strict end of input, including rejection before a final line terminator. `.`
-matches one Unicode-aware code point except `LF`, `CR`, `U+2028`, and `U+2029`.
+anchors. Search probes UTF-16 code-unit boundaries, so a zero-width assertion
+may succeed between the high and low surrogate of one astral code point. A
+consuming Unicode atom still treats that valid surrogate pair as one code point,
+cannot split it through backtracking, and cannot start at the interior low
+surrogate boundary. An isolated high or low surrogate is one independently
+consumable code point. A neighboring BMP code unit does not make it part of a
+pair: an isolated high surrogate before a BMP code unit and an isolated low
+surrogate after a BMP code unit remain two independently consumable code points.
+No multiline, ignore-case, or dot-all flag is available.
+`$` means strict end of input, including rejection before a final line
+terminator. `.` matches one Unicode-aware code point except `LF`, `CR`,
+`U+2028`, and `U+2029`.
 `\\s` is exactly `U+0009-U+000D`, `U+0020`, `U+00A0`, `U+1680`,
 `U+2000-U+200A`, `U+2028`, `U+2029`, `U+202F`, `U+205F`, `U+3000`, and
 `U+FEFF`; `\\S` is its complement. Capturing and non-capturing groups have the

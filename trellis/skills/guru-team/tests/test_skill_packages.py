@@ -864,6 +864,38 @@ class SourceValidationTests(unittest.TestCase):
             ("bounded-quantifier", "^ab{2,4}c+$", "abbbcc", True),
             ("negative-lookahead", "^(?!archive/).+$", "active/task", True),
             ("negative-lookahead-reject", "^(?!archive/).+$", "archive/task", False),
+            ("astral-zero-width-before", "^(?!$)", "\U0001f600", True),
+            ("astral-zero-width-interior", "(?!^|$)", "\U0001f600", True),
+            ("astral-zero-width-after", "$(?!^)", "\U0001f600", True),
+            ("astral-zero-width-alternation", "(?:a|(?!^|$))", "\U0001f600", True),
+            ("astral-zero-width-empty-alternative", "(?:a|)", "\U0001f600", True),
+            ("astral-zero-width-nullable-star", "(?!^|$)a*", "\U0001f600", True),
+            ("astral-zero-width-nullable-optional", "(?!^|$)a?", "\U0001f600", True),
+            ("astral-pair-is-one-dot", "^.$", "\U0001f600", True),
+            ("astral-pair-is-not-two-dots", "^..$", "\U0001f600", False),
+            ("astral-pair-is-one-negated-class", "^[^a]$", "\U0001f600", True),
+            ("astral-pair-is-not-two-negated-classes", "^[^a][^a]$", "\U0001f600", False),
+            ("astral-interior-cannot-start-dot", "(?!^|$).$", "\U0001f600", False),
+            ("astral-interior-cannot-start-nonspace", r"(?!^|$)\S$", "\U0001f600", False),
+            ("astral-interior-cannot-start-negated-class", "(?!^|$)[^a]$", "\U0001f600", False),
+            ("isolated-high-is-one-dot", "^.$", "\ud800", True),
+            ("isolated-low-is-one-dot", "^.$", "\udc00", True),
+            ("isolated-high-is-nonspace", r"^\S$", "\ud800", True),
+            ("isolated-low-is-nonspace", r"^\S$", "\udc00", True),
+            ("isolated-high-is-negated-class", "^[^a]$", "\ud800", True),
+            ("isolated-low-is-negated-class", "^[^a]$", "\udc00", True),
+            ("isolated-high-before-bmp", "^..$", "\ud800a", True),
+            ("isolated-high-after-bmp", "^..$", "a\ud800", True),
+            ("isolated-low-before-bmp", "^..$", "\udc00a", True),
+            ("isolated-low-after-bmp", "^..$", "a\udc00", True),
+            ("isolated-high-quantified", "^.{2}$", "\ud800a", True),
+            ("isolated-low-quantified", r"^\S{2}$", "a\udc00", True),
+            ("isolated-high-nullable-negated-class", "^[^a]?a$", "\ud800a", True),
+            ("isolated-low-nullable-nonspace", r"^a\S?$", "a\udc00", True),
+            ("isolated-high-alternative-backtracking", "^(?:a|.){2}$", "\ud800a", True),
+            ("isolated-low-alternative-backtracking", "^(?:a|[^a]){2}$", "a\udc00", True),
+            ("valid-pair-remains-one-quantified-atom", "^.{1}$", "\ud83d\ude00", True),
+            ("valid-pair-cannot-backtrack-as-two-atoms", "^(?:a|.){2}$", "\ud83d\ude00", False),
             ("control-escape", r"^\t$", "\t", True),
             ("ascii-unicode-escape", r"^\u0041+$", "AAA", True),
             ("class-whitespace-escape", r"^[\s]+$", "\u00a0", True),
@@ -949,7 +981,7 @@ class SourceValidationTests(unittest.TestCase):
                 script,
                 json.dumps(
                     [{"pattern": pattern, "value": value} for _, pattern, value, _ in cases],
-                    ensure_ascii=False,
+                    ensure_ascii=True,
                 ),
             ],
             check=True,
@@ -966,6 +998,137 @@ class SourceValidationTests(unittest.TestCase):
             for _, pattern, value, _ in cases
         ]
         self.assertEqual(runtime_results, ecma_results)
+
+    def test_generated_closed_patterns_match_node_ecma_unicode_regexp(self) -> None:
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("Node.js is unavailable for the generated ECMA-262 comparison")
+
+        atoms = ["a", "b", ".", r"\S", "[^a]", "[a]", r"\s", "(?:a|b)"]
+        quantifiers = ["", "*", "+", "?", "{0}", "{1}", "{0,1}", "{1,2}", "{0,}"]
+        bodies = [f"{atom}{quantifier}" for atom in atoms for quantifier in quantifiers]
+        nullable_bodies = [
+            f"(?:{alternative}){quantifier}"
+            for atom in atoms
+            for alternative in (f"{atom}|", f"|{atom}")
+            for quantifier in ("", "*", "?", "{0,1}")
+        ]
+        assertions = [
+            "^",
+            "$",
+            "(?!^)",
+            "(?!$)",
+            "(?!^|$)",
+            "(?!a)",
+            "(?!.)",
+            r"(?!\S)",
+            "(?![^a])",
+            "(?!a|$)",
+            "(?!|a)",
+            "(?!a(?!b))",
+            "(?!(?!a))",
+        ]
+        patterns = {"", "a|", "|a", "(?:|)", "(?!^|$)"}
+        patterns.update(bodies)
+        patterns.update(nullable_bodies)
+        for assertion in assertions:
+            patterns.add(assertion)
+            for body in bodies + nullable_bodies:
+                patterns.add(f"{assertion}{body}")
+                patterns.add(f"{body}{assertion}")
+        for body in bodies + nullable_bodies:
+            patterns.add(f"^{body}$")
+            patterns.add(f"(?!^|$){body}")
+            patterns.add(f"(?:{body}|)")
+            patterns.add(f"(?:|{body})")
+        accepted_patterns = sorted(patterns)
+        values = [
+            "",
+            "a",
+            "b",
+            "ab",
+            "ba",
+            "aa",
+            "e",
+            "\u00e9",
+            "\U0001f600",
+            "a\U0001f600",
+            "\U0001f600a",
+            "a\U0001f600b",
+            "\U0001f600\U0001f600",
+            "\n",
+            "\r",
+            "\u2028",
+            "\u2029",
+            "a\n",
+            "\U0001f600\n",
+            "\n\U0001f600",
+            "\u00a0",
+            "\u001c",
+            " \t",
+            "x\u2028y",
+            "A0_",
+            "-",
+            "\ud800",
+            "\udc00",
+            "\ud800a",
+            "a\ud800",
+            "\udc00a",
+            "a\udc00",
+            "\ud83d\ude00",
+        ]
+        for pattern in accepted_patterns:
+            with self.subTest(grammar_pattern=pattern):
+                self.assertEqual(
+                    runtime.skill_json_schema_subset_errors(
+                        {"type": "string", "pattern": pattern},
+                        "generated portable pattern",
+                    ),
+                    [],
+                )
+
+        # Node 26 has a V8 regression for an unanchored one-item negated class
+        # before `$`; a spec-equivalent `{1}` wrapper bypasses that optimization.
+        script = (
+            "const matrix = JSON.parse(process.argv[1]);"
+            "const major = Number(process.versions.node.split('.')[0]);"
+            "const source = (pattern) => major === 26 ? `(?:${pattern}){1}` : pattern;"
+            "process.stdout.write(JSON.stringify(matrix.patterns.map((pattern) => "
+            "matrix.values.map((value) => new RegExp(source(pattern), 'u').test(value)))));"
+        )
+        completed = subprocess.run(
+            [
+                node,
+                "-e",
+                script,
+                json.dumps(
+                    {"patterns": accepted_patterns, "values": values},
+                    ensure_ascii=True,
+                ),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        node_results = json.loads(completed.stdout)
+        mismatches = []
+        for pattern_index, pattern in enumerate(accepted_patterns):
+            for value_index, value in enumerate(values):
+                runtime_result = not runtime.skill_json_schema_validation_errors(
+                    value,
+                    {"type": "string", "pattern": pattern},
+                    "generated portable pattern",
+                )
+                if runtime_result != node_results[pattern_index][value_index]:
+                    mismatches.append({
+                        "pattern": pattern,
+                        "value": value,
+                        "runtime": runtime_result,
+                        "node": node_results[pattern_index][value_index],
+                    })
+        self.assertEqual(len(accepted_patterns), 4081)
+        self.assertEqual(len(values), 33)
+        self.assertEqual(mismatches[:20], [], mismatches[:20])
 
     def test_closed_schema_subset_accepts_recursive_supported_keywords(self) -> None:
         schema = {
