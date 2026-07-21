@@ -369,7 +369,122 @@
     "plan_digest": "8df29a1bbebb3824566a3134af34ce6bdadeb42f41cf5237f266e3d5c6b15a6b"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-21T10:22:54Z",
+    "commit_sha": "889387cdfcdf0b0ca8f3e32028c91d19548c3349",
+    "parent": "1cbf3dd85f8845441df2bb3172e82054568c30b5",
+    "message_sha256": "3f64bee298961d275e5878f3f03ea701747ec8402c8bf342725ab509176b6887",
+    "committed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/phase2-check.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-commit-plans/002.json",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "53e7f3477200357e065101615c283b4e04e8b622",
+      "actual_tree": "53e7f3477200357e065101615c283b4e04e8b622",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "4ae1590eee887c2cfcdc399aae7dcf6f39a1ec88",
+          "expected_mode": "100644",
+          "actual_blob": "4ae1590eee887c2cfcdc399aae7dcf6f39a1ec88",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "9517db9d38919f2544ddc52bdacf0e00ea2de196",
+          "expected_mode": "100755",
+          "actual_blob": "9517db9d38919f2544ddc52bdacf0e00ea2de196",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "expected_blob": "b1edcf2db4a45f8ebbf40cb09d14af43c7b6cc45",
+          "expected_mode": "100644",
+          "actual_blob": "b1edcf2db4a45f8ebbf40cb09d14af43c7b6cc45",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "1c3ba23aa624e2e316fb80f50e91654fb5de3296",
+          "expected_mode": "100644",
+          "actual_blob": "1c3ba23aa624e2e316fb80f50e91654fb5de3296",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "76161be558f15a289b43974bb704aed7b9b5ab0a",
+          "expected_mode": "100644",
+          "actual_blob": "76161be558f15a289b43974bb704aed7b9b5ab0a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/phase2-check.json",
+          "expected_blob": "762ff70dc919cee9f76359418cf203b81554f58e",
+          "expected_mode": "100644",
+          "actual_blob": "762ff70dc919cee9f76359418cf203b81554f58e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-commit-plans/002.json",
+          "expected_blob": "84bda44126d10b2fd7204db86d8e332ddd3d5cf3",
+          "expected_mode": "100644",
+          "actual_blob": "84bda44126d10b2fd7204db86d8e332ddd3d5cf3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "expected_blob": "b1edcf2db4a45f8ebbf40cb09d14af43c7b6cc45",
+          "expected_mode": "100644",
+          "actual_blob": "b1edcf2db4a45f8ebbf40cb09d14af43c7b6cc45",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+          "expected_blob": "b1edcf2db4a45f8ebbf40cb09d14af43c7b6cc45",
+          "expected_mode": "100644",
+          "actual_blob": "b1edcf2db4a45f8ebbf40cb09d14af43c7b6cc45",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "24f14693f87cfee33345a462b5e4391b0717710c",
+          "expected_mode": "100644",
+          "actual_blob": "24f14693f87cfee33345a462b5e4391b0717710c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "9517db9d38919f2544ddc52bdacf0e00ea2de196",
+          "expected_mode": "100755",
+          "actual_blob": "9517db9d38919f2544ddc52bdacf0e00ea2de196",
+          "actual_mode": "100755",
+          "matches": true
+        }
+      ]
+    }
   }
 }

@@ -2063,7 +2063,968 @@
     "plan_digest": "28aa6ace8161f69ae8a90b8c9cbb8d6327ff464031ce4d51cdf4845a0f5da01a"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-21T09:18:53Z",
+    "commit_sha": "1cbf3dd85f8845441df2bb3172e82054568c30b5",
+    "parent": "ac14a0d605335e57c47c26c1f21e28c9ea41371c",
+    "message_sha256": "e9272015fada4ae3122f600ba18722a3d305a74ac6237d3a1ec0ba8838ddec4c",
+    "committed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/bash/discover-skill-evals.sh",
+      ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/claude.json",
+      ".trellis/guru-team/skills/adapters/eval/claude.sh",
+      ".trellis/guru-team/skills/adapters/eval/codex.json",
+      ".trellis/guru-team/skills/adapters/eval/codex.sh",
+      ".trellis/guru-team/skills/adapters/eval/cursor.json",
+      ".trellis/guru-team/skills/adapters/eval/cursor.sh",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/adapters/eval/shared.json",
+      ".trellis/guru-team/skills/adapters/eval/shared.sh",
+      ".trellis/guru-team/skills/schemas/skill-eval-adapter-request.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-adapter-response.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-human-feedback.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-native-trace.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-run.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-eval-semantic-grading.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-evals.schema.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/agent-assignment.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/check.jsonl",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/context-discovery.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/contract-wording-review.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.jsonl",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-review.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-scope-ledger.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/phase2-check.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/planning-approval.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/research/eval-contract-evidence.md",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-commit-plans/001.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-start-context.json",
+      ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task.json",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/skills/guru-team/adapters/eval/claude.json",
+      "trellis/skills/guru-team/adapters/eval/claude.sh",
+      "trellis/skills/guru-team/adapters/eval/codex.json",
+      "trellis/skills/guru-team/adapters/eval/codex.sh",
+      "trellis/skills/guru-team/adapters/eval/cursor.json",
+      "trellis/skills/guru-team/adapters/eval/cursor.sh",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/adapters/eval/shared.json",
+      "trellis/skills/guru-team/adapters/eval/shared.sh",
+      "trellis/skills/guru-team/schemas/skill-eval-adapter-request.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-adapter-response.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-human-feedback.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-run.schema.json",
+      "trellis/skills/guru-team/schemas/skill-eval-semantic-grading.schema.json",
+      "trellis/skills/guru-team/schemas/skill-evals.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/claude.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/claude.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/codex.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/codex.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/cursor.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/cursor.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/shared.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/shared.sh",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/fake-native-cli.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/fixture-dispatcher.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/human-feedback.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/legacy-evals.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/evals/evals.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/evals/files/context.txt",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-block-input.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/evals/evals.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/sync-blocked-output.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/interface.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-blocked-output.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-adapter-request.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-adapter-response.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-human-feedback.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-native-trace.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-run.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-semantic-grading.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-evals.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/semantic-grading.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/discover-skill-evals.sh",
+      "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "886a7d48afc495b21b7266716ea2b45e4f4c24ea",
+      "actual_tree": "886a7d48afc495b21b7266716ea2b45e4f4c24ea",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "0ff0e836f7edb0ade15c3aa771ec46be97aff4fb",
+          "expected_mode": "100644",
+          "actual_blob": "0ff0e836f7edb0ade15c3aa771ec46be97aff4fb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/bash/discover-skill-evals.sh",
+          "expected_blob": "083f7a387b8c64359ac8dd381eed2a661181cbf6",
+          "expected_mode": "100755",
+          "actual_blob": "083f7a387b8c64359ac8dd381eed2a661181cbf6",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "expected_blob": "fd0c3b9d1a6ee36a4adab2018de44dd50eab83ba",
+          "expected_mode": "100755",
+          "actual_blob": "fd0c3b9d1a6ee36a4adab2018de44dd50eab83ba",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "e8c25b7d018be0327186a62ff103803cd6dc8c9d",
+          "expected_mode": "100755",
+          "actual_blob": "e8c25b7d018be0327186a62ff103803cd6dc8c9d",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/claude.json",
+          "expected_blob": "b01b9c0e134c336aaff08746e5478c5d443bdef3",
+          "expected_mode": "100644",
+          "actual_blob": "b01b9c0e134c336aaff08746e5478c5d443bdef3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/claude.sh",
+          "expected_blob": "82db42f7f9d633bd6adc05b17b9611419349d8a3",
+          "expected_mode": "100755",
+          "actual_blob": "82db42f7f9d633bd6adc05b17b9611419349d8a3",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/codex.json",
+          "expected_blob": "4c42a263653f38bc3b7e9a94fe823d6ab0ea5f80",
+          "expected_mode": "100644",
+          "actual_blob": "4c42a263653f38bc3b7e9a94fe823d6ab0ea5f80",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/codex.sh",
+          "expected_blob": "4d27a8c83c8d0f19b058303dac9668d5f7c1699e",
+          "expected_mode": "100755",
+          "actual_blob": "4d27a8c83c8d0f19b058303dac9668d5f7c1699e",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/cursor.json",
+          "expected_blob": "2b3cde202342889305939e145d58de25d344e71c",
+          "expected_mode": "100644",
+          "actual_blob": "2b3cde202342889305939e145d58de25d344e71c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/cursor.sh",
+          "expected_blob": "2c788a297c010d836c9d3660c499b5773bdca950",
+          "expected_mode": "100755",
+          "actual_blob": "2c788a297c010d836c9d3660c499b5773bdca950",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "expected_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+          "expected_mode": "100644",
+          "actual_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/shared.json",
+          "expected_blob": "19273310186a35c96203f05dd5f6d31f22704d03",
+          "expected_mode": "100644",
+          "actual_blob": "19273310186a35c96203f05dd5f6d31f22704d03",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/shared.sh",
+          "expected_blob": "1908a99dceb2d843aacf5c89b3ef16f77e686983",
+          "expected_mode": "100755",
+          "actual_blob": "1908a99dceb2d843aacf5c89b3ef16f77e686983",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/schemas/skill-eval-adapter-request.schema.json",
+          "expected_blob": "8ed68341e368099aef62fba2f46c1d9570cc60b4",
+          "expected_mode": "100644",
+          "actual_blob": "8ed68341e368099aef62fba2f46c1d9570cc60b4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/schemas/skill-eval-adapter-response.schema.json",
+          "expected_blob": "473b1688a324edee5ff0f7484cf108aa8c50bd93",
+          "expected_mode": "100644",
+          "actual_blob": "473b1688a324edee5ff0f7484cf108aa8c50bd93",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/schemas/skill-eval-human-feedback.schema.json",
+          "expected_blob": "8a870d291ca2c3bf000935db15bacdae2de3985f",
+          "expected_mode": "100644",
+          "actual_blob": "8a870d291ca2c3bf000935db15bacdae2de3985f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/schemas/skill-eval-native-trace.schema.json",
+          "expected_blob": "2379c86b69a0562c978d4026c754d6c9acd9648d",
+          "expected_mode": "100644",
+          "actual_blob": "2379c86b69a0562c978d4026c754d6c9acd9648d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/schemas/skill-eval-run.schema.json",
+          "expected_blob": "5ee06438102d9ea1bb294ffe0d65733386fcd74b",
+          "expected_mode": "100644",
+          "actual_blob": "5ee06438102d9ea1bb294ffe0d65733386fcd74b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/schemas/skill-eval-semantic-grading.schema.json",
+          "expected_blob": "556e7a0d545f683cafa4c785a8e67462671d8843",
+          "expected_mode": "100644",
+          "actual_blob": "556e7a0d545f683cafa4c785a8e67462671d8843",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/schemas/skill-evals.schema.json",
+          "expected_blob": "13108dc6f8284865ff0a7d6465e6cb66062b085d",
+          "expected_mode": "100644",
+          "actual_blob": "13108dc6f8284865ff0a7d6465e6cb66062b085d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/docs/public-docs.md",
+          "expected_blob": "ca7b204fa0ba246ca38af7e75a8cbf30b0f37011",
+          "expected_mode": "100644",
+          "actual_blob": "ca7b204fa0ba246ca38af7e75a8cbf30b0f37011",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/installer.md",
+          "expected_blob": "f9c9d3f60826ec2271262970d66aee0b2159cab9",
+          "expected_mode": "100644",
+          "actual_blob": "f9c9d3f60826ec2271262970d66aee0b2159cab9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/overlay-guidelines.md",
+          "expected_blob": "add9a63e8ab59b62188c3ce2a137f8ba7551fb9c",
+          "expected_mode": "100644",
+          "actual_blob": "add9a63e8ab59b62188c3ce2a137f8ba7551fb9c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/upstream-ownership.md",
+          "expected_blob": "9cc40d6cb44a74c6707076f3e4ac04b398c17c58",
+          "expected_mode": "100644",
+          "actual_blob": "9cc40d6cb44a74c6707076f3e4ac04b398c17c58",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/companion-scripts.md",
+          "expected_blob": "2509b287ca8004b006cc58e7c4784612f19bfb07",
+          "expected_mode": "100644",
+          "actual_blob": "2509b287ca8004b006cc58e7c4784612f19bfb07",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/data-contracts.md",
+          "expected_blob": "dd383c4ba8b4b7d395acee538ba5d7a1f49c0bb6",
+          "expected_mode": "100644",
+          "actual_blob": "dd383c4ba8b4b7d395acee538ba5d7a1f49c0bb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "46b73e2026d02fa9661cb7a76579e819659ba4c8",
+          "expected_mode": "100644",
+          "actual_blob": "46b73e2026d02fa9661cb7a76579e819659ba4c8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "b469eb6c57b502a56344bc6c3fd530c2d37a3256",
+          "expected_mode": "100644",
+          "actual_blob": "b469eb6c57b502a56344bc6c3fd530c2d37a3256",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/agent-assignment.json",
+          "expected_blob": "6d32751708d093b49658313f7fc32a52dc4baa43",
+          "expected_mode": "100644",
+          "actual_blob": "6d32751708d093b49658313f7fc32a52dc4baa43",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/check.jsonl",
+          "expected_blob": "e6c2789b571b8c5be40143216a50a5f810c6b377",
+          "expected_mode": "100644",
+          "actual_blob": "e6c2789b571b8c5be40143216a50a5f810c6b377",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/context-discovery.json",
+          "expected_blob": "27d4670a4f4417f0ea5f2c519f5310ff0cb936bf",
+          "expected_mode": "100644",
+          "actual_blob": "27d4670a4f4417f0ea5f2c519f5310ff0cb936bf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/contract-wording-review.json",
+          "expected_blob": "5af98cf4dd1310d57a3cd7bfeb6c2274cddf8cd2",
+          "expected_mode": "100644",
+          "actual_blob": "5af98cf4dd1310d57a3cd7bfeb6c2274cddf8cd2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/design.md",
+          "expected_blob": "67d68d8ebf7060d35a25bfd35a2e67a58ed4956c",
+          "expected_mode": "100644",
+          "actual_blob": "67d68d8ebf7060d35a25bfd35a2e67a58ed4956c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.jsonl",
+          "expected_blob": "b3d71c98be44b501913e74e1bf8e39e2cb0e75c2",
+          "expected_mode": "100644",
+          "actual_blob": "b3d71c98be44b501913e74e1bf8e39e2cb0e75c2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/implement.md",
+          "expected_blob": "39b2ce03c189781fc02a9dc951f6d10e9f88cafa",
+          "expected_mode": "100644",
+          "actual_blob": "39b2ce03c189781fc02a9dc951f6d10e9f88cafa",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-review.json",
+          "expected_blob": "b23b82e5a6c42b62b291481ae60043520c17de65",
+          "expected_mode": "100644",
+          "actual_blob": "b23b82e5a6c42b62b291481ae60043520c17de65",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/issue-scope-ledger.json",
+          "expected_blob": "bd50c4d0cf0a788c452481d3cfbc2c6a8656a7cc",
+          "expected_mode": "100644",
+          "actual_blob": "bd50c4d0cf0a788c452481d3cfbc2c6a8656a7cc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/phase2-check.json",
+          "expected_blob": "63ad0ed70a33d0f61bbfc409c37b1a79735b65f3",
+          "expected_mode": "100644",
+          "actual_blob": "63ad0ed70a33d0f61bbfc409c37b1a79735b65f3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/planning-approval.json",
+          "expected_blob": "9195bfd0e780c5422eb9932d1ad15e39bd8ee0e8",
+          "expected_mode": "100644",
+          "actual_blob": "9195bfd0e780c5422eb9932d1ad15e39bd8ee0e8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/prd.md",
+          "expected_blob": "286be559a29e15bb2bce7f2e8a440e17fdf7af45",
+          "expected_mode": "100644",
+          "actual_blob": "286be559a29e15bb2bce7f2e8a440e17fdf7af45",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/research/eval-contract-evidence.md",
+          "expected_blob": "6085c749184d93fd12a5957b652f5896e878eb12",
+          "expected_mode": "100644",
+          "actual_blob": "6085c749184d93fd12a5957b652f5896e878eb12",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-commit-plans/001.json",
+          "expected_blob": "2f0107b1e8c4577f6a217c9cc9d0b1183a8d3339",
+          "expected_mode": "100644",
+          "actual_blob": "2f0107b1e8c4577f6a217c9cc9d0b1183a8d3339",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task-start-context.json",
+          "expected_blob": "8ed4595115824a6f642b22abf1d7a69181cf0d26",
+          "expected_mode": "100644",
+          "actual_blob": "8ed4595115824a6f642b22abf1d7a69181cf0d26",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-147-skill-eval-runner-adapters/task.json",
+          "expected_blob": "9c84657ef731b53ae7e03cb14f2a3fe76c57354b",
+          "expected_mode": "100644",
+          "actual_blob": "9c84657ef731b53ae7e03cb14f2a3fe76c57354b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "README.md",
+          "expected_blob": "445a4dc3e2fd1b307bd353f16568b5a8b87082af",
+          "expected_mode": "100644",
+          "actual_blob": "445a4dc3e2fd1b307bd353f16568b5a8b87082af",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/README.md",
+          "expected_blob": "698ad9873b395d15899c27d03aa1b3c9106831f2",
+          "expected_mode": "100644",
+          "actual_blob": "698ad9873b395d15899c27d03aa1b3c9106831f2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/guru-team-trellis-flow.md",
+          "expected_blob": "c1104c10124d28765ac4413d9018cc02553a5219",
+          "expected_mode": "100644",
+          "actual_blob": "c1104c10124d28765ac4413d9018cc02553a5219",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/requirement-main.md",
+          "expected_blob": "fadbab3c64ed92a64c933a0bf1998c72c067ecf7",
+          "expected_mode": "100644",
+          "actual_blob": "fadbab3c64ed92a64c933a0bf1998c72c067ecf7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/guru-team-extension.json",
+          "expected_blob": "38453dd4c25f25910b7798653212e9f40bc30a45",
+          "expected_mode": "100644",
+          "actual_blob": "38453dd4c25f25910b7798653212e9f40bc30a45",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/README.md",
+          "expected_blob": "93977a0b5a09953e9cc3915b5c85340a5e1a9819",
+          "expected_mode": "100644",
+          "actual_blob": "93977a0b5a09953e9cc3915b5c85340a5e1a9819",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "expected_blob": "f83ae19f9a78da9e5828ebe8657f977aa59aff95",
+          "expected_mode": "100755",
+          "actual_blob": "f83ae19f9a78da9e5828ebe8657f977aa59aff95",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "expected_blob": "d7d777ba3973faf07412be8014fa34aa3e9a8191",
+          "expected_mode": "100755",
+          "actual_blob": "d7d777ba3973faf07412be8014fa34aa3e9a8191",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "c836744e39057297a7c6b682550b20385ab0d56d",
+          "expected_mode": "100644",
+          "actual_blob": "c836744e39057297a7c6b682550b20385ab0d56d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "expected_blob": "ffd94b1b480a0732d9b59b5d16e29ea88a4ee680",
+          "expected_mode": "100644",
+          "actual_blob": "ffd94b1b480a0732d9b59b5d16e29ea88a4ee680",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/claude.json",
+          "expected_blob": "b01b9c0e134c336aaff08746e5478c5d443bdef3",
+          "expected_mode": "100644",
+          "actual_blob": "b01b9c0e134c336aaff08746e5478c5d443bdef3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/claude.sh",
+          "expected_blob": "82db42f7f9d633bd6adc05b17b9611419349d8a3",
+          "expected_mode": "100755",
+          "actual_blob": "82db42f7f9d633bd6adc05b17b9611419349d8a3",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/codex.json",
+          "expected_blob": "4c42a263653f38bc3b7e9a94fe823d6ab0ea5f80",
+          "expected_mode": "100644",
+          "actual_blob": "4c42a263653f38bc3b7e9a94fe823d6ab0ea5f80",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/codex.sh",
+          "expected_blob": "4d27a8c83c8d0f19b058303dac9668d5f7c1699e",
+          "expected_mode": "100755",
+          "actual_blob": "4d27a8c83c8d0f19b058303dac9668d5f7c1699e",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/cursor.json",
+          "expected_blob": "2b3cde202342889305939e145d58de25d344e71c",
+          "expected_mode": "100644",
+          "actual_blob": "2b3cde202342889305939e145d58de25d344e71c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/cursor.sh",
+          "expected_blob": "2c788a297c010d836c9d3660c499b5773bdca950",
+          "expected_mode": "100755",
+          "actual_blob": "2c788a297c010d836c9d3660c499b5773bdca950",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "expected_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+          "expected_mode": "100644",
+          "actual_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/shared.json",
+          "expected_blob": "19273310186a35c96203f05dd5f6d31f22704d03",
+          "expected_mode": "100644",
+          "actual_blob": "19273310186a35c96203f05dd5f6d31f22704d03",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/shared.sh",
+          "expected_blob": "1908a99dceb2d843aacf5c89b3ef16f77e686983",
+          "expected_mode": "100755",
+          "actual_blob": "1908a99dceb2d843aacf5c89b3ef16f77e686983",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/schemas/skill-eval-adapter-request.schema.json",
+          "expected_blob": "8ed68341e368099aef62fba2f46c1d9570cc60b4",
+          "expected_mode": "100644",
+          "actual_blob": "8ed68341e368099aef62fba2f46c1d9570cc60b4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/schemas/skill-eval-adapter-response.schema.json",
+          "expected_blob": "473b1688a324edee5ff0f7484cf108aa8c50bd93",
+          "expected_mode": "100644",
+          "actual_blob": "473b1688a324edee5ff0f7484cf108aa8c50bd93",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/schemas/skill-eval-human-feedback.schema.json",
+          "expected_blob": "8a870d291ca2c3bf000935db15bacdae2de3985f",
+          "expected_mode": "100644",
+          "actual_blob": "8a870d291ca2c3bf000935db15bacdae2de3985f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json",
+          "expected_blob": "2379c86b69a0562c978d4026c754d6c9acd9648d",
+          "expected_mode": "100644",
+          "actual_blob": "2379c86b69a0562c978d4026c754d6c9acd9648d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/schemas/skill-eval-run.schema.json",
+          "expected_blob": "5ee06438102d9ea1bb294ffe0d65733386fcd74b",
+          "expected_mode": "100644",
+          "actual_blob": "5ee06438102d9ea1bb294ffe0d65733386fcd74b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/schemas/skill-eval-semantic-grading.schema.json",
+          "expected_blob": "556e7a0d545f683cafa4c785a8e67462671d8843",
+          "expected_mode": "100644",
+          "actual_blob": "556e7a0d545f683cafa4c785a8e67462671d8843",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/schemas/skill-evals.schema.json",
+          "expected_blob": "13108dc6f8284865ff0a7d6465e6cb66062b085d",
+          "expected_mode": "100644",
+          "actual_blob": "13108dc6f8284865ff0a7d6465e6cb66062b085d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/claude.json",
+          "expected_blob": "b01b9c0e134c336aaff08746e5478c5d443bdef3",
+          "expected_mode": "100644",
+          "actual_blob": "b01b9c0e134c336aaff08746e5478c5d443bdef3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/claude.sh",
+          "expected_blob": "82db42f7f9d633bd6adc05b17b9611419349d8a3",
+          "expected_mode": "100755",
+          "actual_blob": "82db42f7f9d633bd6adc05b17b9611419349d8a3",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/codex.json",
+          "expected_blob": "4c42a263653f38bc3b7e9a94fe823d6ab0ea5f80",
+          "expected_mode": "100644",
+          "actual_blob": "4c42a263653f38bc3b7e9a94fe823d6ab0ea5f80",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/codex.sh",
+          "expected_blob": "4d27a8c83c8d0f19b058303dac9668d5f7c1699e",
+          "expected_mode": "100755",
+          "actual_blob": "4d27a8c83c8d0f19b058303dac9668d5f7c1699e",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/cursor.json",
+          "expected_blob": "2b3cde202342889305939e145d58de25d344e71c",
+          "expected_mode": "100644",
+          "actual_blob": "2b3cde202342889305939e145d58de25d344e71c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/cursor.sh",
+          "expected_blob": "2c788a297c010d836c9d3660c499b5773bdca950",
+          "expected_mode": "100755",
+          "actual_blob": "2c788a297c010d836c9d3660c499b5773bdca950",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+          "expected_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+          "expected_mode": "100644",
+          "actual_blob": "b0e4fd15d1a01108a5b33d31e7a19b71b445f716",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/shared.json",
+          "expected_blob": "19273310186a35c96203f05dd5f6d31f22704d03",
+          "expected_mode": "100644",
+          "actual_blob": "19273310186a35c96203f05dd5f6d31f22704d03",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/shared.sh",
+          "expected_blob": "1908a99dceb2d843aacf5c89b3ef16f77e686983",
+          "expected_mode": "100755",
+          "actual_blob": "1908a99dceb2d843aacf5c89b3ef16f77e686983",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+          "expected_blob": "028ddea15e0d3a53194e47302355a046eb4de844",
+          "expected_mode": "100644",
+          "actual_blob": "028ddea15e0d3a53194e47302355a046eb4de844",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/fake-native-cli.py",
+          "expected_blob": "9ff1729887eb4d1b5ff4d5675187010092e68351",
+          "expected_mode": "100755",
+          "actual_blob": "9ff1729887eb4d1b5ff4d5675187010092e68351",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/fixture-dispatcher.py",
+          "expected_blob": "d1b2b4aad5171883617cd24b56b602dc237b5fc3",
+          "expected_mode": "100755",
+          "actual_blob": "d1b2b4aad5171883617cd24b56b602dc237b5fc3",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/human-feedback.json",
+          "expected_blob": "8a16dddd4137e586057b9fbfd04f80283754674e",
+          "expected_mode": "100644",
+          "actual_blob": "8a16dddd4137e586057b9fbfd04f80283754674e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/legacy-evals.json",
+          "expected_blob": "cf75069f025a6b7871f382365a5ce383d3ee494a",
+          "expected_mode": "100644",
+          "actual_blob": "cf75069f025a6b7871f382365a5ce383d3ee494a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/evals/evals.json",
+          "expected_blob": "449c07ecdcacd3fe932741e9edb17073393f29d0",
+          "expected_mode": "100644",
+          "actual_blob": "449c07ecdcacd3fe932741e9edb17073393f29d0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/evals/files/context.txt",
+          "expected_blob": "80a3ac13e43eedccc201c8f09ad1969923d2d60c",
+          "expected_mode": "100644",
+          "actual_blob": "80a3ac13e43eedccc201c8f09ad1969923d2d60c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/action-block-input.json",
+          "expected_blob": "1f069874b2ee45284966e846afb4c40e5c5f4ad6",
+          "expected_mode": "100644",
+          "actual_blob": "1f069874b2ee45284966e846afb4c40e5c5f4ad6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/evals/evals.json",
+          "expected_blob": "d02f964e6e5682ef0aa066f3458567d446a7a6a5",
+          "expected_mode": "100644",
+          "actual_blob": "d02f964e6e5682ef0aa066f3458567d446a7a6a5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/examples/sync-blocked-output.json",
+          "expected_blob": "e8f7382d6481e1f256796c19b3124d1c5fb44743",
+          "expected_mode": "100644",
+          "actual_blob": "e8f7382d6481e1f256796c19b3124d1c5fb44743",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/interface.json",
+          "expected_blob": "dfa18c03a659cdcbf69a3ff8624fefb2c23c0498",
+          "expected_mode": "100644",
+          "actual_blob": "dfa18c03a659cdcbf69a3ff8624fefb2c23c0498",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-sync/schemas/sync-blocked-output.schema.json",
+          "expected_blob": "447a6b76de7288148eb0e660db9bbc01f3ac7879",
+          "expected_mode": "100644",
+          "actual_blob": "447a6b76de7288148eb0e660db9bbc01f3ac7879",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-adapter-request.schema.json",
+          "expected_blob": "8ed68341e368099aef62fba2f46c1d9570cc60b4",
+          "expected_mode": "100644",
+          "actual_blob": "8ed68341e368099aef62fba2f46c1d9570cc60b4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-adapter-response.schema.json",
+          "expected_blob": "473b1688a324edee5ff0f7484cf108aa8c50bd93",
+          "expected_mode": "100644",
+          "actual_blob": "473b1688a324edee5ff0f7484cf108aa8c50bd93",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-human-feedback.schema.json",
+          "expected_blob": "8a870d291ca2c3bf000935db15bacdae2de3985f",
+          "expected_mode": "100644",
+          "actual_blob": "8a870d291ca2c3bf000935db15bacdae2de3985f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-native-trace.schema.json",
+          "expected_blob": "2379c86b69a0562c978d4026c754d6c9acd9648d",
+          "expected_mode": "100644",
+          "actual_blob": "2379c86b69a0562c978d4026c754d6c9acd9648d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-run.schema.json",
+          "expected_blob": "5ee06438102d9ea1bb294ffe0d65733386fcd74b",
+          "expected_mode": "100644",
+          "actual_blob": "5ee06438102d9ea1bb294ffe0d65733386fcd74b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-semantic-grading.schema.json",
+          "expected_blob": "556e7a0d545f683cafa4c785a8e67462671d8843",
+          "expected_mode": "100644",
+          "actual_blob": "556e7a0d545f683cafa4c785a8e67462671d8843",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-evals.schema.json",
+          "expected_blob": "13108dc6f8284865ff0a7d6465e6cb66062b085d",
+          "expected_mode": "100644",
+          "actual_blob": "13108dc6f8284865ff0a7d6465e6cb66062b085d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/semantic-grading.json",
+          "expected_blob": "485add8db2e91d8f08ff91f3bad360a0b192e204",
+          "expected_mode": "100644",
+          "actual_blob": "485add8db2e91d8f08ff91f3bad360a0b192e204",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
+          "expected_blob": "6544f518f0ad57183b4af4fd5d9f78f0db6ebadb",
+          "expected_mode": "100644",
+          "actual_blob": "6544f518f0ad57183b4af4fd5d9f78f0db6ebadb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "b1591803b21dc5cf6f73ecef98d33ef11ff5bc07",
+          "expected_mode": "100644",
+          "actual_blob": "b1591803b21dc5cf6f73ecef98d33ef11ff5bc07",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "0b01968c1d94e896db2297e08662f5f26afeb4da",
+          "expected_mode": "100644",
+          "actual_blob": "0b01968c1d94e896db2297e08662f5f26afeb4da",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/bash/discover-skill-evals.sh",
+          "expected_blob": "083f7a387b8c64359ac8dd381eed2a661181cbf6",
+          "expected_mode": "100755",
+          "actual_blob": "083f7a387b8c64359ac8dd381eed2a661181cbf6",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "expected_blob": "fd0c3b9d1a6ee36a4adab2018de44dd50eab83ba",
+          "expected_mode": "100755",
+          "actual_blob": "fd0c3b9d1a6ee36a4adab2018de44dd50eab83ba",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "e8c25b7d018be0327186a62ff103803cd6dc8c9d",
+          "expected_mode": "100755",
+          "actual_blob": "e8c25b7d018be0327186a62ff103803cd6dc8c9d",
+          "actual_mode": "100755",
+          "matches": true
+        }
+      ]
+    }
   }
 }

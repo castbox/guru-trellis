@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team Skill 行为案例分散在 prose、examples、tests 与平台 smoke 中，缺少可复用、可执行且跨 Agent 一致的评测合同与 runner。",
+    "outcome": "已建立 package-local eval corpus、public runner、四平台薄 adapter、grading 边界、comparison 与 package 外 evidence，并完成分发和 update/reapply 验证。",
+    "changed_behavior": [
+      "Skill package 可以用版本化 evals/evals.json 声明稳定 case、typed exit、fixtures 与 typed assertions。",
+      "Runner 实际执行 Interface public invocation，并按 actual exit 的独立 output schema 校验结果。",
+      "Deterministic assertions、semantic grading 与 human feedback 在 schema、执行和结果中保持分离。",
+      "Shared、Codex、Claude Code 与 Cursor adapter 消费 byte-identical corpus，并返回统一 closed status。",
+      "Current/comparison exact package 分别验证 Interface、public assets、corpus、fixtures 与 side-local wrapper。",
+      "Run trace、transcript、comparison 和 timing evidence 只写入 package/repo tracked artifact 之外。",
+      "Production legacy Skills 不加载 eval corpus，具体迁移与 coverage 保持为独立后续范围。",
+      "Canonical、installed、preset、overlay 与 throwaway install/update/reapply 保持一致。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "schema",
+        "name": "Skill eval corpus 与 run evidence contracts",
+        "paths": [],
+        "change": "新增 corpus、adapter request/response、native trace、semantic grading、human feedback 与 run result 的 closed schemas。"
+      },
+      {
+        "kind": "script",
+        "name": "Eval discovery、runner 与 comparison runtime",
+        "paths": [],
+        "change": "发现 package-local corpus，执行 public invocation，校验 typed exit/output，并闭合 comparison 与 evidence。"
+      },
+      {
+        "kind": "skill",
+        "name": "Shared 与平台 native adapters",
+        "paths": [],
+        "change": "为 shared、Codex、Claude Code、Cursor 选择真实 wrapper/native argv，并隔离 public projection 与 private runtime。"
+      },
+      {
+        "kind": "test",
+        "name": "Representative semantic/deterministic eval matrix",
+        "paths": [],
+        "change": "覆盖 normal、refresh/re-entry/blocked、different-wrapper、legacy migration、结构错误与分发回归。"
+      },
+      {
+        "kind": "preset",
+        "name": "Canonical distribution 与 installed copies",
+        "paths": [],
+        "change": "同步 extension inventory、workflow、preset、dogfood 与三平台产物，并验证 update/reapply 无漂移。"
+      },
+      {
+        "kind": "docs",
+        "name": "Guru Team Skill evaluation durable SSOT",
+        "paths": [],
+        "change": "收敛 corpus、runner、adapter、grading、comparison、evidence、分发和 production migration boundary。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Package-local behavior evaluation corpus",
+        "before": "行为案例分散且没有稳定、版本化、可执行的 package-local 合同。",
+        "after": "evals/evals.json 声明 stable id、prompt、expected exit、fixtures、expected output 与 typed assertions。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Public invocation execution and typed output validation",
+        "before": "既有 eval validator 只检查静态 shape 和数量，不能证明 public behavior。",
+        "after": "Runner 实际执行 Interface public invocation，记录 actual exit，并按 per-exit output schema 校验。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Grader responsibility boundary",
+        "before": "Mechanical、semantic 与 human judgment 缺少统一分层，脚本结果可能被误作 semantic pass。",
+        "after": "Deterministic grader 只判断机械事实，semantic grader 与 human feedback 独立输入，脚本不生成 semantic pass。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Cross-Agent adapter boundary",
+        "before": "平台 smoke prompt、执行入口和输出形态不统一，无法复用同一 corpus。",
+        "after": "四个薄 adapter 只隔离上下文、传递 prompt/files、执行声明 argv，并收集统一 output/trace。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Exact comparison side binding",
+        "before": "Comparison side 可复用 current invocation，合法 wrapper 变化和普通 package drift 无法可靠闭合。",
+        "after": "每个 exact side 独立验证 Interface/public assets/corpus/fixtures，生成 side-local invocation 与 output schemas。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Runner evidence ownership",
+        "before": "评测 transcript、grading 与 comparison 缺少明确的 tracked artifact 和审计边界。",
+        "after": "Evidence 只写 package/repo 外运行目录，服务排障比较，不成为 public handoff、gate、audit 或 release proof。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Production migration boundary",
+        "before": "横向评测基础设施与 production Skill 用例迁移的所有权容易混合。",
+        "after": "基础设施仅由 representative packages 验收，九个 production Skills 保持 legacy，具体迁移由后续任务承接。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "discover-skill-evals.sh",
+        "run-skill-evals.sh"
+      ],
+      "config_keys": [
+        "discover-skill-evals",
+        "run-skill-evals"
+      ],
+      "schema_fields": [
+        "schema_version",
+        "skill_name",
+        "evals",
+        "expected_exit",
+        "assertions"
+      ],
+      "symbols": [
+        "skill_eval_validate_corpus",
+        "skill_eval_discover_side",
+        "cmd_discover_skill_evals",
+        "cmd_run_skill_evals"
+      ],
+      "phrases": [
+        "Skill 行为评测合同与跨 Agent runner 已完成",
+        "run-skill-evals.sh 实际执行 public invocation",
+        "comparison side-local wrapper 绑定已完成",
+        "production Skill eval corpus 保持待迁移"
+      ]
+    }
+  }
+}

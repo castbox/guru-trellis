@@ -5,7 +5,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/147",
     "title": "实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
     "reason": "本 task 的唯一主要交付单元。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Fresh Phase 2 typed exit 为 passed，十个 adequacy dimensions 全部通过；R1-R12、AC1-AC15、Docs SSOT、agent recovery 与 full rerun 均无 open finding。",
+      "Workflow 548 passed/13 skipped、Skill packages 138 passed、preset 39 passed、ownership 6 passed；400 managed files、0 conflict/removal/sidecar，full throwaway init/update/reapply exit 0。",
+      "Branch Review Gate 已绑定 HEAD 889387cdfcdf0b0ca8f3e32028c91d19548c3349；Round 2 finding owner closure 与 Round 3 fresh final review 的 P0/P1/P2/P3 均为 0，blocking findings 为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "7cd0b3990032eb5b242d39f9b1f85529c6e3eef63a5f99ca8bfd791228da11d6",
+        "verified_content_head": "889387cdfcdf0b0ca8f3e32028c91d19548c3349",
+        "remote_head": "889387cdfcdf0b0ca8f3e32028c91d19548c3349",
+        "publish_head": "889387cdfcdf0b0ca8f3e32028c91d19548c3349",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,7 +28,22 @@
       "url": "https://github.com/castbox/guru-trellis/issues/147",
       "title": "实现 Guru Skill 行为评测合同、Runner 与跨 Agent Adapter 基础设施",
       "reason": "本 task 完整验收并关闭 #147。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Fresh Phase 2 typed exit 为 passed，十个 adequacy dimensions 全部通过；R1-R12、AC1-AC15、Docs SSOT、agent recovery 与 full rerun 均无 open finding。",
+        "Workflow 548 passed/13 skipped、Skill packages 138 passed、preset 39 passed、ownership 6 passed；400 managed files、0 conflict/removal/sidecar，full throwaway init/update/reapply exit 0。",
+        "Branch Review Gate 已绑定 HEAD 889387cdfcdf0b0ca8f3e32028c91d19548c3349；Round 2 finding owner closure 与 Round 3 fresh final review 的 P0/P1/P2/P3 均为 0，blocking findings 为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "7cd0b3990032eb5b242d39f9b1f85529c6e3eef63a5f99ca8bfd791228da11d6",
+          "verified_content_head": "889387cdfcdf0b0ca8f3e32028c91d19548c3349",
+          "remote_head": "889387cdfcdf0b0ca8f3e32028c91d19548c3349",
+          "publish_head": "889387cdfcdf0b0ca8f3e32028c91d19548c3349",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [
