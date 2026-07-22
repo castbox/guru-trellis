@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-22T05:38:46Z",
+  "status": "passed",
+  "repo": "castbox/guru-trellis",
+  "remote": "origin",
+  "branch": "feat/145-stage0-minimal-handoff",
+  "marketplace_source": "gh:castbox/guru-trellis/trellis#feat/145-stage0-minimal-handoff",
+  "verified_head": "9f941087994eb4ea1e4fa9e0c407f8ba3ffd84f8",
+  "remote_head": "9f941087994eb4ea1e4fa9e0c407f8ba3ffd84f8",
+  "task_dir": ".trellis/tasks/07-21-145-stage0-minimal-handoff",
+  "steps": [
+    {
+      "command": [
+        "git",
+        "ls-remote",
+        "--heads",
+        "origin",
+        "feat/145-stage0-minimal-handoff"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "b4bb839dc2e12a97d8bc1310a9b4301f2be45a043c6884cd21c7bafa94e92a77",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_size_bytes": 83,
+      "stderr_size_bytes": 0,
+      "passed": true,
+      "remote_head": "9f941087994eb4ea1e4fa9e0c407f8ba3ffd84f8",
+      "expected_head": "9f941087994eb4ea1e4fa9e0c407f8ba3ffd84f8"
+    },
+    {
+      "command": [
+        "git",
+        "remote",
+        "get-url",
+        "origin"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e28e4e51e40ffc4d418229ccab0818a4b8e16f1b22a919b1b4691cf7775ab8fa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_size_bytes": 43,
+      "stderr_size_bytes": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "--branch",
+        "feat/145-stage0-minimal-handoff",
+        "<remote-url>",
+        "<temp-source>"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "38677b8a53526ac5616b0ccd6cc838b0ab1582a916bc48ad004518fd53cd5b4a",
+      "stdout_size_bytes": 0,
+      "stderr_size_bytes": 106,
+      "passed": true
+    },
+    {
+      "command": [
+        "trellis",
+        "init",
+        "-y",
+        "-u",
+        "marketplace-verifier",
+        "--codex",
+        "--cursor",
+        "--workflow",
+        "guru-team",
+        "--workflow-source",
+        "gh:castbox/guru-trellis/trellis#feat/145-stage0-minimal-handoff"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "05959990b95226617740c0fd0510c3e97785ee58b54579b3ca488ef76031c694",
+      "stderr_sha256": "dd3ef191e8685cf4195aad9f833bec22bc2288bae5a81ecee0f4553d809ad2bf",
+      "stdout_size_bytes": 1551,
+      "stderr_size_bytes": 314,
+      "passed": true
+    },
+    {
+      "command": [
+        "trellis",
+        "workflow",
+        "--marketplace",
+        "gh:castbox/guru-trellis/trellis#feat/145-stage0-minimal-handoff",
+        "--template",
+        "guru-team",
+        "--create-new"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "3674a4ed1893c28eb7ee35c472128d823460f19ec1cdd34bce9a4884c3e3a9c9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_size_bytes": 56,
+      "stderr_size_bytes": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "trellis",
+        "workflow",
+        "--marketplace",
+        "gh:castbox/guru-trellis/trellis#feat/145-stage0-minimal-handoff",
+        "--template",
+        "guru-team",
+        "--force"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "21479450a5474f5fd7c2dc00134e872be537cb6116239c92b0b297103a910fa2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_size_bytes": 78,
+      "stderr_size_bytes": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "<temp-source>/trellis/presets/guru-team/scripts/bash/apply.sh",
+        "--repo",
+        "<temp-project>",
+        "--all-platforms",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "12b08754034f9eafc82129647b021062098ca8383322ae9276274895887e5c77",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_size_bytes": 499764,
+      "stderr_size_bytes": 0,
+      "passed": true
+    }
+  ],
+  "assets": {
+    "workflow_sha256": "9d7dd45084d6e6de2c74cc3a9085062612ce037d85659c8253e80ee0dea14428",
+    "preview_sha256": "9d7dd45084d6e6de2c74cc3a9085062612ce037d85659c8253e80ee0dea14428",
+    "task_start_context_schema_sha256": "38c0baa21215a8d97178a56826606d23547fffae1c76db83b88902d0586ab617",
+    "finish_summary_schema_sha256": "da7b1f4e7ae2bf08996ce52d141483fdd185a8875b366b009697886653c5ff89",
+    "closeout_plan_schema_sha256": "78ea2893f61eaa81333948342b7bb206f9c0bf91b8b7d37b366b9d7e3b9efc35",
+    "runtime_gitignore_present": true,
+    "workspace_gitignore_present": true,
+    "session_auto_commit_false": true,
+    "legacy_handoff_absent": true,
+    "legacy_intake_schema_absent": true
+  }
+}

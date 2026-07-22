@@ -1907,7 +1907,851 @@
     "plan_digest": "0f6709a4851763034c90995928fc6638b9a62591b39593d3b12e75653b5f7d33"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-22T04:31:22Z",
+    "commit_sha": "9f941087994eb4ea1e4fa9e0c407f8ba3ffd84f8",
+    "parent": "ded63e71e5bab787c5d795a300e3507142b18521",
+    "message_sha256": "a987d2bd837d2203e40f00247ff280a2f9be0afa4e2ba72d3c11aa024514b799",
+    "committed_paths": [
+      ".agents/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".agents/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".agents/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".agents/skills/guru-clarify-requirements/interface.json",
+      ".agents/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".agents/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".agents/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".agents/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".agents/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".agents/skills/guru-review-change-request/examples/public-ready-output.json",
+      ".agents/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".agents/skills/guru-review-change-request/interface.json",
+      ".agents/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".agents/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".claude/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".claude/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".claude/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".claude/skills/guru-clarify-requirements/interface.json",
+      ".claude/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".claude/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".claude/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".claude/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".claude/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".claude/skills/guru-review-change-request/examples/public-ready-output.json",
+      ".claude/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".claude/skills/guru-review-change-request/interface.json",
+      ".claude/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".claude/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".codex/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".codex/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".codex/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".codex/skills/guru-clarify-requirements/interface.json",
+      ".codex/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".codex/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".codex/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".codex/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".codex/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".codex/skills/guru-review-change-request/examples/public-ready-output.json",
+      ".codex/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".codex/skills/guru-review-change-request/interface.json",
+      ".codex/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".codex/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".cursor/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".cursor/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".cursor/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".cursor/skills/guru-clarify-requirements/interface.json",
+      ".cursor/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".cursor/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".cursor/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".cursor/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".cursor/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".cursor/skills/guru-review-change-request/examples/public-ready-output.json",
+      ".cursor/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".cursor/skills/guru-review-change-request/interface.json",
+      ".cursor/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".cursor/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-ready-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/interface.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/003.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-needs-context-output.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-ready-output.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-refresh-context-output.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/interface.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "ed8c7f4325113fc83911a264d8be8fcf4d4a73ae",
+      "actual_tree": "ed8c7f4325113fc83911a264d8be8fcf4d4a73ae",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+          "expected_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "expected_mode": "100644",
+          "actual_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+          "expected_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "expected_mode": "100644",
+          "actual_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/interface.json",
+          "expected_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "expected_mode": "100644",
+          "actual_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+          "expected_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "expected_mode": "100644",
+          "actual_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "expected_mode": "100644",
+          "actual_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+          "expected_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "expected_mode": "100644",
+          "actual_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+          "expected_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "expected_mode": "100644",
+          "actual_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+          "expected_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "expected_mode": "100644",
+          "actual_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-change-request/examples/public-ready-output.json",
+          "expected_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "expected_mode": "100644",
+          "actual_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-change-request/interface.json",
+          "expected_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "expected_mode": "100644",
+          "actual_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+          "expected_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "expected_mode": "100644",
+          "actual_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "expected_mode": "100644",
+          "actual_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+          "expected_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "expected_mode": "100644",
+          "actual_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+          "expected_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "expected_mode": "100644",
+          "actual_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/interface.json",
+          "expected_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "expected_mode": "100644",
+          "actual_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+          "expected_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "expected_mode": "100644",
+          "actual_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "expected_mode": "100644",
+          "actual_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+          "expected_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "expected_mode": "100644",
+          "actual_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+          "expected_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "expected_mode": "100644",
+          "actual_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+          "expected_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "expected_mode": "100644",
+          "actual_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-change-request/examples/public-ready-output.json",
+          "expected_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "expected_mode": "100644",
+          "actual_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-change-request/interface.json",
+          "expected_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "expected_mode": "100644",
+          "actual_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+          "expected_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "expected_mode": "100644",
+          "actual_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "expected_mode": "100644",
+          "actual_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+          "expected_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "expected_mode": "100644",
+          "actual_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+          "expected_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "expected_mode": "100644",
+          "actual_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/interface.json",
+          "expected_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "expected_mode": "100644",
+          "actual_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+          "expected_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "expected_mode": "100644",
+          "actual_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "expected_mode": "100644",
+          "actual_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+          "expected_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "expected_mode": "100644",
+          "actual_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+          "expected_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "expected_mode": "100644",
+          "actual_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+          "expected_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "expected_mode": "100644",
+          "actual_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-change-request/examples/public-ready-output.json",
+          "expected_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "expected_mode": "100644",
+          "actual_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-change-request/interface.json",
+          "expected_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "expected_mode": "100644",
+          "actual_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+          "expected_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "expected_mode": "100644",
+          "actual_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "expected_mode": "100644",
+          "actual_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+          "expected_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "expected_mode": "100644",
+          "actual_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+          "expected_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "expected_mode": "100644",
+          "actual_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/interface.json",
+          "expected_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "expected_mode": "100644",
+          "actual_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+          "expected_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "expected_mode": "100644",
+          "actual_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "expected_mode": "100644",
+          "actual_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+          "expected_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "expected_mode": "100644",
+          "actual_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+          "expected_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "expected_mode": "100644",
+          "actual_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+          "expected_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "expected_mode": "100644",
+          "actual_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-change-request/examples/public-ready-output.json",
+          "expected_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "expected_mode": "100644",
+          "actual_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-change-request/interface.json",
+          "expected_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "expected_mode": "100644",
+          "actual_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+          "expected_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "expected_mode": "100644",
+          "actual_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "expected_mode": "100644",
+          "actual_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "c05ec577e5dbcd37ec54e9b15c4c9bdacb919e29",
+          "expected_mode": "100644",
+          "actual_blob": "c05ec577e5dbcd37ec54e9b15c4c9bdacb919e29",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "fa18c81b5600ab0b770ee46863d0318bc92c968c",
+          "expected_mode": "100755",
+          "actual_blob": "fa18c81b5600ab0b770ee46863d0318bc92c968c",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-needs-context-output.json",
+          "expected_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "expected_mode": "100644",
+          "actual_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-retarget-context-output.json",
+          "expected_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "expected_mode": "100644",
+          "actual_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
+          "expected_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "expected_mode": "100644",
+          "actual_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+          "expected_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "expected_mode": "100644",
+          "actual_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "expected_mode": "100644",
+          "actual_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+          "expected_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "expected_mode": "100644",
+          "actual_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+          "expected_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "expected_mode": "100644",
+          "actual_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+          "expected_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "expected_mode": "100644",
+          "actual_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-ready-output.json",
+          "expected_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "expected_mode": "100644",
+          "actual_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-change-request/interface.json",
+          "expected_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "expected_mode": "100644",
+          "actual_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
+          "expected_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "expected_mode": "100644",
+          "actual_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "expected_mode": "100644",
+          "actual_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+          "expected_blob": "5d1cb7676bb3a7d041e96183351c8147fd3742c9",
+          "expected_mode": "100644",
+          "actual_blob": "5d1cb7676bb3a7d041e96183351c8147fd3742c9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+          "expected_blob": "fb2ad995d5eadfd1c1b9acbe7d6f64182db8b47b",
+          "expected_mode": "100644",
+          "actual_blob": "fb2ad995d5eadfd1c1b9acbe7d6f64182db8b47b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+          "expected_blob": "05724d1fe51207f5c71c9a9fc6547e526c883c22",
+          "expected_mode": "100644",
+          "actual_blob": "05724d1fe51207f5c71c9a9fc6547e526c883c22",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/003.json",
+          "expected_blob": "606645d006a55ca58f1aec5365fc30429800d346",
+          "expected_mode": "100644",
+          "actual_blob": "606645d006a55ca58f1aec5365fc30429800d346",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-needs-context-output.json",
+          "expected_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "expected_mode": "100644",
+          "actual_blob": "b6e18b3d12a074ce7fc1045aa87f80f7cc161d60",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-retarget-context-output.json",
+          "expected_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "expected_mode": "100644",
+          "actual_blob": "e07f9a24ef01a630652bcd2be1bfa1e932c8ea55",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+          "expected_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "expected_mode": "100644",
+          "actual_blob": "d67dda4ae29e6fc749e29611e25e81898e544380",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+          "expected_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "expected_mode": "100644",
+          "actual_blob": "4cb711c23d0544be8a58c440b843759b8a8ee504",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "expected_mode": "100644",
+          "actual_blob": "ad6d72ff83218ef8956f4bb1906fa88feaa2684d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+          "expected_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "expected_mode": "100644",
+          "actual_blob": "a19f1510359a75857f0d50d7ea45315dbbd2a942",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+          "expected_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "expected_mode": "100644",
+          "actual_blob": "730338cac68aa7235328db3ddc9e84625c3aff95",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+          "expected_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "expected_mode": "100644",
+          "actual_blob": "bea1926345eacad5772b40d9d8dc352d4b95b037",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-ready-output.json",
+          "expected_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "expected_mode": "100644",
+          "actual_blob": "be0a033e2b882756eb8050fd88b2e6c10b8bb47c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-refresh-context-output.json",
+          "expected_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "expected_mode": "100644",
+          "actual_blob": "30cec2a2359c1ecb0ae99e2c54c3e47f74eacb09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-change-request/interface.json",
+          "expected_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "expected_mode": "100644",
+          "actual_blob": "00b5bf653e89d41981bf333863a5122be97944f0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
+          "expected_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "expected_mode": "100644",
+          "actual_blob": "f0774fb02c8bd45aee8e1961b4baf8337105cb86",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+          "expected_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "expected_mode": "100644",
+          "actual_blob": "e065d3555ba79c34a57e791330b5ad8ab4151b48",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "aa6ff0f09dfa7c5b709d28129af90992892e466f",
+          "expected_mode": "100644",
+          "actual_blob": "aa6ff0f09dfa7c5b709d28129af90992892e466f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "fa18c81b5600ab0b770ee46863d0318bc92c968c",
+          "expected_mode": "100755",
+          "actual_blob": "fa18c81b5600ab0b770ee46863d0318bc92c968c",
+          "actual_mode": "100755",
+          "matches": true
+        }
+      ]
+    }
   }
 }

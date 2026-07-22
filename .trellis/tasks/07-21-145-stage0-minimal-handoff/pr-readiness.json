@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/145-stage0-minimal-handoff",
+    "reviewed_head_sha": "9f941087994eb4ea1e4fa9e0c407f8ba3ffd84f8",
+    "title": "完成：#145 迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+    "body_source": "pr-body.md",
+    "body_sha256": "3c67ef94b81253d41ffbb36863b67a8b809a9ada17eb160f5457bfdad73d886f",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "1befccce9c3ce1c5c5d7f3913f04dd69560f855215a6c6f0d074102b319764e6"
+  },
+  "publish_inputs_sha256": "dbb6e9478e19f7e034d4a04fa3b64ccbe5abad3cb5ff98b4f3915ba1a62504c2"
+}
