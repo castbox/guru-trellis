@@ -1,0 +1,5 @@
+{
+  "code": "invalid_public_input",
+  "field_path": "input",
+  "remediation": "Use one declared public input profile and retry the package wrapper."
+}

@@ -1,0 +1,20 @@
+{
+  "scenario": "All load-bearing questions are answered and the current target is retained without mutation.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true,
+    "open_questions": 0,
+    "confirmation": "not_required"
+  },
+  "owner_staging": {
+    "recipe": "clarity-clear"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json",
+      "--owner-result",
+      ".trellis/.runtime/guru-team/evals/owner-result.json"
+    ]
+  }
+}

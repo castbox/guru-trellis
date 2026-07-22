@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-contract-wording-input-change-request-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "target_locator",
+    "continuation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "change_request"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

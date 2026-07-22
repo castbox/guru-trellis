@@ -20,3 +20,10 @@ reruns the shared base sync once before the first business write.
 The package wrappers require the complete installed Guru Team preset and route
 through `run-skill-command`. They are not standalone implementations. Missing,
 stale, mismatched, ambiguous, or unconsumed evidence fails closed.
+
+After the semantic gate and owner recorder/executor/checker complete, invoke
+`scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-workspace-result> --owner-plan <repo-relative-workspace-plan>`
+to serialize one minimal completion/refresh/stop DTO. The runtime reruns the
+existing result checker, requires its embedded executor/checker evidence, and
+derives the route from the checked executor result. It does not perform an
+additional issue, worktree, branch, or task mutation.

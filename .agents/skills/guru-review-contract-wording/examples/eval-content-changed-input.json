@@ -1,0 +1,12 @@
+{
+  "profile": "planning_artifacts",
+  "source_exit": "start",
+  "mode": "workflow",
+  "task_locator": ".trellis/tasks/current",
+  "planning_artifacts": [
+    "prd.md",
+    "design.md",
+    "implement.md"
+  ],
+  "continuation_id": "stage0-current"
+}

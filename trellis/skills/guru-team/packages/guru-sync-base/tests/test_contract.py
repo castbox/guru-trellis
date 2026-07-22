@@ -17,7 +17,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-sync-base")
-        self.assertEqual(self.interface["schema_version"], "1.2")
+        self.assertEqual(self.interface["schema_version"], "1.3")
         self.assertEqual(self.interface["judgment_mode"], "deterministic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]
@@ -44,7 +44,11 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         )
         self.assertEqual(
             {item["id"]: item["runtime_command"] for item in self.interface["validators"]},
-            {"sync_executor": "sync-base", "result_validator": "check-base-sync"},
+            {
+                "sync_executor": "sync-base",
+                "result_validator": "check-base-sync",
+                "public_invocation": "invoke-stage0-skill",
+            },
         )
         self.assertEqual(
             [item["id"] for item in self.interface["external_exits"]],

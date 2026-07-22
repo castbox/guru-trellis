@@ -98,9 +98,20 @@ the deterministic profile cannot absorb that behavior.
 ## Runtime Dependency
 
 Both wrappers locate only the installed `run-skill-command` dispatcher and pass
-a fixed validator id. The dispatcher proves interface schema 1.2, installed
+a fixed validator id. The dispatcher proves interface schema 1.3, installed
 manifest/runtime API, declared runtime command, managed package inventory and
 selected discovery copy before execution. The package is not self-contained or
 portable. Missing or drifted runtime and unresolved `.new`/`.bak` sidecars fail
 before fetch and require complete Guru Team preset install/upgrade plus source
 and installed Skill validation.
+
+## Interface 1.3 Public Handoff
+
+The public wrapper is `scripts/invoke.sh` and its validator id is
+`public_invocation`. It accepts only the declared scalar arguments. Runtime
+performs the formal resolver, executor, and checker sequence, derives live Git
+facts, and serializes one per-exit DTO. The optional `--base-branch` value is the
+caller-owned explicit selected-base scalar when present; when omitted, the
+wrapper passes the unspecified state to the same shared resolver, which retains
+configured scalar/candidate/remote-default fallback ownership. The
+private `guru-base-sync-result-1.0` stdout artifact is not projected to consumers.

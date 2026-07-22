@@ -362,8 +362,25 @@ contract under `public_api.skill_contracts`:
   `io_contract_state=legacy`;
 - `public_input_schema_ids`, `typed_output_schema_ids`, and
   `private_artifact_schema_ids` are exact inventories from active production
-  1.3 packages only. They are empty in #144 because all nine production
-  packages remain 1.2 legacy.
+  1.3 packages only. After `stage0-minimal-handoff-v1` activation they contain
+  the exact inventories of the six Stage 0 packages; the three #146 packages
+  remain excluded because they are still 1.2 legacy.
+
+The canonical manifest
+`trellis/skills/guru-team/migrations/stage0-minimal-handoff.json` has schema id
+`guru-team-stage0-migration-manifest-1.0`. It is the closed activation inventory
+for exactly six Skills and 24 exits, including every public input profile or
+scalar signature, output/example, consumer input, projection, private artifact,
+and eval case binding. It also fixes the legacy allowlist to
+`guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit`, and
+the activation policy to `preset_transaction`.
+
+Source and installed validation compare the manifest bidirectionally with the
+registry, package Interfaces, workflow markers, extension inventories, and
+package eval corpora. Missing, extra, duplicate, renamed, unknown, out-of-order,
+or mixed-version entries fail closed. Manifest contents are an activation
+contract, not a recovery journal; archived 1.2 artifacts remain readable under
+their original schemas and are never rewritten during validation or install.
 
 Test fixture schema ids belong only to the fixture extension manifest and must
 not appear in production extension, installed production inventory, platform
@@ -1680,8 +1697,10 @@ extension API; they do not add eval schema ids to production Skill public input,
 typed output, or private artifact inventories.
 
 Each closed descriptor contains exact adapter/platform identity, one
-package-relative executable basename, one non-empty `PATH`-resolved native
-command, and the fixed capability list. Discovery may report current
+package-relative executable basename, one non-empty native command, and the
+fixed capability list. Shared resolves its preset-managed native command below
+the adapter root; Codex, Claude, and Cursor resolve theirs from `PATH`.
+Discovery may report current
 `native_available` as a live machine fact. The request remains byte-identical
 across adapters; platform-specific argv/context and native output envelopes are
 private adapter execution details retained through the transcript locator. The
@@ -1705,3 +1724,9 @@ cannot carry a grader verdict. Run evidence
 contains only corpus/interface/package/platform/adapter/comparison identity,
 actual exit, assertion results, status, transcript locator, timing, and
 feedback. It forbids gate/checkpoint/audit/release/provenance fields.
+
+Neither adapter request nor native request carries `expected_exit`. Semantic
+case files may carry exact wrapper arguments referencing a repo-local,
+checker-passed owner result, but never a caller-selected route. Actual wrapper
+output selects the per-exit schema before the runner performs the independent
+expected-versus-actual assertion.

@@ -1,0 +1,10 @@
+{
+  "profile": "current_issue",
+  "source_exit": "start",
+  "mode": "workflow",
+  "target_locator": "#145",
+  "context_locator": "context-discovery.json",
+  "clarity_locator": "requirements-clarification",
+  "wording_locator": "contract-wording-review.json",
+  "continuation_id": "stage0-current"
+}

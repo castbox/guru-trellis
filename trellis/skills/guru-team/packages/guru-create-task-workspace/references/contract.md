@@ -139,3 +139,12 @@ part of this contract.
 Unknown, multiple, unmapped, or consumer-mismatched exits fail closed.
 `prepare-task` is query-only; its legacy mutation flags fail before writes and
 direct callers must enter this Skill.
+
+## Interface 1.3 Public Handoff
+
+The four public profiles separate issue-only/workspace-task and initial/recovery
+invocations at the schema discriminator. After the owner mutation/check loop,
+`scripts/invoke.sh --input ... --owner-result ... --owner-plan ...` reruns the
+existing result checker and serializes one minimal result derived from its
+checked executor outcome. Plan, result, and ignored runtime mapping remain
+owner-private artifacts.

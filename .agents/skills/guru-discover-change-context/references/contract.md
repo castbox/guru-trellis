@@ -120,3 +120,11 @@ reviewed Git identity resolves from `HEAD:<path>` to exactly a `blob`;
 Unknown, multiple, or unmapped exits fail closed. The package requires the
 complete compatible Guru Team preset and `run-skill-command`; it is not
 self-contained or portable.
+
+## Interface 1.3 Public Handoff
+
+`pre_task` and `task_local_reentry` are the only public profiles. After the
+owner loop, `scripts/invoke.sh --input ... --owner-result ...` validates
+caller-owned continuation, reruns the existing result checker, and derives the
+matching per-exit DTO from the checked owner result. The context snapshot
+remains private gate evidence and task-local re-entry passes only its locator.

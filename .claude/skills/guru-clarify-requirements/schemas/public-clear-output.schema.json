@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-output-clear-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "resume_target",
+    "target_disposition",
+    "confirmed_action_id",
+    "continuation_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "clear"
+    },
+    "resume_target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_disposition": {
+      "enum": [
+        "retained",
+        "selected",
+        "reopened",
+        "complete"
+      ]
+    },
+    "confirmed_action_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

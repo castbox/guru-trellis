@@ -6,10 +6,8 @@ import hashlib
 import json
 import os
 import shutil
-import socket
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 from pathlib import Path
@@ -247,79 +245,71 @@ def public_runtime_target(request: dict[str, Any]) -> Path:
 def start_public_runtime_boundary(
     execution_root: Path,
     target: Path,
+    package_root: Path,
+    projection_root: Path,
 ) -> tuple[Path, threading.Thread, threading.Event]:
-    socket_directory = Path(tempfile.mkdtemp(prefix="guru-eval-", dir="/tmp"))
-    socket_path = socket_directory / "public-invocation.sock"
-    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    try:
-        listener.bind(str(socket_path))
-        listener.listen(1)
-        listener.settimeout(0.1)
-    except OSError:
-        listener.close()
-        socket_directory.rmdir()
-        raise
+    request_path = execution_root / "public-invocation-request.json"
+    response_path = execution_root / "public-invocation-response.json"
+    request_path.unlink(missing_ok=True)
+    response_path.unlink(missing_ok=True)
     stop = threading.Event()
 
     def serve() -> None:
         try:
-            while not stop.is_set():
-                try:
-                    connection, _ = listener.accept()
-                    break
-                except socket.timeout:
-                    continue
-            else:
-                return
-            with connection:
-                chunks: list[bytes] = []
-                while True:
-                    chunk = connection.recv(65536)
-                    if not chunk:
-                        break
-                    chunks.append(chunk)
-                try:
-                    request = json.loads(b"".join(chunks).decode("utf-8"))
-                    arguments = request["arguments"]
-                    if not isinstance(arguments, list) or any(not isinstance(item, str) for item in arguments):
-                        raise ValueError("invalid public invocation arguments")
-                    process = subprocess.run(
-                        [str(target), *arguments],
-                        text=True,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        check=False,
-                    )
-                    response_payload = {
-                        "returncode": process.returncode,
-                        "stdout": process.stdout,
-                        "stderr": process.stderr,
-                    }
-                except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
-                    response_payload = {"returncode": 2, "stdout": "", "stderr": str(exc)}
-                connection.sendall(json.dumps(response_payload, separators=(",", ":")).encode("utf-8"))
-        finally:
-            listener.close()
-            socket_path.unlink(missing_ok=True)
+            while not request_path.is_file():
+                if stop.wait(0.01):
+                    return
             try:
-                socket_directory.rmdir()
-            except OSError:
-                pass
+                request = json.loads(request_path.read_text(encoding="utf-8"))
+                arguments = request["arguments"]
+                if not isinstance(arguments, list) or any(not isinstance(item, str) for item in arguments):
+                    raise ValueError("invalid public invocation arguments")
+                if arguments[:2] != ["--package-root", str(projection_root)]:
+                    raise ValueError("public invocation package projection binding is invalid")
+                arguments = ["--package-root", str(package_root), *arguments[2:]]
+                process = subprocess.run(
+                    [str(target), *arguments],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                response_payload = {
+                    "returncode": process.returncode,
+                    "stdout": process.stdout,
+                    "stderr": process.stderr,
+                }
+            except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+                response_payload = {"returncode": 2, "stdout": "", "stderr": str(exc)}
+            response_path.write_text(
+                json.dumps(response_payload, separators=(",", ":")), encoding="utf-8",
+            )
+            while request_path.exists() or response_path.exists():
+                if stop.wait(0.01):
+                    return
+        finally:
+            if stop.is_set():
+                try:
+                    request_path.unlink(missing_ok=True)
+                    response_path.unlink(missing_ok=True)
+                except OSError:
+                    pass
 
     thread = threading.Thread(target=serve, name="guru-eval-public-invocation", daemon=True)
     thread.start()
     boundary = execution_root / "public-invocation-boundary.sh"
     boundary.write_text(
         "#!/usr/bin/env python3\n"
-        "import json,socket,sys\n"
-        f"client=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); client.connect({str(socket_path)!r})\n"
-        "client.sendall(json.dumps({'arguments':sys.argv[1:]},separators=(',',':')).encode('utf-8')); client.shutdown(socket.SHUT_WR)\n"
-        "chunks=[]\n"
-        "while True:\n"
-        " chunk=client.recv(65536)\n"
-        " if not chunk: break\n"
-        " chunks.append(chunk)\n"
-        "result=json.loads(b''.join(chunks).decode('utf-8')); sys.stdout.write(result['stdout']); sys.stderr.write(result['stderr'])\n"
+        "import json,sys,time\n"
+        "from pathlib import Path\n"
+        f"request_path=Path({str(request_path)!r}); response_path=Path({str(response_path)!r})\n"
+        "request_path.write_text(json.dumps({'arguments':sys.argv[1:]},separators=(',',':')),encoding='utf-8')\n"
+        "for _ in range(3000):\n"
+        " if response_path.is_file(): break\n"
+        " time.sleep(0.01)\n"
+        "else: raise SystemExit('public invocation response timed out')\n"
+        "result=json.loads(response_path.read_text(encoding='utf-8')); request_path.unlink(missing_ok=True); response_path.unlink(missing_ok=True)\n"
+        "sys.stdout.write(result['stdout']); sys.stderr.write(result['stderr'])\n"
         "raise SystemExit(result['returncode'])\n",
         encoding="utf-8",
     )
@@ -363,6 +353,9 @@ def build_context(
         f"Case prompt:\n{request['prompt']}",
         f"Public invocation contract:\n{json.dumps(request['interface']['public_invocation'], separators=(',', ':'))}",
         "Staged case files:\n" + ("\n".join(file_sections) if file_sections else "<none>"),
+        "The adapter has already completed any declared owner staging and checker validation in the installed fixture.",
+        "Use the exact public_invocation.arguments from the staged case facts; do not recreate or rewrite public input, owner result, or owner plan files.",
+        "For this post-owner invocation boundary, run only the exact Skill read command above and then the exact wrapper invocation command above. Do not read linked references, Interface assets, examples, wrapper source, or any other file.",
     ])
     native_request = {
         "schema_version": "1.0",
@@ -396,7 +389,18 @@ def build_context(
         "wrapper_path": str(wrapper_path), "projection_root": str(projection_root),
         "skill_sha256": skill_sha256, "wrapper_sha256": wrapper_sha256,
     }, separators=(",", ":")), encoding="utf-8")
-    boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(execution_root, runtime_target)
+    runtime_repo_root = runtime_target.parents[4]
+    installed_package_root = (
+        runtime_repo_root / ".trellis/guru-team/skills/packages" / str(request["skill_id"])
+    )
+    runtime_package_root = (
+        installed_package_root
+        if installed_package_root.is_dir() and not installed_package_root.is_symlink()
+        else projection_root
+    )
+    boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(
+        execution_root, runtime_target, runtime_package_root, projection_root
+    )
     return (
         context, context_path, wrapper_path, trace_path, protocol_path,
         native_request_path, request_sha256, boundary_path, boundary_thread,
@@ -494,14 +498,16 @@ def native_argv(
         return [command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
     if adapter == "codex":
         output_path = native_request_path.with_name("native-last-message.txt")
+        trusted_root = str(Path(request["runtime_target"]).resolve().parents[4])
         return [
             command, "exec", "--ephemeral", "--ignore-user-config", "--sandbox", "workspace-write",
-            "--cd", workdir, "--add-dir", str(projection_root), "--output-last-message", str(output_path), context,
+            "--cd", trusted_root, "--add-dir", workdir, "--add-dir", str(projection_root),
+            "--output-last-message", str(output_path), context,
         ], output_path
     if adapter == "claude":
         return [
-            command, "--print", "--bare", "--output-format", "json", "--no-session-persistence",
-            "--permission-mode", "dontAsk", "--add-dir", str(projection_root), context,
+            command, "--print", "--safe-mode", "--output-format", "json", "--no-session-persistence",
+            "--permission-mode", "dontAsk", "--add-dir", str(projection_root),
         ], None
     return [command, "--print", "--output-format", "json", context], None
 
@@ -539,10 +545,33 @@ def main() -> int:
         fallback = {"corpus_sha256": "0" * 64}
         transcript.write_text(json.dumps({"adapter": args.adapter, "error": str(exc)}), encoding="utf-8")
         return emit(response(fallback, "execution_error", transcript, stderr="adapter request/context invalid"))
-    native = shutil.which(args.native_command)
+    packaged_native = Path(__file__).resolve().parent / args.native_command
+    native = (
+        str(packaged_native)
+        if args.adapter == "shared" and packaged_native.is_file() and os.access(packaged_native, os.X_OK)
+        else shutil.which(args.native_command)
+    )
     if native is None:
         transcript.write_text(json.dumps({"adapter": args.adapter, "native_command": args.native_command, "status": "unsupported"}), encoding="utf-8")
         return emit(response(request, "unsupported", transcript, native_trace=Path(request["workdir"]).resolve().parent / "native-trace.json"))
+    if args.adapter == "cursor":
+        status = subprocess.run(
+            [native, "status"], text=True, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, check=False,
+        )
+        status_text = f"{status.stdout}\n{status.stderr}".lower()
+        if status.returncode != 0 or any(
+            marker in status_text
+            for marker in ("not logged in", "not authenticated", "unauthenticated", "login required")
+        ):
+            transcript.write_text(json.dumps({
+                "adapter": args.adapter, "native_command": args.native_command,
+                "status": "unsupported", "reason": "authentication unavailable",
+            }), encoding="utf-8")
+            return emit(response(
+                request, "unsupported", transcript,
+                native_trace=Path(request["workdir"]).resolve().parent / "native-trace.json",
+            ))
     try:
         (
             context, context_path, wrapper_path, trace_path, protocol_path,
@@ -566,6 +595,7 @@ def main() -> int:
     process = subprocess.run(
         argv,
         cwd=Path(request["workdir"]).resolve().parent,
+        input=context if args.adapter == "claude" else None,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

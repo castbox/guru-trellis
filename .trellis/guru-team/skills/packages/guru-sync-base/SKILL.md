@@ -23,3 +23,10 @@ files.
 Fail closed when the complete compatible Guru Team preset/runtime is missing,
 when facts are stale or ambiguous, or when any runtime/schema/managed-copy
 validation fails. This package is not self-contained or portable.
+
+Public handoff uses `scripts/invoke.sh` with the declared scalar CLI signature.
+The wrapper dispatches only through `run-skill-command`; runtime performs the
+formal resolve, execute, and check sequence, then emits one `synced`, `skipped`,
+or `blocked` minimal DTO. The public `base_branch` scalar is the caller-owned
+result of the selected-base resolution step. Do not read/import the shared
+Python runtime or pass the private base-sync result as the next Skill input.

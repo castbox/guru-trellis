@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-input-active-task-scope-change-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "target_locator",
+    "context_locator",
+    "task_locator",
+    "resume_target",
+    "continuation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "active_task_scope_change"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resume_target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -25,3 +25,10 @@ installed. After the consumer enters a complete same-profile re-entry, current
 binding its exact `facts_sha256` to a different, fully current result; an
 identical result and a current `pass` remain protected. This package is not
 self-contained or portable.
+
+After the semantic gate and owner recorder/checker complete, invoke
+`scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-wording-result>`.
+The minimal DTO preserves the fixed profile for the workflow router; the
+runtime reruns the existing checker, derives the route from its checked result,
+and never reclassifies wording or reads private evidence on behalf of a
+consumer.

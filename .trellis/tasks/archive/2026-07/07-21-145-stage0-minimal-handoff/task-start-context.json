@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 145,
+    "url": "https://github.com/castbox/guru-trellis/issues/145",
+    "title": "迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/145"
+  },
+  "task_slug": "145-stage0-minimal-handoff",
+  "task_title": "#145 迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+  "task_artifact_dir": ".trellis/tasks/07-21-145-stage0-minimal-handoff",
+  "branch_name": "feat/145-stage0-minimal-handoff",
+  "base_branch": "main",
+  "base_ref": "refs/remotes/origin/main",
+  "base_head_sha": "096d1889a511969d5ff09ef4d198ac2825110148",
+  "remote_head_sha": "096d1889a511969d5ff09ef4d198ac2825110148",
+  "workspace_slug": "145-stage0-minimal-handoff",
+  "task_workspace_id": "145-stage0-minimal-handoff",
+  "assignee": "wesleywu",
+  "actor": {
+    "login": "wesleywu"
+  },
+  "issue_scope_ledger_seed": {
+    "schema_version": "1.0",
+    "primary_issue": {
+      "number": 145,
+      "url": "https://github.com/castbox/guru-trellis/issues/145",
+      "title": "迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+      "reason": "本任务唯一主交付单元。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 145,
+        "url": "https://github.com/castbox/guru-trellis/issues/145",
+        "title": "迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+        "reason": "本任务完整实现并验收该 issue；PR 只关闭 #145。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 98,
+        "url": "https://github.com/castbox/guru-trellis/issues/98",
+        "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+        "reason": "Parent umbrella，保持 open，不由本任务关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 127,
+        "url": "https://github.com/castbox/guru-trellis/issues/127",
+        "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+        "reason": "Parent scope，保持 open，不由本任务关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 132,
+        "url": "https://github.com/castbox/guru-trellis/issues/132",
+        "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+        "reason": "相关后续集成范围，保持 open，不由本任务关闭。",
+        "acceptance_evidence": []
+      }
+    ],
+    "followup_issues": [
+      {
+        "number": 146,
+        "url": "https://github.com/castbox/guru-trellis/issues/146",
+        "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+        "reason": "后续迁移其余三个 active packages；本任务明确保留其 legacy 状态。",
+        "acceptance_evidence": []
+      }
+    ],
+    "rules": [
+      "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+      "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+      "followup_issues 表示新范围或后续任务，不能自动关闭。"
+    ]
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": true,
+      "selected_issue": 145
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "名称同时绑定 issue 145、Stage 0 和 minimal handoff 迁移语义。"
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    },
+    "final_source_issue_binding": {
+      "repo": "castbox/guru-trellis",
+      "number": 145,
+      "url": "https://github.com/castbox/guru-trellis/issues/145",
+      "state": "open",
+      "title_sha256": "367dce6beabc76fb88ce05218505d51ab2570418ea08371ed9a8ff463013996d",
+      "body_sha256": "656a557bffc278e4973e351a759273cb70879caa1fccbaa498cf5203dad8a5b9",
+      "updated_at": "2026-07-20T20:05:03Z",
+      "target_disposition_sha256": "95db8b7f5574bb9d5a153fdccfe7b67e530a7127f608370ef787e5e9bbb304a5",
+      "created_issue_binding_sha256": null
+    },
+    "prerequisite_evidence": {
+      "base": {
+        "skill_id": "guru-sync-base",
+        "schema_id": "guru-base-sync-result-1.0",
+        "typed_exit": "synced",
+        "payload_sha256": "81ee6fad7b112779561fe048605a413c5630a18fa75de02cab9fab64a9d25a87",
+        "facts_sha256": "839fc5d15c1e554e1a4594ba4762d14d2f7cffd39e6ad8620ed917f2e2acd30a",
+        "content_sha256": null,
+        "linkage_sha256": null
+      },
+      "context": {
+        "skill_id": "guru-discover-change-context",
+        "schema_id": "guru-context-discovery-1.0",
+        "typed_exit": "context_ready",
+        "payload_sha256": "4540891d49388677325088f235517475f151b9a813460ab768f3719a4e644e19",
+        "facts_sha256": "2e3701e370eed7cc86b41179bbe822306471afa95a63266b135cf6e9ecb9560f",
+        "content_sha256": "864beeb8a7f637a192e2f5619199174353d65a11ccf264d5491af5f09a642553",
+        "linkage_sha256": "2e3701e370eed7cc86b41179bbe822306471afa95a63266b135cf6e9ecb9560f"
+      },
+      "clarity": {
+        "skill_id": "guru-clarify-requirements",
+        "schema_id": "guru-requirements-clarification-2.0",
+        "typed_exit": "clear",
+        "payload_sha256": "1baa71a20b136c7e9370d27e1b3a38b8d3ace637c7915ba80264a61727d20a50",
+        "facts_sha256": "d07dda5a61c567ae9c1509758bba7e6b0b947bb86bfa2bef7a6f87326bdfb951",
+        "content_sha256": "5fa3e02f7947eab84468a71cfe3a78fa77dd7b929c7246a670be7d933748a412",
+        "linkage_sha256": "5a658ad08e84a7f730f05c0442761466f2d95d053ecec40515fcb1628d21aaa6"
+      },
+      "wording": {
+        "skill_id": "guru-review-contract-wording",
+        "schema_id": "guru-contract-wording-review-1.0",
+        "typed_exit": "pass",
+        "payload_sha256": "dd87852b706871c95c87ea50cd401b6a14ab297d61666b33ee3649f941c332a3",
+        "facts_sha256": "0702b39b9e6a36ff47308371047b2e82b064c318aa97b51afc3a40115aa3c1be",
+        "content_sha256": "5a5ec0ddf69e5e18e22d49ffc9e1350fce196588518f45418cef344cf2b6d2cb",
+        "linkage_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "readiness": {
+        "skill_id": "guru-review-change-request",
+        "schema_id": "guru-change-request-review-1.0",
+        "typed_exit": "ready",
+        "payload_sha256": "d1c27f6dc0b547783af1055fe98394e4bb0ebf68377b8a53ac329a375ffdcf4e",
+        "facts_sha256": "7141c3e94623ed7c05f1b7a5b28f4ed093f5544c65ce251c1ac76ace6b2a9913",
+        "content_sha256": "20ec0be4232f69bd00ba6d2abe8af994d3f85568fc65f4d40f61faea6ea97a66",
+        "linkage_sha256": "a777ba94d9f81f21c051421ac2b7280c206a31749674fe6c7a2d622c1ace33e7"
+      }
+    }
+  }
+}

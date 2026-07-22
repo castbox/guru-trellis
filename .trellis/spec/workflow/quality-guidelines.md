@@ -85,6 +85,49 @@ ordered profile schema references, discriminator fields are required constants,
 and scalar examples prove ordered flags, declared value types, binding order,
 and public-input/invocation argv equality.
 
+For production Stage 0 activation, repeat the Interface 1.3 matrix over the
+exact six-package, 24-exit migration manifest rather than only the representative
+fixture. Every structurally distinct input profile/signature must have an
+executable public invocation probe, every exit/profile must have a non-empty
+current eval case binding, and all output fields must resolve to direct consumer
+use pointers. Negative tests must reject missing/extra/duplicate/renamed/unknown
+manifest entries, any 1.2/1.3 mixed Stage 0 graph, stale consumer profiles,
+unconsumed/private fields, unsupported projections, and wrapper-local logic.
+Real public-invocation probes must also reject missing owner locators,
+checker-failed owner results, and public-input/owner mode or fixed-profile
+mismatches. They prove repo-relative caller input works, route selection comes
+from the checker-passed owner result, workspace `created` cannot be serialized
+from an example or unchecked executor result, and output examples are not read
+as production serializer input.
+
+Scalar probes cover both explicit and omitted optional arguments. Omission is
+accepted only for `required=false`, preserves declared order, and reaches the
+same formal owner resolver; missing required, repeated, unknown, or out-of-order
+flags fail. Clarification probes cover the active-task-only null-disposition to
+`retained` projection plus initial/standalone null negative cases.
+
+Fresh install and pre-activation upgrade verification must each cover the normal
+chain plus refresh/re-entry, stop, retarget, content-changed, issue-only
+initial/recovery, and workspace/task initial/recovery families. After `trellis
+update` and preset reapply, source, installed, workflow-marker, extension,
+manifest, package corpus, and selected-platform byte identities must still
+match; `.new`/`.bak` sidecars and mixed activation are blocking. Existing active
+tasks re-enter through owner public profiles, while archive fixtures prove old
+artifact bytes are read-only.
+
+Normal Agent transcript and eval trace assertions are separate evidence. Both
+must show public-wrapper-only invocation, no Agent read/import of private runtime,
+and no normal-package load of `evals/**`. Eval coverage uses the existing #147
+schema, runner, grader policy, adapter protocol, and evidence contract unchanged.
+
+Production semantic eval probes require an explicit repo-local owner-result
+locator whose existing checker passes current facts. They assert that neither
+adapter request nor native request contains `expected_exit`, that actual exit
+selects the output schema, shared executes the packaged native runtime, Codex
+uses a trusted Git root, Claude uses its supported non-interactive protocol,
+and missing Cursor authentication returns `unsupported` without entering an
+interactive session.
+
 Source validation must execute representative package wrappers and revalidate
 their single typed-exit stdout. Negative cases cover missing exit schema or
 example, missing or non-constant exit identity, unknown public I/O fields,
@@ -145,8 +188,9 @@ version mismatch, missing asset, installed drift, and stable
 
 Distribution tests prove the new interface schema and executable discovery
 wrapper are present in canonical, installed, and selected-platform roots;
-production registry/extension inventories contain nine legacy ids and no
-fixture ids/schema ids. Fresh throwaway install and the post-`trellis update`
+production registry/extension inventories contain the exact six Stage 0
+minimal-handoff ids plus three #146-owned legacy ids and no fixture ids/schema
+ids. Fresh throwaway install and the post-`trellis update`
 workflow/preset reapply phase each run source/installed validation, legacy
 discovery smoke, mixed fixture invocation tests, and a final recursive zero
 `.new`/`.bak` scan.

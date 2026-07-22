@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-create-task-workspace-output-created-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "repo_locator",
+    "issue_locator",
+    "base_branch",
+    "branch",
+    "worktree_locator",
+    "task_locator",
+    "continuation_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "created"
+    },
+    "repo_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "issue_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "worktree_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

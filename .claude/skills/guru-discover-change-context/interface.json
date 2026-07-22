@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.2",
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
   "id": "guru-discover-change-context",
   "name": "guru-discover-change-context",
   "description": "Discover fresh current and archived change context, run the semantic evidence gate, and produce a portable snapshot before Guru Team requirement clarification.",
@@ -9,11 +9,23 @@
   "modes": {
     "workflow": {
       "routing": "global_workflow",
-      "entry_precondition_ids": ["runtime_dependency", "fresh_base", "repository_identity", "change_input", "evidence_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "fresh_base",
+        "repository_identity",
+        "change_input",
+        "evidence_freshness"
+      ]
     },
     "standalone": {
       "routing": "direct_discovery",
-      "entry_precondition_ids": ["runtime_dependency", "fresh_base", "repository_identity", "change_input", "evidence_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "fresh_base",
+        "repository_identity",
+        "change_input",
+        "evidence_freshness"
+      ]
     }
   },
   "entry_preconditions": [
@@ -56,12 +68,76 @@
     "distribution": "guru-team-preset",
     "package_portability": "not-self-contained"
   },
-  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
   "artifacts": [
-    {"id": "context_discovery_example", "path": "examples/context-discovery.json"}
+    {
+      "id": "context_discovery_example",
+      "path": "examples/context-discovery.json"
+    },
+    {
+      "id": "public_input_pre_task_example",
+      "path": "examples/public-pre-task-input.json"
+    },
+    {
+      "id": "public_input_task_local_reentry_example",
+      "path": "examples/public-task-local-reentry-input.json"
+    },
+    {
+      "id": "public_invocation_error_example",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_output_context_ready_example",
+      "path": "examples/public-context-ready-output.json"
+    },
+    {
+      "id": "public_output_refresh_base_example",
+      "path": "examples/public-refresh-base-output.json"
+    },
+    {
+      "id": "public_output_blocked_example",
+      "path": "examples/public-blocked-output.json"
+    }
   ],
   "schemas": [
-    {"id": "context_discovery_schema", "path": "schemas/context-discovery.schema.json"}
+    {
+      "id": "context_discovery_schema",
+      "path": "schemas/context-discovery.schema.json"
+    },
+    {
+      "id": "public_input_pre_task",
+      "path": "schemas/public-pre-task-input.schema.json"
+    },
+    {
+      "id": "public_input_task_local_reentry",
+      "path": "schemas/public-task-local-reentry-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_output_context_ready",
+      "path": "schemas/public-context-ready-output.schema.json"
+    },
+    {
+      "id": "public_output_refresh_base",
+      "path": "schemas/public-refresh-base-output.schema.json"
+    },
+    {
+      "id": "public_output_blocked",
+      "path": "schemas/public-blocked-output.schema.json"
+    }
   ],
   "validators": [
     {
@@ -81,23 +157,38 @@
       "command": "scripts/check-context-discovery.sh",
       "runtime_command": "check-context-discovery",
       "objective_scope": "closed result shape, AI-authored gate evidence, Git-trackable task target, digest bindings, live freshness, candidate/mem rules and typed-exit identity"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-stage0-skill",
+      "objective_scope": "Caller-owned input validation and deterministic typed-exit serialization after the owner closed loop"
     }
   ],
   "external_exits": [
     {
       "id": "context_ready",
       "evidence": "fresh current/history snapshot with passed AI Review Gate and objective validation",
-      "consumer": {"kind": "skill", "id": "guru-clarify-requirements"}
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-clarify-requirements"
+      }
     },
     {
       "id": "refresh_base",
       "evidence": "stale base, live change, reviewed blob, query, archive manifest or snapshot binding",
-      "consumer": {"kind": "skill", "id": "guru-sync-base"}
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-sync-base"
+      }
     },
     {
       "id": "blocked",
       "evidence": "invalid input, unsafe path, contract failure or semantic gate unable to pass safely",
-      "consumer": {"kind": "stop", "id": "change-context-blocked"}
+      "consumer": {
+        "kind": "stop",
+        "id": "change-context-blocked"
+      }
     }
   ],
   "reentry": {
@@ -105,6 +196,238 @@
     "freshness": "all live bindings are revalidated before acceptance; stale evidence restarts the complete Skill",
     "stale_behavior": "fail_closed"
   },
-  "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-stage0-discover-change-context-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "pre_task",
+          "schema": {
+            "schema_id": "guru-stage0-discover-change-context-input-pre-task-1.0",
+            "path": "schemas/public-pre-task-input.schema.json"
+          },
+          "example": {
+            "id": "pre_task_input",
+            "path": "examples/public-pre-task-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "pre_task"
+          }
+        },
+        {
+          "id": "task_local_reentry",
+          "schema": {
+            "schema_id": "guru-stage0-discover-change-context-input-task-local-reentry-1.0",
+            "path": "schemas/public-task-local-reentry-input.schema.json"
+          },
+          "example": {
+            "id": "task_local_reentry_input",
+            "path": "examples/public-task-local-reentry-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "task_local_reentry"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "pre_task"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-stage0-discover-change-context-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-pre-task-input.json",
+        "--owner-result",
+        ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/context-discovery.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "context_ready",
+        "schema": {
+          "schema_id": "guru-stage0-discover-change-context-output-context-ready-1.0",
+          "path": "schemas/public-context-ready-output.schema.json"
+        },
+        "example": {
+          "id": "context_ready_output",
+          "path": "examples/public-context-ready-output.json"
+        },
+        "consumer_use_ids": [
+          "project_context_ready"
+        ]
+      },
+      {
+        "exit_id": "refresh_base",
+        "schema": {
+          "schema_id": "guru-stage0-discover-change-context-output-refresh-base-1.0",
+          "path": "schemas/public-refresh-base-output.schema.json"
+        },
+        "example": {
+          "id": "refresh_base_output",
+          "path": "examples/public-refresh-base-output.json"
+        },
+        "consumer_use_ids": [
+          "project_refresh_base"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-stage0-discover-change-context-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "context_ready_initial_change_request_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-clarify-requirements"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input",
+          "interface_path": "packages/guru-clarify-requirements/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "initial_change_request"
+        }
+      },
+      {
+        "id": "refresh_base_sync_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-sync-base"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input",
+          "interface_path": "packages/guru-sync-base/interface.json",
+          "input_kind": "scalar_cli"
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "change-context-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_context_ready",
+        "exit_id": "context_ready",
+        "consumer_input_id": "context_ready_initial_change_request_input",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "handoff_profile",
+            "target": "profile"
+          },
+          {
+            "source": "handoff_mode",
+            "target": "mode"
+          },
+          {
+            "source": "handoff_target_locator",
+            "target": "target_locator"
+          },
+          {
+            "source": "handoff_context_locator",
+            "target": "context_locator"
+          },
+          {
+            "source": "handoff_continuation_id",
+            "target": "continuation_id"
+          }
+        ]
+      },
+      {
+        "id": "project_refresh_base",
+        "exit_id": "refresh_base",
+        "consumer_input_id": "refresh_base_sync_input",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "handoff_mode",
+            "target": "mode"
+          },
+          {
+            "source": "handoff_repo_root",
+            "target": "repo_root"
+          },
+          {
+            "source": "handoff_base_branch",
+            "target": "base_branch"
+          },
+          {
+            "source": "handoff_route",
+            "target": "route"
+          }
+        ]
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "context_snapshot",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
+          "path": "schemas/context-discovery.schema.json"
+        },
+        "persistence": "task_local_tracked"
+      }
+    ]
+  }
 }

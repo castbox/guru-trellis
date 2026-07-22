@@ -1,0 +1,312 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "002",
+  "task": {
+    "id": "145-stage0-minimal-handoff",
+    "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff",
+    "status": "in_progress",
+    "branch": "feat/145-stage0-minimal-handoff"
+  },
+  "issue": {
+    "primary_issue": 145,
+    "ledger_sha256": "edb34a064cbdabc5381a2fe07c5ea30664da80b94a01a0b194cf2d0c6ac3ff3e"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "72326953e4df36a91201f10f581361b045e8c6f0"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/planning-approval.json",
+      "sha256": "13b786f397edc5e741572224fe4f14c179201005877a47f8dcfa5809a343fb38",
+      "size": 152032
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+      "sha256": "80c2fe066af5f0ccbc46c347324d2b53ef5c5edb13eae70d6822d57c588b540b",
+      "size": 335696
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/issue-scope-ledger.json",
+      "sha256": "edb34a064cbdabc5381a2fe07c5ea30664da80b94a01a0b194cf2d0c6ac3ff3e",
+      "size": 5905
+    },
+    "task": {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task.json",
+      "sha256": "d57300e9c19a98df162d6b0c0a34fec2d8268d550dbcf0b268c7a2b90a24a9e6",
+      "size": 686
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8a22efebabff792fc3d803d04ef2bb28d78bc235",
+        "worktree_sha256": "d30ebab69b4d8db41db2f328f7f1da6048fa0284377694e968465e5c4796ae1f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "934b23490a1af5c3241a37eee323f686959c8fd5",
+        "worktree_sha256": "80c2fe066af5f0ccbc46c347324d2b53ef5c5edb13eae70d6822d57c588b540b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f9574d9de9e40262d955aa969ff03638795688d2f57dbe0ec5525d7211ad59f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "bfe03b48f7a5fa12f3b4d94b3a0cab70e286b6d72dfce99d7c6a718064a5b3af",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/reviews/001-final.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2b2b08d30b2c72ff4aa9ef53d8eb716743f5c133cd4feea10641e4711b1f2f8b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "44b219fb52c88093ca0292f3067c42a24eebc4e2",
+        "worktree_sha256": "51ea23dc1e5de5cb7bbe1d9e1279326b5bc9487124184570f1c8dfaba092f3db",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f53706a6483538fd01580edc446c452733f7e323",
+        "worktree_sha256": "2ce041f6476e07f1fc05d5ea9e53e149252e8330fbbb522eef8894a65729eda2",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a972ca951e77defc36555a800c6fb3cfd10b2b3",
+        "worktree_sha256": "2d7b01d5d514a04f71497f578f963d8a79ccfe8ac252c6587391d4d9abd2f625",
+        "mode": "100644"
+      }
+    ],
+    "digest": "321bca691b0b82e2efd6b25e94e9196593ac747987164ef2397fbb098f4154ae"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "#145 实现、检查、Round 1 审查与 finding-fix liveness/assignment 证据，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "fresh Phase 2 recorder output 由当前 candidate evidence digest 直接绑定。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "Round 1 blocked gate 是 finding closure 的输入，按 trellis-continue metadata 规则保留且不得进入 work commit。",
+      "coverage_source": "trellis-continue metadata preservation rule"
+    },
+    {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/review.md",
+      "category": "unrelated-preserved",
+      "reason": "Round 1 中文 review rollup 将在后续闭环与最终放行轮次更新，当前不得进入 finding-fix work commit。",
+      "coverage_source": "trellis-continue metadata preservation rule"
+    },
+    {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/reviews/001-final.md",
+      "category": "unrelated-preserved",
+      "reason": "Round 1 原始报告必须原样保留用于 finding lifecycle，不属于本次 exact stage。",
+      "coverage_source": "trellis-continue metadata preservation rule"
+    },
+    {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/001.json",
+      "category": "task-reviewed",
+      "reason": "首个 work commit 的 committed-result metadata 已由 fresh Phase 2 dirty_paths 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "当前 guru-create-task-commit finding-fix 轮次的确定性计划 artifact。",
+      "coverage_source": "skill-artifact"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "Round 1 F-001 transaction 修复与 .trellis/.developer no-copy P2 修复均属于 #145 approved scope，并由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "F-001、rollback/reapply 与 developer identity no-copy 回归测试属于 #145 approved scope，并由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+    ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+    ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/001.json",
+    ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #145 排除开发者身份暂存",
+    "body": "背景：\nBranch Review Round 1 发现 preset 升级冲突可能留下 mixed 1.2/1.3 graph；修复过程中进一步确认 transaction staging 不应复制项目本地 .trellis/.developer 身份。\n\n变更：\n- 在临时 staging repository 中完成 preset 安装与完整图校验，仅在 activation validation 通过后写回目标仓库。\n- 对未知本地编辑只物化 .new sidecar，对已知 managed backup 保留恢复合同，避免部分激活。\n- 从 transaction staging 排除 .trellis/.developer、runtime/workspace 与 Python cache，并新增 pre-145 upgrade、conflict、rollback、reapply 和 no-copy 回归测试。\n\n边界：\n本提交仅关闭 #145 Branch Review F-001 及其 Phase 2 发现的同路径 P2 correctness 问题；#144/#147 仍为 closed authority refs，#146 保持 follow-up。无 public Skill API、CI/CD、container、K8s、DB migration、Makefile、secret、权限、生产配置或生产数据影响。\n\n验证：\nPreset 45/45；Skill 159/159；Runtime 548 passed/13 skipped；Ownership 6/6；shared eval 24/24；package parity 30/30；source/installed validators、dogfood drift、throwaway install/update/reapply 全部通过。\n\nRefs #145",
+    "bytes": "fix(trellis): #145 排除开发者身份暂存\n\n背景：\nBranch Review Round 1 发现 preset 升级冲突可能留下 mixed 1.2/1.3 graph；修复过程中进一步确认 transaction staging 不应复制项目本地 .trellis/.developer 身份。\n\n变更：\n- 在临时 staging repository 中完成 preset 安装与完整图校验，仅在 activation validation 通过后写回目标仓库。\n- 对未知本地编辑只物化 .new sidecar，对已知 managed backup 保留恢复合同，避免部分激活。\n- 从 transaction staging 排除 .trellis/.developer、runtime/workspace 与 Python cache，并新增 pre-145 upgrade、conflict、rollback、reapply 和 no-copy 回归测试。\n\n边界：\n本提交仅关闭 #145 Branch Review F-001 及其 Phase 2 发现的同路径 P2 correctness 问题；#144/#147 仍为 closed authority refs，#146 保持 follow-up。无 public Skill API、CI/CD、container、K8s、DB migration、Makefile、secret、权限、生产配置或生产数据影响。\n\n验证：\nPreset 45/45；Skill 159/159；Runtime 548 passed/13 skipped；Ownership 6/6；shared eval 24/24；package parity 30/30；source/installed validators、dogfood drift、throwaway install/update/reapply 全部通过。\n\nRefs #145\n",
+    "sha256": "0a1035329de0a8f944babdaee559c8f6b5dfa3b115abf02221961641c92685e9"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex main session /root",
+    "summary": "已审查 #145 finding-fix exact stage、fresh Phase 2、提交消息、issue 语义、Docs SSOT、preset upgrade/update、部署安全边界与 Round 1 metadata preservation；候选可进入确定性 validator。",
+    "evidence": [
+      "phase2-check.json 已由 installed validator 重新确认 typed_exit=passed，checked_head=72326953e4df36a91201f10f581361b045e8c6f0，facts_sha256=aeadce229cf670c3d5889a557650df3f146dced8a7f9affc9dcb6371b4610c4f。",
+      "Phase 2 直接覆盖 installer transaction、developer identity no-copy、45 个 preset tests、159 个 Skill tests、548 passed/13 skipped runtime tests，以及 validators、dogfood drift 和 throwaway install/update/reapply。",
+      "Docs SSOT strategy=ssot_first；本次 finding-fix 不改变 durable contract，Phase 2 已复核 15 个 durable paths 与当前实现一致。",
+      "exact stage 仅包含两处 installer 文件、fresh phase2-check、agent-assignment、001 committed-result metadata 与当前 002 skill artifact。",
+      "review-gate.json、review.md、reviews/001-final.md 均分类为 unrelated-preserved，保持 Round 1 finding lifecycle 原始证据，不会进入提交。",
+      "提交消息为中文 Conventional Commit，仅使用 Refs #145；#145 是唯一 close_issue，#144/#147 仅为 closed authority refs，#146 保持 follow-up。",
+      "修复不改变 public Skill I/O，不触及 CI/CD、container、K8s、DB migration、Makefile、secret、权限、生产配置或生产数据；source checkout 仍为 clean。",
+      "本轮只创建普通追加 commit，不 amend/rebase/reset/force，不 push、不建 PR、不关闭 issue、不调用 finish-work。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-for-trellis-continue",
+    "evidence": "用户在已明确下一步为 finding-fix commit、同 agent 闭环审查、fresh 最终放行审查且终点不含 push/PR/finish-work 的续跑上下文后再次回复‘确认继续’；授权绑定当前 #145 task、feat/145-stage0-minimal-handoff、HEAD 72326953e4df36a91201f10f581361b045e8c6f0、fresh Phase 2 与本计划，不授权 push、PR、issue closure 或 finish-work。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-22T02:26:35Z",
+    "plan_digest": "1d4e723d7f10b00791b0f5efc07c5bd8d5aa1c5d52d3062ae00493faaa378aca"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-22T02:30:20Z",
+    "commit_sha": "ded63e71e5bab787c5d795a300e3507142b18521",
+    "parent": "72326953e4df36a91201f10f581361b045e8c6f0",
+    "message_sha256": "0a1035329de0a8f944babdaee559c8f6b5dfa3b115abf02221961641c92685e9",
+    "committed_paths": [
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/001.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "007ca0e496a6e94f8c413db90bf31b050b308de5",
+      "actual_tree": "007ca0e496a6e94f8c413db90bf31b050b308de5",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+          "expected_blob": "d5b1b13e4ce952916db884ee38048a36146ffcbc",
+          "expected_mode": "100644",
+          "actual_blob": "d5b1b13e4ce952916db884ee38048a36146ffcbc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+          "expected_blob": "5752bb4cec0b12124ff00c376d26421637f83311",
+          "expected_mode": "100644",
+          "actual_blob": "5752bb4cec0b12124ff00c376d26421637f83311",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/001.json",
+          "expected_blob": "a0352412760d707aa89b2eaff8b13552c1cfe0e6",
+          "expected_mode": "100644",
+          "actual_blob": "a0352412760d707aa89b2eaff8b13552c1cfe0e6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+          "expected_blob": "719cf7abf11b8b22e93774f70768b95db222c72f",
+          "expected_mode": "100644",
+          "actual_blob": "719cf7abf11b8b22e93774f70768b95db222c72f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "expected_blob": "a1cfb598023b920f8fee5468c18702de79ebedc0",
+          "expected_mode": "100755",
+          "actual_blob": "a1cfb598023b920f8fee5468c18702de79ebedc0",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "e19232f5bea8f76fdebaad164dba6f76218582a5",
+          "expected_mode": "100644",
+          "actual_blob": "e19232f5bea8f76fdebaad164dba6f76218582a5",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}

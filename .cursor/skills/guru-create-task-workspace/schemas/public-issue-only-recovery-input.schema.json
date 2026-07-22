@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-create-task-workspace-input-issue-only-recovery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "target_locator",
+    "confirmed_action_id",
+    "prior_artifact_locator",
+    "continuation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "issue_only_recovery"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confirmed_action_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prior_artifact_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

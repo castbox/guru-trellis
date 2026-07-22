@@ -15016,7 +15016,7 @@ SKILL_INTERFACE_SCHEMAS = {
         "schema_path": Path("schemas/skill-interface-1.3.schema.json"),
         "interface_ref": "../../schemas/skill-interface-1.3.schema.json",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.3.json",
-        "sha256": "aa174eda5098b832a9208702e9a40ad91baddf2c6154a505ae7977c7406d003f",
+        "sha256": "abd59d05b3b54fd8ffcffe4d59a97c31dd1ed74e11049ea547e4cd55e31f3a4c",
         "io_contract_state": "minimal_handoff",
     },
 }
@@ -15043,6 +15043,22 @@ SKILL_EVAL_TRACE_INVARIANTS = {
     "evals_not_loaded_by_skill": "evals_not_loaded",
     "private_runtime_not_read_by_agent": "private_runtime_not_read",
 }
+STAGE0_MIGRATION_SKILL_IDS = (
+    "guru-sync-base",
+    "guru-discover-change-context",
+    "guru-clarify-requirements",
+    "guru-review-contract-wording",
+    "guru-review-change-request",
+    "guru-create-task-workspace",
+)
+STAGE0_LEGACY_SKILL_IDS = (
+    "guru-approve-task-plan",
+    "guru-check-task",
+    "guru-create-task-commit",
+)
+STAGE0_MIGRATION_MANIFEST = Path("migrations/stage0-minimal-handoff.json")
+STAGE0_MIGRATION_SCHEMA = Path("schemas/stage0-migration-manifest.schema.json")
+STAGE0_MIGRATION_SCHEMA_ID = "guru-team-stage0-migration-manifest-1.0"
 SKILL_RUNTIME_REMEDIATION = (
     "Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete "
     "Guru Team preset, resolve every .new/.bak sidecar, run source and installed Skill package "
@@ -16530,20 +16546,42 @@ def skill_validate_scalar_argv(
     if not isinstance(argv, list) or any(not isinstance(value, str) for value in argv):
         errors.append(f"[scalar_argument_argv] {label} must be an ordered string argv")
         return {}
-    if len(argv) != len(arguments) * 2:
-        errors.append(f"[scalar_argument_argv] {label} must bind every argument exactly once in declared order")
+    if len(argv) % 2:
+        errors.append(f"[scalar_argument_argv] {label} must contain flag/value pairs")
         return {}
+    argument_by_flag = {
+        str(argument.get("flag") or ""): (index, argument)
+        for index, argument in enumerate(arguments)
+    }
     values: dict[str, str] = {}
-    for index, argument in enumerate(arguments):
-        argument_id = str(argument.get("id") or "")
-        if argv[index * 2] != argument.get("flag"):
-            errors.append(f"[scalar_argument_argv] {label} does not use declared argument order")
+    previous_index = -1
+    for offset in range(0, len(argv), 2):
+        flag = argv[offset]
+        match = argument_by_flag.get(flag)
+        if match is None:
+            errors.append(f"[scalar_argument_argv] {label} contains an undeclared argument flag")
             continue
-        value = argv[index * 2 + 1]
+        index, argument = match
+        argument_id = str(argument.get("id") or "")
+        if index <= previous_index or argument_id in values:
+            errors.append(f"[scalar_argument_argv] {label} does not use each declared argument at most once in declared order")
+            continue
+        previous_index = index
+        value = argv[offset + 1]
         if not skill_scalar_value_matches(value, argument.get("type")):
             errors.append(f"[scalar_argument_value] {label} has an invalid value for {argument_id}")
             continue
         values[argument_id] = value
+    missing = [
+        str(argument.get("id") or "")
+        for argument in arguments
+        if argument.get("required") is True
+        and str(argument.get("id") or "") not in values
+    ]
+    if missing:
+        errors.append(
+            f"[scalar_argument_argv] {label} is missing required arguments: {', '.join(missing)}"
+        )
     return values
 
 
@@ -17087,11 +17125,16 @@ def validate_skill_public_contracts(
             else:
                 arguments = target_input.get("arguments") if isinstance(target_input.get("arguments"), list) else []
                 argument_ids = {str(item.get("id") or "") for item in arguments if isinstance(item, dict)}
+                required_argument_ids = {
+                    str(item.get("id") or "")
+                    for item in arguments
+                    if isinstance(item, dict) and item.get("required") is True
+                }
                 consumer_contracts[consumer_id] = (
                     None,
                     argument_ids - {""},
                     "scalar_cli",
-                    argument_ids - {""},
+                    required_argument_ids - {""},
                 )
                 consumer_scalar_arguments[consumer_id] = [item for item in arguments if isinstance(item, dict)]
         else:
@@ -17179,8 +17222,8 @@ def validate_skill_public_contracts(
             targets = {str(item.get("target") or "") for item in mappings if isinstance(item, dict)}
             if operation == "direct":
                 targets = set(output_properties)
-            if targets != target_fields:
-                errors.append(f"[projection_target] projection {projection.get('id')} does not populate the consumer input exactly")
+            if not target_required.issubset(targets) or not targets.issubset(target_fields):
+                errors.append(f"[projection_target] projection {projection.get('id')} does not populate the required consumer input subset exactly")
             output_required = set(output_schema.get("required", [])) if isinstance(output_schema.get("required"), list) else set()
             mapping_by_target = {
                 str(item.get("target") or ""): item
@@ -17236,12 +17279,14 @@ def validate_skill_public_contracts(
                 target_contract = {key: value for key, value in target_schema.items() if key != "$id"}
                 if output_contract != target_contract:
                     errors.append(f"[projection_direct_contract] direct projection {projection.get('id')} requires exact producer/consumer schema equality apart from $id")
-        elif target_kind == "scalar_cli" and set(projected) != target_fields:
-            errors.append(f"[projection_scalar_target] projection {projection.get('id')} does not populate scalar arguments exactly")
+        elif target_kind == "scalar_cli" and (
+            not target_required.issubset(projected) or not set(projected).issubset(target_fields)
+        ):
+            errors.append(f"[projection_scalar_target] projection {projection.get('id')} does not populate the required scalar arguments exactly")
         elif target_kind == "scalar_cli":
             for argument in consumer_scalar_arguments.get(consumer_id, []):
                 argument_id = str(argument.get("id") or "")
-                if not skill_scalar_value_matches(projected.get(argument_id), argument.get("type")):
+                if argument_id in projected and not skill_scalar_value_matches(projected[argument_id], argument.get("type")):
                     errors.append(f"[projection_scalar_type] projection {projection.get('id')} has an invalid value for {argument_id}")
         use_ids = output.get("consumer_use_ids")
         if not isinstance(use_ids, list) or projection.get("id") not in use_ids:
@@ -17689,6 +17734,198 @@ def parse_skill_workflow_markers(
     return invokes, exits, targets
 
 
+def validate_stage0_migration_manifest(
+    skills_root: Path,
+    boundary: Path,
+    active: dict[str, dict[str, Any]],
+    interfaces: dict[str, dict[str, Any]],
+    skill_contracts: dict[str, Any] | None,
+    errors: list[str],
+) -> str | None:
+    schema_path = skills_root / STAGE0_MIGRATION_SCHEMA
+    manifest_path = skills_root / STAGE0_MIGRATION_MANIFEST
+    if skill_lstat_path(
+        boundary, schema_path, "Stage 0 migration manifest schema", errors, kind="file"
+    ) is None:
+        return None
+    if skill_lstat_path(
+        boundary, manifest_path, "Stage 0 migration manifest", errors, kind="file"
+    ) is None:
+        return None
+    schema = skill_read_schema(schema_path, "Stage 0 migration manifest schema", errors)
+    manifest = skill_read_json(manifest_path, "Stage 0 migration manifest", errors)
+    if not isinstance(schema, dict) or not isinstance(manifest, dict):
+        return None
+    if schema.get("$schema") != SKILL_SCHEMA_DIALECT or schema.get("$id") != STAGE0_MIGRATION_SCHEMA_ID:
+        errors.append("Stage 0 migration manifest schema has an incompatible identity")
+        return None
+    schema_errors = skill_json_schema_subset_errors(schema, "Stage 0 migration manifest schema")
+    errors.extend(schema_errors)
+    if not schema_errors:
+        errors.extend(skill_json_schema_validation_errors(
+            manifest, schema, "Stage 0 migration manifest"
+        ))
+
+    expected_skill_ids = list(STAGE0_MIGRATION_SKILL_IDS)
+    expected_legacy_ids = list(STAGE0_LEGACY_SKILL_IDS)
+    if manifest.get("skill_ids") != expected_skill_ids:
+        errors.append("Stage 0 migration manifest skill_ids do not match the ordered activation unit")
+    if manifest.get("legacy_skill_ids") != expected_legacy_ids:
+        errors.append("Stage 0 migration manifest legacy_skill_ids do not match the #146 boundary")
+    if manifest.get("activation_unit_id") != "stage0-minimal-handoff-v1":
+        errors.append("Stage 0 migration manifest has an unknown activation unit")
+
+    minimal_registry_ids = sorted(
+        skill_id for skill_id, entry in active.items()
+        if entry.get("io_contract_state") == "minimal_handoff"
+    )
+    if minimal_registry_ids != sorted(expected_skill_ids):
+        errors.append("Stage 0 registry activation is mixed or does not match the migration manifest")
+    legacy_registry_ids = sorted(
+        skill_id for skill_id, entry in active.items()
+        if entry.get("io_contract_state") == "legacy"
+    )
+    if legacy_registry_ids != sorted(expected_legacy_ids):
+        errors.append("Stage 0 legacy registry allowlist does not match the migration manifest")
+
+    expected_manifest_locator = [{
+        "id": "stage0-minimal-handoff-v1",
+        "schema_id": STAGE0_MIGRATION_SCHEMA_ID,
+        "path": STAGE0_MIGRATION_MANIFEST.as_posix(),
+    }]
+    if not isinstance(skill_contracts, dict) or skill_contracts.get("migration_manifests") != expected_manifest_locator:
+        errors.append("extension migration_manifests does not publish the exact Stage 0 activation manifest")
+
+    raw_entries = manifest.get("skills")
+    manifest_entries: dict[str, dict[str, Any]] = {}
+    if not isinstance(raw_entries, list):
+        errors.append("Stage 0 migration manifest skills must be an array")
+        raw_entries = []
+    for index, item in enumerate(raw_entries):
+        if not isinstance(item, dict):
+            errors.append(f"Stage 0 migration manifest skill at index {index} is invalid")
+            continue
+        skill_id = str(item.get("id") or "")
+        if skill_id in manifest_entries:
+            errors.append(f"Stage 0 migration manifest repeats skill {skill_id}")
+        manifest_entries[skill_id] = item
+    if list(manifest_entries) != expected_skill_ids:
+        errors.append("Stage 0 migration manifest skill entries do not match the ordered activation unit")
+
+    for skill_id in expected_skill_ids:
+        item = manifest_entries.get(skill_id)
+        interface = interfaces.get(skill_id)
+        if not isinstance(item, dict) or not isinstance(interface, dict):
+            errors.append(f"Stage 0 migration manifest cannot resolve active Interface {skill_id}")
+            continue
+        contracts = interface.get("public_contracts")
+        if not isinstance(contracts, dict):
+            errors.append(f"Stage 0 Interface {skill_id} has no minimal public contracts")
+            continue
+        public_input = contracts.get("input")
+        input_kind = public_input.get("kind") if isinstance(public_input, dict) else None
+        profile_ids = [
+            str(profile.get("id") or "")
+            for profile in public_input.get("profiles", [])
+            if isinstance(profile, dict)
+        ] if input_kind == "structured_json" else []
+        if item.get("input_kind") != input_kind or item.get("input_profile_ids") != profile_ids:
+            errors.append(f"Stage 0 manifest input profiles do not match Interface {skill_id}")
+
+        exits = [
+            str(exit_item.get("id") or "")
+            for exit_item in interface.get("external_exits", [])
+            if isinstance(exit_item, dict)
+        ]
+        outputs = {
+            str(output.get("exit_id") or ""): output
+            for output in contracts.get("outputs", []) if isinstance(output, dict)
+        }
+        projections = {
+            str(projection.get("exit_id") or ""): projection
+            for projection in contracts.get("projections", []) if isinstance(projection, dict)
+        }
+        consumers = {
+            str(consumer.get("id") or ""): consumer
+            for consumer in contracts.get("consumer_inputs", []) if isinstance(consumer, dict)
+        }
+
+        corpus_path = skills_root / "packages" / skill_id / "evals/evals.json"
+        corpus = None
+        if skill_lstat_path(
+            boundary, corpus_path, f"Stage 0 eval corpus for {skill_id}", errors, kind="file"
+        ) is not None:
+            corpus = skill_read_json(corpus_path, f"Stage 0 eval corpus for {skill_id}", errors)
+        cases = {
+            str(case.get("id") or ""): case
+            for case in corpus.get("evals", []) if isinstance(corpus, dict) and isinstance(case, dict)
+        }
+        if item.get("eval_case_ids") != list(cases):
+            errors.append(f"Stage 0 manifest eval cases do not match corpus {skill_id}")
+
+        raw_exit_bindings = item.get("exit_bindings")
+        exit_bindings: dict[str, dict[str, Any]] = {}
+        if isinstance(raw_exit_bindings, list):
+            for binding in raw_exit_bindings:
+                if not isinstance(binding, dict):
+                    continue
+                exit_id = str(binding.get("exit_id") or "")
+                if exit_id in exit_bindings:
+                    errors.append(f"Stage 0 manifest repeats exit binding {skill_id}/{exit_id}")
+                exit_bindings[exit_id] = binding
+        if list(exit_bindings) != exits:
+            errors.append(f"Stage 0 manifest exits do not match Interface {skill_id}")
+        for exit_id in exits:
+            binding = exit_bindings.get(exit_id)
+            output = outputs.get(exit_id)
+            projection = projections.get(exit_id)
+            if not isinstance(binding, dict) or not isinstance(output, dict) or not isinstance(projection, dict):
+                errors.append(f"Stage 0 manifest cannot resolve contract binding {skill_id}/{exit_id}")
+                continue
+            schema_ref = output.get("schema")
+            case_ids = [case_id for case_id, case in cases.items() if case.get("expected_exit") == exit_id]
+            expected_binding = {
+                "exit_id": exit_id,
+                "output_schema_id": schema_ref.get("schema_id") if isinstance(schema_ref, dict) else None,
+                "consumer_input_id": projection.get("consumer_input_id"),
+                "projection_id": projection.get("id"),
+                "eval_case_ids": case_ids,
+            }
+            if binding != expected_binding or not case_ids:
+                errors.append(f"Stage 0 manifest binding does not match Interface/corpus {skill_id}/{exit_id}")
+            if projection.get("consumer_input_id") not in consumers:
+                errors.append(f"Stage 0 manifest projection has unknown consumer input {skill_id}/{exit_id}")
+
+        expected_private = [
+            str(artifact.get("id") or "")
+            for artifact in contracts.get("private_artifacts", []) if isinstance(artifact, dict)
+        ]
+        if item.get("private_artifact_ids") != expected_private:
+            errors.append(f"Stage 0 manifest private artifacts do not match Interface {skill_id}")
+
+        expected_profile_ids = profile_ids if input_kind == "structured_json" else ["scalar_cli"]
+        raw_profile_bindings = item.get("profile_case_bindings")
+        profile_bindings: dict[str, list[str]] = {}
+        if isinstance(raw_profile_bindings, list):
+            for binding in raw_profile_bindings:
+                if not isinstance(binding, dict):
+                    continue
+                profile_id = str(binding.get("profile_id") or "")
+                if profile_id in profile_bindings:
+                    errors.append(f"Stage 0 manifest repeats profile binding {skill_id}/{profile_id}")
+                values = binding.get("eval_case_ids")
+                profile_bindings[profile_id] = list(values) if isinstance(values, list) else []
+        if list(profile_bindings) != expected_profile_ids:
+            errors.append(f"Stage 0 manifest profile bindings do not match Interface {skill_id}")
+        for profile_id in expected_profile_ids:
+            expected_cases = list(cases) if profile_id == "scalar_cli" else [
+                case_id for case_id, case in cases.items() if case.get("input_profile_id") == profile_id
+            ]
+            if profile_bindings.get(profile_id) != expected_cases or not expected_cases:
+                errors.append(f"Stage 0 manifest profile coverage is incomplete for {skill_id}/{profile_id}")
+    return str(manifest.get("activation_unit_id") or "") or None
+
+
 def _validate_skill_source(
     skills_root: Path,
     workflow: Path,
@@ -17846,6 +18083,19 @@ def _validate_skill_source(
         for field, expected in inventory_checks.items():
             if skill_contracts.get(field) != expected:
                 errors.append(f"extension {field} does not match active package contracts")
+
+    stage0_activation_unit = None
+    if set(STAGE0_MIGRATION_SKILL_IDS) & set(active) or (
+        isinstance(skill_contracts, dict) and "migration_manifests" in skill_contracts
+    ):
+        stage0_activation_unit = validate_stage0_migration_manifest(
+            skills_root,
+            boundary,
+            active,
+            interfaces,
+            skill_contracts,
+            errors,
+        )
 
     workflow_stat = None
     if not require_workflow:
@@ -18013,6 +18263,7 @@ def _validate_skill_source(
                 skill_id for skill_id, entry in active.items()
                 if entry.get("io_contract_state") == "minimal_handoff"
             ),
+            "stage0_activation_unit": stage0_activation_unit,
             "invoke_markers": len(invokes),
             "exit_markers": len(exit_markers),
             "target_markers": len(target_markers),
@@ -18138,7 +18389,7 @@ def _validate_skill_installed(
         )
 
     add_expected(skills_root / "registry.json", Path("registry.json"), skills_root / "registry.json")
-    for shared_root_name in ("schemas", "adapters"):
+    for shared_root_name in ("schemas", "adapters", "migrations"):
         shared_root = skills_root / shared_root_name
         shared_files = skill_collect_tree_files(
             root,
@@ -18569,15 +18820,655 @@ def resolve_skill_runtime_command(
 
 
 def cmd_run_skill_command(args: argparse.Namespace) -> dict[str, Any]:
-    command_path, _ = resolve_skill_runtime_command(args.package_root, args.validator)
+    command_path, identity = resolve_skill_runtime_command(args.package_root, args.validator)
     forwarded = list(args.runtime_args)
     if forwarded[:1] == ["--"]:
         forwarded = forwarded[1:]
+    environment = dict(os.environ)
+    environment["GURU_TEAM_INVOKED_PLATFORM"] = identity[0]
+    environment["GURU_TEAM_INVOKED_SKILL_ID"] = identity[1]
+    environment["GURU_TEAM_INVOKED_PACKAGE_ROOT"] = os.path.abspath(args.package_root)
     try:
-        os.execv(command_path, [str(command_path), *forwarded])
+        os.execve(command_path, [str(command_path), *forwarded], environment)
     except OSError as exc:
         raise skill_runtime_block("The mapped Skill runtime command could not be executed.") from exc
     raise skill_runtime_block("The mapped Skill runtime command could not be executed.")
+
+
+def stage0_invocation_error(code: str, field_path: str, remediation: str, message: str) -> WorkflowError:
+    return WorkflowError(
+        message,
+        exit_code=2,
+        payload={"code": code, "field_path": field_path, "remediation": remediation},
+    )
+
+
+def stage0_invocation_identity() -> tuple[str, Path]:
+    skill_id = os.environ.get("GURU_TEAM_INVOKED_SKILL_ID", "")
+    package_value = os.environ.get("GURU_TEAM_INVOKED_PACKAGE_ROOT", "")
+    if skill_id not in STAGE0_MIGRATION_SKILL_IDS or not package_value:
+        raise stage0_invocation_error(
+            "invalid_invocation_identity",
+            "invocation",
+            "Invoke one migrated Stage 0 package through its package-local public wrapper.",
+            "Stage 0 public invocation did not receive an audited dispatcher identity.",
+        )
+    package = Path(package_value)
+    if not package.is_absolute() or package.name != skill_id or not package.is_dir() or package.is_symlink():
+        raise stage0_invocation_error(
+            "invalid_invocation_identity",
+            "invocation.package_root",
+            "Restore the complete installed package and retry its public wrapper.",
+            "Stage 0 public invocation package identity is invalid.",
+        )
+    return skill_id, package
+
+
+def stage0_public_interface(skill_id: str, package: Path) -> dict[str, Any]:
+    errors: list[str] = []
+    interface = skill_read_json(package / "interface.json", "Stage 0 public Interface", errors)
+    if (
+        errors
+        or not isinstance(interface, dict)
+        or interface.get("id") != skill_id
+        or interface.get("schema_version") != "1.3"
+        or not isinstance(interface.get("public_contracts"), dict)
+    ):
+        raise stage0_invocation_error(
+            "invalid_public_contract",
+            "interface",
+            "Restore the validated Interface 1.3 package and rerun installed package validation.",
+            "Stage 0 public Interface is invalid.",
+        )
+    return interface
+
+
+def stage0_safe_input_path(
+    root: Path,
+    package: Path,
+    interface: dict[str, Any],
+    value: str | None,
+) -> Path:
+    relative = skill_safe_relative(value)
+    if relative is None:
+        raise stage0_invocation_error(
+            "invalid_public_input",
+            "arguments.input",
+            "Use --input with one safe package-relative declared profile example or caller input file.",
+            "Stage 0 structured public input path is invalid.",
+        )
+    public_input = interface["public_contracts"].get("input")
+    profiles = public_input.get("profiles", []) if isinstance(public_input, dict) else []
+    declared_examples = {
+        str(example.get("path") or "")
+        for profile in profiles
+        if isinstance(profile, dict)
+        for example in [profile.get("example")]
+        if isinstance(example, dict)
+    }
+    path = package / relative if relative.as_posix() in declared_examples else root / relative
+    errors: list[str] = []
+    boundary = package if relative.as_posix() in declared_examples else root
+    if skill_lstat_path(boundary, path, "Stage 0 public input", errors, kind="file") is None:
+        raise stage0_invocation_error(
+            "invalid_public_input",
+            "arguments.input",
+            "Provide a readable regular declared package example or repo-relative caller JSON input file.",
+            "Stage 0 structured public input is missing or unsafe.",
+        )
+    return path
+
+
+def stage0_structured_input(
+    skill_id: str,
+    root: Path,
+    package: Path,
+    interface: dict[str, Any],
+    input_value: str | None,
+) -> dict[str, Any]:
+    path = stage0_safe_input_path(root, package, interface, input_value)
+    errors: list[str] = []
+    payload = skill_read_json(path, "Stage 0 public input", errors)
+    public_input = interface["public_contracts"].get("input")
+    profiles = public_input.get("profiles", []) if isinstance(public_input, dict) else []
+    profile_id = payload.get("profile") if isinstance(payload, dict) else None
+    profile = next(
+        (item for item in profiles if isinstance(item, dict) and item.get("id") == profile_id),
+        None,
+    )
+    if errors or not isinstance(payload, dict) or not isinstance(profile, dict):
+        raise stage0_invocation_error(
+            "invalid_public_input",
+            "input.profile",
+            "Use one complete declared structured input profile.",
+            "Stage 0 structured public input does not select a declared profile.",
+        )
+    schema_ref = profile.get("schema")
+    schema_path = package / str(schema_ref.get("path") if isinstance(schema_ref, dict) else "")
+    schema = skill_read_schema(schema_path, "Stage 0 public input profile", errors)
+    if isinstance(schema, dict):
+        errors.extend(skill_json_schema_validation_errors(payload, schema, "Stage 0 public input"))
+    if errors or not isinstance(schema, dict):
+        raise stage0_invocation_error(
+            "invalid_public_input",
+            "input",
+            "Repair every required caller-owned profile field and retry the package wrapper.",
+            "Stage 0 structured public input failed its declared profile schema.",
+        )
+    return payload
+
+
+def stage0_output_contract(
+    skill_id: str,
+    package: Path,
+    interface: dict[str, Any],
+    exit_id: str | None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    declared_exits = {
+        str(item.get("id") or "")
+        for item in interface.get("external_exits", []) if isinstance(item, dict)
+    }
+    if exit_id not in declared_exits:
+        raise stage0_invocation_error(
+            "unknown_typed_exit",
+            "owner_result.typed_exit",
+            f"Rerun the owner step so it returns one declared typed exit for {skill_id}: {', '.join(sorted(declared_exits))}.",
+            "Stage 0 owner result selected an unknown typed exit.",
+        )
+    contracts = interface["public_contracts"]
+    outputs = [
+        item for item in contracts.get("outputs", [])
+        if isinstance(item, dict) and item.get("exit_id") == exit_id
+    ]
+    projections = [
+        item for item in contracts.get("projections", [])
+        if isinstance(item, dict) and item.get("exit_id") == exit_id
+    ]
+    if len(outputs) != 1 or len(projections) != 1:
+        raise stage0_invocation_error(
+            "invalid_public_contract",
+            f"public_contracts.outputs.{exit_id}",
+            "Restore one output and one projection for every declared typed exit.",
+            "Stage 0 typed output contract is missing or ambiguous.",
+        )
+    output = outputs[0]
+    projection = projections[0]
+    schema_ref = output.get("schema")
+    errors: list[str] = []
+    schema = skill_read_schema(
+        package / str(schema_ref.get("path") if isinstance(schema_ref, dict) else ""),
+        "Stage 0 typed output schema",
+        errors,
+    )
+    if errors or not isinstance(schema, dict):
+        raise stage0_invocation_error(
+            "invalid_public_contract",
+            f"public_contracts.outputs.{exit_id}",
+            "Restore the declared output schema and rerun package validation.",
+            "Stage 0 typed output contract is invalid.",
+        )
+    return schema, projection
+
+
+def stage0_repo_root(package: Path) -> Path:
+    try:
+        root = Path(__file__).resolve().parents[4]
+    except IndexError as exc:
+        raise stage0_invocation_error(
+            "invalid_invocation_identity",
+            "invocation.package_root",
+            "Restore the complete installed package layout.",
+            "Stage 0 package root cannot resolve its repository.",
+        ) from exc
+    return repo_root(root)
+
+
+def stage0_owner_path(root: Path, value: str | None, field: str) -> Path:
+    raw = str(value or "").strip()
+    relative = skill_safe_relative(raw)
+    if relative is None:
+        raise stage0_invocation_error(
+            "invalid_owner_result",
+            field,
+            "Provide the repo-relative locator emitted by the completed owner step.",
+            "Stage 0 owner result locator is invalid.",
+        )
+    path = root / relative
+    errors: list[str] = []
+    if skill_lstat_path(root, path, "Stage 0 owner result", errors, kind="file") is None:
+        raise stage0_invocation_error(
+            "invalid_owner_result",
+            field,
+            "Restore the regular repo-local owner result and rerun its checker.",
+            "Stage 0 owner result is missing or unsafe.",
+        )
+    return path
+
+
+def stage0_owner_result(
+    skill_id: str,
+    root: Path,
+    args: argparse.Namespace,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    result_path = stage0_owner_path(root, args.owner_result, "arguments.owner_result")
+    result_relative = repo_relative(root, result_path)
+    plan: dict[str, Any] | None = None
+    try:
+        result = read_json(result_path)
+        if skill_id == "guru-discover-change-context":
+            checked = cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input=result_relative, task=None,
+                expected_snapshot_sha256=(result.get("snapshot_identity") or {}).get("snapshot_sha256"),
+            ))
+        elif skill_id == "guru-clarify-requirements":
+            checked = cmd_check_requirements_clarification(argparse.Namespace(
+                root=str(root), input=result_relative, task=None,
+                expected_result_sha256=(result.get("content_identity") or {}).get("result_sha256"),
+            ))
+        elif skill_id == "guru-review-contract-wording":
+            profile = str(result.get("profile") or "")
+            scope = result.get("scope") if isinstance(result.get("scope"), dict) else {}
+            scope_items = scope.get("items") if isinstance(scope.get("items"), list) else []
+            scope_paths = [
+                str(item.get("path"))
+                for item in scope_items
+                if isinstance(item, dict) and isinstance(item.get("path"), str)
+            ]
+            task_locator = None
+            change_request_input = None
+            if profile == "planning_artifacts" and scope_paths:
+                task_locator = str(Path(scope_paths[0]).parent)
+            elif profile == "change_request":
+                change_request = stage0_owner_path(
+                    root, args.owner_change_request, "arguments.owner_change_request"
+                )
+                change_request_input = repo_relative(root, change_request)
+            checked = cmd_check_contract_wording_review(argparse.Namespace(
+                root=str(root), input=result_relative, task=task_locator,
+                path=scope_paths if profile == "explicit_paths" else [],
+                change_request_input=change_request_input,
+                expected_facts_sha256=result.get("facts_sha256"),
+            ))
+        elif skill_id == "guru-review-change-request":
+            prerequisites = stage0_owner_path(
+                root, args.owner_prerequisites, "arguments.owner_prerequisites"
+            )
+            change_request = stage0_owner_path(
+                root, args.owner_change_request, "arguments.owner_change_request"
+            )
+            checked = cmd_check_change_request_review(argparse.Namespace(
+                root=str(root), input=result_relative,
+                prerequisites_input=repo_relative(root, prerequisites),
+                change_request_input=repo_relative(root, change_request),
+                expected_facts_sha256=result.get("facts_sha256"),
+            ))
+        elif skill_id == "guru-create-task-workspace":
+            plan_path = stage0_owner_path(root, args.owner_plan, "arguments.owner_plan")
+            plan = read_json(plan_path)
+            checked = cmd_check_task_workspace_result(argparse.Namespace(
+                root=str(root), input=result_relative,
+                plan_input=repo_relative(root, plan_path),
+            ))
+            result = checked
+        else:
+            raise stage0_invocation_error(
+                "invalid_invocation_identity",
+                "invocation.skill_id",
+                "Invoke one declared Stage 0 owner package.",
+                "Stage 0 owner result has no checker binding.",
+            )
+    except WorkflowError as exc:
+        if exc.payload.get("code") in {
+            "invalid_owner_result", "invalid_invocation_identity",
+        }:
+            raise
+        raise stage0_invocation_error(
+            "owner_result_not_checked",
+            "arguments.owner_result",
+            "Complete the owner recorder/checker/executor loop against current facts before public serialization.",
+            "Stage 0 owner result failed its objective checker.",
+        ) from exc
+    checker_status = (
+        (checked.get("checker") or {}).get("status")
+        if skill_id == "guru-create-task-workspace"
+        else checked.get("status")
+    )
+    if checker_status != "passed":
+        raise stage0_invocation_error(
+            "owner_result_not_checked",
+            "arguments.owner_result",
+            "Complete the owner recorder/checker/executor loop before public serialization.",
+            "Stage 0 owner result did not pass its objective checker.",
+        )
+    checked_exit = checked.get("typed_exit")
+    result_exit = result.get("typed_exit")
+    if checked_exit != result_exit:
+        raise stage0_invocation_error(
+            "owner_result_exit_mismatch",
+            "arguments.owner_result",
+            "Rerun the owner checker against the exact current result bytes.",
+            "Stage 0 owner result and checker disagree on the typed exit.",
+        )
+    return result, plan
+
+
+def stage0_target_locator(target: Any, fallback: str | None = None) -> str:
+    if isinstance(target, dict):
+        url = target.get("url")
+        if isinstance(url, str) and url:
+            return url
+        number = target.get("issue_number") or target.get("number")
+        if isinstance(number, int) and number > 0:
+            return f"#{number}"
+        identity = target.get("identity")
+        if isinstance(identity, str) and identity:
+            return identity
+    if isinstance(fallback, str) and fallback:
+        return fallback
+    raise stage0_invocation_error(
+        "owner_result_projection_failed",
+        "owner_result.target",
+        "Repair the checked owner result target identity and rerun the owner step.",
+        "Stage 0 owner result cannot supply the target locator.",
+    )
+
+
+def stage0_clarity_disposition(result: dict[str, Any]) -> str:
+    target_disposition = result.get("target_disposition")
+    invocation_kind = str((result.get("invocation_context") or {}).get("kind") or "")
+    if target_disposition is None and invocation_kind == "active_task_scope_change":
+        return "retained"
+    value = str(target_disposition.get("disposition") or "") if isinstance(target_disposition, dict) else ""
+    if value in {"keep_current_issue", "keep_current_draft", "retain_current"}:
+        return "retained"
+    if value in {"select_duplicate", "retarget_existing_issue"}:
+        return "selected"
+    if value in {"reopen_issue", "reopened"}:
+        return "reopened"
+    if value in {"target_complete", "complete"}:
+        return "complete"
+    raise stage0_invocation_error(
+        "owner_result_projection_failed",
+        "owner_result.target_disposition.disposition",
+        "Rerun clarification with one declared current-target disposition.",
+        "Stage 0 clarification disposition cannot be projected.",
+    )
+
+
+def stage0_confirmed_action_id(result: dict[str, Any]) -> str:
+    confirmation = result.get("human_confirmation")
+    actions = confirmation.get("confirmed_actions") if isinstance(confirmation, dict) else None
+    if isinstance(actions, list) and actions and isinstance(actions[0], str) and actions[0]:
+        return actions[0]
+    source_actions = result.get("source_actions")
+    if isinstance(source_actions, list):
+        for action in source_actions:
+            action_id = action.get("action_id") if isinstance(action, dict) else None
+            if isinstance(action_id, str) and action_id:
+                return action_id
+    facts = result.get("facts_sha256") or (result.get("content_identity") or {}).get("result_sha256")
+    if isinstance(facts, str) and facts:
+        return f"reviewed-{facts[:16]}"
+    raise stage0_invocation_error(
+        "owner_result_projection_failed",
+        "owner_result.human_confirmation",
+        "Record the owner decision/action identity before public serialization.",
+        "Stage 0 owner result cannot supply a confirmed action id.",
+    )
+
+
+def stage0_build_output(
+    skill_id: str,
+    exit_id: str,
+    public_input: dict[str, Any],
+    owner_result: dict[str, Any] | None,
+    owner_plan: dict[str, Any] | None,
+    owner_locator: str | None,
+    schema: dict[str, Any],
+) -> dict[str, Any]:
+    values: dict[str, Any] = {"exit_id": exit_id, **public_input}
+    if skill_id == "guru-discover-change-context" and owner_result is not None:
+        if exit_id == "context_ready":
+            values.update({
+                "handoff_profile": "initial_change_request",
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_target_locator": stage0_target_locator(owner_result.get("live_change")),
+                "handoff_context_locator": owner_locator,
+                "handoff_continuation_id": public_input.get("continuation_id"),
+            })
+        elif exit_id == "refresh_base":
+            values.update({
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_repo_root": ".",
+                "handoff_base_branch": (owner_result.get("repository") or {}).get("selected_base"),
+                "handoff_route": "repo_change",
+            })
+    elif skill_id == "guru-clarify-requirements" and owner_result is not None:
+        target = owner_result.get("review_target")
+        if exit_id == "clear":
+            values.update({
+                "resume_target": (owner_result.get("invocation_context") or {}).get("resume_target"),
+                "target_disposition": stage0_clarity_disposition(owner_result),
+                "confirmed_action_id": stage0_confirmed_action_id(owner_result),
+            })
+        elif exit_id == "needs_context":
+            values.update({
+                "handoff_profile": "pre_task",
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_repo_locator": (target or {}).get("repo"),
+                "handoff_continuation_id": public_input.get("continuation_id"),
+            })
+        elif exit_id in {"refresh_context", "retarget_context"}:
+            values.update({
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_repo_root": ".",
+                "handoff_route": "repo_change",
+            })
+        elif exit_id == "new_task":
+            values.update({
+                "target_locator": stage0_target_locator(target, public_input.get("target_locator")),
+                "confirmed_action_id": stage0_confirmed_action_id(owner_result),
+            })
+    elif skill_id == "guru-review-contract-wording" and owner_result is not None:
+        values.update({
+            "profile": owner_result.get("profile"),
+            "continuation_id": public_input.get("continuation_id"),
+        })
+    elif skill_id == "guru-review-change-request" and owner_result is not None:
+        target = owner_result.get("target")
+        if exit_id == "ready":
+            values.update({
+                "handoff_profile": "workspace_task_initial",
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_target_locator": stage0_target_locator(target, public_input.get("target_locator")),
+                "handoff_repo_locator": (target or {}).get("repo"),
+                "handoff_confirmed_action_id": stage0_confirmed_action_id(owner_result),
+                "handoff_continuation_id": public_input.get("continuation_id"),
+            })
+        elif exit_id == "clarify_requirements":
+            values.update({
+                "handoff_profile": "initial_change_request",
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_target_locator": stage0_target_locator(target, public_input.get("target_locator")),
+                "handoff_context_locator": public_input.get("context_locator"),
+                "handoff_continuation_id": public_input.get("continuation_id"),
+            })
+        elif exit_id == "review_wording":
+            values.update({
+                "handoff_profile": "change_request",
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_target_locator": stage0_target_locator(target, public_input.get("target_locator")),
+                "handoff_continuation_id": public_input.get("continuation_id"),
+            })
+        elif exit_id == "refresh_context":
+            values.update({
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_repo_root": ".",
+                "handoff_route": "repo_change",
+            })
+    elif skill_id == "guru-create-task-workspace" and owner_result is not None:
+        if exit_id == "created":
+            created = owner_result.get("created_workspace") or {}
+            values.update({
+                "repo_locator": created.get("repo"),
+                "issue_locator": f"#{created.get('issue_number')}",
+                "base_branch": (owner_plan or {}).get("base", {}).get("selected_base") or public_input.get("base_branch"),
+                "branch": created.get("branch_name"),
+                "worktree_locator": created.get("workspace_slug"),
+                "task_locator": created.get("task_artifact_dir"),
+                "continuation_id": public_input.get("continuation_id"),
+            })
+        elif exit_id == "refresh_review":
+            values.update({
+                "handoff_mode": owner_result.get("mode"),
+                "handoff_repo_root": ".",
+                "handoff_base_branch": (owner_plan or {}).get("base", {}).get("selected_base") or public_input.get("base_branch"),
+                "handoff_route": "repo_change",
+            })
+
+    properties = schema.get("properties")
+    required = schema.get("required")
+    if not isinstance(properties, dict) or not isinstance(required, list):
+        raise stage0_invocation_error(
+            "invalid_public_contract",
+            f"public_contracts.outputs.{exit_id}",
+            "Restore the closed typed output schema.",
+            "Stage 0 output schema cannot drive serialization.",
+        )
+    missing = [field for field in required if field not in values or values[field] is None]
+    if missing:
+        raise stage0_invocation_error(
+            "owner_result_projection_failed",
+            f"stdout.{missing[0]}",
+            "Repair the checked owner result or caller-owned continuation input.",
+            "Stage 0 typed output is missing a required projected value.",
+        )
+    return {field: copy.deepcopy(values[field]) for field in properties if field in values}
+
+
+def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
+    skill_id, package = stage0_invocation_identity()
+    interface = stage0_public_interface(skill_id, package)
+    root = stage0_repo_root(package)
+    public_input: dict[str, Any] = {}
+    owner_result: dict[str, Any] | None = None
+    owner_plan: dict[str, Any] | None = None
+    owner_locator: str | None = None
+    if skill_id == "guru-sync-base":
+        required = {
+            "source_exit": args.source_exit,
+            "mode": args.mode,
+            "repo_root": args.repo_root,
+            "route": args.route,
+        }
+        if any(not isinstance(value, str) or not value for value in required.values()):
+            raise stage0_invocation_error(
+                "invalid_public_input",
+                "arguments",
+                "Provide every required guru-sync-base scalar argument; --base-branch may be omitted.",
+                "Stage 0 scalar public input is incomplete.",
+            )
+        if args.mode not in {"workflow", "standalone"} or args.route not in {"repo_change", "original_request"}:
+            raise stage0_invocation_error(
+                "invalid_public_input",
+                "arguments.route",
+                "Use workflow|standalone mode and repo_change|original_request route.",
+                "Stage 0 scalar public input contains an unsupported enum.",
+            )
+        if args.mode == "standalone" and args.route == "original_request":
+            raise stage0_invocation_error(
+                "invalid_public_input",
+                "arguments.route",
+                "Standalone base sync must use repo_change.",
+                "Standalone Stage 0 base sync cannot select skipped.",
+            )
+        resolved_repo = repo_root(Path(args.repo_root))
+        public_input = {
+            "source_exit": args.source_exit,
+            "mode": args.mode,
+            "repo_root": args.repo_root,
+            "base_branch": args.base_branch,
+            "route": args.route,
+        }
+        try:
+            if args.route == "original_request":
+                owner_result = cmd_check_base_sync(argparse.Namespace(
+                    root=str(resolved_repo), mode=args.mode, result_json=None,
+                    expected_resolution_sha256=None,
+                    record_skipped="original-request-route",
+                ))
+                exit_id = "skipped"
+                public_input["continuation_id"] = f"{args.source_exit}-original-request"
+            else:
+                resolution = cmd_sync_base(argparse.Namespace(
+                    root=str(resolved_repo), mode=args.mode, resolve_only=True,
+                    execute=False, base=args.base_branch, remote="origin",
+                    expected_resolution_sha256=None,
+                ))
+                synced = cmd_sync_base(argparse.Namespace(
+                    root=str(resolved_repo), mode=args.mode, resolve_only=False,
+                    execute=True, base=args.base_branch, remote="origin",
+                    expected_resolution_sha256=resolution["resolution_sha256"],
+                ))
+                owner_result = cmd_check_base_sync(argparse.Namespace(
+                    root=str(resolved_repo), mode=args.mode,
+                    result_json=synced,
+                    expected_resolution_sha256=resolution["resolution_sha256"],
+                    record_skipped=None,
+                ))
+                exit_id = "synced"
+                public_input.update({
+                    "handoff_profile": "pre_task",
+                    "handoff_mode": args.mode,
+                    "handoff_repo_locator": os.path.relpath(resolved_repo, resolved_repo),
+                    "handoff_base_branch": resolution["selected_base"],
+                    "handoff_continuation_id": f"{args.source_exit}-base-current",
+                })
+        except WorkflowError:
+            exit_id = "blocked"
+    else:
+        public_input = stage0_structured_input(skill_id, root, package, interface, args.input)
+        owner_result, owner_plan = stage0_owner_result(skill_id, root, args)
+        if public_input.get("mode") != owner_result.get("mode"):
+            raise stage0_invocation_error(
+                "owner_result_input_mismatch",
+                "owner_result.mode",
+                "Rerun the owner step for the exact public invocation mode.",
+                "Stage 0 public input and owner result modes do not match.",
+            )
+        if (
+            skill_id == "guru-review-contract-wording"
+            and public_input.get("profile") != owner_result.get("profile")
+        ):
+            raise stage0_invocation_error(
+                "owner_result_input_mismatch",
+                "owner_result.profile",
+                "Rerun the wording owner for the exact fixed public profile.",
+                "Stage 0 wording public input and owner result profiles do not match.",
+            )
+        exit_id = str(owner_result.get("typed_exit") or "")
+        owner_locator = repo_relative(
+            root,
+            stage0_owner_path(root, args.owner_result, "arguments.owner_result"),
+        )
+
+    output_schema, _ = stage0_output_contract(skill_id, package, interface, exit_id)
+    payload = stage0_build_output(
+        skill_id, exit_id, public_input, owner_result, owner_plan,
+        owner_locator, output_schema,
+    )
+
+    validation_errors = skill_json_schema_validation_errors(
+        payload, output_schema, f"Stage 0 typed output {payload.get('exit_id')}"
+    )
+    if validation_errors:
+        raise stage0_invocation_error(
+            "typed_output_invalid",
+            "stdout",
+            "Repair the declared public projection/output contract and rerun source validation.",
+            "Stage 0 public invocation could not serialize a valid typed output.",
+        )
+    return payload
 
 
 def cmd_check_skill_packages(args: argparse.Namespace) -> dict[str, Any]:
@@ -19036,7 +19927,17 @@ def build_skill_eval_discovery(skills_root: Path, skill_id: str) -> dict[str, An
                 "id": adapter_id,
                 "platform": descriptors[adapter_id]["platform"],
                 "native_command": descriptors[adapter_id]["native_command"],
-                "native_available": shutil.which(descriptors[adapter_id]["native_command"]) is not None,
+                "native_available": (
+                    (
+                        adapter_id == "shared"
+                        and (skills_root / "adapters/eval" / descriptors[adapter_id]["native_command"]).is_file()
+                        and os.access(
+                            skills_root / "adapters/eval" / descriptors[adapter_id]["native_command"],
+                            os.X_OK,
+                        )
+                    )
+                    or shutil.which(descriptors[adapter_id]["native_command"]) is not None
+                ),
                 "capabilities": descriptors[adapter_id]["capabilities"],
             }
             for adapter_id in SKILL_EVAL_ADAPTERS
@@ -29092,6 +29993,18 @@ def build_parser() -> argparse.ArgumentParser:
     skill_runtime.add_argument("--package-root", required=True)
     skill_runtime.add_argument("--validator", required=True)
     skill_runtime.add_argument("runtime_args", nargs=argparse.REMAINDER)
+
+    stage0_invocation = sub.add_parser("invoke-stage0-skill")
+    stage0_invocation.add_argument("--input")
+    stage0_invocation.add_argument("--owner-result")
+    stage0_invocation.add_argument("--owner-prerequisites")
+    stage0_invocation.add_argument("--owner-change-request")
+    stage0_invocation.add_argument("--owner-plan")
+    stage0_invocation.add_argument("--source-exit")
+    stage0_invocation.add_argument("--mode")
+    stage0_invocation.add_argument("--repo-root")
+    stage0_invocation.add_argument("--base-branch")
+    stage0_invocation.add_argument("--route")
     boundary.add_argument(
         "--allow-source-clean",
         action="store_true",
@@ -29417,6 +30330,8 @@ def main() -> int:
             payload = cmd_run_skill_evals(args)
         elif args.command == "run-skill-command":
             payload = cmd_run_skill_command(args)
+        elif args.command == "invoke-stage0-skill":
+            payload = cmd_invoke_stage0_skill(args)
         elif args.command == "resolve-human-artifacts":
             payload = cmd_resolve_human_artifacts(args)
         elif args.command == "verify-marketplace":

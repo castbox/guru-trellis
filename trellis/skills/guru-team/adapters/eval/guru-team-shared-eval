@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+def option(arguments: list[str], flag: str) -> str | None:
+    try:
+        index = arguments.index(flag)
+    except ValueError:
+        return None
+    return arguments[index + 1] if index + 1 < len(arguments) else None
+
+
+def helper_call(protocol: dict[str, object], *arguments: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(protocol["helper_path"]),
+            "--trace", str(protocol["trace_path"]),
+            "--request-sha256", str(protocol["request_sha256"]),
+            "--projection-root", str(protocol["projection_root"]),
+            "--skill-sha256", str(protocol["skill_sha256"]),
+            "--wrapper-sha256", str(protocol["wrapper_sha256"]),
+            *arguments,
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+
+def main() -> int:
+    arguments = sys.argv[1:]
+    request_value = option(arguments, "--request") or os.environ.get("GURU_TEAM_NATIVE_REQUEST")
+    protocol_value = os.environ.get("GURU_TEAM_NATIVE_PROTOCOL")
+    if not request_value or not protocol_value:
+        print("shared eval request protocol is incomplete", file=sys.stderr)
+        return 2
+    request = json.loads(Path(request_value).read_text(encoding="utf-8"))
+    protocol = json.loads(Path(protocol_value).read_text(encoding="utf-8"))
+    skill_read = helper_call(
+        protocol,
+        "read", "--kind", "skill_contract", "--path", str(protocol["skill_path"]),
+    )
+    if skill_read.returncode != 0:
+        print(skill_read.stderr, file=sys.stderr)
+        return skill_read.returncode
+
+    invocation_arguments: list[str] | None = None
+    workdir = Path(str(request["workdir"]))
+    for relative in request.get("files", []):
+        target = workdir / str(relative)
+        loaded = helper_call(protocol, "read", "--kind", "case_file", "--path", str(target))
+        if loaded.returncode != 0:
+            print(loaded.stderr, file=sys.stderr)
+            return loaded.returncode
+        try:
+            payload = json.loads(loaded.stdout)
+        except json.JSONDecodeError:
+            continue
+        invocation = payload.get("public_invocation") if isinstance(payload, dict) else None
+        candidate = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if isinstance(candidate, list) and candidate and all(isinstance(item, str) for item in candidate):
+            if invocation_arguments is not None:
+                print("multiple case files declare public invocation arguments", file=sys.stderr)
+                return 2
+            invocation_arguments = candidate
+    if invocation_arguments is None:
+        print("case files do not declare public invocation arguments", file=sys.stderr)
+        return 2
+
+    invoked = helper_call(
+        protocol,
+        "invoke", "--wrapper", str(protocol["wrapper_path"]), "--", *invocation_arguments,
+    )
+    sys.stdout.write(invoked.stdout)
+    sys.stderr.write(invoked.stderr)
+    return invoked.returncode
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

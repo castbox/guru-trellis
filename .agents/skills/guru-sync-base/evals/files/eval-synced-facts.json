@@ -1,0 +1,1 @@
+{"scenario":"The selected local base exists, the checkout is clean, and its configured remote is reachable.","owner_evidence":{"formal_resolver":true,"formal_executor":true,"formal_checker":true},"public_invocation":{"arguments":["--source-exit","start","--mode","workflow","--repo-root",".","--base-branch","main","--route","repo_change"]}}

@@ -389,3 +389,19 @@ The managed adapter also preserves public-only projection semantics: canonical
 package/corpus/private runtime never enter the native request or context, while
 the receipt binds projection root plus exact Skill/wrapper digests. Platform
 copies may not re-expose canonical roots for convenience.
+
+Shared adapter execution uses the preset-managed native executable below the
+adapter root. Codex, Claude, and Cursor remain platform-native `PATH` commands;
+their trusted-root, non-interactive, and unauthenticated-unsupported behavior is
+tested without creating platform-specific corpus copies.
+
+## Stage 0 Package Copy Consistency
+
+The six `stage0-minimal-handoff-v1` package trees are Guru-owned additive assets,
+not workflow overlays. Preset apply copies each complete Interface, public
+schemas/examples, dispatcher-only wrapper, contract references, tests, and
+canonical eval corpus byte-for-byte to installed shared and selected
+Codex/Cursor/Claude discovery roots. Platform copies do not fork input profiles,
+typed exits, consumers, projections, wrapper behavior, case bindings, or grader
+policy. Drift validation compares bytes and executable modes for the complete
+six-package set and rejects partial activation or sidecars.

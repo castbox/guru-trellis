@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-change-request-output-ready-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "handoff_profile",
+    "handoff_mode",
+    "handoff_target_locator",
+    "handoff_repo_locator",
+    "handoff_confirmed_action_id",
+    "handoff_continuation_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "ready"
+    },
+    "handoff_profile": {
+      "const": "workspace_task_initial"
+    },
+    "handoff_mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "handoff_target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_repo_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_confirmed_action_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

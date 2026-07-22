@@ -1,0 +1,8 @@
+{
+  "exit_id": "clarify_requirements",
+  "handoff_profile": "initial_change_request",
+  "handoff_mode": "workflow",
+  "handoff_target_locator": "stage0-handoff-target-locator",
+  "handoff_context_locator": "stage0-handoff-context-locator",
+  "handoff_continuation_id": "stage0-handoff-continuation-id"
+}

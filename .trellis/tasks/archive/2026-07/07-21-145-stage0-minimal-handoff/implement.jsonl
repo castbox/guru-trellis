@@ -1,0 +1,17 @@
+{"file":".trellis/spec/workflow/index.md","reason":"定位 Guru Team workflow canonical、installed 与 dogfood 分层及本任务必读规范。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"约束 Markdown workflow 的 mandatory Skill invocation、typed exit routing 与 Phase 0 运行语义。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"定义 Interface 1.3 minimal_handoff、public input/output、consumer projection、private artifact 与 registry 合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 public wrapper、deterministic runtime、recorder/validator 与 Agent semantic boundary。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"约束 migration manifest、schema、registry、extension inventory 与 existing-state compatibility 数据合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"提供 source/installed/dogfood、四平台、behavior eval、throwaway 与 drift 验证门禁。"}
+{"file":".trellis/spec/preset/index.md","reason":"定位 preset installer、overlay 与 upstream ownership 的实现边界。"}
+{"file":".trellis/spec/preset/installer.md","reason":"约束原子 preset transaction、fresh install、upgrade/update/reapply 与 sidecar 行为。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"约束 canonical ownership 与 Trellis update 后的受管文件边界。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束 shared/Codex/Claude/Cursor overlay 同步和 dogfood drift。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"约束 durable docs 与 README 对 Interface 1.3、安装和验证命令的公开说明。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 Interface、runtime、workflow、preset、platform 与 docs 的跨层数据流闭合。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"避免六个 package、24 exits 与平台副本产生重复常量、schema 或 validation 逻辑。"}
+{"file":"trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json","reason":"实现并验证 scalarArgument.required 显式 boolean 与 guru-sync-base optional base_branch 合同。"}
+{"file":"trellis/workflows/guru-team/scripts/python/guru_team_trellis.py","reason":"实现正式 owner resolver、checker-passed semantic owner result、actual-exit output schema 与 production eval dispatch。"}
+{"file":"trellis/skills/guru-team/tests/test_skill_packages.py","reason":"承接 optional fallback、expected_exit non-oracle、shared/Codex/Claude/Cursor adapter 与24 exits focused coverage。"}
+{"file":"trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh","reason":"验证 clean install、pre-#145 upgrade、update/reapply后的 optional resolver与production eval平台矩阵。"}

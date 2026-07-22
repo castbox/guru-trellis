@@ -1426,10 +1426,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.19"
+assert extension["version"] == "0.6.5-guru.20"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 91
+assert len(assets) == 92
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -1468,10 +1468,17 @@ assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interfa
 assert api["skill_contracts"]["registry_schema_id"] == "guru-team-skill-registry-1.1"
 assert api["skill_contracts"]["supported_interface_schema_ids"] == ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"]
 assert api["skill_contracts"]["current_interface_schema_id"] == "guru-team-skill-interface-1.3"
-assert len(api["skill_contracts"]["legacy_skill_ids"]) == 9
-assert api["skill_contracts"]["public_input_schema_ids"] == []
-assert api["skill_contracts"]["typed_output_schema_ids"] == []
-assert api["skill_contracts"]["private_artifact_schema_ids"] == []
+assert api["skill_contracts"]["legacy_skill_ids"] == [
+    "guru-approve-task-plan", "guru-check-task", "guru-create-task-commit",
+]
+assert len(api["skill_contracts"]["public_input_schema_ids"]) == 15
+assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 24
+assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 7
+assert api["skill_contracts"]["migration_manifests"] == [{
+    "id": "stage0-minimal-handoff-v1",
+    "schema_id": "guru-team-stage0-migration-manifest-1.0",
+    "path": "migrations/stage0-minimal-handoff.json",
+}]
 assert api["skill_evals"]["schema_id"] == "guru-team-skill-evals-1.0"
 assert api["skill_evals"]["adapter_ids"] == ["shared", "codex", "claude", "cursor"]
 assert api["skill_runtime"] == {
@@ -1509,10 +1516,14 @@ test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
 python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":9,"exit_markers":35,"target_markers":20,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
-LEGACY_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
+MINIMAL_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
+python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "minimal_handoff"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.3"' <<<"$MINIMAL_CONTRACT_JSON"
+MINIMAL_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
+python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["corpus_schema_id"] == "guru-team-skill-evals-1.0"; assert payload["case_ids"] == ["synced-route", "skipped-route", "blocked-route"]' <<<"$MINIMAL_EVAL_JSON"
+LEGACY_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-approve-task-plan --json)"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "legacy"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.2"' <<<"$LEGACY_CONTRACT_JSON"
 legacy_eval_error="$(mktemp)"
-if "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json 2>"$legacy_eval_error"; then
+if "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-approve-task-plan --json 2>"$legacy_eval_error"; then
   echo "Legacy production Skill unexpectedly exposed an eval corpus" >&2
   exit 1
 fi

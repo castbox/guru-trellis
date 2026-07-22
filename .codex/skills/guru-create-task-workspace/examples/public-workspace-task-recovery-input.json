@@ -1,0 +1,11 @@
+{
+  "profile": "workspace_task_recovery",
+  "source_exit": "start",
+  "mode": "workflow",
+  "target_locator": "#145",
+  "repo_locator": "castbox/guru-trellis",
+  "base_branch": "main",
+  "confirmed_action_id": "confirmed-stage0-action",
+  "prior_artifact_locator": "task-workspace-result.json",
+  "continuation_id": "stage0-current"
+}

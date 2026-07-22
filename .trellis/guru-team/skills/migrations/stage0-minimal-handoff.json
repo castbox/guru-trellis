@@ -1,0 +1,474 @@
+{
+  "$schema": "../schemas/stage0-migration-manifest.schema.json",
+  "schema_id": "guru-team-stage0-migration-manifest-1.0",
+  "schema_version": "1.0",
+  "activation_unit_id": "stage0-minimal-handoff-v1",
+  "interface_schema_id": "guru-team-skill-interface-1.3",
+  "registry_schema_id": "guru-team-skill-registry-1.1",
+  "eval_schema_id": "guru-team-skill-evals-1.0",
+  "activation_policy": "preset_transaction",
+  "skill_ids": [
+    "guru-sync-base",
+    "guru-discover-change-context",
+    "guru-clarify-requirements",
+    "guru-review-contract-wording",
+    "guru-review-change-request",
+    "guru-create-task-workspace"
+  ],
+  "legacy_skill_ids": [
+    "guru-approve-task-plan",
+    "guru-check-task",
+    "guru-create-task-commit"
+  ],
+  "skills": [
+    {
+      "id": "guru-sync-base",
+      "input_kind": "scalar_cli",
+      "input_profile_ids": [],
+      "profile_case_bindings": [
+        {
+          "profile_id": "scalar_cli",
+          "eval_case_ids": [
+            "synced-route",
+            "skipped-route",
+            "blocked-route"
+          ]
+        }
+      ],
+      "exit_bindings": [
+        {
+          "exit_id": "synced",
+          "output_schema_id": "guru-stage0-sync-base-output-synced-1.0",
+          "consumer_input_id": "synced_pre_task_input",
+          "projection_id": "project_synced",
+          "eval_case_ids": [
+            "synced-route"
+          ]
+        },
+        {
+          "exit_id": "skipped",
+          "output_schema_id": "guru-stage0-sync-base-output-skipped-1.0",
+          "consumer_input_id": "skipped_workflow_input",
+          "projection_id": "project_skipped",
+          "eval_case_ids": [
+            "skipped-route"
+          ]
+        },
+        {
+          "exit_id": "blocked",
+          "output_schema_id": "guru-stage0-sync-base-output-blocked-1.0",
+          "consumer_input_id": "blocked_stop_input",
+          "projection_id": "project_blocked",
+          "eval_case_ids": [
+            "blocked-route"
+          ]
+        }
+      ],
+      "private_artifact_ids": [
+        "base_sync_result"
+      ],
+      "eval_case_ids": [
+        "synced-route",
+        "skipped-route",
+        "blocked-route"
+      ]
+    },
+    {
+      "id": "guru-discover-change-context",
+      "input_kind": "structured_json",
+      "input_profile_ids": [
+        "pre_task",
+        "task_local_reentry"
+      ],
+      "profile_case_bindings": [
+        {
+          "profile_id": "pre_task",
+          "eval_case_ids": [
+            "context-ready-route",
+            "blocked-route"
+          ]
+        },
+        {
+          "profile_id": "task_local_reentry",
+          "eval_case_ids": [
+            "refresh-base-route"
+          ]
+        }
+      ],
+      "exit_bindings": [
+        {
+          "exit_id": "context_ready",
+          "output_schema_id": "guru-stage0-discover-change-context-output-context-ready-1.0",
+          "consumer_input_id": "context_ready_initial_change_request_input",
+          "projection_id": "project_context_ready",
+          "eval_case_ids": [
+            "context-ready-route"
+          ]
+        },
+        {
+          "exit_id": "refresh_base",
+          "output_schema_id": "guru-stage0-discover-change-context-output-refresh-base-1.0",
+          "consumer_input_id": "refresh_base_sync_input",
+          "projection_id": "project_refresh_base",
+          "eval_case_ids": [
+            "refresh-base-route"
+          ]
+        },
+        {
+          "exit_id": "blocked",
+          "output_schema_id": "guru-stage0-discover-change-context-output-blocked-1.0",
+          "consumer_input_id": "blocked_stop_input",
+          "projection_id": "project_blocked",
+          "eval_case_ids": [
+            "blocked-route"
+          ]
+        }
+      ],
+      "private_artifact_ids": [
+        "context_snapshot"
+      ],
+      "eval_case_ids": [
+        "context-ready-route",
+        "refresh-base-route",
+        "blocked-route"
+      ]
+    },
+    {
+      "id": "guru-clarify-requirements",
+      "input_kind": "structured_json",
+      "input_profile_ids": [
+        "initial_change_request",
+        "active_task_scope_change",
+        "standalone_review"
+      ],
+      "profile_case_bindings": [
+        {
+          "profile_id": "initial_change_request",
+          "eval_case_ids": [
+            "retarget-context-route",
+            "new-task-route",
+            "blocked-route"
+          ]
+        },
+        {
+          "profile_id": "active_task_scope_change",
+          "eval_case_ids": [
+            "needs-context-route"
+          ]
+        },
+        {
+          "profile_id": "standalone_review",
+          "eval_case_ids": [
+            "clear-route",
+            "refresh-context-route"
+          ]
+        }
+      ],
+      "exit_bindings": [
+        {
+          "exit_id": "clear",
+          "output_schema_id": "guru-stage0-clarify-requirements-output-clear-1.0",
+          "consumer_input_id": "clear_workflow_input",
+          "projection_id": "project_clear",
+          "eval_case_ids": [
+            "clear-route"
+          ]
+        },
+        {
+          "exit_id": "needs_context",
+          "output_schema_id": "guru-stage0-clarify-requirements-output-needs-context-1.0",
+          "consumer_input_id": "needs_context_pre_task_input",
+          "projection_id": "project_needs_context",
+          "eval_case_ids": [
+            "needs-context-route"
+          ]
+        },
+        {
+          "exit_id": "refresh_context",
+          "output_schema_id": "guru-stage0-clarify-requirements-output-refresh-context-1.0",
+          "consumer_input_id": "refresh_context_sync_input",
+          "projection_id": "project_refresh_context",
+          "eval_case_ids": [
+            "refresh-context-route"
+          ]
+        },
+        {
+          "exit_id": "retarget_context",
+          "output_schema_id": "guru-stage0-clarify-requirements-output-retarget-context-1.0",
+          "consumer_input_id": "retarget_context_sync_input",
+          "projection_id": "project_retarget_context",
+          "eval_case_ids": [
+            "retarget-context-route"
+          ]
+        },
+        {
+          "exit_id": "new_task",
+          "output_schema_id": "guru-stage0-clarify-requirements-output-new-task-1.0",
+          "consumer_input_id": "new_task_workflow_input",
+          "projection_id": "project_new_task",
+          "eval_case_ids": [
+            "new-task-route"
+          ]
+        },
+        {
+          "exit_id": "blocked",
+          "output_schema_id": "guru-stage0-clarify-requirements-output-blocked-1.0",
+          "consumer_input_id": "blocked_stop_input",
+          "projection_id": "project_blocked",
+          "eval_case_ids": [
+            "blocked-route"
+          ]
+        }
+      ],
+      "private_artifact_ids": [
+        "clarification_result"
+      ],
+      "eval_case_ids": [
+        "clear-route",
+        "needs-context-route",
+        "refresh-context-route",
+        "retarget-context-route",
+        "new-task-route",
+        "blocked-route"
+      ]
+    },
+    {
+      "id": "guru-review-contract-wording",
+      "input_kind": "structured_json",
+      "input_profile_ids": [
+        "change_request",
+        "planning_artifacts",
+        "explicit_paths"
+      ],
+      "profile_case_bindings": [
+        {
+          "profile_id": "change_request",
+          "eval_case_ids": [
+            "pass-route"
+          ]
+        },
+        {
+          "profile_id": "planning_artifacts",
+          "eval_case_ids": [
+            "content-changed-route"
+          ]
+        },
+        {
+          "profile_id": "explicit_paths",
+          "eval_case_ids": [
+            "blocked-route"
+          ]
+        }
+      ],
+      "exit_bindings": [
+        {
+          "exit_id": "pass",
+          "output_schema_id": "guru-stage0-review-contract-wording-output-pass-1.0",
+          "consumer_input_id": "pass_workflow_input",
+          "projection_id": "project_pass",
+          "eval_case_ids": [
+            "pass-route"
+          ]
+        },
+        {
+          "exit_id": "content_changed",
+          "output_schema_id": "guru-stage0-review-contract-wording-output-content-changed-1.0",
+          "consumer_input_id": "content_changed_workflow_input",
+          "projection_id": "project_content_changed",
+          "eval_case_ids": [
+            "content-changed-route"
+          ]
+        },
+        {
+          "exit_id": "blocked",
+          "output_schema_id": "guru-stage0-review-contract-wording-output-blocked-1.0",
+          "consumer_input_id": "blocked_stop_input",
+          "projection_id": "project_blocked",
+          "eval_case_ids": [
+            "blocked-route"
+          ]
+        }
+      ],
+      "private_artifact_ids": [
+        "wording_review"
+      ],
+      "eval_case_ids": [
+        "pass-route",
+        "content-changed-route",
+        "blocked-route"
+      ]
+    },
+    {
+      "id": "guru-review-change-request",
+      "input_kind": "structured_json",
+      "input_profile_ids": [
+        "current_issue",
+        "proposed_draft",
+        "standalone_request"
+      ],
+      "profile_case_bindings": [
+        {
+          "profile_id": "current_issue",
+          "eval_case_ids": [
+            "ready-route",
+            "refresh-context-route",
+            "blocked-route"
+          ]
+        },
+        {
+          "profile_id": "proposed_draft",
+          "eval_case_ids": [
+            "clarify-requirements-route"
+          ]
+        },
+        {
+          "profile_id": "standalone_request",
+          "eval_case_ids": [
+            "review-wording-route"
+          ]
+        }
+      ],
+      "exit_bindings": [
+        {
+          "exit_id": "ready",
+          "output_schema_id": "guru-stage0-review-change-request-output-ready-1.0",
+          "consumer_input_id": "ready_workspace_task_initial_input",
+          "projection_id": "project_ready",
+          "eval_case_ids": [
+            "ready-route"
+          ]
+        },
+        {
+          "exit_id": "clarify_requirements",
+          "output_schema_id": "guru-stage0-review-change-request-output-clarify-requirements-1.0",
+          "consumer_input_id": "clarify_requirements_initial_change_request_input",
+          "projection_id": "project_clarify_requirements",
+          "eval_case_ids": [
+            "clarify-requirements-route"
+          ]
+        },
+        {
+          "exit_id": "review_wording",
+          "output_schema_id": "guru-stage0-review-change-request-output-review-wording-1.0",
+          "consumer_input_id": "review_wording_change_request_input",
+          "projection_id": "project_review_wording",
+          "eval_case_ids": [
+            "review-wording-route"
+          ]
+        },
+        {
+          "exit_id": "refresh_context",
+          "output_schema_id": "guru-stage0-review-change-request-output-refresh-context-1.0",
+          "consumer_input_id": "refresh_context_sync_input",
+          "projection_id": "project_refresh_context",
+          "eval_case_ids": [
+            "refresh-context-route"
+          ]
+        },
+        {
+          "exit_id": "blocked",
+          "output_schema_id": "guru-stage0-review-change-request-output-blocked-1.0",
+          "consumer_input_id": "blocked_stop_input",
+          "projection_id": "project_blocked",
+          "eval_case_ids": [
+            "blocked-route"
+          ]
+        }
+      ],
+      "private_artifact_ids": [
+        "change_request_review"
+      ],
+      "eval_case_ids": [
+        "ready-route",
+        "clarify-requirements-route",
+        "review-wording-route",
+        "refresh-context-route",
+        "blocked-route"
+      ]
+    },
+    {
+      "id": "guru-create-task-workspace",
+      "input_kind": "structured_json",
+      "input_profile_ids": [
+        "issue_only_initial",
+        "issue_only_recovery",
+        "workspace_task_initial",
+        "workspace_task_recovery"
+      ],
+      "profile_case_bindings": [
+        {
+          "profile_id": "issue_only_initial",
+          "eval_case_ids": [
+            "created-route"
+          ]
+        },
+        {
+          "profile_id": "issue_only_recovery",
+          "eval_case_ids": [
+            "refresh-review-route"
+          ]
+        },
+        {
+          "profile_id": "workspace_task_initial",
+          "eval_case_ids": [
+            "cancelled-route"
+          ]
+        },
+        {
+          "profile_id": "workspace_task_recovery",
+          "eval_case_ids": [
+            "blocked-route"
+          ]
+        }
+      ],
+      "exit_bindings": [
+        {
+          "exit_id": "created",
+          "output_schema_id": "guru-stage0-create-task-workspace-output-created-1.0",
+          "consumer_input_id": "created_workflow_input",
+          "projection_id": "project_created",
+          "eval_case_ids": [
+            "created-route"
+          ]
+        },
+        {
+          "exit_id": "refresh_review",
+          "output_schema_id": "guru-stage0-create-task-workspace-output-refresh-review-1.0",
+          "consumer_input_id": "refresh_review_sync_input",
+          "projection_id": "project_refresh_review",
+          "eval_case_ids": [
+            "refresh-review-route"
+          ]
+        },
+        {
+          "exit_id": "cancelled",
+          "output_schema_id": "guru-stage0-create-task-workspace-output-cancelled-1.0",
+          "consumer_input_id": "cancelled_stop_input",
+          "projection_id": "project_cancelled",
+          "eval_case_ids": [
+            "cancelled-route"
+          ]
+        },
+        {
+          "exit_id": "blocked",
+          "output_schema_id": "guru-stage0-create-task-workspace-output-blocked-1.0",
+          "consumer_input_id": "blocked_stop_input",
+          "projection_id": "project_blocked",
+          "eval_case_ids": [
+            "blocked-route"
+          ]
+        }
+      ],
+      "private_artifact_ids": [
+        "task_workspace_plan",
+        "task_workspace_result"
+      ],
+      "eval_case_ids": [
+        "created-route",
+        "refresh-review-route",
+        "cancelled-route",
+        "blocked-route"
+      ]
+    }
+  ]
+}

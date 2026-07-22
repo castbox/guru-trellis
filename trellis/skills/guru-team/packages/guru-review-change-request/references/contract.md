@@ -153,3 +153,13 @@ the change-request production recorder/checker to `ready`. Negative cases cover
 wrong prerequisite exits, consumer and target/content mismatch, base/current/
 history/duplicate drift, and both draft variants' source-authority digest
 mismatch. They do not replace producers with handwritten portable projections.
+
+## Interface 1.3 Public Handoff
+
+The public target profiles are `current_issue`, `proposed_draft`, and
+`standalone_request`. After all owner checks,
+`scripts/invoke.sh --input ... --owner-result ... --owner-prerequisites ... --owner-change-request ...`
+reruns the existing checker against the same private bindings, derives the
+Agent-owned route from its checked result, and serializes one
+readiness/re-entry/stop DTO. Full prerequisite and finding evidence remains
+private.

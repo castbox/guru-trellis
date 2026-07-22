@@ -222,3 +222,21 @@ The public-only staged projection, minimal native request, and runner-owned
 public invocation boundary are likewise per-run external data. Canonical corpus
 and private runtime remain Guru-owned source/installed assets outside native
 execution, not platform-owned adapter payload.
+
+## Stage 0 Migration Ownership
+
+`trellis/skills/guru-team/migrations/stage0-minimal-handoff.json`, its schema,
+the six migrated package trees, Stage 0 workflow consumer schemas, shared public
+invocation runtime, registry and extension inventory entries, and selected
+platform copies are Guru-owned additive assets. They do not modify the frozen
+upstream ownership inventory or claim official Trellis-generated paths.
+
+The preset-managed shared native evaluator is part of that Guru-owned adapter
+tree. Optional scalar validation and platform protocol fixes remain within the
+same additive schema/runtime assets and do not alter upstream-owned overlays.
+
+`trellis update` may refresh upstream-managed templates but cannot activate or
+remove part of this versioned unit. Preset reapply is the sole owner of restoring
+the complete Guru activation after update; ownership, source/installed contract,
+dogfood drift, and recursive sidecar checks must all pass before the update path
+is considered complete.

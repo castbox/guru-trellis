@@ -12,6 +12,7 @@ import stat
 import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -64,6 +65,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/discover-skill-evals.sh"),
     Path("scripts/bash/run-skill-evals.sh"),
     Path("scripts/bash/run-skill-command.sh"),
+    Path("scripts/bash/invoke-stage0-skill.sh"),
     Path("scripts/bash/sync-base.sh"),
     Path("scripts/bash/check-base-sync.sh"),
     Path("scripts/bash/preview-change-context-history.sh"),
@@ -708,7 +710,7 @@ def install_skill_packages(
     source_files: list[tuple[Path, Path]] = [
         (canonical_root / "registry.json", Path("registry.json")),
     ]
-    for shared_root_name in ("schemas", "adapters"):
+    for shared_root_name in ("schemas", "adapters", "migrations"):
         shared_root = canonical_root / shared_root_name
         if shared_root.is_dir():
             for source in skill_package_source_files(shared_root):
@@ -1222,6 +1224,231 @@ def normalize_business_doc_language_guidance(repo: Path) -> dict[str, Any]:
     }
 
 
+TRANSACTION_IGNORED_ROOTS = (
+    Path(".git"),
+    Path(".trellis/.developer"),
+    Path(".trellis/.runtime"),
+    Path(".trellis/workspace"),
+)
+
+
+def transaction_path_ignored(relative: Path) -> bool:
+    return (
+        any(relative == root or root in relative.parents for root in TRANSACTION_IGNORED_ROOTS)
+        or "__pycache__" in relative.parts
+        or relative.suffix in {".pyc", ".pyo"}
+    )
+
+
+def copy_repo_to_staging(repo: Path, staging_repo: Path) -> None:
+    repo = Path(os.path.abspath(repo))
+
+    def ignored(directory: str, names: list[str]) -> set[str]:
+        directory_path = Path(directory)
+        relative_directory = directory_path.relative_to(repo)
+        ignored_names: set[str] = set()
+        for name in names:
+            relative = relative_directory / name
+            if transaction_path_ignored(relative):
+                ignored_names.add(name)
+        return ignored_names
+
+    shutil.copytree(repo, staging_repo, symlinks=True, ignore=ignored)
+
+
+def transaction_tree_files(root: Path) -> set[Path]:
+    files: set[Path] = set()
+    for directory, directory_names, file_names in os.walk(root, followlinks=False):
+        directory_path = Path(directory)
+        relative_directory = directory_path.relative_to(root)
+        directory_names[:] = [
+            name
+            for name in directory_names
+            if not transaction_path_ignored(relative_directory / name)
+        ]
+        for name in file_names:
+            relative = relative_directory / name
+            if not transaction_path_ignored(relative):
+                files.add(relative)
+    return files
+
+
+def staged_file_matches_target(staged: Path, target: Path) -> bool:
+    try:
+        staged_stat = staged.lstat()
+        target_stat = target.lstat()
+    except FileNotFoundError:
+        return False
+    if not stat.S_ISREG(staged_stat.st_mode) or not stat.S_ISREG(target_stat.st_mode):
+        if stat.S_ISLNK(staged_stat.st_mode) and stat.S_ISLNK(target_stat.st_mode):
+            return os.readlink(staged) == os.readlink(target)
+        return False
+    return (
+        stat.S_IMODE(staged_stat.st_mode) == stat.S_IMODE(target_stat.st_mode)
+        and filecmp.cmp(staged, target, shallow=False)
+    )
+
+
+def activate_staged_repository(staging_repo: Path, repo: Path) -> None:
+    staged_files = transaction_tree_files(staging_repo)
+    target_files = transaction_tree_files(repo)
+    writes = sorted(
+        (
+            relative
+            for relative in staged_files
+            if relative not in target_files
+            or not staged_file_matches_target(staging_repo / relative, repo / relative)
+        ),
+        key=lambda relative: (
+            relative == Path(".trellis/guru-team/extension.json"),
+            relative.as_posix(),
+        ),
+    )
+    removals = sorted(target_files - staged_files, key=lambda relative: relative.as_posix())
+
+    for relative in removals:
+        _, target_stat, error = lstat_repo_path(repo, repo / relative)
+        if error or target_stat is None or not stat.S_ISREG(target_stat.st_mode):
+            raise SystemExit(f"Cannot activate staged removal for non-regular path: {relative.as_posix()}")
+    for relative in writes:
+        staged = staging_repo / relative
+        staged_stat = staged.lstat()
+        if not stat.S_ISREG(staged_stat.st_mode):
+            raise SystemExit(f"Cannot activate staged non-regular path: {relative.as_posix()}")
+        _, target_stat, error = lstat_repo_path(repo, repo / relative)
+        if error or (target_stat is not None and not stat.S_ISREG(target_stat.st_mode)):
+            raise SystemExit(f"Cannot activate staged path across an unsafe target: {relative.as_posix()}")
+
+    for relative in removals:
+        (repo / relative).unlink()
+    for relative in writes:
+        staged = staging_repo / relative
+        mode = stat.S_IMODE(staged.stat().st_mode)
+        write_safe_repo_file(repo, repo / relative, staged.read_bytes(), mode)
+
+    staged_directories = {
+        path.relative_to(staging_repo)
+        for path in staging_repo.rglob("*")
+        if path.is_dir() and not path.is_symlink() and not transaction_path_ignored(path.relative_to(staging_repo))
+    }
+    target_directories = sorted(
+        (
+            path
+            for path in repo.rglob("*")
+            if path.is_dir()
+            and not path.is_symlink()
+            and not transaction_path_ignored(path.relative_to(repo))
+            and path.relative_to(repo) not in staged_directories
+        ),
+        key=lambda path: len(path.parts),
+        reverse=True,
+    )
+    for path in target_directories:
+        try:
+            path.rmdir()
+        except OSError:
+            continue
+
+
+def materialize_staged_conflict_sidecars(
+    staging_repo: Path,
+    repo: Path,
+    result: dict[str, Any],
+) -> None:
+    sidecars = {
+        str(path)
+        for path in result.get("new_copies", [])
+        if isinstance(path, str) and path.endswith(".new")
+    }
+    skill_packages = result.get("skill_packages")
+    if isinstance(skill_packages, dict):
+        sidecars.update(
+            str(path)
+            for path in skill_packages.get("sidecars", [])
+            if isinstance(path, str) and path.endswith(".new")
+        )
+    for sidecar_text in sorted(sidecars):
+        relative = Path(sidecar_text)
+        if relative.is_absolute() or ".." in relative.parts:
+            raise SystemExit(f"Invalid staged conflict sidecar path: {sidecar_text}")
+        staged = staging_repo / relative
+        try:
+            staged_stat = staged.lstat()
+        except FileNotFoundError as exc:
+            raise SystemExit(f"Missing staged conflict sidecar: {sidecar_text}") from exc
+        if not stat.S_ISREG(staged_stat.st_mode):
+            raise SystemExit(f"Staged conflict sidecar is not a regular file: {sidecar_text}")
+        write_safe_repo_file(
+            repo,
+            repo / relative,
+            staged.read_bytes(),
+            stat.S_IMODE(staged_stat.st_mode),
+        )
+
+
+def managed_backup_recovery_candidate(result: dict[str, Any]) -> bool:
+    skill_packages = result.get("skill_packages")
+    if not isinstance(skill_packages, dict):
+        return False
+    sidecars = skill_packages.get("sidecars")
+    return (
+        skill_packages.get("status") == "conflict"
+        and skill_packages.get("conflicts") == []
+        and isinstance(sidecars, list)
+        and bool(sidecars)
+        and all(isinstance(path, str) and path.endswith(".bak") for path in sidecars)
+    )
+
+
+def validate_staged_graph_without_recovery_backups(
+    staging_repo: Path,
+    guru_root: Path,
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    if not managed_backup_recovery_candidate(result):
+        return result["skill_installed_validation"]
+    manifest_path = staging_repo / ".trellis/guru-team/extension.json"
+    original_manifest = manifest_path.read_bytes()
+    manifest = json.loads(original_manifest)
+    skill_packages = manifest["skill_packages"]
+    sidecars = list(skill_packages["sidecars"])
+    recovery_root = staging_repo.parent / "recovery-sidecars"
+    moved: list[tuple[Path, Path]] = []
+    try:
+        recovery_root.mkdir()
+        for index, sidecar_text in enumerate(sidecars):
+            sidecar = staging_repo / sidecar_text
+            checked_relative, sidecar_stat, error = lstat_repo_path(staging_repo, sidecar)
+            if (
+                error
+                or checked_relative.as_posix() != sidecar_text
+                or sidecar_stat is None
+                or not stat.S_ISREG(sidecar_stat.st_mode)
+            ):
+                return {
+                    "status": "failed",
+                    "mode": "installed",
+                    "facts": {},
+                    "errors": ["recoverable managed backup inventory is invalid"],
+                    "returncode": 2,
+                }
+            parked = recovery_root / str(index)
+            sidecar.replace(parked)
+            moved.append((parked, sidecar))
+        skill_packages["status"] = "ok"
+        skill_packages["sidecars"] = []
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return run_skill_package_validator(staging_repo, guru_root, "installed")
+    finally:
+        manifest_path.write_bytes(original_manifest)
+        for parked, sidecar in reversed(moved):
+            sidecar.parent.mkdir(parents=True, exist_ok=True)
+            parked.replace(sidecar)
+
+
 def install_assets(
     src: Path,
     dst: Path,
@@ -1237,6 +1464,57 @@ def install_assets(
     source_validation = run_skill_package_validator(guru_root, guru_root, "source")
     if source_validation.get("returncode") != 0:
         raise SystemExit("Canonical Guru Team skill package validation failed before preset mutation.")
+
+    repo = Path(os.path.abspath(repo))
+    dst_relative = lexical_repo_relative(repo, dst)
+    with tempfile.TemporaryDirectory(prefix="guru-team-preset-stage-") as temporary:
+        staging_repo = Path(temporary) / "repo"
+        copy_repo_to_staging(repo, staging_repo)
+        result = _install_assets_in_place(
+            src,
+            staging_repo / dst_relative,
+            staging_repo,
+            platforms,
+            all_platforms=all_platforms,
+            source_validation=source_validation,
+            upstream_ownership_validation=upstream_ownership_validation,
+            git_facts_repo=repo,
+        )
+        skill_packages = result["skill_packages"]
+        installed_validation = result["skill_installed_validation"]
+        activation_ready = (
+            skill_packages["status"] == "ok"
+            and installed_validation.get("returncode") == 0
+        )
+        activation_validation = (
+            installed_validation
+            if activation_ready
+            else validate_staged_graph_without_recovery_backups(staging_repo, guru_root, result)
+        )
+        result["skill_activation_validation"] = activation_validation
+        recoverable_activation_ready = (
+            managed_backup_recovery_candidate(result)
+            and activation_validation.get("returncode") == 0
+        )
+        if activation_ready or recoverable_activation_ready:
+            activate_staged_repository(staging_repo, repo)
+        else:
+            materialize_staged_conflict_sidecars(staging_repo, repo, result)
+        return result
+
+
+def _install_assets_in_place(
+    src: Path,
+    dst: Path,
+    repo: Path,
+    platforms: set[str] | None = None,
+    all_platforms: bool = False,
+    *,
+    source_validation: dict[str, Any],
+    upstream_ownership_validation: dict[str, Any],
+    git_facts_repo: Path,
+) -> dict[str, Any]:
+    guru_root = guru_root_from_script()
     previous_manifest = load_previous_installed_manifest(dst)
     dst.mkdir(parents=True, exist_ok=True)
 
@@ -1256,8 +1534,8 @@ def install_assets(
         digest = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
         tracked_clean = False
         if not managed_hashes:
-            tracked = run_git(["ls-files", "--error-unmatch", repo_relative_path], repo)
-            changed = run_git(["diff", "--quiet", "HEAD", "--", repo_relative_path], repo)
+            tracked = run_git(["ls-files", "--error-unmatch", repo_relative_path], git_facts_repo)
+            changed = run_git(["diff", "--quiet", "HEAD", "--", repo_relative_path], git_facts_repo)
             tracked_clean = tracked.returncode == 0 and changed.returncode == 0
         if digest in managed_hashes or tracked_clean:
             target.unlink()
@@ -1292,6 +1570,7 @@ def install_assets(
         dst / "scripts/bash/discover-skill-evals.sh",
         dst / "scripts/bash/run-skill-evals.sh",
         dst / "scripts/bash/run-skill-command.sh",
+        dst / "scripts/bash/invoke-stage0-skill.sh",
         dst / "scripts/bash/sync-base.sh",
         dst / "scripts/bash/check-base-sync.sh",
         dst / "scripts/bash/preview-change-context-history.sh",

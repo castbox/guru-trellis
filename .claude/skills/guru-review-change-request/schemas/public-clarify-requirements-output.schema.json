@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-change-request-output-clarify-requirements-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "handoff_profile",
+    "handoff_mode",
+    "handoff_target_locator",
+    "handoff_context_locator",
+    "handoff_continuation_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "clarify_requirements"
+    },
+    "handoff_profile": {
+      "const": "initial_change_request"
+    },
+    "handoff_mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "handoff_target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_context_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handoff_continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

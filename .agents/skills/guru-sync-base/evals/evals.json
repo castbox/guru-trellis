@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-sync-base",
+  "evals": [
+    {
+      "id": "synced-route",
+      "prompt": "For the staged repository-change scenario, invoke guru-sync-base with its scalar public signature. Let the formal resolver, executor, and checker derive the route from live Git facts.",
+      "expected_exit": "synced",
+      "expected_output": "The public DTO is the declared synced route.",
+      "files": ["evals/files/eval-synced-facts.json"],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "synced"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "skipped-route",
+      "prompt": "For the staged original non-repository request classification, invoke guru-sync-base in workflow mode with its scalar public signature and let the formal no-op recorder derive the route.",
+      "expected_exit": "skipped",
+      "expected_output": "The public DTO is the declared skipped route.",
+      "files": ["evals/files/eval-skipped-facts.json"],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "skipped"
+          }
+        ]
+      }
+    },
+    {
+      "id": "blocked-route",
+      "prompt": "For the staged repository-change scenario with an unresolved selected base, invoke guru-sync-base with its scalar public signature and let the formal resolver fail closed.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "files": ["evals/files/eval-blocked-facts.json"],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      }
+    }
+  ]
+}

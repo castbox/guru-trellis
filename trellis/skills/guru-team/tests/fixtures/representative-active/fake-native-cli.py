@@ -111,6 +111,9 @@ def public_invocation(
 
 def main() -> int:
     arguments = sys.argv[1:]
+    if arguments == ["status"] and Path(sys.argv[0]).name == "cursor-agent":
+        print("Logged in")
+        return 0
     request_file = request_path(arguments)
     request = json.loads(request_file.read_text(encoding="utf-8"))
     protocol_path = Path(os.environ.get("GURU_TEAM_NATIVE_PROTOCOL", str(request_file.parent / "native-protocol.json")))

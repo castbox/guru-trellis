@@ -164,6 +164,14 @@ A deterministic Skill may use scalar CLI arguments instead of an input JSON
 schema when those arguments fully express the public call. Do not create an
 input schema merely for structural symmetry.
 
+Every Interface 1.3 scalar argument explicitly declares boolean `required`.
+Only arguments with `required=false` may be omitted; remaining flag/value pairs
+preserve declaration order, may not repeat, and still pass their declared type
+validator. `guru-sync-base.base_branch` is optional. Omitting it passes an
+unspecified value to the same owner resolver used by explicit calls, so the
+existing configured-scalar, ordered-candidate, and remote-default precedence is
+not duplicated in the wrapper.
+
 ### 3. Input, Output, And Private Contracts
 
 Public input contains only values the caller must intentionally supply. Public
@@ -457,6 +465,61 @@ deterministic 1.3 package. It covers Skill/workflow/stop consumers,
 self-reentry, the closed projection operations, stdout-only and task-local
 private state, distinct exits, and stable errors, but never enters production
 registry, extension inventories, workflow routes, or installed platform roots.
+
+### Stage 0 Production Activation
+
+`stage0-minimal-handoff-v1` is one atomic production activation unit. It contains
+exactly these active packages and exits:
+
+- `guru-sync-base`: `synced`, `skipped`, `blocked`;
+- `guru-discover-change-context`: `context_ready`, `refresh_base`, `blocked`;
+- `guru-clarify-requirements`: `clear`, `needs_context`, `refresh_context`,
+  `retarget_context`, `new_task`, `blocked`;
+- `guru-review-contract-wording`: `pass`, `content_changed`, `blocked`;
+- `guru-review-change-request`: `ready`, `clarify_requirements`,
+  `review_wording`, `refresh_context`, `blocked`;
+- `guru-create-task-workspace`: `created`, `refresh_review`, `cancelled`,
+  `blocked`.
+
+All six select `guru-team-skill-interface-1.3` plus `minimal_handoff` together.
+`guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit` remain
+the exact #146-owned `guru-team-skill-interface-1.2` plus `legacy` allowlist.
+The registry, workflow markers, extension inventories, migration manifest,
+canonical packages, installed packages, and selected platform copies must expose
+the same six-package and 24-exit sets. A mixed Stage 0 graph is invalid even when
+each package validates in isolation.
+
+The six package input contracts are consumer-owned and closed. `guru-sync-base`
+retains a scalar CLI signature; the other packages use discriminator-based
+structured profiles for pre-task/re-entry, initial/scope-change/standalone,
+wording target, readiness target, and initial/recovery mutation families.
+Each profile has an executable example. Each exit has its own schema/example,
+one consumer, one declarative projection, and direct-use pointers for every
+public output field. Stop exits use `exit_id` plus empty `select` projection to
+`zero_payload`; errors and review evidence remain private.
+
+Existing recorder/checker results stay owner-private `runtime_checkpoint` or
+`gate_evidence` with `stdout_only_pre_task`, `task_local_tracked`, or
+`ignored_runtime` persistence. Re-entry passes only caller-owned continuation
+and task-relative locators; the owner runtime rereads live facts, validates the
+old artifact with its published schema, and emits a current 1.3 DTO without
+rewriting archived bytes.
+
+The five semantic public wrappers run only after their Agent-owned semantic
+loop and recorder/checker stage. Their invocation accepts the closed
+caller-owned public input plus repo-relative owner-result/supporting locators,
+reruns the existing objective checker, and derives the exit only from the
+checker-passed owner result. A caller-selected expected exit, public output
+example, or private artifact body is never a production routing input. Declared
+package examples and repo-relative caller JSON files are the only structured
+public-input path families; pre-task callers do not need to write into a
+managed package.
+
+For `guru-clarify-requirements:clear`, a checker-passed
+`active_task_scope_change` result may legitimately carry
+`target_disposition=null` when the accepted action updates only the active task
+scope. That one fixed profile projects to public `retained`; null disposition in
+initial or standalone profiles remains an invalid owner projection.
 
 ## Workflow Markers And Typed Exits
 
@@ -1178,6 +1241,6 @@ Every writable run result lives below an explicit absolute temporary run root
 outside the repository and package. Closed evidence is diagnostic comparison
 data, not public Skill I/O, a consumer handoff, gate, checkpoint, audit chain,
 or release proof. Normal workflow and standalone invocation never read eval
-corpus, fixtures, adapter descriptors, or runner evidence; production public
-I/O, exits, routes, and the nine legacy package states remain unchanged until
-#145/#146.
+corpus, fixtures, adapter descriptors, or runner evidence. The six Stage 0
+packages change atomically through #145; the remaining three legacy package
+states, I/O, exits, and routes remain unchanged until #146.

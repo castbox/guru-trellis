@@ -24,3 +24,10 @@ then re-enters the complete Skill through `guru-sync-base`.
 Fail closed on stale base/live/blob/query/archive identity, invalid evidence,
 unknown exits, or missing compatible runtime. This package is not
 self-contained or portable.
+
+After the semantic gate and owner recorder/checker complete, invoke
+`scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-context-result>`
+to serialize the minimal handoff. The runtime reruns the existing checker and
+derives the route from its checked `typed_exit`; callers never name the expected
+exit. Consumers receive caller-owned continuation only, never the private
+context snapshot body.

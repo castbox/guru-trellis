@@ -1,0 +1,7 @@
+{
+  "exit_id": "clear",
+  "resume_target": "initial-wording",
+  "target_disposition": "retained",
+  "confirmed_action_id": "confirmed-stage0-action",
+  "continuation_id": "stage0-current"
+}

@@ -238,3 +238,12 @@ new semantic decision: initial issue/draft uses `guru-review-contract-wording`
 active scope uses `guru-active-task-planning-review`, and a non-current active
 classification uses the exact declared interrupted Phase 1/2/3/Branch Review
 target. Any kind/target mismatch fails closed.
+
+## Interface 1.3 Public Handoff
+
+The public profiles are `initial_change_request`, `active_task_scope_change`,
+and `standalone_review`. After the owner loop,
+`scripts/invoke.sh --input ... --owner-result ...` reruns the existing checker,
+derives the Agent-owned typed route from its checked result, and serializes only
+the declared continuation; clarification evidence remains private and is never
+imported by the next Skill.

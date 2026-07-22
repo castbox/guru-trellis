@@ -36,7 +36,7 @@ GTT = load_runtime()
 class TaskWorkspacePackageContractTests(unittest.TestCase):
     def test_interface_uses_semantic_profile_and_mode_parity(self) -> None:
         interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
-        self.assertEqual(interface["schema_version"], "1.2")
+        self.assertEqual(interface["schema_version"], "1.3")
         self.assertEqual(interface["id"], "guru-create-task-workspace")
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(
@@ -50,7 +50,12 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
         )
         self.assertEqual(
             {item["runtime_command"] for item in interface["validators"]},
-            {"record-task-workspace-plan", "create-task-workspace", "check-task-workspace-result"},
+            {
+                "record-task-workspace-plan",
+                "create-task-workspace",
+                "check-task-workspace-result",
+                "invoke-stage0-skill",
+            },
         )
 
     def test_public_examples_match_closed_schemas(self) -> None:

@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Stage 0 六个 production Skills 仍把大型 private artifact 当作 public handoff，Agent 需要读取 runtime 才能组装 projection 与路由。",
+    "outcome": "已将六包和 24 exits 迁移到 Interface 1.3 minimal handoff，并闭合 optional base、production eval、preset activation、分发和 Docs SSOT。",
+    "changed_behavior": [
+      "六个 Stage 0 Skills 分别声明最小 public input、逐 exit output、唯一 consumer projection 与 private artifact 边界。",
+      "Public DTO 只保留直接消费字段；live facts、digest、完整审查历史与 recovery state 由 owner runtime 私有持有。",
+      "省略 base 时由 guru-sync-base formal resolver 保留 configured scalar、ordered candidates 与 remote default，不再硬编码 main。",
+      "Production eval 执行真实 public wrapper，按 actual exit 选择 output schema，expected_exit 只作事后断言。",
+      "Preset 在 staging 中验证完整六包 graph 后激活，冲突或 validation failure 保留旧 graph 与可恢复 sidecar。",
+      "六包跨 canonical/installed/平台和 durable docs 保持一致；三个 #146 packages 继续使用 Interface 1.2 legacy。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "Stage 0 packages 与 consumer schemas",
+        "paths": [],
+        "change": "六包、24 exits 和全部 input profiles 迁移为 closed minimal handoff contracts。"
+      },
+      {
+        "kind": "script",
+        "name": "Invocation、resolver 与 eval runtime",
+        "paths": [],
+        "change": "确定性执行 projection、optional base resolution、actual-exit validation 与跨平台 adapter。"
+      },
+      {
+        "kind": "preset",
+        "name": "Atomic activation 与 distribution",
+        "paths": [],
+        "change": "通过 staging transaction 同步完整 graph，并验证 pre-145 upgrade、update/reapply 与 zero-sidecar。"
+      },
+      {
+        "kind": "docs",
+        "name": "Tests 与 durable Docs SSOT",
+        "paths": [],
+        "change": "Production eval、non-main fallback、installer recovery、平台 parity 与长期合同完成同步验证。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Minimal public handoff",
+        "before": "Agent 填写大型 private artifact，并承担 runtime-derived facts、projection 与 digest 组装。",
+        "after": "Caller 只传最小 input，owner runtime 生成 private facts，并按 typed exit 输出最小 consumer DTO。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Optional base resolver",
+        "before": "Semantic re-entry 可把未解析 base 提前改写为 main，破坏 non-main fallback。",
+        "after": "Optional omission 贯穿 producer/projection/consumer，由 formal resolver 独占最终选择。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Actual-exit evaluation",
+        "before": "Expected exit 或静态 corpus 可能替代真实 semantic invocation 与 schema selection。",
+        "after": "Runner 从 checker-passed owner result 获取 actual exit，再选择 schema并执行 expected assertion。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Versioned activation unit",
+        "before": "逐文件 upgrade conflict 可能留下 Interface 1.2/1.3 mixed graph。",
+        "after": "Preset 完整安装和验证 staging candidate 后才激活，失败保留旧 graph并只生成恢复 sidecar。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "invoke-stage0-skill.sh",
+        "run-skill-evals.sh"
+      ],
+      "config_keys": [
+        "base_branch_candidates",
+        "io_contract_state"
+      ],
+      "schema_fields": [
+        "scalarArgument.required",
+        "typed_outputs",
+        "consumer_contracts",
+        "expected_exit"
+      ],
+      "symbols": [
+        "resolve_base_selection",
+        "activate_staged_repository"
+      ],
+      "phrases": [
+        "Stage 0 六包最小 typed handoff 迁移已完成",
+        "invoke-stage0-skill.sh 已按 actual exit 校验 output",
+        "resolve_base_selection 已保留 optional non-main fallback",
+        "activate_staged_repository 已完成完整 graph 激活"
+      ]
+    }
+  }
+}

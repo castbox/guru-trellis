@@ -22,3 +22,10 @@ and standalone execution is stdout-only. `ready` declares
 task workspace. Fail closed when evidence is missing, stale, mismatched, or the
 compatible Guru Team preset runtime is unavailable. This package is not
 self-contained or portable.
+
+After the semantic gate and owner recorder/checker complete, invoke
+`scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-review-result> --owner-prerequisites <repo-relative-prerequisites> --owner-change-request <repo-relative-request>`
+to serialize the readiness handoff. The runtime reruns the existing readiness
+checker against the same private bindings and derives the Agent-owned route from
+its checked result; it does not decide readiness or expose the private review
+artifact.
