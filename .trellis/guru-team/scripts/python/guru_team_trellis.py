@@ -17125,11 +17125,16 @@ def validate_skill_public_contracts(
             else:
                 arguments = target_input.get("arguments") if isinstance(target_input.get("arguments"), list) else []
                 argument_ids = {str(item.get("id") or "") for item in arguments if isinstance(item, dict)}
+                required_argument_ids = {
+                    str(item.get("id") or "")
+                    for item in arguments
+                    if isinstance(item, dict) and item.get("required") is True
+                }
                 consumer_contracts[consumer_id] = (
                     None,
                     argument_ids - {""},
                     "scalar_cli",
-                    argument_ids - {""},
+                    required_argument_ids - {""},
                 )
                 consumer_scalar_arguments[consumer_id] = [item for item in arguments if isinstance(item, dict)]
         else:
@@ -17217,8 +17222,8 @@ def validate_skill_public_contracts(
             targets = {str(item.get("target") or "") for item in mappings if isinstance(item, dict)}
             if operation == "direct":
                 targets = set(output_properties)
-            if targets != target_fields:
-                errors.append(f"[projection_target] projection {projection.get('id')} does not populate the consumer input exactly")
+            if not target_required.issubset(targets) or not targets.issubset(target_fields):
+                errors.append(f"[projection_target] projection {projection.get('id')} does not populate the required consumer input subset exactly")
             output_required = set(output_schema.get("required", [])) if isinstance(output_schema.get("required"), list) else set()
             mapping_by_target = {
                 str(item.get("target") or ""): item
@@ -17274,12 +17279,14 @@ def validate_skill_public_contracts(
                 target_contract = {key: value for key, value in target_schema.items() if key != "$id"}
                 if output_contract != target_contract:
                     errors.append(f"[projection_direct_contract] direct projection {projection.get('id')} requires exact producer/consumer schema equality apart from $id")
-        elif target_kind == "scalar_cli" and set(projected) != target_fields:
-            errors.append(f"[projection_scalar_target] projection {projection.get('id')} does not populate scalar arguments exactly")
+        elif target_kind == "scalar_cli" and (
+            not target_required.issubset(projected) or not set(projected).issubset(target_fields)
+        ):
+            errors.append(f"[projection_scalar_target] projection {projection.get('id')} does not populate the required scalar arguments exactly")
         elif target_kind == "scalar_cli":
             for argument in consumer_scalar_arguments.get(consumer_id, []):
                 argument_id = str(argument.get("id") or "")
-                if not skill_scalar_value_matches(projected.get(argument_id), argument.get("type")):
+                if argument_id in projected and not skill_scalar_value_matches(projected[argument_id], argument.get("type")):
                     errors.append(f"[projection_scalar_type] projection {projection.get('id')} has an invalid value for {argument_id}")
         use_ids = output.get("consumer_use_ids")
         if not isinstance(use_ids, list) or projection.get("id") not in use_ids:
@@ -19145,16 +19152,6 @@ def stage0_owner_result(
     return result, plan
 
 
-def stage0_default_base(root: Path, preferred: Any = None) -> str:
-    if isinstance(preferred, str) and preferred:
-        return preferred
-    config = load_config(root)
-    configured = config.get("base_branch")
-    if isinstance(configured, str) and configured:
-        return configured
-    return "main"
-
-
 def stage0_target_locator(target: Any, fallback: str | None = None) -> str:
     if isinstance(target, dict):
         url = target.get("url")
@@ -19226,7 +19223,6 @@ def stage0_build_output(
     public_input: dict[str, Any],
     owner_result: dict[str, Any] | None,
     owner_plan: dict[str, Any] | None,
-    root: Path,
     owner_locator: str | None,
     schema: dict[str, Any],
 ) -> dict[str, Any]:
@@ -19260,14 +19256,12 @@ def stage0_build_output(
                 "handoff_profile": "pre_task",
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_repo_locator": (target or {}).get("repo"),
-                "handoff_base_branch": stage0_default_base(root),
                 "handoff_continuation_id": public_input.get("continuation_id"),
             })
         elif exit_id in {"refresh_context", "retarget_context"}:
             values.update({
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_repo_root": ".",
-                "handoff_base_branch": stage0_default_base(root),
                 "handoff_route": "repo_change",
             })
         elif exit_id == "new_task":
@@ -19288,7 +19282,6 @@ def stage0_build_output(
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_target_locator": stage0_target_locator(target, public_input.get("target_locator")),
                 "handoff_repo_locator": (target or {}).get("repo"),
-                "handoff_base_branch": stage0_default_base(root),
                 "handoff_confirmed_action_id": stage0_confirmed_action_id(owner_result),
                 "handoff_continuation_id": public_input.get("continuation_id"),
             })
@@ -19311,7 +19304,6 @@ def stage0_build_output(
             values.update({
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_repo_root": ".",
-                "handoff_base_branch": stage0_default_base(root),
                 "handoff_route": "repo_change",
             })
     elif skill_id == "guru-create-task-workspace" and owner_result is not None:
@@ -19463,7 +19455,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
     output_schema, _ = stage0_output_contract(skill_id, package, interface, exit_id)
     payload = stage0_build_output(
         skill_id, exit_id, public_input, owner_result, owner_plan,
-        root, owner_locator, output_schema,
+        owner_locator, output_schema,
     )
 
     validation_errors = skill_json_schema_validation_errors(

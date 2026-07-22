@@ -8,7 +8,6 @@
     "handoff_profile",
     "handoff_mode",
     "handoff_repo_locator",
-    "handoff_base_branch",
     "handoff_continuation_id"
   ],
   "properties": {
@@ -25,10 +24,6 @@
       ]
     },
     "handoff_repo_locator": {
-      "type": "string",
-      "minLength": 1
-    },
-    "handoff_base_branch": {
       "type": "string",
       "minLength": 1
     },

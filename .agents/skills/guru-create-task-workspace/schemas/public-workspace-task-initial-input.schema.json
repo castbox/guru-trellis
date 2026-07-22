@@ -9,7 +9,6 @@
     "mode",
     "target_locator",
     "repo_locator",
-    "base_branch",
     "confirmed_action_id",
     "continuation_id"
   ],

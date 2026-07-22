@@ -9,7 +9,6 @@
     "handoff_mode",
     "handoff_target_locator",
     "handoff_repo_locator",
-    "handoff_base_branch",
     "handoff_confirmed_action_id",
     "handoff_continuation_id"
   ],
@@ -31,10 +30,6 @@
       "minLength": 1
     },
     "handoff_repo_locator": {
-      "type": "string",
-      "minLength": 1
-    },
-    "handoff_base_branch": {
       "type": "string",
       "minLength": 1
     },

@@ -8,7 +8,6 @@
     "source_exit",
     "mode",
     "repo_locator",
-    "base_branch",
     "continuation_id"
   ],
   "properties": {

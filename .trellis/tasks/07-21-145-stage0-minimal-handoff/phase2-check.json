@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-22T02:18:56Z",
+  "generated_at": "2026-07-22T04:26:15Z",
   "mode": "workflow",
   "task": {
     "task_dir": ".trellis/tasks/07-21-145-stage0-minimal-handoff",
@@ -41,7 +41,7 @@
     "facts_sha256": "78d24087a6df4487a019ffcd6e018400a61e19502157678675e487605459267b"
   },
   "requirement_provenance": {
-    "summary": "Fresh r4 review reread the approved #145 requirements, D1/D2 authority, issue review, wording review and issue scope ledger.",
+    "summary": "Round 3 重新读取 #145 approved R1-R9、AC1-AC15、D1/D2 authority、issue review、contract wording review 与 issue scope ledger；close 仅 #145，#98/#127/#132 保持 related，#146 保持 follow-up，#144/#147 仅作 closed authority reference。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/prd.md",
@@ -74,7 +74,7 @@
         "size_bytes": 5905
       }
     ],
-    "facts_sha256": "343490025b2e182b347e729baf991124e4f6be74d25ffd329c1b74a5dc675485"
+    "facts_sha256": "1d4556252471c814c15065bbd4349ae85970053a14689568ca3f9d2034f3630f"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
@@ -155,19 +155,19 @@
         "size_bytes": 79139
       }
     ],
-    "sync_result": "Durable specs, workflow/preset docs and requirements docs consistently state #145 six-package/24-exit 1.3 minimal handoff activation and the #146 three-package 1.2 legacy boundary.",
+    "sync_result": "15 个 durable SSOT paths 已定义 formal guru-sync-base resolver 对 base identity 的独占所有权；Round 3 代码与 schema 修复重新对齐既有 SSOT，未产生新的 durable contract delta。",
     "task_delta_merged": true,
     "task_history_only": [
-      "Phase 0, planning and authority evidence",
-      "Implementation/check liveness and recovery events",
-      "Temporary eval and throwaway run locators"
+      "Phase 0、planning、authority 与历史 review evidence",
+      "implementation/check liveness、recovery 与 Round 3 temporary evidence locators",
+      "Round 3 P1 reproduction and closure narrative"
     ],
-    "no_update_reason": null,
-    "followup_or_pr_limit": "Exact remote feature-branch marketplace installation remains unavailable before publication; the default guard fails closed, while public discovery and the local current-source clean init/update/reapply path passed. The authenticated Claude CLI produced no first trace within 45 seconds, while the same protocol is covered by fake-native tests.",
-    "facts_sha256": "2784de6a35763218816b7727d107383ba221343821e74e1d16cd928c17dbb4e0"
+    "no_update_reason": "Round 3 仅删除 semantic producer 的 premature main fallback、使 consumer base_branch optional 并省略 optional projection mapping；formal resolver ownership 和 durable wording 均未改变，因此无需再次修改 durable docs。",
+    "followup_or_pr_limit": "Exact remote feature-branch marketplace proof 留给 publish gate；当前 unpublished branch 的 default verifier 已按合同 fail closed。本地未执行 authenticated Claude live probe，但 fake-native、argv/stdin/output protocol 与 package parity coverage 均通过。",
+    "facts_sha256": "d57b1cb47af05ba7eeaef1f95cafe2e936134d3516f6650a824fdbe12afd6b7c"
   },
   "implementation_handoff": {
-    "summary": "实现代理在既有 F-001 两文件修复上完成 P2 最小修复：transaction staging 排除 .trellis/.developer，并新增直接 no-copy 回归；完整 installer、Skill、runtime、validator、drift 与 throwaway 证据通过，Docs SSOT 继续采用 ssot_first。",
+    "summary": "实现代理 /root/issue145_implement_r2 在 evt-0236-ab06d499d8 completed handoff 中完成 Round 3 P1 修复：删除 stage0_default_base()，semantic producer 不再伪造 main，consumer base_branch 保持 optional，projection 省略 optional mapping，guru-sync-base formal resolver 继续独占 explicit -> scalar -> ordered candidates -> remote default；canonical、installed 与平台副本同步。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/implement.md",
@@ -176,8 +176,13 @@
       },
       {
         "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
-        "sha256": "d30ebab69b4d8db41db2f328f7f1da6048fa0284377694e968465e5c4796ae1f",
-        "size_bytes": 220719
+        "sha256": "423310d856ca0b7183ff60c7dd0a14c8b2dbb6e734df43edc5b0cfb2062ceca1",
+        "size_bytes": 261279
+      },
+      {
+        "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/issue-scope-ledger.json",
+        "sha256": "edb34a064cbdabc5381a2fe07c5ea30664da80b94a01a0b194cf2d0c6ac3ff3e",
+        "size_bytes": 5905
       },
       {
         "path": "trellis/skills/guru-team/migrations/stage0-minimal-handoff.json",
@@ -196,36 +201,36 @@
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "ca79b4df828e224c4563bebd34478782bc1b083d709b760d34f91e69b89b2212",
-        "size_bytes": 1379474
+        "sha256": "fe16a8f186bfa5ee2188270ef237f45030f4bddddab2aa88d1a5ba0f6eacfbf0",
+        "size_bytes": 1379296
       },
       {
-        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "516a2e8a8e582efe5d05518c36eca421e80e8f6ee56458837e10e8091ed314be",
-        "size_bytes": 85748
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "d0b7bfefcb05c1f408a5f0772b80d3128a0270ef51f443e7824f19bc8f82fff4",
+        "size_bytes": 211600
       },
       {
-        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-        "sha256": "2ce041f6476e07f1fc05d5ea9e53e149252e8330fbbb522eef8894a65729eda2",
-        "size_bytes": 72282
+        "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+        "sha256": "636ca204458896cb05871b7649ea6813f7eccbaa463879717c1e389ae0691c6c",
+        "size_bytes": 20274
       },
       {
-        "path": "docs/requirements/README.md",
-        "sha256": "884bebf78c545feca4a7c2f2a503c8884ea791a3a5ad51ab544c420909bd2924",
-        "size_bytes": 16564
+        "path": "trellis/skills/guru-team/packages/guru-review-change-request/interface.json",
+        "sha256": "6f1115c989198b44f79d235effc63da3dc02606fe9e99b4ade95c16e0bf1bd5f",
+        "size_bytes": 19803
       },
       {
-        "path": "docs/requirements/requirement-main.md",
-        "sha256": "d9293a36486517c03f3901c91c6a8c3495da1eb8cd80f104a9e0685292ed94a5",
-        "size_bytes": 67746
+        "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+        "sha256": "82ee9b0089bdba85ed0fd16241728ed94ada44def5cada6277227e1f18ba4769",
+        "size_bytes": 720
       },
       {
-        "path": "docs/requirements/guru-team-trellis-flow.md",
-        "sha256": "a01aa7bce927c73ac6bdf21e75324576b92023f547b366d9b7c8f8ebdd8c3853",
-        "size_bytes": 79139
+        "path": "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
+        "sha256": "3bd360df1751ca2fb7656c147dcb072761e6ff540916719383efedee588b2b92",
+        "size_bytes": 957
       }
     ],
-    "facts_sha256": "36e48a6dac8fe7bdb0733f41af130284e6339fda59cdc77e15fa4238e0dd681a"
+    "facts_sha256": "91645bf613285b46f7b0490e6e211a8ad1e64fd51f994167abd3d71f5981c299"
   },
   "agent_assignment": {
     "artifact_path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
@@ -238,22 +243,110 @@
       "/root/issue145_check_r2"
     ],
     "recovery_complete": true,
-    "phase2_state_sha256": "17da8ce388c23300afe06cb6024745e2fbfca90162709e80def50645489daabe",
-    "facts_sha256": "c3cc24daa09d9ca3d6d8111d87d0661666b5fbdd3481fd940ff64ae151c817f9"
+    "phase2_state_sha256": "564f25e3c5009a910608fd57ddc56e35c1c34e62fbc9764386743a5719560b34",
+    "facts_sha256": "80ae41a1ad3f664f7dd9411f63559e5ce300f80e04282bfe536f2ab35cb2a517"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "096d1889a511969d5ff09ef4d198ac2825110148",
-    "head": "72326953e4df36a91201f10f581361b045e8c6f0",
+    "head": "ded63e71e5bab787c5d795a300e3507142b18521",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
+      ".agents/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".agents/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".agents/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".agents/skills/guru-clarify-requirements/interface.json",
+      ".agents/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".agents/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".agents/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".agents/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".agents/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".agents/skills/guru-review-change-request/examples/public-ready-output.json",
+      ".agents/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".agents/skills/guru-review-change-request/interface.json",
+      ".agents/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".agents/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".claude/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".claude/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".claude/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".claude/skills/guru-clarify-requirements/interface.json",
+      ".claude/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".claude/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".claude/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".claude/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".claude/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".claude/skills/guru-review-change-request/examples/public-ready-output.json",
+      ".claude/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".claude/skills/guru-review-change-request/interface.json",
+      ".claude/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".claude/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".codex/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".codex/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".codex/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".codex/skills/guru-clarify-requirements/interface.json",
+      ".codex/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".codex/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".codex/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".codex/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".codex/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".codex/skills/guru-review-change-request/examples/public-ready-output.json",
+      ".codex/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".codex/skills/guru-review-change-request/interface.json",
+      ".codex/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".codex/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".cursor/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".cursor/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".cursor/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".cursor/skills/guru-clarify-requirements/interface.json",
+      ".cursor/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".cursor/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".cursor/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".cursor/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".cursor/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".cursor/skills/guru-review-change-request/examples/public-ready-output.json",
+      ".cursor/skills/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".cursor/skills/guru-review-change-request/interface.json",
+      ".cursor/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".cursor/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-needs-context-output.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-ready-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-refresh-context-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/interface.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
       ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
       ".trellis/tasks/07-21-145-stage0-minimal-handoff/review-gate.json",
       ".trellis/tasks/07-21-145-stage0-minimal-handoff/review.md",
       ".trellis/tasks/07-21-145-stage0-minimal-handoff/reviews/001-final.md",
-      ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/001.json",
-      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/reviews/002-closure.md",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/reviews/003-final.md",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-needs-context-output.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-refresh-context-output.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-retarget-context-output.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-ready-output.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-refresh-context-output.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/interface.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "reviewed_paths": [
       {
@@ -263,8 +356,8 @@
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/interface.json",
-        "sha256": "f0728f696ee668fcb270e9b398b2a93240373a88b11f58e295eada4122f06f00",
-        "size_bytes": 20592
+        "sha256": "636ca204458896cb05871b7649ea6813f7eccbaa463879717c1e389ae0691c6c",
+        "size_bytes": 20274
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/references/contract.md",
@@ -323,8 +416,8 @@
       },
       {
         "path": ".agents/skills/guru-review-change-request/interface.json",
-        "sha256": "d8793b98ede14e88fb5d86be9128e43bc6b427a402da032a30f6c206adedf1da",
-        "size_bytes": 20015
+        "sha256": "6f1115c989198b44f79d235effc63da3dc02606fe9e99b4ade95c16e0bf1bd5f",
+        "size_bytes": 19803
       },
       {
         "path": ".agents/skills/guru-review-change-request/references/contract.md",
@@ -378,8 +471,8 @@
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/interface.json",
-        "sha256": "f0728f696ee668fcb270e9b398b2a93240373a88b11f58e295eada4122f06f00",
-        "size_bytes": 20592
+        "sha256": "636ca204458896cb05871b7649ea6813f7eccbaa463879717c1e389ae0691c6c",
+        "size_bytes": 20274
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/references/contract.md",
@@ -438,8 +531,8 @@
       },
       {
         "path": ".claude/skills/guru-review-change-request/interface.json",
-        "sha256": "d8793b98ede14e88fb5d86be9128e43bc6b427a402da032a30f6c206adedf1da",
-        "size_bytes": 20015
+        "sha256": "6f1115c989198b44f79d235effc63da3dc02606fe9e99b4ade95c16e0bf1bd5f",
+        "size_bytes": 19803
       },
       {
         "path": ".claude/skills/guru-review-change-request/references/contract.md",
@@ -493,8 +586,8 @@
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/interface.json",
-        "sha256": "f0728f696ee668fcb270e9b398b2a93240373a88b11f58e295eada4122f06f00",
-        "size_bytes": 20592
+        "sha256": "636ca204458896cb05871b7649ea6813f7eccbaa463879717c1e389ae0691c6c",
+        "size_bytes": 20274
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/references/contract.md",
@@ -553,8 +646,8 @@
       },
       {
         "path": ".codex/skills/guru-review-change-request/interface.json",
-        "sha256": "d8793b98ede14e88fb5d86be9128e43bc6b427a402da032a30f6c206adedf1da",
-        "size_bytes": 20015
+        "sha256": "6f1115c989198b44f79d235effc63da3dc02606fe9e99b4ade95c16e0bf1bd5f",
+        "size_bytes": 19803
       },
       {
         "path": ".codex/skills/guru-review-change-request/references/contract.md",
@@ -608,8 +701,8 @@
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/interface.json",
-        "sha256": "f0728f696ee668fcb270e9b398b2a93240373a88b11f58e295eada4122f06f00",
-        "size_bytes": 20592
+        "sha256": "636ca204458896cb05871b7649ea6813f7eccbaa463879717c1e389ae0691c6c",
+        "size_bytes": 20274
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/references/contract.md",
@@ -668,8 +761,8 @@
       },
       {
         "path": ".cursor/skills/guru-review-change-request/interface.json",
-        "sha256": "d8793b98ede14e88fb5d86be9128e43bc6b427a402da032a30f6c206adedf1da",
-        "size_bytes": 20015
+        "sha256": "6f1115c989198b44f79d235effc63da3dc02606fe9e99b4ade95c16e0bf1bd5f",
+        "size_bytes": 19803
       },
       {
         "path": ".cursor/skills/guru-review-change-request/references/contract.md",
@@ -718,13 +811,13 @@
       },
       {
         "path": ".trellis/guru-team/extension.json",
-        "sha256": "f65769d60cccbf24246ee495fffe9c5276bdc53232c6ce3fa6f89e7062cb2a45",
+        "sha256": "9fdf99e67b27ee2b73758f8d35a0605432cc4299c8390dba041b7103eaa8ff80",
         "size_bytes": 503149
       },
       {
         "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "ca79b4df828e224c4563bebd34478782bc1b083d709b760d34f91e69b89b2212",
-        "size_bytes": 1379474
+        "sha256": "fe16a8f186bfa5ee2188270ef237f45030f4bddddab2aa88d1a5ba0f6eacfbf0",
+        "size_bytes": 1379296
       },
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
@@ -738,8 +831,8 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
-        "sha256": "f0728f696ee668fcb270e9b398b2a93240373a88b11f58e295eada4122f06f00",
-        "size_bytes": 20592
+        "sha256": "636ca204458896cb05871b7649ea6813f7eccbaa463879717c1e389ae0691c6c",
+        "size_bytes": 20274
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
@@ -798,8 +891,8 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change-request/interface.json",
-        "sha256": "d8793b98ede14e88fb5d86be9128e43bc6b427a402da032a30f6c206adedf1da",
-        "size_bytes": 20015
+        "sha256": "6f1115c989198b44f79d235effc63da3dc02606fe9e99b4ade95c16e0bf1bd5f",
+        "size_bytes": 19803
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
@@ -963,8 +1056,8 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
-        "sha256": "f0728f696ee668fcb270e9b398b2a93240373a88b11f58e295eada4122f06f00",
-        "size_bytes": 20592
+        "sha256": "636ca204458896cb05871b7649ea6813f7eccbaa463879717c1e389ae0691c6c",
+        "size_bytes": 20274
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
@@ -1023,8 +1116,8 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-change-request/interface.json",
-        "sha256": "d8793b98ede14e88fb5d86be9128e43bc6b427a402da032a30f6c206adedf1da",
-        "size_bytes": 20015
+        "sha256": "6f1115c989198b44f79d235effc63da3dc02606fe9e99b4ade95c16e0bf1bd5f",
+        "size_bytes": 19803
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
@@ -1098,8 +1191,8 @@
       },
       {
         "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
-        "sha256": "a0a9fbf055eece21594e544ba950c6543804313f7af2dc52e5f92c7bc8b55037",
-        "size_bytes": 201801
+        "sha256": "d0b7bfefcb05c1f408a5f0772b80d3128a0270ef51f443e7824f19bc8f82fff4",
+        "size_bytes": 211600
       },
       {
         "path": "trellis/workflows/guru-team/README.md",
@@ -1108,8 +1201,8 @@
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "ca79b4df828e224c4563bebd34478782bc1b083d709b760d34f91e69b89b2212",
-        "size_bytes": 1379474
+        "sha256": "fe16a8f186bfa5ee2188270ef237f45030f4bddddab2aa88d1a5ba0f6eacfbf0",
+        "size_bytes": 1379296
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/evals/evals.json",
@@ -1233,8 +1326,8 @@
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
-        "sha256": "f728ed2e615f6c4c2c6757082e262f3d0f42bb3206a26d7c177a1346b85aad7d",
-        "size_bytes": 271
+        "sha256": "0495a8c7b454b1117230cc53596bf160630a28ffc3af4bddd01b737b83554851",
+        "size_bytes": 216
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/examples/public-new-task-output.json",
@@ -1243,13 +1336,13 @@
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
-        "sha256": "24ca042dd89f5d9e8cc4973c9f14ed3f0e0d1ea66517eccd811832091c68ff24",
-        "size_bytes": 161
+        "sha256": "bceb52ca2fd29bbf3653f9f371480fb1d07353967f23e5ab2d8a049694039437",
+        "size_bytes": 128
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/examples/public-standalone-review-input.json",
@@ -1288,8 +1381,8 @@
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
-        "sha256": "93bff92f3f60050d48a96da31a3114dccb666e5733b3434ea1b41b989603e92f",
-        "size_bytes": 828
+        "sha256": "82ee9b0089bdba85ed0fd16241728ed94ada44def5cada6277227e1f18ba4769",
+        "size_bytes": 720
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/schemas/public-new-task-output.schema.json",
@@ -1298,13 +1391,13 @@
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
-        "sha256": "e732d9ea1d4f314e6ef0ae905e6bc9afb7b88f918db55bc68e27f4bd9ad09838",
-        "size_bytes": 754
+        "sha256": "8f0c4e5172eca5a0f015a536d43760f5218c45deb74a5a8a7a1705ba89f7f839",
+        "size_bytes": 646
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
-        "sha256": "977a6b7df15ffa12673dee45dd1a3e907f41cde1e18db2593d45122b49b07dce",
-        "size_bytes": 756
+        "sha256": "7aa3401af76a93c1bc62d71a41e1302e8f2dd8fced87d1d5459f99c2af4e4d33",
+        "size_bytes": 648
       },
       {
         "path": ".agents/skills/guru-clarify-requirements/schemas/public-standalone-review-input.schema.json",
@@ -1468,8 +1561,8 @@
       },
       {
         "path": ".agents/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
-        "sha256": "c2758ac65f845b6da352ca0507b33abdc53a6c9c7c31c87525b9c0832e6b397a",
-        "size_bytes": 999
+        "sha256": "9886500d0b47d83f477927c696d93e07c69578a6bc899b35201570ffde07f600",
+        "size_bytes": 980
       },
       {
         "path": ".agents/skills/guru-create-task-workspace/schemas/public-workspace-task-recovery-input.schema.json",
@@ -1583,8 +1676,8 @@
       },
       {
         "path": ".agents/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
-        "sha256": "de846fc06fa9cc080eefd530212aa7723be25fe350a961579cb391c927d25502",
-        "size_bytes": 767
+        "sha256": "c80840fb0b8730c84d34f17ae204aebcc5fc5aeb78bbae8fbab790c6b5e2b85a",
+        "size_bytes": 748
       },
       {
         "path": ".agents/skills/guru-discover-change-context/schemas/public-refresh-base-output.schema.json",
@@ -1718,13 +1811,13 @@
       },
       {
         "path": ".agents/skills/guru-review-change-request/examples/public-ready-output.json",
-        "sha256": "589d9754a6bda3a4092560635a9d4340308a760c03e5077e53ecc8477c629d5f",
-        "size_bytes": 409
+        "sha256": "83283508d3b9ce5c1967d4c807250fb47b3a825b7931bd06c0b9d0a8330443f3",
+        "size_bytes": 354
       },
       {
         "path": ".agents/skills/guru-review-change-request/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".agents/skills/guru-review-change-request/examples/public-review-wording-output.json",
@@ -1768,13 +1861,13 @@
       },
       {
         "path": ".agents/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
-        "sha256": "c5a7dfe60834eb2d5e5f1b1eb8cf2faa39f0d1f1668fa56a2663a53ac33d7d8d",
-        "size_bytes": 1065
+        "sha256": "3bd360df1751ca2fb7656c147dcb072761e6ff540916719383efedee588b2b92",
+        "size_bytes": 957
       },
       {
         "path": ".agents/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
-        "sha256": "9697a698c6bf17089d8b2ca5ccff8b7cd2557f0fb4db87c255eb24f30a1fb530",
-        "size_bytes": 755
+        "sha256": "b34929cfc69ce824592966784c2894e1563776d57b8f9a2dee161e2409a05c9a",
+        "size_bytes": 647
       },
       {
         "path": ".agents/skills/guru-review-change-request/schemas/public-review-wording-output.schema.json",
@@ -2108,8 +2201,8 @@
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
-        "sha256": "f728ed2e615f6c4c2c6757082e262f3d0f42bb3206a26d7c177a1346b85aad7d",
-        "size_bytes": 271
+        "sha256": "0495a8c7b454b1117230cc53596bf160630a28ffc3af4bddd01b737b83554851",
+        "size_bytes": 216
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/examples/public-new-task-output.json",
@@ -2118,13 +2211,13 @@
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
-        "sha256": "24ca042dd89f5d9e8cc4973c9f14ed3f0e0d1ea66517eccd811832091c68ff24",
-        "size_bytes": 161
+        "sha256": "bceb52ca2fd29bbf3653f9f371480fb1d07353967f23e5ab2d8a049694039437",
+        "size_bytes": 128
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/examples/public-standalone-review-input.json",
@@ -2163,8 +2256,8 @@
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
-        "sha256": "93bff92f3f60050d48a96da31a3114dccb666e5733b3434ea1b41b989603e92f",
-        "size_bytes": 828
+        "sha256": "82ee9b0089bdba85ed0fd16241728ed94ada44def5cada6277227e1f18ba4769",
+        "size_bytes": 720
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/schemas/public-new-task-output.schema.json",
@@ -2173,13 +2266,13 @@
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
-        "sha256": "e732d9ea1d4f314e6ef0ae905e6bc9afb7b88f918db55bc68e27f4bd9ad09838",
-        "size_bytes": 754
+        "sha256": "8f0c4e5172eca5a0f015a536d43760f5218c45deb74a5a8a7a1705ba89f7f839",
+        "size_bytes": 646
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
-        "sha256": "977a6b7df15ffa12673dee45dd1a3e907f41cde1e18db2593d45122b49b07dce",
-        "size_bytes": 756
+        "sha256": "7aa3401af76a93c1bc62d71a41e1302e8f2dd8fced87d1d5459f99c2af4e4d33",
+        "size_bytes": 648
       },
       {
         "path": ".claude/skills/guru-clarify-requirements/schemas/public-standalone-review-input.schema.json",
@@ -2343,8 +2436,8 @@
       },
       {
         "path": ".claude/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
-        "sha256": "c2758ac65f845b6da352ca0507b33abdc53a6c9c7c31c87525b9c0832e6b397a",
-        "size_bytes": 999
+        "sha256": "9886500d0b47d83f477927c696d93e07c69578a6bc899b35201570ffde07f600",
+        "size_bytes": 980
       },
       {
         "path": ".claude/skills/guru-create-task-workspace/schemas/public-workspace-task-recovery-input.schema.json",
@@ -2458,8 +2551,8 @@
       },
       {
         "path": ".claude/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
-        "sha256": "de846fc06fa9cc080eefd530212aa7723be25fe350a961579cb391c927d25502",
-        "size_bytes": 767
+        "sha256": "c80840fb0b8730c84d34f17ae204aebcc5fc5aeb78bbae8fbab790c6b5e2b85a",
+        "size_bytes": 748
       },
       {
         "path": ".claude/skills/guru-discover-change-context/schemas/public-refresh-base-output.schema.json",
@@ -2593,13 +2686,13 @@
       },
       {
         "path": ".claude/skills/guru-review-change-request/examples/public-ready-output.json",
-        "sha256": "589d9754a6bda3a4092560635a9d4340308a760c03e5077e53ecc8477c629d5f",
-        "size_bytes": 409
+        "sha256": "83283508d3b9ce5c1967d4c807250fb47b3a825b7931bd06c0b9d0a8330443f3",
+        "size_bytes": 354
       },
       {
         "path": ".claude/skills/guru-review-change-request/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".claude/skills/guru-review-change-request/examples/public-review-wording-output.json",
@@ -2643,13 +2736,13 @@
       },
       {
         "path": ".claude/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
-        "sha256": "c5a7dfe60834eb2d5e5f1b1eb8cf2faa39f0d1f1668fa56a2663a53ac33d7d8d",
-        "size_bytes": 1065
+        "sha256": "3bd360df1751ca2fb7656c147dcb072761e6ff540916719383efedee588b2b92",
+        "size_bytes": 957
       },
       {
         "path": ".claude/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
-        "sha256": "9697a698c6bf17089d8b2ca5ccff8b7cd2557f0fb4db87c255eb24f30a1fb530",
-        "size_bytes": 755
+        "sha256": "b34929cfc69ce824592966784c2894e1563776d57b8f9a2dee161e2409a05c9a",
+        "size_bytes": 647
       },
       {
         "path": ".claude/skills/guru-review-change-request/schemas/public-review-wording-output.schema.json",
@@ -2983,8 +3076,8 @@
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
-        "sha256": "f728ed2e615f6c4c2c6757082e262f3d0f42bb3206a26d7c177a1346b85aad7d",
-        "size_bytes": 271
+        "sha256": "0495a8c7b454b1117230cc53596bf160630a28ffc3af4bddd01b737b83554851",
+        "size_bytes": 216
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/examples/public-new-task-output.json",
@@ -2993,13 +3086,13 @@
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
-        "sha256": "24ca042dd89f5d9e8cc4973c9f14ed3f0e0d1ea66517eccd811832091c68ff24",
-        "size_bytes": 161
+        "sha256": "bceb52ca2fd29bbf3653f9f371480fb1d07353967f23e5ab2d8a049694039437",
+        "size_bytes": 128
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/examples/public-standalone-review-input.json",
@@ -3038,8 +3131,8 @@
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
-        "sha256": "93bff92f3f60050d48a96da31a3114dccb666e5733b3434ea1b41b989603e92f",
-        "size_bytes": 828
+        "sha256": "82ee9b0089bdba85ed0fd16241728ed94ada44def5cada6277227e1f18ba4769",
+        "size_bytes": 720
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/schemas/public-new-task-output.schema.json",
@@ -3048,13 +3141,13 @@
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
-        "sha256": "e732d9ea1d4f314e6ef0ae905e6bc9afb7b88f918db55bc68e27f4bd9ad09838",
-        "size_bytes": 754
+        "sha256": "8f0c4e5172eca5a0f015a536d43760f5218c45deb74a5a8a7a1705ba89f7f839",
+        "size_bytes": 646
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
-        "sha256": "977a6b7df15ffa12673dee45dd1a3e907f41cde1e18db2593d45122b49b07dce",
-        "size_bytes": 756
+        "sha256": "7aa3401af76a93c1bc62d71a41e1302e8f2dd8fced87d1d5459f99c2af4e4d33",
+        "size_bytes": 648
       },
       {
         "path": ".codex/skills/guru-clarify-requirements/schemas/public-standalone-review-input.schema.json",
@@ -3218,8 +3311,8 @@
       },
       {
         "path": ".codex/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
-        "sha256": "c2758ac65f845b6da352ca0507b33abdc53a6c9c7c31c87525b9c0832e6b397a",
-        "size_bytes": 999
+        "sha256": "9886500d0b47d83f477927c696d93e07c69578a6bc899b35201570ffde07f600",
+        "size_bytes": 980
       },
       {
         "path": ".codex/skills/guru-create-task-workspace/schemas/public-workspace-task-recovery-input.schema.json",
@@ -3333,8 +3426,8 @@
       },
       {
         "path": ".codex/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
-        "sha256": "de846fc06fa9cc080eefd530212aa7723be25fe350a961579cb391c927d25502",
-        "size_bytes": 767
+        "sha256": "c80840fb0b8730c84d34f17ae204aebcc5fc5aeb78bbae8fbab790c6b5e2b85a",
+        "size_bytes": 748
       },
       {
         "path": ".codex/skills/guru-discover-change-context/schemas/public-refresh-base-output.schema.json",
@@ -3468,13 +3561,13 @@
       },
       {
         "path": ".codex/skills/guru-review-change-request/examples/public-ready-output.json",
-        "sha256": "589d9754a6bda3a4092560635a9d4340308a760c03e5077e53ecc8477c629d5f",
-        "size_bytes": 409
+        "sha256": "83283508d3b9ce5c1967d4c807250fb47b3a825b7931bd06c0b9d0a8330443f3",
+        "size_bytes": 354
       },
       {
         "path": ".codex/skills/guru-review-change-request/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".codex/skills/guru-review-change-request/examples/public-review-wording-output.json",
@@ -3518,13 +3611,13 @@
       },
       {
         "path": ".codex/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
-        "sha256": "c5a7dfe60834eb2d5e5f1b1eb8cf2faa39f0d1f1668fa56a2663a53ac33d7d8d",
-        "size_bytes": 1065
+        "sha256": "3bd360df1751ca2fb7656c147dcb072761e6ff540916719383efedee588b2b92",
+        "size_bytes": 957
       },
       {
         "path": ".codex/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
-        "sha256": "9697a698c6bf17089d8b2ca5ccff8b7cd2557f0fb4db87c255eb24f30a1fb530",
-        "size_bytes": 755
+        "sha256": "b34929cfc69ce824592966784c2894e1563776d57b8f9a2dee161e2409a05c9a",
+        "size_bytes": 647
       },
       {
         "path": ".codex/skills/guru-review-change-request/schemas/public-review-wording-output.schema.json",
@@ -3858,8 +3951,8 @@
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/examples/public-needs-context-output.json",
-        "sha256": "f728ed2e615f6c4c2c6757082e262f3d0f42bb3206a26d7c177a1346b85aad7d",
-        "size_bytes": 271
+        "sha256": "0495a8c7b454b1117230cc53596bf160630a28ffc3af4bddd01b737b83554851",
+        "size_bytes": 216
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/examples/public-new-task-output.json",
@@ -3868,13 +3961,13 @@
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/examples/public-retarget-context-output.json",
-        "sha256": "24ca042dd89f5d9e8cc4973c9f14ed3f0e0d1ea66517eccd811832091c68ff24",
-        "size_bytes": 161
+        "sha256": "bceb52ca2fd29bbf3653f9f371480fb1d07353967f23e5ab2d8a049694039437",
+        "size_bytes": 128
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/examples/public-standalone-review-input.json",
@@ -3913,8 +4006,8 @@
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
-        "sha256": "93bff92f3f60050d48a96da31a3114dccb666e5733b3434ea1b41b989603e92f",
-        "size_bytes": 828
+        "sha256": "82ee9b0089bdba85ed0fd16241728ed94ada44def5cada6277227e1f18ba4769",
+        "size_bytes": 720
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/schemas/public-new-task-output.schema.json",
@@ -3923,13 +4016,13 @@
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
-        "sha256": "e732d9ea1d4f314e6ef0ae905e6bc9afb7b88f918db55bc68e27f4bd9ad09838",
-        "size_bytes": 754
+        "sha256": "8f0c4e5172eca5a0f015a536d43760f5218c45deb74a5a8a7a1705ba89f7f839",
+        "size_bytes": 646
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
-        "sha256": "977a6b7df15ffa12673dee45dd1a3e907f41cde1e18db2593d45122b49b07dce",
-        "size_bytes": 756
+        "sha256": "7aa3401af76a93c1bc62d71a41e1302e8f2dd8fced87d1d5459f99c2af4e4d33",
+        "size_bytes": 648
       },
       {
         "path": ".cursor/skills/guru-clarify-requirements/schemas/public-standalone-review-input.schema.json",
@@ -4093,8 +4186,8 @@
       },
       {
         "path": ".cursor/skills/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
-        "sha256": "c2758ac65f845b6da352ca0507b33abdc53a6c9c7c31c87525b9c0832e6b397a",
-        "size_bytes": 999
+        "sha256": "9886500d0b47d83f477927c696d93e07c69578a6bc899b35201570ffde07f600",
+        "size_bytes": 980
       },
       {
         "path": ".cursor/skills/guru-create-task-workspace/schemas/public-workspace-task-recovery-input.schema.json",
@@ -4208,8 +4301,8 @@
       },
       {
         "path": ".cursor/skills/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
-        "sha256": "de846fc06fa9cc080eefd530212aa7723be25fe350a961579cb391c927d25502",
-        "size_bytes": 767
+        "sha256": "c80840fb0b8730c84d34f17ae204aebcc5fc5aeb78bbae8fbab790c6b5e2b85a",
+        "size_bytes": 748
       },
       {
         "path": ".cursor/skills/guru-discover-change-context/schemas/public-refresh-base-output.schema.json",
@@ -4343,13 +4436,13 @@
       },
       {
         "path": ".cursor/skills/guru-review-change-request/examples/public-ready-output.json",
-        "sha256": "589d9754a6bda3a4092560635a9d4340308a760c03e5077e53ecc8477c629d5f",
-        "size_bytes": 409
+        "sha256": "83283508d3b9ce5c1967d4c807250fb47b3a825b7931bd06c0b9d0a8330443f3",
+        "size_bytes": 354
       },
       {
         "path": ".cursor/skills/guru-review-change-request/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".cursor/skills/guru-review-change-request/examples/public-review-wording-output.json",
@@ -4393,13 +4486,13 @@
       },
       {
         "path": ".cursor/skills/guru-review-change-request/schemas/public-ready-output.schema.json",
-        "sha256": "c5a7dfe60834eb2d5e5f1b1eb8cf2faa39f0d1f1668fa56a2663a53ac33d7d8d",
-        "size_bytes": 1065
+        "sha256": "3bd360df1751ca2fb7656c147dcb072761e6ff540916719383efedee588b2b92",
+        "size_bytes": 957
       },
       {
         "path": ".cursor/skills/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
-        "sha256": "9697a698c6bf17089d8b2ca5ccff8b7cd2557f0fb4db87c255eb24f30a1fb530",
-        "size_bytes": 755
+        "sha256": "b34929cfc69ce824592966784c2894e1563776d57b8f9a2dee161e2409a05c9a",
+        "size_bytes": 647
       },
       {
         "path": ".cursor/skills/guru-review-change-request/schemas/public-review-wording-output.schema.json",
@@ -4778,8 +4871,8 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-needs-context-output.json",
-        "sha256": "f728ed2e615f6c4c2c6757082e262f3d0f42bb3206a26d7c177a1346b85aad7d",
-        "size_bytes": 271
+        "sha256": "0495a8c7b454b1117230cc53596bf160630a28ffc3af4bddd01b737b83554851",
+        "size_bytes": 216
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-new-task-output.json",
@@ -4788,13 +4881,13 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-retarget-context-output.json",
-        "sha256": "24ca042dd89f5d9e8cc4973c9f14ed3f0e0d1ea66517eccd811832091c68ff24",
-        "size_bytes": 161
+        "sha256": "bceb52ca2fd29bbf3653f9f371480fb1d07353967f23e5ab2d8a049694039437",
+        "size_bytes": 128
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/public-standalone-review-input.json",
@@ -4833,8 +4926,8 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
-        "sha256": "93bff92f3f60050d48a96da31a3114dccb666e5733b3434ea1b41b989603e92f",
-        "size_bytes": 828
+        "sha256": "82ee9b0089bdba85ed0fd16241728ed94ada44def5cada6277227e1f18ba4769",
+        "size_bytes": 720
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-new-task-output.schema.json",
@@ -4843,13 +4936,13 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
-        "sha256": "e732d9ea1d4f314e6ef0ae905e6bc9afb7b88f918db55bc68e27f4bd9ad09838",
-        "size_bytes": 754
+        "sha256": "8f0c4e5172eca5a0f015a536d43760f5218c45deb74a5a8a7a1705ba89f7f839",
+        "size_bytes": 646
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
-        "sha256": "977a6b7df15ffa12673dee45dd1a3e907f41cde1e18db2593d45122b49b07dce",
-        "size_bytes": 756
+        "sha256": "7aa3401af76a93c1bc62d71a41e1302e8f2dd8fced87d1d5459f99c2af4e4d33",
+        "size_bytes": 648
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-standalone-review-input.schema.json",
@@ -5013,8 +5106,8 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
-        "sha256": "c2758ac65f845b6da352ca0507b33abdc53a6c9c7c31c87525b9c0832e6b397a",
-        "size_bytes": 999
+        "sha256": "9886500d0b47d83f477927c696d93e07c69578a6bc899b35201570ffde07f600",
+        "size_bytes": 980
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/public-workspace-task-recovery-input.schema.json",
@@ -5128,8 +5221,8 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
-        "sha256": "de846fc06fa9cc080eefd530212aa7723be25fe350a961579cb391c927d25502",
-        "size_bytes": 767
+        "sha256": "c80840fb0b8730c84d34f17ae204aebcc5fc5aeb78bbae8fbab790c6b5e2b85a",
+        "size_bytes": 748
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/public-refresh-base-output.schema.json",
@@ -5263,13 +5356,13 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-ready-output.json",
-        "sha256": "589d9754a6bda3a4092560635a9d4340308a760c03e5077e53ecc8477c629d5f",
-        "size_bytes": 409
+        "sha256": "83283508d3b9ce5c1967d4c807250fb47b3a825b7931bd06c0b9d0a8330443f3",
+        "size_bytes": 354
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change-request/examples/public-review-wording-output.json",
@@ -5313,13 +5406,13 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
-        "sha256": "c5a7dfe60834eb2d5e5f1b1eb8cf2faa39f0d1f1668fa56a2663a53ac33d7d8d",
-        "size_bytes": 1065
+        "sha256": "3bd360df1751ca2fb7656c147dcb072761e6ff540916719383efedee588b2b92",
+        "size_bytes": 957
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
-        "sha256": "9697a698c6bf17089d8b2ca5ccff8b7cd2557f0fb4db87c255eb24f30a1fb530",
-        "size_bytes": 755
+        "sha256": "b34929cfc69ce824592966784c2894e1563776d57b8f9a2dee161e2409a05c9a",
+        "size_bytes": 647
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/public-review-wording-output.schema.json",
@@ -5538,8 +5631,8 @@
       },
       {
         "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
-        "sha256": "d30ebab69b4d8db41db2f328f7f1da6048fa0284377694e968465e5c4796ae1f",
-        "size_bytes": 220719
+        "sha256": "423310d856ca0b7183ff60c7dd0a14c8b2dbb6e734df43edc5b0cfb2062ceca1",
+        "size_bytes": 261279
       },
       {
         "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/check.jsonl",
@@ -5763,8 +5856,8 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-needs-context-output.json",
-        "sha256": "f728ed2e615f6c4c2c6757082e262f3d0f42bb3206a26d7c177a1346b85aad7d",
-        "size_bytes": 271
+        "sha256": "0495a8c7b454b1117230cc53596bf160630a28ffc3af4bddd01b737b83554851",
+        "size_bytes": 216
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-new-task-output.json",
@@ -5773,13 +5866,13 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-retarget-context-output.json",
-        "sha256": "24ca042dd89f5d9e8cc4973c9f14ed3f0e0d1ea66517eccd811832091c68ff24",
-        "size_bytes": 161
+        "sha256": "bceb52ca2fd29bbf3653f9f371480fb1d07353967f23e5ab2d8a049694039437",
+        "size_bytes": 128
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/public-standalone-review-input.json",
@@ -5818,8 +5911,8 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-needs-context-output.schema.json",
-        "sha256": "93bff92f3f60050d48a96da31a3114dccb666e5733b3434ea1b41b989603e92f",
-        "size_bytes": 828
+        "sha256": "82ee9b0089bdba85ed0fd16241728ed94ada44def5cada6277227e1f18ba4769",
+        "size_bytes": 720
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-new-task-output.schema.json",
@@ -5828,13 +5921,13 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-refresh-context-output.schema.json",
-        "sha256": "e732d9ea1d4f314e6ef0ae905e6bc9afb7b88f918db55bc68e27f4bd9ad09838",
-        "size_bytes": 754
+        "sha256": "8f0c4e5172eca5a0f015a536d43760f5218c45deb74a5a8a7a1705ba89f7f839",
+        "size_bytes": 646
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-retarget-context-output.schema.json",
-        "sha256": "977a6b7df15ffa12673dee45dd1a3e907f41cde1e18db2593d45122b49b07dce",
-        "size_bytes": 756
+        "sha256": "7aa3401af76a93c1bc62d71a41e1302e8f2dd8fced87d1d5459f99c2af4e4d33",
+        "size_bytes": 648
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/public-standalone-review-input.schema.json",
@@ -5998,8 +6091,8 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/public-workspace-task-initial-input.schema.json",
-        "sha256": "c2758ac65f845b6da352ca0507b33abdc53a6c9c7c31c87525b9c0832e6b397a",
-        "size_bytes": 999
+        "sha256": "9886500d0b47d83f477927c696d93e07c69578a6bc899b35201570ffde07f600",
+        "size_bytes": 980
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/public-workspace-task-recovery-input.schema.json",
@@ -6113,8 +6206,8 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
-        "sha256": "de846fc06fa9cc080eefd530212aa7723be25fe350a961579cb391c927d25502",
-        "size_bytes": 767
+        "sha256": "c80840fb0b8730c84d34f17ae204aebcc5fc5aeb78bbae8fbab790c6b5e2b85a",
+        "size_bytes": 748
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/public-refresh-base-output.schema.json",
@@ -6248,13 +6341,13 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-ready-output.json",
-        "sha256": "589d9754a6bda3a4092560635a9d4340308a760c03e5077e53ecc8477c629d5f",
-        "size_bytes": 409
+        "sha256": "83283508d3b9ce5c1967d4c807250fb47b3a825b7931bd06c0b9d0a8330443f3",
+        "size_bytes": 354
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-refresh-context-output.json",
-        "sha256": "e287483402899a6e096a1e1e9b9a9ccd230f66ccc9cb37b4668fc76b7ec75a94",
-        "size_bytes": 160
+        "sha256": "1262b049b23d5e44b9fdbd54ee14197c18686f2a46b496ca1c634586f2973c7e",
+        "size_bytes": 127
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-change-request/examples/public-review-wording-output.json",
@@ -6298,13 +6391,13 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-ready-output.schema.json",
-        "sha256": "c5a7dfe60834eb2d5e5f1b1eb8cf2faa39f0d1f1668fa56a2663a53ac33d7d8d",
-        "size_bytes": 1065
+        "sha256": "3bd360df1751ca2fb7656c147dcb072761e6ff540916719383efedee588b2b92",
+        "size_bytes": 957
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-refresh-context-output.schema.json",
-        "sha256": "9697a698c6bf17089d8b2ca5ccff8b7cd2557f0fb4db87c255eb24f30a1fb530",
-        "size_bytes": 755
+        "sha256": "b34929cfc69ce824592966784c2894e1563776d57b8f9a2dee161e2409a05c9a",
+        "size_bytes": 647
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-change-request/schemas/public-review-wording-output.schema.json",
@@ -6527,79 +6620,47 @@
         "size_bytes": 181
       }
     ],
-    "snapshot_sha256": "5ba823ef8b3375f585a8f042b51f509a3347ce9d8e565f87c8d12b1bd39f9e87"
+    "snapshot_sha256": "deb0f7153e9fe8aa13a836734e30645affc08a49343397eb546b6c361c3bb8b7"
   },
   "check_execution": {
     "commands": [
       {
-        "id": "p2-direct-r6",
+        "id": "focused-optional-projection",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
           "python3",
           "-m",
           "unittest",
-          "trellis.presets.guru-team.scripts.python.test_apply_guru_team_trellis_preset.PresetTransactionInstallerTest.test_transaction_staging_excludes_existing_developer_identity"
+          "trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_projection_may_omit_declared_optional_scalar_argument",
+          "trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_non_direct_projection_requires_all_valid_outputs_to_be_consumable"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "eb8fa45c3b760dc7c5419eb261ccb6c661b89ccac0378e66e030f7df18f6dc96",
-        "stderr_size_bytes": 98,
-        "summary": "直接回归通过：transaction staging 不读取或复制既有 .trellis/.developer，1 个测试通过。"
+        "stderr_sha256": "1bfb3ed641debc2f0761849c0aa7267de43090251df1bee14cceb691b37fb2f9",
+        "stderr_size_bytes": 100,
+        "summary": "Optional scalar omission preserves required coverage and mapped-field type proof; focused validator regression passed."
       },
       {
-        "id": "f001-transactions-r6",
+        "id": "focused-non-main-handoff",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
           "python3",
           "-m",
           "unittest",
-          "trellis.presets.guru-team.scripts.python.test_apply_guru_team_trellis_preset.PresetTransactionInstallerTest.test_unknown_local_edit_conflict_preserves_complete_pre145_graph",
-          "trellis.presets.guru-team.scripts.python.test_apply_guru_team_trellis_preset.PresetTransactionInstallerTest.test_known_managed_pre145_upgrade_activates_complete_graph_with_backups",
-          "trellis.presets.guru-team.scripts.python.test_apply_guru_team_trellis_preset.PresetTransactionInstallerTest.test_reapply_after_unknown_edit_sidecar_handling_completes_upgrade",
-          "trellis.presets.guru-team.scripts.python.test_apply_guru_team_trellis_preset.PresetTransactionInstallerTest.test_forced_installed_validation_failure_preserves_complete_pre145_graph"
+          "trellis.skills.guru-team.tests.test_skill_packages.Stage0PublicInvocationTests.test_non_main_semantic_handoffs_preserve_formal_base_resolution"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "318c5c486e11f311170c32f0fd9e40b4ff94fdc611a75f235c377457d9dbd590",
-        "stderr_size_bytes": 103,
-        "summary": "F-001 四个原子事务场景全部通过：unknown edit、known managed upgrade、sidecar reapply、强制 installed validation failure 均保持完整图。"
+        "stderr_sha256": "e80185ef0bda25642ad16ce20713b7ab4d920dd5e029206896c5510378c9c903",
+        "stderr_size_bytes": 456,
+        "summary": "Non-main config-candidate and remote-default producer-to-projection-to-formal-sync paths plus explicit base passed."
       },
       {
-        "id": "preset-tests-r6",
-        "argv": [
-          "env",
-          "PYTHONDONTWRITEBYTECODE=1",
-          "python3",
-          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "8c90832408b48e6849f5c81ea06f35b5369d0cbcd43fd95855053e388be53d54",
-        "stderr_size_bytes": 808,
-        "summary": "Preset staging、fresh install、upgrade、transaction 与平台选择共 45 个测试通过。"
-      },
-      {
-        "id": "ownership-tests-r6",
-        "argv": [
-          "env",
-          "PYTHONDONTWRITEBYTECODE=1",
-          "python3",
-          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "0371c17816a95c5737fcae95d01583903a441c8cf57a2fbad2a2e8b518413d31",
-        "stderr_size_bytes": 104,
-        "summary": "Upstream ownership 6 个测试通过。"
-      },
-      {
-        "id": "skill-tests-r6",
+        "id": "skill-tests",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
@@ -6615,12 +6676,12 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "c16ee199f6c60f8f9121a6b3b99b8d88bf50f29a828383124d880155d4599d6c",
-        "stderr_size_bytes": 2965,
-        "summary": "Skill package、contract、migration、wrapper、eval 与平台 fixture 共 159 个测试通过。"
+        "stderr_sha256": "7b8838c430014b42252882e9795be26d6367209d98b165c1e48e052696317e50",
+        "stderr_size_bytes": 3324,
+        "summary": "Full Skill package, contract, migration, wrapper, eval and platform suite passed."
       },
       {
-        "id": "runtime-tests-r6",
+        "id": "runtime-tests",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
@@ -6630,14 +6691,44 @@
           "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
         ],
         "exit_code": 0,
-        "stdout_sha256": "90fc8238be666d8b4242fb1cae5b7bcf81f47faf28ffd34a68c5bc3ae99140bb",
+        "stdout_sha256": "64cdd7cc2823ff812c0aa97395be2362ae9772c952e74fab7744c304d7834b75",
         "stdout_size_bytes": 2548,
-        "stderr_sha256": "774c78c3b0b6201bcaab589545bc99d87ac22eb1970967d29746f8ece2f44035",
+        "stderr_sha256": "93a5b77c3e6ce3ace13c96fe137ca5d7e73ddbaf42ae48ad546145a6b3ed67d3",
         "stderr_size_bytes": 3483,
-        "summary": "Workflow runtime 548 个测试通过，13 个 capability-dependent 测试跳过。"
+        "summary": "Full workflow runtime suite passed; capability-dependent skips are recorded in stderr."
       },
       {
-        "id": "source-validator-r6",
+        "id": "preset-tests",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "3d7021675ae789ccb224483e736e846d35875bf5277fff6871e7fa0b38833278",
+        "stderr_size_bytes": 808,
+        "summary": "Preset staging, fresh install, upgrade, transaction and platform-selection suite passed."
+      },
+      {
+        "id": "ownership-tests",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "20c3121bbe1ceafe607a38fac2c11f18683a9fa68ddafc9ab410bd36490bcfcd",
+        "stderr_size_bytes": 104,
+        "summary": "Upstream ownership unit suite passed."
+      },
+      {
+        "id": "source-validator",
         "argv": [
           "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh",
           "--root",
@@ -6651,10 +6742,10 @@
         "stdout_size_bytes": 1006,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Source package validator 通过：6 个 minimal_handoff 与 3 个 legacy active rows 集合一致。"
+        "summary": "Source validator passed the 6 minimal_handoff plus 3 legacy graph and all 24 exits."
       },
       {
-        "id": "installed-validator-r6",
+        "id": "installed-validator",
         "argv": [
           ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
           "--root",
@@ -6668,52 +6759,57 @@
         "stdout_size_bytes": 1195,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Installed validator 通过：1284 managed files，sidecar/removal/conflict 均为 0。"
+        "summary": "Installed validator passed managed inventory, graph, permissions and sidecar checks."
       },
       {
-        "id": "changed-json-r6",
+        "id": "changed-json",
         "argv": [
           "/bin/bash",
           "-c",
-          "set -euo pipefail\ngit diff --name-only -z origin/main...HEAD -- '*.json' | xargs -0 -r -n 1 env PYTHONDONTWRITEBYTECODE=1 python3 -m json.tool >/dev/null\ngit ls-files -z --modified --others --exclude-standard '*.json' | xargs -0 -r -n 1 env PYTHONDONTWRITEBYTECODE=1 python3 -m json.tool >/dev/null\nprintf 'CHANGED_JSON_OK\\n'"
+          "set -euo pipefail\ngit diff --name-only -z origin/main...HEAD -- \"*.json\" | xargs -0 -r -n 1 env PYTHONDONTWRITEBYTECODE=1 python3 -m json.tool >/dev/null\ngit ls-files -z --modified --others --exclude-standard \"*.json\" | xargs -0 -r -n 1 env PYTHONDONTWRITEBYTECODE=1 python3 -m json.tool >/dev/null\nprintf \"CHANGED_JSON_OK\\n\""
         ],
         "exit_code": 0,
         "stdout_sha256": "47efe255fe294fe36082aa58053e7441528a4bf9a5daf6f3131ec8ff79e9af9c",
         "stdout_size_bytes": 16,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Committed diff、dirty 与 untracked 范围中的 JSON 全部可解析。"
+        "summary": "All JSON in committed and current dirty/untracked change scope parses."
       },
       {
-        "id": "python-compile-r6",
+        "id": "python-compile",
         "argv": [
-          "/bin/bash",
-          "-c",
-          "set -euo pipefail\nPYTHONPYCACHEPREFIX=/private/tmp/guru145-phase2-evidence.zQkwek/pycache python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py trellis/skills/guru-team/adapters/eval/native_adapter.py\nprintf 'PY_COMPILE_OK\\n'"
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru145-round3-phase2.5lNk0F/pycache",
+          "python3",
+          "-m",
+          "py_compile",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py"
         ],
         "exit_code": 0,
-        "stdout_sha256": "fd285c90410988b272a486fa12050e0102b35382ee086e7564ed64f452841432",
-        "stdout_size_bytes": 14,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Runtime、preset installer 与 native adapter 均通过 py_compile，cache 写入 repo 外。"
+        "summary": "Runtime, installer and native adapter compile without repository bytecode writes."
       },
       {
-        "id": "bash-syntax-r6",
+        "id": "bash-syntax",
         "argv": [
           "/bin/bash",
           "-c",
-          "set -euo pipefail\nbash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh\nprintf 'BASH_SYNTAX_OK\\n'"
+          "set -euo pipefail\nbash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh\nprintf \"BASH_SYNTAX_OK\\n\""
         ],
         "exit_code": 0,
         "stdout_sha256": "edf13af235d9d8f644df0ac4314340f75947418a6f6f8019900705e567dff9d4",
         "stdout_size_bytes": 15,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Canonical workflow 与 preset bash scripts 全部通过 bash -n。"
+        "summary": "Canonical workflow and preset shell scripts pass bash syntax validation."
       },
       {
-        "id": "dogfood-drift-r6",
+        "id": "dogfood-drift",
         "argv": [
           "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
           "--repo",
@@ -6724,10 +6820,10 @@
         "stdout_size_bytes": 1644,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Dogfood installed overlays 与 canonical sources 一致。"
+        "summary": "Dogfood overlays match canonical sources."
       },
       {
-        "id": "ownership-validator-r6",
+        "id": "ownership-validator",
         "argv": [
           "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
           "--repo",
@@ -6739,10 +6835,10 @@
         "stdout_size_bytes": 1585,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Upstream ownership、frozen identity 与 managed path claims 校验通过。"
+        "summary": "Upstream ownership, frozen identity and managed claims validate."
       },
       {
-        "id": "task-validation-r6",
+        "id": "task-validation",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
@@ -6756,38 +6852,38 @@
         "stdout_size_bytes": 321,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Task context validation 通过：implement.jsonl 与 check.jsonl 各 17 条。"
+        "summary": "Task context and curated implement/check lists validate."
       },
       {
-        "id": "git-diff-check-r6",
+        "id": "git-diff-check",
         "argv": [
           "/bin/bash",
           "-c",
-          "set -euo pipefail\ngit diff --check origin/main...HEAD\ngit diff --check\nprintf 'GIT_DIFF_CHECK_OK\\n'"
+          "set -euo pipefail\ngit diff --check origin/main...HEAD\ngit diff --check\nprintf \"GIT_DIFF_CHECK_OK\\n\""
         ],
         "exit_code": 0,
         "stdout_sha256": "2fbb029599f09906d1a4977db9eb70ce8d8eabe43adb14d5b74f1756ce69ad38",
         "stdout_size_bytes": 18,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Committed diff 与当前 dirty diff 均无 whitespace error。"
+        "summary": "Committed and dirty diffs contain no whitespace errors."
       },
       {
-        "id": "sidecar-scan-r6",
+        "id": "sidecar-scan",
         "argv": [
           "/bin/bash",
           "-c",
-          "set -euo pipefail\nsidecars=$(find . -path './.git' -prune -o -type f \\( -name '*.new' -o -name '*.bak' -o -name '*.rej' -o -name '*.orig' \\) -print)\ntest -z \"$sidecars\"\nprintf 'REPOSITORY_SIDECARS=0\\n'"
+          "set -euo pipefail\nsidecars=$(find . -path \"./.git\" -prune -o -type f \\( -name \"*.new\" -o -name \"*.bak\" -o -name \"*.rej\" -o -name \"*.orig\" \\) -print)\ntest -z \"$sidecars\"\nprintf \"REPOSITORY_SIDECARS=0\\n\""
         ],
         "exit_code": 0,
         "stdout_sha256": "1ef5fe5413799c1fb6ae36240741846907cf9c5193bf869f3f60841f79fd26bb",
         "stdout_size_bytes": 22,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "仓库内 .new/.bak/.rej/.orig sidecar 数量为 0。"
+        "summary": "Repository has no .new, .bak, .rej or .orig sidecars."
       },
       {
-        "id": "shared-eval-sync-base-r6",
+        "id": "shared-eval-guru-sync-base",
         "argv": [
           "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
           "--root",
@@ -6799,18 +6895,18 @@
           "--adapter",
           "shared",
           "--run-root",
-          "/private/tmp/guru145-phase2-evidence.zQkwek/run-guru-sync-base",
+          "/private/tmp/guru145-round3-phase2.5lNk0F/run-guru-sync-base",
           "--json"
         ],
         "exit_code": 0,
-        "stdout_sha256": "2e5e825aaacff25c2ac3f61433e0397bde145f53c18325b79cafd196a29ad4f5",
-        "stdout_size_bytes": 3291,
+        "stdout_sha256": "dcc19c6202663648e911478a9629568589540311f98b4a4e90349ae0811a1849",
+        "stdout_size_bytes": 3282,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "guru-sync-base shared production eval 3/3 cases 通过。"
+        "summary": "guru-sync-base shared production eval corpus passed through the real public wrapper."
       },
       {
-        "id": "shared-eval-discover-context-r6",
+        "id": "shared-eval-guru-discover-change-context",
         "argv": [
           "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
           "--root",
@@ -6822,18 +6918,18 @@
           "--adapter",
           "shared",
           "--run-root",
-          "/private/tmp/guru145-phase2-evidence.zQkwek/run-guru-discover-change-context",
+          "/private/tmp/guru145-round3-phase2.5lNk0F/run-guru-discover-change-context",
           "--json"
         ],
         "exit_code": 0,
-        "stdout_sha256": "8a9d4f7f123e1aea3be3c19e57bbe45ce5953a79afd7221aaaa83200e9a9da8a",
-        "stdout_size_bytes": 3411,
+        "stdout_sha256": "4685737c40a2e2ee8de4e99db43c71b92030c0fd5c2e594842d85885acd5b60f",
+        "stdout_size_bytes": 3403,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "guru-discover-change-context shared production eval 3/3 cases 通过。"
+        "summary": "guru-discover-change-context shared production eval corpus passed through the real public wrapper."
       },
       {
-        "id": "shared-eval-clarify-r6",
+        "id": "shared-eval-guru-clarify-requirements",
         "argv": [
           "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
           "--root",
@@ -6845,18 +6941,18 @@
           "--adapter",
           "shared",
           "--run-root",
-          "/private/tmp/guru145-phase2-evidence.zQkwek/run-guru-clarify-requirements",
+          "/private/tmp/guru145-round3-phase2.5lNk0F/run-guru-clarify-requirements",
           "--json"
         ],
         "exit_code": 0,
-        "stdout_sha256": "25bc408444ce221b66c2f2cb65ae4b5be04d1bfb3bbf63de4e56a4ab5ea0b91a",
-        "stdout_size_bytes": 5883,
+        "stdout_sha256": "90de96e1c5670e20d695fbcdcc63335afc4e3e819357f78bb31809479829dcc9",
+        "stdout_size_bytes": 5863,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "guru-clarify-requirements shared production eval 6/6 cases 通过。"
+        "summary": "guru-clarify-requirements shared production eval corpus passed through the real public wrapper."
       },
       {
-        "id": "shared-eval-wording-r6",
+        "id": "shared-eval-guru-review-contract-wording",
         "argv": [
           "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
           "--root",
@@ -6868,18 +6964,18 @@
           "--adapter",
           "shared",
           "--run-root",
-          "/private/tmp/guru145-phase2-evidence.zQkwek/run-guru-review-contract-wording",
+          "/private/tmp/guru145-round3-phase2.5lNk0F/run-guru-review-contract-wording",
           "--json"
         ],
         "exit_code": 0,
-        "stdout_sha256": "0b1cf865c2f4127c5c6492adac0b613930d0e6b7b3ecb4c1885b341a4f9a76b1",
-        "stdout_size_bytes": 3393,
+        "stdout_sha256": "8e24e37eb0c83d31adab1a955b670b35f0b09c9789ead7b7cce83b6746aaf86d",
+        "stdout_size_bytes": 3383,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "guru-review-contract-wording shared production eval 3/3 cases 通过。"
+        "summary": "guru-review-contract-wording shared production eval corpus passed through the real public wrapper."
       },
       {
-        "id": "shared-eval-change-request-r6",
+        "id": "shared-eval-guru-review-change-request",
         "argv": [
           "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
           "--root",
@@ -6891,18 +6987,18 @@
           "--adapter",
           "shared",
           "--run-root",
-          "/private/tmp/guru145-phase2-evidence.zQkwek/run-guru-review-change-request",
+          "/private/tmp/guru145-round3-phase2.5lNk0F/run-guru-review-change-request",
           "--json"
         ],
         "exit_code": 0,
-        "stdout_sha256": "c6d97f20f7a4a1c955b6ac9f371d018bfab71b6bd887ca53100aeb47e6c1a8ae",
-        "stdout_size_bytes": 5084,
+        "stdout_sha256": "a1deef9603b0de54ace2ee6dc8de354b9c6d6959caea7744a36caa14beacc708",
+        "stdout_size_bytes": 5072,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "guru-review-change-request shared production eval 5/5 cases 通过。"
+        "summary": "guru-review-change-request shared production eval corpus passed through the real public wrapper."
       },
       {
-        "id": "shared-eval-task-workspace-r6",
+        "id": "shared-eval-guru-create-task-workspace",
         "argv": [
           "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
           "--root",
@@ -6914,60 +7010,46 @@
           "--adapter",
           "shared",
           "--run-root",
-          "/private/tmp/guru145-phase2-evidence.zQkwek/run-guru-create-task-workspace",
+          "/private/tmp/guru145-round3-phase2.5lNk0F/run-guru-create-task-workspace",
           "--json"
         ],
         "exit_code": 0,
-        "stdout_sha256": "f9af20b02eb628fd21eced498fe5db3ced9c811729b6904cccabdfede173c2d7",
-        "stdout_size_bytes": 4213,
+        "stdout_sha256": "e82e0a11d32352db94ce8631da6ec488e691cb6f3b6376d99db6e900fafaf4cb",
+        "stdout_size_bytes": 4203,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "guru-create-task-workspace shared production eval 4/4 cases 通过。"
+        "summary": "guru-create-task-workspace shared production eval corpus passed through the real public wrapper."
       },
       {
-        "id": "shared-eval-aggregate-r6",
+        "id": "package-parity",
         "argv": [
           "/bin/bash",
           "-c",
-          "set -euo pipefail\njq -s -e 'length == 6 and all(.[]; .status == \"passed\") and ([.[].cases[]] | length) == 24 and all(.[].cases[]; .status == \"passed\")' /private/tmp/guru145-phase2-evidence.zQkwek/shared-eval-guru-sync-base.stdout /private/tmp/guru145-phase2-evidence.zQkwek/shared-eval-guru-discover-change-context.stdout /private/tmp/guru145-phase2-evidence.zQkwek/shared-eval-guru-clarify-requirements.stdout /private/tmp/guru145-phase2-evidence.zQkwek/shared-eval-guru-review-contract-wording.stdout /private/tmp/guru145-phase2-evidence.zQkwek/shared-eval-guru-review-change-request.stdout /private/tmp/guru145-phase2-evidence.zQkwek/shared-eval-guru-create-task-workspace.stdout >/dev/null\nprintf 'SHARED_EVAL=6/24\\n'"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "a7a0294073a0de50f6da600a336b183c47ff44c8c0ae49e4d2ca1f837b739cc9",
-        "stdout_size_bytes": 17,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "六包 shared production eval 聚合为 6 runs、24/24 cases passed。"
-      },
-      {
-        "id": "package-parity-r6",
-        "argv": [
-          "/bin/bash",
-          "-c",
-          "set -euo pipefail\nskills=(guru-sync-base guru-discover-change-context guru-clarify-requirements guru-review-contract-wording guru-review-change-request guru-create-task-workspace)\ntargets=(.trellis/guru-team/skills/packages .agents/skills .codex/skills .claude/skills .cursor/skills)\nchecks=0\nfor skill in \"${skills[@]}\"; do\n  source_dir=\"trellis/skills/guru-team/packages/$skill\"\n  for target_root in \"${targets[@]}\"; do\n    target_dir=\"$target_root/$skill\"\n    diff -qr \"$source_dir\" \"$target_dir\" >/dev/null\n    while IFS= read -r source_file; do\n      relative_file=\"${source_file#$source_dir/}\"\n      target_file=\"$target_dir/$relative_file\"\n      cmp -s \"$source_file\" \"$target_file\"\n      [[ \"$(stat -f '%Lp' \"$source_file\")\" == \"$(stat -f '%Lp' \"$target_file\")\" ]]\n    done < <(find \"$source_dir\" -type f -print)\n    checks=$((checks+1))\n  done\ndone\n[[ \"$checks\" -eq 30 ]]\nprintf 'PACKAGE_PARITY=%s/30\\n' \"$checks\""
+          "set -euo pipefail\nskills=(guru-sync-base guru-discover-change-context guru-clarify-requirements guru-review-contract-wording guru-review-change-request guru-create-task-workspace)\ntargets=(.trellis/guru-team/skills/packages .agents/skills .codex/skills .claude/skills .cursor/skills)\nchecks=0\nfor skill in \"${skills[@]}\"; do\n  source_dir=\"trellis/skills/guru-team/packages/$skill\"\n  for target_root in \"${targets[@]}\"; do\n    target_dir=\"$target_root/$skill\"\n    diff -qr \"$source_dir\" \"$target_dir\" >/dev/null\n    while IFS= read -r source_file; do\n      relative_file=\"${source_file#$source_dir/}\"\n      target_file=\"$target_dir/$relative_file\"\n      cmp -s \"$source_file\" \"$target_file\"\n      [[ \"$(stat -f \"%Lp\" \"$source_file\")\" == \"$(stat -f \"%Lp\" \"$target_file\")\" ]]\n    done < <(find \"$source_dir\" -type f -print)\n    checks=$((checks+1))\n  done\ndone\n[[ \"$checks\" -eq 30 ]]\nprintf \"PACKAGE_PARITY=%s/30\\n\" \"$checks\""
         ],
         "exit_code": 0,
         "stdout_sha256": "9cb86d58e7595adfdddad8a8bd1d4b47bbaaea9d58298685cc039a883e0de813",
         "stdout_size_bytes": 21,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Canonical、installed、Codex、Claude、Cursor 六包 bytes/modes parity 30/30 通过。"
+        "summary": "Canonical, installed, shared, Codex, Claude and Cursor package bytes/modes parity passed for 30 package roots."
       },
       {
-        "id": "impact-security-manifest-r6",
+        "id": "impact-security-manifest",
         "argv": [
           "/bin/bash",
           "-c",
-          "set -euo pipefail\nchanged=$( { git diff --name-only origin/main...HEAD; git diff --name-only; git ls-files --others --exclude-standard; } | LC_ALL=C sort -u )\nfor entry in 'CI:^\\.github/workflows/' 'CONTAINER:(^|/)(Dockerfile[^/]*|docker-compose[^/]*)(/|$)' 'K8S:(^|/)(k8s|kustomize)(/|$)' 'HELM:(^|/)helm(/|$)' 'DB:(^|/)(database/migrations|db/migrations)(/|$)' 'MAKE:(^|/)Makefile$' 'DEPS:(^|/)(package-lock\\.json|pnpm-lock\\.yaml|yarn\\.lock|go\\.mod|go\\.sum|requirements[^/]*\\.txt|pyproject\\.toml|Pipfile\\.lock)$'; do label=\"${entry%%:*}\"; pattern=\"${entry#*:}\"; matches=$(printf '%s\\n' \"$changed\" | rg \"$pattern\" || true); [[ -z \"$matches\" ]]; printf '%s_PATHS=0\\n' \"$label\"; done\njq -e '(.skills|length)==6 and ([.skills[].id]|sort)==([\"guru-clarify-requirements\",\"guru-create-task-workspace\",\"guru-discover-change-context\",\"guru-review-change-request\",\"guru-review-contract-wording\",\"guru-sync-base\"]|sort) and ([.skills[].exit_bindings[]]|length)==24' trellis/skills/guru-team/migrations/stage0-minimal-handoff.json >/dev/null\nprintf 'STAGE0_SET=6/24\\n'\nsecret_matches=$( { git diff --no-ext-diff --unified=0 origin/main...HEAD; git diff --no-ext-diff --unified=0; } | rg 'BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36,}' || true)\n[[ -z \"$secret_matches\" ]]\nprintf 'SECRET_MATERIAL_MATCHES=0\\n'"
+          "set -euo pipefail\nchanged=$( { git diff --name-only origin/main...HEAD; git diff --name-only; git ls-files --others --exclude-standard; } | LC_ALL=C sort -u )\nfor entry in \"CI:^\\\\.github/workflows/\" \"CONTAINER:(^|/)(Dockerfile[^/]*|docker-compose[^/]*)(/|$)\" \"K8S:(^|/)(k8s|kustomize)(/|$)\" \"HELM:(^|/)helm(/|$)\" \"DB:(^|/)(database/migrations|db/migrations)(/|$)\" \"MAKE:(^|/)Makefile$\" \"DEPS:(^|/)(package-lock\\\\.json|pnpm-lock\\\\.yaml|yarn\\\\.lock|go\\\\.mod|go\\\\.sum|requirements[^/]*\\\\.txt|pyproject\\\\.toml|Pipfile\\\\.lock)$\"; do\n  label=\"${entry%%:*}\"\n  pattern=\"${entry#*:}\"\n  matches=$(printf \"%s\\n\" \"$changed\" | rg \"$pattern\" || true)\n  test -z \"$matches\"\n  printf \"%s_PATHS=0\\n\" \"$label\"\ndone\njq -e '(.skills|length)==6 and ([.skills[].id]|sort)==([\"guru-clarify-requirements\",\"guru-create-task-workspace\",\"guru-discover-change-context\",\"guru-review-change-request\",\"guru-review-contract-wording\",\"guru-sync-base\"]|sort) and ([.skills[].exit_bindings[]]|length)==24' trellis/skills/guru-team/migrations/stage0-minimal-handoff.json >/dev/null\nprintf \"STAGE0_SET=6/24\\n\"\nsecret_matches=$( { git diff --no-ext-diff --unified=0 origin/main...HEAD; git diff --no-ext-diff --unified=0; } | rg 'BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36,}' || true)\ntest -z \"$secret_matches\"\nprintf \"SECRET_MATERIAL_MATCHES=0\\n\""
         ],
         "exit_code": 0,
         "stdout_sha256": "a315f4c18889cf41f6996ef3ffbce1fb6b96a3c4eb4c6525c3e225da40d95d16",
         "stdout_size_bytes": 133,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "CI/CD、container、K8s/Kustomize、Helm、DB migration、Makefile、dependency paths 均为 0；Stage0 集合 6/24；secret-shaped diff 命中 0。"
+        "summary": "No CI/CD, container, K8s, Helm, DB, Makefile or dependency paths changed; Stage0 set is 6/24 and secret-shaped diff matches are zero."
       },
       {
-        "id": "workspace-boundary-r6",
+        "id": "workspace-boundary",
         "argv": [
           "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
           "--json",
@@ -6975,14 +7057,14 @@
           ".trellis/tasks/07-21-145-stage0-minimal-handoff"
         ],
         "exit_code": 0,
-        "stdout_sha256": "20be3de798eb56170d8fdd6d660d08e84654474e8f2d4f904351d68442ec8d3f",
-        "stdout_size_bytes": 1237,
+        "stdout_sha256": "f0e71eac4745ccc1d5d5b9653464dd60b3661964d1a0666ac868da28e3483686",
+        "stdout_size_bytes": 9531,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Workspace boundary 通过：expected 与 actual task worktree 一致，source checkout clean，无 suspicious source artifacts。"
+        "summary": "Workspace boundary remains exact and source checkout is clean."
       },
       {
-        "id": "planning-approval-r6",
+        "id": "planning-approval",
         "argv": [
           "./.trellis/guru-team/scripts/bash/check-planning-approval.sh",
           "--json",
@@ -6990,28 +7072,28 @@
           ".trellis/tasks/07-21-145-stage0-minimal-handoff"
         ],
         "exit_code": 0,
-        "stdout_sha256": "9176ba88b19a6e4734123eb35e80c58ccac2c08a65b0e892b1aff196249f712a",
+        "stdout_sha256": "52e9d3d28f650f631556e08f53dc117602dd5f92bbce69c5403ea878f4a1da67",
         "stdout_size_bytes": 754,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Planning approval 当前有效，typed_exit=approved，facts_sha256=78d24087...。"
+        "summary": "Planning approval remains fresh and approved for current planning bytes."
       },
       {
-        "id": "throwaway-local-source-r6",
+        "id": "throwaway-local-source",
         "argv": [
           "env",
           "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
           "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
         ],
         "exit_code": 0,
-        "stdout_sha256": "c502841f706e9adb04a8414f0cf5a82a93e4b7b85fa19fda1316d1ff8f3d845d",
+        "stdout_sha256": "09308b8e701ba5c8bdc65fb9bc52d4ba12f1f75d657e756dfad96aad8a392ae3",
         "stdout_size_bytes": 2025315,
-        "stderr_sha256": "aba997a7a924e7ef86d1968ccca4b407792b3e814bd88aa73b6f7bf7bad3abf9",
+        "stderr_sha256": "3752d52ae7cce599adab828d559ba61be84931e6473d042f85f1d7d3fbb42409",
         "stderr_size_bytes": 930,
-        "summary": "本地当前 source 的 clean install、pre-#145 upgrade、workflow preview/switch、trellis update 与 preset reapply 全链通过；最终 1284 managed，sidecar/removal/conflict 为 0。"
+        "summary": "Allowed unpublished-source fallback completed clean install, pre-145 upgrade, preview/switch, update/reapply and Stage0 smokes."
       },
       {
-        "id": "default-marketplace-guard-r6",
+        "id": "default-marketplace-guard",
         "argv": [
           "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
         ],
@@ -7020,22 +7102,22 @@
         "stdout_size_bytes": 592,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "默认 marketplace verifier 按合同返回预期 exit 2，未把尚未 push 的 feature branch 冒充 exact remote-ref proof。"
+        "summary": "Default marketplace verifier correctly fails closed while the feature branch is unpublished."
       }
     ],
     "unverified_items": [
       {
-        "id": "unverified-claude-live-r6",
+        "id": "unverified-claude-live-round3",
         "command_or_area": "Authenticated Claude native production eval",
-        "reason": "当前环境未运行真实 authenticated Claude CLI；fresh runtime/Skill suites 已覆盖受控 Claude argv/stdin/output protocol、adapter parity 与 declared unsupported 行为。",
-        "impact": "真实 Claude 服务行为未在本地证明，但未发现 repository adapter、input protocol 或 contract failure；该外部限制不阻断当前实现正确性。",
+        "reason": "当前本地未执行真实 authenticated Claude CLI probe；Skill/runtime suites 已覆盖 fake-native Claude argv/stdin/output protocol、adapter parity 与 declared unsupported 行为。",
+        "impact": "真实 Claude 服务行为未在本轮本地证明，但 repository adapter、input protocol、contract 与跨平台 bytes/modes 均有 fresh deterministic coverage；不阻断当前实现正确性。",
         "blocking": false
       },
       {
-        "id": "unverified-exact-remote-marketplace-r6",
+        "id": "unverified-exact-remote-marketplace-round3",
         "command_or_area": "Exact remote feature-branch workflow marketplace install",
-        "reason": "Feature branch 尚未发布；default marketplace guard 按合同 exit 2，未把 public main sample 冒充当前 branch proof。",
-        "impact": "Exact remote-ref verification 留给 publish gate；public marketplace discovery 加本地 current-source clean install、pre-#145 upgrade、update/reapply 与 zero-sidecar 全链已通过。",
+        "reason": "Feature branch 尚未发布；default marketplace verifier 按合同 exit 2，未把 public main 冒充当前 branch proof。",
+        "impact": "Exact remote-ref verification 留给 publish gate；本地 current-source clean install、pre-#145 upgrade、preview/switch、update/reapply、Stage0 smoke 与 zero-sidecar 全链已通过。",
         "blocking": false
       }
     ],
@@ -7043,19 +7125,19 @@
       {
         "source": "official_trellis_check",
         "agent_id": "/root/issue145_check",
-        "summary": "The first independent Phase 2 agent supplied historical raw evidence only; its superseded findings and command results were not reused as the fresh r4 semantic conclusion.",
+        "summary": "首轮独立 Phase 2 代理仅提供历史 raw evidence；其已被后续实现与完整重跑取代，不作为 Round 3 semantic pass。",
         "evidence_only": true,
         "facts_sha256": "ee829a883e61c9f24e0995b5b2665a5e850fa425dda029855f56fbabbd2078b8"
       },
       {
         "source": "official_trellis_check",
         "agent_id": "/root/issue145_check_r2",
-        "summary": "独立检查代理在 HEAD 72326953e4df36a91201f10f581361b045e8c6f0 上完成 fresh full committed+dirty Phase 2：独立复现 P2 与 F-001；Skill159、runtime548+13 skipped、preset45、ownership6、shared production eval24/24、parity30/30、source/installed validators、throwaway/update/reapply、Docs SSOT、issue ledger、deployment/security 全部覆盖；零 current-scope finding；未调用 recorder/checker。随后仅按主会话授权补捕获同一适用矩阵的分离 stdout/stderr digest 与 size。",
+        "summary": "独立检查代理在 HEAD ded63e71e5bab787c5d795a300e3507142b18521 上完成 Round 3 fresh full Phase 2：复核原 P1、全部 committed diff 与 non-metadata dirty paths、15 个 durable SSOT paths、issue ledger、deployment/security、28 条 fresh commands；findings 为 0，未调用 recorder/checker。",
         "evidence_only": true,
-        "facts_sha256": "fa952a34179742e2326f6a4236c529d2743182032598e9137e20b16e9390ad2e"
+        "facts_sha256": "8f4127a1efa79c284273e99ede5be20f508ba2b2151d5dbd1449b089e3ee9619"
       }
     ],
-    "execution_sha256": "13696453fb905c424fe807f3979a1072954605d69a4e47b9037eb3a78cfd8fbe"
+    "execution_sha256": "a25038f51c95f014d6f6130b6f1c72f9f9106664c218c8a97893f897555bc746"
   },
   "scope_qualification": {
     "candidates": [],
@@ -7066,73 +7148,73 @@
       {
         "id": "requirements",
         "status": "passed",
-        "summary": "Approved R1-R9、AC1-AC15 以及 accepted D1/D2 authority 均已实现，#145 是唯一 close issue，未扩张 scope。",
+        "summary": "Approved R1-R9、AC1-AC15 与 accepted D1/D2 authority 全部由当前实现承接；#145 是唯一 close issue，#98/#127/#132 related、#146 follow-up，scope 未扩张。",
         "evidence_refs": [
           "planning",
           "requirement_provenance"
         ],
-        "affected_sha256": "82979fea97cb1b68089ed67602da58e50a63796fc8848a4dc8d380b43870367d",
+        "affected_sha256": "78d24087a6df4487a019ffcd6e018400a61e19502157678675e487605459267b",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "design",
         "status": "passed",
-        "summary": "Stage 0 minimal handoff、D1 optional base fallback、D2 semantic eval closure 与 installer transaction 设计均由当前实现和 durable SSOT 承接。",
+        "summary": "Stage 0 minimal handoff 设计要求 semantic producer 保留 unresolved base、formal guru-sync-base resolver 独占 resolution；Round 3 修复与该边界一致。",
         "evidence_refs": [
           "planning",
           "docs_ssot_plan",
           "implementation_handoff"
         ],
-        "affected_sha256": "ea546d48087c15164e6691d1111ab9ca0b9e8b5860d869e2bc80f86fb0a1fa27",
+        "affected_sha256": "ee6bc7f0bce434e3a905e9d748c6351152fe4f97bcb3f3b300c831ac944ccbd5",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "implementation",
         "status": "passed",
-        "summary": "六个 1.3 minimal_handoff Skills、24 exits、runtime/adapter/distribution 与 P2 no-copy、F-001 atomic activation 组成一致实现；#146 三包保持 1.2 legacy。",
+        "summary": "stage0_default_base() 已删除；clarification needs_context/refresh_context/retarget_context 与 change-request ready/refresh_context 不再伪造 main，consumer schema 与 projections 正确保留 optional base，formal resolver 继续独占 resolution。",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "2ce041f6476e07f1fc05d5ea9e53e149252e8330fbbb522eef8894a65729eda2",
+        "affected_sha256": "fe16a8f186bfa5ee2188270ef237f45030f4bddddab2aa88d1a5ba0f6eacfbf0",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "tests",
         "status": "passed",
-        "summary": "Fresh r6 的 direct P2、F-001、preset45、Skill159、runtime548+13 skipped、ownership6、shared24、parity30 与 throwaway 均通过；仅保留两个有界外部限制。",
+        "summary": "Round 3 fresh matrix 通过：focused optional 2/2、non-main 1/1、Skill161、runtime548+13 skipped、preset45、ownership6、shared eval24/24、parity30/30、validators 与 throwaway；仅保留两个 non-blocking external limits。",
         "evidence_refs": [
           "check_execution",
           "repository_snapshot"
         ],
-        "affected_sha256": "2d7b01d5d514a04f71497f578f963d8a79ccfe8ac252c6587391d4d9abd2f625",
+        "affected_sha256": "8f4127a1efa79c284273e99ede5be20f508ba2b2151d5dbd1449b089e3ee9619",
         "finding_ids": [],
         "unverified_ids": [
-          "unverified-claude-live-r6",
-          "unverified-exact-remote-marketplace-r6"
+          "unverified-claude-live-round3",
+          "unverified-exact-remote-marketplace-round3"
         ]
       },
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "ssot_first reconciliation 完成：15 个 durable paths 与 code/registry/manifest/README 一致，task delta 已合并，临时 locator 与过程输出仅保留为 task history。",
+        "summary": "ssot_first reconciliation 通过：15 个 durable paths 已声明 formal resolver ownership；Round 3 仅把代码重新对齐既有 SSOT，无新 durable docs delta，no-update reason 已明确。",
         "evidence_refs": [
           "docs_ssot_plan",
           "planning",
           "repository_snapshot"
         ],
-        "affected_sha256": "5593a948acd796264610769d0f7e83cda29b1b3de695045684dc59b01f4ea92f",
+        "affected_sha256": "3ed317414faa09756a41209a09985ba7dd11eb875a6a68d64845d7cea4d930ab",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "cross_layer",
         "status": "passed",
-        "summary": "六 Skills、24 exits、consumer projections、eval corpus、registry、workflow、extension、installed/platform copies 与 byte/mode parity 全部一致。",
+        "summary": "六个 1.3 minimal_handoff Skills、24 exits、producer outputs、consumer projections、formal resolver、shared eval、registry、workflow、installed 与四平台副本一致；30/30 package roots bytes/modes parity 通过。",
         "evidence_refs": [
           "repository_snapshot",
           "implementation_handoff",
@@ -7146,7 +7228,7 @@
       {
         "id": "compatibility",
         "status": "passed",
-        "summary": "Existing/archive fixtures、pre-#145 unknown/known upgrade、update/reapply 与六包 1.3/三包 1.2 legacy compatibility 均通过。",
+        "summary": "Existing/archive fixtures、pre-#145 upgrade、preview/switch、update/reapply、explicit/config-candidate/remote-default resolution 与六包 1.3/三包 1.2 legacy compatibility 均通过。",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution",
@@ -7155,14 +7237,14 @@
         "affected_sha256": "909c1ee4a3697f781609d0d39de67c08b5f96e53333f1c6138752a00b9a35df1",
         "finding_ids": [],
         "unverified_ids": [
-          "unverified-claude-live-r6",
-          "unverified-exact-remote-marketplace-r6"
+          "unverified-claude-live-round3",
+          "unverified-exact-remote-marketplace-round3"
         ]
       },
       {
         "id": "deployment_and_operations",
         "status": "passed",
-        "summary": "CI/CD、container、K8s/Kustomize、Helm、DB migration、Makefile 与 dependency paths 变更为 0；install/update/reapply、identity preservation 与 zero-sidecar 通过。",
+        "summary": "CI/CD、container、K8s/Kustomize、Helm、DB migration、Makefile 与 dependency changed paths 均为 0；secret-shaped matches 为 0；install/update/reapply、ownership、drift 与 zero-sidecar 通过。",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
@@ -7174,19 +7256,19 @@
       {
         "id": "agent_recovery",
         "status": "passed",
-        "summary": "实现与阶段二检查代理集合匹配 effective completed events；evidence supplement 的上下文错位已通过 evt-0209 failed、evt-0210 same-agent resume 与 evt-0211 completed 闭环。",
+        "summary": "实现代理集合保持 /root/issue145_implement 与 /root/issue145_implement_r2，阶段二检查集合保持 /root/issue145_check 与 /root/issue145_check_r2；主会话须在 recorder 前记录本轮 fresh completed liveness，materializer 将强制 exact completed sets 与 recovery closure。",
         "evidence_refs": [
           "agent_assignment",
           "implementation_handoff"
         ],
-        "affected_sha256": "d30ebab69b4d8db41db2f328f7f1da6048fa0284377694e968465e5c4796ae1f",
+        "affected_sha256": "8f4127a1efa79c284273e99ede5be20f508ba2b2151d5dbd1449b089e3ee9619",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "本轮从 approved scope 与 1254 个 reviewed implementation paths 出发，对当前 committed+dirty snapshot 完整重跑；29 条命令均具备 split stdout/stderr digest 与 size。",
+        "summary": "Round 3 从 approved scope、1254 个 non-metadata reviewed paths、完整 1257-path committed diff 与 93-path dirty snapshot出发重跑；28 条命令全部记录 argv、exit、split stdout/stderr SHA-256 与 size，27 条 exit 0，1 条 guard 预期 exit 2。",
         "evidence_refs": [
           "planning",
           "requirement_provenance",
@@ -7196,40 +7278,40 @@
           "check_execution",
           "agent_assignment"
         ],
-        "affected_sha256": "fa952a34179742e2326f6a4236c529d2743182032598e9137e20b16e9390ad2e",
+        "affected_sha256": "8f4127a1efa79c284273e99ede5be20f508ba2b2151d5dbd1449b089e3ee9619",
         "finding_ids": [],
         "unverified_ids": [
-          "unverified-claude-live-r6",
-          "unverified-exact-remote-marketplace-r6"
+          "unverified-claude-live-round3",
+          "unverified-exact-remote-marketplace-round3"
         ]
       }
     ],
     "findings": [],
     "ai_review_gate": {
       "status": "passed",
-      "summary": "Fresh full r6 对完整 #145 scope、当前 diff、Docs SSOT、agent recovery 和全部适用验证完成 AI Review Gate；current-scope findings 为 0，blocking unverified items 为 0。",
+      "summary": "Round 3 对完整 #145 scope、当前 committed+dirty snapshot、Docs SSOT、agent recovery 和全部适用验证完成 AI Review Gate；normal-path P1 已闭环，P0/P1/P2/P3 findings 均为 0，blocking unverified items 为 0。",
       "planning_facts_sha256": "78d24087a6df4487a019ffcd6e018400a61e19502157678675e487605459267b",
-      "snapshot_sha256": "5ba823ef8b3375f585a8f042b51f509a3347ce9d8e565f87c8d12b1bd39f9e87",
+      "snapshot_sha256": "deb0f7153e9fe8aa13a836734e30645affc08a49343397eb546b6c361c3bb8b7",
       "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-      "adequacy_sha256": "dcc0f97c0a4ca454b65f14029b3d8eb22eacc1eeb377112773fdf62f7a22c007",
+      "adequacy_sha256": "bab5507a9c1b6324eb4c02c6afd04dcd3b622cecb55a54c2bde5908db2d00658",
       "findings_count": 0,
       "full_rerun": true,
-      "full_round_sha256": "fa0114bcee4367fbd0162baef053632d8a20267ce9af3cfc1e5619db448f4bca"
+      "full_round_sha256": "99ed1512fc725cdd2a4b13fb4bcbf6851d5aa8e1fea409822984fcee31618373"
     },
-    "adequacy_sha256": "dcc0f97c0a4ca454b65f14029b3d8eb22eacc1eeb377112773fdf62f7a22c007"
+    "adequacy_sha256": "bab5507a9c1b6324eb4c02c6afd04dcd3b622cecb55a54c2bde5908db2d00658"
   },
   "human_confirmation": {
     "kind": "not-required",
     "status": "not_required",
-    "summary": "本轮未引入 scope、authority 或用户选择变化；两个外部限制均已在 approved plan 中有界且不阻断。",
+    "summary": "Round 3 未引入 scope、authority、issue classification 或用户选择变化；两个外部限制已在 approved plan 内有界且不阻断。",
     "confirmed_at": null
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "Fresh full r6 完整覆盖 #145 approved scope、当前 committed+dirty diff、Docs SSOT、agent recovery 与全部适用验证；P2 与 F-001 均已闭环，十个 adequacy dimensions 通过，current-scope findings 为 0。",
+  "reason": "Round 3 在 HEAD ded63e71e5bab787c5d795a300e3507142b18521 上完整复核 #145 approved scope、origin/main...HEAD diff、全部 non-metadata dirty paths、Docs SSOT、agent recovery 与适用验证；原 P1 已闭环，十个 adequacy dimensions 通过，current-scope findings 为 0。",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
-  "facts_sha256": "aeadce229cf670c3d5889a557650df3f146dced8a7f9affc9dcb6371b4610c4f"
+  "facts_sha256": "73334880433f8384f50537d7ec645dd1acd02d49387d3a1f8dfa6e570f6c9eec"
 }

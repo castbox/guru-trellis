@@ -4,7 +4,6 @@
   "handoff_mode": "workflow",
   "handoff_target_locator": "stage0-handoff-target-locator",
   "handoff_repo_locator": "stage0-handoff-repo-locator",
-  "handoff_base_branch": "stage0-handoff-base-branch",
   "handoff_confirmed_action_id": "stage0-handoff-confirmed-action-id",
   "handoff_continuation_id": "stage0-handoff-continuation-id"
 }

@@ -525,10 +525,6 @@
             "target": "repo_locator"
           },
           {
-            "source": "handoff_base_branch",
-            "target": "base_branch"
-          },
-          {
             "source": "handoff_continuation_id",
             "target": "continuation_id"
           }
@@ -553,10 +549,6 @@
             "target": "repo_root"
           },
           {
-            "source": "handoff_base_branch",
-            "target": "base_branch"
-          },
-          {
             "source": "handoff_route",
             "target": "route"
           }
@@ -579,10 +571,6 @@
           {
             "source": "handoff_repo_root",
             "target": "repo_root"
-          },
-          {
-            "source": "handoff_base_branch",
-            "target": "base_branch"
           },
           {
             "source": "handoff_route",

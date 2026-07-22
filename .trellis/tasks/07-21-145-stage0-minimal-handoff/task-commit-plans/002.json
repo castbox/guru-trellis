@@ -236,7 +236,77 @@
     "plan_digest": "1d4e723d7f10b00791b0f5efc07c5bd8d5aa1c5d52d3062ae00493faaa378aca"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-22T02:30:20Z",
+    "commit_sha": "ded63e71e5bab787c5d795a300e3507142b18521",
+    "parent": "72326953e4df36a91201f10f581361b045e8c6f0",
+    "message_sha256": "0a1035329de0a8f944babdaee559c8f6b5dfa3b115abf02221961641c92685e9",
+    "committed_paths": [
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/001.json",
+      ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "007ca0e496a6e94f8c413db90bf31b050b308de5",
+      "actual_tree": "007ca0e496a6e94f8c413db90bf31b050b308de5",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/agent-assignment.json",
+          "expected_blob": "d5b1b13e4ce952916db884ee38048a36146ffcbc",
+          "expected_mode": "100644",
+          "actual_blob": "d5b1b13e4ce952916db884ee38048a36146ffcbc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/phase2-check.json",
+          "expected_blob": "5752bb4cec0b12124ff00c376d26421637f83311",
+          "expected_mode": "100644",
+          "actual_blob": "5752bb4cec0b12124ff00c376d26421637f83311",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/001.json",
+          "expected_blob": "a0352412760d707aa89b2eaff8b13552c1cfe0e6",
+          "expected_mode": "100644",
+          "actual_blob": "a0352412760d707aa89b2eaff8b13552c1cfe0e6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-21-145-stage0-minimal-handoff/task-commit-plans/002.json",
+          "expected_blob": "719cf7abf11b8b22e93774f70768b95db222c72f",
+          "expected_mode": "100644",
+          "actual_blob": "719cf7abf11b8b22e93774f70768b95db222c72f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "expected_blob": "a1cfb598023b920f8fee5468c18702de79ebedc0",
+          "expected_mode": "100755",
+          "actual_blob": "a1cfb598023b920f8fee5468c18702de79ebedc0",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "e19232f5bea8f76fdebaad164dba6f76218582a5",
+          "expected_mode": "100644",
+          "actual_blob": "e19232f5bea8f76fdebaad164dba6f76218582a5",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }
