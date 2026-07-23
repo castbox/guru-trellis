@@ -1464,21 +1464,26 @@ assert "guru-planning-approval-2.0" in api["skill_contracts"]["artifact_schema_i
 assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-workspace-plan-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-workspace-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.2"
+assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.3"
 assert api["skill_contracts"]["registry_schema_id"] == "guru-team-skill-registry-1.1"
 assert api["skill_contracts"]["supported_interface_schema_ids"] == ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"]
 assert api["skill_contracts"]["current_interface_schema_id"] == "guru-team-skill-interface-1.3"
-assert api["skill_contracts"]["legacy_skill_ids"] == [
-    "guru-approve-task-plan", "guru-check-task", "guru-create-task-commit",
+assert api["skill_contracts"]["legacy_skill_ids"] == []
+assert len(api["skill_contracts"]["public_input_schema_ids"]) == 25
+assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 35
+assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 10
+assert api["skill_contracts"]["migration_manifests"] == [
+    {
+        "id": "stage0-minimal-handoff-v1",
+        "schema_id": "guru-team-stage0-migration-manifest-1.0",
+        "path": "migrations/stage0-minimal-handoff.json",
+    },
+    {
+        "id": "production-minimal-handoff-v1",
+        "schema_id": "guru-team-production-migration-manifest-1.0",
+        "path": "migrations/production-minimal-handoff.json",
+    },
 ]
-assert len(api["skill_contracts"]["public_input_schema_ids"]) == 15
-assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 24
-assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 7
-assert api["skill_contracts"]["migration_manifests"] == [{
-    "id": "stage0-minimal-handoff-v1",
-    "schema_id": "guru-team-stage0-migration-manifest-1.0",
-    "path": "migrations/stage0-minimal-handoff.json",
-}]
 assert api["skill_evals"]["schema_id"] == "guru-team-skill-evals-1.0"
 assert api["skill_evals"]["adapter_ids"] == ["shared", "codex", "claude", "cursor"]
 assert api["skill_runtime"] == {
@@ -1515,19 +1520,21 @@ test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/claude.sh"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":9,"exit_markers":35,"target_markers":20,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":9,"exit_markers":35,"target_markers":21,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 MINIMAL_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "minimal_handoff"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.3"' <<<"$MINIMAL_CONTRACT_JSON"
 MINIMAL_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["corpus_schema_id"] == "guru-team-skill-evals-1.0"; assert payload["case_ids"] == ["synced-route", "skipped-route", "blocked-route"]' <<<"$MINIMAL_EVAL_JSON"
-LEGACY_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-approve-task-plan --json)"
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "legacy"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.2"' <<<"$LEGACY_CONTRACT_JSON"
-legacy_eval_error="$(mktemp)"
-if "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-approve-task-plan --json 2>"$legacy_eval_error"; then
-  echo "Legacy production Skill unexpectedly exposed an eval corpus" >&2
-  exit 1
-fi
-python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["code"] == "evals_unsupported"' "$legacy_eval_error"
+while IFS='|' read -r skill_id expected_case_ids; do
+  PRODUCTION_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill "$skill_id" --json)"
+  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "minimal_handoff"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.3"' <<<"$PRODUCTION_CONTRACT_JSON"
+  PRODUCTION_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill "$skill_id" --json)"
+  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["corpus_schema_id"] == "guru-team-skill-evals-1.0"; assert payload["case_ids"] == json.loads(sys.argv[1])' "$expected_case_ids" <<<"$PRODUCTION_EVAL_JSON"
+done <<'EOF'
+guru-approve-task-plan|["approved-initial","revision-required","clarify-scope","blocked-initial"]
+guru-check-task|["passed-initial","implementation-required","planning-stale","blocked-initial"]
+guru-create-task-commit|["committed-initial","revision-required","committed-finding-fix","blocked-recovery"]
+EOF
 test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
 test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
 test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
@@ -2402,14 +2409,142 @@ DISCOVERY_TASK_JSON="$(
     --task "$DISCOVERY_TASK_REL" \
     --expected-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256"
 )"
+DISCOVERY_TASK_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["snapshot_identity"]["snapshot_sha256"])' <<<"$DISCOVERY_TASK_JSON")"
 DISCOVERY_CHECK_JSON="$(
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
     --root "$DISCOVERY_TASK_WORKTREE" \
     --json \
     --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256"
+    --expected-snapshot-sha256 "$DISCOVERY_TASK_SNAPSHOT_SHA256"
 )"
-python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]; assert checked["status"] == "passed"; assert checked["typed_exit"] == "context_ready"' "$DISCOVERY_TASK_JSON" "$DISCOVERY_SNAPSHOT_SHA256" <<<"$DISCOVERY_CHECK_JSON"
+python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]; assert checked["status"] == "passed"; assert checked["typed_exit"] == "context_ready"; assert recorded["task_worktree_state"]["context_snapshot_path"].endswith("context-discovery.json")' "$DISCOVERY_TASK_JSON" "$DISCOVERY_TASK_SNAPSHOT_SHA256" <<<"$DISCOVERY_CHECK_JSON"
+DISCOVERY_REPLACEMENT_INPUT="$WORK_DIR/context-discovery-replacement-input.json"
+DISCOVERY_INVALID_REPLACEMENT_INPUT="$WORK_DIR/context-discovery-invalid-replacement-input.json"
+DISCOVERY_REPLACEMENT_SUBMITTED_SHA256="$(python3 - "$DISCOVERY_TASK_WORKTREE" "$DISCOVERY_INPUT" "$DISCOVERY_REPLACEMENT_INPUT" "$DISCOVERY_INVALID_REPLACEMENT_INPUT" "$DISCOVERY_TASK_SNAPSHOT_SHA256" <<'PY'
+import copy
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+spec = importlib.util.spec_from_file_location("installed_replacement_context_runtime", runtime)
+if spec is None or spec.loader is None:
+    raise SystemExit(f"could not load installed context discovery runtime: {runtime}")
+gtt = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = gtt
+spec.loader.exec_module(gtt)
+payload["generated_at"] = "2026-01-01T00:01:00Z"
+payload["superseded_snapshot_sha256"] = sys.argv[5]
+payload["current_state"]["observations"].append(
+    "The active task authority changed after the prior snapshot."
+)
+payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
+Path(sys.argv[3]).write_text(
+    json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+)
+invalid = copy.deepcopy(payload)
+invalid["snapshot_identity"]["snapshot_sha256"] = "0" * 64
+Path(sys.argv[4]).write_text(
+    json.dumps(invalid, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+)
+print(payload["snapshot_identity"]["snapshot_sha256"])
+PY
+)"
+DISCOVERY_PRIOR_BYTES_SHA256="$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")"
+for replacement_case in missing wrong; do
+  replacement_error_code="expected_prior_snapshot_required"
+  set +e
+  if [[ "$replacement_case" == "wrong" ]]; then
+    replacement_error_code="expected_prior_snapshot_mismatch"
+    DISCOVERY_REPLACEMENT_ERROR_JSON="$(
+      DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
+        --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
+        --input "$DISCOVERY_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
+        --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" \
+        --expected-prior-snapshot-sha256 "$(printf 'f%.0s' {1..64})" 2>&1
+    )"
+  else
+    DISCOVERY_REPLACEMENT_ERROR_JSON="$(
+      DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
+        --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
+        --input "$DISCOVERY_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
+        --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" 2>&1
+    )"
+  fi
+  DISCOVERY_REPLACEMENT_ERROR_STATUS=$?
+  set -e
+  if [[ "$DISCOVERY_REPLACEMENT_ERROR_STATUS" -eq 0 ]]; then
+    echo "Context discovery accepted $replacement_case replacement prior" >&2
+    exit 2
+  fi
+  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["error_codes"] == [sys.argv[1]]' "$replacement_error_code" <<<"$DISCOVERY_REPLACEMENT_ERROR_JSON"
+  test "$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")" = "$DISCOVERY_PRIOR_BYTES_SHA256"
+done
+set +e
+DISCOVERY_INVALID_REPLACEMENT_JSON="$(
+  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
+    --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
+    --input "$DISCOVERY_INVALID_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
+    --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" \
+    --expected-prior-snapshot-sha256 "$DISCOVERY_TASK_SNAPSHOT_SHA256" 2>&1
+)"
+DISCOVERY_INVALID_REPLACEMENT_STATUS=$?
+set -e
+if [[ "$DISCOVERY_INVALID_REPLACEMENT_STATUS" -eq 0 ]]; then
+  echo "Context discovery accepted an invalid replacement snapshot" >&2
+  exit 2
+fi
+python3 -c 'import json, sys; payload=json.load(sys.stdin); assert "snapshot_identity_mismatch" in payload["error_codes"]' <<<"$DISCOVERY_INVALID_REPLACEMENT_JSON"
+test "$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")" = "$DISCOVERY_PRIOR_BYTES_SHA256"
+DISCOVERY_REPLACED_JSON="$(
+  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
+    --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
+    --input "$DISCOVERY_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
+    --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" \
+    --expected-prior-snapshot-sha256 "$DISCOVERY_TASK_SNAPSHOT_SHA256"
+)"
+DISCOVERY_REPLACED_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["superseded_snapshot_sha256"] == sys.argv[1]; print(payload["snapshot_identity"]["snapshot_sha256"])' "$DISCOVERY_TASK_SNAPSHOT_SHA256" <<<"$DISCOVERY_REPLACED_JSON")"
+DISCOVERY_REPLACED_BYTES_SHA256="$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")"
+test "$DISCOVERY_REPLACED_BYTES_SHA256" != "$DISCOVERY_PRIOR_BYTES_SHA256"
+DISCOVERY_RETRY_JSON="$(
+  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
+    --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
+    --input "$DISCOVERY_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
+    --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" \
+    --expected-prior-snapshot-sha256 "$DISCOVERY_TASK_SNAPSHOT_SHA256"
+)"
+python3 -c 'import json, sys; first=json.loads(sys.argv[1]); retry=json.load(sys.stdin); assert first == retry; assert retry["snapshot_identity"]["snapshot_sha256"] == sys.argv[2]' "$DISCOVERY_REPLACED_JSON" "$DISCOVERY_REPLACED_SNAPSHOT_SHA256" <<<"$DISCOVERY_RETRY_JSON"
+test "$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")" = "$DISCOVERY_REPLACED_BYTES_SHA256"
+DISCOVERY_TASK_PUBLIC_INPUT_REL=".trellis/.runtime/guru-team/context-discovery-task-public-input.json"
+DISCOVERY_TASK_PUBLIC_INPUT="$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_PUBLIC_INPUT_REL"
+mkdir -p "$(dirname "$DISCOVERY_TASK_PUBLIC_INPUT")"
+python3 - "$DISCOVERY_TASK_PUBLIC_INPUT" "$DISCOVERY_TASK_REL" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+payload = {
+    "profile": "task_local_reentry",
+    "source_exit": "start",
+    "mode": "standalone",
+    "repo_locator": "castbox/guru-trellis-throwaway",
+    "base_branch": "main",
+    "task_locator": sys.argv[2],
+    "prior_snapshot_locator": "context-discovery.json",
+    "continuation_id": "throwaway-task-local-reentry",
+}
+Path(sys.argv[1]).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+PY
+DISCOVERY_TASK_PUBLIC_JSON="$(
+  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
+    "$DISCOVERY_TASK_WORKTREE/.agents/skills/guru-discover-change-context/scripts/invoke.sh" \
+    --input "$DISCOVERY_TASK_PUBLIC_INPUT_REL" \
+    --owner-result "$DISCOVERY_TASK_REL/context-discovery.json"
+)"
+python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_context_locator"].endswith("context-discovery.json")' <<<"$DISCOVERY_TASK_PUBLIC_JSON"
 rm "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json"
 DISCOVERY_GIT_EXCLUDE="$(git -C "$DISCOVERY_TASK_WORKTREE" rev-parse --git-path info/exclude)"
 if [[ "$DISCOVERY_GIT_EXCLUDE" != /* ]]; then
@@ -2522,14 +2657,15 @@ DISCOVERY_REFRESH_TASK_JSON="$(
     --task "$DISCOVERY_TASK_REL" \
     --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256"
 )"
+DISCOVERY_REFRESH_TASK_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["snapshot_identity"]["snapshot_sha256"])' <<<"$DISCOVERY_REFRESH_TASK_JSON")"
 DISCOVERY_REFRESH_CHECK_JSON="$(
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
     --root "$DISCOVERY_TASK_WORKTREE" \
     --json \
     --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256"
+    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_TASK_SNAPSHOT_SHA256"
 )"
-python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["typed_exit"] == checked["typed_exit"] == "refresh_base"; assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]' "$DISCOVERY_REFRESH_TASK_JSON" "$DISCOVERY_REFRESH_SNAPSHOT_SHA256" <<<"$DISCOVERY_REFRESH_CHECK_JSON"
+python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["typed_exit"] == checked["typed_exit"] == "refresh_base"; assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]' "$DISCOVERY_REFRESH_TASK_JSON" "$DISCOVERY_REFRESH_TASK_SNAPSHOT_SHA256" <<<"$DISCOVERY_REFRESH_CHECK_JSON"
 rm -rf "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL"
 mkdir -p "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_ZERO_TASK_REL"
 printf '%s\n' "{\"id\":\"context-discovery-zero\",\"status\":\"planning\",\"branch\":\"$DISCOVERY_TASK_BRANCH\"}" >"$DISCOVERY_TASK_WORKTREE/$DISCOVERY_ZERO_TASK_REL/task.json"
@@ -2542,14 +2678,15 @@ DISCOVERY_ZERO_TASK_JSON="$(
     --task "$DISCOVERY_ZERO_TASK_REL" \
     --expected-snapshot-sha256 "$DISCOVERY_ZERO_SNAPSHOT_SHA256"
 )"
+DISCOVERY_ZERO_TASK_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["snapshot_identity"]["snapshot_sha256"])' <<<"$DISCOVERY_ZERO_TASK_JSON")"
 DISCOVERY_ZERO_CHECK_JSON="$(
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
     --root "$DISCOVERY_TASK_WORKTREE" \
     --json \
     --task "$DISCOVERY_ZERO_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_ZERO_SNAPSHOT_SHA256"
+    --expected-snapshot-sha256 "$DISCOVERY_ZERO_TASK_SNAPSHOT_SHA256"
 )"
-python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["history_preview"]["candidates"] == []; assert recorded["mem_review"]["status"] == "not_needed"; assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]; assert checked["status"] == "passed"' "$DISCOVERY_ZERO_TASK_JSON" "$DISCOVERY_ZERO_SNAPSHOT_SHA256" <<<"$DISCOVERY_ZERO_CHECK_JSON"
+python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["history_preview"]["candidates"] == []; assert recorded["mem_review"]["status"] == "not_needed"; assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]; assert checked["status"] == "passed"' "$DISCOVERY_ZERO_TASK_JSON" "$DISCOVERY_ZERO_TASK_SNAPSHOT_SHA256" <<<"$DISCOVERY_ZERO_CHECK_JSON"
 git -C "$TARGET" worktree remove --force "$DISCOVERY_TASK_WORKTREE"
 git -C "$TARGET" branch -D "$DISCOVERY_TASK_BRANCH" >/dev/null
 test -z "$(git -C "$TARGET" status --porcelain=v1)"
@@ -3220,6 +3357,267 @@ ABSENCE_SIDECARS="$(find "$ABSENCE_TARGET" -type f \( -name '*.new' -o -name '*.
 if [[ -n "$ABSENCE_SIDECARS" ]]; then
   echo "Unexpected no-developer fixture sidecars after update/reapply:" >&2
   printf '%s\n' "$ABSENCE_SIDECARS" >&2
+  exit 2
+fi
+
+PRE146_ARCHIVE_DIR="$ABSENCE_TARGET/.trellis/tasks/archive/2026-01/pre-146-production-interface"
+PRE146_ACTIVE_DIR="$ABSENCE_TARGET/.trellis/tasks/07-01-pre-146-active-production"
+python3 - "$ABSENCE_TARGET" "$PRE146_ARCHIVE_DIR" "$PRE146_ACTIVE_DIR" <<'PY'
+import hashlib
+import json
+import shutil
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+archive_dir = Path(sys.argv[2]).resolve()
+active_dir = Path(sys.argv[3]).resolve()
+skills_root = root / ".trellis/guru-team/skills"
+extension_path = root / ".trellis/guru-team/extension.json"
+production_ids = (
+    "guru-approve-task-plan",
+    "guru-check-task",
+    "guru-create-task-commit",
+)
+stage0_ids = {
+    "guru-sync-base",
+    "guru-discover-change-context",
+    "guru-clarify-requirements",
+    "guru-review-contract-wording",
+    "guru-review-change-request",
+    "guru-create-task-workspace",
+}
+package_roots = (
+    skills_root / "packages",
+    root / ".agents/skills",
+    root / ".codex/skills",
+    root / ".cursor/skills",
+    root / ".claude/skills",
+)
+
+
+def json_bytes(payload):
+    return (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+
+
+for skill_id in production_ids:
+    for package_root in package_roots:
+        package = package_root / skill_id
+        interface_path = package / "interface.json"
+        interface = json.loads(interface_path.read_text(encoding="utf-8"))
+        interface["$schema"] = "../../schemas/skill-interface.schema.json"
+        interface["schema_version"] = "1.2"
+        interface.pop("public_contracts", None)
+        interface["artifacts"] = [
+            item for item in interface.get("artifacts", [])
+            if not str(item.get("id", "")).startswith("public_")
+            and not str(item.get("id", "")).endswith("_authoring")
+        ]
+        interface["schemas"] = [
+            item for item in interface.get("schemas", [])
+            if not str(item.get("id", "")).startswith("public_")
+        ]
+        interface["validators"] = [
+            item for item in interface.get("validators", [])
+            if item.get("id") != "public_invocation"
+        ]
+        if skill_id == "guru-approve-task-plan":
+            for external_exit in interface.get("external_exits", []):
+                if external_exit.get("id") == "clarify_scope":
+                    external_exit["consumer"] = {
+                        "kind": "skill", "id": "guru-clarify-requirements"
+                    }
+        interface_path.write_bytes(json_bytes(interface))
+        shutil.rmtree(package / "evals", ignore_errors=True)
+        invoke = package / "scripts/invoke.sh"
+        if invoke.exists():
+            invoke.unlink()
+        for parent_name in ("examples", "schemas"):
+            parent = package / parent_name
+            if parent.is_dir():
+                for candidate in parent.glob("public-*"):
+                    candidate.unlink()
+
+shutil.rmtree(skills_root / "consumers/workflow/production", ignore_errors=True)
+for relative in (
+    "migrations/production-minimal-handoff.json",
+    "schemas/production-migration-manifest.schema.json",
+):
+    path = skills_root / relative
+    if path.exists():
+        path.unlink()
+
+registry_path = skills_root / "registry.json"
+registry = json.loads(registry_path.read_text(encoding="utf-8"))
+for entry in registry["skills"]:
+    if entry.get("id") in production_ids:
+        entry["interface_schema_id"] = "guru-team-skill-interface-1.2"
+        entry["io_contract_state"] = "legacy"
+registry_path.write_bytes(json_bytes(registry))
+
+extension = json.loads(extension_path.read_text(encoding="utf-8"))
+contracts = extension["extension"]["public_api"]["skill_contracts"]
+contracts["interface_schema_id"] = "guru-team-skill-interface-1.2"
+contracts["legacy_skill_ids"] = list(production_ids)
+contracts["public_input_schema_ids"] = [
+    value for value in contracts["public_input_schema_ids"]
+    if not value.startswith("guru-production-")
+]
+contracts["typed_output_schema_ids"] = [
+    value for value in contracts["typed_output_schema_ids"]
+    if not value.startswith("guru-production-")
+]
+production_private_ids = {
+    "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+}
+contracts["private_artifact_schema_ids"] = [
+    value for value in contracts["private_artifact_schema_ids"]
+    if value not in production_private_ids
+]
+contracts["migration_manifests"] = [
+    value for value in contracts["migration_manifests"]
+    if value["id"] == "stage0-minimal-handoff-v1"
+]
+extension["extension"]["version"] = "0.6.5-guru.20"
+
+skill_manifest = extension["skill_packages"]
+records = []
+for record in skill_manifest["files"]:
+    target = root / record["path"]
+    if not target.is_file():
+        continue
+    updated = dict(record)
+    updated["sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
+    records.append(updated)
+skill_manifest["files"] = records
+skill_manifest["canonical_registry_sha256"] = hashlib.sha256(
+    registry_path.read_bytes()
+).hexdigest()
+skill_manifest["status"] = "ok"
+skill_manifest["conflicts"] = []
+skill_manifest["sidecars"] = []
+skill_manifest["removals"] = []
+packages = []
+for entry in registry["skills"]:
+    if entry.get("state") != "active":
+        continue
+    package = skills_root / str(entry["package"])
+    interface = skills_root / str(entry["interface"])
+    tree = hashlib.sha256()
+    for source in sorted(path for path in package.rglob("*") if path.is_file() and not path.is_symlink()):
+        if "__pycache__" in source.parts or source.suffix in {".pyc", ".pyo"}:
+            continue
+        relative = source.relative_to(package).as_posix()
+        tree.update(relative.encode("utf-8") + b"\0" + source.read_bytes() + b"\0")
+    packages.append({
+        "id": str(entry["id"]),
+        "interface_sha256": hashlib.sha256(interface.read_bytes()).hexdigest(),
+        "tree_sha256": tree.hexdigest(),
+    })
+skill_manifest["packages"] = packages
+extension_path.write_bytes(json_bytes(extension))
+
+archive_dir.mkdir(parents=True)
+active_dir.mkdir(parents=True)
+for skill_id in production_ids:
+    legacy_interface = skills_root / f"packages/{skill_id}/interface.json"
+    (archive_dir / f"{skill_id}-interface-1.2.json").write_bytes(
+        legacy_interface.read_bytes()
+    )
+for name, payload in (
+    ("planning-approval.json", {"schema_version": "1.2", "skill_id": "guru-approve-task-plan", "typed_exit": "revision_required"}),
+    ("phase2-check.json", {"schema_version": "1.0", "skill_id": "guru-check-task", "typed_exit": "planning_stale"}),
+    ("task-commit-plan.json", {"schema_version": "1.0", "skill_id": "guru-create-task-commit", "typed_exit": "revision-required"}),
+):
+    (active_dir / name).write_bytes(json_bytes(payload))
+
+entries = {entry["id"]: entry for entry in registry["skills"] if entry.get("state") == "active"}
+assert set(entries) == stage0_ids | set(production_ids)
+assert all(entries[skill_id]["io_contract_state"] == "minimal_handoff" for skill_id in stage0_ids)
+assert all(entries[skill_id]["interface_schema_id"] == "guru-team-skill-interface-1.3" for skill_id in stage0_ids)
+assert all(entries[skill_id]["io_contract_state"] == "legacy" for skill_id in production_ids)
+assert all(entries[skill_id]["interface_schema_id"] == "guru-team-skill-interface-1.2" for skill_id in production_ids)
+assert len(contracts["public_input_schema_ids"]) == 15
+assert len(contracts["typed_output_schema_ids"]) == 24
+assert len(contracts["private_artifact_schema_ids"]) == 7
+assert contracts["legacy_skill_ids"] == list(production_ids)
+assert [item["id"] for item in contracts["migration_manifests"]] == ["stage0-minimal-handoff-v1"]
+PY
+PRE146_ARCHIVE_DIGEST="$(workspace_tree_digest "$PRE146_ARCHIVE_DIR")"
+PRE146_ACTIVE_DIGEST="$(workspace_tree_digest "$PRE146_ACTIVE_DIR")"
+assert_official_state_absent "$ABSENCE_TARGET" "pre-146 production fixture materialization"
+set +e
+PRE146_FIRST_APPLY_JSON="$(
+  "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+    --repo "$ABSENCE_TARGET" \
+    --platform claude \
+    --platform codex \
+    --platform cursor
+)"
+PRE146_FIRST_APPLY_STATUS=$?
+set -e
+if [[ "$PRE146_FIRST_APPLY_STATUS" -ne 2 ]]; then
+  echo "Pre-#146 preset upgrade did not stop for managed backup acknowledgment" >&2
+  exit 2
+fi
+python3 -c 'import json, pathlib, sys; root=pathlib.Path(sys.argv[1]).resolve(); payload=json.load(sys.stdin); package=payload["skill_packages"]; assert package["status"] == "conflict"; assert package["conflicts"] == []; assert package["sidecars"]; [(path.unlink()) for value in package["sidecars"] for path in [(root / value).resolve()] if path.is_relative_to(root) and path.suffix in {".new", ".bak"} and path.is_file()]' "$ABSENCE_TARGET" <<<"$PRE146_FIRST_APPLY_JSON"
+PRE146_COMPLETED_APPLY_JSON="$(
+  "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+    --repo "$ABSENCE_TARGET" \
+    --platform claude \
+    --platform codex \
+    --platform cursor
+)"
+python3 -c 'import json, sys; payload=json.load(sys.stdin); package=payload["skill_packages"]; assert package["status"] == "ok"; assert package["conflicts"] == package["sidecars"] == []; installed=payload["skill_installed_validation"]; assert installed["status"] == "passed"; assert installed["facts"]["minimal_handoff_ids"] == sorted(installed["facts"]["active_ids"]); assert installed["facts"]["legacy_ids"] == []' <<<"$PRE146_COMPLETED_APPLY_JSON"
+assert_official_state_absent "$ABSENCE_TARGET" "pre-146 preset upgrade"
+(
+  cd "$ABSENCE_TARGET"
+  trellis update --force
+  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
+)
+apply_local_workflow_sample "$ABSENCE_TARGET"
+"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+  --repo "$ABSENCE_TARGET" \
+  --platform claude \
+  --platform codex \
+  --platform cursor >/dev/null
+assert_official_state_absent "$ABSENCE_TARGET" "pre-146 update and reapply"
+PRE146_SOURCE_VALIDATION_JSON="$("$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
+PRE146_INSTALLED_VALIDATION_JSON="$("$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$ABSENCE_TARGET" --json --mode installed)"
+python3 -c 'import json, sys; source=json.loads(sys.argv[1]); installed=json.load(sys.stdin); expected={"invoke_markers":9,"exit_markers":35,"target_markers":21,"legacy_ids":[],"planned_ids":[]}; assert source["status"] == installed["status"] == "passed"; assert all(source["facts"][key] == installed["facts"][key] == value for key, value in expected.items())' "$PRE146_SOURCE_VALIDATION_JSON" <<<"$PRE146_INSTALLED_VALIDATION_JSON"
+for skill_id in \
+  guru-approve-task-plan \
+  guru-check-task \
+  guru-clarify-requirements \
+  guru-create-task-commit \
+  guru-create-task-workspace \
+  guru-discover-change-context \
+  guru-review-change-request \
+  guru-review-contract-wording \
+  guru-sync-base; do
+  PRE146_CONTRACT_JSON="$("$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$ABSENCE_TARGET" --mode installed --skill "$skill_id" --json)"
+  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "minimal_handoff"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.3"' <<<"$PRE146_CONTRACT_JSON"
+done
+for skill_id in guru-approve-task-plan guru-check-task guru-create-task-commit; do
+  PRE146_EVAL_JSON="$(
+    "$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/run-skill-evals.sh" \
+      --root "$ABSENCE_TARGET" \
+      --mode installed \
+      --skill "$skill_id" \
+      --adapter shared \
+      --run-root "$WORK_DIR/pre-146-upgrade-evals/$skill_id" \
+      --json
+  )"
+  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["status"] == "passed"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.3"; assert all(case["status"] == "passed" for case in payload["cases"])' <<<"$PRE146_EVAL_JSON"
+done
+test "$(workspace_tree_digest "$PRE146_ARCHIVE_DIR")" = "$PRE146_ARCHIVE_DIGEST"
+test "$(workspace_tree_digest "$PRE146_ACTIVE_DIR")" = "$PRE146_ACTIVE_DIGEST"
+PRE146_FINAL_SIDECARS="$(find "$ABSENCE_TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print)"
+if [[ -n "$PRE146_FINAL_SIDECARS" ]]; then
+  echo "Unexpected pre-146 upgrade sidecars after update/reapply:" >&2
+  printf '%s\n' "$PRE146_FINAL_SIDECARS" >&2
   exit 2
 fi
 

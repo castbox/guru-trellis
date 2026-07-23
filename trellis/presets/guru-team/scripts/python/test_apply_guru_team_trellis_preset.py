@@ -1550,9 +1550,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
         for field, expected_count in (
-            ("public_input_schema_ids", 15),
-            ("typed_output_schema_ids", 24),
-            ("private_artifact_schema_ids", 7),
+            ("public_input_schema_ids", 25),
+            ("typed_output_schema_ids", 35),
+            ("private_artifact_schema_ids", 10),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -1672,7 +1672,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 (package_root / readiness_schema_relative).read_bytes(),
                 readiness_schema_bytes,
             )
-        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.2")
+        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.3")
         self.assertEqual(public_api["skill_contracts"]["reserved_skill_ids"], ["guru-create-work-commit"])
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("backfill-finish-summary", public_api["companion_scripts"])

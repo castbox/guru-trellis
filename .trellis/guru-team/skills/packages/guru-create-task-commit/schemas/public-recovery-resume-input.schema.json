@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-create-task-commit-input-recovery-resume-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "message_intent",
+    "path_authorizations",
+    "semantic_review",
+    "human_authorization",
+    "exit_intent",
+    "source_exit",
+    "checked_head",
+    "check_ref",
+    "recovery_intent"
+  ],
+  "properties": {
+    "profile": {
+      "const": "recovery_resume"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "message_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "body"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "path_authorizations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "semantic_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "revision-required",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "human_authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "not_required",
+            "refused"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "exit_intent": {
+      "type": "string",
+      "enum": [
+        "committed",
+        "revision-required",
+        "blocked"
+      ]
+    },
+    "source_exit": {
+      "const": "transaction_recovery"
+    },
+    "checked_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "check_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recovery_intent": {
+      "type": "string",
+      "enum": [
+        "resume_planned",
+        "verify_committed"
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-approve-task-plan-output-approved-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "approval_ref"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "approved"
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "approval_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

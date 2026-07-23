@@ -908,13 +908,14 @@ the mandatory invocation and typed transitions below.
 <!-- guru-skill-invoke: {"skill":"guru-approve-task-plan","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"approved","consumer":{"kind":"workflow","id":"phase-1-task-activation"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"revision_required","consumer":{"kind":"skill","id":"guru-approve-task-plan"}} -->
-<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"clarify_scope","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"clarify_scope","consumer":{"kind":"workflow","id":"guru-task-plan-clarify-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"blocked","consumer":{"kind":"stop","id":"task-plan-approval-blocked"}} -->
 
 Consume exactly one declared exit. Unknown, multiple, unmapped, missing-package,
 or consumer-mismatched results fail closed.
 
 <!-- guru-stop-target: {"id":"task-plan-approval-blocked"} -->
+<!-- guru-workflow-target: {"id":"guru-task-plan-clarify-scope-router"} -->
 
 #### 1.5 Activate task `[required · once]`
 

@@ -127,6 +127,10 @@ class ChangeContextPackageContractTests(unittest.TestCase):
         schema = json.loads((self.package / "schemas/context-discovery.schema.json").read_text(encoding="utf-8"))
         example = json.loads((self.package / "examples/context-discovery.json").read_text(encoding="utf-8"))
         self.assertEqual(schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json")
+        self.assertIn("task_worktree_state", schema["properties"])
+        self.assertNotIn("task_worktree_state", schema["required"])
+        self.assertIn("superseded_snapshot_sha256", schema["properties"])
+        self.assertNotIn("superseded_snapshot_sha256", schema["required"])
         self.assertEqual(example["skill_id"], "guru-discover-change-context")
         if importlib.util.find_spec("jsonschema") is not None:
             from jsonschema import Draft202012Validator
@@ -134,6 +138,28 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             Draft202012Validator.check_schema(schema)
             validator = Draft202012Validator(schema)
             self.assertEqual(list(validator.iter_errors(example)), [])
+            task_local = copy.deepcopy(example)
+            task_local["task_worktree_state"] = {
+                "head": "1" * 40,
+                "context_snapshot_path": ".trellis/tasks/example/context-discovery.json",
+                "entries": [{
+                    "path": "trellis/runtime.py",
+                    "index_status": "",
+                    "worktree_status": "M",
+                    "untracked": False,
+                    "deleted": False,
+                    "renamed_from": None,
+                    "copied_from": None,
+                    "index_blob": "2" * 40,
+                    "worktree_sha256": "3" * 64,
+                    "mode": "100644",
+                }],
+                "digest": "4" * 64,
+            }
+            self.assertEqual(list(validator.iter_errors(task_local)), [])
+            invalid_task_local = copy.deepcopy(task_local)
+            invalid_task_local["task_worktree_state"]["entries"][0]["unexpected"] = True
+            self.assertNotEqual(list(validator.iter_errors(invalid_task_local)), [])
             invalid_mem = copy.deepcopy(example)
             invalid_mem["mem_review"].update({
                 "status": "used",

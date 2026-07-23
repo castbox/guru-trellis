@@ -1,0 +1,14 @@
+{
+  "profile": "clarification_reentry",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "authority_refs": ["task:prd.md"],
+  "provenance_review": ["R1 explicit_requirement"],
+  "adequacy_review": ["scope authority needs clarification"],
+  "unusual_scenario_dispositions": ["U1 clarification_required"],
+  "confirmation": {"status": "not_required", "summary": "Clarification owns the next interaction."},
+  "ai_review_gate": {"status": "clarify_scope", "summary": "The exact scope authority requires clarification."},
+  "exit_intent": "clarify_scope",
+  "source_exit": "clarify_scope",
+  "reentry_reason": "authority_refreshed"
+}

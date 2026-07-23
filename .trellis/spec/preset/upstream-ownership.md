@@ -240,3 +240,17 @@ remove part of this versioned unit. Preset reapply is the sole owner of restorin
 the complete Guru activation after update; ownership, source/installed contract,
 dogfood drift, and recursive sidecar checks must all pass before the update path
 is considered complete.
+
+## Production Migration Ownership
+
+`trellis/skills/guru-team/migrations/production-minimal-handoff.json`, its
+schema, the three planning/check/commit package trees, production workflow/stop
+consumer schemas, public wrappers, canonical corpora, and native owner fixtures
+are Guru-owned additive preset assets. They do not alter the frozen Stage 0
+manifest or the 43-path upstream overlay payload. Registry, extension,
+installed provenance, and platform copies may change only as the atomic
+production activation projection of those canonical assets.
+The Interface 1.3 `skill_input_authoring_seed` shape, the three target-owned
+authoring examples, and their deterministic partition/merge probes are part of
+that same Guru-owned additive package graph. They do not expand the frozen
+overlay set or claim an upstream-managed platform entry.

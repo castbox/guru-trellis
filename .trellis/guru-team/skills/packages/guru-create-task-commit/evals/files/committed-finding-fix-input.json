@@ -1,0 +1,14 @@
+{
+  "profile": "finding_fix_commit",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "message_intent": {"subject": "fix(workflow): #146 修复 production eval finding", "body": "背景：\nValidate the finding-fix commit route.\n\n变更：\nCommit the exact staged eval fix.\n\n边界：\nNo Branch Review behavior is executed.\n\n验证：\nRun the shared production eval corpus.\n\nRefs #146"},
+  "path_authorizations": ["src/production-eval.txt"],
+  "semantic_review": {"status": "passed", "summary": "The finding fix and exact paths passed AI review."},
+  "human_authorization": {"status": "confirmed", "summary": "The exact finding-fix commit is authorized."},
+  "exit_intent": "committed",
+  "source_exit": "passed",
+  "checked_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "check_ref": "phase2-check:staged",
+  "commit_intent": "finding_fix"
+}

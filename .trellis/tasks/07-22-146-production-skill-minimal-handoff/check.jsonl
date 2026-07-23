@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"复核三包 Interface、11 exits、consumer projections、private artifacts 与 9/35 closure 是否满足 SSOT。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"复核 source/installed、negative cases、platform distribution、throwaway 与 drift 门禁。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核 semantic Gate、sub-agent Phase 2、typed-exit route 与 Branch Review 前置条件。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核 builder/recorder/validator/executor 未越过 AI semantic judgment 边界。"}
+{"file":".trellis/spec/preset/installer.md","reason":"复核 clean install、pre-migration upgrade、trellis update、preset reapply 与 sidecar 结果。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"复核未修改 Trellis upstream、全局 npm、node_modules 或 upstream-owned platform entries。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"复核 durable docs 与三份 public README 的同步完整性及命令可执行性。"}

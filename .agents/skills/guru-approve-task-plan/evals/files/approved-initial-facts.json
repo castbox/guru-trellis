@@ -1,0 +1,1 @@
+{"scenario":"The initial planning round is current, adequate, and explicitly confirmed.","owner_evidence":{"semantic_gate":"passed","checker_required":true},"owner_staging":{"recipe":"planning-approved"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/tasks/current/planning-approval.json"]}}

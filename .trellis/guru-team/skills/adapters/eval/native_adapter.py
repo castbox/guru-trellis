@@ -21,6 +21,11 @@ ADAPTERS = ("shared", "codex", "claude", "cursor")
 OWNER_INPUT = ".trellis/.runtime/guru-team/evals/public-input.json"
 OWNER_RESULT = ".trellis/.runtime/guru-team/evals/owner-result.json"
 OWNER_PLAN = ".trellis/.runtime/guru-team/evals/owner-plan.json"
+PRODUCTION_SKILLS = {
+    "guru-approve-task-plan",
+    "guru-check-task",
+    "guru-create-task-commit",
+}
 
 TRACE_HELPER = r'''#!/usr/bin/env python3
 from __future__ import annotations
@@ -1246,6 +1251,474 @@ def build_workspace_owner(
     ))
 
 
+def production_wording_evidence(runtime: Any, fixture: Path, task: Path) -> None:
+    scope, contents = runtime.contract_wording_build_scope(
+        fixture, "planning_artifacts", "workflow", task_dir=task,
+    )
+    scan = runtime.scan_contract_wording(scope, contents)
+    gate = {
+        "status": "passed",
+        "reviewer": "production-eval-owner",
+        "summary": "The fixed planning scope passed the complete wording review.",
+        "reviewed_scan_sha256": scan["scan_sha256"],
+        "checked_dimensions": {
+            key: True for key in runtime.CONTRACT_WORDING_REVIEW_DIMENSIONS
+        },
+        "planning_checked_dimensions": {
+            key: True for key in runtime.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+        },
+    }
+    evidence = runtime.contract_wording_derive_result(
+        "planning_artifacts",
+        "workflow",
+        scope,
+        scan,
+        {
+            "generated_at": "2026-07-23T00:00:00Z",
+            "semantic_review": {
+                "revisions": [],
+                "classifications": [],
+                "ai_review_gate": gate,
+            },
+            "human_confirmation": {
+                "status": "not_required",
+                "confirmed_by": None,
+                "confirmed_at": None,
+                "reason": "The production eval wording review does not mutate content.",
+            },
+            "typed_exit": "pass",
+        },
+    )
+    runtime.write_json(task / runtime.CONTRACT_WORDING_EVIDENCE_ARTIFACT, evidence)
+
+
+def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
+    (fixture / ".trellis/guru-team/config.yml").write_text(
+        "workspace_mode: current\n", encoding="utf-8",
+    )
+    task = fixture / ".trellis/tasks/current"
+    task.mkdir(parents=True, exist_ok=True)
+    runtime.write_json(task / "task.json", {
+        "id": "current",
+        "name": "current",
+        "title": "Production minimal handoff eval",
+        "status": "planning",
+        "scope": "issue #146",
+        "branch": "eval/current",
+        "base_branch": "main",
+    })
+    for name, content in {
+        "prd.md": (
+            "# PRD\n\n## R1. Production eval\n\n"
+            "The production eval uses the public package boundary.\n"
+        ),
+        "design.md": (
+            "# Design\n\n## Docs SSOT Plan\n\n"
+            "Strategy: ssot_first. Durable requirements own the contract.\n"
+        ),
+        "implement.md": (
+            "# Implement\n\nExecute the recorder, checker, and public wrapper.\n"
+        ),
+    }.items():
+        (task / name).write_text(content, encoding="utf-8")
+    runtime.write_json(task / "issue-scope-ledger.json", {
+        "schema_version": "1.0",
+        "primary_issue": {"number": 146},
+        "close_issues": [{"number": 146}],
+        "related_issues": [],
+        "followup_issues": [],
+    })
+    runtime.write_json(task / "task-start-context.json", {
+        "schema_version": "1.0",
+        "task_artifact_dir": ".trellis/tasks/current",
+        "task_slug": "current",
+        "workspace_slug": "current",
+        "task_title": "Production minimal handoff eval",
+        "task_workspace_id": "current",
+        "branch_name": "eval/current",
+        "base_branch": "main",
+        "base_ref": "refs/remotes/origin/main",
+        "base_head_sha": "0" * 40,
+        "remote_head_sha": "0" * 40,
+        "source_issue": {"number": 146},
+        "source_repo": {"repo": "example/guru-extension", "url": ""},
+        "assignee": "production-eval",
+        "actor": {"login": "production-eval"},
+        "issue_scope_ledger_seed": {},
+        "intake_summary": {
+            "duplicate_decision": {}, "naming_quality": {}, "confirmation": {},
+        },
+    })
+    durable = fixture / "docs/requirements.md"
+    durable.parent.mkdir(parents=True, exist_ok=True)
+    durable.write_text(
+        "# Requirements\n\nThe public wrapper owns the production eval boundary.\n",
+        encoding="utf-8",
+    )
+    source = fixture / "src/production-eval.txt"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text("baseline\n", encoding="utf-8")
+    production_wording_evidence(runtime, fixture, task)
+    run_git(fixture, "add", ".")
+    run_git(fixture, "commit", "-q", "-m", "stage production owner fixture")
+    base_head = run_git(fixture, "rev-parse", "HEAD")
+    run_git(fixture, "update-ref", "refs/remotes/origin/main", base_head)
+    run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
+    run_git(fixture, "checkout", "-q", "-b", "eval/current")
+    context_path = task / "task-start-context.json"
+    context = json.loads(context_path.read_text(encoding="utf-8"))
+    context["base_head_sha"] = base_head
+    context["remote_head_sha"] = base_head
+    runtime.write_json(context_path, context)
+    run_git(fixture, "add", context_path.relative_to(fixture).as_posix())
+    run_git(fixture, "commit", "-q", "-m", "bind production task base")
+    return task, base_head
+
+
+def production_planning_input(
+    runtime: Any, fixture: Path, task: Path, exit_id: str,
+) -> Path:
+    statuses = {
+        "approved": "passed",
+        "revision_required": "revision_required",
+        "clarify_scope": "clarify_scope",
+        "blocked": "blocked",
+    }
+    consumers = {
+        "approved": {"kind": "workflow", "id": "phase-1-task-activation"},
+        "revision_required": {"kind": "skill", "id": "guru-approve-task-plan"},
+        "clarify_scope": {
+            "kind": "workflow", "id": "guru-task-plan-clarify-scope-router",
+        },
+        "blocked": {"kind": "stop", "id": "task-plan-approval-blocked"},
+    }
+    status = statuses[exit_id]
+    gate = {
+        "status": status,
+        "reviewer": "production-eval-owner",
+        "summary": "The exact production planning case completed semantic review.",
+        "reviewed_at": "2026-07-23T00:01:00Z",
+        "findings": [],
+        "revision_actions": (
+            ["Revise the task-local planning contract."]
+            if exit_id == "revision_required" else []
+        ),
+        "scope_proposals": (
+            ["scope-proposal:R13"] if exit_id == "clarify_scope" else []
+        ),
+        "blocking_reasons": (
+            ["The required planning authority is unavailable."]
+            if exit_id == "blocked" else []
+        ),
+    }
+    confirmation = {
+        "kind": "post-planning-approval" if exit_id == "approved" else "not-required",
+        "status": "confirmed" if exit_id == "approved" else "not_required",
+        "prompt_presented_at": "2026-07-23T00:02:00Z" if exit_id == "approved" else None,
+        "confirmed_at": "2026-07-23T00:03:00Z" if exit_id == "approved" else None,
+        "evidence_summary": (
+            "The user confirmed after reviewing all planning links."
+            if exit_id == "approved"
+            else "This route does not activate the task."
+        ),
+    }
+    payload = {
+        "mode": "workflow",
+        "requirement_authorities": [{
+            "id": "task-prd",
+            "kind": "task_artifact",
+            "locator": ".trellis/tasks/current/prd.md",
+            "sha256": "0" * 64,
+            "updated_at": None,
+        }],
+        "docs_ssot_plan": {
+            "strategy": "ssot_first",
+            "artifact_path": "design.md",
+            "locator": "Docs SSOT Plan",
+            "statement_sha256": "0" * 64,
+            "durable_paths": ["docs/requirements.md"],
+        },
+        "provenance_review": {
+            "entries": [{
+                "id": "R1",
+                "artifact_path": "prd.md",
+                "locator": "R1. Production eval",
+                "statement_sha256": "0" * 64,
+                "classification": "explicit_requirement",
+                "authority_refs": ["task-prd"],
+                "reason": "The task PRD explicitly owns the public eval boundary.",
+                "implementation_choice": None,
+                "scope_expansion": None,
+                "out_of_scope_proposal": None,
+            }],
+            "coverage": {
+                "reviewer": "production-eval-owner",
+                "summary": "Every load-bearing item is covered.",
+                "reviewed_entry_ids": ["R1"],
+                "all_load_bearing_items_covered": True,
+                "review_sha256": "0" * 64,
+            },
+        },
+        "unusual_scenario_review": {
+            "reviewer": "production-eval-owner",
+            "summary": "No unusual scenario expands this eval scope.",
+            "candidates": [],
+            "unresolved_count": 0,
+            "review_sha256": "0" * 64,
+        },
+        "semantic_review": {"ai_review_gate": gate},
+        "user_confirmation": confirmation,
+        "typed_exit": exit_id,
+        "consumer": consumers[exit_id],
+        "reason": f"Production planning eval selected {exit_id}.",
+        "supersedes_facts_sha256": None,
+    }
+    path = fixture / ".trellis/.runtime/guru-team/evals/planning-owner-input.json"
+    runtime.write_json(path, payload)
+    return path
+
+
+def production_record_planning(
+    runtime: Any, fixture: Path, task: Path, exit_id: str,
+) -> dict[str, Any]:
+    input_path = production_planning_input(runtime, fixture, task, exit_id)
+    runtime.cmd_record_planning_approval(argparse.Namespace(
+        root=str(fixture),
+        task=task.relative_to(fixture).as_posix(),
+        input=input_path.relative_to(fixture).as_posix(),
+        dry_run=False,
+    ))
+    return runtime.cmd_check_planning_approval(argparse.Namespace(
+        root=str(fixture),
+        task=task.relative_to(fixture).as_posix(),
+        allow_committed_head=False,
+        require_exit=None,
+        expected_artifact_sha256=None,
+    ))
+
+
+def production_agent_assignment(runtime: Any, fixture: Path, task: Path) -> None:
+    head = run_git(fixture, "rev-parse", "HEAD")
+    roles = (("实现代理", "implement-1"), ("阶段二检查代理", "check-1"))
+    agents = [{
+        "logical_role": role,
+        "agent_id": agent_id,
+        "platform_nickname": agent_id,
+        "assigned_at": "2026-07-23T00:04:00Z",
+        "assigned_head": head,
+        "reason": f"Assign {role} for the complete eval round.",
+        "event_id": f"evt-{agent_id}-assigned",
+    } for role, agent_id in roles]
+    events = [{
+        "event_id": f"evt-{agent_id}-completed",
+        "event": "completed",
+        "agent_id": agent_id,
+        "logical_role": role,
+        "platform_nickname": agent_id,
+        "observed_at": "2026-07-23T00:05:00Z",
+        "recorded_at": "2026-07-23T00:05:00Z",
+        "head": head,
+        "source": "main-session",
+        "evidence": f"{role} completed the production eval round.",
+        "predecessor_agent_id": "",
+        "predecessor_event_id": "",
+        "termination_reason": "",
+        "termination_source_event_id": "",
+        "replacement_reason": "",
+        "handoff_summary": "",
+    } for role, agent_id in roles]
+    runtime.write_json(task / "agent-assignment.json", {
+        "schema_version": runtime.AGENT_ASSIGNMENT_SCHEMA_VERSION,
+        "generated_at": "2026-07-23T00:04:00Z",
+        "updated_at": "2026-07-23T00:05:00Z",
+        "task": ".trellis/tasks/current",
+        "head": head,
+        "agents": agents,
+        "liveness": {},
+        "review_rounds": [],
+        "reuse_decisions": [],
+        "status_events": events,
+        "event_corrections": [],
+        "recovery_links": [],
+    })
+
+
+def production_phase2_input(
+    runtime: Any, fixture: Path, task: Path, package: Path, exit_id: str,
+) -> Path:
+    payload = json.loads(
+        (package / "examples/phase2-check.json").read_text(encoding="utf-8")
+    )
+    payload["mode"] = "workflow"
+    payload["requirement_provenance"] = {
+        "summary": "The approved requirement authority was reviewed.",
+        "artifacts": [{"path": "docs/requirements.md"}],
+        "facts_sha256": "0" * 64,
+    }
+    payload["docs_ssot_plan"] = {
+        "strategy": "ssot_first",
+        "durable_paths": [{"path": "docs/requirements.md"}],
+        "sync_result": "The durable requirement was the implementation input.",
+        "task_delta_merged": True,
+        "task_history_only": ["Eval owner staging evidence"],
+        "no_update_reason": None,
+        "followup_or_pr_limit": None,
+        "facts_sha256": "0" * 64,
+    }
+    payload["implementation_handoff"] = {
+        "summary": "The production eval implementation and checks completed.",
+        "artifacts": [{"path": ".trellis/tasks/current/implement.md"}],
+        "facts_sha256": "0" * 64,
+    }
+    payload["agent_assignment"] = {
+        "implementation_agent_ids": ["implement-1"],
+        "check_agent_ids": ["check-1"],
+    }
+    payload["repository_snapshot"] = {
+        "reviewed_paths": [
+            {"path": "src/production-eval.txt"},
+            {"path": ".trellis/tasks/current/agent-assignment.json"},
+        ],
+    }
+    payload["check_execution"]["worker_evidence"] = [{
+        "source": "official_trellis_check",
+        "agent_id": "check-1",
+        "summary": "The checker supplied evidence for the completed semantic round.",
+        "evidence_only": True,
+        "facts_sha256": "f" * 64,
+    }]
+    payload["check_execution"]["unverified_items"] = []
+    payload["scope_qualification"]["candidates"] = []
+    payload["semantic_review"]["findings"] = []
+    for dimension in payload["semantic_review"]["adequacy_dimensions"]:
+        dimension["status"] = "passed"
+        dimension["finding_ids"] = []
+        dimension["unverified_ids"] = []
+    route = None
+    consumer = {
+        "passed": {"kind": "skill", "id": "guru-create-task-commit"},
+        "implementation_required": {"kind": "workflow", "id": "guru-resume-implementation"},
+        "planning_stale": {"kind": "workflow", "id": "guru-task-check-planning-router"},
+        "blocked": {"kind": "stop", "id": "task-check-blocked"},
+    }[exit_id]
+    if exit_id == "implementation_required":
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "A current-scope implementation defect remains.",
+            "trigger_refs": ["PRD R1"],
+            "normal_path_reproduction": "The supported eval path reproduces the defect.",
+            "disposition": "current_scope", "route_basis": "Return to implementation.",
+            "severity": "P2", "finding_id": "F1",
+        }]
+        payload["semantic_review"]["findings"] = [{
+            "id": "F1", "candidate_id": "C1", "severity": "P2",
+            "summary": "The current implementation requires a fix.",
+            "path": "src/production-eval.txt", "blocking": True, "status": "open",
+        }]
+        payload["semantic_review"]["adequacy_dimensions"][2]["finding_ids"] = ["F1"]
+    elif exit_id == "planning_stale":
+        route = "reapprove_plan"
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "scope-proposal:R13",
+            "summary": "The approved scope requires a current authority decision.",
+            "trigger_refs": ["PRD R1"],
+            "normal_path_reproduction": "The supported eval path requires a scope change.",
+            "disposition": "scope_change_required",
+            "route_basis": "Return to the planning owner.",
+            "severity": None, "finding_id": None,
+        }]
+    elif exit_id == "blocked":
+        payload["check_execution"]["unverified_items"] = [{
+            "id": "U1", "command_or_area": "integration verification",
+            "reason": "The required dependency is unavailable.",
+            "impact": "A complete reliable check cannot be claimed.",
+            "blocking": True,
+        }]
+        payload["semantic_review"]["adequacy_dimensions"][9]["unverified_ids"] = ["U1"]
+    payload["typed_exit"] = exit_id
+    payload["route"] = route
+    payload["reason"] = f"Production Phase 2 eval selected {exit_id}."
+    payload["consumer"] = consumer
+    payload["semantic_review"]["ai_review_gate"]["status"] = exit_id
+    payload["semantic_review"]["ai_review_gate"]["full_rerun"] = True
+    path = fixture / ".trellis/.runtime/guru-team/evals/phase2-owner-input.json"
+    runtime.write_json(path, payload)
+    return path
+
+
+def production_record_phase2(
+    runtime: Any, fixture: Path, task: Path, package: Path, exit_id: str,
+) -> dict[str, Any]:
+    input_path = production_phase2_input(runtime, fixture, task, package, exit_id)
+    runtime.cmd_record_phase2_check(argparse.Namespace(
+        root=str(fixture),
+        task=task.relative_to(fixture).as_posix(),
+        input=input_path.relative_to(fixture).as_posix(),
+        dry_run=False,
+    ))
+    return runtime.cmd_check_phase2_check(argparse.Namespace(
+        root=str(fixture), task=task.relative_to(fixture).as_posix(),
+    ))
+
+
+def stage_production_owner_execution(
+    request: dict[str, Any],
+    fixture: Path,
+    runtime_target: Path,
+    request_package: Path,
+    recipe: str,
+    public_input_path: Path,
+) -> tuple[Path, Path, dict[str, str]]:
+    skill_id = str(request["skill_id"])
+    fixture_runtime_target = fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+    if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
+        raise ValueError("fixture public invocation runtime is unavailable")
+    runtime = load_owner_runtime(fixture_runtime_target)
+    task, _ = production_task_fixture(runtime, fixture)
+    package = fixture / ".trellis/guru-team/skills/packages" / skill_id
+    if (
+        hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
+        or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
+    ):
+        raise ValueError("owner staging package does not match the evaluated package contract")
+    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+    expected_prefix = {
+        "guru-approve-task-plan": "planning-",
+        "guru-check-task": "check-",
+        "guru-create-task-commit": "commit-",
+    }[skill_id]
+    if not recipe.startswith(expected_prefix):
+        raise ValueError("production owner staging recipe does not match the evaluated package")
+    if skill_id == "guru-approve-task-plan":
+        production_record_planning(
+            runtime, fixture, task, str(public_input["exit_intent"]),
+        )
+    else:
+        production_record_planning(runtime, fixture, task, "approved")
+        task_payload = json.loads((task / "task.json").read_text(encoding="utf-8"))
+        task_payload["status"] = "in_progress"
+        runtime.write_json(task / "task.json", task_payload)
+        run_git(fixture, "add", task.relative_to(fixture).as_posix())
+        run_git(fixture, "commit", "-q", "-m", "activate production eval task")
+        production_agent_assignment(runtime, fixture, task)
+        (fixture / "src/production-eval.txt").write_text(
+            f"{recipe}\n", encoding="utf-8",
+        )
+        phase2_package = fixture / ".trellis/guru-team/skills/packages/guru-check-task"
+        checked = production_record_phase2(
+            runtime, fixture, task, phase2_package, "passed" if skill_id == "guru-create-task-commit" else str(public_input["exit_intent"]),
+        )
+        if skill_id == "guru-create-task-commit":
+            public_input["checked_head"] = checked["checked_head"]
+            public_input["check_ref"] = runtime.task_commit_public_check_ref(
+                checked["artifact_sha256"]
+            )
+    runtime_input = fixture / OWNER_INPUT
+    runtime.write_json(runtime_input, public_input)
+    return package, fixture_runtime_target, {}
+
+
 def stage_owner_execution(
     request: dict[str, Any], execution_root: Path, runtime_target: Path,
 ) -> tuple[Path, Path, dict[str, str]]:
@@ -1274,6 +1747,15 @@ def stage_owner_execution(
             "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}",
         }
     recipe, public_input = owner_recipe(request)
+    if skill_id in PRODUCTION_SKILLS:
+        return stage_production_owner_execution(
+            request,
+            fixture,
+            runtime_target,
+            request_package,
+            recipe,
+            public_input,
+        )
     worktree_root = execution_root / "owner-worktrees"
     (fixture / ".trellis/guru-team/config.yml").write_text(
         f"workspace_mode: worktree\nworktree_root: {worktree_root}\n",
@@ -1699,7 +2181,7 @@ def main() -> int:
             native_request_path, request_sha256, boundary_path,
             boundary_thread, boundary_stop,
         ) = build_context(request)
-    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+    except Exception as exc:
         transcript.write_text(json.dumps({"adapter": args.adapter, "error": str(exc)}), encoding="utf-8")
         return emit(response(request, "execution_error", transcript, stderr="adapter request/context invalid"))
     protocol = json.loads(protocol_path.read_text(encoding="utf-8"))

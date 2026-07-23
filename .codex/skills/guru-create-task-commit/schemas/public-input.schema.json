@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-create-task-commit-input-aggregate-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-initial-commit-input.schema.json"
+    },
+    {
+      "$ref": "public-revision-reentry-input.schema.json"
+    },
+    {
+      "$ref": "public-finding-fix-commit-input.schema.json"
+    },
+    {
+      "$ref": "public-recovery-resume-input.schema.json"
+    }
+  ]
+}

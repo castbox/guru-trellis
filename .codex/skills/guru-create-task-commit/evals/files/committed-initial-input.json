@@ -1,0 +1,13 @@
+{
+  "profile": "initial_commit",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "message_intent": {"subject": "feat(workflow): #146 迁移 production handoff", "body": "背景：\nValidate production eval staging.\n\n变更：\nCommit the exact staged eval path.\n\n边界：\nNo Branch Review behavior is executed.\n\n验证：\nRun the shared production eval corpus.\n\nRefs #146"},
+  "path_authorizations": ["src/production-eval.txt"],
+  "semantic_review": {"status": "passed", "summary": "Message and exact paths passed AI review."},
+  "human_authorization": {"status": "confirmed", "summary": "The exact task commit side effect is authorized."},
+  "exit_intent": "committed",
+  "source_exit": "passed",
+  "checked_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "check_ref": "phase2-check:staged"
+}

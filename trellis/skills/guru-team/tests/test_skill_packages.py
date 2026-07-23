@@ -180,7 +180,7 @@ class SourceValidationTests(unittest.TestCase):
         )
         self.assertEqual(result["facts"]["invoke_markers"], 9)
         self.assertEqual(result["facts"]["exit_markers"], 35)
-        self.assertEqual(result["facts"]["target_markers"], 20)
+        self.assertEqual(result["facts"]["target_markers"], 21)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -228,7 +228,7 @@ class SourceValidationTests(unittest.TestCase):
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
 
         self.assertEqual(interface["id"], "guru-create-task-commit")
-        self.assertEqual(interface["schema_version"], "1.2")
+        self.assertEqual(interface["schema_version"], "1.3")
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(interface["modes"]["workflow"]["routing"], "global_workflow")
         self.assertEqual(interface["modes"]["standalone"]["routing"], "direct_discovery")
@@ -243,7 +243,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(interface["runtime_dependency"], runtime.SKILL_RUNTIME_DEPENDENCY)
         self.assertEqual(
             {item["id"]: item["runtime_command"] for item in interface["validators"]},
-            {"candidate_validator": "check-commit-messages", "exact_executor": "create-task-commit"},
+            {
+                "candidate_validator": "check-commit-messages",
+                "exact_executor": "create-task-commit",
+                "public_invocation": "invoke-stage0-skill",
+            },
         )
         for phrase in ("creating a task commit", "committing Phase 2 changes", "finding fix", "revision commit"):
             self.assertIn(phrase, skill)
@@ -616,6 +620,52 @@ class SourceValidationTests(unittest.TestCase):
             "[input_nullable_template]" in item
             for item in self.validate()["errors"]
         ))
+
+    def test_production_authoring_seed_rejects_overlap_missing_and_extra_fields(self) -> None:
+        cases = {
+            "overlap": lambda contract: contract["authoring_fields"].append("source_exit"),
+            "missing": lambda contract: contract["authoring_fields"].remove("exit_intent"),
+            "extra": lambda contract: contract["authoring_fields"].append("runtime_default"),
+        }
+        for label, mutate in cases.items():
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as directory:
+                skills_root = Path(directory) / "skills"
+                shutil.copytree(SKILLS_ROOT, skills_root)
+                package = skills_root / "packages/guru-check-task"
+                interface_path = package / "interface.json"
+                interface = json.loads(interface_path.read_text(encoding="utf-8"))
+                consumer = next(
+                    item for item in interface["public_contracts"]["consumer_inputs"]
+                    if item["id"] == "initial_commit_seed_input"
+                )
+                mutate(consumer["contract"])
+                interface_path.write_text(json.dumps(interface), encoding="utf-8")
+                registry = json.loads(
+                    (skills_root / "registry.json").read_text(encoding="utf-8")
+                )
+                active = {
+                    item["id"]: item for item in registry["skills"]
+                    if item["state"] == "active"
+                }
+                errors: list[str] = []
+                runtime.validate_skill_public_contracts(
+                    skills_root,
+                    package,
+                    interface,
+                    errors,
+                    boundary=skills_root,
+                    runtime_commands={"invoke-stage0-skill"},
+                    active_registry_entries=active,
+                    execute_fixture=False,
+                )
+                self.assertTrue(
+                    any(
+                        "[consumer_authoring_seed]" in item
+                        and "partition the target required fields exactly" in item
+                        for item in errors
+                    ),
+                    errors,
+                )
 
     def test_aggregate_requires_exact_ordered_profile_references(self) -> None:
         schema_path = self.root / "packages/guru-example-action/schemas/action-input.schema.json"
@@ -3436,8 +3486,12 @@ class Stage0MigrationManifestTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["stage0_activation_unit"], "stage0-minimal-handoff-v1")
-        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 6)
-        self.assertEqual(len(result["facts"]["legacy_ids"]), 3)
+        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 9)
+        self.assertEqual(len(result["facts"]["legacy_ids"]), 0)
+        self.assertEqual(
+            result["facts"]["production_activation_unit"],
+            "production-minimal-handoff-v1",
+        )
 
     def test_missing_exit_binding_fails_closed(self) -> None:
         manifest = self.read_manifest()

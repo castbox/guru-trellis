@@ -1,0 +1,14 @@
+{
+  "profile": "recovery_resume",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "message_intent": {"subject": "feat(workflow): #146 迁移 production handoff", "body": "Resume only after current recovery evidence is available."},
+  "path_authorizations": ["src/production-eval.txt"],
+  "semantic_review": {"status": "blocked", "summary": "Current recovery evidence is incomplete."},
+  "human_authorization": {"status": "not_required", "summary": "No additional Git side effect is authorized."},
+  "exit_intent": "blocked",
+  "source_exit": "transaction_recovery",
+  "checked_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "check_ref": "phase2-check:staged",
+  "recovery_intent": "resume_planned"
+}

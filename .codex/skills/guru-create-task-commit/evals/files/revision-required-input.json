@@ -1,0 +1,14 @@
+{
+  "profile": "revision_reentry",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "message_intent": {"subject": "feat(workflow): #146 迁移 production handoff", "body": "Revise the exact candidate before committing."},
+  "path_authorizations": ["src/production-eval.txt"],
+  "semantic_review": {"status": "revision-required", "summary": "The candidate requires revision."},
+  "human_authorization": {"status": "not_required", "summary": "No commit side effect is authorized yet."},
+  "exit_intent": "revision-required",
+  "source_exit": "revision-required",
+  "checked_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "check_ref": "phase2-check:staged",
+  "reentry_reason": "candidate_revision"
+}

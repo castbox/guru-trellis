@@ -1,0 +1,1 @@
+{"scenario":"Recovery remains blocked before any new candidate or Git side effect is created.","owner_evidence":{"semantic_gate":"blocked","checker_required":false},"owner_staging":{"recipe":"commit-blocked-recovery"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json"]}}

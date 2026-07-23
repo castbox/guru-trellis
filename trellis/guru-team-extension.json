@@ -60,18 +60,24 @@
       "canonical_root": "trellis/skills/guru-team/",
       "installed_root": ".trellis/guru-team/skills/",
       "registry_schema_id": "guru-team-skill-registry-1.1",
-      "interface_schema_id": "guru-team-skill-interface-1.2",
+      "interface_schema_id": "guru-team-skill-interface-1.3",
       "supported_interface_schema_ids": [
         "guru-team-skill-interface-1.2",
         "guru-team-skill-interface-1.3"
       ],
       "current_interface_schema_id": "guru-team-skill-interface-1.3",
-      "legacy_skill_ids": [
-        "guru-approve-task-plan",
-        "guru-check-task",
-        "guru-create-task-commit"
-      ],
+      "legacy_skill_ids": [],
       "public_input_schema_ids": [
+        "guru-production-approve-task-plan-input-clarification-reentry-1.0",
+        "guru-production-approve-task-plan-input-initial-review-1.0",
+        "guru-production-approve-task-plan-input-revision-reentry-1.0",
+        "guru-production-check-task-input-finding-fix-rerun-1.0",
+        "guru-production-check-task-input-initial-check-1.0",
+        "guru-production-check-task-input-planning-reentry-1.0",
+        "guru-production-create-task-commit-input-finding-fix-commit-1.0",
+        "guru-production-create-task-commit-input-initial-commit-1.0",
+        "guru-production-create-task-commit-input-recovery-resume-1.0",
+        "guru-production-create-task-commit-input-revision-reentry-1.0",
         "guru-stage0-clarify-requirements-input-active-task-scope-change-1.0",
         "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
         "guru-stage0-clarify-requirements-input-standalone-review-1.0",
@@ -89,6 +95,17 @@
         "guru-stage0-review-contract-wording-input-planning-artifacts-1.0"
       ],
       "typed_output_schema_ids": [
+        "guru-production-approve-task-plan-output-approved-1.0",
+        "guru-production-approve-task-plan-output-blocked-1.0",
+        "guru-production-approve-task-plan-output-clarify-scope-1.0",
+        "guru-production-approve-task-plan-output-revision-required-1.0",
+        "guru-production-check-task-output-blocked-1.0",
+        "guru-production-check-task-output-implementation-required-1.0",
+        "guru-production-check-task-output-passed-1.0",
+        "guru-production-check-task-output-planning-stale-1.0",
+        "guru-production-create-task-commit-output-blocked-1.0",
+        "guru-production-create-task-commit-output-committed-1.0",
+        "guru-production-create-task-commit-output-revision-required-1.0",
         "guru-stage0-clarify-requirements-output-blocked-1.0",
         "guru-stage0-clarify-requirements-output-clear-1.0",
         "guru-stage0-clarify-requirements-output-needs-context-1.0",
@@ -119,7 +136,10 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-1.0.json"
       ],
@@ -164,6 +184,11 @@
           "id": "stage0-minimal-handoff-v1",
           "schema_id": "guru-team-stage0-migration-manifest-1.0",
           "path": "migrations/stage0-minimal-handoff.json"
+        },
+        {
+          "id": "production-minimal-handoff-v1",
+          "schema_id": "guru-team-production-migration-manifest-1.0",
+          "path": "migrations/production-minimal-handoff.json"
         }
       ]
     },

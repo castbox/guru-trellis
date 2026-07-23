@@ -1,0 +1,15 @@
+{
+  "profile": "finding_fix_rerun",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "scope_dispositions": ["C1 current_scope"],
+  "adequacy_review": ["implementation finding remains open"],
+  "findings": ["F1 current-scope finding"],
+  "unverified_conclusions": [],
+  "evidence_locators": ["implement.md", "src/production-eval.txt"],
+  "ai_review_gate": {"status": "implementation_required", "summary": "One current-scope finding remains open."},
+  "exit_intent": "implementation_required",
+  "source_exit": "implementation_required",
+  "rerun_reason": "finding_fix",
+  "closed_prior_finding_refs": ["F0"]
+}

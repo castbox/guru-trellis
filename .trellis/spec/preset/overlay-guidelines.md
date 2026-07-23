@@ -405,3 +405,13 @@ Codex/Cursor/Claude discovery roots. Platform copies do not fork input profiles,
 typed exits, consumers, projections, wrapper behavior, case bindings, or grader
 policy. Drift validation compares bytes and executable modes for the complete
 six-package set and rejects partial activation or sidecars.
+
+The production planning/check/commit package trees follow the same copy and
+mode rules under the independent `production-minimal-handoff-v1` manifest.
+Together the two manifests yield nine byte-identical active package trees and
+35 exits. The frozen 43-path workflow/platform overlay payload is not expanded
+for package assets; packages, shared consumers, schemas, manifests, and evals
+remain Guru-owned preset-managed additive assets.
+The Interface 1.3 `skill_input_authoring_seed` shape, three target-owned
+authoring examples, and partition/merge probes belong to that same managed
+package graph. They do not authorize a new or modified overlay path.

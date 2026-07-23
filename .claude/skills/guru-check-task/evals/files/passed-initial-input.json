@@ -1,0 +1,13 @@
+{
+  "profile": "initial_check",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "scope_dispositions": ["C1 no current-scope finding"],
+  "adequacy_review": ["all dimensions passed"],
+  "findings": [],
+  "unverified_conclusions": [],
+  "evidence_locators": ["implement.md", "src/production-eval.txt"],
+  "ai_review_gate": {"status": "passed", "summary": "The full Phase 2 check passed."},
+  "exit_intent": "passed",
+  "source_exit": "implementation_complete"
+}

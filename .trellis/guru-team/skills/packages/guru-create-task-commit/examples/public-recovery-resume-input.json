@@ -1,0 +1,25 @@
+{
+  "profile": "recovery_resume",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "message_intent": {
+    "subject": "feat(workflow): #146 迁移 production handoff",
+    "body": "Background and verification are reviewed for the task commit."
+  },
+  "path_authorizations": [
+    "trellis/skills/guru-team/registry.json"
+  ],
+  "semantic_review": {
+    "status": "blocked",
+    "summary": "Message and exact paths passed AI review."
+  },
+  "human_authorization": {
+    "status": "confirmed",
+    "summary": "The exact task commit side effect is authorized."
+  },
+  "exit_intent": "blocked",
+  "source_exit": "transaction_recovery",
+  "checked_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "check_ref": "phase2-check:current",
+  "recovery_intent": "resume_planned"
+}

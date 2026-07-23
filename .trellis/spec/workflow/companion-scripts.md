@@ -128,6 +128,18 @@ ordered typed argv in both public-input and invocation examples. Wrapper/handler
 non-object or multiple stdout values, unknown exits, and output-schema mismatch
 fail with stable portable errors.
 
+For the three approved production semantic edges, the same target ownership
+check accepts `skill_input_authoring_seed`. The validator exact-resolves the
+target structured profile and its package-local authoring example, requires
+disjoint `seed_fields` and `authoring_fields`, requires their union to equal the
+profile's complete top-level required set, and requires the independently
+validated projected seed and authoring example keys to equal those sets. It
+then performs a no-overwrite merge and validates the merged object against the
+complete target profile schema before a consumer probe can run. Any overlap,
+overwrite, missing/extra/unknown field, default/literal/private lookup, or
+runtime-authored semantic value fails closed. Projection execution remains
+limited to `direct|select|rename|normalize`.
+
 ## Stage 0 Public Invocation Runtime
 
 Each package in `stage0-minimal-handoff-v1` owns one dispatcher-only public
@@ -170,6 +182,41 @@ DTO. Public failures use only stable `code`, repo-relative `field_path`, and
 `remediation`. Normal invocation does not load `evals/**`, and an Agent or
 consumer must not read or import `guru_team_trellis.py` to perform discovery,
 invocation, projection, or error diagnosis.
+
+## Production Public Invocation Runtime
+
+`guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit` use
+the same dispatcher-only wrapper template and shared public invocation command
+as Stage 0 packages. The invocation identity is resolved from the active
+Interface 1.3 registry and the two published migration manifests; the Stage 0
+command name remains a compatibility API even though dispatch is no longer
+limited to the Stage 0 set.
+
+Planning/check invocation validates the selected closed public profile,
+materializes the current owner input in ignored runtime state, calls the
+existing owner recorder and checker for `task_ref`, and selects the actual exit
+only from checker-passed owner evidence. Commit invocation first validates the
+AI-owned message intent, exact path authorization, semantic review, human
+authorization, and route/recovery intent. A deterministic builder then rereads
+the current task, approval, Phase 2, ledger, HEAD, base, dirty snapshot, and
+sequence; constructs the private `guru-task-commit-plan-1.0` candidate; calls
+the existing candidate validator; and, only for `committed`, calls the existing
+transaction executor. It does not reinterpret transaction, hook, staging,
+rollback, or recovery semantics.
+
+The builder may return `revision-required` or `blocked` from the caller-owned
+route intent before Git mutation. A `committed` result is projected only after
+the executor returns a committed result and current HEAD equals its commit SHA.
+Public output is exactly `exit_id`, `task_ref`, `base_ref`, and
+`committed_head`; candidate/result bodies remain private.
+
+Public consumer probes for planning self-reentry, check-to-commit, and commit
+self-reentry consume only the producer's minimal DTO to build the declared
+seed. Fresh AI-owned authoring is loaded from the exact target-package example
+for validation/probe purposes, never synthesized by runtime. The seed and
+authoring objects are validated separately and merged without overwrite before
+the target wrapper is invoked; no producer gate/checkpoint/candidate artifact
+is read to fill the target input.
 
 Because the installed runtime is Python-standard-library-only, 1.3 contract
 validation implements a recursive Draft 2020-12-compatible closed subset, not
@@ -307,7 +354,20 @@ result and all projection/provenance fields, selected-remote GitHub repository
 identity, draft-to-created-issue live body binding,
 selected-remote/base/live/reviewed-blob/query/archive freshness, and
 same-snapshot identity. Neither command creates semantic conclusions or
-rewrites an existing different artifact.
+derives task scope from private artifact content.
+
+For `task_local_reentry`, the public wrapper first validates the exact
+repo-relative `task_locator` and fixed `prior_snapshot_locator`, then requires
+the owner result locator to equal their joined path and calls the checker with
+that validated task. Task-mode recording derives private
+`task_worktree_state` from current HEAD and the complete dirty entry snapshot,
+excluding only the fixed context snapshot and ignored runtime state. For a
+different-byte existing target, the recorder uses `lstat` to require a regular
+file before reading it, proves trackability/schema/identity and an exact
+`--expected-prior-snapshot-sha256`, validates the complete new snapshot and
+live worktree state, then replaces through `write_json`. The new snapshot binds
+the prior digest in `superseded_snapshot_sha256`; failed pre-write validation
+preserves prior bytes and same-byte retry remains idempotent.
 Record/check first execute only pure schema, digest, entry
 clue, and semantic-evidence shape validation. `change_input` has ten closed clue
 arrays and at least one must be non-empty; a separate issue binding or canonical

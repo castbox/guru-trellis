@@ -301,7 +301,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-create-task-commit")
-        self.assertEqual(self.interface["schema_version"], "1.2")
+        self.assertEqual(self.interface["schema_version"], "1.3")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         self.assertEqual(self.interface["modes"]["workflow"]["routing"], "global_workflow")
         self.assertEqual(self.interface["modes"]["standalone"]["routing"], "direct_discovery")

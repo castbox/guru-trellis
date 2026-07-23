@@ -63,6 +63,13 @@ Before any public skill read/write/remove, validate lexical repo containment
 and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
 
+The atomic production package inventory includes the Interface 1.3 additive
+`skill_input_authoring_seed` schema shape, three target-owned authoring
+examples, the production manifest bindings, and their validator/probe tests.
+Canonical, installed, shared, Codex, Cursor, and Claude copies must carry
+byte-identical contracts; a graph that has only part of those three edge
+bindings is a mixed production activation and must fail before target mutation.
+
 Installed package validation parses the installed workflow target declarations
 as well as invoke/exit markers. Every `skill` consumer must resolve to an active
 or planned installed registry id. Active consumers require their complete
@@ -103,6 +110,13 @@ Managed schema/runtime/tests must move together when duplicate candidate facts
 gain canonical repo/number/identity/URL/open-state/update-time digest and live
 freshness checks, or when the `blocked` exit/Gate state matrix changes; a mixed
 old-schema/new-runtime installation is drift and fails installed validation.
+They must also move together for validated task-local owner binding, private
+`task_worktree_state`, and formal fixed-snapshot replacement. Installed and
+throwaway checks cover exact-locator mismatch, dirty path/status/content/mode/
+rename drift, non-regular or wrong prior preservation, exact-prior replacement,
+`superseded_snapshot_sha256`, and same-byte idempotency. Upgrade/reapply may not
+leave an old context schema/runtime/wrapper combination or any `.new`/`.bak`
+sidecar.
 
 The registry also installs active semantic `guru-clarify-requirements` to the
 same audited runtime and selected discovery roots. Its managed tree includes
@@ -476,8 +490,25 @@ its mode. Interface 1.3 accepts explicit boolean scalar `required`; the staged
 probes execute both explicit and omitted-base paths through the same resolver.
 
 A pre-activation installation is a supported upgrade input. Reapply replaces
-the complete six-package activation unit while retaining the three #146 legacy
-packages and read-only archived artifact schemas. Fresh install, upgrade,
+the complete six-package activation unit while retaining read-only archived
+artifact schemas. Fresh install, upgrade,
 `trellis update`, and repeated preset apply all end with the same manifest,
 registry, extension, package, corpus, and selected-platform bytes and modes.
 The verifier scans recursively for `.new` and `.bak` after each transition.
+
+## Production Skill Atomic Activation
+
+`production-minimal-handoff-v1` is staged and activated in the same preset
+transaction as its manifest/schema, three complete package trees, consumer
+schemas, registry, extension inventory, installed provenance, and selected
+platform copies. The transaction validates the complete nine-Skill/35-exit
+graph before publishing any destination. A pre-#146 six-minimal/three-legacy
+install upgrades directly to nine minimal packages; any intermediate mixed
+graph fails staging and leaves the prior complete install in place.
+
+The Stage 0 manifest remains a separately managed immutable activation record.
+Installer migration updates may add the production manifest locator and assets
+but may not change the Stage 0 manifest's activation id, ordered skill ids, exit
+bindings, or legacy-boundary history. Update/reapply must reproduce identical
+canonical, installed, shared, Codex, Cursor, and Claude package bytes and
+executable modes without `.new` or `.bak` sidecars.

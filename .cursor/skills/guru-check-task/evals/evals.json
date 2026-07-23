@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-check-task",
+  "evals": [
+    {
+      "id": "passed-initial",
+      "prompt": "Complete the initial_check semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived passed route.",
+      "expected_exit": "passed",
+      "expected_output": "The public DTO is the declared passed route.",
+      "input_profile_id": "initial_check",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "passed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/passed-initial-input.json", "evals/files/passed-initial-facts.json"]
+    },
+    {
+      "id": "implementation-required",
+      "prompt": "Complete the finding_fix_rerun semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived implementation_required route.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The public DTO is the declared implementation_required route.",
+      "input_profile_id": "finding_fix_rerun",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "implementation_required"
+          }
+        ]
+      },
+      "files": ["evals/files/implementation-required-input.json", "evals/files/implementation-required-facts.json"]
+    },
+    {
+      "id": "planning-stale",
+      "prompt": "Complete the planning_reentry semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived planning_stale route.",
+      "expected_exit": "planning_stale",
+      "expected_output": "The public DTO is the declared planning_stale route.",
+      "input_profile_id": "planning_reentry",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "planning_stale"
+          }
+        ]
+      },
+      "files": ["evals/files/planning-stale-input.json", "evals/files/planning-stale-facts.json"]
+    },
+    {
+      "id": "blocked-initial",
+      "prompt": "Complete the initial_check semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived blocked route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "input_profile_id": "initial_check",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/blocked-initial-input.json", "evals/files/blocked-initial-facts.json"]
+    }
+  ]
+}

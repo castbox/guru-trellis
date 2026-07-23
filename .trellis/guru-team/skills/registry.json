@@ -13,8 +13,8 @@
       "name": "guru-approve-task-plan",
       "package": "packages/guru-approve-task-plan",
       "interface": "packages/guru-approve-task-plan/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.2",
-      "io_contract_state": "legacy",
+      "interface_schema_id": "guru-team-skill-interface-1.3",
+      "io_contract_state": "minimal_handoff",
       "supported_platforms": [
         "shared",
         "codex",
@@ -47,8 +47,8 @@
       "name": "guru-create-task-commit",
       "package": "packages/guru-create-task-commit",
       "interface": "packages/guru-create-task-commit/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.2",
-      "io_contract_state": "legacy",
+      "interface_schema_id": "guru-team-skill-interface-1.3",
+      "io_contract_state": "minimal_handoff",
       "supported_platforms": [
         "shared",
         "codex",
@@ -64,8 +64,8 @@
       "name": "guru-check-task",
       "package": "packages/guru-check-task",
       "interface": "packages/guru-check-task/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.2",
-      "io_contract_state": "legacy",
+      "interface_schema_id": "guru-team-skill-interface-1.3",
+      "io_contract_state": "minimal_handoff",
       "supported_platforms": [
         "shared",
         "codex",

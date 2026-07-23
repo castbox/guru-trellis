@@ -23,7 +23,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-approve-task-plan")
-        self.assertEqual(self.interface["schema_version"], "1.2")
+        self.assertEqual(self.interface["schema_version"], "1.3")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]
@@ -59,6 +59,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             {
                 "planning_approval_recorder": "record-planning-approval",
                 "planning_approval_checker": "check-planning-approval",
+                "public_invocation": "invoke-stage0-skill",
             },
         )
         self.assertEqual(
@@ -66,7 +67,10 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             [
                 ("approved", {"kind": "workflow", "id": "phase-1-task-activation"}),
                 ("revision_required", {"kind": "skill", "id": "guru-approve-task-plan"}),
-                ("clarify_scope", {"kind": "skill", "id": "guru-clarify-requirements"}),
+                (
+                    "clarify_scope",
+                    {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"},
+                ),
                 ("blocked", {"kind": "stop", "id": "task-plan-approval-blocked"}),
             ],
         )
@@ -151,7 +155,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             ),
             "clarify_scope": (
                 "clarify_scope",
-                {"kind": "skill", "id": "guru-clarify-requirements"},
+                {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"},
                 {"scope_proposals": ["Confirm the proposed authority change."]},
             ),
             "blocked": (

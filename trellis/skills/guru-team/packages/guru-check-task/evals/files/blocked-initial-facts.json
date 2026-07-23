@@ -1,0 +1,1 @@
+{"scenario":"The Phase 2 owner records one blocking unverified item and stops.","owner_evidence":{"semantic_gate":"blocked","checker_required":true},"owner_staging":{"recipe":"check-blocked"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/tasks/current/phase2-check.json"]}}

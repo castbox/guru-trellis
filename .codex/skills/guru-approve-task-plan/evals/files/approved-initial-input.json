@@ -1,0 +1,13 @@
+{
+  "profile": "initial_review",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "authority_refs": ["task:prd.md"],
+  "provenance_review": ["R1 explicit_requirement"],
+  "adequacy_review": ["requirements complete"],
+  "unusual_scenario_dispositions": ["U1 out_of_scope"],
+  "confirmation": {"status": "confirmed", "summary": "The reviewed planning round is confirmed."},
+  "ai_review_gate": {"status": "passed", "summary": "The complete planning round passed."},
+  "exit_intent": "approved",
+  "source_exit": "planning_ready"
+}

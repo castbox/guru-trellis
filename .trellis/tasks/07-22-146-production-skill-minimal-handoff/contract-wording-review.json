@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-22T19:24:00Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-22-146-production-skill-minimal-handoff",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "size_bytes": 30413,
+        "content_sha256": "2344b71b027094e5249d28bce733d7fca841ad4dae96e06b17d2721fd70609df"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "size_bytes": 33192,
+        "content_sha256": "0902063ddb98e3832027d5af3f00ce0adf1ded3df09a4b4b69efad8a7179ee6b"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+        "size_bytes": 25828,
+        "content_sha256": "2f3d2ed229eaf2392fd184fc41de6ca838cc8d3fcd0be431c0be537b394bde9a"
+      }
+    ],
+    "scope_sha256": "88341da05b115dd5bea1327a559a1c721832658bad1f6aa5aca3dfda69102434"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-146-r13-r16-planning-wording-reentry",
+      "summary": "已在 content_changed consumer re-entry 后重新完整审查当前 prd.md、design.md、implement.md。固定范围、文档 hashes 与零命中 scan 均为 current。#146 原始 3 Skills/11 exits、9/35 closure、R7/R12、唯一 close issue、#131 handoff、compatibility 与非目标没有削弱；R13-R16 分别只有一个明确 owner 和一个实现路径。clarify_scope 只进入 routing-only target；owner checker只消费 validated locator；task_worktree_state只作为 private evidence；formal replacement只在 exact prior 与完整 new checks通过后改变 fixed bytes。所有 conditional routes、rollback points、AC18-AC21 与 distribution/upgrade regressions均有精确 trigger和observable outcome。没有未标注的外部非合同引用，零 lexical hit没有替代完整规划语义复核。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "Re-entry没有再次修改文档；产品语义由已确认 proposal/action 与 GitHub authority固定。独立 post-planning approval仍在展示最终文档后获取。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "897b2a5f52f6b8a22cb9a5e8eff0c0db1c8c8b0a22a9893872775077e50215f5"
+}

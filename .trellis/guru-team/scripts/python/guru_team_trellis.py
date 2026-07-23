@@ -84,7 +84,7 @@ PLANNING_APPROVAL_UNUSUAL_DISPOSITIONS = {
 PLANNING_APPROVAL_CONSUMERS = {
     "approved": {"kind": "workflow", "id": "phase-1-task-activation"},
     "revision_required": {"kind": "skill", "id": "guru-approve-task-plan"},
-    "clarify_scope": {"kind": "skill", "id": "guru-clarify-requirements"},
+    "clarify_scope": {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"},
     "blocked": {"kind": "stop", "id": "task-plan-approval-blocked"},
 }
 CONTRACT_WORDING_SKILL_ID = "guru-review-contract-wording"
@@ -221,7 +221,8 @@ CONTEXT_PROTECTED_PREFIXES = (
 )
 CONTEXT_TOP_LEVEL_KEYS = {
     "schema_version", "skill_id", "generated_at", "mode", "typed_exit",
-    "repository", "base_evidence", "change_input", "live_change",
+    "repository", "base_evidence", "task_worktree_state", "superseded_snapshot_sha256",
+    "change_input", "live_change",
     "duplicate_search", "current_state", "canonical_query", "history_preview",
     "history_review", "mem_review", "ai_review_gate", "human_confirmation",
     "refresh_history", "snapshot_identity", "error",
@@ -13298,6 +13299,34 @@ def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -
     return {"entries": entries, "digest": task_commit_canonical_digest(entries)}
 
 
+def context_task_worktree_state(root: Path, task_dir: Path) -> dict[str, Any]:
+    context_snapshot_path = repo_relative(root, task_dir / "context-discovery.json")
+    captured = capture_task_commit_snapshot(root, {context_snapshot_path})
+
+    def private_state_path(value: Any) -> bool:
+        return isinstance(value, str) and (
+            value == context_snapshot_path
+            or value == ".trellis/.runtime"
+            or value.startswith(".trellis/.runtime/")
+        )
+
+    entries = [
+        entry
+        for entry in captured["entries"]
+        if not any(
+            private_state_path(entry.get(field))
+            for field in ("path", "renamed_from", "copied_from")
+        )
+    ]
+    state = {
+        "head": current_head(root),
+        "context_snapshot_path": context_snapshot_path,
+        "entries": entries,
+    }
+    state["digest"] = context_digest(state)
+    return state
+
+
 def task_commit_message_parts(message_bytes: str) -> tuple[str, str]:
     if "\r" in message_bytes or not message_bytes.endswith("\n"):
         return "", ""
@@ -13605,6 +13634,222 @@ def validate_task_commit_candidate(
         "workspace_boundary": boundary,
     }
     return plan, facts, errors
+
+
+def task_commit_public_check_ref(artifact_sha256: str) -> str:
+    return f"phase2-check:{artifact_sha256}"
+
+
+def task_commit_next_candidate_path(
+    root: Path,
+    task_dir: Path,
+) -> tuple[Path, str]:
+    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
+    if plan_dir.exists() and not plan_dir.is_dir():
+        raise WorkflowError("Task commit plan path is not a directory.", exit_code=2)
+    plan_dir.mkdir(parents=True, exist_ok=True)
+    occupied: list[int] = []
+    for path in sorted(plan_dir.iterdir()):
+        if not path.is_file() or not re.fullmatch(r"[0-9]{3}\.json", path.name):
+            raise WorkflowError(
+                "Task commit plan directory contains an unsupported entry.", exit_code=2
+            )
+        occupied.append(int(path.stem))
+    if occupied != list(range(1, len(occupied) + 1)) or len(occupied) >= 999:
+        raise WorkflowError(
+            "Task commit plan sequence history is not contiguous or is exhausted.", exit_code=2
+        )
+    sequence = f"{len(occupied) + 1:03d}"
+    candidate_path = plan_dir / f"{sequence}.json"
+    if candidate_path.exists():
+        raise WorkflowError("Task commit candidate sequence is already occupied.", exit_code=2)
+    return candidate_path, sequence
+
+
+def build_task_commit_candidate_from_public_input(
+    root: Path,
+    task_dir: Path,
+    public_input: dict[str, Any],
+) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+    config = load_config(root)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
+    task = task_json(task_dir)
+    task_relative = repo_relative(root, task_dir)
+    if public_input.get("task_ref") != task_relative:
+        raise WorkflowError("Public task_ref does not match the resolved task.", exit_code=2)
+    if task.get("status") != "in_progress":
+        raise WorkflowError("Task commit candidate requires an in_progress task.", exit_code=2)
+    require_ordinary_task_commit_git_state(root)
+
+    phase2_path, phase2, phase2_errors = validate_phase2_check(root, task_dir)
+    if phase2_errors:
+        raise WorkflowError(
+            "Task commit candidate requires a fresh passed Phase 2 check.",
+            exit_code=2,
+            payload={"errors": phase2_errors},
+        )
+    phase2_sha256 = hashlib.sha256(phase2_path.read_bytes()).hexdigest()
+    phase2_repository = (
+        phase2.get("repository_snapshot")
+        if isinstance(phase2.get("repository_snapshot"), dict)
+        else {}
+    )
+    current = current_head(root)
+    if (
+        phase2.get("typed_exit") != "passed"
+        or public_input.get("checked_head") != current
+        or phase2_repository.get("head") != current
+        or public_input.get("check_ref") != task_commit_public_check_ref(phase2_sha256)
+    ):
+        raise WorkflowError(
+            "Public commit input does not bind the current passed Phase 2 identity.",
+            exit_code=2,
+        )
+
+    candidate_path, sequence = task_commit_next_candidate_path(root, task_dir)
+    candidate_relative = repo_relative(root, candidate_path)
+    snapshot = capture_task_commit_snapshot(root, {candidate_relative})
+    snapshot_entries = {
+        str(item["path"]): item
+        for item in snapshot["entries"]
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    authorizations = public_input.get("path_authorizations")
+    if not isinstance(authorizations, list) or any(
+        task_commit_repo_path_errors(item, "path_authorizations")
+        for item in authorizations
+    ):
+        raise WorkflowError("Public path authorizations are invalid.", exit_code=2)
+    authorized_paths = set(authorizations)
+    if len(authorized_paths) != len(authorizations):
+        raise WorkflowError("Public path authorizations must be unique.", exit_code=2)
+    unknown_authorizations = sorted(authorized_paths - set(snapshot_entries))
+    if unknown_authorizations:
+        raise WorkflowError(
+            "Public path authorizations do not resolve current dirty paths.",
+            exit_code=2,
+            payload={"paths": unknown_authorizations},
+        )
+
+    semantic_review = public_input.get("semantic_review")
+    authorization = public_input.get("human_authorization")
+    if (
+        not isinstance(semantic_review, dict)
+        or semantic_review.get("status") != "passed"
+        or not str(semantic_review.get("summary") or "").strip()
+        or not isinstance(authorization, dict)
+        or authorization.get("status") != "confirmed"
+        or not str(authorization.get("summary") or "").strip()
+    ):
+        raise WorkflowError(
+            "Committed route requires a passed semantic review and exact confirmation.",
+            exit_code=2,
+        )
+
+    message_intent = public_input.get("message_intent")
+    if not isinstance(message_intent, dict):
+        raise WorkflowError("Public commit message intent is missing.", exit_code=2)
+    subject = str(message_intent.get("subject") or "")
+    body = str(message_intent.get("body") or "")
+    message_bytes = f"{subject}\n\n{body}\n"
+    parsed_subject, parsed_body = task_commit_message_parts(message_bytes)
+    if parsed_subject != subject or parsed_body != body:
+        raise WorkflowError("Public commit message intent is not canonical.", exit_code=2)
+
+    classifications: list[dict[str, Any]] = []
+    exact_stage_paths = set(authorized_paths)
+    for path, entry in snapshot_entries.items():
+        reviewed = path in authorized_paths
+        classifications.append({
+            "path": path,
+            "category": "task-reviewed" if reviewed else "unrelated-preserved",
+            "reason": (
+                str(semantic_review["summary"])
+                if reviewed
+                else "The caller did not authorize this current dirty path for the task commit."
+            ),
+            "coverage_source": (
+                repo_relative(root, phase2_path)
+                if reviewed
+                else "public-path-authorization"
+            ),
+        })
+        if reviewed and isinstance(entry.get("renamed_from"), str):
+            exact_stage_paths.add(str(entry["renamed_from"]))
+    classifications.append({
+        "path": candidate_relative,
+        "category": "task-reviewed",
+        "reason": "This invocation owns the exact private candidate evidence.",
+        "coverage_source": "skill-artifact",
+    })
+    exact_stage_paths.add(candidate_relative)
+
+    ledger_path = issue_scope_ledger_path(task_dir)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
+    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
+    plan: dict[str, Any] = {
+        "$schema": TASK_COMMIT_PLAN_SCHEMA_ID,
+        "schema_version": TASK_COMMIT_PLAN_SCHEMA_VERSION,
+        "skill_id": TASK_COMMIT_SKILL_ID,
+        "sequence": sequence,
+        "task": {
+            "id": task.get("id"),
+            "path": task_relative,
+            "status": task.get("status"),
+            "branch": current_branch(root),
+        },
+        "issue": {
+            "primary_issue": primary_issue_number_from_ledger(ledger),
+            "ledger_sha256": hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
+        },
+        "git": {
+            "base_branch": base_branch,
+            "base_ref": diff_base_ref(root, base_branch),
+            "pre_commit_head": current,
+        },
+        "evidence": {
+            "planning_approval": task_commit_file_evidence(root, planning_approval_path(task_dir)),
+            "phase2_check": task_commit_file_evidence(root, phase2_path),
+            "issue_scope_ledger": task_commit_file_evidence(root, ledger_path),
+            "task": task_commit_file_evidence(root, task_dir / "task.json"),
+        },
+        "dirty_snapshot": snapshot,
+        "path_classifications": classifications,
+        "exact_stage_paths": sorted(exact_stage_paths),
+        "message": {
+            "subject": subject,
+            "body": body,
+            "bytes": message_bytes,
+            "sha256": hashlib.sha256(message_bytes.encode("utf-8")).hexdigest(),
+        },
+        "ai_review": {
+            "status": "passed",
+            "reviewer": "public-skill-caller",
+            "summary": str(semantic_review["summary"]),
+            "evidence": [
+                "The caller supplied the exact reviewed path authorization set and commit message intent."
+            ],
+        },
+        "authorization": {
+            "authorized": True,
+            "source": "public-invocation-explicit-confirmation",
+            "evidence": str(authorization["summary"]),
+        },
+        "freshness": {"captured_at": now_iso(), "plan_digest": ""},
+        "result": {"status": "planned", "exit": None},
+    }
+    plan["freshness"]["plan_digest"] = task_commit_plan_digest(plan)
+    write_json(candidate_path, plan)
+    checked_plan, facts, errors = validate_task_commit_candidate(root, candidate_path, task_dir)
+    if errors:
+        candidate_path.unlink(missing_ok=True)
+        raise WorkflowError(
+            "Deterministic task commit candidate validation failed.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return candidate_path, checked_plan, facts
 
 
 def git_nul_path_set(
@@ -15016,7 +15261,7 @@ SKILL_INTERFACE_SCHEMAS = {
         "schema_path": Path("schemas/skill-interface-1.3.schema.json"),
         "interface_ref": "../../schemas/skill-interface-1.3.schema.json",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.3.json",
-        "sha256": "abd59d05b3b54fd8ffcffe4d59a97c31dd1ed74e11049ea547e4cd55e31f3a4c",
+        "sha256": "3238ec24598e12903ad9c249a8000dbb970938871015de4a6464ae36053e46b6",
         "io_contract_state": "minimal_handoff",
     },
 }
@@ -15051,14 +15296,19 @@ STAGE0_MIGRATION_SKILL_IDS = (
     "guru-review-change-request",
     "guru-create-task-workspace",
 )
-STAGE0_LEGACY_SKILL_IDS = (
+PRODUCTION_MIGRATION_SKILL_IDS = (
     "guru-approve-task-plan",
     "guru-check-task",
     "guru-create-task-commit",
 )
+PUBLIC_MIGRATION_SKILL_IDS = STAGE0_MIGRATION_SKILL_IDS + PRODUCTION_MIGRATION_SKILL_IDS
+STAGE0_LEGACY_SKILL_IDS = PRODUCTION_MIGRATION_SKILL_IDS
 STAGE0_MIGRATION_MANIFEST = Path("migrations/stage0-minimal-handoff.json")
 STAGE0_MIGRATION_SCHEMA = Path("schemas/stage0-migration-manifest.schema.json")
 STAGE0_MIGRATION_SCHEMA_ID = "guru-team-stage0-migration-manifest-1.0"
+PRODUCTION_MIGRATION_MANIFEST = Path("migrations/production-minimal-handoff.json")
+PRODUCTION_MIGRATION_SCHEMA = Path("schemas/production-migration-manifest.schema.json")
+PRODUCTION_MIGRATION_SCHEMA_ID = "guru-team-production-migration-manifest-1.0"
 SKILL_RUNTIME_REMEDIATION = (
     "Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete "
     "Guru Team preset, resolve every .new/.bak sidecar, run source and installed Skill package "
@@ -16349,7 +16599,7 @@ def skill_extension_runtime_contract(
     if not isinstance(skill_contracts, dict):
         skill_contracts = None
     elif (
-        skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.2"
+        skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.3"
         or skill_contracts.get("supported_interface_schema_ids") != expected_supported
         or skill_contracts.get("current_interface_schema_id") != "guru-team-skill-interface-1.3"
         or skill_contracts.get("registry_schema_id") != "guru-team-skill-registry-1.1"
@@ -17014,6 +17264,7 @@ def validate_skill_public_contracts(
         tuple[dict[str, Any] | None, set[str], str, set[str]],
     ] = {}
     consumer_scalar_arguments: dict[str, list[dict[str, Any]]] = {}
+    consumer_authoring_seeds: dict[str, dict[str, Any]] = {}
     for consumer_id, consumer in consumer_by_id.items():
         identity = consumer.get("consumer")
         payload_kind = consumer.get("payload_kind")
@@ -17031,12 +17282,16 @@ def validate_skill_public_contracts(
             continue
         identity_kind = identity.get("kind")
         contract_kind = contract.get("kind")
-        if identity_kind == "skill" and contract_kind != "skill_input":
+        if identity_kind == "skill" and contract_kind not in {
+            "skill_input", "skill_input_authoring_seed",
+        }:
             errors.append(
                 f"[consumer_skill_input] Skill consumer input {consumer_id} for {skill_id} must use the target-owned skill_input contract"
             )
             continue
-        if identity_kind != "skill" and contract_kind == "skill_input":
+        if identity_kind != "skill" and contract_kind in {
+            "skill_input", "skill_input_authoring_seed",
+        }:
             errors.append(
                 f"[consumer_skill_input] non-Skill consumer input {consumer_id} for {skill_id} cannot use a Skill-owned input contract"
             )
@@ -17069,7 +17324,7 @@ def validate_skill_public_contracts(
                 "structured_json",
                 set(required) if isinstance(required, list) else set(),
             )
-        elif contract_kind == "skill_input":
+        elif contract_kind in {"skill_input", "skill_input_authoring_seed"}:
             target_skill_id = str(identity.get("id") or "")
             target_entry = active_registry_entries.get(target_skill_id)
             target_interface_relative = (
@@ -17105,6 +17360,9 @@ def validate_skill_public_contracts(
             if not isinstance(target_input, dict) or target_input.get("kind") != contract.get("input_kind"):
                 errors.append(f"[consumer_skill_input] consumer input {consumer_id} does not match the target Skill input kind")
                 continue
+            if contract_kind == "skill_input_authoring_seed" and contract.get("input_kind") != "structured_json":
+                errors.append(f"[consumer_authoring_seed] consumer input {consumer_id} must target structured JSON")
+                continue
             if contract.get("input_kind") == "structured_json":
                 profile_id = contract.get("profile_id")
                 profiles = target_input.get("profiles") if isinstance(target_input.get("profiles"), list) else []
@@ -17116,12 +17374,81 @@ def validate_skill_public_contracts(
                 _, schema = skill_contract_asset(
                     boundary, target_package, matches[0].get("schema"), f"consumer Skill input {consumer_id}", errors, schema=True
                 )
-                consumer_contracts[consumer_id] = (
-                    schema,
-                    set(skill_closed_object_schema(schema, f"consumer Skill input {consumer_id}", errors)),
-                    "structured_json",
-                    set(schema.get("required", [])) if isinstance(schema, dict) and isinstance(schema.get("required"), list) else set(),
+                properties = skill_closed_object_schema(
+                    schema, f"consumer Skill input {consumer_id}", errors
                 )
+                required = set(schema.get("required", [])) if isinstance(schema, dict) and isinstance(schema.get("required"), list) else set()
+                if contract_kind == "skill_input_authoring_seed":
+                    seed_values = contract.get("seed_fields")
+                    authoring_values = contract.get("authoring_fields")
+                    seed_fields = set(seed_values) if isinstance(seed_values, list) else set()
+                    authoring_fields = set(authoring_values) if isinstance(authoring_values, list) else set()
+                    if (
+                        not seed_fields
+                        or not authoring_fields
+                        or seed_fields & authoring_fields
+                        or seed_fields | authoring_fields != required
+                        or not seed_fields.issubset(properties)
+                        or not authoring_fields.issubset(properties)
+                    ):
+                        errors.append(
+                            f"[consumer_authoring_seed] consumer input {consumer_id} must partition the target required fields exactly"
+                        )
+                    authoring_ref = contract.get("authoring_example")
+                    _, authoring_example = skill_contract_asset(
+                        boundary,
+                        target_package,
+                        authoring_ref,
+                        f"consumer authoring example {consumer_id}",
+                        errors,
+                        schema=False,
+                    )
+                    if not isinstance(authoring_example, dict) or set(authoring_example) != authoring_fields:
+                        errors.append(
+                            f"[consumer_authoring_seed] consumer input {consumer_id} authoring example must contain exactly authoring_fields"
+                        )
+                        authoring_example = {}
+                    authoring_schema = {
+                        "$schema": SKILL_SCHEMA_DIALECT,
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": sorted(authoring_fields),
+                        "properties": {
+                            field: copy.deepcopy(properties[field])
+                            for field in sorted(authoring_fields)
+                            if field in properties
+                        },
+                    }
+                    if authoring_example:
+                        errors.extend(skill_json_schema_validation_errors(
+                            authoring_example,
+                            authoring_schema,
+                            f"consumer authoring example {consumer_id}",
+                        ))
+                    seed_schema = {
+                        "$schema": SKILL_SCHEMA_DIALECT,
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": sorted(seed_fields),
+                        "properties": {
+                            field: copy.deepcopy(properties[field])
+                            for field in sorted(seed_fields)
+                            if field in properties
+                        },
+                    }
+                    consumer_contracts[consumer_id] = (
+                        seed_schema, seed_fields, "structured_json", seed_fields,
+                    )
+                    consumer_authoring_seeds[consumer_id] = {
+                        "target_schema": schema,
+                        "seed_fields": seed_fields,
+                        "authoring_fields": authoring_fields,
+                        "authoring_example": authoring_example,
+                    }
+                else:
+                    consumer_contracts[consumer_id] = (
+                        schema, set(properties), "structured_json", required,
+                    )
             else:
                 arguments = target_input.get("arguments") if isinstance(target_input.get("arguments"), list) else []
                 argument_ids = {str(item.get("id") or "") for item in arguments if isinstance(item, dict)}
@@ -17209,7 +17536,14 @@ def validate_skill_public_contracts(
             source_fields = set(output_properties) if operation == "direct" else {
                 str(item.get("source") or "") for item in mappings if isinstance(item, dict)
             }
-            if source_fields != set(output_properties):
+            routing_identity_only = (
+                operation == "select"
+                and consumer_by_id[consumer_id].get("consumer") == {
+                    "kind": "workflow", "id": "branch-review-or-finding-closure",
+                }
+                and set(output_properties) - source_fields == {"exit_id"}
+            )
+            if source_fields != set(output_properties) and not routing_identity_only:
                 errors.append(f"[public_output_unconsumed_field] typed output {exit_id} for {skill_id} has fields without direct consumer use")
         projected = skill_apply_projection(projection, example)
         if operation != "direct" or target_kind == "scalar_cli":
@@ -17274,6 +17608,26 @@ def validate_skill_public_contracts(
             errors.append(f"[projection_zero_payload] zero-payload consumer {consumer_id} received projected fields")
         elif target_schema is not None:
             errors.extend(skill_json_schema_validation_errors(projected, target_schema, f"projection {projection.get('id')} for {skill_id}"))
+            authoring_seed = consumer_authoring_seeds.get(consumer_id)
+            if isinstance(authoring_seed, dict):
+                seed_fields = authoring_seed["seed_fields"]
+                authoring_fields = authoring_seed["authoring_fields"]
+                authoring_example = authoring_seed["authoring_example"]
+                if set(projected) != seed_fields or set(authoring_example) != authoring_fields:
+                    errors.append(
+                        f"[consumer_authoring_seed] projection {projection.get('id')} does not preserve the exact seed/authoring partition"
+                    )
+                elif set(projected) & set(authoring_example):
+                    errors.append(
+                        f"[consumer_authoring_seed] projection {projection.get('id')} would overwrite caller-authored fields"
+                    )
+                else:
+                    merged = {**projected, **copy.deepcopy(authoring_example)}
+                    errors.extend(skill_json_schema_validation_errors(
+                        merged,
+                        authoring_seed["target_schema"],
+                        f"authoring-seed merge {projection.get('id')} for {skill_id}",
+                    ))
             if operation == "direct":
                 output_contract = {key: value for key, value in output_schema.items() if key != "$id"}
                 target_contract = {key: value for key, value in target_schema.items() if key != "$id"}
@@ -17389,6 +17743,23 @@ def validate_skill_public_contracts(
                                     f"invoked projection {exit_id} for {skill_id}",
                                 )
                             )
+                            authoring_seed = consumer_authoring_seeds.get(consumer_id)
+                            if isinstance(authoring_seed, dict):
+                                authoring_example = authoring_seed["authoring_example"]
+                                if set(projected) & set(authoring_example):
+                                    errors.append(
+                                        f"[invocation_projection] invoked exit {exit_id} overwrites caller-authored fields"
+                                    )
+                                else:
+                                    merged = {**projected, **copy.deepcopy(authoring_example)}
+                                    errors.extend(
+                                        f"[invocation_projection] {error}"
+                                        for error in skill_json_schema_validation_errors(
+                                            merged,
+                                            authoring_seed["target_schema"],
+                                            f"invoked authoring-seed merge {exit_id} for {skill_id}",
+                                        )
+                                    )
                         elif target_kind == "scalar_cli":
                             if set(projected) != target_fields:
                                 errors.append(f"[invocation_projection] invoked exit {exit_id} did not populate scalar arguments exactly")
@@ -17775,27 +18146,6 @@ def validate_stage0_migration_manifest(
     if manifest.get("activation_unit_id") != "stage0-minimal-handoff-v1":
         errors.append("Stage 0 migration manifest has an unknown activation unit")
 
-    minimal_registry_ids = sorted(
-        skill_id for skill_id, entry in active.items()
-        if entry.get("io_contract_state") == "minimal_handoff"
-    )
-    if minimal_registry_ids != sorted(expected_skill_ids):
-        errors.append("Stage 0 registry activation is mixed or does not match the migration manifest")
-    legacy_registry_ids = sorted(
-        skill_id for skill_id, entry in active.items()
-        if entry.get("io_contract_state") == "legacy"
-    )
-    if legacy_registry_ids != sorted(expected_legacy_ids):
-        errors.append("Stage 0 legacy registry allowlist does not match the migration manifest")
-
-    expected_manifest_locator = [{
-        "id": "stage0-minimal-handoff-v1",
-        "schema_id": STAGE0_MIGRATION_SCHEMA_ID,
-        "path": STAGE0_MIGRATION_MANIFEST.as_posix(),
-    }]
-    if not isinstance(skill_contracts, dict) or skill_contracts.get("migration_manifests") != expected_manifest_locator:
-        errors.append("extension migration_manifests does not publish the exact Stage 0 activation manifest")
-
     raw_entries = manifest.get("skills")
     manifest_entries: dict[str, dict[str, Any]] = {}
     if not isinstance(raw_entries, list):
@@ -17923,6 +18273,190 @@ def validate_stage0_migration_manifest(
             ]
             if profile_bindings.get(profile_id) != expected_cases or not expected_cases:
                 errors.append(f"Stage 0 manifest profile coverage is incomplete for {skill_id}/{profile_id}")
+    return str(manifest.get("activation_unit_id") or "") or None
+
+
+def validate_production_migration_manifest(
+    skills_root: Path,
+    boundary: Path,
+    interfaces: dict[str, dict[str, Any]],
+    errors: list[str],
+) -> str | None:
+    schema_path = skills_root / PRODUCTION_MIGRATION_SCHEMA
+    manifest_path = skills_root / PRODUCTION_MIGRATION_MANIFEST
+    if skill_lstat_path(
+        boundary, schema_path, "production migration manifest schema", errors, kind="file"
+    ) is None:
+        return None
+    if skill_lstat_path(
+        boundary, manifest_path, "production migration manifest", errors, kind="file"
+    ) is None:
+        return None
+    schema = skill_read_schema(schema_path, "production migration manifest schema", errors)
+    manifest = skill_read_json(manifest_path, "production migration manifest", errors)
+    if not isinstance(schema, dict) or not isinstance(manifest, dict):
+        return None
+    if schema.get("$schema") != SKILL_SCHEMA_DIALECT or schema.get("$id") != PRODUCTION_MIGRATION_SCHEMA_ID:
+        errors.append("production migration manifest schema has an incompatible identity")
+        return None
+    schema_errors = skill_json_schema_subset_errors(schema, "production migration manifest schema")
+    errors.extend(schema_errors)
+    if not schema_errors:
+        errors.extend(skill_json_schema_validation_errors(
+            manifest, schema, "production migration manifest"
+        ))
+
+    expected_skill_ids = list(PRODUCTION_MIGRATION_SKILL_IDS)
+    if manifest.get("skill_ids") != expected_skill_ids:
+        errors.append("production migration manifest skill_ids do not match the ordered activation unit")
+    if manifest.get("legacy_skill_ids") != []:
+        errors.append("production migration manifest legacy_skill_ids must be empty")
+    if manifest.get("activation_unit_id") != "production-minimal-handoff-v1":
+        errors.append("production migration manifest has an unknown activation unit")
+    if manifest.get("interface_schema_id") != "guru-team-skill-interface-1.3":
+        errors.append("production migration manifest does not require Interface 1.3")
+    if manifest.get("registry_schema_id") != "guru-team-skill-registry-1.1":
+        errors.append("production migration manifest has an unknown registry schema")
+    if manifest.get("eval_schema_id") != SKILL_EVAL_SCHEMA_ID:
+        errors.append("production migration manifest has an unknown eval schema")
+
+    raw_entries = manifest.get("skills")
+    manifest_entries: dict[str, dict[str, Any]] = {}
+    if not isinstance(raw_entries, list):
+        errors.append("production migration manifest skills must be an array")
+        raw_entries = []
+    for index, item in enumerate(raw_entries):
+        if not isinstance(item, dict):
+            errors.append(f"production migration manifest skill at index {index} is invalid")
+            continue
+        skill_id = str(item.get("id") or "")
+        if skill_id in manifest_entries:
+            errors.append(f"production migration manifest repeats skill {skill_id}")
+        manifest_entries[skill_id] = item
+    if list(manifest_entries) != expected_skill_ids:
+        errors.append("production migration manifest skill entries do not match the ordered activation unit")
+
+    expected_authoring_edges: list[dict[str, Any]] = []
+    for skill_id in expected_skill_ids:
+        item = manifest_entries.get(skill_id)
+        interface = interfaces.get(skill_id)
+        if not isinstance(item, dict) or not isinstance(interface, dict):
+            errors.append(f"production migration manifest cannot resolve active Interface {skill_id}")
+            continue
+        contracts = interface.get("public_contracts")
+        if not isinstance(contracts, dict):
+            errors.append(f"production Interface {skill_id} has no minimal public contracts")
+            continue
+        public_input = contracts.get("input")
+        profiles = public_input.get("profiles", []) if isinstance(public_input, dict) else []
+        profile_ids = [
+            str(profile.get("id") or "")
+            for profile in profiles if isinstance(profile, dict)
+        ]
+        if item.get("input_kind") != "structured_json" or item.get("input_profile_ids") != profile_ids:
+            errors.append(f"production manifest input profiles do not match Interface {skill_id}")
+
+        exits = [
+            str(exit_item.get("id") or "")
+            for exit_item in interface.get("external_exits", []) if isinstance(exit_item, dict)
+        ]
+        outputs = {
+            str(output.get("exit_id") or ""): output
+            for output in contracts.get("outputs", []) if isinstance(output, dict)
+        }
+        projections = {
+            str(projection.get("exit_id") or ""): projection
+            for projection in contracts.get("projections", []) if isinstance(projection, dict)
+        }
+        consumers = {
+            str(consumer.get("id") or ""): consumer
+            for consumer in contracts.get("consumer_inputs", []) if isinstance(consumer, dict)
+        }
+        corpus_path = skills_root / "packages" / skill_id / "evals/evals.json"
+        corpus = None
+        if skill_lstat_path(
+            boundary, corpus_path, f"production eval corpus for {skill_id}", errors, kind="file"
+        ) is not None:
+            corpus = skill_read_json(corpus_path, f"production eval corpus for {skill_id}", errors)
+        cases = {
+            str(case.get("id") or ""): case
+            for case in corpus.get("evals", []) if isinstance(corpus, dict) and isinstance(case, dict)
+        }
+        if item.get("eval_case_ids") != list(cases):
+            errors.append(f"production manifest eval cases do not match corpus {skill_id}")
+
+        raw_exit_bindings = item.get("exit_bindings")
+        exit_bindings = {
+            str(binding.get("exit_id") or ""): binding
+            for binding in raw_exit_bindings if isinstance(binding, dict)
+        } if isinstance(raw_exit_bindings, list) else {}
+        if list(exit_bindings) != exits or len(exit_bindings) != len(raw_exit_bindings or []):
+            errors.append(f"production manifest exits do not match Interface {skill_id}")
+        for exit_id in exits:
+            binding = exit_bindings.get(exit_id)
+            output = outputs.get(exit_id)
+            projection = projections.get(exit_id)
+            if not isinstance(binding, dict) or not isinstance(output, dict) or not isinstance(projection, dict):
+                errors.append(f"production manifest cannot resolve contract binding {skill_id}/{exit_id}")
+                continue
+            schema_ref = output.get("schema")
+            example_ref = output.get("example")
+            case_ids = [
+                case_id for case_id, case in cases.items()
+                if case.get("expected_exit") == exit_id
+            ]
+            expected_binding = {
+                "exit_id": exit_id,
+                "output_schema_id": schema_ref.get("schema_id") if isinstance(schema_ref, dict) else None,
+                "output_example_id": example_ref.get("id") if isinstance(example_ref, dict) else None,
+                "consumer_input_id": projection.get("consumer_input_id"),
+                "projection_id": projection.get("id"),
+                "eval_case_ids": case_ids,
+            }
+            if binding != expected_binding or not case_ids:
+                errors.append(f"production manifest binding does not match Interface/corpus {skill_id}/{exit_id}")
+            consumer_id = str(projection.get("consumer_input_id") or "")
+            consumer = consumers.get(consumer_id)
+            if not isinstance(consumer, dict):
+                errors.append(f"production manifest projection has unknown consumer input {skill_id}/{exit_id}")
+                continue
+            contract = consumer.get("contract")
+            if isinstance(contract, dict) and contract.get("kind") == "skill_input_authoring_seed":
+                identity = consumer.get("consumer")
+                authoring_ref = contract.get("authoring_example")
+                expected_authoring_edges.append({
+                    "producer_skill_id": skill_id,
+                    "exit_id": exit_id,
+                    "consumer_skill_id": identity.get("id") if isinstance(identity, dict) else None,
+                    "profile_id": contract.get("profile_id"),
+                    "consumer_input_id": consumer_id,
+                    "projection_id": projection.get("id"),
+                    "authoring_example_id": authoring_ref.get("id") if isinstance(authoring_ref, dict) else None,
+                })
+
+        expected_private = [
+            str(artifact.get("id") or "")
+            for artifact in contracts.get("private_artifacts", []) if isinstance(artifact, dict)
+        ]
+        if item.get("private_artifact_ids") != expected_private:
+            errors.append(f"production manifest private artifacts do not match Interface {skill_id}")
+        raw_profile_bindings = item.get("profile_case_bindings")
+        profile_bindings = {
+            str(binding.get("profile_id") or ""): list(binding.get("eval_case_ids", []))
+            for binding in raw_profile_bindings if isinstance(binding, dict)
+        } if isinstance(raw_profile_bindings, list) else {}
+        if list(profile_bindings) != profile_ids or len(profile_bindings) != len(raw_profile_bindings or []):
+            errors.append(f"production manifest profile bindings do not match Interface {skill_id}")
+        for profile_id in profile_ids:
+            expected_cases = [
+                case_id for case_id, case in cases.items()
+                if case.get("input_profile_id") == profile_id
+            ]
+            if profile_bindings.get(profile_id) != expected_cases or not expected_cases:
+                errors.append(f"production manifest profile coverage is incomplete for {skill_id}/{profile_id}")
+
+    if manifest.get("authoring_seed_edges") != expected_authoring_edges or len(expected_authoring_edges) != 3:
+        errors.append("production manifest authoring_seed_edges do not match the exact three Interface edges")
     return str(manifest.get("activation_unit_id") or "") or None
 
 
@@ -18085,6 +18619,7 @@ def _validate_skill_source(
                 errors.append(f"extension {field} does not match active package contracts")
 
     stage0_activation_unit = None
+    production_activation_unit = None
     if set(STAGE0_MIGRATION_SKILL_IDS) & set(active) or (
         isinstance(skill_contracts, dict) and "migration_manifests" in skill_contracts
     ):
@@ -18096,6 +18631,52 @@ def _validate_skill_source(
             skill_contracts,
             errors,
         )
+        production_activation_unit = validate_production_migration_manifest(
+            skills_root,
+            boundary,
+            interfaces,
+            errors,
+        )
+        expected_manifest_locators = [
+            {
+                "id": "stage0-minimal-handoff-v1",
+                "schema_id": STAGE0_MIGRATION_SCHEMA_ID,
+                "path": STAGE0_MIGRATION_MANIFEST.as_posix(),
+            },
+            {
+                "id": "production-minimal-handoff-v1",
+                "schema_id": PRODUCTION_MIGRATION_SCHEMA_ID,
+                "path": PRODUCTION_MIGRATION_MANIFEST.as_posix(),
+            },
+        ]
+        if (
+            not isinstance(skill_contracts, dict)
+            or skill_contracts.get("migration_manifests") != expected_manifest_locators
+        ):
+            errors.append(
+                "extension migration_manifests do not publish the exact Stage 0 then production activation order"
+            )
+        stage0_ids = set(STAGE0_MIGRATION_SKILL_IDS)
+        production_ids = set(PRODUCTION_MIGRATION_SKILL_IDS)
+        if stage0_ids & production_ids:
+            errors.append("Stage 0 and production activation manifests overlap")
+        active_ids = set(active)
+        if not (stage0_ids | production_ids).issubset(active_ids):
+            errors.append("active registry is missing a manifest-owned Skill")
+        if any(
+            entry.get("interface_schema_id") != "guru-team-skill-interface-1.3"
+            or entry.get("io_contract_state") != "minimal_handoff"
+            for entry in active.values()
+        ):
+            errors.append("active registry contains a legacy, unknown, or missing I/O contract state")
+        if active_ids == stage0_ids | production_ids:
+            exit_count = sum(
+                len(interface.get("external_exits", []))
+                for interface in interfaces.values()
+                if isinstance(interface.get("external_exits"), list)
+            )
+            if len(active_ids) != 9 or exit_count != 35:
+                errors.append("current active Skill closure must remain exactly 9 Skills and 35 exits")
 
     workflow_stat = None
     if not require_workflow:
@@ -18264,6 +18845,7 @@ def _validate_skill_source(
                 if entry.get("io_contract_state") == "minimal_handoff"
             ),
             "stage0_activation_unit": stage0_activation_unit,
+            "production_activation_unit": production_activation_unit,
             "invoke_markers": len(invokes),
             "exit_markers": len(exit_markers),
             "target_markers": len(target_markers),
@@ -18846,12 +19428,12 @@ def stage0_invocation_error(code: str, field_path: str, remediation: str, messag
 def stage0_invocation_identity() -> tuple[str, Path]:
     skill_id = os.environ.get("GURU_TEAM_INVOKED_SKILL_ID", "")
     package_value = os.environ.get("GURU_TEAM_INVOKED_PACKAGE_ROOT", "")
-    if skill_id not in STAGE0_MIGRATION_SKILL_IDS or not package_value:
+    if skill_id not in PUBLIC_MIGRATION_SKILL_IDS or not package_value:
         raise stage0_invocation_error(
             "invalid_invocation_identity",
             "invocation",
-            "Invoke one migrated Stage 0 package through its package-local public wrapper.",
-            "Stage 0 public invocation did not receive an audited dispatcher identity.",
+            "Invoke one migrated package through its package-local public wrapper.",
+            "Public invocation did not receive an audited dispatcher identity.",
         )
     package = Path(package_value)
     if not package.is_absolute() or package.name != skill_id or not package.is_dir() or package.is_symlink():
@@ -19049,15 +19631,58 @@ def stage0_owner_result(
     skill_id: str,
     root: Path,
     args: argparse.Namespace,
+    public_input: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
     result_path = stage0_owner_path(root, args.owner_result, "arguments.owner_result")
     result_relative = repo_relative(root, result_path)
     plan: dict[str, Any] | None = None
+    context_task_locator: str | None = None
+    if skill_id == "guru-discover-change-context":
+        profile = public_input.get("profile")
+        if profile == "task_local_reentry":
+            task_locator = public_input.get("task_locator")
+            prior_snapshot_locator = public_input.get("prior_snapshot_locator")
+            task_relative = skill_safe_relative(task_locator)
+            snapshot_relative = skill_safe_relative(prior_snapshot_locator)
+            if task_relative is None or task_relative.as_posix() != task_locator:
+                raise stage0_invocation_error(
+                    "invalid_public_input",
+                    "input.task_locator",
+                    "Use one clean repo-relative active task locator.",
+                    "Stage 0 task-local context task locator is invalid.",
+                )
+            if (
+                snapshot_relative is None
+                or snapshot_relative.as_posix() != prior_snapshot_locator
+                or snapshot_relative.as_posix() != "context-discovery.json"
+            ):
+                raise stage0_invocation_error(
+                    "invalid_public_input",
+                    "input.prior_snapshot_locator",
+                    "Use the clean task-local context-discovery.json snapshot locator.",
+                    "Stage 0 task-local context snapshot locator is invalid.",
+                )
+            expected_result = (task_relative / snapshot_relative).as_posix()
+            if result_relative != expected_result:
+                raise stage0_invocation_error(
+                    "owner_result_input_mismatch",
+                    "arguments.owner_result",
+                    "Use the exact task-local context snapshot selected by the validated public input.",
+                    "Stage 0 owner result does not match the task-local public input locators.",
+                )
+            context_task_locator = task_locator
+        elif profile != "pre_task":
+            raise stage0_invocation_error(
+                "invalid_public_input",
+                "input.profile",
+                "Use one declared guru-discover-change-context public input profile.",
+                "Stage 0 context discovery received an unsupported public input profile.",
+            )
     try:
         result = read_json(result_path)
         if skill_id == "guru-discover-change-context":
             checked = cmd_check_context_discovery(argparse.Namespace(
-                root=str(root), input=result_relative, task=None,
+                root=str(root), input=result_relative, task=context_task_locator,
                 expected_snapshot_sha256=(result.get("snapshot_identity") or {}).get("snapshot_sha256"),
             ))
         elif skill_id == "guru-clarify-requirements":
@@ -19152,6 +19777,193 @@ def stage0_owner_result(
     return result, plan
 
 
+def production_task_from_public_input(
+    root: Path,
+    public_input: dict[str, Any],
+) -> Path:
+    task_ref = str(public_input.get("task_ref") or "")
+    task_dir = resolve_task_dir(root, task_ref)
+    if repo_relative(root, task_dir) != task_ref:
+        raise stage0_invocation_error(
+            "owner_result_input_mismatch",
+            "input.task_ref",
+            "Use the exact repo-relative active task locator.",
+            "Production public input task_ref does not match the resolved task.",
+        )
+    return task_dir
+
+
+def production_owner_result(
+    skill_id: str,
+    root: Path,
+    args: argparse.Namespace,
+    public_input: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    task_dir = production_task_from_public_input(root, public_input)
+    artifact_name = (
+        PLANNING_APPROVAL_ARTIFACT
+        if skill_id == "guru-approve-task-plan"
+        else PHASE2_CHECK_ARTIFACT
+    )
+    expected_path = task_dir / artifact_name
+    result_path = stage0_owner_path(root, args.owner_result, "arguments.owner_result")
+    if result_path.resolve() != expected_path.resolve():
+        raise stage0_invocation_error(
+            "owner_result_input_mismatch",
+            "arguments.owner_result",
+            f"Use the exact {artifact_name} owned by input.task_ref.",
+            "Production owner result locator does not match the public task.",
+        )
+    try:
+        result = read_json(result_path)
+        if skill_id == "guru-approve-task-plan":
+            checked = cmd_check_planning_approval(argparse.Namespace(
+                root=str(root), task=repo_relative(root, task_dir),
+            ))
+            result_task_ref = (result.get("task") or {}).get("task_dir")
+        elif skill_id == "guru-check-task":
+            checked = cmd_check_phase2_check(argparse.Namespace(
+                root=str(root), task=repo_relative(root, task_dir),
+            ))
+            result_task_ref = (result.get("task") or {}).get("task_dir")
+        else:
+            raise WorkflowError("Unsupported production owner package.", exit_code=2)
+    except WorkflowError as exc:
+        raise stage0_invocation_error(
+            "owner_result_not_checked",
+            "arguments.owner_result",
+            "Complete the owner recorder/checker loop against current facts before public serialization.",
+            "Production owner result failed its objective checker.",
+        ) from exc
+    semantic = result.get("semantic_review")
+    gate = semantic.get("ai_review_gate") if isinstance(semantic, dict) else None
+    actual_exit = str(result.get("typed_exit") or "")
+    if (
+        checked.get("status") != "ok"
+        or checked.get("typed_exit") != actual_exit
+        or result_task_ref != public_input.get("task_ref")
+        or result.get("mode") != public_input.get("mode")
+        or public_input.get("exit_intent") != actual_exit
+        or not isinstance(gate, dict)
+        or gate.get("status") != public_input.get("ai_review_gate", {}).get("status")
+    ):
+        raise stage0_invocation_error(
+            "owner_result_input_mismatch",
+            "arguments.owner_result",
+            "Rerun the semantic owner for the exact public task, mode, Gate, and exit intent.",
+            "Production public input and checked owner result do not describe the same owner round.",
+        )
+    return result, checked
+
+
+def production_scope_proposal_refs(owner_result: dict[str, Any]) -> list[str]:
+    semantic = owner_result.get("semantic_review")
+    gate = semantic.get("ai_review_gate") if isinstance(semantic, dict) else None
+    proposals = gate.get("scope_proposals") if isinstance(gate, dict) else None
+    if isinstance(proposals, list):
+        refs = [str(item) for item in proposals if isinstance(item, str) and item]
+        if refs:
+            return list(dict.fromkeys(refs))
+    scope = owner_result.get("scope_qualification")
+    candidates = scope.get("candidates") if isinstance(scope, dict) else None
+    refs = [
+        str(item.get("id"))
+        for item in candidates or []
+        if isinstance(item, dict)
+        and item.get("disposition") == "scope_change_required"
+        and isinstance(item.get("id"), str)
+        and item.get("id")
+    ] if isinstance(candidates, list) else []
+    if refs:
+        return list(dict.fromkeys(refs))
+    raise stage0_invocation_error(
+        "owner_result_projection_failed",
+        "owner_result.scope_proposals",
+        "Record at least one checked scope proposal reference for the planning route.",
+        "Production owner result cannot supply a scope proposal reference.",
+    )
+
+
+def production_commit_semantic_exit(public_input: dict[str, Any]) -> str:
+    exit_id = str(public_input.get("exit_intent") or "")
+    semantic = public_input.get("semantic_review")
+    authorization = public_input.get("human_authorization")
+    semantic_status = semantic.get("status") if isinstance(semantic, dict) else None
+    authorization_status = authorization.get("status") if isinstance(authorization, dict) else None
+    valid = (
+        exit_id == "committed" and semantic_status == "passed" and authorization_status == "confirmed"
+        or exit_id == "revision-required" and semantic_status == "revision-required"
+        or exit_id == "blocked" and (
+            semantic_status == "blocked" or authorization_status == "refused"
+        )
+    )
+    if not valid:
+        raise stage0_invocation_error(
+            "invalid_public_input",
+            "input.exit_intent",
+            "Align exit_intent with the completed semantic review and confirmation outcome.",
+            "Production commit public input contains a contradictory semantic route.",
+        )
+    return exit_id
+
+
+def production_verify_committed_candidate(
+    root: Path,
+    task_dir: Path,
+    public_input: dict[str, Any],
+) -> dict[str, Any]:
+    candidates = sorted((task_dir / TASK_COMMIT_PLAN_DIR).glob("[0-9][0-9][0-9].json"))
+    if not candidates:
+        raise WorkflowError("No committed task candidate is available for recovery.", exit_code=2)
+    candidate = candidates[-1]
+    plan = read_json(candidate)
+    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
+    phase2_path = phase2_check_path(task_dir)
+    if (
+        result.get("status") != "committed"
+        or task_commit_result_validation_errors(root, plan)
+        or result.get("commit_sha") != current_head(root)
+        or public_input.get("checked_head") != plan.get("git", {}).get("pre_commit_head")
+        or public_input.get("check_ref")
+        != task_commit_public_check_ref(hashlib.sha256(phase2_path.read_bytes()).hexdigest())
+    ):
+        raise WorkflowError("Committed task candidate recovery evidence is stale.", exit_code=2)
+    return {
+        "status": "committed",
+        "commit_sha": result["commit_sha"],
+        "base_ref": plan["git"]["base_ref"],
+        "candidate_artifact": repo_relative(root, candidate),
+    }
+
+
+def production_commit_result(
+    root: Path,
+    public_input: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    task_dir = production_task_from_public_input(root, public_input)
+    exit_id = production_commit_semantic_exit(public_input)
+    if exit_id != "committed":
+        return {"typed_exit": exit_id}, None
+    try:
+        if (
+            public_input.get("profile") == "recovery_resume"
+            and public_input.get("recovery_intent") == "verify_committed"
+        ):
+            executed = production_verify_committed_candidate(root, task_dir, public_input)
+            return {"typed_exit": "committed"}, executed
+        candidate_path, plan, _ = build_task_commit_candidate_from_public_input(
+            root, task_dir, public_input
+        )
+        executed = execute_task_commit_candidate(root, candidate_path, task_dir)
+        executed["base_ref"] = plan["git"]["base_ref"]
+        return {"typed_exit": "committed"}, executed
+    except WorkflowError as exc:
+        return {"typed_exit": "blocked"}, {
+            "status": "blocked",
+            "errors": [str(exc)],
+        }
+
+
 def stage0_target_locator(target: Any, fallback: str | None = None) -> str:
     if isinstance(target, dict):
         url = target.get("url")
@@ -19179,7 +19991,9 @@ def stage0_clarity_disposition(result: dict[str, Any]) -> str:
     if target_disposition is None and invocation_kind == "active_task_scope_change":
         return "retained"
     value = str(target_disposition.get("disposition") or "") if isinstance(target_disposition, dict) else ""
-    if value in {"keep_current_issue", "keep_current_draft", "retain_current"}:
+    if value in {
+        "keep_current_open_issue", "keep_current_issue", "keep_current_draft", "retain_current",
+    }:
         return "retained"
     if value in {"select_duplicate", "retarget_existing_issue"}:
         return "selected"
@@ -19325,6 +20139,53 @@ def stage0_build_output(
                 "handoff_base_branch": (owner_plan or {}).get("base", {}).get("selected_base") or public_input.get("base_branch"),
                 "handoff_route": "repo_change",
             })
+    elif skill_id == "guru-approve-task-plan" and owner_result is not None:
+        if exit_id == "approved":
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "approval_ref": f"planning-approval:{(owner_plan or {}).get('artifact_sha256')}",
+            })
+        elif exit_id == "revision_required":
+            values["task_ref"] = public_input.get("task_ref")
+        elif exit_id == "clarify_scope":
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "proposal_refs": production_scope_proposal_refs(owner_result),
+            })
+    elif skill_id == "guru-check-task" and owner_result is not None:
+        if exit_id == "passed":
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "checked_head": (owner_plan or {}).get("checked_head"),
+                "check_ref": task_commit_public_check_ref(
+                    str((owner_plan or {}).get("artifact_sha256") or "")
+                ),
+            })
+        elif exit_id == "implementation_required":
+            findings = owner_result.get("semantic_review", {}).get("findings", [])
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "finding_refs": [
+                    str(item.get("id"))
+                    for item in findings
+                    if isinstance(item, dict) and item.get("status") == "open"
+                ],
+            })
+        elif exit_id == "planning_stale":
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "planning_route": owner_result.get("route"),
+                "proposal_refs": production_scope_proposal_refs(owner_result),
+            })
+    elif skill_id == "guru-create-task-commit" and owner_result is not None:
+        if exit_id == "committed":
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "base_ref": (owner_plan or {}).get("base_ref"),
+                "committed_head": (owner_plan or {}).get("commit_sha"),
+            })
+        elif exit_id == "revision-required":
+            values["task_ref"] = public_input.get("task_ref")
 
     properties = schema.get("properties")
     required = schema.get("required")
@@ -19428,8 +20289,20 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
             exit_id = "blocked"
     else:
         public_input = stage0_structured_input(skill_id, root, package, interface, args.input)
-        owner_result, owner_plan = stage0_owner_result(skill_id, root, args)
-        if public_input.get("mode") != owner_result.get("mode"):
+        if skill_id in {"guru-approve-task-plan", "guru-check-task"}:
+            owner_result, owner_plan = production_owner_result(
+                skill_id, root, args, public_input
+            )
+        elif skill_id == "guru-create-task-commit":
+            owner_result, owner_plan = production_commit_result(root, public_input)
+        else:
+            owner_result, owner_plan = stage0_owner_result(
+                skill_id, root, args, public_input
+            )
+        if (
+            skill_id != "guru-create-task-commit"
+            and public_input.get("mode") != owner_result.get("mode")
+        ):
             raise stage0_invocation_error(
                 "owner_result_input_mismatch",
                 "owner_result.mode",
@@ -19447,10 +20320,11 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 "Stage 0 wording public input and owner result profiles do not match.",
             )
         exit_id = str(owner_result.get("typed_exit") or "")
-        owner_locator = repo_relative(
-            root,
-            stage0_owner_path(root, args.owner_result, "arguments.owner_result"),
-        )
+        if skill_id != "guru-create-task-commit":
+            owner_locator = repo_relative(
+                root,
+                stage0_owner_path(root, args.owner_result, "arguments.owner_result"),
+            )
 
     output_schema, _ = stage0_output_contract(skill_id, package, interface, exit_id)
     payload = stage0_build_output(
@@ -24149,7 +25023,12 @@ def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
     )
     if schema_errors:
         errors.append("context_schema_validation_failed")
-    if set(payload) != CONTEXT_TOP_LEVEL_KEYS:
+    top_level_keys = set(payload)
+    if not (
+        CONTEXT_TOP_LEVEL_KEYS - {"task_worktree_state", "superseded_snapshot_sha256"}
+        <= top_level_keys
+        <= CONTEXT_TOP_LEVEL_KEYS
+    ):
         errors.append("invalid_top_level_fields")
     if payload.get("schema_version") != CONTEXT_DISCOVERY_SCHEMA_VERSION or payload.get("skill_id") != CONTEXT_DISCOVERY_SKILL_ID:
         errors.append("invalid_schema_identity")
@@ -24553,17 +25432,30 @@ def context_live_base_errors(root: Path, payload: dict[str, Any], task_dir: Path
         validate_github_remote_repository(root, remote_name, str(repository.get("repo") or ""))
     except WorkflowError:
         errors.append("base_repository_stale")
-    try:
-        dirty = git_status_paths(root, fail_closed=True)
-    except (WorkflowError, UnicodeError):
-        errors.append("git_status_unreadable")
-        dirty = []
-    if task_dir is None and dirty:
-        errors.append("checkout_not_clean")
-    elif task_dir is not None:
-        task_prefix = task_dir.relative_to(root).as_posix() + "/"
-        if any(path != task_prefix[:-1] and not path.startswith(task_prefix) for path in dirty):
-            errors.append("dirty_path_outside_task")
+    if task_dir is None:
+        if payload.get("task_worktree_state") is not None:
+            errors.append("task_worktree_state_forbidden")
+        if payload.get("superseded_snapshot_sha256") is not None:
+            errors.append("superseded_snapshot_forbidden")
+        try:
+            dirty = git_status_paths(root, fail_closed=True)
+        except (WorkflowError, UnicodeError):
+            errors.append("git_status_unreadable")
+            dirty = []
+        if dirty:
+            errors.append("checkout_not_clean")
+    else:
+        expected_state = payload.get("task_worktree_state")
+        if not isinstance(expected_state, dict):
+            errors.append("task_worktree_state_required")
+        else:
+            try:
+                live_state = context_task_worktree_state(root, task_dir)
+            except (WorkflowError, OSError, UnicodeError):
+                errors.append("task_worktree_state_unreadable")
+            else:
+                if expected_state != live_state:
+                    errors.append("task_worktree_state_stale")
     return errors
 
 
@@ -24703,6 +25595,43 @@ def context_discovery_target_trackability_errors(root: Path, target: Path) -> li
     return ["context_discovery_target_trackability_unreadable"]
 
 
+def context_prior_snapshot_replacement_errors(
+    root: Path,
+    target: Path,
+    payload: dict[str, Any],
+    expected_prior_snapshot_sha256: str | None,
+) -> list[str]:
+    if not expected_prior_snapshot_sha256:
+        return ["expected_prior_snapshot_required"]
+    try:
+        prior_bytes = target.read_bytes()
+        prior = json.loads(prior_bytes.decode("utf-8"))
+    except OSError:
+        return ["prior_snapshot_unreadable"]
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return ["prior_snapshot_invalid"]
+    if not isinstance(prior, dict):
+        return ["prior_snapshot_invalid"]
+    prior_identity = prior.get("snapshot_identity")
+    prior_snapshot_sha256 = (
+        prior_identity.get("snapshot_sha256")
+        if isinstance(prior_identity, dict)
+        else None
+    )
+    if (
+        context_structural_errors(root, prior)
+        or prior_identity != context_snapshot_identity(prior)
+    ):
+        return ["prior_snapshot_invalid"]
+    if prior_snapshot_sha256 != expected_prior_snapshot_sha256:
+        return ["expected_prior_snapshot_mismatch"]
+    if payload.get("superseded_snapshot_sha256") != expected_prior_snapshot_sha256:
+        return ["superseded_snapshot_mismatch"]
+    if prior.get("repository") != payload.get("repository"):
+        return ["prior_snapshot_repository_mismatch"]
+    return []
+
+
 def cmd_preview_change_context_history(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     if args.query_json:
@@ -24729,8 +25658,48 @@ def cmd_preview_change_context_history(args: argparse.Namespace) -> dict[str, An
 def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     payload, task_dir = context_payload_from_args(root, args, require_active_task=True)
+    target = task_dir / "context-discovery.json" if task_dir is not None else None
+    if target is not None and (target.exists() or target.is_symlink()):
+        try:
+            prior_mode = target.lstat().st_mode
+        except OSError as exc:
+            raise WorkflowError(
+                "Existing context-discovery.json is unreadable.",
+                exit_code=2,
+                payload={"error_codes": ["existing_snapshot_unreadable"]},
+            ) from exc
+        if not stat.S_ISREG(prior_mode):
+            raise WorkflowError(
+                "Existing context-discovery.json must be a regular file.",
+                exit_code=2,
+                payload={"error_codes": ["prior_snapshot_not_regular"]},
+            )
     if payload.get("mode") != args.mode:
         raise WorkflowError("context discovery mode does not match recorder mode.", exit_code=2)
+    submitted_identity = payload.get("snapshot_identity")
+    submitted_snapshot_sha256 = (
+        submitted_identity.get("snapshot_sha256")
+        if isinstance(submitted_identity, dict)
+        else None
+    )
+    submitted_structural = context_structural_errors(root, payload)
+    if submitted_structural:
+        raise WorkflowError(
+            "Context discovery snapshot validation failed.",
+            exit_code=2,
+            payload={"error_codes": context_sort(submitted_structural)},
+        )
+    if (
+        args.expected_snapshot_sha256
+        and args.expected_snapshot_sha256 != submitted_snapshot_sha256
+    ):
+        raise WorkflowError(
+            "Expected context discovery snapshot digest does not match.",
+            exit_code=2,
+            payload={"error_codes": ["expected_snapshot_mismatch"]},
+        )
+    if task_dir is not None:
+        payload["task_worktree_state"] = context_task_worktree_state(root, task_dir)
     payload["snapshot_identity"] = context_snapshot_identity(payload)
     structural = context_structural_errors(root, payload)
     if structural:
@@ -24748,15 +25717,15 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             payload={"error_codes": context_sort(structural + route_live)},
         )
     snapshot_sha256 = payload["snapshot_identity"]["snapshot_sha256"]
-    if args.expected_snapshot_sha256 and args.expected_snapshot_sha256 != snapshot_sha256:
-        raise WorkflowError("Expected context discovery snapshot digest does not match.", exit_code=2, payload={"error_codes": ["expected_snapshot_mismatch"]})
     if task_dir is None:
         if args.expected_snapshot_sha256:
             raise WorkflowError("Pre-task context recording does not accept an expected task snapshot.", exit_code=2)
+        if getattr(args, "expected_prior_snapshot_sha256", None):
+            raise WorkflowError("Pre-task context recording does not accept an expected prior snapshot.", exit_code=2)
         return payload
     if not args.expected_snapshot_sha256:
         raise WorkflowError("Task-local context recording requires --expected-snapshot-sha256.", exit_code=2)
-    target = task_dir / "context-discovery.json"
+    assert target is not None
     trackability_errors = context_discovery_target_trackability_errors(root, target)
     if trackability_errors:
         raise WorkflowError(
@@ -24775,8 +25744,29 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
                 payload={"error_codes": ["existing_snapshot_unreadable"]},
             ) from exc
         if actual_bytes != expected_bytes:
-            raise WorkflowError("Existing context-discovery.json does not match the expected snapshot.", exit_code=2, payload={"error_codes": ["existing_snapshot_mismatch"]})
+            replacement_errors = context_prior_snapshot_replacement_errors(
+                root,
+                target,
+                payload,
+                getattr(args, "expected_prior_snapshot_sha256", None),
+            )
+            if replacement_errors:
+                raise WorkflowError(
+                    "Existing context-discovery.json cannot be formally replaced.",
+                    exit_code=2,
+                    payload={"error_codes": replacement_errors},
+                )
+            write_json(target, payload)
     else:
+        if (
+            getattr(args, "expected_prior_snapshot_sha256", None)
+            or payload.get("superseded_snapshot_sha256") is not None
+        ):
+            raise WorkflowError(
+                "Initial context-discovery.json write cannot supersede a prior snapshot.",
+                exit_code=2,
+                payload={"error_codes": ["prior_snapshot_not_found"]},
+            )
         write_json(target, payload)
     trackability_errors = context_discovery_target_trackability_errors(root, target)
     if trackability_errors:
@@ -29856,6 +30846,7 @@ def build_parser() -> argparse.ArgumentParser:
     context_record.add_argument("--input")
     context_record.add_argument("--task")
     context_record.add_argument("--expected-snapshot-sha256")
+    context_record.add_argument("--expected-prior-snapshot-sha256")
 
     context_check = sub.add_parser("check-context-discovery")
     context_check.add_argument("--root")

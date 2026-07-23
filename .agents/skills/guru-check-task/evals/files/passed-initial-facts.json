@@ -1,0 +1,1 @@
+{"scenario":"The complete Phase 2 owner round passes against the current dirty snapshot.","owner_evidence":{"semantic_gate":"passed","checker_required":true},"owner_staging":{"recipe":"check-passed"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/tasks/current/phase2-check.json"]}}

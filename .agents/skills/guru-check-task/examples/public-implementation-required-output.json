@@ -1,0 +1,7 @@
+{
+  "exit_id": "implementation_required",
+  "task_ref": ".trellis/tasks/example-task",
+  "finding_refs": [
+    "F1"
+  ]
+}

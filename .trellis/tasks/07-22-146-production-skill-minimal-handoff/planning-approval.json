@@ -1,0 +1,1331 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-22T19:32:53Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-22-146-production-skill-minimal-handoff",
+    "task_identity_sha256": "cf50c524585ca3e708e04af47454c3b4bcb75479b5be06acd9281fef8c049bb1",
+    "scope_ledger_sha256": "ec10bec3a2aee4777f9a56bec024aca35a442cf447f4f135f8de7c1428c2eab5",
+    "status": "in_progress",
+    "branch": "codex/146-production-skill-minimal-handoff",
+    "issue_numbers": [
+      146
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c",
+    "head": "7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c",
+    "dirty_paths": [
+      ".agents/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+      ".agents/skills/guru-discover-change-context/tests/test_contract.py",
+      ".claude/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+      ".claude/skills/guru-discover-change-context/tests/test_contract.py",
+      ".codex/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+      ".codex/skills/guru-discover-change-context/tests/test_contract.py",
+      ".cursor/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+      ".cursor/skills/guru-discover-change-context/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
+      ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_contract.py",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/check.jsonl",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/context-discovery.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.jsonl",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-review.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-start-context.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task.json",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/skills/guru-team/migrations/production-minimal-handoff.json",
+      "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
+      "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
+      "trellis/skills/guru-team/schemas/production-migration-manifest.schema.json",
+      "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "captured_at": "2026-07-22T19:32:53Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:146",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/146",
+      "sha256": "2de07b29a98766f64c1ababd9ea6d7ff4219bbfa4ba0df1572947b6b06b4bbdd",
+      "updated_at": "2026-07-22T18:43:38Z"
+    },
+    {
+      "id": "comment:146:5042614203",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5042614203",
+      "sha256": "0601dc91d8d25eaaa009d61b142ed1518031ac37471400e43941b57cf583572c",
+      "updated_at": null
+    },
+    {
+      "id": "comment:146:5042976037",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5042976037",
+      "sha256": "27c8cebded0b762eac6ff7cc507d581770a60575046070bc0658b44fd09652f1",
+      "updated_at": null
+    },
+    {
+      "id": "comment:146:5044522718",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5044522718",
+      "sha256": "6d9da93d2aff7155247bac833fe201c3fddcb673ce89760ed2369e5b6f4f565e",
+      "updated_at": null
+    },
+    {
+      "id": "comment:146:5045340918",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5045340918",
+      "sha256": "294a0fde48722cdeff9ada1db6fcb617ba4700d401503183346e9d38cadc2d3b",
+      "updated_at": null
+    },
+    {
+      "id": "comment:146:5047220259",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5047220259",
+      "sha256": "6c91d444494d1ef46e4a51cffcb24b49bd69d64a8e39ceb6bfac51e7d24d7d35",
+      "updated_at": null
+    },
+    {
+      "id": "comment:146:5049566946",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5049566946",
+      "sha256": "33739450afc17bf06464b3f542395af2da3805ff69cfdec8e43e19f103069de4",
+      "updated_at": null
+    },
+    {
+      "id": "comment:146:5050065847",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5050065847",
+      "sha256": "14adc17061cec4d148e0a4e761926f4da0566502212a650d425530ea58ca88d2",
+      "updated_at": null
+    },
+    {
+      "id": "phase0:issue-review",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-review.json",
+      "sha256": "6075cdb53221fed3f7a396942d103faf821da560daf1192b0e607c63f1ae6cd6",
+      "updated_at": null
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    },
+    {
+      "id": "archive:144-design",
+      "kind": "repository_document",
+      "locator": ".trellis/tasks/archive/2026-07/07-20-144-minimal-typed-handoff-io/design.md",
+      "sha256": "b28490a16e4a36ae3e263b6a3d231fbdb3fbdd828ff7a27610c8e12e880b8a6e",
+      "updated_at": null
+    },
+    {
+      "id": "archive:145-design",
+      "kind": "repository_document",
+      "locator": ".trellis/tasks/archive/2026-07/07-21-145-stage0-minimal-handoff/design.md",
+      "sha256": "d52aafbbe36889421d36ba2528593ef33e68370f8c983afbffa11a84e65debb3",
+      "updated_at": null
+    },
+    {
+      "id": "archive:147-design",
+      "kind": "repository_document",
+      "locator": ".trellis/tasks/archive/2026-07/07-21-147-skill-eval-runner-adapters/design.md",
+      "sha256": "9fa7bfda13bcec1d24dd54b9e43d8327812051973deb85baa44a7f5decea9004",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+      "sha256": "2344b71b027094e5249d28bce733d7fca841ad4dae96e06b17d2721fd70609df",
+      "size_bytes": 30413,
+      "modified_at": "2026-07-22T19:23:40.869850+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+      "sha256": "0902063ddb98e3832027d5af3f00ce0adf1ded3df09a4b4b69efad8a7179ee6b",
+      "size_bytes": 33192,
+      "modified_at": "2026-07-22T19:23:40.870274+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+      "sha256": "2f3d2ed229eaf2392fd184fc41de6ca838cc8d3fcd0be431c0be537b394bde9a",
+      "size_bytes": 25828,
+      "modified_at": "2026-07-22T19:23:40.870580+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+      "sha256": "2344b71b027094e5249d28bce733d7fca841ad4dae96e06b17d2721fd70609df",
+      "size_bytes": 30413,
+      "modified_at": "2026-07-22T19:23:40.869850+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+      "sha256": "0902063ddb98e3832027d5af3f00ce0adf1ded3df09a4b4b69efad8a7179ee6b",
+      "size_bytes": 33192,
+      "modified_at": "2026-07-22T19:23:40.870274+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+      "sha256": "2f3d2ed229eaf2392fd184fc41de6ca838cc8d3fcd0be431c0be537b394bde9a",
+      "size_bytes": 25828,
+      "modified_at": "2026-07-22T19:23:40.870580+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+    "locator": "## 11. Docs SSOT Plan",
+    "statement_sha256": "6b8ab3f38fa20aa377dc3435371d57f6ab10a1b3d718b48aaaa668413e9d9029",
+    "durable_paths": [
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/docs/public-docs.md",
+      "docs/requirements/README.md",
+      "docs/requirements/requirement-main.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md"
+    ]
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "5286b7f4788855d184258c777cf8997423bcfbeb2b4eca3b986eb7be5d14f29b",
+    "facts_sha256": "897b2a5f52f6b8a22cb9a5e8eff0c0db1c8c8b0a22a9893872775077e50215f5",
+    "scope_sha256": "88341da05b115dd5bea1327a559a1c721832658bad1f6aa5aca3dfda69102434",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session-issue-146-r13-r16-planning-wording-reentry",
+    "summary": "已在 content_changed consumer re-entry 后重新完整审查当前 prd.md、design.md、implement.md。固定范围、文档 hashes 与零命中 scan 均为 current。#146 原始 3 Skills/11 exits、9/35 closure、R7/R12、唯一 close issue、#131 handoff、compatibility 与非目标没有削弱；R13-R16 分别只有一个明确 owner 和一个实现路径。clarify_scope 只进入 routing-only target；owner checker只消费 validated locator；task_worktree_state只作为 private evidence；formal replacement只在 exact prior 与完整 new checks通过后改变 fixed bytes。所有 conditional routes、rollback points、AC18-AC21 与 distribution/upgrade regressions均有精确 trigger和observable outcome。没有未标注的外部非合同引用，零 lexical hit没有替代完整规划语义复核。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "R1",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R1. Interface 1.3 与 production activation",
+        "statement_sha256": "4eba0c017bfa4363ea2d123868d646dc3346cff24770223757b702d2bbf52032",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:144-design",
+          "archive:145-design"
+        ],
+        "reason": "Issue #146 明确要求三包迁移到 Interface 1.3 minimal_handoff，并保持 Stage 0 activation identity。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R2",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R2. Structured public input profiles",
+        "statement_sha256": "2c0b30c645e8c097a7da7a4935216aa71337afa84ee38beb8469d32dfe93ae25",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:144-design"
+        ],
+        "reason": "Issue #146 与 Interface 1.3 基线共同要求 caller-owned structured profiles 和 runtime fact 重建。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R3",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R3. Per-exit outputs 与 consumer projections",
+        "statement_sha256": "c810c2ef1a0e47991b8f01f7179b7924e611847b4e5623d378e44125509581b0",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:144-design"
+        ],
+        "reason": "Issue #146 明确要求 11 个 per-exit outputs、唯一 consumer、projection 与 direct-use proof。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R4",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R4. Public/private state 分离",
+        "statement_sha256": "1ad11cf55e166502badc24d68adc36b631f0f8082fbfc81953cd4be05b2cbfa4",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:144-design"
+        ],
+        "reason": "Issue #146 明确要求 gate、checkpoint 与 transaction artifacts 保持 private。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R5",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R5. Deterministic commit candidate builder",
+        "statement_sha256": "66a21f2617af2ed47b00a5d3481382f51e68970fa459c5e4b86f6cd033bbe343",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "Issue #146 明确要求 deterministic builder 生成 private candidate，并保留现有 transaction semantics。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R6",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R6. Eval corpus 与 9/35 closure",
+        "statement_sha256": "0c9aa7a2e44756f610207dddc4db8023d260d0835f3f511af538c4e8243fa1e9",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:145-design",
+          "archive:147-design"
+        ],
+        "reason": "Issue #146 明确要求三个 corpora、11 exits/profile coverage 与 9 Skills/35 exits closure，并复用 #147 runner contract。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R7",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R7. Stage 0 clarification disposition projection",
+        "statement_sha256": "3275ec09453da69c37db90bdcbfe534c94c6cf0e5b1f1fd19c40df8fc57fc9d8",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5042976037",
+          "phase0:issue-review"
+        ],
+        "reason": "GitHub proposal 给出 exact normal-path 修复内容，Phase 0 issue review 绑定其 proposal digest 的专门用户确认并将其纳入 accepted_current。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R8",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R8. Compatibility、upgrade 与原子切换",
+        "statement_sha256": "2f792225422dca0e4e3fbeff60c215c30ea5dd2008520ef973984b168b7431b2",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "comment:146:5042614203",
+          "archive:144-design",
+          "archive:145-design"
+        ],
+        "reason": "Issue #146 与依赖澄清要求 active/archive compatibility、upgrade/update/reapply 和 atomic activation。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R9",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R9. Docs SSOT 与分发",
+        "statement_sha256": "258e941982e25bdd6f06bacecb77c7b0984f0d6c04bf6c8dfd1729b38894fb54",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "reason": "Issue #146 的 clean distribution 验收与仓库 AGENTS.md 的 canonical/dogfood/Docs SSOT 规则共同要求该范围。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R10",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R10. Workflow 与 semantic ownership 保持",
+        "statement_sha256": "e84abe250dd206fc2888041c68a57a1d9fe9dcedc8bdb8000715678032732e07",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents",
+          "archive:144-design",
+          "archive:147-design"
+        ],
+        "reason": "Issue、仓库 SSOT 与已交付基础合同都要求 Markdown/AI 持有 semantic judgment，脚本只执行确定性动作。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R11",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R11. 场景边界",
+        "statement_sha256": "e77ebabfe05b4150e309cb1257601d30caf9d9c6c7027f786b4775e9c0409a45",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "reason": "Issue #146 与仓库 normal-operation boundary 明确排除恶意、竞态压力、锁、TOCTOU 与额外非功能加固。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R12",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R12. Semantic Skill authoring seed",
+        "statement_sha256": "27a37426a91b91cb38fdd16f14be595c0291f809a8fb53bd7370c659e633acb0",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5044522718"
+        ],
+        "reason": "GitHub comment 5044522718 已把精确确认的 authoring-seed proposal 固定为 #146 current authority，直接要求 additive target-owned contract、三条 edge、无覆盖 merge 与完整 target schema validation。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R13",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R13. clarify_scope routing-only workflow target",
+        "statement_sha256": "9624e4ece142a140a01a2830a5122ee8411dfb9fca2f080f8e690fb5613b329c",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5045340918"
+        ],
+        "reason": "Current GitHub authority 精确要求 clarify_scope 三字段 DTO 只进入 routing-only workflow target，再由 caller AI fresh authoring existing clarification input。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R14",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R14. task-local re-entry owner checker binding",
+        "statement_sha256": "decf16ee4271ee7a86d275de4fd7b47ed10bef0259a6634ed8fd40ff6fdd0c67",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5047220259"
+        ],
+        "reason": "Current GitHub authority 精确要求 task_local_reentry 用 validated task_locator 复验 exact owner-result locator，同时保持 pre_task 行为。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R15",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R15. private task worktree state evidence",
+        "statement_sha256": "a4159b9053ba631e618a46429c2e1a6e66f0ec24984ed5b032149209b31da48d",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5049566946"
+        ],
+        "reason": "Current GitHub authority 精确要求 private task_worktree_state 绑定 HEAD 与完整 dirty identity，并保持 public DTO 和 pre_task clean contract不变。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R16",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "### R16. formal task context snapshot replacement",
+        "statement_sha256": "7bd442c3d4857d0d177625f89d21d160a658773e8c12364c4993d99674d9c5ca",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5050065847"
+        ],
+        "reason": "Current GitHub authority 精确要求 task-mode exact-prior fixed-snapshot replacement、preserve-prior failure、superseded binding 与 same-bytes retry consistency。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC1",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC1：",
+        "statement_sha256": "0b187b448b5d60fc139af151cc2dee53e8269317765c30ea7f8d0fa91a55d53d",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "Issue #146 明确要求 3 Skills/11 exits 的 source、installed、workflow、registry 与 manifest 集合一致。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC2",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC2：",
+        "statement_sha256": "7abee30c01e6db46719295666b2b27429f37bc0626ff9c33f7f9e56b90f87207",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "Issue #146 明确要求三包切换到 1.3 minimal_handoff 且 active registry 无 legacy/unknown/missing state。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC3",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC3：",
+        "statement_sha256": "c253449918ac7bd82413d016cda68eeb14f46610ce5ce2df0b7f107f6410685b",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:144-design"
+        ],
+        "reason": "Issue #146 与 Interface 1.3 contract 要求 closed profile schema/example/probe 与 public/private boundary。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC4",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC4：",
+        "statement_sha256": "2268f197648c95064c271dad6ee2f109e0c4fb8e0391b78aded5d03df651f73d",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:144-design"
+        ],
+        "reason": "Issue #146 明确要求每个 exit 的 schema/example/consumer/projection 与 direct-use proof。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC5",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC5：",
+        "statement_sha256": "bc55200846d24c94cc8a0a5f1b1f5d1795b40479b649afa894e05a463e07ad52",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "Issue #146 明确要求两个 self-reentry、passed-to-commit 与 committed-to-#131 projection tests。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC6",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC6：",
+        "statement_sha256": "694f9ec0ef36c3961b422baf8551f352911367b64ba631475af07f539465247a",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "Issue #146 明确要求 candidate builder 与现有 commit transaction regressions 全部通过。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC7",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC7：",
+        "statement_sha256": "17afb002bebb1ef3babbe50fe45ce0807ee28574019d885f9e2f7be9161c9b89",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:147-design"
+        ],
+        "reason": "Issue #146 与 #147 contract 要求真实 wrapper corpus execution 和 actual-exit schema selection。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC8",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC8：",
+        "statement_sha256": "99422044ccfc51a8673e5e7ad45b0ae49fa83105f0bc7406167db90e7f481536",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "Issue #146 明确要求 9 Skills/35 exits 与全部 profiles 的 closure set difference 为零。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC9",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC9：",
+        "statement_sha256": "13a1a51f6f87603bdbff92b553324ad2ed01f76a42a0f42d97c2f3868c6ae2ca",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "archive:147-design"
+        ],
+        "reason": "Issue #146 明确要求九份 corpus 跨平台 byte identity 与 unsupported contract。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC10",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC10：",
+        "statement_sha256": "bebe4062c19b607b7d0012e2bd0f9ef7c5853a0fefc1f885b464124388e6e85a",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "Issue #146 明确要求 normal transcript 与 eval trace 不读取 private runtime source。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC11",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC11：",
+        "statement_sha256": "d269c556c0d215367815909d9f67e90991add785445ff6dad8a5dac6fabbf843",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5042976037",
+          "phase0:issue-review"
+        ],
+        "reason": "已确认 proposal 要求 keep_current_open_issue 到 retained 的真实 wrapper regression 与 Stage 0 无回归。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC12",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC12：",
+        "statement_sha256": "376624da367df18a4a82df7bcec91d7fc27c2a997884d555ae1eb0a092c586de",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "Issue #146 明确要求 active re-entry、rerun、recovery、archive read 与 freshness compatibility。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC13",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC13：",
+        "statement_sha256": "7feb33928c831d5b5ed9a7f322b1d184815efa4edd27c41596a61ab15a20581b",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "reason": "Issue 与仓库分发门禁要求 source/installed/dogfood/platform/throwaway/update/reapply 和零 sidecar。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC14",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC14：",
+        "statement_sha256": "f84de72391e22ae2309594e4e06ee47bdad05794c6eb5c1b6496a003694e5765",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "reason": "仓库 Docs SSOT 与 README executable-command 门禁要求 task delta 合并和隐藏状态独立性。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC15",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC15：",
+        "statement_sha256": "f5700132201d205e6c32b76069437cc00385f544aa34da3961acf53676163a85",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "repo:agents"
+        ],
+        "reason": "仓库 workflow 要求完整 guru-check-task semantic review 覆盖 requirements、design、implementation、tests、distribution、docs 与 task artifacts。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC16",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC16：",
+        "statement_sha256": "afd24d8660ebf588f45bb6640f34d88988a66a5f608cc5cbc123af256988904c",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "reason": "Issue close boundary 与仓库 Branch Review/PR readiness gate 要求完整 base diff 和精确 close/ref semantics。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC17",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC17：",
+        "statement_sha256": "0c2713ab8c534893c597b19adf04e1f5d25b03bb4037fc346f13da97839c6e4e",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5044522718"
+        ],
+        "reason": "Current authority 明确要求 authoring-seed 仅覆盖三条 edge，并以 partition、union、无覆盖 merge、完整 target schema 与负例证明验收。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC18",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC18：",
+        "statement_sha256": "5bc214a3025eaa3e33fdf7c933da0a45d30c0994cb8e578cc2c31929d3e1a4d3",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5045340918"
+        ],
+        "reason": "Current authority 要求 routing-only target、mandatory clarification invocation、caller AI fresh authoring 和 authoring-seed cardinality 3 的可观察验收。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC19",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC19：",
+        "statement_sha256": "6223dc2e179147365ba1340cbfeaeb4f50719d1106ac6a305071847f3fc9e091",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5047220259"
+        ],
+        "reason": "Current authority 要求 task-local exact locator pass、mismatch/unsafe/stale fail 与 pre_task regression。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC20",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC20：",
+        "statement_sha256": "78ea0dd03d0afad75957b04f1592773884dce0b4632eab3b6ccd28a10eb2912d",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5049566946"
+        ],
+        "reason": "Current authority 要求 active dirty pass、snapshot 后 path/status/content/mode/rename drift fail、clean pre-task/standalone 与 public DTO不变。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC21",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "locator": "AC21：",
+        "statement_sha256": "a5919b2201fb3f4f808901be61545da197cc2731cd707fba7388bd4ee0ffa81d",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5050065847"
+        ],
+        "reason": "Current authority 要求 exact expected prior、新 snapshot完整检查、failure preserves bytes、same-bytes retry、superseded binding 与 installed context_ready wrapper。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C1",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C1 |",
+        "statement_sha256": "6341203980a65f7322196f895f168e287d342dc48b1a370752111f7bdf27491d",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:146",
+          "archive:145-design"
+        ],
+        "reason": "必须在不破坏 #145 activation identity 的前提下登记独立 production migration unit。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "separate-production-manifest",
+              "tradeoff": "保留 Stage 0 6x24 identity，并独立验证 production 3x11。"
+            },
+            {
+              "id": "extend-stage0-manifest",
+              "tradeoff": "文件更少，但会破坏 #145 public activation identity。"
+            }
+          ],
+          "selected_id": "separate-production-manifest",
+          "selection_reason": "独立 manifest 保持已发布 Stage 0 identity 并满足本任务原子 migration closure。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C2",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C2 |",
+        "statement_sha256": "4663e89f588e810115c2b7378eaa9e028ee8ad6c86ffb366c6aa83dc433459e4",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:146",
+          "archive:144-design"
+        ],
+        "reason": "Consumer 需要一个最小 task scope locator，runtime 负责 private artifact discovery。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "task-ref",
+              "tradeoff": "一个 repo-relative locator 支持 runtime 重建全部 private facts。"
+            },
+            {
+              "id": "per-artifact-locators",
+              "tradeoff": "调用方显式但扩大 DTO 并暴露 private implementation layout。"
+            }
+          ],
+          "selected_id": "task-ref",
+          "selection_reason": "task_ref 是 consumer 直接使用的最小 scope locator，避免 private artifact fields 泄漏。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C3",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C3 |",
+        "statement_sha256": "f3146b02548a706d01954e12e8101ea1a0b441d72a39c9e117f19c478c35e657",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:146",
+          "archive:144-design"
+        ],
+        "reason": "#131 直接消费 committed SHA，额外 freshness token 没有独立 consumer。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "committed-head",
+              "tradeoff": "同一 SHA 同时满足 commit identity 与 freshness use。"
+            },
+            {
+              "id": "extra-freshness-token",
+              "tradeoff": "身份分离但增加无人消费 public 字段。"
+            }
+          ],
+          "selected_id": "committed-head",
+          "selection_reason": "committed_head 已满足两个直接 consumer use，不需要新 token。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C4",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C4 |",
+        "statement_sha256": "c501d6f81466187446444ee37d34d1ca99eb1664a7ff02da74df93abadd3f192",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "reason": "Builder 必须机械生成 candidate，同时保留现有 executor 与 AI semantic ownership。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "deterministic-builder-existing-executor",
+              "tradeoff": "新增 objective materialization，保留成熟 transaction invariants。"
+            },
+            {
+              "id": "rewrite-transaction-agent-plan",
+              "tradeoff": "可能统一代码，但重写 transaction 并把 derived facts 交给 Agent。"
+            }
+          ],
+          "selected_id": "deterministic-builder-existing-executor",
+          "selection_reason": "复用现有 validator/executor 可满足 issue 且不移动 semantic boundary。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C5",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C5 |",
+        "statement_sha256": "10f6b1f646d6c990be6751649e3ef82c6ebe67aa0060e748976c89bbdfe53c16",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:146",
+          "archive:145-design"
+        ],
+        "reason": "Closure 必须覆盖 live active registry，同时保留 9x35 作为当前回归断言。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "live-registry-derived",
+              "tradeoff": "未来 active 1.3 package 可在完整 proof 后自动纳入 closure。"
+            },
+            {
+              "id": "hardcode-nine",
+              "tradeoff": "当前简单，但未来会静默漏掉新增 active package。"
+            }
+          ],
+          "selected_id": "live-registry-derived",
+          "selection_reason": "live registry 是 current authority，cardinality 只作为明确回归断言。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C6",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C6 |",
+        "statement_sha256": "db92dcb2fb672e413b028ed8ed76002ab1a76a7d2e5a3c1fa759f02385fbfb1b",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:146"
+        ],
+        "reason": "本任务必须交付与 #131 兼容的 DTO，但不能提前实现或激活 #131 Skill。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "workflow-consumer-compatible",
+              "tradeoff": "保持当前 workflow route，并让 DTO 与未来 #131 input 字节兼容。"
+            },
+            {
+              "id": "early-activate-131",
+              "tradeoff": "直接使用 Skill consumer，但越过 #131 独立 issue scope。"
+            }
+          ],
+          "selected_id": "workflow-consumer-compatible",
+          "selection_reason": "保留当前 consumer ownership，同时完成 #146 承诺的 minimal handoff。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C7",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C7 |",
+        "statement_sha256": "f3120c85ebff4a68917b503a048ea58d6b15bb7bf3f935145ad46a1c0b361833",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5044522718"
+        ],
+        "reason": "GitHub current authority 已精确固定 additive target-owned skill_input_authoring_seed 作为三条 normal semantic handoff 的选定方案，并排除完整 producer semantic input、runtime defaults 与另开 prerequisite。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C8",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C8 |",
+        "statement_sha256": "27ba548d7303df8ef468cb5683e1fee0a52b217a0511f5c87ce56b7fee3f8a8e",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5045340918"
+        ],
+        "reason": "Current authority 已选定 routing-only workflow target，并明确拒绝第4条 authoring seed与producer DTO扩张。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C9",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C9 |",
+        "statement_sha256": "e3cba6ca100adbbfaba68b412c193b03c9cb318bf34b4179feebadc6bcabfb35",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5047220259",
+          "comment:146:5049566946"
+        ],
+        "reason": "Current authorities 已共同固定 explicit task locator与private exact worktree-state binding，拒绝private推断和无条件dirty acceptance。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C10",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "locator": "| C10 |",
+        "statement_sha256": "3ba98530dced4f3c2d2ed44726feefabb860c5c77389189b4c122e43ab0a8385",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:146:5050065847"
+        ],
+        "reason": "Current authority 已选定 fixed locator exact-prior replacement与optional superseded digest，并拒绝archive/current pointer及Git清理绕过。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "VALIDATION",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+        "locator": "## 4. Validation commands",
+        "statement_sha256": "4f4bedaf2e5a4fee5930e795fc411fae527d1349267c632b3300527bf5f6444f",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "reason": "Issue acceptance 与仓库开箱/upgrade 门禁要求完整 unit、schema、source/installed、dogfood、throwaway、update/reapply 和 drift validation。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "ROLLBACK",
+        "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+        "locator": "## 6. Rollback points",
+        "statement_sha256": "eb4874c951ea1a356009375ba88591a8884c112ec693034164d6d4c8e0c73c6a",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "reason": "原子 migration、semantic ownership 与 scope boundaries 需要确定的 trigger/action recovery matrix。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "closed-trigger-action-matrix",
+              "tradeoff": "每个正常 failure 有唯一停止、修订或 reapply route。"
+            },
+            {
+              "id": "ad-hoc-recovery",
+              "tradeoff": "文本更短，但实现遇到 drift 时缺少可审核 route。"
+            }
+          ],
+          "selected_id": "closed-trigger-action-matrix",
+          "selection_reason": "明确的 RP1-RP11 让 supported normal failures 可确定恢复且不扩张非常规加固范围。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      }
+    ],
+    "coverage": {
+      "reviewer": "codex-main-session-issue-146-planning-approval",
+      "summary": "已覆盖 R1-R16、AC1-AC21、C1-C10、完整 validation contract 与 RP1-RP11 rollback matrix；R12-R16、AC17-AC21、C7-C10 分别由 current GitHub authority comments 5044522718、5045340918、5047220259、5049566946、5050065847 直接支持，Docs SSOT Plan 另由专用 binding 覆盖。",
+      "reviewed_entry_ids": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11",
+        "R12",
+        "R13",
+        "R14",
+        "R15",
+        "R16",
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15",
+        "AC16",
+        "AC17",
+        "AC18",
+        "AC19",
+        "AC20",
+        "AC21",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C9",
+        "C10",
+        "VALIDATION",
+        "ROLLBACK"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "a2be1db7e3fb09f5baedff5599c090de4be44eab2dfe1ec2e6d60ce3d876fabe"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "codex-main-session-issue-146-planning-approval",
+    "summary": "R12-R16 是已确认并写入 current authority 的普通 normal-path scope expansions；它们不属于六类 unusual scenario。六类 unusual scenarios 继续按 Issue #146 与 AGENTS.md 的 normal-operation boundary 保持原 disposition，没有 confirmed unusual expansion 或 unresolved candidate。",
+    "candidates": [
+      {
+        "id": "security-threat",
+        "scenario_class": "security_or_threat",
+        "trigger_evidence": "Issue #146 与 AGENTS.md 明确排除本任务未要求的威胁模型和 hostile-input security boundary。",
+        "scope": "不新增 authenticity、anti-tamper、anti-forgery 或 hostile-input 防御机制。",
+        "cost": "纳入会扩大产品与测试范围，并偏离 honest-but-fallible correctness 目标。",
+        "alternatives": [
+          "保留 secret redaction 和正文明确安全边界",
+          "未来由独立 requirement 定义威胁模型"
+        ],
+        "consequence": "当前实现和 review 不把排除的 threat-hardening 当作 finding 或验收项。",
+        "source_requirement_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "proposal_sha256": "335c9793e60e8405f3b8feac5699fa608523afdb957cf31268cb37446e508ce1",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "malicious-actor",
+        "scenario_class": "attack_or_malicious_actor",
+        "trigger_evidence": "Issue #146 与 AGENTS.md 明确排除故意伪造、篡改、欺骗和流程绕过。",
+        "scope": "不为恶意 actor 或对抗性输入增加防御与负例。",
+        "cost": "需要新的 threat model、security acceptance 和不属于当前 task 的机制。",
+        "alternatives": [
+          "只处理正常 recorder/validator correctness bug",
+          "未来独立 security issue"
+        ],
+        "consequence": "只能由人为伪造 artifact 复现的案例不进入 current acceptance。",
+        "source_requirement_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "proposal_sha256": "cbbde4dc2988c8cfaf9383efca647eda86883a644b846a12279a4c585fd24f5b",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "toctou-concurrency",
+        "scenario_class": "toctou_or_concurrency_race",
+        "trigger_evidence": "Issue #146 排除竞态压力、锁与 TOCTOU，同时要求保留现有 commit transaction invariants。",
+        "scope": "实现不得新增加锁、lease 或 TOCTOU hardening；只复用现有 normal transaction checks。",
+        "cost": "新机制会扩大非功能范围并可能改变 transaction semantics。",
+        "alternatives": [
+          "保持现有 transaction invariants",
+          "未来以独立 requirement 评审并发模型"
+        ],
+        "consequence": "实现若引入额外锁或 race protocol，planning 必须 revision 并移除该机制。",
+        "source_requirement_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "proposal_sha256": "5317cb46f6ad0545aa4de797954efa752063563414c04e227952a66125d381d8",
+        "disposition": "mechanism_removed",
+        "confirmation": null
+      },
+      {
+        "id": "fault-crash",
+        "scenario_class": "fault_injection_or_crash_consistency",
+        "trigger_evidence": "Issue #146 与 AGENTS.md 排除额外 fault injection、偶发 crash consistency 和非常规恢复加固。",
+        "scope": "不新增 failure injection matrix 或 crash consistency protocol。",
+        "cost": "需要扩大测试设施和 transaction contract，超出 normal-path correctness。",
+        "alternatives": [
+          "保留正文要求的正常 failure matrix",
+          "未来独立 reliability issue"
+        ],
+        "consequence": "额外 crash/fault 场景不阻塞本任务验收，也不成为 required follow-up。",
+        "source_requirement_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "proposal_sha256": "7ef5920d3432d21ea387b0a3b38c312d304befd05c03a004c96e9f639dddba35",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "cross-os-atomicity",
+        "scenario_class": "cross_os_atomicity",
+        "trigger_evidence": "Issue #146 与 AGENTS.md 明确排除跨 OS 原子性协议。",
+        "scope": "不新增 Darwin/Linux/Windows 跨平台 atomic write 或 filesystem protocol。",
+        "cost": "需要新的平台矩阵和 filesystem guarantees，明显扩张范围。",
+        "alternatives": [
+          "验证当前支持平台的既有 installer transaction",
+          "未来独立 portability issue"
+        ],
+        "consequence": "跨 OS atomicity 不进入 implementation 或 Branch Review finding。",
+        "source_requirement_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "proposal_sha256": "2cef52ce99b8e6fba02c965092dbe4a690e7ec4b5b13e3c5eb6c20a4e99e611e",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "other-nonstandard",
+        "scenario_class": "other_nonstandard",
+        "trigger_evidence": "当前 source authority 没有触发其它非常规非功能机制。",
+        "scope": "不预先实现未由 issue、planning 或 supported normal-path evidence 触发的机制。",
+        "cost": "未知机制缺少 acceptance、owner 与回归边界。",
+        "alternatives": [
+          "出现真实 normal-path gap 时进入 Scope Change Gate",
+          "未来建立独立 issue"
+        ],
+        "consequence": "没有 current authority 的其它 proposal 保持 out_of_scope。",
+        "source_requirement_refs": [
+          "issue:146",
+          "repo:agents"
+        ],
+        "proposal_sha256": "89094dfff201ab0f3f9dd45d213c210522f60245004d23539c984a8f250d62b7",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      }
+    ],
+    "unresolved_count": 0,
+    "review_sha256": "accbde2622e1d02c923a6c0c4ee4c089d74e8a8151365b693054368d76d9ca6c"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-146-planning-approval",
+      "summary": "已重新核验九项 entry preconditions 与当前 R1-R16、AC1-AC21、C1-C10 规划；authoring-seed 仍只覆盖三条声明 edge，clarify_scope只有routing-only路径，owner locator与private worktree state各有唯一owner，formal replacement只在exact prior和完整new checks通过后改变fixed bytes。Producer DTO、四种 projection operations、semantic ownership、#145 identity、#147 grader policy、#131 internals、Finish family 与六类 unusual dispositions均不变；没有 finding、revision action、scope proposal 或 blocker。",
+      "reviewed_at": "2026-07-22T19:30:16Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-22T19:25:00Z",
+    "confirmed_at": "2026-07-22T19:30:16Z",
+    "evidence_summary": "用户在看到已纳入 R13-R16、comments 5045340918、5047220259、5049566946、5050065847 的最终 prd.md、design.md、implement.md 链接，以及 implementation/Phase 2 blocked说明后明确回复‘确认继续’。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "最终规划、wording evidence、authority、provenance、unusual scenario 与独立 post-planning confirmation 均完整且 current。",
+  "supersedes_facts_sha256": "6a907d57896281146445ba57d6d02c68dc15c0f4d4f21acf3991669368825ac3",
+  "facts_sha256": "f6ae8069917a7cff30d31f57cb2e825ce146554b05c695887add74253e3fdb30"
+}

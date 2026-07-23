@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-approve-task-plan-input-aggregate-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-initial-review-input.schema.json"
+    },
+    {
+      "$ref": "public-revision-reentry-input.schema.json"
+    },
+    {
+      "$ref": "public-clarification-reentry-input.schema.json"
+    }
+  ]
+}

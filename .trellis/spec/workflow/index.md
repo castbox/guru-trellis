@@ -38,9 +38,10 @@ Before editing workflow behavior:
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Interface 1.2 remains the frozen legacy contract. Registry 1.1 selects exact
   `interface_schema_id` plus `io_contract_state`; interface 1.3 is
-  production-active for the six Stage 0 packages in
-  `stage0-minimal-handoff-v1`. The three #146-owned packages remain on 1.2
-  `legacy`; the mixed fixture remains test-only.
+  production-active for all nine workflow packages. The frozen
+  `stage0-minimal-handoff-v1` manifest owns its original six packages and 24
+  exits, while `production-minimal-handoff-v1` independently owns planning,
+  check, and commit with 11 exits. The mixed fixture remains test-only.
 - `discover-skill-contract` is the stable deterministic public discovery
   command. It returns a closed legacy/minimal variant and portable errors; the
   exact package invocation remains package-owned and callers do not import the

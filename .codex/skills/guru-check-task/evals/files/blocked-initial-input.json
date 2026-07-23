@@ -1,0 +1,13 @@
+{
+  "profile": "initial_check",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "scope_dispositions": ["C1 no classified finding"],
+  "adequacy_review": ["verification is incomplete"],
+  "findings": [],
+  "unverified_conclusions": ["U1 integration verification unavailable"],
+  "evidence_locators": ["implement.md", "src/production-eval.txt"],
+  "ai_review_gate": {"status": "blocked", "summary": "A required verification remains unavailable."},
+  "exit_intent": "blocked",
+  "source_exit": "implementation_complete"
+}

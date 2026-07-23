@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-check-task-output-blocked-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "blocked"
+    }
+  }
+}
