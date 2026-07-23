@@ -99,10 +99,15 @@ runtime commands `record-planning-approval` / `check-planning-approval`. They
 must distinguish the dedicated unusual-proposal confirmation from ordinary
 post-planning confirmation and list the four exits and consumers: `approved`
 to `phase-1-task-activation`, `revision_required` to the same Skill,
-`clarify_scope` to `guru-clarify-requirements`, and `blocked` to
-`task-plan-approval-blocked`. Workflow prose and platform entry text reference
-the Skill and route only; the package contract owns adequacy, provenance,
-proposal review, Gate, confirmation, and re-entry. Upgrade docs state that
+`clarify_scope` to routing-only workflow target
+`guru-task-plan-clarify-scope-router`, and `blocked` to
+`task-plan-approval-blocked`. Public docs state that the router consumes only
+`exit_id`/`task_ref`/`proposal_refs`, establishes scope context, and mandatory
+invokes `guru-clarify-requirements:active_task_scope_change`; the caller AI
+authors the complete clarification input from fresh live context. Workflow
+prose and platform entry text reference the Skill and route only; the package
+contract owns adequacy, provenance, proposal review, Gate, confirmation, and
+re-entry. Upgrade docs state that
 active schema 1.2 approval requires full v2 re-recording while archives are not
 rewritten. Public docs also state that task identity and a scope-ledger
 requirement authority use the same issue-category projection, and distinguish
@@ -288,9 +293,10 @@ the four run statuses, repo-external evidence, and the distinction between
 deterministic grading, external semantic grading, and human feedback. Examples
 use a caller-selected Interface 1.3 package and explicit external run root; they
 use one of the six production Stage 0 packages after
-`stage0-minimal-handoff-v1` activation. Upgrade text states that #146 retains
-the three non-Stage-0 legacy packages, and requires source/installed/platform
-discovery plus zero-sidecar validation after update/reapply.
+`stage0-minimal-handoff-v1` activation. Upgrade text states that the separate
+#146 production unit migrates the three non-Stage-0 packages to Interface 1.3,
+and requires source/installed/platform discovery plus zero-sidecar validation
+after update/reapply.
 
 The README usage contract also names the four installed executable wrappers,
 their `PATH`-resolved native commands, discovery capability reporting, the
@@ -316,9 +322,7 @@ Git root, Claude uses safe non-interactive input, and unauthenticated Cursor is
 
 All three public README files describe the production
 `stage0-minimal-handoff-v1` boundary: six Stage 0 packages and 24 exits use
-Interface 1.3 `minimal_handoff`, while `guru-approve-task-plan`,
-`guru-check-task`, and `guru-create-task-commit` remain Interface 1.2 `legacy`
-under #146. They name the migration manifest, the package-local discovery and
+Interface 1.3 `minimal_handoff`. They name the migration manifest, the package-local discovery and
 public invocation boundary, and the rule that normal Agents do not read/import
 the shared Python runtime or receive private recorder/checker artifacts.
 They also document explicit boolean scalar `required`, optional
@@ -332,3 +336,33 @@ identity, fresh install, pre-activation upgrade, `trellis update`, preset
 reapply, existing-task re-entry, archive read-only behavior, and recursive zero
 `.new`/`.bak` checks. README commands must run from a clean repository without
 machine-local hidden state.
+
+## Production Minimal Handoff Documentation
+
+All three public README files describe `production-minimal-handoff-v1` as a
+separate atomic unit containing planning, check, and commit with ten profiles
+and 11 exits. They state that all nine active packages now use Interface 1.3
+`minimal_handoff`, the combined current closure is 9-by-35, and the Stage 0
+manifest remains frozen at 6-by-24. They publish discovery, invocation, eval,
+pre-#146 upgrade, update/reapply, and drift-validation commands.
+
+The docs show the exact `committed` DTO fields `exit_id`, `task_ref`,
+`base_ref`, and `committed_head`, and name
+`workflow:branch-review-or-finding-closure` as the unchanged consumer. They do
+not claim Issue #131 is implemented, do not expose private approval/check/commit
+artifact bodies, and do not present eval `expected_exit` as a production input.
+
+The docs also name target-owned `skill_input_authoring_seed` for exactly the
+planning self-reentry, check-to-commit, and commit self-reentry edges. They
+explain that producer projection supplies only minimal seed fields, the caller
+AI authors every remaining required semantic field, validation proves a
+disjoint exact required-field partition and a no-overwrite full-schema merge,
+and no new projection operation, private-artifact lookup, default, or runtime
+semantic reconstruction is introduced.
+
+The public READMEs also describe the compatible active-task context re-entry
+contract: exact validated task/snapshot locators, private full dirty-worktree
+binding, and exact-prior formal replacement of the fixed snapshot. They state
+that the existing target must be regular and trackable, a successful
+different-byte replacement records `superseded_snapshot_sha256`, failed
+pre-write validation preserves prior bytes, and same-byte retry is idempotent.

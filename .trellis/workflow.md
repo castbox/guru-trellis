@@ -908,13 +908,34 @@ the mandatory invocation and typed transitions below.
 <!-- guru-skill-invoke: {"skill":"guru-approve-task-plan","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"approved","consumer":{"kind":"workflow","id":"phase-1-task-activation"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"revision_required","consumer":{"kind":"skill","id":"guru-approve-task-plan"}} -->
-<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"clarify_scope","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"clarify_scope","consumer":{"kind":"workflow","id":"guru-task-plan-clarify-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"blocked","consumer":{"kind":"stop","id":"task-plan-approval-blocked"}} -->
 
 Consume exactly one declared exit. Unknown, multiple, unmapped, missing-package,
 or consumer-mismatched results fail closed.
 
 <!-- guru-stop-target: {"id":"task-plan-approval-blocked"} -->
+<!-- guru-workflow-target: {"id":"guru-task-plan-clarify-scope-router"} -->
+
+This routing-only target consumes only the checked `exit_id`, `task_ref`, and
+`proposal_refs` from `guru-approve-task-plan:clarify_scope`. Validate that
+exact exit and consumer, and resolve `task_ref` to the one current task. Fail
+closed on missing, stale, mismatched, multiple, unknown, or unmapped input.
+
+Fresh-read the live issue authority, current task and scope ledger, current
+planning artifacts and approval state, and every referenced proposal before
+continuing. These reads establish caller context only; they do not expand the
+producer DTO or authorize workflow/runtime reconstruction of semantic input.
+
+The caller AI must then author all eight existing
+`guru-clarify-requirements:active_task_scope_change` input fields from that
+fresh context: `profile`, `source_exit`, `mode`, `target_locator`,
+`context_locator`, `task_locator`, `resume_target`, and `continuation_id`.
+Enter the Scope Change Gate above and mandatory invoke the existing active
+`guru-clarify-requirements` package with that complete input. Do not add a
+fourth `skill_input_authoring_seed`; the declared authoring-seed edge
+cardinality remains exactly three. Do not infer, default, merge, or recover
+these eight fields from private runtime state or the three-field producer DTO.
 
 #### 1.5 Activate task `[required · once]`
 

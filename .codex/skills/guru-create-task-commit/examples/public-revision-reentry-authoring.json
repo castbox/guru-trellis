@@ -1,0 +1,23 @@
+{
+  "profile": "revision_reentry",
+  "mode": "workflow",
+  "message_intent": {
+    "subject": "feat(workflow): #146 迁移 production handoff",
+    "body": "Background and verification are reviewed for the task commit."
+  },
+  "path_authorizations": [
+    "trellis/skills/guru-team/registry.json"
+  ],
+  "semantic_review": {
+    "status": "revision-required",
+    "summary": "Message and exact paths passed AI review."
+  },
+  "human_authorization": {
+    "status": "confirmed",
+    "summary": "The exact task commit side effect is authorized."
+  },
+  "exit_intent": "revision-required",
+  "checked_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "check_ref": "phase2-check:current",
+  "reentry_reason": "candidate_revision"
+}

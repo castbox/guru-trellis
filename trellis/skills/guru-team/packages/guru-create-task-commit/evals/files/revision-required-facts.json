@@ -1,0 +1,1 @@
+{"scenario":"The semantic owner returns the commit candidate for revision without a Git side effect.","owner_evidence":{"semantic_gate":"revision-required","checker_required":false},"owner_staging":{"recipe":"commit-revision-required"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json"]}}

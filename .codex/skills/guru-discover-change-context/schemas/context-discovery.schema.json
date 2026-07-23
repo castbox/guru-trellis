@@ -19,6 +19,8 @@
     "typed_exit": {"enum": ["context_ready", "refresh_base", "blocked"]},
     "repository": {"$ref": "#/$defs/repository"},
     "base_evidence": {"$ref": "#/$defs/baseEvidence"},
+    "task_worktree_state": {"$ref": "#/$defs/taskWorktreeState"},
+    "superseded_snapshot_sha256": {"$ref": "#/$defs/sha256"},
     "change_input": {"$ref": "#/$defs/changeInput"},
     "live_change": {"$ref": "#/$defs/liveChange"},
     "duplicate_search": {"$ref": "#/$defs/duplicateSearch"},
@@ -147,6 +149,35 @@
         "remote_head": {"$ref": "#/$defs/commit"},
         "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"},
         "clean": {"const": true}
+      }
+    },
+    "taskWorktreeEntry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "index_status", "worktree_status", "untracked", "deleted", "renamed_from", "copied_from", "index_blob", "worktree_sha256", "mode"],
+      "properties": {
+        "path": {"$ref": "#/$defs/portablePath"},
+        "index_status": {"enum": ["", "M", "A", "D", "R", "C", "U", "T", "?"]},
+        "worktree_status": {"enum": ["", "M", "A", "D", "R", "C", "U", "T", "?"]},
+        "untracked": {"type": "boolean"},
+        "deleted": {"type": "boolean"},
+        "renamed_from": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/portablePath"}]},
+        "copied_from": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/portablePath"}]},
+        "index_blob": {"oneOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{40,64}$"}]},
+        "worktree_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+        "mode": {"oneOf": [{"type": "null"}, {"enum": ["100644", "100755", "120000", "160000"]}]},
+        "gitlink_head": {"oneOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{40,64}$"}]},
+        "gitlink_initialized": {"type": "boolean"},
+        "gitlink_dirty": {"oneOf": [{"type": "null"}, {"type": "boolean"}]}
+      }
+    },
+    "taskWorktreeState": {
+      "type": "object", "additionalProperties": false,
+      "required": ["head", "context_snapshot_path", "entries", "digest"],
+      "properties": {
+        "head": {"$ref": "#/$defs/commit"},
+        "context_snapshot_path": {"$ref": "#/$defs/portablePath"},
+        "entries": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/taskWorktreeEntry"}},
+        "digest": {"$ref": "#/$defs/sha256"}
       }
     },
     "baseResolution": {

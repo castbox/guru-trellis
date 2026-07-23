@@ -19,7 +19,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-check-task")
-        self.assertEqual(self.interface["schema_version"], "1.2")
+        self.assertEqual(self.interface["schema_version"], "1.3")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         expected = [
             "runtime_dependency", "task_workspace", "approved_planning",

@@ -1,0 +1,419 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 146,
+    "url": "https://github.com/castbox/guru-trellis/issues/146",
+    "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+    "reason": "当前独立可交付的 production Skill minimal handoff 迁移单元。",
+    "acceptance_evidence": [
+      "Fresh Phase 2 typed exit 为 passed，10/10 adequacy dimensions 与 39 条 command evidence 完整；Package 166/166、runtime 557 passed/13 skipped、preset 45/45、ownership 6/6、production source 12/12、Stage 0 source 24/24、全九包 installed corpora、source/installed 9 Skills/35 exits/21 targets/0 legacy、platform identity、dogfood drift 与 Docs SSOT 15/15 均通过。",
+      "三个 task work commits 由 commit plans 001-003 精确绑定 parent、message、path set、tree、逐 path blob/mode 与 hook mutation；最终 reviewed content HEAD 为 9519ff8f2c9bd22e697d3ecc8196ad153ea76106，post-commit audit 确认非 metadata 变更均被 fresh Phase 2 覆盖。",
+      "Branch Review Gate 已绑定 HEAD 9519ff8f2c9bd22e697d3ecc8196ad153ea76106；Round 001 的 P1/P2 与 Round 003 的 P3 均由合法 closure/replacement chain 关闭，Round 005 fresh final reviewer 覆盖完整 3 commits/629 paths，P0/P1/P2/P3 全部为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "320c7a23f88eba6c0ac13b49dda4fddcbbbad07c34a73c104ebd247bb04e4de1",
+        "verified_content_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+        "remote_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+        "publish_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 146,
+      "url": "https://github.com/castbox/guru-trellis/issues/146",
+      "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+      "reason": "当前 task 承诺完整覆盖并由 planning、Phase 2 与 Branch Review gate 验收。",
+      "acceptance_evidence": [
+        "Fresh Phase 2 typed exit 为 passed，10/10 adequacy dimensions 与 39 条 command evidence 完整；Package 166/166、runtime 557 passed/13 skipped、preset 45/45、ownership 6/6、production source 12/12、Stage 0 source 24/24、全九包 installed corpora、source/installed 9 Skills/35 exits/21 targets/0 legacy、platform identity、dogfood drift 与 Docs SSOT 15/15 均通过。",
+        "三个 task work commits 由 commit plans 001-003 精确绑定 parent、message、path set、tree、逐 path blob/mode 与 hook mutation；最终 reviewed content HEAD 为 9519ff8f2c9bd22e697d3ecc8196ad153ea76106，post-commit audit 确认非 metadata 变更均被 fresh Phase 2 覆盖。",
+        "Branch Review Gate 已绑定 HEAD 9519ff8f2c9bd22e697d3ecc8196ad153ea76106；Round 001 的 P1/P2 与 Round 003 的 P3 均由合法 closure/replacement chain 关闭，Round 005 fresh final reviewer 覆盖完整 3 commits/629 paths，P0/P1/P2/P3 全部为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "320c7a23f88eba6c0ac13b49dda4fddcbbbad07c34a73c104ebd247bb04e4de1",
+          "verified_content_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+          "remote_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+          "publish_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "父级路线 issue；本 task 只提供其后续收敛所需的 production Skill I/O。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 131,
+      "url": "https://github.com/castbox/guru-trellis/issues/131",
+      "title": "实现 guru-review-branch 闭环 Skill",
+      "reason": "后续消费者；只消费本 task 产出的最小 committed DTO。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "后续集成 issue；不在本 task 中关闭或实现。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [],
+  "scope_decisions": [
+    {
+      "trail_id": "scope_change_20260722_authoring_seed",
+      "proposal_decisions": [
+        {
+          "proposal_id": "authoring_seed_semantic_skill_handoff",
+          "proposal_digest": "9957d4d64f8e5a599264df6c5ef909b5432a8822e43979ea9c9ab4db85a18902",
+          "decision": "accepted_current",
+          "confirmation_ref": "user_confirm_20260722_authoring_seed"
+        }
+      ],
+      "user_decision": {
+        "status": "confirmed",
+        "proposal_digests": [
+          "9957d4d64f8e5a599264df6c5ef909b5432a8822e43979ea9c9ab4db85a18902"
+        ],
+        "confirmer": "user",
+        "confirmed_at": "2026-07-22T10:04:26Z",
+        "evidence_summary": "用户精确确认 proposal 9957d4d64f8e5a599264df6c5ef909b5432a8822e43979ea9c9ab4db85a18902 与 GitHub action 06762b79209e4ca40e4d36b495cffc2d2faf87c45a099d6e8d5207ddd62d44e6 纳入 #146，并授权按 authority、fresh context、planning update、fresh approval 的顺序更新当前 task。"
+      },
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5044522718",
+        "content_sha256": "53ede9fbdb7406faa757a667bdbf929b2126dd2dfdd1a6adddc2f88fc195fced",
+        "updated_at": "2026-07-22T10:05:41Z"
+      },
+      "context_before_task_update_sha256": "9bf1cd58e2f33815c453980185092d7e202c4c20bcac586ecc0ca71d0f2783cb",
+      "planning_documents": [
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+          "content_sha256": "c4b3bf81766490799b30408d8bd508c630726b6cbfd0086bbc2b5563dbb39c04"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+          "content_sha256": "5dc06793a3900a88c9409609a68180d56aca4ed23abe872e888c27bf6adf7f85"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+          "content_sha256": "342128075b1982bdf06ac1986759b95ce1606cba1dd9c591d6daeb14b19f9351"
+        }
+      ],
+      "stale_downstream_evidence": {
+        "planning_approval_sha256": "4e87c10622d4cbb80dd3346220766050c8228c5a8da20715052ee730da7886b5",
+        "phase2_check_sha256": null,
+        "branch_review_sha256": null
+      },
+      "review_evidence": {
+        "status": "not_started",
+        "artifact": null
+      },
+      "reentry_owners": [
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-review-branch"
+      ],
+      "interrupted_resume_target": "guru-active-task-planning-review"
+    },
+    {
+      "trail_id": "scope_change_20260722_clarify_scope_router",
+      "proposal_decisions": [
+        {
+          "proposal_id": "clarify_scope_workflow_router",
+          "proposal_digest": "94fa389212eb801e5d5efeb1264b506c4d40c51969424c498cb7c341d8626421",
+          "decision": "accepted_current",
+          "confirmation_ref": "user_confirm_20260722_clarify_scope_router"
+        }
+      ],
+      "user_decision": {
+        "status": "confirmed",
+        "proposal_digests": [
+          "94fa389212eb801e5d5efeb1264b506c4d40c51969424c498cb7c341d8626421"
+        ],
+        "confirmer": "user",
+        "confirmed_at": "2026-07-22T11:39:00Z",
+        "evidence_summary": "用户精确确认 proposal 94fa389212eb801e5d5efeb1264b506c4d40c51969424c498cb7c341d8626421 与 GitHub action 7d0affc297881201825277a74fdd7edace0777f6ef86e631e277984537c057af 纳入 #146。"
+      },
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5045340918",
+        "content_sha256": "6b55ca10c69765c361fe36199086dbc636cab8f3b54f718f0db7b7aa329a816d",
+        "updated_at": "2026-07-22T11:40:58Z"
+      },
+      "context_before_task_update_sha256": "41680b6c441af235e9db2cc4c17958a55800fb6ac6955d9263027802b348ccea",
+      "planning_documents": [
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+          "content_sha256": "2344b71b027094e5249d28bce733d7fca841ad4dae96e06b17d2721fd70609df"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+          "content_sha256": "0902063ddb98e3832027d5af3f00ce0adf1ded3df09a4b4b69efad8a7179ee6b"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+          "content_sha256": "2f3d2ed229eaf2392fd184fc41de6ca838cc8d3fcd0be431c0be537b394bde9a"
+        }
+      ],
+      "stale_downstream_evidence": {
+        "planning_approval_sha256": "4e87c10622d4cbb80dd3346220766050c8228c5a8da20715052ee730da7886b5",
+        "phase2_check_sha256": null,
+        "branch_review_sha256": null
+      },
+      "review_evidence": {
+        "status": "not_started",
+        "artifact": null
+      },
+      "reentry_owners": [
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-review-branch"
+      ],
+      "interrupted_resume_target": "guru-active-task-planning-review"
+    },
+    {
+      "trail_id": "scope_change_20260722_task_local_owner_checker",
+      "proposal_decisions": [
+        {
+          "proposal_id": "task_local_reentry_owner_checker_binding",
+          "proposal_digest": "b27b0331ad057a111df26556d69ae4f38d1792134187e1caf362014f81530a03",
+          "decision": "accepted_current",
+          "confirmation_ref": "user_confirm_20260722_task_local_owner_checker"
+        }
+      ],
+      "user_decision": {
+        "status": "confirmed",
+        "proposal_digests": [
+          "b27b0331ad057a111df26556d69ae4f38d1792134187e1caf362014f81530a03"
+        ],
+        "confirmer": "user",
+        "confirmed_at": "2026-07-22T14:13:00Z",
+        "evidence_summary": "用户精确确认 proposal b27b0331ad057a111df26556d69ae4f38d1792134187e1caf362014f81530a03 与 GitHub action 02dd426fcc9cafe8b494cd93004a6e124709008cad311bd7f60226c80b14ff0c 纳入 #146。"
+      },
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5047220259",
+        "content_sha256": "03a06ca24ce42fae6eb2a422a0f8deecc17d198cecd3cdd7beb7b15eee348e5d",
+        "updated_at": "2026-07-22T14:14:52Z"
+      },
+      "context_before_task_update_sha256": "41680b6c441af235e9db2cc4c17958a55800fb6ac6955d9263027802b348ccea",
+      "planning_documents": [
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+          "content_sha256": "2344b71b027094e5249d28bce733d7fca841ad4dae96e06b17d2721fd70609df"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+          "content_sha256": "0902063ddb98e3832027d5af3f00ce0adf1ded3df09a4b4b69efad8a7179ee6b"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+          "content_sha256": "2f3d2ed229eaf2392fd184fc41de6ca838cc8d3fcd0be431c0be537b394bde9a"
+        }
+      ],
+      "stale_downstream_evidence": {
+        "planning_approval_sha256": "4e87c10622d4cbb80dd3346220766050c8228c5a8da20715052ee730da7886b5",
+        "phase2_check_sha256": null,
+        "branch_review_sha256": null
+      },
+      "review_evidence": {
+        "status": "not_started",
+        "artifact": null
+      },
+      "reentry_owners": [
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-review-branch"
+      ],
+      "interrupted_resume_target": "guru-active-task-planning-review"
+    },
+    {
+      "trail_id": "scope_change_20260722_task_worktree_state",
+      "proposal_decisions": [
+        {
+          "proposal_id": "task_local_worktree_state_binding",
+          "proposal_digest": "420548bc06f157928b8dafe73bb51854fbb01fa5d4f0cfe4b1d03606993c2f10",
+          "decision": "accepted_current",
+          "confirmation_ref": "user_confirm_20260722_task_worktree_state"
+        }
+      ],
+      "user_decision": {
+        "status": "confirmed",
+        "proposal_digests": [
+          "420548bc06f157928b8dafe73bb51854fbb01fa5d4f0cfe4b1d03606993c2f10"
+        ],
+        "confirmer": "user",
+        "confirmed_at": "2026-07-22T17:53:00Z",
+        "evidence_summary": "用户精确确认 proposal 420548bc06f157928b8dafe73bb51854fbb01fa5d4f0cfe4b1d03606993c2f10 与 GitHub action 21fdaa68ab5af088aa269ff96603cd0561236de35bf1b561b18b5c72a2a1abc4 纳入 #146，并授权发布 exact issue comment。"
+      },
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5049566946",
+        "content_sha256": "e80131c39cda60a54e585d8a8fa3dc0e632aacbec11d3ab736280ec744273600",
+        "updated_at": "2026-07-22T17:53:49Z"
+      },
+      "context_before_task_update_sha256": "41680b6c441af235e9db2cc4c17958a55800fb6ac6955d9263027802b348ccea",
+      "planning_documents": [
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+          "content_sha256": "2344b71b027094e5249d28bce733d7fca841ad4dae96e06b17d2721fd70609df"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+          "content_sha256": "0902063ddb98e3832027d5af3f00ce0adf1ded3df09a4b4b69efad8a7179ee6b"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+          "content_sha256": "2f3d2ed229eaf2392fd184fc41de6ca838cc8d3fcd0be431c0be537b394bde9a"
+        }
+      ],
+      "stale_downstream_evidence": {
+        "planning_approval_sha256": "4e87c10622d4cbb80dd3346220766050c8228c5a8da20715052ee730da7886b5",
+        "phase2_check_sha256": null,
+        "branch_review_sha256": null
+      },
+      "review_evidence": {
+        "status": "not_started",
+        "artifact": null
+      },
+      "reentry_owners": [
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-review-branch"
+      ],
+      "interrupted_resume_target": "guru-active-task-planning-review"
+    },
+    {
+      "trail_id": "scope_change_20260722_formal_context_snapshot_replacement",
+      "proposal_decisions": [
+        {
+          "proposal_id": "formal_task_context_snapshot_replacement",
+          "proposal_digest": "0f8472c3728ee8b8d4188bc0b4301d9f2039d44b90b127a17b81aa176bf5bc49",
+          "decision": "accepted_current",
+          "confirmation_ref": "user_confirm_20260723_formal_context_snapshot_replacement"
+        }
+      ],
+      "user_decision": {
+        "status": "confirmed",
+        "proposal_digests": [
+          "0f8472c3728ee8b8d4188bc0b4301d9f2039d44b90b127a17b81aa176bf5bc49"
+        ],
+        "confirmer": "user",
+        "confirmed_at": "2026-07-22T19:21:19Z",
+        "evidence_summary": "用户精确确认 proposal 0f8472c3728ee8b8d4188bc0b4301d9f2039d44b90b127a17b81aa176bf5bc49 与 GitHub action a7a60a956923882ed8ea5684152a9e31dd5803dd24aff69331f438d866fa5943 纳入 #146，并授权发布 exact issue comment。"
+      },
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5050065847",
+        "content_sha256": "117a3cdb2c4ff630045d624ff2db4f3973fd0da93c3961a61a44494e98544ed9",
+        "updated_at": "2026-07-22T18:43:38Z"
+      },
+      "context_before_task_update_sha256": "41680b6c441af235e9db2cc4c17958a55800fb6ac6955d9263027802b348ccea",
+      "planning_documents": [
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+          "content_sha256": "2344b71b027094e5249d28bce733d7fca841ad4dae96e06b17d2721fd70609df"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+          "content_sha256": "0902063ddb98e3832027d5af3f00ce0adf1ded3df09a4b4b69efad8a7179ee6b"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+          "content_sha256": "2f3d2ed229eaf2392fd184fc41de6ca838cc8d3fcd0be431c0be537b394bde9a"
+        }
+      ],
+      "stale_downstream_evidence": {
+        "planning_approval_sha256": "4e87c10622d4cbb80dd3346220766050c8228c5a8da20715052ee730da7886b5",
+        "phase2_check_sha256": null,
+        "branch_review_sha256": null
+      },
+      "review_evidence": {
+        "status": "not_started",
+        "artifact": null
+      },
+      "reentry_owners": [
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-review-branch"
+      ],
+      "interrupted_resume_target": "guru-active-task-planning-review"
+    },
+    {
+      "trail_id": "scope_change_20260723_production_eval_adapter_owner_staging",
+      "proposal_decisions": [
+        {
+          "proposal_id": "production_eval_adapter_owner_staging",
+          "proposal_digest": "9cb7d74836af661328de1dc5f0e6740840a7a8fbd02e0028a6813a6bde73ebc5",
+          "decision": "accepted_current",
+          "confirmation_ref": "user_confirm_20260723_production_eval_adapter_owner_staging"
+        }
+      ],
+      "user_decision": {
+        "status": "confirmed",
+        "proposal_digests": [
+          "9cb7d74836af661328de1dc5f0e6740840a7a8fbd02e0028a6813a6bde73ebc5"
+        ],
+        "confirmer": "user",
+        "confirmed_at": "2026-07-23T01:04:30Z",
+        "evidence_summary": "用户精确确认 proposal 9cb7d74836af661328de1dc5f0e6740840a7a8fbd02e0028a6813a6bde73ebc5 与 GitHub action 82052b7d1f9d04cf49a6ec0b4a3980b71cb6d83e96aef8f796b30acee1fae4ae 纳入 #146，授权发布 exact issue comment，并要求按 GitHub authority、fresh context、planning/ledger update、fresh planning approval 顺序更新当前 task；随后单独授权只用于 R16 post-commit task-local context re-entry 的一次性 recovery exception。"
+      },
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/146#issuecomment-5053205362",
+        "content_sha256": "39a87a4184491cb8f0695eeaea1c22b4a36dc4c05e17d799a3bdddd08e15ff6b",
+        "updated_at": "2026-07-23T01:04:30Z"
+      },
+      "context_before_task_update_sha256": "3f40c78c012252820080e0e15f87c7e0da3a1f6629f2b795356da67d2eecd0f3",
+      "planning_documents": [
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+          "content_sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+          "content_sha256": "962a380af4710d2f0b10499c3b55bb2143d2ec2665f10016a0a354c89aa6e322"
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+          "content_sha256": "c3d9521fdb431a4484441facb4447fbcfa0d3507429aa4e5de6cea6b2842b3b0"
+        }
+      ],
+      "stale_downstream_evidence": {
+        "planning_approval_sha256": "2b6917cc2891185a403c31b668c53179d6bae2233429287fa96a6ca8186727d8",
+        "phase2_check_sha256": "c0f91fad9e457cf19665c7219353aa734e6af6f1d1796b2aa5ef5465cf1fc9b0",
+        "branch_review_sha256": "113b5c75cfd8bbb2e0dc938f56f364bc3f4ede461f6783f9a67c502946573fea"
+      },
+      "review_evidence": {
+        "status": "stale",
+        "artifact": {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review-gate.json",
+          "content_sha256": "113b5c75cfd8bbb2e0dc938f56f364bc3f4ede461f6783f9a67c502946573fea"
+        }
+      },
+      "reentry_owners": [
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-review-branch"
+      ],
+      "interrupted_resume_target": "guru-active-task-planning-review"
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

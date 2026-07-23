@@ -1,0 +1,5 @@
+{
+  "code": "invalid_public_input",
+  "field_path": "input.profile",
+  "remediation": "Use one declared closed production input profile."
+}

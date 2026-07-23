@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 146,
+    "url": "https://github.com/castbox/guru-trellis/issues/146",
+    "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/146"
+  },
+  "task_slug": "146-production-skill-minimal-handoff",
+  "task_title": "#146 迁移 production Skills 到最小 typed handoff",
+  "task_artifact_dir": ".trellis/tasks/07-22-146-production-skill-minimal-handoff",
+  "branch_name": "codex/146-production-skill-minimal-handoff",
+  "base_branch": "main",
+  "base_ref": "refs/remotes/origin/main",
+  "base_head_sha": "7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c",
+  "remote_head_sha": "7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c",
+  "workspace_slug": "146-production-skill-minimal-handoff",
+  "task_workspace_id": "146-production-skill-minimal-handoff",
+  "assignee": "wesleywu",
+  "actor": {
+    "login": "wesleywu"
+  },
+  "issue_scope_ledger_seed": {
+    "schema_version": "1.0",
+    "primary_issue": {
+      "number": 146,
+      "url": "https://github.com/castbox/guru-trellis/issues/146",
+      "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+      "reason": "当前独立可交付的 production Skill minimal handoff 迁移单元。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 146,
+        "url": "https://github.com/castbox/guru-trellis/issues/146",
+        "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+        "reason": "当前 task 承诺完整覆盖并由 planning、Phase 2 与 Branch Review gate 验收。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 127,
+        "url": "https://github.com/castbox/guru-trellis/issues/127",
+        "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+        "reason": "父级路线 issue；本 task 只提供其后续收敛所需的 production Skill I/O。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 131,
+        "url": "https://github.com/castbox/guru-trellis/issues/131",
+        "title": "实现 guru-review-branch 闭环 Skill",
+        "reason": "后续消费者；只消费本 task 产出的最小 committed DTO。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 132,
+        "url": "https://github.com/castbox/guru-trellis/issues/132",
+        "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+        "reason": "后续集成 issue；不在本 task 中关闭或实现。",
+        "acceptance_evidence": []
+      }
+    ],
+    "followup_issues": [],
+    "rules": [
+      "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+      "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+      "followup_issues 表示新范围或后续任务，不能自动关闭。"
+    ]
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": true,
+      "selected_issue": 146
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "名称绑定 issue #146 与三个 production Skills 的 minimal handoff 迁移。"
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    },
+    "final_source_issue_binding": {
+      "repo": "castbox/guru-trellis",
+      "number": 146,
+      "url": "https://github.com/castbox/guru-trellis/issues/146",
+      "state": "open",
+      "title_sha256": "fef91a791df76a162ff80a0e1dace1017c61da62b4f5c4893d0f70d59a453e9d",
+      "body_sha256": "53f85d90fa491e50f51c0853aaa4a31afac34679f3153d6e7d5effe61764fa81",
+      "updated_at": "2026-07-22T07:12:45Z",
+      "target_disposition_sha256": "986ee4684bd59662acc68d26a915114c01e36220ac0a00f20707c80ffaa94066",
+      "created_issue_binding_sha256": null
+    },
+    "prerequisite_evidence": {
+      "base": {
+        "skill_id": "guru-sync-base",
+        "schema_id": "guru-base-sync-result-1.0",
+        "typed_exit": "synced",
+        "payload_sha256": "40a4974842e4b29951d0f7586996899a1b020d5c309896ab417c67c6c623b4d7",
+        "facts_sha256": "4fd67714acc4fac92227aa6af901985f6a3401e43d887144698fee8f1cd61cca",
+        "content_sha256": null,
+        "linkage_sha256": null
+      },
+      "context": {
+        "skill_id": "guru-discover-change-context",
+        "schema_id": "guru-context-discovery-1.0",
+        "typed_exit": "context_ready",
+        "payload_sha256": "88f2372dd0e733dae2f1bcbff3a4d919bf1807c93bce3724d6bc1935220c2444",
+        "facts_sha256": "10c480c57d34b1a5c0d536e4427920510264995f56deaefb155532889215968e",
+        "content_sha256": "ec9123e702d6140858c3305a3a02a6e6ac53e7a42a657139dd80cc514f233a59",
+        "linkage_sha256": "10c480c57d34b1a5c0d536e4427920510264995f56deaefb155532889215968e"
+      },
+      "clarity": {
+        "skill_id": "guru-clarify-requirements",
+        "schema_id": "guru-requirements-clarification-2.0",
+        "typed_exit": "clear",
+        "payload_sha256": "57a112aef1c235a0644d5c0dbd60efdd56c666db70e3c35ff9e78147b9abb243",
+        "facts_sha256": "bd3d9f06c02a995328bd88b9ec72f0e62fb2ef4a306f030688d60daad4b57776",
+        "content_sha256": "961c4a9644736ea1f6df6ec39496cb2c242e4296d566e729888e659c5771e730",
+        "linkage_sha256": "1f5099ca6a89612769953f8442aa4e896b8be475bc13f882653985397aff19f8"
+      },
+      "wording": {
+        "skill_id": "guru-review-contract-wording",
+        "schema_id": "guru-contract-wording-review-1.0",
+        "typed_exit": "pass",
+        "payload_sha256": "b15b2494ef79620782bda7a1282d593ab801ef7fe1ef0b8595ab31e6fc0ca0fb",
+        "facts_sha256": "ab9c2e2bf0f7180ab93ce6aa5548c41009f6d84bab38e813573fad4b88d19566",
+        "content_sha256": "1a0b4073ffb456f8437dafe3ef7b74503241fa791356f2c1eb2cbd5a224fcf63",
+        "linkage_sha256": "a91c28cadd793bbb2dc3bb75b37295454cb1faeb78cab647126334a29b59d4d1"
+      },
+      "readiness": {
+        "skill_id": "guru-review-change-request",
+        "schema_id": "guru-change-request-review-1.0",
+        "typed_exit": "ready",
+        "payload_sha256": "6075cdb53221fed3f7a396942d103faf821da560daf1192b0e607c63f1ae6cd6",
+        "facts_sha256": "32472384f7ee00462b98a44024c05cc2f4d7add9ecfb7e1c6510efb955192c9d",
+        "content_sha256": "8129302d8423ed8f991640c32415ede6695e29fa9383d287aa3d1083debce079",
+        "linkage_sha256": "dc018919b19c0cc5af62f4ef165e2e052b69e70b24ca48aff37af31269a039ac"
+      }
+    }
+  }
+}

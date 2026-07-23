@@ -39,8 +39,9 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
   state、minimal public input/per-exit output/consumer projection/private artifact 与
   `discover-skill-contract` 基础设施。#144 交付时，九个 production Skills 仍使用 1.2
   `legacy`，1.3 representative fixture 仅用于测试；随后 #145 已把六个 Stage 0 Skills
-  及其 24 exits 原子迁移到 `1.3+minimal_handoff`，#146 的 planning/check/commit 三包仍保持
-  `1.2+legacy`。
+  及其 24 exits 原子迁移到 `1.3+minimal_handoff`；#146 再以独立
+  `production-minimal-handoff-v1` 把 planning/check/commit 三包、十个 profiles 与 11 exits
+  原子迁移到 1.3。当前 live closure 为 9 Skills / 35 exits，Stage 0 的 6/24 identity 保持不变。
 
 ## 扩展重要性分层
 
@@ -58,6 +59,11 @@ Phase 0 change-context 的 duplicate evidence 使用 repo/number/`#number` ident
 URL/open state/update time 的 deterministic digest projection，并从同一次 open search 返回
 字段重算 identity、URL 与 digest；record/check 不进行第二次 search 或 candidate re-read。
 同一 result contract 双向绑定 `typed_exit=blocked` 与 blocked AI Review Gate。
+Active-task context re-entry 由 validated task/snapshot locators 绑定 owner
+checker；private `task_worktree_state` 覆盖除 fixed snapshot/runtime 外的完整 dirty
+worktree。Different-byte fixed snapshot 仅在 regular/trackable prior、exact expected
+prior digest 与完整 new/live validation 全部通过后 formal replace，并记录
+`superseded_snapshot_sha256`；失败保持 prior bytes，same-byte retry 幂等。
 
 ## Canonical Source
 
@@ -75,9 +81,9 @@ Active package 的 `SKILL.md` frontmatter 只允许 stable id `name` 与非空
 Interface schema 1.2 为已发布 legacy contract；interface 1.3 是新建或实质修改 public
 I/O 的 independent target。Registry 1.1 的每个 active row 必须 exact 选择
 `interface_schema_id` 和 `legacy|minimal_handoff`，不得从 optional 字段猜版本。
-当前 `stage0-minimal-handoff-v1` 原子单元中的六个 Stage 0 production rows 已统一切换为
-`1.3+minimal_handoff`；`guru-approve-task-plan`、`guru-check-task`、
-`guru-create-task-commit` 三个 #146 rows 继续保持 `1.2+legacy`。两版均为每个 mode 固定 `routing`，
+当前 `stage0-minimal-handoff-v1` 原子单元中的六个 Stage 0 production rows 与独立
+`production-minimal-handoff-v1` 中 planning/check/commit 三个 rows 均使用
+`1.3+minimal_handoff`，active `legacy_skill_ids=[]`。两版均为每个 mode 固定 `routing`，
 声明 `judgment_mode`、`runtime_dependency` 与 validator `runtime_command`。`semantic` 使用五阶段，
 `deterministic` 使用三阶段；`standalone` 只表示平台可脱离
 global workflow routing 直接发现 Skill，不表示单目录 self-contained/portable；两种
@@ -105,6 +111,18 @@ packages 和 selected platform copies 必须双向集合相等；任何 missing/
 unknown 或 mixed 1.2/1.3 Stage 0 graph 均失败关闭。Preset 以一次完整 staging transaction
 安装该单元，upgrade/update/reapply 后仍须得到同一 graph、同一 corpus bytes/modes 与零
 `.new`/`.bak` sidecar。
+
+Production manifest 精确绑定 planning/check/commit 的十个 structured profiles、11 exits、
+per-exit output/example、consumer/projection、private artifact 与 eval cases；两个 manifests
+合并后形成当前 9/35 closure。`committed` DTO 只含 `exit_id`、`task_ref`、`base_ref`、
+`committed_head`，继续由 `branch-review-or-finding-closure` 消费，#146 不提前激活 #131。
+Commit candidate builder 只物化 private plan并复用既有 validator/executor transaction。
+
+Planning revision self-reentry、check passed 到 initial commit、commit revision self-reentry
+三条 edge 使用 target-owned `skill_input_authoring_seed`。Producer 只投影 minimal seed，
+caller AI 编写其余 required semantic fields；validator 证明字段分区无交集且完整、merge 无
+覆盖并通过完整 target schema。该 consumer kind 不新增 projection operation，也不允许
+private lookup、default 或 runtime semantic reconstruction。
 
 `guru-sync-base` 保持 scalar CLI；其余五包以 closed discriminator profiles 表达 pre-task、
 re-entry、target、scope-change 与 mutation initial/recovery。Agent 先在 owner loop 中完成
@@ -181,7 +199,7 @@ Closed but unmerged PR：
 public-wrapper runner、deterministic/external-semantic/human 三边界，以及
 shared/Codex/Claude/Cursor 四个薄 adapter。#147 交付时，九个 production Skills 仍保持
 Interface 1.2 legacy；随后 #145 已迁移六个 Stage 0 production corpora 并完成其 24 exits
-coverage，#146 继续负责 planning/check/commit 三个 legacy packages 的迁移与 coverage closure。
+coverage；#146 已完成 planning/check/commit 三包的 11-exit coverage 与 9/35 closure。
 四个 descriptor 必须绑定真实可执行 wrapper，并由 wrapper 从 `PATH` 检测 documented native
 command、组装平台 argv、加载 exact Skill/prompt/files、收集 public output/trace；隐藏
 executable 环境变量不能替代该公开安装路径。

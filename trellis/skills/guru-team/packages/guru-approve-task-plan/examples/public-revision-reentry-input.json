@@ -1,0 +1,29 @@
+{
+  "profile": "revision_reentry",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "authority_refs": [
+    "issue:#146",
+    "task:prd.md"
+  ],
+  "provenance_review": [
+    "R1 explicit_requirement"
+  ],
+  "adequacy_review": [
+    "requirements complete"
+  ],
+  "unusual_scenario_dispositions": [
+    "U1 out_of_scope"
+  ],
+  "confirmation": {
+    "status": "confirmed",
+    "summary": "The reviewed planning round is confirmed."
+  },
+  "ai_review_gate": {
+    "status": "revision_required",
+    "summary": "The complete planning round passed."
+  },
+  "exit_intent": "revision_required",
+  "source_exit": "revision_required",
+  "reentry_reason": "task_local_revision"
+}

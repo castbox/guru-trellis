@@ -1,0 +1,4352 @@
+{
+  "agent_assignment": {
+    "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+    "implementation_agent_ids": [
+      "/root/implement_146_findings_r1",
+      "/root/implement_146_p3_r18",
+      "/root/implement_146_r17_fixes",
+      "/root/implement_146_r5",
+      "/root/implement_146_r6",
+      "/root/implement_146_r8"
+    ],
+    "check_agent_ids": [
+      "/root/check_146",
+      "/root/check_146_p3_r18_full",
+      "/root/check_146_r17_full"
+    ],
+    "recovery_complete": true,
+    "phase2_state_sha256": "496cec1db27fe4f32ad44901f1288b1c3602b3bc2e46af6ffd642e791212a7bd",
+    "facts_sha256": "51380a14a09fdf6c2c7a733cff20a8a699f2eef57300c313c8f814a38cc8e814"
+  },
+  "check_execution": {
+    "commands": [
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "trellis/skills/guru-team/tests",
+          "-p",
+          "test_*.py"
+        ],
+        "exit_code": 0,
+        "id": "package-suite-166",
+        "stderr_sha256": "dad22f669fcfd57eadab032a800cf6b8fd5e9a14098420f76e16d1dcb0334037",
+        "stderr_size_bytes": 3656,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "本轮重跑完整输出 digest；Ran 166 tests in 193.018s，OK。"
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "id": "runtime-suite-557",
+        "stderr_sha256": "837b2f7549950b816c44956047f7975cf6a96b659683616d384a51b749bc4512",
+        "stderr_size_bytes": 3492,
+        "stdout_sha256": "82f5734c65334358fc6c5054deabb698e76dfaa6dfb07b90b8d83c9fbc697072",
+        "stdout_size_bytes": 2548,
+        "summary": "本轮重跑完整输出 digest；Ran 557 tests in 177.415s，OK (skipped=13)。"
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "exit_code": 0,
+        "id": "preset-suite-45",
+        "stderr_sha256": "9484af242903af5203fbb2fa0d48ec45b9fcbf151293b9ac6aac41a80d934652",
+        "stderr_size_bytes": 808,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "本轮重跑完整输出 digest；Ran 45 tests in 79.356s，OK。"
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+        ],
+        "exit_code": 0,
+        "id": "ownership-suite-6",
+        "stderr_sha256": "2a7b0b7f20df451dcce6189df74e1b6fb04cd8bd8a9370c35684e0a97c892be4",
+        "stderr_size_bytes": 104,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "本轮重跑完整输出 digest；Ran 6 tests in 0.755s，OK。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--json",
+          "--mode",
+          "source"
+        ],
+        "exit_code": 0,
+        "id": "source-package-closure",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "39013f5a2f3c59f72e75c6f0e5cc47bb2fcecebb0d2973f9030aa92568446601",
+        "stdout_size_bytes": 1069,
+        "summary": "完整 stdout digest；9 active Skills、35 exits、21 targets、0 legacy。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--json",
+          "--mode",
+          "installed"
+        ],
+        "exit_code": 0,
+        "id": "installed-package-closure",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "70be98f74c0d9e9fcfe98495151f54960d13cd54ec782cb15da285dd4c91487c",
+        "stdout_size_bytes": 1258,
+        "summary": "完整 stdout digest；9 active Skills、35 exits、21 targets、1711 managed files、sidecar/removal/conflict 均为 0。"
+      },
+      {
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+          "--repo",
+          "."
+        ],
+        "exit_code": 0,
+        "id": "dogfood-overlay-drift",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "cb49b1a93f3a07d96bee821abee031be6d737b0062529991e85ff1338ece189e",
+        "stdout_size_bytes": 1644,
+        "summary": "完整 stdout digest；dogfood overlay copies match canonical。"
+      },
+      {
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+          "--repo",
+          ".",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "upstream-ownership-validator",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "0e688545acc465dc1bdab556e666ad8ee78345f90cf012109b8f99ba18a0e195",
+        "stdout_size_bytes": 1585,
+        "summary": "完整 stdout digest；frozen inventory 43、materialized identity 匹配、errors=[]。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-sync-base",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-sync-base-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-sync-base",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "19af48cea1310c27eb82f1b451cd46cd7946db831c999adad47b9bee8d1f6b96",
+        "stdout_size_bytes": 3355,
+        "summary": "Digest 绑定保存的 shared-run result JSON；3/3 passed，exits=synced,skipped,blocked。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-clarify-requirements",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-clarify-requirements-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-clarify-requirements",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "48380bf646ac8d1dc585976549b9cfc188a8227a7b2742f4119a90d23ed1daf7",
+        "stdout_size_bytes": 5995,
+        "summary": "Digest 绑定保存的 shared-run result JSON；6/6 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-create-task-workspace",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-create-task-workspace-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-create-task-workspace",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "446dd38db21f319d117604e920b59cb133a9c4f0e4ad16af78620bad38ec6712",
+        "stdout_size_bytes": 4293,
+        "summary": "Digest 绑定保存的 shared-run result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-discover-change-context",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-discover-change-context-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-discover-change-context",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "9f52e7423b59ff802bd52e350566a5167f0aa4cb15af6c131af6a0ff0ff35320",
+        "stdout_size_bytes": 3475,
+        "summary": "Digest 绑定保存的 shared-run result JSON；3/3 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-review-change-request",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-review-change-request-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-review-change-request",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "cbdc63f3572875744028e8dd08bf447a364122b88f545a0583a029b66cf890a0",
+        "stdout_size_bytes": 5180,
+        "summary": "Digest 绑定保存的 shared-run result JSON；5/5 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-review-contract-wording",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-review-contract-wording-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-review-contract-wording",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "2be057e591038d663cfe6d5e26f5d3baafc123e54e0981ab9dc8c1ec5b95d735",
+        "stdout_size_bytes": 3457,
+        "summary": "Digest 绑定保存的 shared-run result JSON；3/3 passed；Stage 0 source 合计 24 exits。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-approve-task-plan",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-approve-task-plan",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-approve-task-plan",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "20bb926023cdd452560f04e90c3f2a9af63fc86ac31aaa7a15d4b96cb8c7b9d9",
+        "stdout_size_bytes": 4233,
+        "summary": "Digest 绑定保存的 shared-run result JSON；4/4 passed，含 clarify_scope。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-check-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-check-task",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-check-task",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "f200ba1be5f5f9a84ad35821f3f2b1c104151865c91bb8d0c0e13fb758de5709",
+        "stdout_size_bytes": 4199,
+        "summary": "Digest 绑定保存的 shared-run result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-create-task-commit",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-create-task-commit",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-create-task-commit",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "2bb93519f372aa56fa8e6b9232fc4b7b24a5f96f487e276e33b061e888c91655",
+        "stdout_size_bytes": 4257,
+        "summary": "Digest 绑定保存的 shared-run result JSON；4/4 passed；production source 合计 12 cases。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-sync-base",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-sync-base-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-sync-base",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "b050b08400de694fb94f87b3de2904b3b8cf5899af999cfddf33353206ac5a5c",
+        "stdout_size_bytes": 3367,
+        "summary": "Digest 绑定保存的 installed shared-run result JSON；3/3 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-clarify-requirements",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-clarify-requirements-serial",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-clarify-requirements-serial",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "31413ecb67cd20849c9291468ea46529d624c394caad6e0e61a35ccd3f54a713",
+        "stdout_size_bytes": 6009,
+        "summary": "Digest 绑定保存的 installed serial result JSON；6/6 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-create-task-workspace",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-create-task-workspace-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-create-task-workspace",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "6b433e8bab039682536cdc5d137fbe57c76c775cb7d2ba633757cdc7be0247d1",
+        "stdout_size_bytes": 4308,
+        "summary": "Digest 绑定保存的 installed result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-discover-change-context",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-discover-change-context-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-discover-change-context",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "c5b2f8ee86dbed55f97879b1742d45e818099bf147039ae2036d945041f485c4",
+        "stdout_size_bytes": 3487,
+        "summary": "Digest 绑定保存的 installed result JSON；3/3 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-review-change-request",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-review-change-request-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-review-change-request",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "db3cfa59558bcbec9c6c26dba49dd8fe45eee2a9e62f6ea5c48080f2cf67a325",
+        "stdout_size_bytes": 5198,
+        "summary": "Digest 绑定保存的 installed result JSON；5/5 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-review-contract-wording",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-review-contract-wording-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-review-contract-wording",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "c15e68ebe853f6983f7435c2a64973b74642ee74a908f6cb580966cecd00020b",
+        "stdout_size_bytes": 3469,
+        "summary": "Digest 绑定保存的 installed result JSON；3/3 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-approve-task-plan",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-approve-task-plan-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-approve-task-plan",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "8bc39dce8061ca6b5a55d0e8fc25f98bc5ded7efa0e14457ab22bcc4e67c80e0",
+        "stdout_size_bytes": 4288,
+        "summary": "Digest 绑定保存的 installed result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-check-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-check-task-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-check-task",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "8dd89f157156efd19b2c48849e72549db292ce9ebaf639bd53fdce7a5bfae7bb",
+        "stdout_size_bytes": 4254,
+        "summary": "Digest 绑定保存的 installed result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-create-task-commit",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-create-task-commit-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-create-task-commit",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "54953919a60cb044491ae06eed48ae982c4f36839436b95739593445222f09fe",
+        "stdout_size_bytes": 4312,
+        "summary": "Digest 绑定保存的 installed result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-clarify-requirements",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-clarify-requirements-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-clarify-requirements-concurrent-observation",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "2223d453849f36e841df0d9a4494902b3fad26587d8d7d66781df6109c1bc634",
+        "stdout_size_bytes": 4670,
+        "summary": "Digest 绑定保存的并发批跑 result JSON；runner exit 0 但 status=execution_error，2/6 case 读取空 response；随后 serial 6/6 通过。"
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "import json,subprocess,pathlib; a=subprocess.check_output(['git','diff','--name-only','--diff-filter=ACMR','origin/main...HEAD'],text=True).splitlines(); b=subprocess.check_output(['git','diff','--name-only','--diff-filter=ACMR'],text=True).splitlines(); p=list(dict.fromkeys(a+b)); j=[x for x in p if x.endswith('.json')]; [json.loads(pathlib.Path(x).read_text()) for x in j]; print(f'json_files={len(j)} status=passed')"
+        ],
+        "exit_code": 0,
+        "id": "json-parse-555",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "30aea8aa1193a54902df13973dcbae66e1687fdfa823d08713b82a22f538bc17",
+        "stdout_size_bytes": 29,
+        "summary": "完整输出 digest；555 changed JSON files parsed。"
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "py_compile",
+          ".agents/skills/guru-approve-task-plan/tests/test_contract.py",
+          ".agents/skills/guru-check-task/tests/test_contract.py",
+          ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+          ".agents/skills/guru-discover-change-context/tests/test_contract.py",
+          ".claude/skills/guru-approve-task-plan/tests/test_contract.py",
+          ".claude/skills/guru-check-task/tests/test_contract.py",
+          ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+          ".claude/skills/guru-discover-change-context/tests/test_contract.py",
+          ".codex/skills/guru-approve-task-plan/tests/test_contract.py",
+          ".codex/skills/guru-check-task/tests/test_contract.py",
+          ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+          ".codex/skills/guru-discover-change-context/tests/test_contract.py",
+          ".cursor/skills/guru-approve-task-plan/tests/test_contract.py",
+          ".cursor/skills/guru-check-task/tests/test_contract.py",
+          ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+          ".cursor/skills/guru-discover-change-context/tests/test_contract.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-check-task/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "id": "python-py-compile-31",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "本轮先前真实执行；31 changed Python files，完整 stdout/stderr 均为空；使用 repo 外 PYTHONPYCACHEPREFIX，生成缓存已清理。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-n",
+          ".agents/skills/guru-approve-task-plan/scripts/invoke.sh",
+          ".agents/skills/guru-check-task/scripts/invoke.sh",
+          ".agents/skills/guru-create-task-commit/scripts/invoke.sh",
+          ".claude/skills/guru-approve-task-plan/scripts/invoke.sh",
+          ".claude/skills/guru-check-task/scripts/invoke.sh",
+          ".claude/skills/guru-create-task-commit/scripts/invoke.sh",
+          ".codex/skills/guru-approve-task-plan/scripts/invoke.sh",
+          ".codex/skills/guru-check-task/scripts/invoke.sh",
+          ".codex/skills/guru-create-task-commit/scripts/invoke.sh",
+          ".cursor/skills/guru-approve-task-plan/scripts/invoke.sh",
+          ".cursor/skills/guru-check-task/scripts/invoke.sh",
+          ".cursor/skills/guru-create-task-commit/scripts/invoke.sh",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/invoke.sh",
+          ".trellis/guru-team/skills/packages/guru-check-task/scripts/invoke.sh",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/invoke.sh",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/invoke.sh",
+          "trellis/skills/guru-team/packages/guru-check-task/scripts/invoke.sh",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/invoke.sh"
+        ],
+        "exit_code": 0,
+        "id": "bash-syntax-19",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "f6d6d73210821a1b7951581258a25abb395376e932441587689775f02d6ffceb",
+        "stdout_size_bytes": 28,
+        "summary": "完整 batch 输出 digest；19 shell files passed bash -n。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-lc",
+          "git diff --check origin/main...HEAD; git diff --check; assert recursive .new/.bak and __pycache__ scans are empty"
+        ],
+        "exit_code": 0,
+        "id": "diff-sidecar-cache",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "7641f1d766fa0c3fe5c99b9fd18653fca619594ea51b6b68816e3f3c813729da",
+        "stdout_size_bytes": 59,
+        "summary": "实际 batch 包含两条 git diff --check 与递归 sidecar/cache assertions；输出 branch_diff=passed working_diff=passed sidecars=0 caches=0。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-lc",
+          "65 generated diff/cmp checks over three production package trees, nine corpora across five mirrors, adapter, runtime, workflow, production manifest and registry"
+        ],
+        "exit_code": 0,
+        "id": "canonical-installed-platform-identity",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "615cf6e58073933163cdd0293cd72adc212cbd64d17d7be7deba028cd71a334d",
+        "stdout_size_bytes": 33,
+        "summary": "完整 generated batch 输出 digest；identity_checks=65 status=passed。"
+      },
+      {
+        "argv": [
+          "stat",
+          "-f",
+          "%Lp %N",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval",
+          ".trellis/guru-team/skills/adapters/eval/guru-team-shared-eval"
+        ],
+        "exit_code": 0,
+        "id": "adapter-wrapper-modes",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "beb83d5255747790e6b3f8d7f7977c490093d759b31eaee28a11e7c32d5441ab",
+        "stdout_size_bytes": 254,
+        "summary": "完整 stdout digest；adapter modes 644/644，shared wrapper modes 755/755。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-lc",
+          "scan added branch and working-diff lines for private-key and common provider-token patterns; fail if matched"
+        ],
+        "exit_code": 0,
+        "id": "secret-pattern-scan",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "2b06ddb0b4923942e1d71ee9c8e98c7f73efb1208b23429c1784f817b6862a9c",
+        "stdout_size_bytes": 32,
+        "summary": "完整 batch 输出 digest；secret_patterns=0 status=passed。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-lc",
+          "git diff --name-only origin/main...HEAD | rg deployment-impact path pattern"
+        ],
+        "exit_code": 0,
+        "id": "deployment-impact-path-scan",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "f2ef7783162c21c62a4a053485d7a130736ae702fd4c5cc52a9304dcf828e6d6",
+        "stdout_size_bytes": 137,
+        "summary": "完整 stdout digest；仅命中两个 production Skill migration manifest，未命中 CI/CD、container、K8s/Helm、DB migration 或 Makefile。"
+      },
+      {
+        "argv": [
+          "env",
+          "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 1,
+        "id": "throwaway-public-sample-attempt-1",
+        "stderr_sha256": "dde507f63053f7f252e3f9b1dbcdc4a7c7be1f9e628d17771c783e9f83890343",
+        "stderr_size_bytes": 121,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "仅保存并 hash 精确终端最终错误行，不声称绑定完整长 stdout；本轮输出已在超时前通过 initial init/preset/source-installed/package smoke，最终 public marketplace index request timeout。"
+      },
+      {
+        "argv": [
+          "env",
+          "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 1,
+        "id": "throwaway-public-sample-attempt-2",
+        "stderr_sha256": "dde507f63053f7f252e3f9b1dbcdc4a7c7be1f9e628d17771c783e9f83890343",
+        "stderr_size_bytes": 121,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "仅保存并 hash 精确终端最终错误行，不声称绑定完整长 stdout；本轮输出已在超时前通过 initial install、preview/switch、trellis update、preset reapply、after-update smoke、drift/ownership，最终 no-developer 子 fixture 的 public marketplace request timeout。"
+      },
+      {
+        "argv": [
+          "env",
+          "TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#codex/146-production-skill-minimal-handoff",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 1,
+        "id": "exact-unpublished-marketplace-ref",
+        "stderr_sha256": "0c4a789b0afaed71b6b587035e2515b2567f68b3f184d24f55dc925a7b07417f",
+        "stderr_size_bytes": 148,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "仅保存并 hash 精确终端最终错误行；未发布 feature ref 无 marketplace index，属于 push 后 PR-readiness limitation。"
+      },
+      {
+        "argv": [
+          "git",
+          "ls-remote",
+          "--heads",
+          "origin",
+          "refs/heads/codex/146-production-skill-minimal-handoff"
+        ],
+        "exit_code": 0,
+        "id": "exact-unpublished-ls-remote",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "完整 stdout/stderr 均为空，确认 exact feature branch ref 尚未发布。"
+      }
+    ],
+    "unverified_items": [
+      {
+        "blocking": false,
+        "command_or_area": "exact unpublished branch remote marketplace verification",
+        "id": "U1",
+        "impact": "不影响本地实现与 Phase 2 语义充分性；在 reviewed commit push 后、PR readiness 前必须补 exact remote proof，且不得用 public sample 冒充。",
+        "reason": "codex/146-production-skill-minimal-handoff 尚未 push，git ls-remote 为空且 exact marketplace ref 按合同失败；public sample 两次远端 index 请求 timeout 也如实记录。"
+      }
+    ],
+    "worker_evidence": [
+      {
+        "agent_id": "/root/check_146",
+        "evidence_only": true,
+        "facts_sha256": "c02ef04af1c0c2fc2bf6603e1682cd827623dacca2122c0a30d94ee5172b0e17",
+        "source": "official_trellis_check",
+        "summary": "早期 completed Phase 2 checker 的历史 evidence；其结果不替代当前 P3-F003 修复后的 full rerun。"
+      },
+      {
+        "agent_id": "/root/check_146_r17_full",
+        "evidence_only": true,
+        "facts_sha256": "612bc5b82c90b210d6f3743b300e54f9b6af5bea5f12aee6691970ef3b5760bd",
+        "source": "official_trellis_check",
+        "summary": "R17 completed Phase 2 checker 的历史 evidence；其结果在 durable flow 文档修订后失效，不替代当前 full rerun。"
+      },
+      {
+        "agent_id": "/root/check_146_p3_r18_full",
+        "evidence_only": true,
+        "facts_sha256": "ce16acbe315d43b0d2fc71b94ad834c9328b3aae13daeb131919a8b59c4530be",
+        "source": "official_trellis_check",
+        "summary": "Fresh Phase 2 完整覆盖 Issue #146 的 requirements、design、implementation、tests、15-path ssot_first Docs SSOT、cross-layer contracts、compatibility、deployment/operations、agent recovery 与 verification completeness；P3-F003 已由当前 durable flow 文档修订关闭，P0-P3 当前均为 0，HEAD c945c73e1779f4e62409883bab5e1f6a907e4584，唯一 non-metadata dirty path 为 docs/requirements/guru-team-trellis-flow.md，typed exit 保持 passed。AC16 post-commit Branch Review 与 exact unpublished marketplace proof 是下游限制，不改变 Phase 2 结论。"
+      }
+    ],
+    "execution_sha256": "5840d8e2df79b14ccaa17b6ea371d4d7c9eef55314a80dee8411700daa53bee2"
+  },
+  "consumer": {
+    "id": "guru-create-task-commit",
+    "kind": "skill"
+  },
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "durable_paths": [
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "ccc3615e6917e0242f83cc0a2926470c9231186f9437da8e8111b59ad883ce29",
+        "size_bytes": 80832
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "sha256": "7da5011162373a6bcc2b903062270d70b462945bef526c0044cff9c8fd081e22",
+        "size_bytes": 60018
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "62396663ff37b9dabeac4ae90f63ea0b22e4c310692650090bcf8d5f1bdf33e5",
+        "size_bytes": 91016
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "a3d5a49d968e1a2b421da265c8b30be8b780244c793b7c3f659795a4f79407b7",
+        "size_bytes": 108909
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "6ad5f006d742894e2c4b0d9ce0d931544cd6d23d4e807f47161c5a36149ed8b4",
+        "size_bytes": 37647
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "d5a046d3e6ae5441db51657add9d9694d89315487e75118a85f338033a5565e1",
+        "size_bytes": 27845
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "43b94fcd5472d28799bf3533f98978c370bed1d03e47a31f5f0466fa1f7f7483",
+        "size_bytes": 24857
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "17922f8d7c9912e12bf9f4cdb5b3998c38b9a993cda7b54652b3ff073a98e80e",
+        "size_bytes": 12895
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "76e581ae0f9cabb6ad726418c244282e344020ef1123194df3c4d18b8904f386",
+        "size_bytes": 21611
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "sha256": "6fc7f8e92adcf0d496c3eacd40b1c605805817f2878e82243d43755e341b323e",
+        "size_bytes": 18095
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "d30ccd375eb88718fe45706ef401e1f049efe7f562eed9245d0cbf5b3624bee1",
+        "size_bytes": 68978
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
+        "size_bytes": 81350
+      },
+      {
+        "path": "README.md",
+        "sha256": "ca7a37b0cd13ae9da57bdd38bfc6eccae03bbde58fdc17f11b444d7e52ee96da",
+        "size_bytes": 77025
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "68c48f62781840578463c1a1db65679330ef14653be65e0edea54646b69f39ba",
+        "size_bytes": 68905
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "0ea61f80c725c5aa69e38a2082bdb9843aabf73cd694523f97f1799c1b931305",
+        "size_bytes": 63728
+      }
+    ],
+    "sync_result": "15/15 durable SSOT paths 已完成 ssot_first 合并；Round 003 的 P3-F003 task delta 已修正 durable flow SSOT 的陈旧未来态，明确 #145 保持 6 Skills/24 exits、#146 已完成 3 production Skills、10 profiles、11 exits 及 combined 9 Skills/35 exits closure。",
+    "task_delta_merged": true,
+    "task_history_only": [
+      "Issue intake、proposal/action、Phase 0/context 与 approval/ledger decision trail",
+      "Agent assignment、liveness、raw command digests、review rounds、PR readiness 与临时 evidence roots"
+    ],
+    "no_update_reason": null,
+    "followup_or_pr_limit": "当前分支尚未 push；exact remote marketplace proof 必须在 reviewed commit push 后由 PR readiness 补验，public sample 不得冒充 exact branch proof。",
+    "facts_sha256": "9920786757c8145aade0b1eb4fa989f6372936f12b5fabcf129474b67bd2dffe"
+  },
+  "human_confirmation": {
+    "confirmed_at": null,
+    "kind": "not-required",
+    "status": "not_required",
+    "summary": "Phase 2 没有无条件人工确认；fresh planning approval 与用户已授权的当前恢复边界保持有效。"
+  },
+  "implementation_handoff": {
+    "summary": "实现与 recovery handoff 覆盖 R1-R17/AC1-AC22、15 个 durable SSOT、P2-F002 routing-only、R17 production owner staging、R16 task-local freshness；evt-0218/0219 进一步完成 P3-F003 的最小 durable flow 文档修复，明确 #145 6 Skills/24 exits 与 #146 已完成 3 Skills/10 profiles/11 exits/combined 9/35，随后由 fresh checker 完整重跑。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+        "sha256": "c3d9521fdb431a4484441facb4447fbcfa0d3507429aa4e5de6cea6b2842b3b0",
+        "size_bytes": 30536
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "sha256": "962a380af4710d2f0b10499c3b55bb2143d2ec2665f10016a0a354c89aa6e322",
+        "size_bytes": 37252
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+        "sha256": "18bab6a41258e88e3f9fd244630f0274976be1c706f5dc14166e83fffd5a0830",
+        "size_bytes": 253685
+      }
+    ],
+    "facts_sha256": "cd54f9522efc920db326b35b6b0f1b8a4c0e1aa2f0b04cde332fa02cb8af50df"
+  },
+  "mode": "workflow",
+  "reason": "当前完整 scope 的十个 adequacy 维度全部通过，P3-F003 已关闭且无开放 finding；exact remote proof limitation 由 push 后 PR readiness 消费。",
+  "repository_snapshot": {
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c",
+    "head": "c945c73e1779f4e62409883bab5e1f6a907e4584",
+    "diff_range": "origin/main...HEAD",
+    "dirty_paths": [
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review-gate.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-001-final-release.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-002-finding-closure.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-003-final-release.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/001.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/002.json",
+      "docs/requirements/guru-team-trellis-flow.md"
+    ],
+    "reviewed_paths": [
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/evals.json",
+        "sha256": "6ef303f9f50794e70085e61b105e0315468165d32f585d2ebfa53f637b314821",
+        "size_bytes": 3652
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        "sha256": "ce52d5aba3e9371bea7a8aaea9d1c140ab0a2dea9c82aa98cd371a1ea1ffde0f",
+        "size_bytes": 370
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/files/approved-initial-input.json",
+        "sha256": "1a78145064b078d73223388406804114ddfd67166a010d736a82a44053034a5c",
+        "size_bytes": 544
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/files/blocked-initial-facts.json",
+        "sha256": "f35d7b67b2b13ad499d2b18965fd66cf77a1d47353d61f198a9dad9fc32cdf2e",
+        "size_bytes": 375
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/files/blocked-initial-input.json",
+        "sha256": "1cb70a4ca30e8858d533eca1bdf0572286d2554359843b8f2c59fdb8d5668a00",
+        "size_bytes": 574
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/files/clarify-scope-facts.json",
+        "sha256": "6b082dd44582da13a1ecb8ba9c1b90e71a3ce2e8e53896a8b3491af8acafbd91",
+        "size_bytes": 387
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/files/clarify-scope-input.json",
+        "sha256": "ad078da36f46a0a366a1b79b5634acb27c3070c2fb602fa54336a18e66bf6be2",
+        "size_bytes": 645
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/files/revision-required-facts.json",
+        "sha256": "4879701b4e1687c87ca07944a703d48ad7a6e6832215e71a6219068b9025b438",
+        "size_bytes": 384
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/evals/files/revision-required-input.json",
+        "sha256": "6016048a659a7cbf6def6a0ba10f25df322a18be4d3ef83ee926f83f4926e7a3",
+        "size_bytes": 614
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-approved-output.json",
+        "sha256": "2f31450783a8c5cea61a2d9b5f646ae1c267fc7f2ecc8561b22f9abc379275dc",
+        "size_bytes": 120
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-clarification-reentry-input.json",
+        "sha256": "eb861c3f3fc65c077c76fd1d7b8a2b91e5e3936e6c0ba8379373261c858545e7",
+        "size_bytes": 684
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-clarify-scope-output.json",
+        "sha256": "5b0f76b0e947ccb466a97bb70a6a1deefad1dd14b4c1fecf481580de993d2063",
+        "size_bytes": 129
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-initial-review-input.json",
+        "sha256": "c1698c1a7e70360681691f6667d125e9f1b10ce0b8b03f4305fbfb9d574cc99c",
+        "size_bytes": 623
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-revision-reentry-authoring.json",
+        "sha256": "74e13ff6087627e3b0289718ac1ace535601c19a9fb402c55342a31b4579cf31",
+        "size_bytes": 608
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-revision-reentry-input.json",
+        "sha256": "b93b68d3dee0db676d7fd59c5fcbbe35b0ba226cef806bbb3c2e0adf9af08378",
+        "size_bytes": 691
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/examples/public-revision-required-output.json",
+        "sha256": "432f4281261411373bbbb4d60b729f49738c4e45a10c040a0052ba982563460d",
+        "size_bytes": 82
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/interface.json",
+        "sha256": "88f4266a67a2d2cfac570150aa9f326bf81b488eb223ab06c086158f4fa947bf",
+        "size_bytes": 18002
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+        "sha256": "ac1b2af0989891a1fa049a75ac984f12fb4194899f7fb8403d9cc3249ca75c28",
+        "size_bytes": 22923
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-approved-output.schema.json",
+        "sha256": "4766677d44fc79f4612bbd8f3cae7b546137bab9353767ff089fcb4106c22873",
+        "size_bytes": 504
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-blocked-output.schema.json",
+        "sha256": "33c6cdd2b2870bf11d4a170491e172cd745e1c32f317fa3351cbc429e17f807e",
+        "size_bytes": 288
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-clarification-reentry-input.schema.json",
+        "sha256": "aac5e19343104ffdc5d54818778db8b4e6a59917075c3b7461d93e1d446f77b4",
+        "size_bytes": 2687
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-clarify-scope-output.schema.json",
+        "sha256": "5fd8b061d093a95a7a134f90298f4662994617d7fa7326df3f52bd34e8631f54",
+        "size_bytes": 616
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-initial-review-input.schema.json",
+        "sha256": "8f07facb49cb3e3e3f1ea9caaef6d5187047eab7a8a5704f91b696364243070a",
+        "size_bytes": 2584
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-input.schema.json",
+        "sha256": "8d0753079c183adde4af5f0ad0c098bb48de6c7cef5cb3ecdf71c43c40e1e97c",
+        "size_bytes": 363
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-invocation-error.schema.json",
+        "sha256": "d69831158013f40dc5201d1e7e26b931b1cd633d73bece62f2c52fbd27c30ddf",
+        "size_bytes": 464
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "995bbb03349c8c74d81e46e6ea0b8ad146e430f7807332e01bcd98e5e1d51944",
+        "size_bytes": 2681
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/schemas/public-revision-required-output.schema.json",
+        "sha256": "bcdb0bf38b18080e13ae1996a94c4b5674e32e3785ae5e4c5289edcb18acba68",
+        "size_bytes": 428
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/scripts/invoke.sh",
+        "sha256": "b1127e785cfa82605e85f22e1b6b1a5a55a8c17dc363598499545cc894b3807b",
+        "size_bytes": 1198
+      },
+      {
+        "path": ".agents/skills/guru-approve-task-plan/tests/test_contract.py",
+        "sha256": "a4eadb5de27a8c0be8952e3b1252b93c4506f142ac3edf294ae3eadb6b289b3e",
+        "size_bytes": 13424
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/evals.json",
+        "sha256": "81149d37d0e3c66053682a05e68d6f752fe72ed11757c4f857011c19fff3cbc2",
+        "size_bytes": 3640
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/files/blocked-initial-facts.json",
+        "sha256": "09401e16717e75929cf2f380f02a74bc82bf5db2869e6ef1891eb0631ce452aa",
+        "size_bytes": 353
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/files/blocked-initial-input.json",
+        "sha256": "0102054560e20928af2e7b19b898fd7b7f48e44dec70969e47d5c72d61101387",
+        "size_bytes": 535
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/files/implementation-required-facts.json",
+        "sha256": "a7291f5a4d70dd4592f1e4daa87bbd52e2d2056d31823828f661b3726a387279",
+        "size_bytes": 398
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/files/implementation-required-input.json",
+        "sha256": "ebc4de7d90a1dafcf4be6290f65262f51e323a78df54b17074fc5eb73303e1cb",
+        "size_bytes": 624
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/files/passed-initial-facts.json",
+        "sha256": "6046a4938ad261b9b6a4c92bf01e618bcc2fe18751e3d32b3d4e16453aa1fe31",
+        "size_bytes": 361
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/files/passed-initial-input.json",
+        "sha256": "22c3c8808f9a0270b35fb828d28d5c62f36be433e51e47be412b0318efc74f53",
+        "size_bytes": 476
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/files/planning-stale-facts.json",
+        "sha256": "9c003ab531ffe757274fc73b7b1498e4554ffc8043e4c0814280222b172e4b65",
+        "size_bytes": 384
+      },
+      {
+        "path": ".agents/skills/guru-check-task/evals/files/planning-stale-input.json",
+        "sha256": "72ce70ffb842c3f503fcfaaeccf3049039bdee157b3e2fbc1d160f9c1dcc6a05",
+        "size_bytes": 543
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/public-finding-fix-rerun-input.json",
+        "sha256": "ec215a701237522f79914167b7e3f91ce84d3573789095dfb2ceb1951850d7b1",
+        "size_bytes": 661
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/public-implementation-required-output.json",
+        "sha256": "120091dc9f3cd3e8e4bb03ff504b29e897a04bffac731f206fa45d1352fcd16b",
+        "size_bytes": 122
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/public-initial-check-input.json",
+        "sha256": "790176eee3a75e4b32e33e0b59f00f8788f1bb8dd6e3223c751b20135b5f740f",
+        "size_bytes": 509
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/public-passed-output.json",
+        "sha256": "d3c60e8975137123acfa2198298e230dc2dae92d2e82805255ad54383c867b47",
+        "size_bytes": 172
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/public-planning-reentry-input.json",
+        "sha256": "5a59c41a4c1798bdcf87ee4f8925f421cc5c8497bebc084370c0e7dc8a16444d",
+        "size_bytes": 559
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/public-planning-stale-output.json",
+        "sha256": "64832f9acf83e9f962c4f85b69bcb74a65b6267dd16018865d9092f462b25653",
+        "size_bytes": 168
+      },
+      {
+        "path": ".agents/skills/guru-check-task/interface.json",
+        "sha256": "a00c1a116e733e404867da98586d75eb719eb9f8aaa70f9111690ba5548dce0c",
+        "size_bytes": 17844
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-blocked-output.schema.json",
+        "sha256": "cd1a82e68b6ce830d5305f0b1bc482dc5cabc797496411bff6154395c8e699aa",
+        "size_bytes": 281
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-finding-fix-rerun-input.schema.json",
+        "sha256": "23f4ab68dff510149c64d5c410de41f1b931b97fd9b51847a11e15ae899c2e5c",
+        "size_bytes": 2585
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-implementation-required-output.schema.json",
+        "sha256": "bff89e9b2ce944725bd483d387d4141f36652e56cf82cd7a24fac99ee3a0756e",
+        "size_bytes": 627
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-initial-check-input.schema.json",
+        "sha256": "adf0e7768bd08fc603f778262ded9d66f678b3437419018d8e49612b43cef88f",
+        "size_bytes": 2279
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-input.schema.json",
+        "sha256": "5235d4ecb1194ce6a96280388ab56b004099b2a2c1149e428684aeff107cc141",
+        "size_bytes": 351
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-invocation-error.schema.json",
+        "sha256": "4fa3719994829677151697ac458f5ad5bf278416388306380e1b2002ab64b9ce",
+        "size_bytes": 457
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-passed-output.schema.json",
+        "sha256": "aeee579dfb10d360d7525b3467baffb441e10e5d9638b01f07428c51dff1792d",
+        "size_bytes": 594
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-planning-reentry-input.schema.json",
+        "sha256": "9c71f8ed3f90b5c907df8f6c6fc11a9a46a3503d264f50a3181f9da0f0677296",
+        "size_bytes": 2361
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/public-planning-stale-output.schema.json",
+        "sha256": "2f3e0ff2695f979257eea96162a968ad89539908b1e4454e272001e066d1f802",
+        "size_bytes": 769
+      },
+      {
+        "path": ".agents/skills/guru-check-task/scripts/invoke.sh",
+        "sha256": "8ad9c73d0ebc41a3a66acccff18f14e376a177602b1c93f8a2a183425adb3edb",
+        "size_bytes": 1107
+      },
+      {
+        "path": ".agents/skills/guru-check-task/tests/test_contract.py",
+        "sha256": "8c1af01930d78e984ad58104b103d5e77c37a15b8715c8fa24db3072916eecec",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/evals.json",
+        "sha256": "c047335cb813a235f742164aeb0f66ceff6bc26aa6353c9687d3783a11fd527c",
+        "size_bytes": 3671
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/files/blocked-recovery-facts.json",
+        "sha256": "dbfa895675910bdc7276a1ad055d984882b89fd46d041fcc5c94df49b960b2f5",
+        "size_bytes": 319
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/files/blocked-recovery-input.json",
+        "sha256": "34eae5ffdb796546ae63543f5cf65565c8eb1fe607d7ce238e5f8e72013808df",
+        "size_bytes": 722
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/files/committed-finding-fix-facts.json",
+        "sha256": "634a339684e12c0a12a193a53b1367876e170f579b6270ad21ca98957c82408a",
+        "size_bytes": 350
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/files/committed-finding-fix-input.json",
+        "sha256": "e8895856dff75c1183c1b1a0c314041b24e64fbc37000f1e05cbbd58125e4880",
+        "size_bytes": 875
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/files/committed-initial-facts.json",
+        "sha256": "b68077ba37d3ea9ee06cd8ca7b6ada055b4f5a4739d4c5fb722a8260a03b2e59",
+        "size_bytes": 344
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/files/committed-initial-input.json",
+        "sha256": "eb98657cd58858012d20bee1b890ee5125fb0f28a8d4921529893b6cccb866ef",
+        "size_bytes": 826
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/files/revision-required-facts.json",
+        "sha256": "ab423e5fe7a33f4f46f462d7e1b26aeac5db834930027148c46fa246e57e908d",
+        "size_bytes": 337
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/evals/files/revision-required-input.json",
+        "sha256": "89332bd6e81291caf637a0d367f3253cb687794027c8e9fa7f339f31bfc836df",
+        "size_bytes": 719
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-committed-output.json",
+        "sha256": "430cd339894575c587c39102aa7d45f1a46011547273a9d18824de9afb7fb935",
+        "size_bytes": 167
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-finding-fix-commit-input.json",
+        "sha256": "16f3bbf3c26c47d517cc224438cbb25b78542e661586235d5cbed26003e424ce",
+        "size_bytes": 782
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-initial-commit-authoring.json",
+        "sha256": "264750dc5214fe4cf5261eac6042bf528058b05c48af8d4d9b6e518777b1f0a7",
+        "size_bytes": 567
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-initial-commit-input.json",
+        "sha256": "12b96076757ba38f731ba96bbccd672daaeda207778cdb45bc4c722d95e3f268",
+        "size_bytes": 740
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-recovery-resume-input.json",
+        "sha256": "0ca43d422e98a01f23f12192824fabf72aefe868e0c1e82f40bf373b07e9c379",
+        "size_bytes": 793
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-revision-reentry-authoring.json",
+        "sha256": "d3de3da4d81fd438584710284e6599fc9c11b8d99f1ec9540448eea6587430c5",
+        "size_bytes": 731
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-revision-reentry-input.json",
+        "sha256": "8b20c63080a133bdcf702627dd38c290a8cd08cee1125169f47ba8ea3a43401f",
+        "size_bytes": 814
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/public-revision-required-output.json",
+        "sha256": "17528972df0b549ae2b27098ce1fa46c12c553bac0e4b65d4027a424c931f505",
+        "size_bytes": 82
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/interface.json",
+        "sha256": "72c62d4cc895088fabfa859a7fd67ffa7256642672eeda650439484e05d53768",
+        "size_bytes": 16551
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-blocked-output.schema.json",
+        "sha256": "6285e869bf79b95aacefd31c66a776c299bbf36d928fb190bef5f5a9596e8e53",
+        "size_bytes": 289
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-committed-output.schema.json",
+        "sha256": "2f70990652bee5227ba8c83a83cb283ad3d6f1038ea22a8e5ef585585ed637ae",
+        "size_bytes": 610
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-finding-fix-commit-input.schema.json",
+        "sha256": "e8d68caa5dd439b937034e05b6d18e7ca20e1158356078f29f9244cfb4919678",
+        "size_bytes": 2574
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-initial-commit-input.schema.json",
+        "sha256": "1f9d79cf4148e77fdd5b6c3eece8459530cab3a55c66d49c86389865807d8e78",
+        "size_bytes": 2486
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-input.schema.json",
+        "sha256": "ff7faedf93e77dfe2210bffc1a7d916dfbe681a7b7e404e6c634c7115660c075",
+        "size_bytes": 431
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-invocation-error.schema.json",
+        "sha256": "c2df88c88abf19f8123ef75b17d477d48457b1bdcd30badb455a39cd26c225e9",
+        "size_bytes": 465
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-recovery-resume-input.schema.json",
+        "sha256": "b7c8686415c7f89b87d1cf3128b501de5c9358dbbb832e475d2ccff7d982d654",
+        "size_bytes": 2658
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "05b32c65c5f7ec3e414dfaa9b94f4455b2fb916dc4162ef2ddb3c1cffea4d8a2",
+        "size_bytes": 2590
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/public-revision-required-output.schema.json",
+        "sha256": "68e6c091f2bdfa9a01bb5e39813cb002dcde25d4c3359177af608b71a80e7317",
+        "size_bytes": 429
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/scripts/invoke.sh",
+        "sha256": "1c0a4227a8cbb98eee3f8f200c4c65a693db8b508b8ca3f25a452c3cea61fb86",
+        "size_bytes": 1211
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+        "sha256": "839170b8ebd1e0b005cb3cbdee64b1f63437d4ef0e26974a766764ff1fe60874",
+        "size_bytes": 22528
+      },
+      {
+        "path": ".agents/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
+        "size_bytes": 406
+      },
+      {
+        "path": ".agents/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+        "sha256": "6840cb06e8946633c70162c708785c458860a749e27182d649126f58225e0f4f",
+        "size_bytes": 27751
+      },
+      {
+        "path": ".agents/skills/guru-discover-change-context/tests/test_contract.py",
+        "sha256": "203e3bdc508d41518b1c6365c1abbb16526add6e8315bac7f81a0fca3dd83070",
+        "size_bytes": 13020
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/evals.json",
+        "sha256": "6ef303f9f50794e70085e61b105e0315468165d32f585d2ebfa53f637b314821",
+        "size_bytes": 3652
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        "sha256": "ce52d5aba3e9371bea7a8aaea9d1c140ab0a2dea9c82aa98cd371a1ea1ffde0f",
+        "size_bytes": 370
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/files/approved-initial-input.json",
+        "sha256": "1a78145064b078d73223388406804114ddfd67166a010d736a82a44053034a5c",
+        "size_bytes": 544
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/files/blocked-initial-facts.json",
+        "sha256": "f35d7b67b2b13ad499d2b18965fd66cf77a1d47353d61f198a9dad9fc32cdf2e",
+        "size_bytes": 375
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/files/blocked-initial-input.json",
+        "sha256": "1cb70a4ca30e8858d533eca1bdf0572286d2554359843b8f2c59fdb8d5668a00",
+        "size_bytes": 574
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/files/clarify-scope-facts.json",
+        "sha256": "6b082dd44582da13a1ecb8ba9c1b90e71a3ce2e8e53896a8b3491af8acafbd91",
+        "size_bytes": 387
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/files/clarify-scope-input.json",
+        "sha256": "ad078da36f46a0a366a1b79b5634acb27c3070c2fb602fa54336a18e66bf6be2",
+        "size_bytes": 645
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/files/revision-required-facts.json",
+        "sha256": "4879701b4e1687c87ca07944a703d48ad7a6e6832215e71a6219068b9025b438",
+        "size_bytes": 384
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/evals/files/revision-required-input.json",
+        "sha256": "6016048a659a7cbf6def6a0ba10f25df322a18be4d3ef83ee926f83f4926e7a3",
+        "size_bytes": 614
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-approved-output.json",
+        "sha256": "2f31450783a8c5cea61a2d9b5f646ae1c267fc7f2ecc8561b22f9abc379275dc",
+        "size_bytes": 120
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-clarification-reentry-input.json",
+        "sha256": "eb861c3f3fc65c077c76fd1d7b8a2b91e5e3936e6c0ba8379373261c858545e7",
+        "size_bytes": 684
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-clarify-scope-output.json",
+        "sha256": "5b0f76b0e947ccb466a97bb70a6a1deefad1dd14b4c1fecf481580de993d2063",
+        "size_bytes": 129
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-initial-review-input.json",
+        "sha256": "c1698c1a7e70360681691f6667d125e9f1b10ce0b8b03f4305fbfb9d574cc99c",
+        "size_bytes": 623
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-revision-reentry-authoring.json",
+        "sha256": "74e13ff6087627e3b0289718ac1ace535601c19a9fb402c55342a31b4579cf31",
+        "size_bytes": 608
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-revision-reentry-input.json",
+        "sha256": "b93b68d3dee0db676d7fd59c5fcbbe35b0ba226cef806bbb3c2e0adf9af08378",
+        "size_bytes": 691
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/examples/public-revision-required-output.json",
+        "sha256": "432f4281261411373bbbb4d60b729f49738c4e45a10c040a0052ba982563460d",
+        "size_bytes": 82
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/interface.json",
+        "sha256": "88f4266a67a2d2cfac570150aa9f326bf81b488eb223ab06c086158f4fa947bf",
+        "size_bytes": 18002
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+        "sha256": "ac1b2af0989891a1fa049a75ac984f12fb4194899f7fb8403d9cc3249ca75c28",
+        "size_bytes": 22923
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-approved-output.schema.json",
+        "sha256": "4766677d44fc79f4612bbd8f3cae7b546137bab9353767ff089fcb4106c22873",
+        "size_bytes": 504
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-blocked-output.schema.json",
+        "sha256": "33c6cdd2b2870bf11d4a170491e172cd745e1c32f317fa3351cbc429e17f807e",
+        "size_bytes": 288
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-clarification-reentry-input.schema.json",
+        "sha256": "aac5e19343104ffdc5d54818778db8b4e6a59917075c3b7461d93e1d446f77b4",
+        "size_bytes": 2687
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-clarify-scope-output.schema.json",
+        "sha256": "5fd8b061d093a95a7a134f90298f4662994617d7fa7326df3f52bd34e8631f54",
+        "size_bytes": 616
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-initial-review-input.schema.json",
+        "sha256": "8f07facb49cb3e3e3f1ea9caaef6d5187047eab7a8a5704f91b696364243070a",
+        "size_bytes": 2584
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-input.schema.json",
+        "sha256": "8d0753079c183adde4af5f0ad0c098bb48de6c7cef5cb3ecdf71c43c40e1e97c",
+        "size_bytes": 363
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-invocation-error.schema.json",
+        "sha256": "d69831158013f40dc5201d1e7e26b931b1cd633d73bece62f2c52fbd27c30ddf",
+        "size_bytes": 464
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "995bbb03349c8c74d81e46e6ea0b8ad146e430f7807332e01bcd98e5e1d51944",
+        "size_bytes": 2681
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/schemas/public-revision-required-output.schema.json",
+        "sha256": "bcdb0bf38b18080e13ae1996a94c4b5674e32e3785ae5e4c5289edcb18acba68",
+        "size_bytes": 428
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/scripts/invoke.sh",
+        "sha256": "b1127e785cfa82605e85f22e1b6b1a5a55a8c17dc363598499545cc894b3807b",
+        "size_bytes": 1198
+      },
+      {
+        "path": ".claude/skills/guru-approve-task-plan/tests/test_contract.py",
+        "sha256": "a4eadb5de27a8c0be8952e3b1252b93c4506f142ac3edf294ae3eadb6b289b3e",
+        "size_bytes": 13424
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/evals.json",
+        "sha256": "81149d37d0e3c66053682a05e68d6f752fe72ed11757c4f857011c19fff3cbc2",
+        "size_bytes": 3640
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/files/blocked-initial-facts.json",
+        "sha256": "09401e16717e75929cf2f380f02a74bc82bf5db2869e6ef1891eb0631ce452aa",
+        "size_bytes": 353
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/files/blocked-initial-input.json",
+        "sha256": "0102054560e20928af2e7b19b898fd7b7f48e44dec70969e47d5c72d61101387",
+        "size_bytes": 535
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/files/implementation-required-facts.json",
+        "sha256": "a7291f5a4d70dd4592f1e4daa87bbd52e2d2056d31823828f661b3726a387279",
+        "size_bytes": 398
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/files/implementation-required-input.json",
+        "sha256": "ebc4de7d90a1dafcf4be6290f65262f51e323a78df54b17074fc5eb73303e1cb",
+        "size_bytes": 624
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/files/passed-initial-facts.json",
+        "sha256": "6046a4938ad261b9b6a4c92bf01e618bcc2fe18751e3d32b3d4e16453aa1fe31",
+        "size_bytes": 361
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/files/passed-initial-input.json",
+        "sha256": "22c3c8808f9a0270b35fb828d28d5c62f36be433e51e47be412b0318efc74f53",
+        "size_bytes": 476
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/files/planning-stale-facts.json",
+        "sha256": "9c003ab531ffe757274fc73b7b1498e4554ffc8043e4c0814280222b172e4b65",
+        "size_bytes": 384
+      },
+      {
+        "path": ".claude/skills/guru-check-task/evals/files/planning-stale-input.json",
+        "sha256": "72ce70ffb842c3f503fcfaaeccf3049039bdee157b3e2fbc1d160f9c1dcc6a05",
+        "size_bytes": 543
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/public-finding-fix-rerun-input.json",
+        "sha256": "ec215a701237522f79914167b7e3f91ce84d3573789095dfb2ceb1951850d7b1",
+        "size_bytes": 661
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/public-implementation-required-output.json",
+        "sha256": "120091dc9f3cd3e8e4bb03ff504b29e897a04bffac731f206fa45d1352fcd16b",
+        "size_bytes": 122
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/public-initial-check-input.json",
+        "sha256": "790176eee3a75e4b32e33e0b59f00f8788f1bb8dd6e3223c751b20135b5f740f",
+        "size_bytes": 509
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/public-passed-output.json",
+        "sha256": "d3c60e8975137123acfa2198298e230dc2dae92d2e82805255ad54383c867b47",
+        "size_bytes": 172
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/public-planning-reentry-input.json",
+        "sha256": "5a59c41a4c1798bdcf87ee4f8925f421cc5c8497bebc084370c0e7dc8a16444d",
+        "size_bytes": 559
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/public-planning-stale-output.json",
+        "sha256": "64832f9acf83e9f962c4f85b69bcb74a65b6267dd16018865d9092f462b25653",
+        "size_bytes": 168
+      },
+      {
+        "path": ".claude/skills/guru-check-task/interface.json",
+        "sha256": "a00c1a116e733e404867da98586d75eb719eb9f8aaa70f9111690ba5548dce0c",
+        "size_bytes": 17844
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-blocked-output.schema.json",
+        "sha256": "cd1a82e68b6ce830d5305f0b1bc482dc5cabc797496411bff6154395c8e699aa",
+        "size_bytes": 281
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-finding-fix-rerun-input.schema.json",
+        "sha256": "23f4ab68dff510149c64d5c410de41f1b931b97fd9b51847a11e15ae899c2e5c",
+        "size_bytes": 2585
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-implementation-required-output.schema.json",
+        "sha256": "bff89e9b2ce944725bd483d387d4141f36652e56cf82cd7a24fac99ee3a0756e",
+        "size_bytes": 627
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-initial-check-input.schema.json",
+        "sha256": "adf0e7768bd08fc603f778262ded9d66f678b3437419018d8e49612b43cef88f",
+        "size_bytes": 2279
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-input.schema.json",
+        "sha256": "5235d4ecb1194ce6a96280388ab56b004099b2a2c1149e428684aeff107cc141",
+        "size_bytes": 351
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-invocation-error.schema.json",
+        "sha256": "4fa3719994829677151697ac458f5ad5bf278416388306380e1b2002ab64b9ce",
+        "size_bytes": 457
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-passed-output.schema.json",
+        "sha256": "aeee579dfb10d360d7525b3467baffb441e10e5d9638b01f07428c51dff1792d",
+        "size_bytes": 594
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-planning-reentry-input.schema.json",
+        "sha256": "9c71f8ed3f90b5c907df8f6c6fc11a9a46a3503d264f50a3181f9da0f0677296",
+        "size_bytes": 2361
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/public-planning-stale-output.schema.json",
+        "sha256": "2f3e0ff2695f979257eea96162a968ad89539908b1e4454e272001e066d1f802",
+        "size_bytes": 769
+      },
+      {
+        "path": ".claude/skills/guru-check-task/scripts/invoke.sh",
+        "sha256": "8ad9c73d0ebc41a3a66acccff18f14e376a177602b1c93f8a2a183425adb3edb",
+        "size_bytes": 1107
+      },
+      {
+        "path": ".claude/skills/guru-check-task/tests/test_contract.py",
+        "sha256": "8c1af01930d78e984ad58104b103d5e77c37a15b8715c8fa24db3072916eecec",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/evals.json",
+        "sha256": "c047335cb813a235f742164aeb0f66ceff6bc26aa6353c9687d3783a11fd527c",
+        "size_bytes": 3671
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/files/blocked-recovery-facts.json",
+        "sha256": "dbfa895675910bdc7276a1ad055d984882b89fd46d041fcc5c94df49b960b2f5",
+        "size_bytes": 319
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/files/blocked-recovery-input.json",
+        "sha256": "34eae5ffdb796546ae63543f5cf65565c8eb1fe607d7ce238e5f8e72013808df",
+        "size_bytes": 722
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/files/committed-finding-fix-facts.json",
+        "sha256": "634a339684e12c0a12a193a53b1367876e170f579b6270ad21ca98957c82408a",
+        "size_bytes": 350
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/files/committed-finding-fix-input.json",
+        "sha256": "e8895856dff75c1183c1b1a0c314041b24e64fbc37000f1e05cbbd58125e4880",
+        "size_bytes": 875
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/files/committed-initial-facts.json",
+        "sha256": "b68077ba37d3ea9ee06cd8ca7b6ada055b4f5a4739d4c5fb722a8260a03b2e59",
+        "size_bytes": 344
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/files/committed-initial-input.json",
+        "sha256": "eb98657cd58858012d20bee1b890ee5125fb0f28a8d4921529893b6cccb866ef",
+        "size_bytes": 826
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/files/revision-required-facts.json",
+        "sha256": "ab423e5fe7a33f4f46f462d7e1b26aeac5db834930027148c46fa246e57e908d",
+        "size_bytes": 337
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/evals/files/revision-required-input.json",
+        "sha256": "89332bd6e81291caf637a0d367f3253cb687794027c8e9fa7f339f31bfc836df",
+        "size_bytes": 719
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-committed-output.json",
+        "sha256": "430cd339894575c587c39102aa7d45f1a46011547273a9d18824de9afb7fb935",
+        "size_bytes": 167
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-finding-fix-commit-input.json",
+        "sha256": "16f3bbf3c26c47d517cc224438cbb25b78542e661586235d5cbed26003e424ce",
+        "size_bytes": 782
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-initial-commit-authoring.json",
+        "sha256": "264750dc5214fe4cf5261eac6042bf528058b05c48af8d4d9b6e518777b1f0a7",
+        "size_bytes": 567
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-initial-commit-input.json",
+        "sha256": "12b96076757ba38f731ba96bbccd672daaeda207778cdb45bc4c722d95e3f268",
+        "size_bytes": 740
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-recovery-resume-input.json",
+        "sha256": "0ca43d422e98a01f23f12192824fabf72aefe868e0c1e82f40bf373b07e9c379",
+        "size_bytes": 793
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-revision-reentry-authoring.json",
+        "sha256": "d3de3da4d81fd438584710284e6599fc9c11b8d99f1ec9540448eea6587430c5",
+        "size_bytes": 731
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-revision-reentry-input.json",
+        "sha256": "8b20c63080a133bdcf702627dd38c290a8cd08cee1125169f47ba8ea3a43401f",
+        "size_bytes": 814
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/public-revision-required-output.json",
+        "sha256": "17528972df0b549ae2b27098ce1fa46c12c553bac0e4b65d4027a424c931f505",
+        "size_bytes": 82
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/interface.json",
+        "sha256": "72c62d4cc895088fabfa859a7fd67ffa7256642672eeda650439484e05d53768",
+        "size_bytes": 16551
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-blocked-output.schema.json",
+        "sha256": "6285e869bf79b95aacefd31c66a776c299bbf36d928fb190bef5f5a9596e8e53",
+        "size_bytes": 289
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-committed-output.schema.json",
+        "sha256": "2f70990652bee5227ba8c83a83cb283ad3d6f1038ea22a8e5ef585585ed637ae",
+        "size_bytes": 610
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-finding-fix-commit-input.schema.json",
+        "sha256": "e8d68caa5dd439b937034e05b6d18e7ca20e1158356078f29f9244cfb4919678",
+        "size_bytes": 2574
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-initial-commit-input.schema.json",
+        "sha256": "1f9d79cf4148e77fdd5b6c3eece8459530cab3a55c66d49c86389865807d8e78",
+        "size_bytes": 2486
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-input.schema.json",
+        "sha256": "ff7faedf93e77dfe2210bffc1a7d916dfbe681a7b7e404e6c634c7115660c075",
+        "size_bytes": 431
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-invocation-error.schema.json",
+        "sha256": "c2df88c88abf19f8123ef75b17d477d48457b1bdcd30badb455a39cd26c225e9",
+        "size_bytes": 465
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-recovery-resume-input.schema.json",
+        "sha256": "b7c8686415c7f89b87d1cf3128b501de5c9358dbbb832e475d2ccff7d982d654",
+        "size_bytes": 2658
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "05b32c65c5f7ec3e414dfaa9b94f4455b2fb916dc4162ef2ddb3c1cffea4d8a2",
+        "size_bytes": 2590
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/public-revision-required-output.schema.json",
+        "sha256": "68e6c091f2bdfa9a01bb5e39813cb002dcde25d4c3359177af608b71a80e7317",
+        "size_bytes": 429
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/scripts/invoke.sh",
+        "sha256": "1c0a4227a8cbb98eee3f8f200c4c65a693db8b508b8ca3f25a452c3cea61fb86",
+        "size_bytes": 1211
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+        "sha256": "839170b8ebd1e0b005cb3cbdee64b1f63437d4ef0e26974a766764ff1fe60874",
+        "size_bytes": 22528
+      },
+      {
+        "path": ".claude/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
+        "size_bytes": 406
+      },
+      {
+        "path": ".claude/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+        "sha256": "6840cb06e8946633c70162c708785c458860a749e27182d649126f58225e0f4f",
+        "size_bytes": 27751
+      },
+      {
+        "path": ".claude/skills/guru-discover-change-context/tests/test_contract.py",
+        "sha256": "203e3bdc508d41518b1c6365c1abbb16526add6e8315bac7f81a0fca3dd83070",
+        "size_bytes": 13020
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/evals.json",
+        "sha256": "6ef303f9f50794e70085e61b105e0315468165d32f585d2ebfa53f637b314821",
+        "size_bytes": 3652
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        "sha256": "ce52d5aba3e9371bea7a8aaea9d1c140ab0a2dea9c82aa98cd371a1ea1ffde0f",
+        "size_bytes": 370
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/files/approved-initial-input.json",
+        "sha256": "1a78145064b078d73223388406804114ddfd67166a010d736a82a44053034a5c",
+        "size_bytes": 544
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/files/blocked-initial-facts.json",
+        "sha256": "f35d7b67b2b13ad499d2b18965fd66cf77a1d47353d61f198a9dad9fc32cdf2e",
+        "size_bytes": 375
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/files/blocked-initial-input.json",
+        "sha256": "1cb70a4ca30e8858d533eca1bdf0572286d2554359843b8f2c59fdb8d5668a00",
+        "size_bytes": 574
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/files/clarify-scope-facts.json",
+        "sha256": "6b082dd44582da13a1ecb8ba9c1b90e71a3ce2e8e53896a8b3491af8acafbd91",
+        "size_bytes": 387
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/files/clarify-scope-input.json",
+        "sha256": "ad078da36f46a0a366a1b79b5634acb27c3070c2fb602fa54336a18e66bf6be2",
+        "size_bytes": 645
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/files/revision-required-facts.json",
+        "sha256": "4879701b4e1687c87ca07944a703d48ad7a6e6832215e71a6219068b9025b438",
+        "size_bytes": 384
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/evals/files/revision-required-input.json",
+        "sha256": "6016048a659a7cbf6def6a0ba10f25df322a18be4d3ef83ee926f83f4926e7a3",
+        "size_bytes": 614
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-approved-output.json",
+        "sha256": "2f31450783a8c5cea61a2d9b5f646ae1c267fc7f2ecc8561b22f9abc379275dc",
+        "size_bytes": 120
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-clarification-reentry-input.json",
+        "sha256": "eb861c3f3fc65c077c76fd1d7b8a2b91e5e3936e6c0ba8379373261c858545e7",
+        "size_bytes": 684
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-clarify-scope-output.json",
+        "sha256": "5b0f76b0e947ccb466a97bb70a6a1deefad1dd14b4c1fecf481580de993d2063",
+        "size_bytes": 129
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-initial-review-input.json",
+        "sha256": "c1698c1a7e70360681691f6667d125e9f1b10ce0b8b03f4305fbfb9d574cc99c",
+        "size_bytes": 623
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-revision-reentry-authoring.json",
+        "sha256": "74e13ff6087627e3b0289718ac1ace535601c19a9fb402c55342a31b4579cf31",
+        "size_bytes": 608
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-revision-reentry-input.json",
+        "sha256": "b93b68d3dee0db676d7fd59c5fcbbe35b0ba226cef806bbb3c2e0adf9af08378",
+        "size_bytes": 691
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/examples/public-revision-required-output.json",
+        "sha256": "432f4281261411373bbbb4d60b729f49738c4e45a10c040a0052ba982563460d",
+        "size_bytes": 82
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/interface.json",
+        "sha256": "88f4266a67a2d2cfac570150aa9f326bf81b488eb223ab06c086158f4fa947bf",
+        "size_bytes": 18002
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+        "sha256": "ac1b2af0989891a1fa049a75ac984f12fb4194899f7fb8403d9cc3249ca75c28",
+        "size_bytes": 22923
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-approved-output.schema.json",
+        "sha256": "4766677d44fc79f4612bbd8f3cae7b546137bab9353767ff089fcb4106c22873",
+        "size_bytes": 504
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-blocked-output.schema.json",
+        "sha256": "33c6cdd2b2870bf11d4a170491e172cd745e1c32f317fa3351cbc429e17f807e",
+        "size_bytes": 288
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-clarification-reentry-input.schema.json",
+        "sha256": "aac5e19343104ffdc5d54818778db8b4e6a59917075c3b7461d93e1d446f77b4",
+        "size_bytes": 2687
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-clarify-scope-output.schema.json",
+        "sha256": "5fd8b061d093a95a7a134f90298f4662994617d7fa7326df3f52bd34e8631f54",
+        "size_bytes": 616
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-initial-review-input.schema.json",
+        "sha256": "8f07facb49cb3e3e3f1ea9caaef6d5187047eab7a8a5704f91b696364243070a",
+        "size_bytes": 2584
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-input.schema.json",
+        "sha256": "8d0753079c183adde4af5f0ad0c098bb48de6c7cef5cb3ecdf71c43c40e1e97c",
+        "size_bytes": 363
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-invocation-error.schema.json",
+        "sha256": "d69831158013f40dc5201d1e7e26b931b1cd633d73bece62f2c52fbd27c30ddf",
+        "size_bytes": 464
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "995bbb03349c8c74d81e46e6ea0b8ad146e430f7807332e01bcd98e5e1d51944",
+        "size_bytes": 2681
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/schemas/public-revision-required-output.schema.json",
+        "sha256": "bcdb0bf38b18080e13ae1996a94c4b5674e32e3785ae5e4c5289edcb18acba68",
+        "size_bytes": 428
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/scripts/invoke.sh",
+        "sha256": "b1127e785cfa82605e85f22e1b6b1a5a55a8c17dc363598499545cc894b3807b",
+        "size_bytes": 1198
+      },
+      {
+        "path": ".codex/skills/guru-approve-task-plan/tests/test_contract.py",
+        "sha256": "a4eadb5de27a8c0be8952e3b1252b93c4506f142ac3edf294ae3eadb6b289b3e",
+        "size_bytes": 13424
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/evals.json",
+        "sha256": "81149d37d0e3c66053682a05e68d6f752fe72ed11757c4f857011c19fff3cbc2",
+        "size_bytes": 3640
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/files/blocked-initial-facts.json",
+        "sha256": "09401e16717e75929cf2f380f02a74bc82bf5db2869e6ef1891eb0631ce452aa",
+        "size_bytes": 353
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/files/blocked-initial-input.json",
+        "sha256": "0102054560e20928af2e7b19b898fd7b7f48e44dec70969e47d5c72d61101387",
+        "size_bytes": 535
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/files/implementation-required-facts.json",
+        "sha256": "a7291f5a4d70dd4592f1e4daa87bbd52e2d2056d31823828f661b3726a387279",
+        "size_bytes": 398
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/files/implementation-required-input.json",
+        "sha256": "ebc4de7d90a1dafcf4be6290f65262f51e323a78df54b17074fc5eb73303e1cb",
+        "size_bytes": 624
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/files/passed-initial-facts.json",
+        "sha256": "6046a4938ad261b9b6a4c92bf01e618bcc2fe18751e3d32b3d4e16453aa1fe31",
+        "size_bytes": 361
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/files/passed-initial-input.json",
+        "sha256": "22c3c8808f9a0270b35fb828d28d5c62f36be433e51e47be412b0318efc74f53",
+        "size_bytes": 476
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/files/planning-stale-facts.json",
+        "sha256": "9c003ab531ffe757274fc73b7b1498e4554ffc8043e4c0814280222b172e4b65",
+        "size_bytes": 384
+      },
+      {
+        "path": ".codex/skills/guru-check-task/evals/files/planning-stale-input.json",
+        "sha256": "72ce70ffb842c3f503fcfaaeccf3049039bdee157b3e2fbc1d160f9c1dcc6a05",
+        "size_bytes": 543
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/public-finding-fix-rerun-input.json",
+        "sha256": "ec215a701237522f79914167b7e3f91ce84d3573789095dfb2ceb1951850d7b1",
+        "size_bytes": 661
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/public-implementation-required-output.json",
+        "sha256": "120091dc9f3cd3e8e4bb03ff504b29e897a04bffac731f206fa45d1352fcd16b",
+        "size_bytes": 122
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/public-initial-check-input.json",
+        "sha256": "790176eee3a75e4b32e33e0b59f00f8788f1bb8dd6e3223c751b20135b5f740f",
+        "size_bytes": 509
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/public-passed-output.json",
+        "sha256": "d3c60e8975137123acfa2198298e230dc2dae92d2e82805255ad54383c867b47",
+        "size_bytes": 172
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/public-planning-reentry-input.json",
+        "sha256": "5a59c41a4c1798bdcf87ee4f8925f421cc5c8497bebc084370c0e7dc8a16444d",
+        "size_bytes": 559
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/public-planning-stale-output.json",
+        "sha256": "64832f9acf83e9f962c4f85b69bcb74a65b6267dd16018865d9092f462b25653",
+        "size_bytes": 168
+      },
+      {
+        "path": ".codex/skills/guru-check-task/interface.json",
+        "sha256": "a00c1a116e733e404867da98586d75eb719eb9f8aaa70f9111690ba5548dce0c",
+        "size_bytes": 17844
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-blocked-output.schema.json",
+        "sha256": "cd1a82e68b6ce830d5305f0b1bc482dc5cabc797496411bff6154395c8e699aa",
+        "size_bytes": 281
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-finding-fix-rerun-input.schema.json",
+        "sha256": "23f4ab68dff510149c64d5c410de41f1b931b97fd9b51847a11e15ae899c2e5c",
+        "size_bytes": 2585
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-implementation-required-output.schema.json",
+        "sha256": "bff89e9b2ce944725bd483d387d4141f36652e56cf82cd7a24fac99ee3a0756e",
+        "size_bytes": 627
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-initial-check-input.schema.json",
+        "sha256": "adf0e7768bd08fc603f778262ded9d66f678b3437419018d8e49612b43cef88f",
+        "size_bytes": 2279
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-input.schema.json",
+        "sha256": "5235d4ecb1194ce6a96280388ab56b004099b2a2c1149e428684aeff107cc141",
+        "size_bytes": 351
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-invocation-error.schema.json",
+        "sha256": "4fa3719994829677151697ac458f5ad5bf278416388306380e1b2002ab64b9ce",
+        "size_bytes": 457
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-passed-output.schema.json",
+        "sha256": "aeee579dfb10d360d7525b3467baffb441e10e5d9638b01f07428c51dff1792d",
+        "size_bytes": 594
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-planning-reentry-input.schema.json",
+        "sha256": "9c71f8ed3f90b5c907df8f6c6fc11a9a46a3503d264f50a3181f9da0f0677296",
+        "size_bytes": 2361
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/public-planning-stale-output.schema.json",
+        "sha256": "2f3e0ff2695f979257eea96162a968ad89539908b1e4454e272001e066d1f802",
+        "size_bytes": 769
+      },
+      {
+        "path": ".codex/skills/guru-check-task/scripts/invoke.sh",
+        "sha256": "8ad9c73d0ebc41a3a66acccff18f14e376a177602b1c93f8a2a183425adb3edb",
+        "size_bytes": 1107
+      },
+      {
+        "path": ".codex/skills/guru-check-task/tests/test_contract.py",
+        "sha256": "8c1af01930d78e984ad58104b103d5e77c37a15b8715c8fa24db3072916eecec",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/evals.json",
+        "sha256": "c047335cb813a235f742164aeb0f66ceff6bc26aa6353c9687d3783a11fd527c",
+        "size_bytes": 3671
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/files/blocked-recovery-facts.json",
+        "sha256": "dbfa895675910bdc7276a1ad055d984882b89fd46d041fcc5c94df49b960b2f5",
+        "size_bytes": 319
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/files/blocked-recovery-input.json",
+        "sha256": "34eae5ffdb796546ae63543f5cf65565c8eb1fe607d7ce238e5f8e72013808df",
+        "size_bytes": 722
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/files/committed-finding-fix-facts.json",
+        "sha256": "634a339684e12c0a12a193a53b1367876e170f579b6270ad21ca98957c82408a",
+        "size_bytes": 350
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/files/committed-finding-fix-input.json",
+        "sha256": "e8895856dff75c1183c1b1a0c314041b24e64fbc37000f1e05cbbd58125e4880",
+        "size_bytes": 875
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/files/committed-initial-facts.json",
+        "sha256": "b68077ba37d3ea9ee06cd8ca7b6ada055b4f5a4739d4c5fb722a8260a03b2e59",
+        "size_bytes": 344
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/files/committed-initial-input.json",
+        "sha256": "eb98657cd58858012d20bee1b890ee5125fb0f28a8d4921529893b6cccb866ef",
+        "size_bytes": 826
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/files/revision-required-facts.json",
+        "sha256": "ab423e5fe7a33f4f46f462d7e1b26aeac5db834930027148c46fa246e57e908d",
+        "size_bytes": 337
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/evals/files/revision-required-input.json",
+        "sha256": "89332bd6e81291caf637a0d367f3253cb687794027c8e9fa7f339f31bfc836df",
+        "size_bytes": 719
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-committed-output.json",
+        "sha256": "430cd339894575c587c39102aa7d45f1a46011547273a9d18824de9afb7fb935",
+        "size_bytes": 167
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-finding-fix-commit-input.json",
+        "sha256": "16f3bbf3c26c47d517cc224438cbb25b78542e661586235d5cbed26003e424ce",
+        "size_bytes": 782
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-initial-commit-authoring.json",
+        "sha256": "264750dc5214fe4cf5261eac6042bf528058b05c48af8d4d9b6e518777b1f0a7",
+        "size_bytes": 567
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-initial-commit-input.json",
+        "sha256": "12b96076757ba38f731ba96bbccd672daaeda207778cdb45bc4c722d95e3f268",
+        "size_bytes": 740
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-recovery-resume-input.json",
+        "sha256": "0ca43d422e98a01f23f12192824fabf72aefe868e0c1e82f40bf373b07e9c379",
+        "size_bytes": 793
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-revision-reentry-authoring.json",
+        "sha256": "d3de3da4d81fd438584710284e6599fc9c11b8d99f1ec9540448eea6587430c5",
+        "size_bytes": 731
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-revision-reentry-input.json",
+        "sha256": "8b20c63080a133bdcf702627dd38c290a8cd08cee1125169f47ba8ea3a43401f",
+        "size_bytes": 814
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/public-revision-required-output.json",
+        "sha256": "17528972df0b549ae2b27098ce1fa46c12c553bac0e4b65d4027a424c931f505",
+        "size_bytes": 82
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/interface.json",
+        "sha256": "72c62d4cc895088fabfa859a7fd67ffa7256642672eeda650439484e05d53768",
+        "size_bytes": 16551
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-blocked-output.schema.json",
+        "sha256": "6285e869bf79b95aacefd31c66a776c299bbf36d928fb190bef5f5a9596e8e53",
+        "size_bytes": 289
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-committed-output.schema.json",
+        "sha256": "2f70990652bee5227ba8c83a83cb283ad3d6f1038ea22a8e5ef585585ed637ae",
+        "size_bytes": 610
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-finding-fix-commit-input.schema.json",
+        "sha256": "e8d68caa5dd439b937034e05b6d18e7ca20e1158356078f29f9244cfb4919678",
+        "size_bytes": 2574
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-initial-commit-input.schema.json",
+        "sha256": "1f9d79cf4148e77fdd5b6c3eece8459530cab3a55c66d49c86389865807d8e78",
+        "size_bytes": 2486
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-input.schema.json",
+        "sha256": "ff7faedf93e77dfe2210bffc1a7d916dfbe681a7b7e404e6c634c7115660c075",
+        "size_bytes": 431
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-invocation-error.schema.json",
+        "sha256": "c2df88c88abf19f8123ef75b17d477d48457b1bdcd30badb455a39cd26c225e9",
+        "size_bytes": 465
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-recovery-resume-input.schema.json",
+        "sha256": "b7c8686415c7f89b87d1cf3128b501de5c9358dbbb832e475d2ccff7d982d654",
+        "size_bytes": 2658
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "05b32c65c5f7ec3e414dfaa9b94f4455b2fb916dc4162ef2ddb3c1cffea4d8a2",
+        "size_bytes": 2590
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/public-revision-required-output.schema.json",
+        "sha256": "68e6c091f2bdfa9a01bb5e39813cb002dcde25d4c3359177af608b71a80e7317",
+        "size_bytes": 429
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/scripts/invoke.sh",
+        "sha256": "1c0a4227a8cbb98eee3f8f200c4c65a693db8b508b8ca3f25a452c3cea61fb86",
+        "size_bytes": 1211
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+        "sha256": "839170b8ebd1e0b005cb3cbdee64b1f63437d4ef0e26974a766764ff1fe60874",
+        "size_bytes": 22528
+      },
+      {
+        "path": ".codex/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
+        "size_bytes": 406
+      },
+      {
+        "path": ".codex/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+        "sha256": "6840cb06e8946633c70162c708785c458860a749e27182d649126f58225e0f4f",
+        "size_bytes": 27751
+      },
+      {
+        "path": ".codex/skills/guru-discover-change-context/tests/test_contract.py",
+        "sha256": "203e3bdc508d41518b1c6365c1abbb16526add6e8315bac7f81a0fca3dd83070",
+        "size_bytes": 13020
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/evals.json",
+        "sha256": "6ef303f9f50794e70085e61b105e0315468165d32f585d2ebfa53f637b314821",
+        "size_bytes": 3652
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        "sha256": "ce52d5aba3e9371bea7a8aaea9d1c140ab0a2dea9c82aa98cd371a1ea1ffde0f",
+        "size_bytes": 370
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/files/approved-initial-input.json",
+        "sha256": "1a78145064b078d73223388406804114ddfd67166a010d736a82a44053034a5c",
+        "size_bytes": 544
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/files/blocked-initial-facts.json",
+        "sha256": "f35d7b67b2b13ad499d2b18965fd66cf77a1d47353d61f198a9dad9fc32cdf2e",
+        "size_bytes": 375
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/files/blocked-initial-input.json",
+        "sha256": "1cb70a4ca30e8858d533eca1bdf0572286d2554359843b8f2c59fdb8d5668a00",
+        "size_bytes": 574
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/files/clarify-scope-facts.json",
+        "sha256": "6b082dd44582da13a1ecb8ba9c1b90e71a3ce2e8e53896a8b3491af8acafbd91",
+        "size_bytes": 387
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/files/clarify-scope-input.json",
+        "sha256": "ad078da36f46a0a366a1b79b5634acb27c3070c2fb602fa54336a18e66bf6be2",
+        "size_bytes": 645
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/files/revision-required-facts.json",
+        "sha256": "4879701b4e1687c87ca07944a703d48ad7a6e6832215e71a6219068b9025b438",
+        "size_bytes": 384
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/evals/files/revision-required-input.json",
+        "sha256": "6016048a659a7cbf6def6a0ba10f25df322a18be4d3ef83ee926f83f4926e7a3",
+        "size_bytes": 614
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-approved-output.json",
+        "sha256": "2f31450783a8c5cea61a2d9b5f646ae1c267fc7f2ecc8561b22f9abc379275dc",
+        "size_bytes": 120
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-clarification-reentry-input.json",
+        "sha256": "eb861c3f3fc65c077c76fd1d7b8a2b91e5e3936e6c0ba8379373261c858545e7",
+        "size_bytes": 684
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-clarify-scope-output.json",
+        "sha256": "5b0f76b0e947ccb466a97bb70a6a1deefad1dd14b4c1fecf481580de993d2063",
+        "size_bytes": 129
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-initial-review-input.json",
+        "sha256": "c1698c1a7e70360681691f6667d125e9f1b10ce0b8b03f4305fbfb9d574cc99c",
+        "size_bytes": 623
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-revision-reentry-authoring.json",
+        "sha256": "74e13ff6087627e3b0289718ac1ace535601c19a9fb402c55342a31b4579cf31",
+        "size_bytes": 608
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-revision-reentry-input.json",
+        "sha256": "b93b68d3dee0db676d7fd59c5fcbbe35b0ba226cef806bbb3c2e0adf9af08378",
+        "size_bytes": 691
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/examples/public-revision-required-output.json",
+        "sha256": "432f4281261411373bbbb4d60b729f49738c4e45a10c040a0052ba982563460d",
+        "size_bytes": 82
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/interface.json",
+        "sha256": "88f4266a67a2d2cfac570150aa9f326bf81b488eb223ab06c086158f4fa947bf",
+        "size_bytes": 18002
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+        "sha256": "ac1b2af0989891a1fa049a75ac984f12fb4194899f7fb8403d9cc3249ca75c28",
+        "size_bytes": 22923
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-approved-output.schema.json",
+        "sha256": "4766677d44fc79f4612bbd8f3cae7b546137bab9353767ff089fcb4106c22873",
+        "size_bytes": 504
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-blocked-output.schema.json",
+        "sha256": "33c6cdd2b2870bf11d4a170491e172cd745e1c32f317fa3351cbc429e17f807e",
+        "size_bytes": 288
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-clarification-reentry-input.schema.json",
+        "sha256": "aac5e19343104ffdc5d54818778db8b4e6a59917075c3b7461d93e1d446f77b4",
+        "size_bytes": 2687
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-clarify-scope-output.schema.json",
+        "sha256": "5fd8b061d093a95a7a134f90298f4662994617d7fa7326df3f52bd34e8631f54",
+        "size_bytes": 616
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-initial-review-input.schema.json",
+        "sha256": "8f07facb49cb3e3e3f1ea9caaef6d5187047eab7a8a5704f91b696364243070a",
+        "size_bytes": 2584
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-input.schema.json",
+        "sha256": "8d0753079c183adde4af5f0ad0c098bb48de6c7cef5cb3ecdf71c43c40e1e97c",
+        "size_bytes": 363
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-invocation-error.schema.json",
+        "sha256": "d69831158013f40dc5201d1e7e26b931b1cd633d73bece62f2c52fbd27c30ddf",
+        "size_bytes": 464
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "995bbb03349c8c74d81e46e6ea0b8ad146e430f7807332e01bcd98e5e1d51944",
+        "size_bytes": 2681
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/schemas/public-revision-required-output.schema.json",
+        "sha256": "bcdb0bf38b18080e13ae1996a94c4b5674e32e3785ae5e4c5289edcb18acba68",
+        "size_bytes": 428
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/scripts/invoke.sh",
+        "sha256": "b1127e785cfa82605e85f22e1b6b1a5a55a8c17dc363598499545cc894b3807b",
+        "size_bytes": 1198
+      },
+      {
+        "path": ".cursor/skills/guru-approve-task-plan/tests/test_contract.py",
+        "sha256": "a4eadb5de27a8c0be8952e3b1252b93c4506f142ac3edf294ae3eadb6b289b3e",
+        "size_bytes": 13424
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/evals.json",
+        "sha256": "81149d37d0e3c66053682a05e68d6f752fe72ed11757c4f857011c19fff3cbc2",
+        "size_bytes": 3640
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/files/blocked-initial-facts.json",
+        "sha256": "09401e16717e75929cf2f380f02a74bc82bf5db2869e6ef1891eb0631ce452aa",
+        "size_bytes": 353
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/files/blocked-initial-input.json",
+        "sha256": "0102054560e20928af2e7b19b898fd7b7f48e44dec70969e47d5c72d61101387",
+        "size_bytes": 535
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/files/implementation-required-facts.json",
+        "sha256": "a7291f5a4d70dd4592f1e4daa87bbd52e2d2056d31823828f661b3726a387279",
+        "size_bytes": 398
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/files/implementation-required-input.json",
+        "sha256": "ebc4de7d90a1dafcf4be6290f65262f51e323a78df54b17074fc5eb73303e1cb",
+        "size_bytes": 624
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/files/passed-initial-facts.json",
+        "sha256": "6046a4938ad261b9b6a4c92bf01e618bcc2fe18751e3d32b3d4e16453aa1fe31",
+        "size_bytes": 361
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/files/passed-initial-input.json",
+        "sha256": "22c3c8808f9a0270b35fb828d28d5c62f36be433e51e47be412b0318efc74f53",
+        "size_bytes": 476
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/files/planning-stale-facts.json",
+        "sha256": "9c003ab531ffe757274fc73b7b1498e4554ffc8043e4c0814280222b172e4b65",
+        "size_bytes": 384
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/evals/files/planning-stale-input.json",
+        "sha256": "72ce70ffb842c3f503fcfaaeccf3049039bdee157b3e2fbc1d160f9c1dcc6a05",
+        "size_bytes": 543
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/public-finding-fix-rerun-input.json",
+        "sha256": "ec215a701237522f79914167b7e3f91ce84d3573789095dfb2ceb1951850d7b1",
+        "size_bytes": 661
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/public-implementation-required-output.json",
+        "sha256": "120091dc9f3cd3e8e4bb03ff504b29e897a04bffac731f206fa45d1352fcd16b",
+        "size_bytes": 122
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/public-initial-check-input.json",
+        "sha256": "790176eee3a75e4b32e33e0b59f00f8788f1bb8dd6e3223c751b20135b5f740f",
+        "size_bytes": 509
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/public-passed-output.json",
+        "sha256": "d3c60e8975137123acfa2198298e230dc2dae92d2e82805255ad54383c867b47",
+        "size_bytes": 172
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/public-planning-reentry-input.json",
+        "sha256": "5a59c41a4c1798bdcf87ee4f8925f421cc5c8497bebc084370c0e7dc8a16444d",
+        "size_bytes": 559
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/public-planning-stale-output.json",
+        "sha256": "64832f9acf83e9f962c4f85b69bcb74a65b6267dd16018865d9092f462b25653",
+        "size_bytes": 168
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/interface.json",
+        "sha256": "a00c1a116e733e404867da98586d75eb719eb9f8aaa70f9111690ba5548dce0c",
+        "size_bytes": 17844
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-blocked-output.schema.json",
+        "sha256": "cd1a82e68b6ce830d5305f0b1bc482dc5cabc797496411bff6154395c8e699aa",
+        "size_bytes": 281
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-finding-fix-rerun-input.schema.json",
+        "sha256": "23f4ab68dff510149c64d5c410de41f1b931b97fd9b51847a11e15ae899c2e5c",
+        "size_bytes": 2585
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-implementation-required-output.schema.json",
+        "sha256": "bff89e9b2ce944725bd483d387d4141f36652e56cf82cd7a24fac99ee3a0756e",
+        "size_bytes": 627
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-initial-check-input.schema.json",
+        "sha256": "adf0e7768bd08fc603f778262ded9d66f678b3437419018d8e49612b43cef88f",
+        "size_bytes": 2279
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-input.schema.json",
+        "sha256": "5235d4ecb1194ce6a96280388ab56b004099b2a2c1149e428684aeff107cc141",
+        "size_bytes": 351
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-invocation-error.schema.json",
+        "sha256": "4fa3719994829677151697ac458f5ad5bf278416388306380e1b2002ab64b9ce",
+        "size_bytes": 457
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-passed-output.schema.json",
+        "sha256": "aeee579dfb10d360d7525b3467baffb441e10e5d9638b01f07428c51dff1792d",
+        "size_bytes": 594
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-planning-reentry-input.schema.json",
+        "sha256": "9c71f8ed3f90b5c907df8f6c6fc11a9a46a3503d264f50a3181f9da0f0677296",
+        "size_bytes": 2361
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/public-planning-stale-output.schema.json",
+        "sha256": "2f3e0ff2695f979257eea96162a968ad89539908b1e4454e272001e066d1f802",
+        "size_bytes": 769
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/scripts/invoke.sh",
+        "sha256": "8ad9c73d0ebc41a3a66acccff18f14e376a177602b1c93f8a2a183425adb3edb",
+        "size_bytes": 1107
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/tests/test_contract.py",
+        "sha256": "8c1af01930d78e984ad58104b103d5e77c37a15b8715c8fa24db3072916eecec",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/evals.json",
+        "sha256": "c047335cb813a235f742164aeb0f66ceff6bc26aa6353c9687d3783a11fd527c",
+        "size_bytes": 3671
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/files/blocked-recovery-facts.json",
+        "sha256": "dbfa895675910bdc7276a1ad055d984882b89fd46d041fcc5c94df49b960b2f5",
+        "size_bytes": 319
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/files/blocked-recovery-input.json",
+        "sha256": "34eae5ffdb796546ae63543f5cf65565c8eb1fe607d7ce238e5f8e72013808df",
+        "size_bytes": 722
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/files/committed-finding-fix-facts.json",
+        "sha256": "634a339684e12c0a12a193a53b1367876e170f579b6270ad21ca98957c82408a",
+        "size_bytes": 350
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/files/committed-finding-fix-input.json",
+        "sha256": "e8895856dff75c1183c1b1a0c314041b24e64fbc37000f1e05cbbd58125e4880",
+        "size_bytes": 875
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/files/committed-initial-facts.json",
+        "sha256": "b68077ba37d3ea9ee06cd8ca7b6ada055b4f5a4739d4c5fb722a8260a03b2e59",
+        "size_bytes": 344
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/files/committed-initial-input.json",
+        "sha256": "eb98657cd58858012d20bee1b890ee5125fb0f28a8d4921529893b6cccb866ef",
+        "size_bytes": 826
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/files/revision-required-facts.json",
+        "sha256": "ab423e5fe7a33f4f46f462d7e1b26aeac5db834930027148c46fa246e57e908d",
+        "size_bytes": 337
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/evals/files/revision-required-input.json",
+        "sha256": "89332bd6e81291caf637a0d367f3253cb687794027c8e9fa7f339f31bfc836df",
+        "size_bytes": 719
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-committed-output.json",
+        "sha256": "430cd339894575c587c39102aa7d45f1a46011547273a9d18824de9afb7fb935",
+        "size_bytes": 167
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-finding-fix-commit-input.json",
+        "sha256": "16f3bbf3c26c47d517cc224438cbb25b78542e661586235d5cbed26003e424ce",
+        "size_bytes": 782
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-initial-commit-authoring.json",
+        "sha256": "264750dc5214fe4cf5261eac6042bf528058b05c48af8d4d9b6e518777b1f0a7",
+        "size_bytes": 567
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-initial-commit-input.json",
+        "sha256": "12b96076757ba38f731ba96bbccd672daaeda207778cdb45bc4c722d95e3f268",
+        "size_bytes": 740
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-recovery-resume-input.json",
+        "sha256": "0ca43d422e98a01f23f12192824fabf72aefe868e0c1e82f40bf373b07e9c379",
+        "size_bytes": 793
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-revision-reentry-authoring.json",
+        "sha256": "d3de3da4d81fd438584710284e6599fc9c11b8d99f1ec9540448eea6587430c5",
+        "size_bytes": 731
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-revision-reentry-input.json",
+        "sha256": "8b20c63080a133bdcf702627dd38c290a8cd08cee1125169f47ba8ea3a43401f",
+        "size_bytes": 814
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/public-revision-required-output.json",
+        "sha256": "17528972df0b549ae2b27098ce1fa46c12c553bac0e4b65d4027a424c931f505",
+        "size_bytes": 82
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/interface.json",
+        "sha256": "72c62d4cc895088fabfa859a7fd67ffa7256642672eeda650439484e05d53768",
+        "size_bytes": 16551
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-blocked-output.schema.json",
+        "sha256": "6285e869bf79b95aacefd31c66a776c299bbf36d928fb190bef5f5a9596e8e53",
+        "size_bytes": 289
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-committed-output.schema.json",
+        "sha256": "2f70990652bee5227ba8c83a83cb283ad3d6f1038ea22a8e5ef585585ed637ae",
+        "size_bytes": 610
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-finding-fix-commit-input.schema.json",
+        "sha256": "e8d68caa5dd439b937034e05b6d18e7ca20e1158356078f29f9244cfb4919678",
+        "size_bytes": 2574
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-initial-commit-input.schema.json",
+        "sha256": "1f9d79cf4148e77fdd5b6c3eece8459530cab3a55c66d49c86389865807d8e78",
+        "size_bytes": 2486
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-input.schema.json",
+        "sha256": "ff7faedf93e77dfe2210bffc1a7d916dfbe681a7b7e404e6c634c7115660c075",
+        "size_bytes": 431
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-invocation-error.schema.json",
+        "sha256": "c2df88c88abf19f8123ef75b17d477d48457b1bdcd30badb455a39cd26c225e9",
+        "size_bytes": 465
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-recovery-resume-input.schema.json",
+        "sha256": "b7c8686415c7f89b87d1cf3128b501de5c9358dbbb832e475d2ccff7d982d654",
+        "size_bytes": 2658
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "05b32c65c5f7ec3e414dfaa9b94f4455b2fb916dc4162ef2ddb3c1cffea4d8a2",
+        "size_bytes": 2590
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/public-revision-required-output.schema.json",
+        "sha256": "68e6c091f2bdfa9a01bb5e39813cb002dcde25d4c3359177af608b71a80e7317",
+        "size_bytes": 429
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/scripts/invoke.sh",
+        "sha256": "1c0a4227a8cbb98eee3f8f200c4c65a693db8b508b8ca3f25a452c3cea61fb86",
+        "size_bytes": 1211
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+        "sha256": "839170b8ebd1e0b005cb3cbdee64b1f63437d4ef0e26974a766764ff1fe60874",
+        "size_bytes": 22528
+      },
+      {
+        "path": ".cursor/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
+        "size_bytes": 406
+      },
+      {
+        "path": ".cursor/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+        "sha256": "6840cb06e8946633c70162c708785c458860a749e27182d649126f58225e0f4f",
+        "size_bytes": 27751
+      },
+      {
+        "path": ".cursor/skills/guru-discover-change-context/tests/test_contract.py",
+        "sha256": "203e3bdc508d41518b1c6365c1abbb16526add6e8315bac7f81a0fca3dd83070",
+        "size_bytes": 13020
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "b917b6fd76838460fc19f8a66b653312faaa8f422256f8c11f2b83d2cf32c9f4",
+        "size_bytes": 667047
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "fe224c344d490a88eebede055083b30e4909e6a46186de4ea6a3da1af0a6b522",
+        "size_bytes": 1425883
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "sha256": "d6cde0822017a3441dc2380f5730366c18eff0d759caf071f070dac14e40f0fe",
+        "size_bytes": 106865
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/approve-task-plan-approved.schema.json",
+        "sha256": "889b07ec7771da402d3c1d5adc38cc8c48cad15689b1957d17634d64570a7250",
+        "size_bytes": 512
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/approve-task-plan-clarify-scope.schema.json",
+        "sha256": "5b4b52f9a33b3564fc0e6507226d38cfdaade10cd6f24bd26181a76c43816302",
+        "size_bytes": 624
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/check-task-implementation-required.schema.json",
+        "sha256": "ada2dc9879cde4d6aa4e34c6b4ced012e67b8fd60f1dadcd51025ccb60adf9c5",
+        "size_bytes": 635
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/check-task-planning-stale.schema.json",
+        "sha256": "b5f4a5dcdb5b5e58078af394575ab75ef292bbf268a1018b2a1f64061fb8a378",
+        "size_bytes": 777
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/create-task-commit-committed.schema.json",
+        "sha256": "8a84c9524e5265fdf4c8e6283e906cf4600e0e1a1eeac9684efb8fc44d4fa611",
+        "size_bytes": 552
+      },
+      {
+        "path": ".trellis/guru-team/skills/migrations/production-minimal-handoff.json",
+        "sha256": "ffd932776f6dc0a3731f0444ed462a38a870e39bdbcac36456eda6dab3f6aa45",
+        "size_bytes": 7765
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/evals.json",
+        "sha256": "6ef303f9f50794e70085e61b105e0315468165d32f585d2ebfa53f637b314821",
+        "size_bytes": 3652
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        "sha256": "ce52d5aba3e9371bea7a8aaea9d1c140ab0a2dea9c82aa98cd371a1ea1ffde0f",
+        "size_bytes": 370
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/approved-initial-input.json",
+        "sha256": "1a78145064b078d73223388406804114ddfd67166a010d736a82a44053034a5c",
+        "size_bytes": 544
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/blocked-initial-facts.json",
+        "sha256": "f35d7b67b2b13ad499d2b18965fd66cf77a1d47353d61f198a9dad9fc32cdf2e",
+        "size_bytes": 375
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/blocked-initial-input.json",
+        "sha256": "1cb70a4ca30e8858d533eca1bdf0572286d2554359843b8f2c59fdb8d5668a00",
+        "size_bytes": 574
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/clarify-scope-facts.json",
+        "sha256": "6b082dd44582da13a1ecb8ba9c1b90e71a3ce2e8e53896a8b3491af8acafbd91",
+        "size_bytes": 387
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/clarify-scope-input.json",
+        "sha256": "ad078da36f46a0a366a1b79b5634acb27c3070c2fb602fa54336a18e66bf6be2",
+        "size_bytes": 645
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/revision-required-facts.json",
+        "sha256": "4879701b4e1687c87ca07944a703d48ad7a6e6832215e71a6219068b9025b438",
+        "size_bytes": 384
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/revision-required-input.json",
+        "sha256": "6016048a659a7cbf6def6a0ba10f25df322a18be4d3ef83ee926f83f4926e7a3",
+        "size_bytes": 614
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-approved-output.json",
+        "sha256": "2f31450783a8c5cea61a2d9b5f646ae1c267fc7f2ecc8561b22f9abc379275dc",
+        "size_bytes": 120
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-clarification-reentry-input.json",
+        "sha256": "eb861c3f3fc65c077c76fd1d7b8a2b91e5e3936e6c0ba8379373261c858545e7",
+        "size_bytes": 684
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-clarify-scope-output.json",
+        "sha256": "5b0f76b0e947ccb466a97bb70a6a1deefad1dd14b4c1fecf481580de993d2063",
+        "size_bytes": 129
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-initial-review-input.json",
+        "sha256": "c1698c1a7e70360681691f6667d125e9f1b10ce0b8b03f4305fbfb9d574cc99c",
+        "size_bytes": 623
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-revision-reentry-authoring.json",
+        "sha256": "74e13ff6087627e3b0289718ac1ace535601c19a9fb402c55342a31b4579cf31",
+        "size_bytes": 608
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-revision-reentry-input.json",
+        "sha256": "b93b68d3dee0db676d7fd59c5fcbbe35b0ba226cef806bbb3c2e0adf9af08378",
+        "size_bytes": 691
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/public-revision-required-output.json",
+        "sha256": "432f4281261411373bbbb4d60b729f49738c4e45a10c040a0052ba982563460d",
+        "size_bytes": 82
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/interface.json",
+        "sha256": "88f4266a67a2d2cfac570150aa9f326bf81b488eb223ab06c086158f4fa947bf",
+        "size_bytes": 18002
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+        "sha256": "ac1b2af0989891a1fa049a75ac984f12fb4194899f7fb8403d9cc3249ca75c28",
+        "size_bytes": 22923
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-approved-output.schema.json",
+        "sha256": "4766677d44fc79f4612bbd8f3cae7b546137bab9353767ff089fcb4106c22873",
+        "size_bytes": 504
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-blocked-output.schema.json",
+        "sha256": "33c6cdd2b2870bf11d4a170491e172cd745e1c32f317fa3351cbc429e17f807e",
+        "size_bytes": 288
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-clarification-reentry-input.schema.json",
+        "sha256": "aac5e19343104ffdc5d54818778db8b4e6a59917075c3b7461d93e1d446f77b4",
+        "size_bytes": 2687
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-clarify-scope-output.schema.json",
+        "sha256": "5fd8b061d093a95a7a134f90298f4662994617d7fa7326df3f52bd34e8631f54",
+        "size_bytes": 616
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-initial-review-input.schema.json",
+        "sha256": "8f07facb49cb3e3e3f1ea9caaef6d5187047eab7a8a5704f91b696364243070a",
+        "size_bytes": 2584
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-input.schema.json",
+        "sha256": "8d0753079c183adde4af5f0ad0c098bb48de6c7cef5cb3ecdf71c43c40e1e97c",
+        "size_bytes": 363
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-invocation-error.schema.json",
+        "sha256": "d69831158013f40dc5201d1e7e26b931b1cd633d73bece62f2c52fbd27c30ddf",
+        "size_bytes": 464
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "995bbb03349c8c74d81e46e6ea0b8ad146e430f7807332e01bcd98e5e1d51944",
+        "size_bytes": 2681
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/public-revision-required-output.schema.json",
+        "sha256": "bcdb0bf38b18080e13ae1996a94c4b5674e32e3785ae5e4c5289edcb18acba68",
+        "size_bytes": 428
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/invoke.sh",
+        "sha256": "b1127e785cfa82605e85f22e1b6b1a5a55a8c17dc363598499545cc894b3807b",
+        "size_bytes": 1198
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+        "sha256": "a4eadb5de27a8c0be8952e3b1252b93c4506f142ac3edf294ae3eadb6b289b3e",
+        "size_bytes": 13424
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/evals.json",
+        "sha256": "81149d37d0e3c66053682a05e68d6f752fe72ed11757c4f857011c19fff3cbc2",
+        "size_bytes": 3640
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/files/blocked-initial-facts.json",
+        "sha256": "09401e16717e75929cf2f380f02a74bc82bf5db2869e6ef1891eb0631ce452aa",
+        "size_bytes": 353
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/files/blocked-initial-input.json",
+        "sha256": "0102054560e20928af2e7b19b898fd7b7f48e44dec70969e47d5c72d61101387",
+        "size_bytes": 535
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/files/implementation-required-facts.json",
+        "sha256": "a7291f5a4d70dd4592f1e4daa87bbd52e2d2056d31823828f661b3726a387279",
+        "size_bytes": 398
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/files/implementation-required-input.json",
+        "sha256": "ebc4de7d90a1dafcf4be6290f65262f51e323a78df54b17074fc5eb73303e1cb",
+        "size_bytes": 624
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/files/passed-initial-facts.json",
+        "sha256": "6046a4938ad261b9b6a4c92bf01e618bcc2fe18751e3d32b3d4e16453aa1fe31",
+        "size_bytes": 361
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/files/passed-initial-input.json",
+        "sha256": "22c3c8808f9a0270b35fb828d28d5c62f36be433e51e47be412b0318efc74f53",
+        "size_bytes": 476
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/files/planning-stale-facts.json",
+        "sha256": "9c003ab531ffe757274fc73b7b1498e4554ffc8043e4c0814280222b172e4b65",
+        "size_bytes": 384
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/evals/files/planning-stale-input.json",
+        "sha256": "72ce70ffb842c3f503fcfaaeccf3049039bdee157b3e2fbc1d160f9c1dcc6a05",
+        "size_bytes": 543
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/public-finding-fix-rerun-input.json",
+        "sha256": "ec215a701237522f79914167b7e3f91ce84d3573789095dfb2ceb1951850d7b1",
+        "size_bytes": 661
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/public-implementation-required-output.json",
+        "sha256": "120091dc9f3cd3e8e4bb03ff504b29e897a04bffac731f206fa45d1352fcd16b",
+        "size_bytes": 122
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/public-initial-check-input.json",
+        "sha256": "790176eee3a75e4b32e33e0b59f00f8788f1bb8dd6e3223c751b20135b5f740f",
+        "size_bytes": 509
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/public-passed-output.json",
+        "sha256": "d3c60e8975137123acfa2198298e230dc2dae92d2e82805255ad54383c867b47",
+        "size_bytes": 172
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/public-planning-reentry-input.json",
+        "sha256": "5a59c41a4c1798bdcf87ee4f8925f421cc5c8497bebc084370c0e7dc8a16444d",
+        "size_bytes": 559
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/public-planning-stale-output.json",
+        "sha256": "64832f9acf83e9f962c4f85b69bcb74a65b6267dd16018865d9092f462b25653",
+        "size_bytes": 168
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/interface.json",
+        "sha256": "a00c1a116e733e404867da98586d75eb719eb9f8aaa70f9111690ba5548dce0c",
+        "size_bytes": 17844
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-blocked-output.schema.json",
+        "sha256": "cd1a82e68b6ce830d5305f0b1bc482dc5cabc797496411bff6154395c8e699aa",
+        "size_bytes": 281
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-finding-fix-rerun-input.schema.json",
+        "sha256": "23f4ab68dff510149c64d5c410de41f1b931b97fd9b51847a11e15ae899c2e5c",
+        "size_bytes": 2585
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-implementation-required-output.schema.json",
+        "sha256": "bff89e9b2ce944725bd483d387d4141f36652e56cf82cd7a24fac99ee3a0756e",
+        "size_bytes": 627
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-initial-check-input.schema.json",
+        "sha256": "adf0e7768bd08fc603f778262ded9d66f678b3437419018d8e49612b43cef88f",
+        "size_bytes": 2279
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-input.schema.json",
+        "sha256": "5235d4ecb1194ce6a96280388ab56b004099b2a2c1149e428684aeff107cc141",
+        "size_bytes": 351
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-invocation-error.schema.json",
+        "sha256": "4fa3719994829677151697ac458f5ad5bf278416388306380e1b2002ab64b9ce",
+        "size_bytes": 457
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-passed-output.schema.json",
+        "sha256": "aeee579dfb10d360d7525b3467baffb441e10e5d9638b01f07428c51dff1792d",
+        "size_bytes": 594
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-planning-reentry-input.schema.json",
+        "sha256": "9c71f8ed3f90b5c907df8f6c6fc11a9a46a3503d264f50a3181f9da0f0677296",
+        "size_bytes": 2361
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/public-planning-stale-output.schema.json",
+        "sha256": "2f3e0ff2695f979257eea96162a968ad89539908b1e4454e272001e066d1f802",
+        "size_bytes": 769
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/scripts/invoke.sh",
+        "sha256": "8ad9c73d0ebc41a3a66acccff18f14e376a177602b1c93f8a2a183425adb3edb",
+        "size_bytes": 1107
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "8c1af01930d78e984ad58104b103d5e77c37a15b8715c8fa24db3072916eecec",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/evals.json",
+        "sha256": "c047335cb813a235f742164aeb0f66ceff6bc26aa6353c9687d3783a11fd527c",
+        "size_bytes": 3671
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/files/blocked-recovery-facts.json",
+        "sha256": "dbfa895675910bdc7276a1ad055d984882b89fd46d041fcc5c94df49b960b2f5",
+        "size_bytes": 319
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/files/blocked-recovery-input.json",
+        "sha256": "34eae5ffdb796546ae63543f5cf65565c8eb1fe607d7ce238e5f8e72013808df",
+        "size_bytes": 722
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/files/committed-finding-fix-facts.json",
+        "sha256": "634a339684e12c0a12a193a53b1367876e170f579b6270ad21ca98957c82408a",
+        "size_bytes": 350
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/files/committed-finding-fix-input.json",
+        "sha256": "e8895856dff75c1183c1b1a0c314041b24e64fbc37000f1e05cbbd58125e4880",
+        "size_bytes": 875
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/files/committed-initial-facts.json",
+        "sha256": "b68077ba37d3ea9ee06cd8ca7b6ada055b4f5a4739d4c5fb722a8260a03b2e59",
+        "size_bytes": 344
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/files/committed-initial-input.json",
+        "sha256": "eb98657cd58858012d20bee1b890ee5125fb0f28a8d4921529893b6cccb866ef",
+        "size_bytes": 826
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/files/revision-required-facts.json",
+        "sha256": "ab423e5fe7a33f4f46f462d7e1b26aeac5db834930027148c46fa246e57e908d",
+        "size_bytes": 337
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/evals/files/revision-required-input.json",
+        "sha256": "89332bd6e81291caf637a0d367f3253cb687794027c8e9fa7f339f31bfc836df",
+        "size_bytes": 719
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-committed-output.json",
+        "sha256": "430cd339894575c587c39102aa7d45f1a46011547273a9d18824de9afb7fb935",
+        "size_bytes": 167
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-finding-fix-commit-input.json",
+        "sha256": "16f3bbf3c26c47d517cc224438cbb25b78542e661586235d5cbed26003e424ce",
+        "size_bytes": 782
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-initial-commit-authoring.json",
+        "sha256": "264750dc5214fe4cf5261eac6042bf528058b05c48af8d4d9b6e518777b1f0a7",
+        "size_bytes": 567
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-initial-commit-input.json",
+        "sha256": "12b96076757ba38f731ba96bbccd672daaeda207778cdb45bc4c722d95e3f268",
+        "size_bytes": 740
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-recovery-resume-input.json",
+        "sha256": "0ca43d422e98a01f23f12192824fabf72aefe868e0c1e82f40bf373b07e9c379",
+        "size_bytes": 793
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-revision-reentry-authoring.json",
+        "sha256": "d3de3da4d81fd438584710284e6599fc9c11b8d99f1ec9540448eea6587430c5",
+        "size_bytes": 731
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-revision-reentry-input.json",
+        "sha256": "8b20c63080a133bdcf702627dd38c290a8cd08cee1125169f47ba8ea3a43401f",
+        "size_bytes": 814
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/public-revision-required-output.json",
+        "sha256": "17528972df0b549ae2b27098ce1fa46c12c553bac0e4b65d4027a424c931f505",
+        "size_bytes": 82
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+        "sha256": "72c62d4cc895088fabfa859a7fd67ffa7256642672eeda650439484e05d53768",
+        "size_bytes": 16551
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-blocked-output.schema.json",
+        "sha256": "6285e869bf79b95aacefd31c66a776c299bbf36d928fb190bef5f5a9596e8e53",
+        "size_bytes": 289
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-committed-output.schema.json",
+        "sha256": "2f70990652bee5227ba8c83a83cb283ad3d6f1038ea22a8e5ef585585ed637ae",
+        "size_bytes": 610
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-finding-fix-commit-input.schema.json",
+        "sha256": "e8d68caa5dd439b937034e05b6d18e7ca20e1158356078f29f9244cfb4919678",
+        "size_bytes": 2574
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-initial-commit-input.schema.json",
+        "sha256": "1f9d79cf4148e77fdd5b6c3eece8459530cab3a55c66d49c86389865807d8e78",
+        "size_bytes": 2486
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-input.schema.json",
+        "sha256": "ff7faedf93e77dfe2210bffc1a7d916dfbe681a7b7e404e6c634c7115660c075",
+        "size_bytes": 431
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-invocation-error.schema.json",
+        "sha256": "c2df88c88abf19f8123ef75b17d477d48457b1bdcd30badb455a39cd26c225e9",
+        "size_bytes": 465
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-recovery-resume-input.schema.json",
+        "sha256": "b7c8686415c7f89b87d1cf3128b501de5c9358dbbb832e475d2ccff7d982d654",
+        "size_bytes": 2658
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "05b32c65c5f7ec3e414dfaa9b94f4455b2fb916dc4162ef2ddb3c1cffea4d8a2",
+        "size_bytes": 2590
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/public-revision-required-output.schema.json",
+        "sha256": "68e6c091f2bdfa9a01bb5e39813cb002dcde25d4c3359177af608b71a80e7317",
+        "size_bytes": 429
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/invoke.sh",
+        "sha256": "1c0a4227a8cbb98eee3f8f200c4c65a693db8b508b8ca3f25a452c3cea61fb86",
+        "size_bytes": 1211
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+        "sha256": "839170b8ebd1e0b005cb3cbdee64b1f63437d4ef0e26974a766764ff1fe60874",
+        "size_bytes": 22528
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
+        "size_bytes": 406
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
+        "sha256": "6840cb06e8946633c70162c708785c458860a749e27182d649126f58225e0f4f",
+        "size_bytes": 27751
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_contract.py",
+        "sha256": "203e3bdc508d41518b1c6365c1abbb16526add6e8315bac7f81a0fca3dd83070",
+        "size_bytes": 13020
+      },
+      {
+        "path": ".trellis/guru-team/skills/registry.json",
+        "sha256": "6d1009109977a1252c5503bef82a3cc19fe00001e91ed48c42e68258f17247d5",
+        "size_bytes": 5357
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/production-migration-manifest.schema.json",
+        "sha256": "3d820af84ea9ee752c32867b68521bced22b8632e9c741858214522a9eb74797",
+        "size_bytes": 4865
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+        "sha256": "3238ec24598e12903ad9c249a8000dbb970938871015de4a6464ae36053e46b6",
+        "size_bytes": 16371
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "76e581ae0f9cabb6ad726418c244282e344020ef1123194df3c4d18b8904f386",
+        "size_bytes": 21611
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "d5a046d3e6ae5441db51657add9d9694d89315487e75118a85f338033a5565e1",
+        "size_bytes": 27845
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "43b94fcd5472d28799bf3533f98978c370bed1d03e47a31f5f0466fa1f7f7483",
+        "size_bytes": 24857
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "17922f8d7c9912e12bf9f4cdb5b3998c38b9a993cda7b54652b3ff073a98e80e",
+        "size_bytes": 12895
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "62396663ff37b9dabeac4ae90f63ea0b22e4c310692650090bcf8d5f1bdf33e5",
+        "size_bytes": 91016
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "a3d5a49d968e1a2b421da265c8b30be8b780244c793b7c3f659795a4f79407b7",
+        "size_bytes": 108909
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "sha256": "be2f8a2f02dceb7497b94363cd714d6c6c6078509cf94f9b44095ca54749bfb1",
+        "size_bytes": 5307
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "6ad5f006d742894e2c4b0d9ce0d931544cd6d23d4e807f47161c5a36149ed8b4",
+        "size_bytes": 37647
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "ccc3615e6917e0242f83cc0a2926470c9231186f9437da8e8111b59ad883ce29",
+        "size_bytes": 80832
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "sha256": "7da5011162373a6bcc2b903062270d70b462945bef526c0044cff9c8fd081e22",
+        "size_bytes": 60018
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+        "sha256": "18bab6a41258e88e3f9fd244630f0274976be1c706f5dc14166e83fffd5a0830",
+        "size_bytes": 253685
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/check.jsonl",
+        "sha256": "b72a73c1801b957ed92f8092cb526c368e9048759f6131107181b4999fa3cc21",
+        "size_bytes": 1125
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/context-discovery.json",
+        "sha256": "6220ac4e532d57f6e9ee56c7d5461c33163c8af214dc7768f2453fe19b822037",
+        "size_bytes": 430839
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
+        "sha256": "9c515772c376a3b12d3f7ab247ec62bccbaefdf1a021e17d78b2f312fcbd2e28",
+        "size_bytes": 3850
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "sha256": "962a380af4710d2f0b10499c3b55bb2143d2ec2665f10016a0a354c89aa6e322",
+        "size_bytes": 37252
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.jsonl",
+        "sha256": "8c70f872386e015e564f3264c8c1bffc336bd739345f3244e2e9763c6e71330d",
+        "size_bytes": 1158
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+        "sha256": "c3d9521fdb431a4484441facb4447fbcfa0d3507429aa4e5de6cea6b2842b3b0",
+        "size_bytes": 30536
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-review.json",
+        "sha256": "6075cdb53221fed3f7a396942d103faf821da560daf1192b0e607c63f1ae6cd6",
+        "size_bytes": 13986
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
+        "sha256": "5dc10038b5398cc8b15301f0c6f765f3eac356178395b470b6dccd9ba5f5d851",
+        "size_bytes": 17656
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
+        "sha256": "d0bbefb789805ab0f4f26bd78a75760d1b8ab2412a2fd41b60d4ffbf9b81e335",
+        "size_bytes": 61726
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5",
+        "size_bytes": 34054
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review-gate.json",
+        "sha256": "ef121638c2dc3f2bf6661e43b77b99f1af8d07180c58d0de50f32772933fe31f",
+        "size_bytes": 187929
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review.md",
+        "sha256": "3e74fbc6508f7e1f0c1325063a1a8d667c5c544986f5703413b3790612f48b4c",
+        "size_bytes": 5769
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-001-final-release.md",
+        "sha256": "ac1709e74608a11fab1170cc37f1ba9a338ef436e265e72a65353ea1daddae96",
+        "size_bytes": 13932
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/001.json",
+        "sha256": "88af4092b2f439f578c6f2dc0411008f2f1888bce421e9eb752b94a26b12c82c",
+        "size_bytes": 975352
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-start-context.json",
+        "sha256": "ce24e3ab8f8de234ae113e6a084630a9b145a48ab171dbd0a46f1cf13f56e761",
+        "size_bytes": 6668
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task.json",
+        "sha256": "37b2b2474ac1a99b5a39f06ea99a8d340f0dea8d5c232c85d8a858b1d45ebb03",
+        "size_bytes": 706
+      },
+      {
+        "path": ".trellis/workflow.md",
+        "sha256": "e44afc70224b0981547878237244d75181ceb79b9e79282f3849b030d77846b9",
+        "size_bytes": 134599
+      },
+      {
+        "path": "README.md",
+        "sha256": "ca7a37b0cd13ae9da57bdd38bfc6eccae03bbde58fdc17f11b444d7e52ee96da",
+        "size_bytes": 77025
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "sha256": "6fc7f8e92adcf0d496c3eacd40b1c605805817f2878e82243d43755e341b323e",
+        "size_bytes": 18095
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
+        "size_bytes": 81350
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "d30ccd375eb88718fe45706ef401e1f049efe7f562eed9245d0cbf5b3624bee1",
+        "size_bytes": 68978
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "sha256": "e741a912cdb9d8b32de6921fba19d6ebbd768b17bcbae0e871bb649c4e880aae",
+        "size_bytes": 10925
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "0ea61f80c725c5aa69e38a2082bdb9843aabf73cd694523f97f1799c1b931305",
+        "size_bytes": 63728
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "c7dafc4c1e3fc675e21eae7a7f0c006db196736956f5c608ffa68691090e6695",
+        "size_bytes": 181471
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "sha256": "84257c17c593653ca2f0e055b55749b12eeb8b01aba9c90fa2c110278bf56574",
+        "size_bytes": 94379
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "d6cde0822017a3441dc2380f5730366c18eff0d759caf071f070dac14e40f0fe",
+        "size_bytes": 106865
+      },
+      {
+        "path": "trellis/skills/guru-team/consumers/workflow/production/approve-task-plan-approved.schema.json",
+        "sha256": "889b07ec7771da402d3c1d5adc38cc8c48cad15689b1957d17634d64570a7250",
+        "size_bytes": 512
+      },
+      {
+        "path": "trellis/skills/guru-team/consumers/workflow/production/approve-task-plan-clarify-scope.schema.json",
+        "sha256": "5b4b52f9a33b3564fc0e6507226d38cfdaade10cd6f24bd26181a76c43816302",
+        "size_bytes": 624
+      },
+      {
+        "path": "trellis/skills/guru-team/consumers/workflow/production/check-task-implementation-required.schema.json",
+        "sha256": "ada2dc9879cde4d6aa4e34c6b4ced012e67b8fd60f1dadcd51025ccb60adf9c5",
+        "size_bytes": 635
+      },
+      {
+        "path": "trellis/skills/guru-team/consumers/workflow/production/check-task-planning-stale.schema.json",
+        "sha256": "b5f4a5dcdb5b5e58078af394575ab75ef292bbf268a1018b2a1f64061fb8a378",
+        "size_bytes": 777
+      },
+      {
+        "path": "trellis/skills/guru-team/consumers/workflow/production/create-task-commit-committed.schema.json",
+        "sha256": "8a84c9524e5265fdf4c8e6283e906cf4600e0e1a1eeac9684efb8fc44d4fa611",
+        "size_bytes": 552
+      },
+      {
+        "path": "trellis/skills/guru-team/migrations/production-minimal-handoff.json",
+        "sha256": "ffd932776f6dc0a3731f0444ed462a38a870e39bdbcac36456eda6dab3f6aa45",
+        "size_bytes": 7765
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/evals.json",
+        "sha256": "6ef303f9f50794e70085e61b105e0315468165d32f585d2ebfa53f637b314821",
+        "size_bytes": 3652
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        "sha256": "ce52d5aba3e9371bea7a8aaea9d1c140ab0a2dea9c82aa98cd371a1ea1ffde0f",
+        "size_bytes": 370
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/approved-initial-input.json",
+        "sha256": "1a78145064b078d73223388406804114ddfd67166a010d736a82a44053034a5c",
+        "size_bytes": 544
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/blocked-initial-facts.json",
+        "sha256": "f35d7b67b2b13ad499d2b18965fd66cf77a1d47353d61f198a9dad9fc32cdf2e",
+        "size_bytes": 375
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/blocked-initial-input.json",
+        "sha256": "1cb70a4ca30e8858d533eca1bdf0572286d2554359843b8f2c59fdb8d5668a00",
+        "size_bytes": 574
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/clarify-scope-facts.json",
+        "sha256": "6b082dd44582da13a1ecb8ba9c1b90e71a3ce2e8e53896a8b3491af8acafbd91",
+        "size_bytes": 387
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/clarify-scope-input.json",
+        "sha256": "ad078da36f46a0a366a1b79b5634acb27c3070c2fb602fa54336a18e66bf6be2",
+        "size_bytes": 645
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/revision-required-facts.json",
+        "sha256": "4879701b4e1687c87ca07944a703d48ad7a6e6832215e71a6219068b9025b438",
+        "size_bytes": 384
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/revision-required-input.json",
+        "sha256": "6016048a659a7cbf6def6a0ba10f25df322a18be4d3ef83ee926f83f4926e7a3",
+        "size_bytes": 614
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-approved-output.json",
+        "sha256": "2f31450783a8c5cea61a2d9b5f646ae1c267fc7f2ecc8561b22f9abc379275dc",
+        "size_bytes": 120
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-clarification-reentry-input.json",
+        "sha256": "eb861c3f3fc65c077c76fd1d7b8a2b91e5e3936e6c0ba8379373261c858545e7",
+        "size_bytes": 684
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-clarify-scope-output.json",
+        "sha256": "5b0f76b0e947ccb466a97bb70a6a1deefad1dd14b4c1fecf481580de993d2063",
+        "size_bytes": 129
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-initial-review-input.json",
+        "sha256": "c1698c1a7e70360681691f6667d125e9f1b10ce0b8b03f4305fbfb9d574cc99c",
+        "size_bytes": 623
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-revision-reentry-authoring.json",
+        "sha256": "74e13ff6087627e3b0289718ac1ace535601c19a9fb402c55342a31b4579cf31",
+        "size_bytes": 608
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-revision-reentry-input.json",
+        "sha256": "b93b68d3dee0db676d7fd59c5fcbbe35b0ba226cef806bbb3c2e0adf9af08378",
+        "size_bytes": 691
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/public-revision-required-output.json",
+        "sha256": "432f4281261411373bbbb4d60b729f49738c4e45a10c040a0052ba982563460d",
+        "size_bytes": 82
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json",
+        "sha256": "88f4266a67a2d2cfac570150aa9f326bf81b488eb223ab06c086158f4fa947bf",
+        "size_bytes": 18002
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+        "sha256": "ac1b2af0989891a1fa049a75ac984f12fb4194899f7fb8403d9cc3249ca75c28",
+        "size_bytes": 22923
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-approved-output.schema.json",
+        "sha256": "4766677d44fc79f4612bbd8f3cae7b546137bab9353767ff089fcb4106c22873",
+        "size_bytes": 504
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-blocked-output.schema.json",
+        "sha256": "33c6cdd2b2870bf11d4a170491e172cd745e1c32f317fa3351cbc429e17f807e",
+        "size_bytes": 288
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-clarification-reentry-input.schema.json",
+        "sha256": "aac5e19343104ffdc5d54818778db8b4e6a59917075c3b7461d93e1d446f77b4",
+        "size_bytes": 2687
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-clarify-scope-output.schema.json",
+        "sha256": "5fd8b061d093a95a7a134f90298f4662994617d7fa7326df3f52bd34e8631f54",
+        "size_bytes": 616
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-initial-review-input.schema.json",
+        "sha256": "8f07facb49cb3e3e3f1ea9caaef6d5187047eab7a8a5704f91b696364243070a",
+        "size_bytes": 2584
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-input.schema.json",
+        "sha256": "8d0753079c183adde4af5f0ad0c098bb48de6c7cef5cb3ecdf71c43c40e1e97c",
+        "size_bytes": 363
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-invocation-error.schema.json",
+        "sha256": "d69831158013f40dc5201d1e7e26b931b1cd633d73bece62f2c52fbd27c30ddf",
+        "size_bytes": 464
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "995bbb03349c8c74d81e46e6ea0b8ad146e430f7807332e01bcd98e5e1d51944",
+        "size_bytes": 2681
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/public-revision-required-output.schema.json",
+        "sha256": "bcdb0bf38b18080e13ae1996a94c4b5674e32e3785ae5e4c5289edcb18acba68",
+        "size_bytes": 428
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/invoke.sh",
+        "sha256": "b1127e785cfa82605e85f22e1b6b1a5a55a8c17dc363598499545cc894b3807b",
+        "size_bytes": 1198
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+        "sha256": "a4eadb5de27a8c0be8952e3b1252b93c4506f142ac3edf294ae3eadb6b289b3e",
+        "size_bytes": 13424
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/evals.json",
+        "sha256": "81149d37d0e3c66053682a05e68d6f752fe72ed11757c4f857011c19fff3cbc2",
+        "size_bytes": 3640
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/files/blocked-initial-facts.json",
+        "sha256": "09401e16717e75929cf2f380f02a74bc82bf5db2869e6ef1891eb0631ce452aa",
+        "size_bytes": 353
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/files/blocked-initial-input.json",
+        "sha256": "0102054560e20928af2e7b19b898fd7b7f48e44dec70969e47d5c72d61101387",
+        "size_bytes": 535
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/files/implementation-required-facts.json",
+        "sha256": "a7291f5a4d70dd4592f1e4daa87bbd52e2d2056d31823828f661b3726a387279",
+        "size_bytes": 398
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/files/implementation-required-input.json",
+        "sha256": "ebc4de7d90a1dafcf4be6290f65262f51e323a78df54b17074fc5eb73303e1cb",
+        "size_bytes": 624
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/files/passed-initial-facts.json",
+        "sha256": "6046a4938ad261b9b6a4c92bf01e618bcc2fe18751e3d32b3d4e16453aa1fe31",
+        "size_bytes": 361
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/files/passed-initial-input.json",
+        "sha256": "22c3c8808f9a0270b35fb828d28d5c62f36be433e51e47be412b0318efc74f53",
+        "size_bytes": 476
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/files/planning-stale-facts.json",
+        "sha256": "9c003ab531ffe757274fc73b7b1498e4554ffc8043e4c0814280222b172e4b65",
+        "size_bytes": 384
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/evals/files/planning-stale-input.json",
+        "sha256": "72ce70ffb842c3f503fcfaaeccf3049039bdee157b3e2fbc1d160f9c1dcc6a05",
+        "size_bytes": 543
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/public-finding-fix-rerun-input.json",
+        "sha256": "ec215a701237522f79914167b7e3f91ce84d3573789095dfb2ceb1951850d7b1",
+        "size_bytes": 661
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/public-implementation-required-output.json",
+        "sha256": "120091dc9f3cd3e8e4bb03ff504b29e897a04bffac731f206fa45d1352fcd16b",
+        "size_bytes": 122
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/public-initial-check-input.json",
+        "sha256": "790176eee3a75e4b32e33e0b59f00f8788f1bb8dd6e3223c751b20135b5f740f",
+        "size_bytes": 509
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/public-passed-output.json",
+        "sha256": "d3c60e8975137123acfa2198298e230dc2dae92d2e82805255ad54383c867b47",
+        "size_bytes": 172
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/public-planning-reentry-input.json",
+        "sha256": "5a59c41a4c1798bdcf87ee4f8925f421cc5c8497bebc084370c0e7dc8a16444d",
+        "size_bytes": 559
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/public-planning-stale-output.json",
+        "sha256": "64832f9acf83e9f962c4f85b69bcb74a65b6267dd16018865d9092f462b25653",
+        "size_bytes": 168
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/interface.json",
+        "sha256": "a00c1a116e733e404867da98586d75eb719eb9f8aaa70f9111690ba5548dce0c",
+        "size_bytes": 17844
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-blocked-output.schema.json",
+        "sha256": "cd1a82e68b6ce830d5305f0b1bc482dc5cabc797496411bff6154395c8e699aa",
+        "size_bytes": 281
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-finding-fix-rerun-input.schema.json",
+        "sha256": "23f4ab68dff510149c64d5c410de41f1b931b97fd9b51847a11e15ae899c2e5c",
+        "size_bytes": 2585
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-implementation-required-output.schema.json",
+        "sha256": "bff89e9b2ce944725bd483d387d4141f36652e56cf82cd7a24fac99ee3a0756e",
+        "size_bytes": 627
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-initial-check-input.schema.json",
+        "sha256": "adf0e7768bd08fc603f778262ded9d66f678b3437419018d8e49612b43cef88f",
+        "size_bytes": 2279
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-input.schema.json",
+        "sha256": "5235d4ecb1194ce6a96280388ab56b004099b2a2c1149e428684aeff107cc141",
+        "size_bytes": 351
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-invocation-error.schema.json",
+        "sha256": "4fa3719994829677151697ac458f5ad5bf278416388306380e1b2002ab64b9ce",
+        "size_bytes": 457
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-passed-output.schema.json",
+        "sha256": "aeee579dfb10d360d7525b3467baffb441e10e5d9638b01f07428c51dff1792d",
+        "size_bytes": 594
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-planning-reentry-input.schema.json",
+        "sha256": "9c71f8ed3f90b5c907df8f6c6fc11a9a46a3503d264f50a3181f9da0f0677296",
+        "size_bytes": 2361
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/public-planning-stale-output.schema.json",
+        "sha256": "2f3e0ff2695f979257eea96162a968ad89539908b1e4454e272001e066d1f802",
+        "size_bytes": 769
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/scripts/invoke.sh",
+        "sha256": "8ad9c73d0ebc41a3a66acccff18f14e376a177602b1c93f8a2a183425adb3edb",
+        "size_bytes": 1107
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "8c1af01930d78e984ad58104b103d5e77c37a15b8715c8fa24db3072916eecec",
+        "size_bytes": 14886
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/evals.json",
+        "sha256": "c047335cb813a235f742164aeb0f66ceff6bc26aa6353c9687d3783a11fd527c",
+        "size_bytes": 3671
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/files/blocked-recovery-facts.json",
+        "sha256": "dbfa895675910bdc7276a1ad055d984882b89fd46d041fcc5c94df49b960b2f5",
+        "size_bytes": 319
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/files/blocked-recovery-input.json",
+        "sha256": "34eae5ffdb796546ae63543f5cf65565c8eb1fe607d7ce238e5f8e72013808df",
+        "size_bytes": 722
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/files/committed-finding-fix-facts.json",
+        "sha256": "634a339684e12c0a12a193a53b1367876e170f579b6270ad21ca98957c82408a",
+        "size_bytes": 350
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/files/committed-finding-fix-input.json",
+        "sha256": "e8895856dff75c1183c1b1a0c314041b24e64fbc37000f1e05cbbd58125e4880",
+        "size_bytes": 875
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/files/committed-initial-facts.json",
+        "sha256": "b68077ba37d3ea9ee06cd8ca7b6ada055b4f5a4739d4c5fb722a8260a03b2e59",
+        "size_bytes": 344
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/files/committed-initial-input.json",
+        "sha256": "eb98657cd58858012d20bee1b890ee5125fb0f28a8d4921529893b6cccb866ef",
+        "size_bytes": 826
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/files/revision-required-facts.json",
+        "sha256": "ab423e5fe7a33f4f46f462d7e1b26aeac5db834930027148c46fa246e57e908d",
+        "size_bytes": 337
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/evals/files/revision-required-input.json",
+        "sha256": "89332bd6e81291caf637a0d367f3253cb687794027c8e9fa7f339f31bfc836df",
+        "size_bytes": 719
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-blocked-output.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "size_bytes": 27
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-committed-output.json",
+        "sha256": "430cd339894575c587c39102aa7d45f1a46011547273a9d18824de9afb7fb935",
+        "size_bytes": 167
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-finding-fix-commit-input.json",
+        "sha256": "16f3bbf3c26c47d517cc224438cbb25b78542e661586235d5cbed26003e424ce",
+        "size_bytes": 782
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-initial-commit-authoring.json",
+        "sha256": "264750dc5214fe4cf5261eac6042bf528058b05c48af8d4d9b6e518777b1f0a7",
+        "size_bytes": 567
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-initial-commit-input.json",
+        "sha256": "12b96076757ba38f731ba96bbccd672daaeda207778cdb45bc4c722d95e3f268",
+        "size_bytes": 740
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-invocation-error.json",
+        "sha256": "fbc6a4a3b2313f0b3e0c264f33121d1cc4bc678784e22b2094c6111dd707f7a0",
+        "size_bytes": 140
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-recovery-resume-input.json",
+        "sha256": "0ca43d422e98a01f23f12192824fabf72aefe868e0c1e82f40bf373b07e9c379",
+        "size_bytes": 793
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-revision-reentry-authoring.json",
+        "sha256": "d3de3da4d81fd438584710284e6599fc9c11b8d99f1ec9540448eea6587430c5",
+        "size_bytes": 731
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-revision-reentry-input.json",
+        "sha256": "8b20c63080a133bdcf702627dd38c290a8cd08cee1125169f47ba8ea3a43401f",
+        "size_bytes": 814
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/public-revision-required-output.json",
+        "sha256": "17528972df0b549ae2b27098ce1fa46c12c553bac0e4b65d4027a424c931f505",
+        "size_bytes": 82
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+        "sha256": "72c62d4cc895088fabfa859a7fd67ffa7256642672eeda650439484e05d53768",
+        "size_bytes": 16551
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-blocked-output.schema.json",
+        "sha256": "6285e869bf79b95aacefd31c66a776c299bbf36d928fb190bef5f5a9596e8e53",
+        "size_bytes": 289
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-committed-output.schema.json",
+        "sha256": "2f70990652bee5227ba8c83a83cb283ad3d6f1038ea22a8e5ef585585ed637ae",
+        "size_bytes": 610
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-finding-fix-commit-input.schema.json",
+        "sha256": "e8d68caa5dd439b937034e05b6d18e7ca20e1158356078f29f9244cfb4919678",
+        "size_bytes": 2574
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-initial-commit-input.schema.json",
+        "sha256": "1f9d79cf4148e77fdd5b6c3eece8459530cab3a55c66d49c86389865807d8e78",
+        "size_bytes": 2486
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-input.schema.json",
+        "sha256": "ff7faedf93e77dfe2210bffc1a7d916dfbe681a7b7e404e6c634c7115660c075",
+        "size_bytes": 431
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-invocation-error.schema.json",
+        "sha256": "c2df88c88abf19f8123ef75b17d477d48457b1bdcd30badb455a39cd26c225e9",
+        "size_bytes": 465
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-recovery-resume-input.schema.json",
+        "sha256": "b7c8686415c7f89b87d1cf3128b501de5c9358dbbb832e475d2ccff7d982d654",
+        "size_bytes": 2658
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-revision-reentry-input.schema.json",
+        "sha256": "05b32c65c5f7ec3e414dfaa9b94f4455b2fb916dc4162ef2ddb3c1cffea4d8a2",
+        "size_bytes": 2590
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/public-revision-required-output.schema.json",
+        "sha256": "68e6c091f2bdfa9a01bb5e39813cb002dcde25d4c3359177af608b71a80e7317",
+        "size_bytes": 429
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/invoke.sh",
+        "sha256": "1c0a4227a8cbb98eee3f8f200c4c65a693db8b508b8ca3f25a452c3cea61fb86",
+        "size_bytes": 1211
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+        "sha256": "839170b8ebd1e0b005cb3cbdee64b1f63437d4ef0e26974a766764ff1fe60874",
+        "size_bytes": 22528
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
+        "size_bytes": 406
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
+        "sha256": "6840cb06e8946633c70162c708785c458860a749e27182d649126f58225e0f4f",
+        "size_bytes": 27751
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
+        "sha256": "203e3bdc508d41518b1c6365c1abbb16526add6e8315bac7f81a0fca3dd83070",
+        "size_bytes": 13020
+      },
+      {
+        "path": "trellis/skills/guru-team/registry.json",
+        "sha256": "6d1009109977a1252c5503bef82a3cc19fe00001e91ed48c42e68258f17247d5",
+        "size_bytes": 5357
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/production-migration-manifest.schema.json",
+        "sha256": "3d820af84ea9ee752c32867b68521bced22b8632e9c741858214522a9eb74797",
+        "size_bytes": 4865
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+        "sha256": "3238ec24598e12903ad9c249a8000dbb970938871015de4a6464ae36053e46b6",
+        "size_bytes": 16371
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+        "sha256": "253ada3f84ff569b1977b4d1ffdf7cdf25c2384a7612280890b1e90143a5c1c3",
+        "size_bytes": 2019
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json",
+        "sha256": "3238ec24598e12903ad9c249a8000dbb970938871015de4a6464ae36053e46b6",
+        "size_bytes": 16371
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "904d338356b3b0ae45c4ae59fd9904292c8d95081c2798622312a895c2bd370a",
+        "size_bytes": 220437
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "68c48f62781840578463c1a1db65679330ef14653be65e0edea54646b69f39ba",
+        "size_bytes": 68905
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "fe224c344d490a88eebede055083b30e4909e6a46186de4ea6a3da1af0a6b522",
+        "size_bytes": 1425883
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "4397ca932906866f1f3d4d39bb362fe02a642a6820cce93a2883657b6251ce85",
+        "size_bytes": 1102953
+      },
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "sha256": "e44afc70224b0981547878237244d75181ceb79b9e79282f3849b030d77846b9",
+        "size_bytes": 134599
+      }
+    ],
+    "snapshot_sha256": "28b68b274cc581aa94e7054ee46974f60c0a543d199bbae39d56a82225fa5dde"
+  },
+  "requirement_provenance": {
+    "summary": "已复核 Issue #146 的 GitHub authority、fresh planning approval、R1-R17、AC1-AC22、P3-F003 closure 与 close/related scope；#146 为唯一 close issue，#127/#131/#132 仅 related。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5",
+        "size_bytes": 34054
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
+        "sha256": "5dc10038b5398cc8b15301f0c6f765f3eac356178395b470b6dccd9ba5f5d851",
+        "size_bytes": 17656
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/context-discovery.json",
+        "sha256": "6220ac4e532d57f6e9ee56c7d5461c33163c8af214dc7768f2453fe19b822037",
+        "size_bytes": 430839
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
+        "sha256": "9c515772c376a3b12d3f7ab247ec62bccbaefdf1a021e17d78b2f312fcbd2e28",
+        "size_bytes": 3850
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
+        "sha256": "d0bbefb789805ab0f4f26bd78a75760d1b8ab2412a2fd41b60d4ffbf9b81e335",
+        "size_bytes": 61726
+      }
+    ],
+    "facts_sha256": "773afbc25c6950310ae5ca324787c1791d8ecb84148c58e262d173121cec4bed"
+  },
+  "route": null,
+  "scope_qualification": {
+    "candidates": [],
+    "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "adequacy_dimensions": [
+      {
+        "affected_sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5",
+        "evidence_refs": [
+          "planning",
+          "requirement_provenance"
+        ],
+        "finding_ids": [],
+        "id": "requirements",
+        "status": "passed",
+        "summary": "R1-R17、AC1-AC22、GitHub authority、P3-F003 closure 与 issue close/related 范围完整一致。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "962a380af4710d2f0b10499c3b55bb2143d2ec2665f10016a0a354c89aa6e322",
+        "evidence_refs": [
+          "planning",
+          "docs_ssot_plan"
+        ],
+        "finding_ids": [],
+        "id": "design",
+        "status": "passed",
+        "summary": "Minimal public handoff、routing-only clarification、native owner staging 与 task-local freshness 设计均被实现。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
+        "evidence_refs": [
+          "implementation_handoff",
+          "repository_snapshot"
+        ],
+        "finding_ids": [],
+        "id": "implementation",
+        "status": "passed",
+        "summary": "P2-F002、R17、R16 与 P3-F003 normal-path corrections 在 canonical、installed、平台副本及 durable flow SSOT 中一致，无开放实现缺陷。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "dd4ad1fcb2cfca1d0c48c52d658c88d70eedb8e10099ca113601b1c8e9391e74",
+        "evidence_refs": [
+          "check_execution",
+          "repository_snapshot"
+        ],
+        "finding_ids": [],
+        "id": "tests",
+        "status": "passed",
+        "summary": "Fresh full rerun：Package 166、runtime 557/13 skip、preset 45、ownership 6、Stage0 source 24、production source 12、全九包 installed corpora 均通过；39 条 command evidence 如实保留 nonzero limitation。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
+        "evidence_refs": [
+          "docs_ssot_plan",
+          "implementation_handoff"
+        ],
+        "finding_ids": [],
+        "id": "docs_ssot",
+        "status": "passed",
+        "summary": "ssot_first 的 15/15 durable paths 与 task delta 已合并，P3-F003 的陈旧未来态已修正，task-history-only 内容未泄入长期合同。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "44f6ffbc35e923dd3593fa60b0d35d0233b58024beff9a14669dc4138910cbed",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution",
+          "docs_ssot_plan"
+        ],
+        "finding_ids": [],
+        "id": "cross_layer",
+        "status": "passed",
+        "summary": "Workflow、package interface、registry、adapter、runtime、schema、eval 与 tests 的跨层投影一致。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "f6968e57e92bbfb27b874577c19e96ae5ca81253b323b7aba4a1e8749c478c10",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution",
+          "requirement_provenance"
+        ],
+        "finding_ids": [],
+        "id": "compatibility",
+        "status": "passed",
+        "summary": "Stage0 manifest 与 #147 eval schema/runner/grader/protocol 保持冻结，source/installed 与全平台 bytes 一致。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "94f45b7afc6584eda1bf8acb8d19894ddf271ec95e79147299c6573c7545bdf6",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "finding_ids": [],
+        "id": "deployment_and_operations",
+        "status": "passed",
+        "summary": "无 CI/CD、container、K8s/Helm、DB migration 或 Makefile 影响；安装/update/reapply 与 zero-sidecar 门禁通过。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "18bab6a41258e88e3f9fd244630f0274976be1c706f5dc14166e83fffd5a0830",
+        "evidence_refs": [
+          "agent_assignment",
+          "implementation_handoff"
+        ],
+        "finding_ids": [],
+        "id": "agent_recovery",
+        "status": "passed",
+        "summary": "实现与 Phase 2 checker 的历史失败/恢复链均闭合；P3 修复实现代理和 fresh checker 均有 completed evidence，追加 command output 通过 evt-0228 记录。",
+        "unverified_ids": []
+      },
+      {
+        "affected_sha256": "dd4ad1fcb2cfca1d0c48c52d658c88d70eedb8e10099ca113601b1c8e9391e74",
+        "evidence_refs": [
+          "check_execution",
+          "planning",
+          "requirement_provenance",
+          "implementation_handoff",
+          "docs_ssot_plan",
+          "repository_snapshot",
+          "agent_assignment"
+        ],
+        "finding_ids": [],
+        "id": "verification_completeness",
+        "status": "passed",
+        "summary": "当前 full round 的 39 条实际 command evidence 与所有适用 repository gate 已记录；exact remote branch proof 是 push 后 PR readiness 的 non-blocking limitation。",
+        "unverified_ids": [
+          "U1"
+        ]
+      }
+    ],
+    "ai_review_gate": {
+      "full_rerun": true,
+      "status": "passed",
+      "summary": "Fresh checker 对 R1-R17、AC1-AC22、P3-F003 closure、15-path Docs SSOT、完整 repository snapshot、agent recovery 与适用验证完成 full rerun；P0-P3=0，无 blocking unverified item。",
+      "planning_facts_sha256": "7bd21858f8eac1ab85099e70095ff0762ff84ed5113216c2640afb0d67cb076a",
+      "snapshot_sha256": "28b68b274cc581aa94e7054ee46974f60c0a543d199bbae39d56a82225fa5dde",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "adequacy_sha256": "7527ab33f08d5fc7365e89fb0e1c191b9b4d333aeb24425ec59d2edf6c9beeae",
+      "findings_count": 0,
+      "full_round_sha256": "c4e052a15cc536d2439321e078341adce61e924210b548c991bf2310cf24f21b"
+    },
+    "findings": [],
+    "adequacy_sha256": "7527ab33f08d5fc7365e89fb0e1c191b9b4d333aeb24425ec59d2edf6c9beeae"
+  },
+  "typed_exit": "passed",
+  "schema_version": "2.0",
+  "skill_id": "guru-check-task",
+  "generated_at": "2026-07-23T06:40:01Z",
+  "task": {
+    "task_dir": ".trellis/tasks/07-22-146-production-skill-minimal-handoff",
+    "task_id": "146-production-skill-minimal-handoff",
+    "branch": "codex/146-production-skill-minimal-handoff",
+    "base_branch": "main",
+    "issue_numbers": [
+      146
+    ],
+    "task_identity_sha256": "cf50c524585ca3e708e04af47454c3b4bcb75479b5be06acd9281fef8c049bb1"
+  },
+  "planning": {
+    "schema_id": "guru-planning-approval-2.0",
+    "typed_exit": "approved",
+    "artifact": {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
+      "sha256": "d0bbefb789805ab0f4f26bd78a75760d1b8ab2412a2fd41b60d4ffbf9b81e335",
+      "size_bytes": 61726
+    },
+    "reviewed_artifacts": [
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5",
+        "size_bytes": 34054
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+        "sha256": "962a380af4710d2f0b10499c3b55bb2143d2ec2665f10016a0a354c89aa6e322",
+        "size_bytes": 37252
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+        "sha256": "c3d9521fdb431a4484441facb4447fbcfa0d3507429aa4e5de6cea6b2842b3b0",
+        "size_bytes": 30536
+      }
+    ],
+    "facts_sha256": "7bd21858f8eac1ab85099e70095ff0762ff84ed5113216c2640afb0d67cb076a"
+  },
+  "facts_sha256": "087ee8191fe3ee185a8148ed065eb4ea72f06f8e82865d0c98029a4d631dbe51"
+}

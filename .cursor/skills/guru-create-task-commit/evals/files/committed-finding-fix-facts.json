@@ -1,0 +1,1 @@
+{"scenario":"The deterministic builder creates and executes one exact finding-fix task commit candidate.","owner_evidence":{"semantic_gate":"passed","confirmation":"confirmed","checker_required":true},"owner_staging":{"recipe":"commit-finding-fix"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json"]}}

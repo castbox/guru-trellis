@@ -1,0 +1,14 @@
+{
+  "profile": "planning_reentry",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "scope_dispositions": ["C1 scope_change_required"],
+  "adequacy_review": ["approved planning scope is stale"],
+  "findings": [],
+  "unverified_conclusions": [],
+  "evidence_locators": ["implement.md", "src/production-eval.txt"],
+  "ai_review_gate": {"status": "planning_stale", "summary": "The approved scope requires reapproval."},
+  "exit_intent": "planning_stale",
+  "source_exit": "planning_stale",
+  "rerun_reason": "planning_refreshed"
+}

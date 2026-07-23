@@ -100,6 +100,31 @@ from the checker-passed owner result, workspace `created` cannot be serialized
 from an example or unchecked executor result, and output examples are not read
 as production serializer input.
 
+Repeat the same matrix for `production-minimal-handoff-v1`: exactly three
+packages, ten profiles, and 11 exits. Then validate the combined live-active
+closure at nine Skills and 35 exits. Negative tests cover missing, extra,
+duplicate, renamed, case-mismatched, unknown, or legacy entries; missing
+profile/output/consumer/projection assets; private or unconsumed output fields;
+invalid discriminator unions; absolute paths; and partial Stage 0/production
+activation. A regression fixture proves the original Stage 0 manifest identity
+and ordered 6-by-24 set are unchanged.
+
+Every production profile and exit executes the real package wrapper through
+the shared adapter. The runner validates the actual exit schema before
+comparing `expected_exit`; expected values never enter owner construction or
+route selection. Commit `committed` evals validate the exact projection into
+`branch-review-or-finding-closure` and do not dispatch Branch Review. Existing
+commit transaction tests remain mandatory because the new candidate builder is
+not authorization to replace or weaken the executor.
+
+The three `skill_input_authoring_seed` edges have positive partition/projection
+probes and negative overlap, overwrite, missing, extra, unknown, private-lookup,
+runtime-semantic-reconstruction, and fifth-operation fixtures. Each positive
+probe independently validates seed and authoring example keys, proves disjoint
+union equals the complete target required set, performs a no-overwrite merge,
+and validates the merged target input before invoking the real consumer wrapper.
+No other edge may declare this consumer kind.
+
 Scalar probes cover both explicit and omitted optional arguments. Omission is
 accepted only for `required=false`, preserves declared order, and reaches the
 same formal owner resolver; missing required, repeated, unknown, or out-of-order
@@ -189,9 +214,9 @@ version mismatch, missing asset, installed drift, and stable
 Distribution tests prove the new interface schema and executable discovery
 wrapper are present in canonical, installed, and selected-platform roots;
 production registry/extension inventories contain the exact six Stage 0
-minimal-handoff ids plus three #146-owned legacy ids and no fixture ids/schema
-ids. Fresh throwaway install and the post-`trellis update`
-workflow/preset reapply phase each run source/installed validation, legacy
+minimal-handoff ids plus three production minimal-handoff ids and no fixture
+ids/schema ids. Fresh throwaway install and the post-`trellis update`
+workflow/preset reapply phase each run source/installed validation, production
 discovery smoke, mixed fixture invocation tests, and a final recursive zero
 `.new`/`.bak` scan.
 For `guru-discover-change-context`, tests must cover mode-precondition parity,
@@ -200,6 +225,11 @@ isolation, deterministic sort/limit/projection, zero and 1-3 candidate paths,
 mem insufficiency gate, pre-task zero-write, same-snapshot task-local record,
 ordinary refresh stale-code/superseded-digest re-entry, task target trackability
 through repository `.gitignore`, `.git/info/exclude`, and `core.excludesFile`,
+validated task-locator/owner-result equality, exact private worktree-state pass
+and path/status/content/mode/rename drift failures, different-byte formal
+replacement with exact prior, missing/wrong/non-regular prior failures that
+preserve prior bytes, stale-new preservation, superseded binding, and
+same-snapshot idempotency,
 duplicate candidate canonical fact digest plus identity/URL/repo/number binding
 from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
 exits, source/installed distribution and clean

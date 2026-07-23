@@ -225,11 +225,18 @@ Reserved ids 与 test fixtures 永不安装，未选择的平台 root 不因 ski
 Preset 同时安装冻结的 interface 1.2 与独立 interface 1.3 schema，并安装 registry 1.1。
 Active registry row 以 exact `interface_schema_id` / `io_contract_state` 选择
 `1.2+legacy` 或 `1.3+minimal_handoff`；`stage0-minimal-handoff-v1` 中六个 Stage 0
-packages/24 exits 已全部使用 1.3，planning/check/commit 三包仍由 #146 保持 legacy。
-Preset 在一次 staging transaction 中安装 migration manifest/schema、六包 public
+packages/24 exits 已全部使用 1.3；独立 `production-minimal-handoff-v1` 中
+planning/check/commit 三包/十 profiles/11 exits 也使用 1.3。当前 active closure 为 9/35，
+`legacy_skill_ids=[]`，Stage 0 identity 保持 6/24。
+Preset 在一次 staging transaction 中安装两个 migration manifests/schemas、九包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Mixed 1.2/1.3 representative fixture、fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
+同一 transaction 还安装 Interface 1.3 additive
+`skill_input_authoring_seed` shape、planning/check/commit 三条声明 edge 的 target-owned
+authoring examples 与 partition/no-overwrite/full-target-schema probes。该 kind 不增加第五种
+projection operation；部分 edge、缺失 authoring example 或 canonical/installed/platform
+字节不一致均视为 mixed production graph。
 Interface 1.3 scalar `required` 为显式 boolean；preset 安装的 `guru-sync-base` 将
 `base_branch` 标为 optional，省略调用继续复用 formal resolver。
 Fixture source validation 强制 Skill consumer 使用 active registry exact canonical path 与
@@ -373,6 +380,13 @@ canonical issue URL、open state 与 update time 的 canonical digest projection
 base 后从同一次 search 返回字段重算 identity、URL 与 digest，不进行第二次 search 或
 candidate re-read。Managed schema/runtime 同时强制 `blocked` exit
 与 blocked AI Review Gate 双向一致。
+Task-local package/runtime 还以 validated task/snapshot locators 精确绑定 owner checker，
+用 private `task_worktree_state` 记录除 fixed snapshot/runtime 外的完整 dirty worktree。
+Different-byte fixed snapshot 仅在 prior regular/trackable、exact expected prior digest 与
+完整 new/live/worktree validation 通过后 formal replace，并记录
+`superseded_snapshot_sha256`；失败保持 prior bytes，same-byte retry 幂等。Preset、selected
+platform copies、throwaway pre-#146 upgrade 和 update/reapply 必须保持这些 schema/runtime/
+wrapper/test bytes 与 executable modes 一致。
 Refresh record/check 记录并核对当前 stable stale codes、superseded query/snapshot
 digests、reason 与 detection time，然后要求整步 re-entry；只消费当前 payload 与 expected
 snapshot identity，不重建 ancestry。
@@ -749,10 +763,13 @@ compatibility and is not a workflow hop:
 After task planning and a current `planning_artifacts:pass`, Phase 1 mandatory
 invokes `guru-approve-task-plan`. Only `approved` enters
 `phase-1-task-activation`; `revision_required` re-enters the Skill,
-`clarify_scope` routes to `guru-clarify-requirements`, and `blocked` stops at
-`task-plan-approval-blocked`. The preset distributes this route's package and
-v2 deterministic runtime; it does not move the step-local review loop into a
-platform overlay.
+`clarify_scope` routes to the three-field workflow target
+`guru-task-plan-clarify-scope-router`, and `blocked` stops at
+`task-plan-approval-blocked`. The router establishes scope context and mandatory
+invokes `guru-clarify-requirements:active_task_scope_change`; the caller AI
+authors the complete semantic input from fresh live context. The preset
+distributes this route's package and v2 deterministic runtime; it does not move
+the step-local review loop into a platform overlay.
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json

@@ -103,24 +103,24 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Versioned Interface And Registry Migration
 
 `guru-team-skill-interface-1.2` is the frozen legacy contract. Its schema file,
-schema id, field meanings, and the nine current production package payloads are
-not reinterpreted by the minimal-handoff rollout. New or materially changed
-public Skill I/O targets the independent
-`guru-team-skill-interface-1.3` contract.
+schema id, and field meanings are not reinterpreted by the minimal-handoff
+rollout. All nine current production packages now select the independent
+`guru-team-skill-interface-1.3` contract; archived 1.2 artifacts remain
+historical and are never rewritten as public handoff state.
 
 Registry schema `guru-team-skill-registry-1.1` is the exact version selector.
 Every active row declares `interface_schema_id` and `io_contract_state`; only
 `1.2 + legacy` and `1.3 + minimal_handoff` are legal. Reserved and planned rows
-remain lifecycle-only and must not carry package or I/O contract fields. During
-the #144 migration window, all nine production active rows remain explicitly
-allowlisted `1.2 + legacy`; #145 and #146 own their payload migrations.
+remain lifecycle-only and must not carry package or I/O contract fields. The
+completed #145 and #146 activation units own the public migration history; the
+live active registry contains no `legacy` row.
 
 The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes both supported ids, names 1.3 as current for
-new work, retains compatibility scalar `interface_schema_id=1.2` until #146,
-and keeps production public-input, typed-output, and private-artifact schema
-inventories empty while every production package remains legacy.
+new work, uses compatibility scalar `interface_schema_id=1.3`, and publishes
+exact public-input, typed-output, and private-artifact schema inventories for
+all nine active production packages.
 
 ### 1. Scope And Trigger
 
@@ -144,9 +144,12 @@ schema may use `oneOf` only as a validator index, never as an authoring template
 filled with nullable fields.
 
 The consumer independently owns its input contract. A `kind=skill` consumer
-must use `contract.kind=skill_input`, and the referenced interface id must equal
-the declared consumer id; a producer-owned or third-party schema cannot stand
-in for the target Skill's input. A structured `kind=workflow` consumer uses a
+normally uses `contract.kind=skill_input`. The three production semantic edges
+declared below use the additive
+`contract.kind=skill_input_authoring_seed`; both kinds exact-reference the
+target Interface and profile, and the referenced interface id must equal the
+declared consumer id. A producer-owned or third-party schema cannot stand in
+for the target Skill's input. A structured `kind=workflow` consumer uses a
 canonical locator below `consumers/workflow/`; a structured `kind=stop`
 consumer uses one below `consumers/stop/`. The original locator must equal its
 normalized repo-relative spelling, include a file below that exact owner root,
@@ -209,6 +212,11 @@ it is a separate artifact and must not inflate the handoff DTO.
   projection or redesign the boundary before activation;
 - runtime-derived fact appears in authoring input without caller ownership ->
   derive it inside runtime or remove it;
+- a semantic Skill handoff cannot fill its target profile from the minimal DTO
+  alone -> use the target-owned `skill_input_authoring_seed` contract only for
+  an approved edge, then merge projected seed fields with fresh caller-authored
+  fields without overwrite; do not add defaults, private lookups, or semantic
+  inference;
 - audit/checkpoint field appears only for history or diagnostics -> keep it in a
   private artifact or remove it from the workflow entirely;
 - required freshness cannot be proved from the minimal handoff -> add the
@@ -326,6 +334,22 @@ an explicit non-blank source pattern are accepted; an unprovable relation fails
 activation even when one example passes. Runtime facts, private artifacts,
 arbitrary expressions, script paths, and semantic reconstruction are outside
 the projection grammar.
+
+The additive target-owned `skill_input_authoring_seed` consumer contract is
+valid only for a structured target profile. It exact-references that target
+Interface/profile and declares unique non-empty `seed_fields`, unique non-empty
+`authoring_fields`, and one package-local authoring example. The two field sets
+must be disjoint and their union must exactly equal the target profile's
+top-level `required` set. The authoring example contains exactly
+`authoring_fields`; the producer projection consumes every public output field
+and produces exactly `seed_fields` using only the existing
+`direct|select|rename|normalize` operation grammar. Validation checks the seed
+and authoring objects independently, performs a no-overwrite merge, then
+validates the merged object against the complete target profile schema.
+Missing, extra, unknown, duplicate, overlapping, overwritten, defaulted, or
+runtime-authored fields fail closed. This consumer kind does not add a fifth
+projection operation and does not authorize reading producer private state or
+reconstructing AI judgment.
 
 An explicit `zero_payload` stop still receives the producer's typed-exit
 routing identity, but that identity is not forwarded as stop-response payload.
@@ -482,8 +506,9 @@ exactly these active packages and exits:
   `blocked`.
 
 All six select `guru-team-skill-interface-1.3` plus `minimal_handoff` together.
-`guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit` remain
-the exact #146-owned `guru-team-skill-interface-1.2` plus `legacy` allowlist.
+The Stage 0 manifest retains its historical three-id `legacy_skill_ids`
+boundary as frozen migration metadata; the live registry no longer treats
+those ids as legacy after the independent production activation.
 The registry, workflow markers, extension inventories, migration manifest,
 canonical packages, installed packages, and selected platform copies must expose
 the same six-package and 24-exit sets. A mixed Stage 0 graph is invalid even when
@@ -520,6 +545,66 @@ For `guru-clarify-requirements:clear`, a checker-passed
 `target_disposition=null` when the accepted action updates only the active task
 scope. That one fixed profile projects to public `retained`; null disposition in
 initial or standalone profiles remains an invalid owner projection.
+
+### Production Planning, Check, And Commit Activation
+
+`production-minimal-handoff-v1` is a separate atomic activation unit. It does
+not modify the ordered Stage 0 manifest, its `activation_unit_id`, its six-skill
+identity, or its 24-exit set. The production unit contains exactly:
+
+- `guru-approve-task-plan`: `approved`, `revision_required`, `clarify_scope`,
+  `blocked`;
+- `guru-check-task`: `passed`, `implementation_required`, `planning_stale`,
+  `blocked`;
+- `guru-create-task-commit`: `committed`, `revision-required`, `blocked`.
+
+The ten closed structured input profiles are `initial_review`,
+`revision_reentry`, `clarification_reentry`, `initial_check`,
+`finding_fix_rerun`, `planning_reentry`, `initial_commit`,
+`revision_reentry`, `finding_fix_commit`, and `recovery_resume`. Profile ids are
+package-local: the two `revision_reentry` profiles are intentionally owned by
+different Skills. Each profile has one executable example and at least one
+current eval case binding.
+
+The public DTOs are exact. Planning emits `approved(exit_id, task_ref,
+approval_ref)`, `revision_required(exit_id, task_ref)`,
+`clarify_scope(exit_id, task_ref, proposal_refs)`, or blocked `exit_id` only.
+Check emits `passed(exit_id, task_ref, checked_head, check_ref)`,
+`implementation_required(exit_id, task_ref, finding_refs)`,
+`planning_stale(exit_id, task_ref, planning_route, proposal_refs)`, or blocked
+`exit_id` only. Commit emits `committed(exit_id, task_ref, base_ref,
+committed_head)`, `revision-required(exit_id, task_ref)`, or blocked `exit_id`
+only. `branch-review-or-finding-closure` continues to consume exactly
+`task_ref`, `base_ref`, and `committed_head`; Issue #146 does not activate or
+change the planned downstream package.
+
+Planning and check wrappers materialize their existing task-local owner input,
+invoke the existing recorder/checker pair, and project only the checker-passed
+actual exit. The commit wrapper uses a deterministic private candidate builder
+to combine caller-owned message/path/review/authorization intent with live
+task, Phase 2, ledger, Git, snapshot, and sequence facts. The builder then
+calls the existing candidate validator and transaction executor unchanged.
+Caller-selected `expected_exit`, artifact bodies, digests, file metadata,
+absolute paths, and runtime snapshots are not public input.
+
+Exactly three semantic handoffs use target-owned authoring seeds:
+`guru-approve-task-plan:revision_required -> revision_reentry`,
+`guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
+`guru-create-task-commit:revision-required -> revision_reentry`. Their projected
+seed fields are respectively `source_exit/task_ref`,
+`source_exit/task_ref/checked_head/check_ref`, and
+`source_exit/task_ref`. Target package authoring examples supply every remaining
+required fresh semantic field. The validator proves disjoint partition,
+required-set equality, no-overwrite merge, and full target-schema validity;
+all other Skill/workflow/stop consumers keep their existing contracts.
+
+Active closure is derived from the live registry plus the frozen Stage 0
+manifest, the production manifest, and any future complete active Interface
+1.3 rows absent from both manifests. Every active profile and exit must have a
+current canonical case binding and byte-identical selected-platform corpus.
+The current cardinality assertion is nine active Skills and 35 exits; missing,
+extra, duplicate, renamed, legacy, unknown, partially activated, or
+case-mismatched entries fail closed.
 
 ## Workflow Markers And Typed Exits
 
@@ -592,7 +677,7 @@ The four external exits and unique consumers are:
 
 - `approved` -> workflow target `phase-1-task-activation`;
 - `revision_required` -> Skill `guru-approve-task-plan`;
-- `clarify_scope` -> Skill `guru-clarify-requirements`;
+- `clarify_scope` -> workflow target `guru-task-plan-clarify-scope-router`;
 - `blocked` -> stop `task-plan-approval-blocked`.
 
 Before task activation, repository snapshot freshness includes selected base,
@@ -600,8 +685,11 @@ base ref/HEAD, invocation HEAD, and dirty paths. After activation, normal
 implementation HEAD/dirty drift does not invalidate otherwise current planning.
 
 `revision_required` restarts after task-local planning changes and a fresh
-wording review. `clarify_scope` delegates authority/scope mutation and then
-restarts all nine entry checks. Unknown, duplicate, multiple, unmapped, or
+wording review. `clarify_scope` delegates through the three-field routing-only
+workflow target, which establishes scope context and mandatory invokes
+`guru-clarify-requirements:active_task_scope_change`; the caller AI authors the
+complete clarification input from fresh live context before all nine planning
+entry checks restart. Unknown, duplicate, multiple, unmapped, or
 consumer-mismatched exits fail closed. The package uses closed schema
 `guru-planning-approval-2.0`; active schema 1.2 approval artifacts require a
 complete semantic re-entry and v2 recording, while archived artifacts remain
@@ -741,6 +829,17 @@ Task-local record/check also require the exact target to be non-ignored under
 `git check-ignore --quiet --no-index --` before and after recording and during
 checking. Ignore matches or unreadable trackability fail closed; pre-task mode
 remains stdout-only and does not perform this target gate.
+The `task_local_reentry` wrapper validates `task_locator` and the fixed
+`prior_snapshot_locator=context-discovery.json` before binding the owner result;
+the owner checker receives that exact task locator and may not infer it from
+private artifact content. Task-local snapshots carry private
+`task_worktree_state` bound to current HEAD and every dirty path/status/content/
+mode/rename fact, excluding only the fixed snapshot itself and ignored runtime
+state. A different-byte fixed snapshot may be replaced only after the existing
+target is proved regular and trackable, its schema/identity matches an explicit
+`--expected-prior-snapshot-sha256`, and the complete new snapshot passes live
+and worktree-state checks. The replacement binds the prior identity through
+`superseded_snapshot_sha256`; same-byte retry is idempotent.
 
 `guru-clarify-requirements` is an active semantic package with identical
 workflow/standalone preconditions: compatible runtime, current review target,
@@ -1242,5 +1341,5 @@ outside the repository and package. Closed evidence is diagnostic comparison
 data, not public Skill I/O, a consumer handoff, gate, checkpoint, audit chain,
 or release proof. Normal workflow and standalone invocation never read eval
 corpus, fixtures, adapter descriptors, or runner evidence. The six Stage 0
-packages change atomically through #145; the remaining three legacy package
-states, I/O, exits, and routes remain unchanged until #146.
+packages change atomically through #145, and the three production packages
+change atomically through the separate #146 activation unit.

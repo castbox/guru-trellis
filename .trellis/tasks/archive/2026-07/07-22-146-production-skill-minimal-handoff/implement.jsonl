@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现 Interface 1.3、minimal handoff、consumer projection、registry lifecycle 与 package distribution 时遵守核心 SSOT。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"保持 planning、Phase 2、task commit 的 mandatory invocation、typed-exit route 与 semantic ownership 边界。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"新增 deterministic builder、closure validator 与 public invocation 时遵守 executor/validator/recorder 边界。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"更新 registry、extension、artifact、migration、eval 与 installed manifest 合同。"}
+{"file":".trellis/spec/preset/installer.md","reason":"实现 production graph 原子安装、upgrade/update、reapply 与 sidecar 处理。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"同步 canonical 与 dogfood copies 时遵守 overlay ownership 和 managed hash 规则。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"同步 README 的 install、discovery、invocation、eval 与 upgrade 命令。"}

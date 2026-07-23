@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-approve-task-plan",
+  "evals": [
+    {
+      "id": "approved-initial",
+      "prompt": "Complete the initial_review semantic owner round and invoke guru-approve-task-plan through its public wrapper; return the checker-derived approved route.",
+      "expected_exit": "approved",
+      "expected_output": "The public DTO is the declared approved route.",
+      "input_profile_id": "initial_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "approved"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/approved-initial-input.json", "evals/files/approved-initial-facts.json"]
+    },
+    {
+      "id": "revision-required",
+      "prompt": "Complete the revision_reentry semantic owner round and invoke guru-approve-task-plan through its public wrapper; return the checker-derived revision_required route.",
+      "expected_exit": "revision_required",
+      "expected_output": "The public DTO is the declared revision_required route.",
+      "input_profile_id": "revision_reentry",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "revision_required"
+          }
+        ]
+      },
+      "files": ["evals/files/revision-required-input.json", "evals/files/revision-required-facts.json"]
+    },
+    {
+      "id": "clarify-scope",
+      "prompt": "Complete the clarification_reentry semantic owner round and invoke guru-approve-task-plan through its public wrapper; return the checker-derived clarify_scope route.",
+      "expected_exit": "clarify_scope",
+      "expected_output": "The public DTO is the declared clarify_scope route.",
+      "input_profile_id": "clarification_reentry",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "clarify_scope"
+          }
+        ]
+      },
+      "files": ["evals/files/clarify-scope-input.json", "evals/files/clarify-scope-facts.json"]
+    },
+    {
+      "id": "blocked-initial",
+      "prompt": "Complete the initial_review semantic owner round and invoke guru-approve-task-plan through its public wrapper; return the checker-derived blocked route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "input_profile_id": "initial_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/blocked-initial-input.json", "evals/files/blocked-initial-facts.json"]
+    }
+  ]
+}

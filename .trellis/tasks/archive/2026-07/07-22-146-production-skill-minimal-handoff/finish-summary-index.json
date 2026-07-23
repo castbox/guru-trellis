@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "三个 production Skills 仍使用 Interface 1.2 legacy public I/O，大型 private artifact、runtime facts 与 projection 责任泄入跨 Skill handoff。",
+    "outcome": "已将 planning、Phase 2 与 task commit 三包迁移到 Interface 1.3 minimal handoff，并闭合 10 profiles、11 exits、semantic re-entry、production eval、分发和 Docs SSOT。",
+    "changed_behavior": [
+      "三个 production Skills 分别声明最小 public input、逐 exit output、唯一 consumer projection 与 private artifact 边界。",
+      "Public DTO 只保留直接消费字段；live facts、digest、完整审查历史、transaction journal 与 recovery state 由 owner runtime 私有持有。",
+      "三个 re-entry 路径只传递最小 authoring seed，并由下一 semantic owner fresh author 完整输入。",
+      "clarify_scope handoff 进入 routing-only fresh reread 与 mandatory requirements clarification，unknown、multiple、unmapped 或 stale 状态 fail closed。",
+      "Production eval adapter 只为三个 production packages 执行真实 public wrapper，并按 actual exit 选择 output schema。",
+      "三包跨 canonical、installed、Agents、Codex、Claude、Cursor、workflow/preset registry 与 durable docs 保持一致。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "Planning、Phase 2 与 task commit packages",
+        "paths": [],
+        "change": "三个 Skills、10 profiles 与 11 exits 迁移为 closed minimal handoff contracts。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Consumer projection 与 semantic re-entry",
+        "paths": [],
+        "change": "以唯一 consumer、最小 seed、fresh authoring 与 fail-closed router 承接 typed exits。"
+      },
+      {
+        "kind": "script",
+        "name": "Runtime、task freshness 与 production eval adapter",
+        "paths": [],
+        "change": "确定性执行 owner-result staging、task-local freshness、projection 与 actual-exit validation。"
+      },
+      {
+        "kind": "preset",
+        "name": "Activation、distribution 与 installed parity",
+        "paths": [],
+        "change": "同步三包 registry/manifest 和五类平台副本，并验证 install、update、reapply 与 zero-sidecar。"
+      },
+      {
+        "kind": "docs",
+        "name": "Tests 与 durable Docs SSOT",
+        "paths": [],
+        "change": "Minimal handoff、re-entry、eval、分发和完成态长期合同完成同步验证。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Production minimal public handoff",
+        "before": "Caller 或 Agent 读取大型 private artifact，再组装 runtime-derived facts、projection 与 digest。",
+        "after": "Caller 只传最小 input，owner runtime 持有 private facts，并按 typed exit 输出最小 consumer DTO。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Semantic re-entry authoring seed",
+        "before": "Producer output 可能携带下一 Skill 的完整输入或要求 consumer 理解 producer internal artifact。",
+        "after": "Producer 只输出最小 seed，下一 semantic owner fresh author 其余必填字段并保持字段互斥。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Clarification routing continuation",
+        "before": "clarify_scope marker 缺少 task-local fresh reread、mandatory clarification invocation 与唯一 continuation。",
+        "after": "Routing-only consumer 读取三字段 handoff，fresh author clarification input，并在非唯一合法出口时 fail closed。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Production actual-exit evaluation",
+        "before": "三个 production packages 没有通过 native adapter 执行真实 public wrapper 的 current-scope closure。",
+        "after": "Exact-three allowlist 执行真实 wrapper，从 owner result 获取 actual exit 后选择 output schema并做 expected assertion。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Task-local freshness and recovery",
+        "before": "Context snapshot 或 recovery 可能依赖非 task-local locator、陈旧 base/head 或不完整 replacement state。",
+        "after": "Owner runtime 绑定 task worktree state、base/head freshness 与显式 replacement chain，stale 或 mismatch fail closed。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "run-skill-evals.sh",
+        "check-skill-packages",
+        "finish-work.sh"
+      ],
+      "config_keys": [
+        "io_contract_state",
+        "workflow_route_id"
+      ],
+      "schema_fields": [
+        "input_profiles",
+        "typed_outputs",
+        "consumer_contracts",
+        "skill_input_authoring_seed",
+        "committed_head"
+      ],
+      "symbols": [
+        "production_owner_result",
+        "stage0_build_output",
+        "native_adapter",
+        "prepare_closeout"
+      ],
+      "phrases": [
+        "三个 production Skills minimal typed handoff 迁移已完成",
+        "clarify_scope routing-only continuation 已闭合",
+        "run-skill-evals.sh 按 actual exit 校验三包 output",
+        "task-local freshness 与 replacement recovery 已完成",
+        "io_contract_state 记录 9 Skills/35 exits closure"
+      ]
+    }
+  }
+}

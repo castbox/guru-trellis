@@ -80,7 +80,7 @@
       "if": {"properties": {"typed_exit": {"const": "clarify_scope"}}, "required": ["typed_exit"]},
       "then": {
         "properties": {
-          "consumer": {"const": {"kind": "skill", "id": "guru-clarify-requirements"}},
+          "consumer": {"const": {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"}},
           "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "clarify_scope"}, "scope_proposals": {"minItems": 1}}}}}
         }
       }

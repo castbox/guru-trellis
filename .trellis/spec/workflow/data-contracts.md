@@ -192,12 +192,20 @@ covers `.gitignore`, `.git/info/exclude`, and `core.excludesFile`, including a
 tracked file. Ignored or unreadable trackability fails closed with
 `context_discovery_target_ignored` or
 `context_discovery_target_trackability_unreadable`; pre-task stdout-only mode
-does not run this target gate. An existing byte-identical snapshot is
-idempotent; different bytes, stale identity, non-task tracked dirty paths,
-workspace/runtime/cache targets, or digest mismatch fail without overwrite or
-sidecar. The closed schema and source-specific portable locator fields keep raw
-source payloads out of the persisted artifact through field-specific
-validation.
+does not run this target gate. The `task_local_reentry` public input supplies an
+exact task locator plus fixed `prior_snapshot_locator=context-discovery.json`;
+the wrapper binds the owner checker to that task rather than deriving scope
+from the private snapshot. Task mode adds private `task_worktree_state`, whose
+digest covers current HEAD and every dirty path/status/content/mode/rename fact
+except the fixed snapshot and ignored runtime state. An existing byte-identical
+snapshot is idempotent. Different bytes require a regular, trackable,
+schema/identity-valid prior whose snapshot digest matches explicit
+`--expected-prior-snapshot-sha256`, followed by complete validation of the new
+snapshot and exact live worktree state. A successful replacement records the
+prior digest in optional `superseded_snapshot_sha256`; missing/wrong/invalid
+prior or stale new evidence fails before overwrite and produces no sidecar.
+The closed schema and source-specific portable locator fields keep raw source
+payloads out of the persisted artifact through field-specific validation.
 
 ## Requirements Clarification Result
 
@@ -351,9 +359,8 @@ team extension version. The canonical source is `trellis/guru-team-extension.jso
 The canonical and installed extension manifests publish one additive migration
 contract under `public_api.skill_contracts`:
 
-- compatibility `interface_schema_id` remains
-  `guru-team-skill-interface-1.2` through #145 and switches only after #146 has
-  removed every active `legacy` row;
+- compatibility `interface_schema_id` is
+  `guru-team-skill-interface-1.3` after #146 removes every active `legacy` row;
 - `supported_interface_schema_ids` is the exact ordered set containing 1.2 and
   1.3, while `current_interface_schema_id` is 1.3 for new or materially revised
   public I/O;
@@ -361,10 +368,9 @@ contract under `public_api.skill_contracts`:
 - `legacy_skill_ids` exactly equals active registry rows with
   `io_contract_state=legacy`;
 - `public_input_schema_ids`, `typed_output_schema_ids`, and
-  `private_artifact_schema_ids` are exact inventories from active production
-  1.3 packages only. After `stage0-minimal-handoff-v1` activation they contain
-  the exact inventories of the six Stage 0 packages; the three #146 packages
-  remain excluded because they are still 1.2 legacy.
+  `private_artifact_schema_ids` are exact inventories from all active
+  production 1.3 packages. `legacy_skill_ids` is empty after the atomic
+  production activation.
 
 The canonical manifest
 `trellis/skills/guru-team/migrations/stage0-minimal-handoff.json` has schema id
@@ -381,6 +387,35 @@ package eval corpora. Missing, extra, duplicate, renamed, unknown, out-of-order,
 or mixed-version entries fail closed. Manifest contents are an activation
 contract, not a recovery journal; archived 1.2 artifacts remain readable under
 their original schemas and are never rewritten during validation or install.
+
+The independent canonical manifest
+`trellis/skills/guru-team/migrations/production-minimal-handoff.json` has schema
+id `guru-team-production-migration-manifest-1.0` and activation id
+`production-minimal-handoff-v1`. It binds exactly the three planning/check/
+commit packages, ten structured profiles, 11 stable exits, per-exit output
+schema/example identities, consumer inputs, projections, private artifact ids,
+and canonical eval cases. Both migration manifest locators are published in
+the extension in activation order. The Stage 0 manifest bytes and ordered
+6-by-24 identity remain a regression authority and are not rewritten to absorb
+production packages.
+
+The source and installed closure algorithm reads the live registry, both
+manifests, Interface public contracts, and package-local corpora. It requires
+the active ids to equal the two manifest sets plus any future complete active
+1.3 rows; requires every active row to be `minimal_handoff`; and requires exact
+profile/exit/current-case set equality. Nine Skills and 35 exits are the current
+cardinality regression, not a hard-coded future registry allowlist.
+
+The production manifest also binds the exact three
+`skill_input_authoring_seed` edges. Each binding names the target Interface and
+profile, projected `seed_fields`, target-owned `authoring_fields`, and the
+package-local authoring example id. Interface and manifest validation require
+the two sets to be disjoint, their union to equal the target profile's complete
+top-level required set, the projected seed and authoring example to contain
+exactly their declared keys, and the no-overwrite merged object to validate
+against the complete target profile schema. This is a consumer contract kind,
+not a projection operation; the operation inventory remains exactly
+`direct|select|rename|normalize`.
 
 Test fixture schema ids belong only to the fixture extension manifest and must
 not appear in production extension, installed production inventory, platform
@@ -736,7 +771,10 @@ Typed exit, AI Gate, evidence, and consumer form one closed union:
   `skill:guru-approve-task-plan`;
 - `clarify_scope` records a non-empty authority/scope mutation proposal that is
   excluded from approved execution and uses
-  `skill:guru-clarify-requirements`;
+  `workflow:guru-task-plan-clarify-scope-router`; the router consumes only
+  `exit_id`, `task_ref`, and `proposal_refs`, then mandatory invokes
+  `guru-clarify-requirements:active_task_scope_change` with complete fresh
+  caller-authored semantic input;
 - `blocked` records a missing authority, refusal, external blocker, or unsafe
   revision condition and uses `stop:task-plan-approval-blocked`.
 

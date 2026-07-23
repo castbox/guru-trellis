@@ -1,0 +1,6 @@
+{
+  "exit_id": "committed",
+  "task_ref": ".trellis/tasks/example-task",
+  "base_ref": "origin/main",
+  "committed_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

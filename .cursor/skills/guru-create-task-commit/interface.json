@@ -1,40 +1,507 @@
 {
-  "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.2",
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
   "id": "guru-create-task-commit",
   "name": "guru-create-task-commit",
   "description": "Create a reviewed Trellis task work commit after Phase 2, including finding-fix and revision commits, with exact staging and fresh evidence.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
-    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]},
-    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]}
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "workspace_boundary",
+        "task_identity",
+        "planning_approval",
+        "phase2_check",
+        "issue_scope_ledger",
+        "pre_commit_head",
+        "git_operation_state",
+        "dirty_snapshot",
+        "commit_authorization"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "workspace_boundary",
+        "task_identity",
+        "planning_approval",
+        "phase2_check",
+        "issue_scope_ledger",
+        "pre_commit_head",
+        "git_operation_state",
+        "dirty_snapshot",
+        "commit_authorization"
+      ]
+    }
   },
   "entry_preconditions": [
-    {"id": "workspace_boundary", "evidence": "task-start-context.json plus local runtime/worktree facts", "binding": "actual repository root equals the mapped task worktree", "freshness": "checked for the current invocation"},
-    {"id": "task_identity", "evidence": "task.json and candidate task object", "binding": "task id, repo-relative directory, branch and in_progress status", "freshness": "files and current branch still match"},
-    {"id": "planning_approval", "evidence": "planning-approval.json", "binding": "Skill-owned guru-planning-approval-2.0 approved result and exact reviewed/approved planning document digests", "freshness": "shared check-planning-approval --require-exit approved passes against current task evidence"},
-    {"id": "phase2_check", "evidence": "phase2-check.json", "binding": "passed check, checked artifact digests, dirty paths and pre-commit HEAD", "freshness": "candidate self artifact is the only permitted post-check delta"},
-    {"id": "issue_scope_ledger", "evidence": "issue-scope-ledger.json", "binding": "primary issue and ledger SHA-256", "freshness": "current bytes and primary issue match"},
-    {"id": "pre_commit_head", "evidence": "Git HEAD and candidate git object", "binding": "exact commit id", "freshness": "unchanged immediately before execution"},
-    {"id": "git_operation_state", "evidence": "Git operation and sequencer markers", "binding": "ordinary state without merge, cherry-pick, revert, rebase, sequencer or am markers", "freshness": "checked during candidate validation, before staging and immediately before commit"},
-    {"id": "dirty_snapshot", "evidence": "NUL-delimited Git status and content identities", "binding": "complete staged, unstaged, untracked, delete and explicit rename/copy facts; ordinary SHA-256/mode/delete and initialized clean gitlink HEAD are exact index authorities, while only rename sources inherit deletion/exact-stage authority", "freshness": "current snapshot, candidate raw bytes, complete live index preimage and operation state still match through isolated validation; index.lock remains a sentinel and ref/index/candidate guards remain owned through the final candidate identity-read linearization point"},
-    {"id": "commit_authorization", "evidence": "candidate authorization object", "binding": "explicit authorized flag, source and evidence", "freshness": "authorization applies to this exact stage/message plan"}
+    {
+      "id": "workspace_boundary",
+      "evidence": "task-start-context.json plus local runtime/worktree facts",
+      "binding": "actual repository root equals the mapped task worktree",
+      "freshness": "checked for the current invocation"
+    },
+    {
+      "id": "task_identity",
+      "evidence": "task.json and candidate task object",
+      "binding": "task id, repo-relative directory, branch and in_progress status",
+      "freshness": "files and current branch still match"
+    },
+    {
+      "id": "planning_approval",
+      "evidence": "planning-approval.json",
+      "binding": "Skill-owned guru-planning-approval-2.0 approved result and exact reviewed/approved planning document digests",
+      "freshness": "shared check-planning-approval --require-exit approved passes against current task evidence"
+    },
+    {
+      "id": "phase2_check",
+      "evidence": "phase2-check.json",
+      "binding": "passed check, checked artifact digests, dirty paths and pre-commit HEAD",
+      "freshness": "candidate self artifact is the only permitted post-check delta"
+    },
+    {
+      "id": "issue_scope_ledger",
+      "evidence": "issue-scope-ledger.json",
+      "binding": "primary issue and ledger SHA-256",
+      "freshness": "current bytes and primary issue match"
+    },
+    {
+      "id": "pre_commit_head",
+      "evidence": "Git HEAD and candidate git object",
+      "binding": "exact commit id",
+      "freshness": "unchanged immediately before execution"
+    },
+    {
+      "id": "git_operation_state",
+      "evidence": "Git operation and sequencer markers",
+      "binding": "ordinary state without merge, cherry-pick, revert, rebase, sequencer or am markers",
+      "freshness": "checked during candidate validation, before staging and immediately before commit"
+    },
+    {
+      "id": "dirty_snapshot",
+      "evidence": "NUL-delimited Git status and content identities",
+      "binding": "complete staged, unstaged, untracked, delete and explicit rename/copy facts; ordinary SHA-256/mode/delete and initialized clean gitlink HEAD are exact index authorities, while only rename sources inherit deletion/exact-stage authority",
+      "freshness": "current snapshot, candidate raw bytes, complete live index preimage and operation state still match through isolated validation; index.lock remains a sentinel and ref/index/candidate guards remain owned through the final candidate identity-read linearization point"
+    },
+    {
+      "id": "commit_authorization",
+      "evidence": "candidate authorization object",
+      "binding": "explicit authorized flag, source and evidence",
+      "freshness": "authorization applies to this exact stage/message plan"
+    }
   ],
-  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
-  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
-  "artifacts": [{"id": "task_commit_plan_example", "path": "examples/task-commit-plan.json"}],
-  "schemas": [{"id": "task_commit_plan_schema", "path": "schemas/task-commit-plan.schema.json"}],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "task_commit_plan_example",
+      "path": "examples/task-commit-plan.json"
+    },
+    {
+      "id": "public_input_initial_commit_example",
+      "path": "examples/public-initial-commit-input.json"
+    },
+    {
+      "id": "initial_commit_authoring",
+      "path": "examples/public-initial-commit-authoring.json"
+    },
+    {
+      "id": "public_input_revision_reentry_example",
+      "path": "examples/public-revision-reentry-input.json"
+    },
+    {
+      "id": "revision_reentry_authoring",
+      "path": "examples/public-revision-reentry-authoring.json"
+    },
+    {
+      "id": "public_input_finding_fix_commit_example",
+      "path": "examples/public-finding-fix-commit-input.json"
+    },
+    {
+      "id": "public_input_recovery_resume_example",
+      "path": "examples/public-recovery-resume-input.json"
+    },
+    {
+      "id": "public_invocation_error_example",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_output_committed_example",
+      "path": "examples/public-committed-output.json"
+    },
+    {
+      "id": "public_output_revision_required_example",
+      "path": "examples/public-revision-required-output.json"
+    },
+    {
+      "id": "public_output_blocked_example",
+      "path": "examples/public-blocked-output.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "task_commit_plan_schema",
+      "path": "schemas/task-commit-plan.schema.json"
+    },
+    {
+      "id": "public_input_initial_commit",
+      "path": "schemas/public-initial-commit-input.schema.json"
+    },
+    {
+      "id": "public_input_revision_reentry",
+      "path": "schemas/public-revision-reentry-input.schema.json"
+    },
+    {
+      "id": "public_input_finding_fix_commit",
+      "path": "schemas/public-finding-fix-commit-input.schema.json"
+    },
+    {
+      "id": "public_input_recovery_resume",
+      "path": "schemas/public-recovery-resume-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_output_committed",
+      "path": "schemas/public-committed-output.schema.json"
+    },
+    {
+      "id": "public_output_revision_required",
+      "path": "schemas/public-revision-required-output.schema.json"
+    },
+    {
+      "id": "public_output_blocked",
+      "path": "schemas/public-blocked-output.schema.json"
+    }
+  ],
   "validators": [
-    {"id": "candidate_validator", "command": "scripts/check-task-commit-plan.sh", "runtime_command": "check-commit-messages", "objective_scope": "schema, identity, evidence, freshness, explicit rename/copy relations, independently classified copy sources, exact paths, shared parser and authorization facts"},
-    {"id": "exact_executor", "command": "scripts/create-task-commit.sh", "runtime_command": "create-task-commit", "objective_scope": "artifact-authorized ordinary/gitlink/candidate bindings with deletion inheritance limited to rename sources, isolated index and detached commit validation, guarded conditional ref/candidate rollback under an index.lock sentinel, independent final-index publication, final candidate identity-read linearization, immutable commit blob/result digest evidence, and raw commit postconditions"}
+    {
+      "id": "candidate_validator",
+      "command": "scripts/check-task-commit-plan.sh",
+      "runtime_command": "check-commit-messages",
+      "objective_scope": "schema, identity, evidence, freshness, explicit rename/copy relations, independently classified copy sources, exact paths, shared parser and authorization facts"
+    },
+    {
+      "id": "exact_executor",
+      "command": "scripts/create-task-commit.sh",
+      "runtime_command": "create-task-commit",
+      "objective_scope": "artifact-authorized ordinary/gitlink/candidate bindings with deletion inheritance limited to rename sources, isolated index and detached commit validation, guarded conditional ref/candidate rollback under an index.lock sentinel, independent final-index publication, final candidate identity-read linearization, immutable commit blob/result digest evidence, and raw commit postconditions"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-stage0-skill",
+      "objective_scope": "Caller-owned production input validation, owner recorder/checker or candidate builder execution, and deterministic single typed-exit serialization"
+    }
   ],
   "external_exits": [
-    {"id": "committed", "evidence": "task commit plan result and current Git HEAD", "consumer": {"kind": "workflow", "id": "branch-review-or-finding-closure"}},
-    {"id": "revision-required", "evidence": "AI review or candidate validation revision evidence", "consumer": {"kind": "skill", "id": "guru-create-task-commit"}},
-    {"id": "blocked", "evidence": "semantic conflict, authorization failure, dangerous operation, hook mutation or objective postcondition error", "consumer": {"kind": "stop", "id": "task-commit-blocked"}}
+    {
+      "id": "committed",
+      "evidence": "task commit plan result and current Git HEAD",
+      "consumer": {
+        "kind": "workflow",
+        "id": "branch-review-or-finding-closure"
+      }
+    },
+    {
+      "id": "revision-required",
+      "evidence": "AI review or candidate validation revision evidence",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-create-task-commit"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "semantic conflict, authorization failure, dangerous operation, hook mutation or objective postcondition error",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-commit-blocked"
+      }
+    }
   ],
-  "reentry": {"identity": "task id, sequence, Phase 2 digest, pre-commit HEAD and dirty snapshot digest", "freshness": "all evidence matches and sequence has not executed", "stale_behavior": "fail_closed"},
-  "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+  "reentry": {
+    "identity": "task id, sequence, Phase 2 digest, pre-commit HEAD and dirty snapshot digest",
+    "freshness": "all evidence matches and sequence has not executed",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-production-create-task-commit-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "initial_commit",
+          "schema": {
+            "schema_id": "guru-production-create-task-commit-input-initial-commit-1.0",
+            "path": "schemas/public-initial-commit-input.schema.json"
+          },
+          "example": {
+            "id": "initial_commit_input",
+            "path": "examples/public-initial-commit-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "initial_commit"
+          }
+        },
+        {
+          "id": "revision_reentry",
+          "schema": {
+            "schema_id": "guru-production-create-task-commit-input-revision-reentry-1.0",
+            "path": "schemas/public-revision-reentry-input.schema.json"
+          },
+          "example": {
+            "id": "revision_reentry_input",
+            "path": "examples/public-revision-reentry-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "revision_reentry"
+          }
+        },
+        {
+          "id": "finding_fix_commit",
+          "schema": {
+            "schema_id": "guru-production-create-task-commit-input-finding-fix-commit-1.0",
+            "path": "schemas/public-finding-fix-commit-input.schema.json"
+          },
+          "example": {
+            "id": "finding_fix_commit_input",
+            "path": "examples/public-finding-fix-commit-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "finding_fix_commit"
+          }
+        },
+        {
+          "id": "recovery_resume",
+          "schema": {
+            "schema_id": "guru-production-create-task-commit-input-recovery-resume-1.0",
+            "path": "schemas/public-recovery-resume-input.schema.json"
+          },
+          "example": {
+            "id": "recovery_resume_input",
+            "path": "examples/public-recovery-resume-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "recovery_resume"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "initial_commit"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-production-create-task-commit-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-initial-commit-input.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "committed",
+        "schema": {
+          "schema_id": "guru-production-create-task-commit-output-committed-1.0",
+          "path": "schemas/public-committed-output.schema.json"
+        },
+        "example": {
+          "id": "committed_output",
+          "path": "examples/public-committed-output.json"
+        },
+        "consumer_use_ids": [
+          "project_committed"
+        ]
+      },
+      {
+        "exit_id": "revision-required",
+        "schema": {
+          "schema_id": "guru-production-create-task-commit-output-revision-required-1.0",
+          "path": "schemas/public-revision-required-output.schema.json"
+        },
+        "example": {
+          "id": "revision_required_output",
+          "path": "examples/public-revision-required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_revision_required"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-production-create-task-commit-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "committed_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "branch-review-or-finding-closure"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-production-create-task-commit-workflow-committed-input-1.0",
+          "path": "consumers/workflow/production/create-task-commit-committed.schema.json"
+        }
+      },
+      {
+        "id": "revision_reentry_seed_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-create-task-commit"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-create-task-commit/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "revision_reentry",
+          "seed_fields": [
+            "source_exit",
+            "task_ref"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "message_intent",
+            "path_authorizations",
+            "semantic_review",
+            "human_authorization",
+            "exit_intent",
+            "checked_head",
+            "check_ref",
+            "reentry_reason"
+          ],
+          "authoring_example": {
+            "id": "revision_reentry_authoring",
+            "path": "examples/public-revision-reentry-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-commit-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_committed",
+        "exit_id": "committed",
+        "consumer_input_id": "committed_workflow_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "base_ref",
+            "target": "base_ref"
+          },
+          {
+            "source": "committed_head",
+            "target": "committed_head"
+          }
+        ]
+      },
+      {
+        "id": "project_revision_required",
+        "exit_id": "revision-required",
+        "consumer_input_id": "revision_reentry_seed_input",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          }
+        ]
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "task_commit_candidate",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+          "path": "schemas/task-commit-plan.schema.json"
+        },
+        "persistence": "task_local_tracked"
+      }
+    ]
+  }
 }

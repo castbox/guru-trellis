@@ -38,12 +38,25 @@ global workflow contains no adequacy checklist, provenance classification,
 unusual-scenario review, confirmation algorithm, recorder/checker command, or
 revision procedure for this step. It owns only these transitions: `approved`
 -> workflow target `phase-1-task-activation`, `revision_required` -> Skill
-`guru-approve-task-plan`, `clarify_scope` -> Skill
-`guru-clarify-requirements`, and `blocked` -> stop
+`guru-approve-task-plan`, `clarify_scope` -> workflow target
+`guru-task-plan-clarify-scope-router`, and `blocked` -> stop
 `task-plan-approval-blocked`. The task activation target is the only place that
 may consume approval and invoke the official task start transition. Missing
 package, unknown/multiple/unmapped exit, consumer conflict, or marker drift
 fails closed.
+
+The planning invocation consumes the package-owned Interface 1.3
+`initial_review|revision_reentry|clarification_reentry` profile and only the
+minimal typed output. `approved` hands `task_ref` and opaque `approval_ref` to
+activation; workflow never reads the private planning approval body to route.
+The `revision_required` self-reentry consumes only projected
+`source_exit/task_ref` seed plus fresh caller-authored semantic fields through
+the target package's `skill_input_authoring_seed`; workflow does not rebuild or
+default those fields. The clarification router consumes only
+`exit_id`/`task_ref`/`proposal_refs`, establishes the current scope context,
+and mandatory invokes `guru-clarify-requirements:active_task_scope_change`;
+the caller AI authors that target profile's complete semantic input from fresh
+live context.
 
 Phase 0 begins with tool-free request classification. Before `check-env`,
 `prepare-task`, issue/duplicate reads, Docs/code/tests/history reads, or any
@@ -131,6 +144,18 @@ trackability fails closed as `context_discovery_target_ignored` or
 does not run this target gate. Neither mode reads or writes
 `.trellis/workspace/**`, repo-level history indexes/caches, or shared handoff
 state.
+
+Active-task re-entry validates the public `task_locator` and fixed
+`prior_snapshot_locator=context-discovery.json`, requires the owner result to
+be that exact task-local file, and passes the validated locator to the owner
+checker. The private snapshot binds current HEAD plus the complete dirty
+worktree state excluding only itself and ignored runtime state. Different-byte
+formal replacement is allowed only for a regular, trackable, structurally
+valid prior whose snapshot digest equals the explicit expected-prior digest;
+the complete new snapshot must pass live and worktree-state validation before
+`write_json`, record `superseded_snapshot_sha256`, and pass the same checks after
+write. Same-byte retry remains idempotent and pre-task stdout behavior is
+unchanged.
 
 Workflow and stop consumers are declared by one unfenced
 `guru-workflow-target` or `guru-stop-target` marker at the actual continuation
@@ -435,6 +460,14 @@ freshness algorithm. `passed` routes to `guru-create-task-commit`;
 `blocked` stops at `task-check-blocked`. Unknown, multiple, unmapped, or
 consumer-mismatched results fail closed.
 
+The check invocation consumes one of `initial_check|finding_fix_rerun|
+planning_reentry`. Its `passed` DTO supplies only `task_ref`, `checked_head`,
+and opaque `check_ref` to the commit package. Phase 2 semantic ownership and
+the complete `phase2-check.json` evidence remain inside `guru-check-task`.
+The target commit package maps `exit_id` to `source_exit`, treats those four
+values as its declared `initial_commit` seed, and requires fresh AI-authored
+message/path/review/authorization fields before the complete input validates.
+
 Phase 2 check verifies implementation and message-relevant evidence, but it does
 not ask for manual approval of a planned work message. After a fresh final Phase
 2 pass, Phase 3.4 mandatory invokes `guru-create-task-commit`. The skill owns
@@ -474,6 +507,18 @@ operation and does not retroactively block or overwrite the committed result.
 Ref/candidate rollback is conditional and never overwrites third-party state;
 after the successful final read only best-effort guard/temp cleanup and return
 may occur.
+
+Commit invocation profiles are `initial_commit`, `revision_reentry`,
+`finding_fix_commit`, and `recovery_resume`. Only the `committed` DTO crosses
+the workflow boundary, with exact fields `exit_id`, `task_ref`, `base_ref`, and
+`committed_head`. The unchanged `branch-review-or-finding-closure` consumer
+accepts the last three fields; candidate/result bodies stay private and Issue
+#131 is not activated by this contract.
+The `revision-required` self-reentry similarly projects only
+`source_exit/task_ref`; the target package owns every remaining fresh semantic
+and re-entry field. Both self-reentry edges and the check-to-commit edge use
+no-overwrite authoring-seed merge and never read producer private artifacts.
+
 Branch Review Gate reviews
 committed messages and publish readiness payloads. Finish-work metadata commits
 and publish merge payloads remain on the same objective formatter/validator

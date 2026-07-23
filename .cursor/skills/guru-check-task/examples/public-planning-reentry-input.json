@@ -1,0 +1,24 @@
+{
+  "profile": "planning_reentry",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "scope_dispositions": [
+    "C1 current_scope"
+  ],
+  "adequacy_review": [
+    "all dimensions passed"
+  ],
+  "findings": [],
+  "unverified_conclusions": [],
+  "evidence_locators": [
+    "implement.md",
+    "tests/test_contract.py"
+  ],
+  "ai_review_gate": {
+    "status": "planning_stale",
+    "summary": "The full Phase 2 check passed."
+  },
+  "exit_intent": "planning_stale",
+  "source_exit": "planning_stale",
+  "rerun_reason": "planning_refreshed"
+}
