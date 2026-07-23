@@ -608,7 +608,248 @@
     "plan_digest": "fd30562cdb2d7513885f9a4743fce4b5dda68ce5a074dd84f6fc9dd25c46f009"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-23T04:45:59Z",
+    "commit_sha": "c945c73e1779f4e62409883bab5e1f6a907e4584",
+    "parent": "e3efc635e36039f0db94a9d24eddad676ad7fe7b",
+    "message_sha256": "2bf7e40d29abce4bb0e1688ad1dcbb7c1d2e276cbdc2737a2dd958fdde7aeef1",
+    "committed_paths": [
+      ".agents/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+      ".claude/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+      ".codex/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+      ".cursor/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/context-discovery.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/002.json",
+      ".trellis/workflow.md",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "4a2c13affe824af51d688d7cd9d68b42a2dc9f10",
+      "actual_tree": "4a2c13affe824af51d688d7cd9d68b42a2dc9f10",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+          "expected_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "expected_mode": "100644",
+          "actual_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+          "expected_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "expected_mode": "100644",
+          "actual_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+          "expected_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "expected_mode": "100644",
+          "actual_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+          "expected_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "expected_mode": "100644",
+          "actual_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "b9b19638ccd59cb0f8c9fd98f309006e4a23cfc4",
+          "expected_mode": "100644",
+          "actual_blob": "b9b19638ccd59cb0f8c9fd98f309006e4a23cfc4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "88e30353a7e0964c418fbc49e4e9ad70a235ee73",
+          "expected_mode": "100755",
+          "actual_blob": "88e30353a7e0964c418fbc49e4e9ad70a235ee73",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "expected_blob": "8d835b54d098061f65deb5b86582f81e68c89a77",
+          "expected_mode": "100644",
+          "actual_blob": "8d835b54d098061f65deb5b86582f81e68c89a77",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+          "expected_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "expected_mode": "100644",
+          "actual_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+          "expected_blob": "358db9dcdec82b89f646a2ebeeff0b74a1e89967",
+          "expected_mode": "100644",
+          "actual_blob": "358db9dcdec82b89f646a2ebeeff0b74a1e89967",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/context-discovery.json",
+          "expected_blob": "565da71033940f6d0bef6db552b4a595d9ea39e9",
+          "expected_mode": "100644",
+          "actual_blob": "565da71033940f6d0bef6db552b4a595d9ea39e9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
+          "expected_blob": "e2fb93af5908c5f89a4a48db5f05e531670ffbd9",
+          "expected_mode": "100644",
+          "actual_blob": "e2fb93af5908c5f89a4a48db5f05e531670ffbd9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
+          "expected_blob": "ff84b948fe90bb07df88d9b55a244485680ca6b4",
+          "expected_mode": "100644",
+          "actual_blob": "ff84b948fe90bb07df88d9b55a244485680ca6b4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
+          "expected_blob": "049c0631a89fad1f5fac1a2c2439108c71811241",
+          "expected_mode": "100644",
+          "actual_blob": "049c0631a89fad1f5fac1a2c2439108c71811241",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
+          "expected_blob": "c1342fbc5b71b7f271a91aa69b39b70b0ba4fa5f",
+          "expected_mode": "100644",
+          "actual_blob": "c1342fbc5b71b7f271a91aa69b39b70b0ba4fa5f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json",
+          "expected_blob": "2a85ae714013edcbcab9de48e060f627c99cee05",
+          "expected_mode": "100644",
+          "actual_blob": "2a85ae714013edcbcab9de48e060f627c99cee05",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
+          "expected_blob": "3ddd7f991c5b0f4a8637f3f081edad71602cb141",
+          "expected_mode": "100644",
+          "actual_blob": "3ddd7f991c5b0f4a8637f3f081edad71602cb141",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+          "expected_blob": "af2f4502e3f1b6d9ecb5132f6d8cf299de518d77",
+          "expected_mode": "100644",
+          "actual_blob": "af2f4502e3f1b6d9ecb5132f6d8cf299de518d77",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/002.json",
+          "expected_blob": "3edb484f57e8674f1d5d1ab696eef882508cea42",
+          "expected_mode": "100644",
+          "actual_blob": "3edb484f57e8674f1d5d1ab696eef882508cea42",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/workflow.md",
+          "expected_blob": "fce240ef8cab7fd852fe510226b734ec9d54e908",
+          "expected_mode": "100644",
+          "actual_blob": "fce240ef8cab7fd852fe510226b734ec9d54e908",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "expected_blob": "8d835b54d098061f65deb5b86582f81e68c89a77",
+          "expected_mode": "100644",
+          "actual_blob": "8d835b54d098061f65deb5b86582f81e68c89a77",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
+          "expected_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "expected_mode": "100644",
+          "actual_blob": "c3fbc064d6d12d6a14a93dd2b15d2c3c56150763",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "f3a67aa44c29f3dcd7cff2c93605a28374361639",
+          "expected_mode": "100644",
+          "actual_blob": "f3a67aa44c29f3dcd7cff2c93605a28374361639",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "88e30353a7e0964c418fbc49e4e9ad70a235ee73",
+          "expected_mode": "100755",
+          "actual_blob": "88e30353a7e0964c418fbc49e4e9ad70a235ee73",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "226785e0e8756d6fdf4ba8b7629a0fb83c6762dc",
+          "expected_mode": "100644",
+          "actual_blob": "226785e0e8756d6fdf4ba8b7629a0fb83c6762dc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/workflow.md",
+          "expected_blob": "fce240ef8cab7fd852fe510226b734ec9d54e908",
+          "expected_mode": "100644",
+          "actual_blob": "fce240ef8cab7fd852fe510226b734ec9d54e908",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

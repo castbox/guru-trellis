@@ -262,7 +262,50 @@
     "plan_digest": "e34c4409440d6bfd3ecbba56eaf3b5729c986805b45fcdf7630dd3cb71bc0582"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-23T07:20:02Z",
+    "commit_sha": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+    "parent": "c945c73e1779f4e62409883bab5e1f6a907e4584",
+    "message_sha256": "39ca80c2dc232a8dd1ee1c25fecd77cb05f4adc5866721abe55cc7d584032c17",
+    "committed_paths": [
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/003.json",
+      "docs/requirements/guru-team-trellis-flow.md"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "876d416e24d64bfe611843818bc571854820600b",
+      "actual_tree": "876d416e24d64bfe611843818bc571854820600b",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json",
+          "expected_blob": "338e510f5412975f10189e29acd3bfee4f8a322d",
+          "expected_mode": "100644",
+          "actual_blob": "338e510f5412975f10189e29acd3bfee4f8a322d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/003.json",
+          "expected_blob": "1cd458ac2ec298d2f8c7b9942f686f8b8aa4328c",
+          "expected_mode": "100644",
+          "actual_blob": "1cd458ac2ec298d2f8c7b9942f686f8b8aa4328c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/guru-team-trellis-flow.md",
+          "expected_blob": "c340d667b9ee4fa1e7c0085e842dd25cb528607a",
+          "expected_mode": "100644",
+          "actual_blob": "c340d667b9ee4fa1e7c0085e842dd25cb528607a",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

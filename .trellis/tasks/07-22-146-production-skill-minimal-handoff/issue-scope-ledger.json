@@ -5,7 +5,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/146",
     "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
     "reason": "当前独立可交付的 production Skill minimal handoff 迁移单元。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Fresh Phase 2 typed exit 为 passed，10/10 adequacy dimensions 与 39 条 command evidence 完整；Package 166/166、runtime 557 passed/13 skipped、preset 45/45、ownership 6/6、production source 12/12、Stage 0 source 24/24、全九包 installed corpora、source/installed 9 Skills/35 exits/21 targets/0 legacy、platform identity、dogfood drift 与 Docs SSOT 15/15 均通过。",
+      "三个 task work commits 由 commit plans 001-003 精确绑定 parent、message、path set、tree、逐 path blob/mode 与 hook mutation；最终 reviewed content HEAD 为 9519ff8f2c9bd22e697d3ecc8196ad153ea76106，post-commit audit 确认非 metadata 变更均被 fresh Phase 2 覆盖。",
+      "Branch Review Gate 已绑定 HEAD 9519ff8f2c9bd22e697d3ecc8196ad153ea76106；Round 001 的 P1/P2 与 Round 003 的 P3 均由合法 closure/replacement chain 关闭，Round 005 fresh final reviewer 覆盖完整 3 commits/629 paths，P0/P1/P2/P3 全部为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "320c7a23f88eba6c0ac13b49dda4fddcbbbad07c34a73c104ebd247bb04e4de1",
+        "verified_content_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+        "remote_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+        "publish_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,7 +28,22 @@
       "url": "https://github.com/castbox/guru-trellis/issues/146",
       "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
       "reason": "当前 task 承诺完整覆盖并由 planning、Phase 2 与 Branch Review gate 验收。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Fresh Phase 2 typed exit 为 passed，10/10 adequacy dimensions 与 39 条 command evidence 完整；Package 166/166、runtime 557 passed/13 skipped、preset 45/45、ownership 6/6、production source 12/12、Stage 0 source 24/24、全九包 installed corpora、source/installed 9 Skills/35 exits/21 targets/0 legacy、platform identity、dogfood drift 与 Docs SSOT 15/15 均通过。",
+        "三个 task work commits 由 commit plans 001-003 精确绑定 parent、message、path set、tree、逐 path blob/mode 与 hook mutation；最终 reviewed content HEAD 为 9519ff8f2c9bd22e697d3ecc8196ad153ea76106，post-commit audit 确认非 metadata 变更均被 fresh Phase 2 覆盖。",
+        "Branch Review Gate 已绑定 HEAD 9519ff8f2c9bd22e697d3ecc8196ad153ea76106；Round 001 的 P1/P2 与 Round 003 的 P3 均由合法 closure/replacement chain 关闭，Round 005 fresh final reviewer 覆盖完整 3 commits/629 paths，P0/P1/P2/P3 全部为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "320c7a23f88eba6c0ac13b49dda4fddcbbbad07c34a73c104ebd247bb04e4de1",
+          "verified_content_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+          "remote_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+          "publish_head": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

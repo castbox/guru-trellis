@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "codex/146-production-skill-minimal-handoff",
+    "reviewed_head_sha": "9519ff8f2c9bd22e697d3ecc8196ad153ea76106",
+    "title": "完成：#146 迁移 production Skills 到最小 typed handoff",
+    "body_source": "pr-body.md",
+    "body_sha256": "4bf79878dd731a7f290143c328f7766c07f2f7b383a8bf57ad38441ce5c7e9bd",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "a7c4c86b3362a9f678e45235e51c7288c01518f5a52eb529678622e7327a67f3"
+  },
+  "publish_inputs_sha256": "a74638f6818acf7e5712389b9354828d47c27c9d0cd761b3da46f2f0937fcc61"
+}
