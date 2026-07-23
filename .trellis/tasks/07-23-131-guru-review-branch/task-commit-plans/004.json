@@ -1,0 +1,352 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "004",
+  "task": {
+    "id": "131-guru-review-branch",
+    "path": ".trellis/tasks/07-23-131-guru-review-branch",
+    "status": "in_progress",
+    "branch": "codex/131-guru-review-branch"
+  },
+  "issue": {
+    "primary_issue": 131,
+    "ledger_sha256": "e9e82419654384ac5a03cc7875b977bc83b4265ee21c1abd0f895d69f448f7b7"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "38a0e8dd2314b086378e0674f4bd377dc5e6f694"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/planning-approval.json",
+      "sha256": "b93c510271199865f738493102c90abd058e6c86f4e9a4f5ffe7139090193e66",
+      "size": 69028
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      "sha256": "272ffa7c88d80041e80b21051c2edbc8dd7313ed7e6d9ce262b3c631f5644859",
+      "size": 32547
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/issue-scope-ledger.json",
+      "sha256": "e9e82419654384ac5a03cc7875b977bc83b4265ee21c1abd0f895d69f448f7b7",
+      "size": 2710
+    },
+    "task": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task.json",
+      "sha256": "69841b4e5f914a965c1cbda7fb83bf6c8f8ec9d693e6a2dbed9920595cda2adb",
+      "size": 654
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "991272826914213ebb9205b6034e51534b3b62cc",
+        "worktree_sha256": "43692587462f22a340ceb52a5b7b2779353d82f28f27fdc90357f00fb86dc63c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c452dc7d50ccd3bf31144a30897b233397f10e10",
+        "worktree_sha256": "4b801162d8e9078838c8f1b48f8401007e27d69850065df2a969bef910b65655",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a260380c7a9e75310fa7f9a05741593a44d15e0",
+        "worktree_sha256": "272ffa7c88d80041e80b21051c2edbc8dd7313ed7e6d9ce262b3c631f5644859",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "b16537fb5603feaf485599198d659d68a7f2a5d9faebafbfa68c5814fb6775ec",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "98970d49300bdd78d07ebf153de93732dac22708",
+        "worktree_sha256": "cd13a800e69da41c3ad83e31f9e4256c91dec9a705a9a0d91bf0c1b89d09a054",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0f4ba501ac2b5cc39767aa6598eff3be6170a3bc",
+        "worktree_sha256": "7f67b929d13b8e726cf931c5e3aaab880dc8c2014c01a7d4138f809f0b57a97c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "26a1d264d30f043c79b78fb85ebd20c66c1bd5f82a8dae4a8a356d4e1d52f323",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7701f3157748a3550a6dca780341461d952aad210e2a924fda61722c1f8a56f2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "307ce3ac653840730b330f8c3c1a4119b911cadcc1b58b59538c023cf4ef54e4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bda7594f3e63b2ba15c0e686fe306a10e16ce53a",
+        "worktree_sha256": "8a05bcf32bfb7636bfed5fe4994a648708636f9a688dfb5a1576e3b3f6979a5b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/workflow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "238d5523ce28069eb8e201c6cba5dc2ee0dae1c5",
+        "worktree_sha256": "65671684345f0b2e5600cd596880f7fa89ce3c30fedadc9d1af3f85b85626574",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3df2a81de6e1649da83c18b6499d9f45d3d39c36",
+        "worktree_sha256": "1495af54e07b3478789689c3f3f739dc8f7351b82ba9e1342214f07bb1e7ee88",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0b74cfb8a019419a1a82d2b72044e9e27307c088",
+        "worktree_sha256": "c1bd30b2f8d57527f8c234a0ef116e45bb4cf2aa5f7487b74ff3fa664f66074d",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "238d5523ce28069eb8e201c6cba5dc2ee0dae1c5",
+        "worktree_sha256": "65671684345f0b2e5600cd596880f7fa89ce3c30fedadc9d1af3f85b85626574",
+        "mode": "100644"
+      }
+    ],
+    "digest": "6011176550ee580ae4630b1b333461bb24bc83e133e520823c3f93160bcbffeb"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/workflow.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/workflow.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+    ".trellis/workflow.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "message": {
+    "subject": "fix(workflow): #131 收敛分支审查编排",
+    "body": "背景：\nRound 4/5 Branch Review 发现全局 workflow 仍复制 guru-review-branch 的 step-local 审查合同，后续 Phase 2 又发现 throwaway preview 仍依赖已删除的旧文案。\n\n变更：\n将 canonical 与 dogfood workflow 收敛为 mandatory invocation、四个 typed exits、route 与 fail-closed stop；保留通用 sub-agent boundary。区分 public marketplace discovery sample 与 exact/current source preview，并补充 routing-only 和 preview 防回归。\n\n边界：\n不改变 Skill id、exit id、schema 或 public DTO；#116 publication package 仍为 planned/missing；本提交不包含 push、PR、部署或 issue close。\n\n验证：\n独立 Phase 2 在自修复后通过 runtime 566、Skill 169、contract 8、preset 45、ownership 6、shared eval 双侧 7/7、validators、inventory 1903/0 与完整 throwaway update/reapply。\n\nRefs #131",
+    "bytes": "fix(workflow): #131 收敛分支审查编排\n\n背景：\nRound 4/5 Branch Review 发现全局 workflow 仍复制 guru-review-branch 的 step-local 审查合同，后续 Phase 2 又发现 throwaway preview 仍依赖已删除的旧文案。\n\n变更：\n将 canonical 与 dogfood workflow 收敛为 mandatory invocation、四个 typed exits、route 与 fail-closed stop；保留通用 sub-agent boundary。区分 public marketplace discovery sample 与 exact/current source preview，并补充 routing-only 和 preview 防回归。\n\n边界：\n不改变 Skill id、exit id、schema 或 public DTO；#116 publication package 仍为 planned/missing；本提交不包含 push、PR、部署或 issue close。\n\n验证：\n独立 Phase 2 在自修复后通过 runtime 566、Skill 169、contract 8、preset 45、ownership 6、shared eval 双侧 7/7、validators、inventory 1903/0 与完整 throwaway update/reapply。\n\nRefs #131\n",
+    "sha256": "06a59f3b91109040b1549b4339230029db9664c23a0bfd3b92fd49274a7c3292"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "已逐项复核两项 P2 的关闭证据、完整 Phase 2、14 个当前 dirty paths、中文 Conventional Commit message、secret/部署/upgrade 边界；全部路径属于 Issue #131 finding-fix 或 task-local gate evidence，无 unrelated 或 ambiguous path。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户多次明确回复“确认继续”，授权按已确认 Trellis 流程继续本地修复、Phase 2、task commit 与 Branch Review；不授权 push、PR、部署或 issue close。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-23T23:38:39Z",
+    "plan_digest": "f2ab85cd0f65d98385d53ff2451b3393744b8471e40c561ac1f278679aa95d2a"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

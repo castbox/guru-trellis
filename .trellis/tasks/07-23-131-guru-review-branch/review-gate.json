@@ -1,11 +1,11 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-07-23T20:44:14Z",
+  "generated_at": "2026-07-23T22:16:18Z",
   "task_dir": ".trellis/tasks/07-23-131-guru-review-branch",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/131-guru-review-branch",
-  "head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
+  "head": "38a0e8dd2314b086378e0674f4bd377dc5e6f694",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/guru-create-task-commit/interface.json",
@@ -239,6 +239,7 @@
     ".trellis/tasks/07-23-131-guru-review-branch/issue-scope-ledger.json",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-final-rerun.md",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
@@ -247,8 +248,10 @@
     ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
     ".trellis/tasks/07-23-131-guru-review-branch/review.md",
     ".trellis/tasks/07-23-131-guru-review-branch/reviews/01-problem-discovery.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md",
     ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/001.json",
     ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
     ".trellis/tasks/07-23-131-guru-review-branch/task-start-context.json",
     ".trellis/tasks/07-23-131-guru-review-branch/task.json",
     ".trellis/workflow.md",
@@ -344,11 +347,11 @@
     "--base-branch",
     "main",
     "--summary",
-    "Round 2 完整 closure review 关闭 F-131-BR-01..04，但资格化新的 F-131-BR2-01 P2；当前分支不能放行。",
+    "Round 4 fresh final review 与 Round 5 problem-discovery role re-entry 保持历史 findings closed，但资格化 F-131-BR4-01 P2；global workflow SSOT 仍复制 step-local 合同，当前分支不能放行。",
     "--evidence",
-    "独立问题闭环审查代理覆盖 origin/main...0fdbb708 的 312 个路径，运行 focused、package、Skill、runtime、preset、ownership、source/installed eval、parity、Docs、安全与完整 range diff-check；原四项关闭，新正常多 closure round fixture 证明 exact closure report linkage 未绑定。",
+    "全新 technical reviewer独立覆盖 origin/main...38a0e8dd 的315路径；Round5不改变Round4 finding/HEAD/severity，只满足 qualified finding owner lifecycle。focused74、contract8、Skill167、runtime566、preset45、ownership6、双eval7/7、validators/parity/drift/static/scans均通过，但green suite不能消除global workflow可达重复合同。",
     "--reviewer",
-    "/root/issue_131_branch_review_discovery",
+    "/root/issue_131_branch_review_final",
     "--review-source",
     "independent-agent",
     "--review-report",
@@ -356,16 +359,16 @@
     "--agent-assignment",
     ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
     "--skill-input",
-    ".trellis/.runtime/guru-team/issue-131-branch-review-round2-public-input.json",
+    ".trellis/.runtime/guru-team/issue-131-branch-review-round4-public-input.json",
     "--semantic-review-file",
-    ".trellis/.runtime/guru-team/issue-131-branch-review-round2-semantic-current.json",
+    ".trellis/.runtime/guru-team/issue-131-branch-review-round4-semantic.json",
     "--typed-exit",
     "implementation_required",
     "--json"
   ],
   "conclusion": {
     "passed": false,
-    "summary": "Round 2 完整 closure review 关闭 F-131-BR-01..04，但资格化新的 F-131-BR2-01 P2；当前分支不能放行。",
+    "summary": "Round 4 fresh final review 与 Round 5 problem-discovery role re-entry 保持历史 findings closed，但资格化 F-131-BR4-01 P2；global workflow SSOT 仍复制 step-local 合同，当前分支不能放行。",
     "block_priorities": [
       "P0",
       "P1",
@@ -380,27 +383,29 @@
   "findings": [
     {
       "priority": "P2",
-      "message": "replacement lifecycle 可用任意合法 replacement round 为 finding 当前引用的另一未链接 closure report 背书",
-      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "candidate_ref": "C-131-BR2-01",
+      "message": "Global workflow 仍复制 guru-review-branch reviewer、closure、artifact、recorder/checker step-local 内部合同",
+      "path": "trellis/workflows/guru-team/workflow.md",
+      "candidate_ref": "C-131-BR4-01",
       "disposition": "qualified_finding",
       "scenario_class": "normal_required_behavior",
-      "affected_behavior": "replacement lifecycle 可用任意合法 replacement round 为 finding 当前引用的另一未链接 closure report 背书",
+      "affected_behavior": "Global workflow 仍复制 guru-review-branch reviewer、closure、artifact、recorder/checker step-local 内部合同",
       "evidence_refs": [
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md"
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md"
       ],
       "requirement_refs": [
-        "prd.md:R6",
-        "prd.md:R9",
-        "design.md:7.2",
-        ".codex/skills/guru-review-branch/references/contract.md:Finding closure and final review"
+        "prd.md:Goal",
+        "prd.md:AC13",
+        "design.md:9",
+        "implement.md:Step 6",
+        ".trellis/spec/workflow/workflow-contract.md:945-961"
       ],
-      "scope_basis": "Issue #131 已批准的 per-finding exact closure evidence 与 replacement recovery 正常路径",
-      "qualification_reason": "正常多 closure round fixture 中 round 2 有合法 replacement chain，但 finding 的 closure_evidence 指向未链接 round 3 时，assignment、final-round 与 lifecycle validators 均错误返回无错误；合法链未绑定当前 exact closure round。",
-      "finding_ref": "F-131-BR2-01",
+      "scope_basis": "Issue #131 批准的 global workflow transition-only 与 active Skill step-local SSOT 分层",
+      "qualification_reason": "Phase 3.5 已使用 mandatory Skill invocation，但 canonical/dogfood workflow 的 helper/Sub-agent 段仍提供 review-branch.sh --pass 直调和 reviewer/closure/recovery/artifact/recorder 细节，普通 AI 读取 workflow 时形成第二权威，无需恶意伪造或非常规场景。",
+      "finding_ref": "F-131-BR4-01",
       "severity": "P2",
-      "owner_round": 2,
-      "reviewed_head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
+      "owner_round": 5,
+      "reviewed_head": "38a0e8dd2314b086378e0674f4bd377dc5e6f694",
       "status": "open",
       "closure_evidence": []
     }
@@ -408,20 +413,18 @@
   "observations": [
     {
       "kind": "observation",
-      "message": "guru-review-task-publication 仍为 planned/missing",
-      "path": "trellis/skills/guru-team/registry.json",
-      "candidate_ref": "C-131-06",
+      "message": "仓库未配置且环境无 ruff、shellcheck、mypy、pyright",
+      "path": "AGENTS.md",
+      "candidate_ref": "C-131-BR4-03",
       "disposition": "observation",
       "scenario_class": "out_of_scope",
-      "affected_behavior": "guru-review-task-publication 仍为 planned/missing",
+      "affected_behavior": "仓库未配置且环境无 ruff、shellcheck、mypy、pyright",
       "evidence_refs": [
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md"
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md"
       ],
-      "requirement_refs": [
-        "issue-scope-ledger.json:followup_issues"
-      ],
-      "scope_basis": "Issue #116/#132 的明确后续交付边界",
-      "qualification_reason": "Issue #131 只需在 planned consumer 边界 fail closed，不包含 publication package 激活。"
+      "requirement_refs": [],
+      "scope_basis": "当前仓库 executable validation baseline",
+      "qualification_reason": "JSON、Bash、Python compile、tests 与 throwaway 已通过；缺失工具不用于降低或提高 finding severity。"
     }
   ],
   "followup_candidates": [
@@ -429,18 +432,18 @@
       "kind": "followup_candidate",
       "message": "当前未 push，无法验证 exact remote feature-ref marketplace install",
       "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "candidate_ref": "C-131-05",
+      "candidate_ref": "C-131-BR4-02",
       "disposition": "followup_candidate",
       "scenario_class": "out_of_scope",
       "affected_behavior": "当前未 push，无法验证 exact remote feature-ref marketplace install",
       "evidence_refs": [
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md"
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md"
       ],
       "requirement_refs": [
         "AGENTS.md:开箱即用门禁"
       ],
       "scope_basis": "当前明确不授权 push/publication",
-      "qualification_reason": "远端 exact feature ref 只有 push 后才存在；publication 前必须复验，但不能在本轮虚构远端结果。"
+      "qualification_reason": "远端 exact feature ref 只有 push 后才存在；publication 前必须复验，不能以 public main 冒充。"
     }
   ],
   "issue_scope": {
@@ -502,34 +505,35 @@
     ]
   },
   "verification_evidence": {
-    "base_head": "origin/main...0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
-    "changed_file_count": 312,
-    "reviewer": "/root/issue_131_branch_review_discovery",
+    "base_head": "origin/main...38a0e8dd2314b086378e0674f4bd377dc5e6f694",
+    "changed_file_count": 315,
+    "reviewer": "/root/issue_131_branch_review_final",
     "review_source": "independent-agent",
     "review_report": {
       "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
-      "sha256": "3f80ca0d2dbcf3e66b15b5edfd15fd6972389afbe33e0f4b4addc3b9603e34a2",
-      "size_bytes": 3515,
-      "modified_at": "2026-07-23T20:38:45.316528+00:00"
+      "sha256": "7f67b929d13b8e726cf931c5e3aaab880dc8c2014c01a7d4138f809f0b57a97c",
+      "size_bytes": 5268,
+      "modified_at": "2026-07-23T22:15:32.329584+00:00"
     },
     "agent_assignment": {
       "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
-      "sha256": "aae3a26bc029d674c586120423bf02b5c9ec19c394ac38eac19c8eb8a45e0305",
-      "size_bytes": 115712,
-      "modified_at": "2026-07-23T20:38:06.923209+00:00",
+      "sha256": "3f0cbb201394b412fe1754fb2d227cfd5b2a361fae8ac0519a728a2d5af80714",
+      "size_bytes": 124798,
+      "modified_at": "2026-07-23T22:15:06.746202+00:00",
       "schema_version": "1.2",
-      "artifact_head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
+      "artifact_head": "38a0e8dd2314b086378e0674f4bd377dc5e6f694",
       "roles": [
         "实现代理",
+        "最终放行审查代理",
         "问题发现审查代理",
         "问题闭环审查代理",
         "阶段二检查代理"
       ],
-      "agents_count": 3,
-      "review_rounds_count": 2,
-      "reuse_decisions_count": 7,
-      "status_events_count": 127,
-      "effective_status_events_count": 127,
+      "agents_count": 4,
+      "review_rounds_count": 5,
+      "reuse_decisions_count": 12,
+      "status_events_count": 129,
+      "effective_status_events_count": 129,
       "event_corrections_count": 0,
       "recovery_links_count": 0,
       "task": ".trellis/tasks/07-23-131-guru-review-branch",
@@ -557,10 +561,43 @@
         "sha256": "013ab622c3281f00264721f4c9f5868bb5d053dd13a403ad5722a26679857ee4",
         "size_bytes": 12269,
         "modified_at": "2026-07-23T20:37:35.530739+00:00"
+      },
+      {
+        "round": 3,
+        "logical_role": "问题闭环审查代理",
+        "agent_id": "/root/issue_131_branch_review_discovery",
+        "reviewed_head": "38a0e8dd2314b086378e0674f4bd377dc5e6f694",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
+        "sha256": "26a1d264d30f043c79b78fb85ebd20c66c1bd5f82a8dae4a8a356d4e1d52f323",
+        "size_bytes": 9962,
+        "modified_at": "2026-07-23T21:46:12.015878+00:00"
+      },
+      {
+        "round": 4,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/issue_131_branch_review_final",
+        "reviewed_head": "38a0e8dd2314b086378e0674f4bd377dc5e6f694",
+        "findings_count": 1,
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
+        "sha256": "7701f3157748a3550a6dca780341461d952aad210e2a924fda61722c1f8a56f2",
+        "size_bytes": 13898,
+        "modified_at": "2026-07-23T22:06:55.106759+00:00"
+      },
+      {
+        "round": 5,
+        "logical_role": "问题发现审查代理",
+        "agent_id": "/root/issue_131_branch_review_final",
+        "reviewed_head": "38a0e8dd2314b086378e0674f4bd377dc5e6f694",
+        "findings_count": 1,
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+        "sha256": "307ce3ac653840730b330f8c3c1a4119b911cadcc1b58b59538c023cf4ef54e4",
+        "size_bytes": 6830,
+        "modified_at": "2026-07-23T22:14:26.838295+00:00"
       }
     ],
     "evidence": [
-      "独立问题闭环审查代理覆盖 origin/main...0fdbb708 的 312 个路径，运行 focused、package、Skill、runtime、preset、ownership、source/installed eval、parity、Docs、安全与完整 range diff-check；原四项关闭，新正常多 closure round fixture 证明 exact closure report linkage 未绑定。"
+      "全新 technical reviewer独立覆盖 origin/main...38a0e8dd 的315路径；Round5不改变Round4 finding/HEAD/severity，只满足 qualified finding owner lifecycle。focused74、contract8、Skill167、runtime566、preset45、ownership6、双eval7/7、validators/parity/drift/static/scans均通过，但green suite不能消除global workflow可达重复合同。"
     ],
     "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
   },
@@ -602,12 +639,14 @@
         ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
         ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-final-rerun.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
         ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
         ".trellis/tasks/07-23-131-guru-review-branch/review.md",
         ".trellis/tasks/07-23-131-guru-review-branch/reviews/01-problem-discovery.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md",
         ".trellis/workflow.md",
         "README.md",
         "docs/requirements/README.md",
@@ -708,6 +747,7 @@
         ".trellis/tasks/07-23-131-guru-review-branch/issue-scope-ledger.json",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-final-rerun.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
@@ -716,8 +756,10 @@
         ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
         ".trellis/tasks/07-23-131-guru-review-branch/review.md",
         ".trellis/tasks/07-23-131-guru-review-branch/reviews/01-problem-discovery.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/001.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
+        ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-start-context.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task.json",
         ".trellis/workflow.md",
@@ -969,6 +1011,7 @@
         ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/001.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
+        ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-start-context.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task.json",
         "trellis/guru-team-extension.json",
@@ -1179,6 +1222,7 @@
       ".trellis/guru-team/skills/packages/guru-review-branch/schemas/review-gate.schema.json",
       ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-final-rerun.md",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
@@ -1202,31 +1246,33 @@
   },
   "skill_id": "guru-review-branch",
   "mode": "workflow",
-  "review_intent": "finding_fix_review",
+  "review_intent": "fresh_final_review",
   "typed_exit": "implementation_required",
   "semantic_review": {
     "qualified_findings": [
       {
-        "candidate_ref": "C-131-BR2-01",
+        "candidate_ref": "C-131-BR4-01",
         "disposition": "qualified_finding",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "replacement lifecycle 可用任意合法 replacement round 为 finding 当前引用的另一未链接 closure report 背书",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "affected_behavior": "Global workflow 仍复制 guru-review-branch reviewer、closure、artifact、recorder/checker step-local 内部合同",
+        "path": "trellis/workflows/guru-team/workflow.md",
         "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md"
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md"
         ],
         "requirement_refs": [
-          "prd.md:R6",
-          "prd.md:R9",
-          "design.md:7.2",
-          ".codex/skills/guru-review-branch/references/contract.md:Finding closure and final review"
+          "prd.md:Goal",
+          "prd.md:AC13",
+          "design.md:9",
+          "implement.md:Step 6",
+          ".trellis/spec/workflow/workflow-contract.md:945-961"
         ],
-        "scope_basis": "Issue #131 已批准的 per-finding exact closure evidence 与 replacement recovery 正常路径",
-        "qualification_reason": "正常多 closure round fixture 中 round 2 有合法 replacement chain，但 finding 的 closure_evidence 指向未链接 round 3 时，assignment、final-round 与 lifecycle validators 均错误返回无错误；合法链未绑定当前 exact closure round。",
-        "finding_ref": "F-131-BR2-01",
+        "scope_basis": "Issue #131 批准的 global workflow transition-only 与 active Skill step-local SSOT 分层",
+        "qualification_reason": "Phase 3.5 已使用 mandatory Skill invocation，但 canonical/dogfood workflow 的 helper/Sub-agent 段仍提供 review-branch.sh --pass 直调和 reviewer/closure/recovery/artifact/recorder 细节，普通 AI 读取 workflow 时形成第二权威，无需恶意伪造或非常规场景。",
+        "finding_ref": "F-131-BR4-01",
         "severity": "P2",
-        "owner_round": 2,
-        "reviewed_head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
+        "owner_round": 5,
+        "reviewed_head": "38a0e8dd2314b086378e0674f4bd377dc5e6f694",
         "status": "open",
         "closure_evidence": []
       }
@@ -1234,57 +1280,73 @@
     "scope_proposals": [],
     "observations": [
       {
-        "candidate_ref": "C-131-06",
+        "candidate_ref": "C-131-BR4-03",
         "disposition": "observation",
         "scenario_class": "out_of_scope",
-        "affected_behavior": "guru-review-task-publication 仍为 planned/missing",
-        "path": "trellis/skills/guru-team/registry.json",
+        "affected_behavior": "仓库未配置且环境无 ruff、shellcheck、mypy、pyright",
+        "path": "AGENTS.md",
         "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md"
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md"
         ],
-        "requirement_refs": [
-          "issue-scope-ledger.json:followup_issues"
-        ],
-        "scope_basis": "Issue #116/#132 的明确后续交付边界",
-        "qualification_reason": "Issue #131 只需在 planned consumer 边界 fail closed，不包含 publication package 激活。"
+        "requirement_refs": [],
+        "scope_basis": "当前仓库 executable validation baseline",
+        "qualification_reason": "JSON、Bash、Python compile、tests 与 throwaway 已通过；缺失工具不用于降低或提高 finding severity。"
       }
     ],
     "followup_candidates": [
       {
-        "candidate_ref": "C-131-05",
+        "candidate_ref": "C-131-BR4-02",
         "disposition": "followup_candidate",
         "scenario_class": "out_of_scope",
         "affected_behavior": "当前未 push，无法验证 exact remote feature-ref marketplace install",
         "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
         "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md"
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md"
         ],
         "requirement_refs": [
           "AGENTS.md:开箱即用门禁"
         ],
         "scope_basis": "当前明确不授权 push/publication",
-        "qualification_reason": "远端 exact feature ref 只有 push 后才存在；publication 前必须复验，但不能在本轮虚构远端结果。"
+        "qualification_reason": "远端 exact feature ref 只有 push 后才存在；publication 前必须复验，不能以 public main 冒充。"
       }
     ],
     "rejected_candidates": [
       {
-        "candidate_ref": "C-131-07",
+        "candidate_ref": "C-131-BR4-04",
         "disposition": "rejected_candidate",
         "scenario_class": "out_of_scope",
-        "affected_behavior": "敌对篡改、恶意绕过、TOCTOU、额外 fault injection 与跨 OS atomicity 加固",
+        "affected_behavior": "敌对篡改、恶意伪造、TOCTOU、额外并发或原子性加固",
         "path": "AGENTS.md",
         "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md"
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md"
         ],
         "requirement_refs": [],
         "scope_basis": "仓库 honest-but-fallible 范围明确排除",
         "qualification_reason": "这些候选不能在无需恶意伪造或非常规非功能扩展的受支持正常路径中复现。"
+      },
+      {
+        "candidate_ref": "C-131-BR4-05",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Exact closure round、13-entry、public/private DTO、actual-exit、copy parity 与 upgrade/update 可能存在新缺陷",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md"
+        ],
+        "requirement_refs": [
+          "prd.md:R3",
+          "prd.md:R6",
+          "prd.md:R7",
+          "prd.md:R9"
+        ],
+        "scope_basis": "Issue #131 current normal behavior",
+        "qualification_reason": "Fresh final review 与 focused/full/eval/parity/update evidence 未发现这些当前合同被违反。"
       }
     ],
     "ai_review_gate": {
       "status": "implementation_required",
-      "summary": "Round 2 对 origin/main...0fdbb708 完成独立 closure：Round 1 四项 finding 已关闭，但正常多 closure 路径新资格化 F-131-BR2-01 P2；当前 HEAD 不可放行，必须修复后重跑完整 Phase 2、task commit 与 closure review。"
+      "summary": "Round 4 fresh final review 覆盖 origin/main...38a0e8dd 的完整 315-file range；历史 findings 全部 closed，但资格化 F-131-BR4-01 P2，当前 global workflow 仍复制 Branch Review step-local 合同，因此不能 passed。"
     }
   },
-  "facts_sha256": "2591a7a72595ca059a72d35db7271bbc38813c70c0a0e43f809c451ac1644505"
+  "facts_sha256": "077de9481aa6d230f233c534ba2cc4251ee76826a5c908e2496585734ca1aeb2"
 }

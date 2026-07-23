@@ -82,6 +82,44 @@ def assert_task_plan_clarify_scope_router_contract(
         testcase.assertIn(phrase, normalized)
 
 
+def assert_branch_review_workflow_is_routing_only(
+    testcase: unittest.TestCase, workflow: str,
+) -> None:
+    start = workflow.index("#### 3.5 Branch Review Gate")
+    end = workflow.index("#### 3.6 Finish-work", start)
+    section = workflow[start:end]
+    testcase.assertEqual(
+        section.count('guru-skill-invoke: {"skill":"guru-review-branch"'),
+        1,
+    )
+    testcase.assertEqual(
+        section.count('guru-skill-exit: {"skill":"guru-review-branch"'),
+        4,
+    )
+    for phrase in (
+        "review-branch.sh",
+        "check-review-gate.sh",
+        "--review-source independent-agent",
+        "--findings-file",
+        "`问题发现审查代理`",
+        "`问题闭环审查代理`",
+        "`最终放行审查代理`",
+    ):
+        testcase.assertNotIn(phrase, workflow)
+    for phrase in (
+        "all 13 entry checks",
+        "independent-review dispatch",
+        "qualification before severity",
+        "raw-report retention",
+        "finding closure",
+        "fresh final review",
+        "recorder/checker",
+        "`reviews/*.md`",
+        "`review-gate.json`",
+    ):
+        testcase.assertNotIn(phrase, section)
+
+
 class SourceValidationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
@@ -270,6 +308,44 @@ class SourceValidationTests(unittest.TestCase):
         assert_task_plan_clarify_scope_router_contract(self, canonical)
         assert_task_plan_clarify_scope_router_contract(self, dogfood)
         self.assertEqual(canonical, dogfood)
+
+    def test_branch_review_workflow_is_routing_only_in_source_and_dogfood(self) -> None:
+        canonical = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(
+            encoding="utf-8"
+        )
+        dogfood = (REPO / ".trellis/workflow.md").read_text(encoding="utf-8")
+        assert_branch_review_workflow_is_routing_only(self, canonical)
+        assert_branch_review_workflow_is_routing_only(self, dogfood)
+        self.assertEqual(canonical, dogfood)
+
+    def test_throwaway_preview_checks_current_branch_review_routing(self) -> None:
+        script = (
+            REPO
+            / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ).read_text(encoding="utf-8")
+        start = script.index('test -f "$TARGET/.trellis/workflow.md.new"')
+        end = script.index(
+            'test ! -e "$TARGET/.trellis/workflow.md.new"',
+            start,
+        )
+        preview_check = script[start:end]
+        self.assertIn('if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]', preview_check)
+        self.assertIn(
+            'grep -q \'guru-skill-invoke: '
+            '{"skill":"guru-review-branch","required":true}\' '
+            '"$TARGET/.trellis/workflow.md.new"',
+            preview_check,
+        )
+        self.assertIn(
+            '! grep -q "review-source independent-agent" '
+            '"$TARGET/.trellis/workflow.md.new"',
+            preview_check,
+        )
+        self.assertNotIn(
+            '\ngrep -q "review-source independent-agent" '
+            '"$TARGET/.trellis/workflow.md.new"',
+            preview_check,
+        )
 
     def test_production_task_commit_package_contract(self) -> None:
         package = SKILLS_ROOT / "packages/guru-create-task-commit"

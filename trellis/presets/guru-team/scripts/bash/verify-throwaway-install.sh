@@ -1333,8 +1333,9 @@ DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256 "$TARGET/.trellis/.developer")"
 
 test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
-grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
-grep -q 'Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md`' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md"
+! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
+grep -q 'Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`' "$TARGET/.trellis/workflow.md"
 grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
 grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-sync-base","required":true}' "$TARGET/.trellis/workflow.md"
@@ -3091,7 +3092,12 @@ rm -f "$TARGET/.trellis/workflow.md.new"
   trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new
 )
 test -f "$TARGET/.trellis/workflow.md.new"
-grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md.new"
+if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]; then
+  grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md.new"
+else
+  grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md.new"
+  ! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md.new"
+fi
 rm -f "$TARGET/.trellis/workflow.md.new"
 test ! -e "$TARGET/.trellis/workflow.md.new"
 (
@@ -3099,7 +3105,8 @@ test ! -e "$TARGET/.trellis/workflow.md.new"
   trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
 )
 apply_local_workflow_sample
-grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md"
+! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 
 (
   cd "$TARGET"
@@ -3127,7 +3134,8 @@ if [[ "$(file_sha256 "$TARGET/.trellis/.developer")" != "$DEVELOPER_IDENTITY_DIG
   exit 2
 fi
 
-grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md"
+! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-discover-change-context","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"retarget_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"

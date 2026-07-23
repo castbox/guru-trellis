@@ -312,6 +312,93 @@ commit与真实Branch Review。实现代理未执行这些职责。
 2. Current branch未commit/push，feature-ref marketplace安装仍未验证。
 3. #116、#132和Trellis CLI 0.6.8边界不变。
 
+## 14. Branch Review Round 5 finding-fix（2026-07-24）
+
+本节记录 `F-131-BR4-01` 的实现修复。实现代理未修改 reviewer-owned
+`agent-assignment.json`、`review.md`、`review-gate.json`、`reviews/**`、
+`task-commit-plans/**`，未修改 planning / Phase 2 gate artifact，也未创建 commit、
+push 或 PR。
+
+### 14.1 Finding implementation
+
+- 原状态：current `review-gate.json` 将 `F-131-BR4-01` 记录为
+  `P2 / open`，typed exit 为 `implementation_required`。
+- 根因：Phase 3.5 已有正确的 mandatory `guru-review-branch` invocation 与四个
+  typed exits，但 global workflow 的 task helper、Sub-agent Boundary、artifact 与
+  Phase 3.5 prose 仍复制 package-owned reviewer role、raw report、finding closure、
+  fresh final、recovery、recorder/checker 与命令参数合同，形成第二个行为 SSOT。
+- 修复：canonical workflow 删除 `review-branch.sh --pass` /
+  `check-review-gate.sh` 直调示例和 Branch Review 专属角色、artifact、closure/final、
+  recorder/checker细节；通用 Sub-agent Boundary 只保留稳定 technical id、workspace、
+  wait/liveness 与“不以 main session/script 替代 owning Skill gate”的跨 Skill原则。
+  Phase 3.5 只保留 producer seed projection、mandatory invoke、四个 typed routes、
+  human-artifact全局过渡和 fail-closed stop。
+- 同步：`.trellis/workflow.md` 与 canonical workflow byte-identical；heading depth、
+  workflow-state、Phase 3.5 step anchor、1 invoke、4 exits及3 target/stop markers均未
+  改变。
+- 新状态：实现层已经修复并由防回归验证固定；reviewer-owned gate保持
+  `open / implementation_required`，必须由下一轮独立 finding closure复核后更新。
+
+### 14.2 Files changed
+
+- `trellis/workflows/guru-team/workflow.md`
+- `.trellis/workflow.md`
+- `trellis/skills/guru-team/tests/test_skill_packages.py`
+- `trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`
+- 本 `implementation-handoff.md`
+
+新增 workflow contract regression 同时检查 canonical/dogfood：Phase 3.5只有一个
+`guru-review-branch` invoke和四个 exits；global workflow不再含 direct
+`review-branch.sh` / `check-review-gate.sh`、reviewer role名或旧 finding 参数；
+Phase 3.5不再含 entry/reviewer/qualification/raw-report/closure/final/
+recorder-checker/artifact内部词汇。Throwaway verifier改为在本地 unpublished
+canonical sample安装后断言 stable Skill marker与旧直调文案缺失；public-main
+`--create-new` preview仍只验证公开 marketplace discovery，不冒充未 push feature ref。
+
+### 14.3 Docs SSOT reconciliation
+
+| Field | Round 5 finding-fix result |
+| --- | --- |
+| Strategy | 延续批准的 `ssot_first` |
+| Durable-doc input | `.trellis/spec/workflow/workflow-contract.md` 的 Phase Ownership 与 945-961 行 Phase 3.5 routing contract，以及 approved PRD/design/implement |
+| Updated durable path | canonical `trellis/workflows/guru-team/workflow.md` 收敛为 global transition SSOT |
+| Dogfood sync | `.trellis/workflow.md` byte-identical |
+| No-change durable paths | workflow contract、Skill package contract、public package、runtime、schema与eval已经正确拥有 step-local合同，本 finding只要求移除 global duplicate，不需改写其 authority |
+| Task-history-only | Round 4/5 raw reports、gate状态、验证日志、远端未发布限制与本 handoff |
+| Follow-up | #116、#132保持原边界 |
+
+本轮没有新增产品、API、data、deployment、security或 public Skill I/O合同；不需要修改
+PRD/design/implement或重新批准 planning。CI/CD、container、K8s/Kustomize、database
+migration与 Makefile均无影响。
+
+### 14.4 Validation
+
+- 新增 focused routing-only regression：1 test，`OK`。
+- `SourceValidationTests`：99 tests，`OK`。
+- 完整 `test_skill_packages.py`：168 tests，`OK`。
+- Preset installer：45 tests，`OK`。
+- Exact transient Claude adapter test复跑：1 test，`OK`。
+- Source / installed package validators：均 `passed`，10 active Skills /
+  39 exits / 23 targets；installed inventory为1903 managed files，
+  sidecar/removal/conflict均为0。
+- `get_context.py --mode phase --step 3.5`：成功解析；输出只含 mandatory invoke、
+  四个 typed exits、targets与全局 routes。
+- Dogfood overlay drift、canonical/dogfood byte parity、`task.py validate`、
+  planning checker、workspace boundary、changed Python `py_compile`、
+  changed Bash `bash -n`、`git diff --check`、`git diff --check origin/main`、
+  empty index与source checkout clean均通过。
+- Full throwaway install/update/reapply最终rerun：exit 0；覆盖public marketplace
+  discovery、本地 unpublished canonical workflow sample、fresh install、
+  existing-project preview/switch、all-platform preset、wrapper/eval、
+  `trellis update --force`、workflow/preset reapply与最终零sidecar inventory。
+
+### 14.5 Next gate and limitations
+
+下一步必须重新执行完整独立 Phase 2、fresh task work commit、Round 5 finding owner
+closure和未参与此前发现/闭环的 fresh final review；实现测试不能替代这些 semantic
+gate。分支仍未 commit/push，因此 exact current feature-ref remote marketplace
+install不可验证，public `main` preview也不作为替代证据。
+
 ## 13. Branch Review Round 2 finding-fix（2026-07-24）
 
 本节记录 `F-131-BR2-01` 的实现修复。实现代理只修改 runtime、回归测试、preset
