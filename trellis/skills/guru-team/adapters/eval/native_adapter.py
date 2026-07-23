@@ -623,7 +623,11 @@ def context_sync_result(runtime: Any, head: str) -> dict[str, Any]:
 
 
 def build_context_owner(
-    runtime: Any, fixture: Path, package_root: Path, recipe: str,
+    runtime: Any,
+    fixture: Path,
+    package_root: Path,
+    recipe: str,
+    task_dir: Path | None = None,
 ) -> dict[str, Any]:
     payload = json.loads(
         (package_root / "examples/context-discovery.json").read_text(encoding="utf-8")
@@ -669,6 +673,10 @@ def build_context_owner(
     payload["error"] = None
     payload["typed_exit"] = "context_ready"
     payload["ai_review_gate"]["status"] = "passed"
+    if task_dir is not None:
+        payload["task_worktree_state"] = runtime.context_task_worktree_state(
+            fixture, task_dir,
+        )
     payload["snapshot_identity"] = runtime.context_snapshot_identity(payload)
     if recipe == "context-ready":
         return payload
@@ -684,10 +692,18 @@ def build_context_owner(
     if recipe == "context-refresh-base":
         ready_snapshot = payload["snapshot_identity"]["snapshot_sha256"]
         run_git(fixture, "commit", "--allow-empty", "-q", "-m", "advance context fixture")
+        if task_dir is not None:
+            payload["task_worktree_state"] = runtime.context_task_worktree_state(
+                fixture, task_dir,
+            )
         payload["typed_exit"] = "refresh_base"
         payload["refresh_history"] = [{
             "reason": "The decision checkout advanced after context review.",
-            "error_codes": ["base_head_stale", "local_base_stale"],
+            "error_codes": (
+                runtime.context_live_base_errors(fixture, payload, task_dir)
+                if task_dir is not None
+                else ["base_head_stale", "local_base_stale"]
+            ),
             "superseded_query_sha256": query["query_sha256"],
             "superseded_snapshot_sha256": ready_snapshot,
             "detected_at": "2026-01-01T00:01:00Z",
@@ -1824,7 +1840,14 @@ def stage_owner_execution(
         if skill_id == "guru-clarify-requirements":
             owner = build_clarity_owner(runtime, package, recipe)
         elif skill_id == "guru-discover-change-context":
-            owner = build_context_owner(runtime, fixture, package, recipe)
+            context_task_dir = (
+                fixture / str(public_payload["task_locator"])
+                if public_payload.get("profile") == "task_local_reentry"
+                else None
+            )
+            owner = build_context_owner(
+                runtime, fixture, package, recipe, context_task_dir,
+            )
         elif skill_id == "guru-review-contract-wording":
             owner, _ = build_wording_owner(runtime, fixture, package, recipe)
         elif skill_id == "guru-review-change-request":
@@ -1843,7 +1866,18 @@ def stage_owner_execution(
             os.environ.pop("PATH", None)
         else:
             os.environ["PATH"] = previous_path
-    (fixture / OWNER_RESULT).write_text(json.dumps(owner) + "\n", encoding="utf-8")
+    owner_path = fixture / OWNER_RESULT
+    if (
+        skill_id == "guru-discover-change-context"
+        and public_payload.get("profile") == "task_local_reentry"
+    ):
+        owner_path = (
+            fixture
+            / str(public_payload["task_locator"])
+            / str(public_payload["prior_snapshot_locator"])
+        )
+    owner_path.parent.mkdir(parents=True, exist_ok=True)
+    owner_path.write_text(json.dumps(owner) + "\n", encoding="utf-8")
     return package, fixture_runtime_target, environment
 
 

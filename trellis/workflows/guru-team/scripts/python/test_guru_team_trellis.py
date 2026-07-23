@@ -19590,7 +19590,30 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         dirty_runtime.write_text("VALUE = 'reviewed task implementation'\n", encoding="utf-8")
 
         git(feature, "commit", "--allow-empty", "-q", "-m", "test: advance feature head")
-        self.assertIn("base_head_stale", gtt.context_live_base_errors(feature, recorded, task))
+        advanced_head = git(feature, "rev-parse", "HEAD")
+        self.assertNotEqual(advanced_head, head)
+        resolved_feature = feature.resolve()
+        resolved_task = task.resolve()
+        stale_task_errors = gtt.context_live_base_errors(
+            resolved_feature, recorded, resolved_task
+        )
+        self.assertNotIn("base_head_stale", stale_task_errors)
+        self.assertEqual(stale_task_errors, ["task_worktree_state_stale"])
+        current_task = copy.deepcopy(recorded)
+        current_task["task_worktree_state"] = gtt.context_task_worktree_state(
+            resolved_feature, resolved_task
+        )
+        self.assertEqual(current_task["task_worktree_state"]["head"], advanced_head)
+        self.assertEqual(
+            gtt.context_live_base_errors(
+                resolved_feature, current_task, resolved_task
+            ),
+            [],
+        )
+        self.assertIn(
+            "base_head_stale",
+            gtt.context_live_base_errors(resolved_feature, payload, None),
+        )
         git(feature, "reset", "-q", "--hard", head)
         dirty_runtime.write_text("VALUE = 'reviewed task implementation'\n", encoding="utf-8")
 

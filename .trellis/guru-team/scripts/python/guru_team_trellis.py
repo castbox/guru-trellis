@@ -25376,7 +25376,7 @@ def context_live_base_errors(root: Path, payload: dict[str, Any], task_dir: Path
     git = result["git"]
     errors: list[str] = []
     head = current_head(root)
-    if head != decision.get("head_after"):
+    if task_dir is None and head != decision.get("head_after"):
         errors.append("base_head_stale")
     live_branch = current_branch(root)
     if task_dir is None:

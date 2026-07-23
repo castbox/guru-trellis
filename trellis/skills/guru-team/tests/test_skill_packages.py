@@ -40,6 +40,48 @@ native_adapter = load_module(
 )
 
 
+def task_plan_clarify_scope_router(workflow: str) -> str:
+    marker = '<!-- guru-workflow-target: {"id":"guru-task-plan-clarify-scope-router"} -->'
+    assert workflow.count(marker) == 1
+    start = workflow.index(marker) + len(marker)
+    end = workflow.index("#### 1.5 Activate task", start)
+    return workflow[start:end]
+
+
+def assert_task_plan_clarify_scope_router_contract(
+    testcase: unittest.TestCase, workflow: str,
+) -> None:
+    router = task_plan_clarify_scope_router(workflow)
+    normalized = re.sub(r"\s+", " ", router)
+    consume = normalized.index("consumes only the checked `exit_id`, `task_ref`, and")
+    freshness = normalized.index("Fresh-read the live issue authority")
+    authoring = normalized.index("The caller AI must then author all eight existing")
+    invocation = normalized.index("mandatory invoke the existing active")
+    testcase.assertLess(consume, freshness)
+    testcase.assertLess(freshness, authoring)
+    testcase.assertLess(authoring, invocation)
+    for field in (
+        "`profile`", "`source_exit`", "`mode`", "`target_locator`",
+        "`context_locator`", "`task_locator`", "`resume_target`",
+        "`continuation_id`",
+    ):
+        testcase.assertIn(field, normalized)
+    for phrase in (
+        "exact exit and consumer",
+        "the one current task",
+        "Fail closed on missing, stale, mismatched, multiple, unknown, or unmapped input",
+        "current task and scope ledger",
+        "current planning artifacts and approval state",
+        "every referenced proposal",
+        "`guru-clarify-requirements:active_task_scope_change`",
+        "fourth `skill_input_authoring_seed`",
+        "cardinality remains exactly three",
+        "do not expand the producer DTO",
+        "private runtime state",
+    ):
+        testcase.assertIn(phrase, normalized)
+
+
 class SourceValidationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
@@ -219,6 +261,15 @@ class SourceValidationTests(unittest.TestCase):
             (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes(),
             (REPO / ".trellis/workflow.md").read_bytes(),
         )
+
+    def test_task_plan_clarify_scope_router_is_routing_only_in_source_and_dogfood(self) -> None:
+        canonical = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(
+            encoding="utf-8"
+        )
+        dogfood = (REPO / ".trellis/workflow.md").read_text(encoding="utf-8")
+        assert_task_plan_clarify_scope_router_contract(self, canonical)
+        assert_task_plan_clarify_scope_router_contract(self, dogfood)
+        self.assertEqual(canonical, dogfood)
 
     def test_production_task_commit_package_contract(self) -> None:
         package = SKILLS_ROOT / "packages/guru-create-task-commit"
@@ -3578,6 +3629,13 @@ class Stage0PublicInvocationTests(unittest.TestCase):
         )
 
     def eval_public_output(self, skill_id: str, case_id: str) -> dict:
+        result = self.run_shared_eval(skill_id, case_id)
+        transcript = json.loads(
+            Path(result["cases"][0]["transcript_locator"]).read_text(encoding="utf-8")
+        )
+        return json.loads(transcript["stdout"])
+
+    def run_shared_eval(self, skill_id: str, case_id: str) -> dict:
         run_root = Path(self.temp.name) / "producer-evals" / skill_id / case_id
         process = subprocess.run(
             [
@@ -3596,10 +3654,90 @@ class Stage0PublicInvocationTests(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stderr)
         result = json.loads(process.stdout)
         self.assertEqual(result["status"], "passed", result)
-        transcript = json.loads(
-            Path(result["cases"][0]["transcript_locator"]).read_text(encoding="utf-8")
+        return result
+
+    def test_installed_task_plan_clarify_scope_router_is_routing_only(self) -> None:
+        workflow = (self.repo / ".trellis/workflow.md").read_text(encoding="utf-8")
+        assert_task_plan_clarify_scope_router_contract(self, workflow)
+
+    def test_task_local_refresh_base_eval_uses_checked_snapshot_owner(self) -> None:
+        result = self.run_shared_eval(
+            "guru-discover-change-context", "refresh-base-route"
         )
-        return json.loads(transcript["stdout"])
+        case = result["cases"][0]
+        self.assertEqual(case["actual_exit"], "refresh_base")
+        transcript = json.loads(
+            Path(case["transcript_locator"]).read_text(encoding="utf-8")
+        )
+        native_trace = json.loads(
+            Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
+        )
+        self.assertIn(
+            ".trellis/tasks/current/context-discovery.json",
+            native_trace["events"][-1]["argv"],
+        )
+
+    def test_production_shared_adapter_stages_exact_allowlist_and_real_wrappers(self) -> None:
+        self.assertEqual(native_adapter.PRODUCTION_SKILLS, {
+            "guru-approve-task-plan",
+            "guru-check-task",
+            "guru-create-task-commit",
+        })
+        cases = (
+            ("guru-approve-task-plan", "approved-initial", "approved"),
+            ("guru-check-task", "passed-initial", "passed"),
+            ("guru-create-task-commit", "revision-required", "revision-required"),
+        )
+        fallback_request: dict | None = None
+        for skill_id, case_id, expected_exit in cases:
+            with self.subTest(skill=skill_id, case=case_id):
+                result = self.run_shared_eval(skill_id, case_id)
+                case = result["cases"][0]
+                self.assertEqual(case["actual_exit"], expected_exit)
+                passed_checks = {
+                    item["id"] for item in case["deterministic_results"] if item["passed"]
+                }
+                self.assertTrue({
+                    "expected-exit",
+                    "actual-exit-output-schema",
+                    "expected-route",
+                }.issubset(passed_checks))
+                if skill_id != "guru-create-task-commit":
+                    self.assertTrue({
+                        "public-only",
+                        "evals-not-loaded",
+                        "private-runtime-not-read",
+                    }.issubset(passed_checks))
+                transcript_path = Path(case["transcript_locator"])
+                transcript = json.loads(transcript_path.read_text(encoding="utf-8"))
+                public_output = json.loads(transcript["stdout"])
+                self.assertEqual(public_output["exit_id"], expected_exit)
+                adapter_request = json.loads(
+                    transcript_path.with_name("adapter-request.json").read_text(encoding="utf-8")
+                )
+                native_request = json.loads(
+                    Path(transcript["native_request_path"]).read_text(encoding="utf-8")
+                )
+                self.assertNotIn("expected_exit", adapter_request)
+                self.assertNotIn("expected_exit", native_request)
+                if fallback_request is None:
+                    fallback_request = adapter_request
+
+        assert fallback_request is not None
+        original_allowlist = native_adapter.PRODUCTION_SKILLS
+        native_adapter.PRODUCTION_SKILLS = set()
+        try:
+            with self.assertRaisesRegex(
+                ValueError,
+                "owner staging is not implemented for guru-approve-task-plan",
+            ):
+                native_adapter.stage_owner_execution(
+                    fallback_request,
+                    Path(self.temp.name) / "non-allowlisted-owner-staging",
+                    Path(fallback_request["runtime_target"]),
+                )
+        finally:
+            native_adapter.PRODUCTION_SKILLS = original_allowlist
 
     def non_main_repo(self, name: str, candidates: list[str]) -> Path:
         repo = Path(self.temp.name) / name

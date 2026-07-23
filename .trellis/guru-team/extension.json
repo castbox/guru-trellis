@@ -266,11 +266,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-22T23:20:41Z",
+  "installed_at": "2026-07-23T03:54:00Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/146-production-skill-minimal-handoff",
-    "commit": "7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c",
+    "commit": "e3efc635e36039f0db94a9d24eddad676ad7fe7b",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -376,9 +376,7 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
-    ],
+    "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },
@@ -450,7 +448,7 @@
       {
         "id": "guru-discover-change-context",
         "interface_sha256": "4baa74368ecb3b4d3b25dad58571774ca1d7ac77d6b9084afc80e259926f0502",
-        "tree_sha256": "003952e2b93e838ad62f035012b252f9d090221b9ba4eca28fda4a2e3bf28633"
+        "tree_sha256": "3dc39a6e2c6a3e5e0f11d3fe29cc73de761c8aee3b10885a6208343cb9622f20"
       }
     ],
     "files": [
@@ -597,7 +595,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "c1ebe63609440346a69afd4557b1be9e276d11ef3955161dbf33ba53a6b341c7",
+        "sha256": "d6cde0822017a3441dc2380f5730366c18eff0d759caf071f070dac14e40f0fe",
         "executable": false,
         "action": "unchanged"
       },
@@ -2865,7 +2863,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-        "sha256": "5e3f532e99d37d6d460b3d4ce151b2adc269b17f80fe6754714ef01e37bae0ff",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
         "executable": false,
         "action": "unchanged"
       },
@@ -11552,7 +11550,7 @@
       {
         "path": ".agents/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-        "sha256": "5e3f532e99d37d6d460b3d4ce151b2adc269b17f80fe6754714ef01e37bae0ff",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
         "executable": false,
         "action": "unchanged"
       },
@@ -11783,7 +11781,7 @@
       {
         "path": ".codex/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-        "sha256": "5e3f532e99d37d6d460b3d4ce151b2adc269b17f80fe6754714ef01e37bae0ff",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
         "executable": false,
         "action": "unchanged"
       },
@@ -12014,7 +12012,7 @@
       {
         "path": ".claude/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-        "sha256": "5e3f532e99d37d6d460b3d4ce151b2adc269b17f80fe6754714ef01e37bae0ff",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
         "executable": false,
         "action": "unchanged"
       },
@@ -12245,7 +12243,7 @@
       {
         "path": ".cursor/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-        "sha256": "5e3f532e99d37d6d460b3d4ce151b2adc269b17f80fe6754714ef01e37bae0ff",
+        "sha256": "62919b011883245818f088f414c6b407e054c4b1d05f3aeffb9a32cef875b253",
         "executable": false,
         "action": "unchanged"
       },
