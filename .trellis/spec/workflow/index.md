@@ -89,3 +89,14 @@ python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5
 There is no app frontend, database, API server, or ORM in this repository. Do
 not add React, database, route-handler, or service-layer guidance unless the
 repository actually grows those assets.
+
+## Branch Review Closed-Loop Owner
+
+The durable contracts for `guru-review-branch` are split across:
+
+- `skill-package-contract.md`: public Interface 1.3 I/O, planned target bridge,
+  private state and routing discriminator;
+- `workflow-contract.md`: thin Phase 3.5 invocation and typed consumers;
+- `data-contracts.md`: scenario/disposition/finding artifact shapes;
+- `companion-scripts.md`: deterministic recorder/checker boundary;
+- `quality-guidelines.md`: lifecycle, eval, distribution and upgrade coverage.

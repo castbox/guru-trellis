@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 131,
+    "url": "https://github.com/castbox/guru-trellis/issues/131",
+    "title": "实现 guru-review-branch 闭环 Skill",
+    "reason": "当前唯一 independently deliverable 主目标。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 131,
+      "url": "https://github.com/castbox/guru-trellis/issues/131",
+      "title": "实现 guru-review-branch 闭环 Skill",
+      "reason": "当前 task 明确承诺完整实现并由 Branch Review Gate 验收。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "父级工作流收敛项目，仅建立关联，不由本 task 关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 130,
+      "url": "https://github.com/castbox/guru-trellis/issues/130",
+      "title": "实现 guru-check-task 闭环 Skill",
+      "reason": "已完成的上游 check 闭环依赖，必须保持语义与接口。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 144,
+      "url": "https://github.com/castbox/guru-trellis/issues/144",
+      "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+      "reason": "已完成的 Interface 1.3 基础设施依赖。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 146,
+      "url": "https://github.com/castbox/guru-trellis/issues/146",
+      "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+      "reason": "已完成的 committed seed 生产者依赖。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 116,
+      "url": "https://github.com/castbox/guru-trellis/issues/116",
+      "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+      "reason": "passed 出口的后续 publication consumer，由独立 task 实现。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "完整 workflow graph 与集成收口由独立 task 验证。",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

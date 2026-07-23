@@ -220,8 +220,8 @@
       "id": "committed",
       "evidence": "task commit plan result and current Git HEAD",
       "consumer": {
-        "kind": "workflow",
-        "id": "branch-review-or-finding-closure"
+        "kind": "skill",
+        "id": "guru-review-branch"
       }
     },
     {
@@ -392,16 +392,31 @@
     ],
     "consumer_inputs": [
       {
-        "id": "committed_workflow_input",
+        "id": "branch_review_seed_input",
         "consumer": {
-          "kind": "workflow",
-          "id": "branch-review-or-finding-closure"
+          "kind": "skill",
+          "id": "guru-review-branch"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "json_schema",
-          "schema_id": "guru-production-create-task-commit-workflow-committed-input-1.0",
-          "path": "consumers/workflow/production/create-task-commit-committed.schema.json"
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-branch/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "branch_review",
+          "seed_fields": [
+            "task_ref",
+            "base_ref",
+            "committed_head"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "review_intent"
+          ],
+          "authoring_example": {
+            "id": "branch_review_authoring",
+            "path": "examples/public-branch-review-authoring.json"
+          }
         }
       },
       {
@@ -451,7 +466,7 @@
       {
         "id": "project_committed",
         "exit_id": "committed",
-        "consumer_input_id": "committed_workflow_input",
+        "consumer_input_id": "branch_review_seed_input",
         "operation": "select",
         "mappings": [
           {

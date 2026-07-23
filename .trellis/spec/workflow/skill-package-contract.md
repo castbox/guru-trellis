@@ -144,7 +144,7 @@ schema may use `oneOf` only as a validator index, never as an authoring template
 filled with nullable fields.
 
 The consumer independently owns its input contract. A `kind=skill` consumer
-normally uses `contract.kind=skill_input`. The three production semantic edges
+normally uses `contract.kind=skill_input`. The four production semantic edges
 declared below use the additive
 `contract.kind=skill_input_authoring_seed`; both kinds exact-reference the
 target Interface and profile, and the referenced interface id must equal the
@@ -574,9 +574,10 @@ Check emits `passed(exit_id, task_ref, checked_head, check_ref)`,
 `planning_stale(exit_id, task_ref, planning_route, proposal_refs)`, or blocked
 `exit_id` only. Commit emits `committed(exit_id, task_ref, base_ref,
 committed_head)`, `revision-required(exit_id, task_ref)`, or blocked `exit_id`
-only. `branch-review-or-finding-closure` continues to consume exactly
-`task_ref`, `base_ref`, and `committed_head`; Issue #146 does not activate or
-change the planned downstream package.
+only. Active `guru-review-branch` consumes exactly `task_ref`, `base_ref`, and
+`committed_head`; the caller authors only `profile`, `mode`, and
+`review_intent`. Issue #146 did not activate the downstream package, while
+Issue #131 changes only the consumer binding.
 
 Planning and check wrappers materialize their existing task-local owner input,
 invoke the existing recorder/checker pair, and project only the checker-passed
@@ -587,13 +588,15 @@ calls the existing candidate validator and transaction executor unchanged.
 Caller-selected `expected_exit`, artifact bodies, digests, file metadata,
 absolute paths, and runtime snapshots are not public input.
 
-Exactly three semantic handoffs use target-owned authoring seeds:
+Exactly four semantic handoffs use target-owned authoring seeds:
 `guru-approve-task-plan:revision_required -> revision_reentry`,
 `guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
-`guru-create-task-commit:revision-required -> revision_reentry`. Their projected
-seed fields are respectively `source_exit/task_ref`,
+`guru-create-task-commit:revision-required -> revision_reentry`, and
+`guru-create-task-commit:committed -> guru-review-branch:branch_review`. Their
+projected seed fields are respectively `source_exit/task_ref`,
 `source_exit/task_ref/checked_head/check_ref`, and
-`source_exit/task_ref`. Target package authoring examples supply every remaining
+`source_exit/task_ref`, and `task_ref/base_ref/committed_head`. Target package
+authoring examples supply every remaining
 required fresh semantic field. The validator proves disjoint partition,
 required-set equality, no-overwrite merge, and full target-schema validity;
 all other Skill/workflow/stop consumers keep their existing contracts.
@@ -602,7 +605,7 @@ Active closure is derived from the live registry plus the frozen Stage 0
 manifest, the production manifest, and any future complete active Interface
 1.3 rows absent from both manifests. Every active profile and exit must have a
 current canonical case binding and byte-identical selected-platform corpus.
-The current cardinality assertion is nine active Skills and 35 exits; missing,
+The current cardinality assertion is ten active Skills and 39 exits; missing,
 extra, duplicate, renamed, legacy, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1343,3 +1346,37 @@ or release proof. Normal workflow and standalone invocation never read eval
 corpus, fixtures, adapter descriptors, or runner evidence. The six Stage 0
 packages change atomically through #145, and the three production packages
 change atomically through the separate #146 activation unit.
+
+## Branch Review Owner And Planned Publication Bridge
+
+`guru-review-branch` is the semantic owner of the post-commit full-range review.
+Its single `branch_review` input profile requires exactly `profile`, `mode`,
+`task_ref`, `base_ref`, `committed_head`, and `review_intent`. The committed
+producer supplies the three identity fields; the caller AI freshly authors
+`profile`, `mode`, and `review_intent`. Planning, Phase 2, issue ledger, Docs
+SSOT outcome, assignment/recovery, raw reports, findings, range and freshness
+remain task-local private evidence.
+
+The four outputs are independent minimal DTOs:
+
+- `passed`: `exit_id`, `task_ref`, `reviewed_head`, `review_ref`;
+- `implementation_required`: `exit_id`, `task_ref`, `reviewed_head`,
+  `finding_refs`;
+- `scope_confirmation_required`: `exit_id`, `task_ref`, `proposal_refs`;
+- `blocked`: `exit_id`.
+
+`planned_skill_input_seed` is the only permitted pre-activation bridge to a
+planned Skill. It contains only `kind` and non-empty unique `seed_fields`; it
+must not claim an interface path, profile, target schema, authoring fields,
+authoring example, or private locator. The referenced registry target must be
+exactly `planned`, and projection validation consumes every producer business
+field while validating source field shapes only. Runtime invocation of the
+planned target fails closed as missing Skill. When the target becomes active,
+its owner must replace this bridge with `skill_input` or
+`skill_input_authoring_seed` and prove compatibility against its own input.
+
+For every structured projection, an `exit_id` field whose schema is the exact
+matching const may be omitted only as the already selected route discriminator.
+Every other producer field must be consumed. If the consumer requires
+`exit_id`, it must still be projected. This rule is general and does not permit
+dropping business data or inventing another projection operation.

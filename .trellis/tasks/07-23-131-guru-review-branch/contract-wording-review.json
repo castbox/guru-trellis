@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-23T12:42:58Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-23-131-guru-review-branch",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "size_bytes": 16135,
+        "content_sha256": "6ad8c1137377203441afacc4bd2a1db03e2564cd6f47b1a23c16e1ba612902ec"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-23-131-guru-review-branch/design.md",
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+        "size_bytes": 23473,
+        "content_sha256": "9b7db338b6c34ed261db10a22b07803fa4950929fbdfecf7dc741da980c5efce"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-23-131-guru-review-branch/implement.md",
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
+        "size_bytes": 16965,
+        "content_sha256": "fa902098b919fa30d8d5a9fee028eb9074f2e40b0cb1a42e4c6530efc2ec53cc"
+      }
+    ],
+    "scope_sha256": "103ea0a66e215031b6c7971651ab27aee3b799602704b839db2e8760b04b72b8"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-131-final-planning-wording",
+      "summary": "已在 planning adequacy revision后重新完整审查固定范围内的 prd.md、design.md、implement.md。受控词命中为零，current scan与三文件摘要一致。规划现已显式承接第4条 target-owned authoring-seed edge：#146 production migration manifest保持 3-Skill/11-exit集合与 activation identity，committed consumer/projection binding切换到 #131并同步 authoring edge清单。其余 #131 authority保持不变：qualification先于 severity，未确认 proposal只进入 clarification，finding fix强制经过 Phase 2、commit、closure与 fresh final review；planned #116 bridge只保留 producer seed并在 target package缺失时 fail closed。Workflow、Skill、runtime、artifact、eval、preset、update/reapply与 Docs SSOT均有单一 owner、机器可验证 gate和确定停止条件。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本轮只修正 task-local planning adequacy并承接 accepted_current已授权的 producer-to-consumer edge；GitHub requirement authority未变，post-planning approval仍独立等待用户查看最终文档后确认。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "fb815b7b744db7c405ce4ca9b6bd8d000bc33e468c19da46071300e470640e9c"
+}

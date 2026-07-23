@@ -127,6 +127,28 @@
       "workflow_route_id": "phase-0-change-request-readiness"
     },
     {
+      "id": "guru-review-branch",
+      "state": "active",
+      "name": "guru-review-branch",
+      "package": "packages/guru-review-branch",
+      "interface": "packages/guru-review-branch/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.3",
+      "io_contract_state": "minimal_handoff",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "phase-3-5-branch-review"
+    },
+    {
+      "id": "guru-review-task-publication",
+      "state": "planned",
+      "reason": "Reserved planned consumer for the checker-passed guru-review-branch passed seed; activation is owned by issue #116."
+    },
+    {
       "id": "guru-sync-base",
       "state": "active",
       "name": "guru-sync-base",

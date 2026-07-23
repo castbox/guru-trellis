@@ -1,0 +1,1341 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-23T17:38:52Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-23-131-guru-review-branch",
+    "task_identity_sha256": "88cf781be685dac1ddf1e47328fe49fd9db8fd97dba13034da9973c984fd7325",
+    "scope_ledger_sha256": "b36ecb78ab11ed2405998673035dcd7cf5e2dfe3c9c22fe383e232120c91b2b1",
+    "status": "in_progress",
+    "branch": "codex/131-guru-review-branch",
+    "issue_numbers": [
+      131
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "ea132e350c4b6861fc955f17e590651a46e890ab",
+    "head": "ea132e350c4b6861fc955f17e590651a46e890ab",
+    "dirty_paths": [
+      ".agents/skills/guru-create-task-commit/interface.json",
+      ".agents/skills/guru-review-branch/SKILL.md",
+      ".agents/skills/guru-review-branch/evals/evals.json",
+      ".agents/skills/guru-review-branch/evals/files/blocked-stale-facts.json",
+      ".agents/skills/guru-review-branch/evals/files/blocked-stale-input.json",
+      ".agents/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      ".agents/skills/guru-review-branch/evals/files/finding-fix-passed-input.json",
+      ".agents/skills/guru-review-branch/evals/files/fresh-final-passed-facts.json",
+      ".agents/skills/guru-review-branch/evals/files/fresh-final-passed-input.json",
+      ".agents/skills/guru-review-branch/evals/files/implementation-required-facts.json",
+      ".agents/skills/guru-review-branch/evals/files/implementation-required-input.json",
+      ".agents/skills/guru-review-branch/evals/files/scope-confirmation-required-facts.json",
+      ".agents/skills/guru-review-branch/evals/files/scope-confirmation-required-input.json",
+      ".agents/skills/guru-review-branch/evals/files/standalone-passed-facts.json",
+      ".agents/skills/guru-review-branch/evals/files/standalone-passed-input.json",
+      ".agents/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+      ".agents/skills/guru-review-branch/evals/files/workflow-passed-input.json",
+      ".agents/skills/guru-review-branch/examples/public-blocked-output.json",
+      ".agents/skills/guru-review-branch/examples/public-branch-review-authoring.json",
+      ".agents/skills/guru-review-branch/examples/public-branch-review-input.json",
+      ".agents/skills/guru-review-branch/examples/public-implementation-required-output.json",
+      ".agents/skills/guru-review-branch/examples/public-invocation-error.json",
+      ".agents/skills/guru-review-branch/examples/public-passed-output.json",
+      ".agents/skills/guru-review-branch/examples/public-scope-confirmation-required-output.json",
+      ".agents/skills/guru-review-branch/examples/review-gate.json",
+      ".agents/skills/guru-review-branch/interface.json",
+      ".agents/skills/guru-review-branch/references/contract.md",
+      ".agents/skills/guru-review-branch/schemas/public-blocked-output.schema.json",
+      ".agents/skills/guru-review-branch/schemas/public-branch-review-input.schema.json",
+      ".agents/skills/guru-review-branch/schemas/public-implementation-required-output.schema.json",
+      ".agents/skills/guru-review-branch/schemas/public-input.schema.json",
+      ".agents/skills/guru-review-branch/schemas/public-invocation-error.schema.json",
+      ".agents/skills/guru-review-branch/schemas/public-passed-output.schema.json",
+      ".agents/skills/guru-review-branch/schemas/public-scope-confirmation-required-output.schema.json",
+      ".agents/skills/guru-review-branch/schemas/review-gate.schema.json",
+      ".agents/skills/guru-review-branch/scripts/check-review-gate.sh",
+      ".agents/skills/guru-review-branch/scripts/invoke.sh",
+      ".agents/skills/guru-review-branch/scripts/review-branch.sh",
+      ".agents/skills/guru-review-branch/tests/test_contract.py",
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/skills/guru-create-task-commit/interface.json",
+      ".claude/skills/guru-review-branch/SKILL.md",
+      ".claude/skills/guru-review-branch/evals/evals.json",
+      ".claude/skills/guru-review-branch/evals/files/blocked-stale-facts.json",
+      ".claude/skills/guru-review-branch/evals/files/blocked-stale-input.json",
+      ".claude/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      ".claude/skills/guru-review-branch/evals/files/finding-fix-passed-input.json",
+      ".claude/skills/guru-review-branch/evals/files/fresh-final-passed-facts.json",
+      ".claude/skills/guru-review-branch/evals/files/fresh-final-passed-input.json",
+      ".claude/skills/guru-review-branch/evals/files/implementation-required-facts.json",
+      ".claude/skills/guru-review-branch/evals/files/implementation-required-input.json",
+      ".claude/skills/guru-review-branch/evals/files/scope-confirmation-required-facts.json",
+      ".claude/skills/guru-review-branch/evals/files/scope-confirmation-required-input.json",
+      ".claude/skills/guru-review-branch/evals/files/standalone-passed-facts.json",
+      ".claude/skills/guru-review-branch/evals/files/standalone-passed-input.json",
+      ".claude/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+      ".claude/skills/guru-review-branch/evals/files/workflow-passed-input.json",
+      ".claude/skills/guru-review-branch/examples/public-blocked-output.json",
+      ".claude/skills/guru-review-branch/examples/public-branch-review-authoring.json",
+      ".claude/skills/guru-review-branch/examples/public-branch-review-input.json",
+      ".claude/skills/guru-review-branch/examples/public-implementation-required-output.json",
+      ".claude/skills/guru-review-branch/examples/public-invocation-error.json",
+      ".claude/skills/guru-review-branch/examples/public-passed-output.json",
+      ".claude/skills/guru-review-branch/examples/public-scope-confirmation-required-output.json",
+      ".claude/skills/guru-review-branch/examples/review-gate.json",
+      ".claude/skills/guru-review-branch/interface.json",
+      ".claude/skills/guru-review-branch/references/contract.md",
+      ".claude/skills/guru-review-branch/schemas/public-blocked-output.schema.json",
+      ".claude/skills/guru-review-branch/schemas/public-branch-review-input.schema.json",
+      ".claude/skills/guru-review-branch/schemas/public-implementation-required-output.schema.json",
+      ".claude/skills/guru-review-branch/schemas/public-input.schema.json",
+      ".claude/skills/guru-review-branch/schemas/public-invocation-error.schema.json",
+      ".claude/skills/guru-review-branch/schemas/public-passed-output.schema.json",
+      ".claude/skills/guru-review-branch/schemas/public-scope-confirmation-required-output.schema.json",
+      ".claude/skills/guru-review-branch/schemas/review-gate.schema.json",
+      ".claude/skills/guru-review-branch/scripts/check-review-gate.sh",
+      ".claude/skills/guru-review-branch/scripts/invoke.sh",
+      ".claude/skills/guru-review-branch/scripts/review-branch.sh",
+      ".claude/skills/guru-review-branch/tests/test_contract.py",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/guru-create-task-commit/interface.json",
+      ".codex/skills/guru-review-branch/SKILL.md",
+      ".codex/skills/guru-review-branch/evals/evals.json",
+      ".codex/skills/guru-review-branch/evals/files/blocked-stale-facts.json",
+      ".codex/skills/guru-review-branch/evals/files/blocked-stale-input.json",
+      ".codex/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      ".codex/skills/guru-review-branch/evals/files/finding-fix-passed-input.json",
+      ".codex/skills/guru-review-branch/evals/files/fresh-final-passed-facts.json",
+      ".codex/skills/guru-review-branch/evals/files/fresh-final-passed-input.json",
+      ".codex/skills/guru-review-branch/evals/files/implementation-required-facts.json",
+      ".codex/skills/guru-review-branch/evals/files/implementation-required-input.json",
+      ".codex/skills/guru-review-branch/evals/files/scope-confirmation-required-facts.json",
+      ".codex/skills/guru-review-branch/evals/files/scope-confirmation-required-input.json",
+      ".codex/skills/guru-review-branch/evals/files/standalone-passed-facts.json",
+      ".codex/skills/guru-review-branch/evals/files/standalone-passed-input.json",
+      ".codex/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+      ".codex/skills/guru-review-branch/evals/files/workflow-passed-input.json",
+      ".codex/skills/guru-review-branch/examples/public-blocked-output.json",
+      ".codex/skills/guru-review-branch/examples/public-branch-review-authoring.json",
+      ".codex/skills/guru-review-branch/examples/public-branch-review-input.json",
+      ".codex/skills/guru-review-branch/examples/public-implementation-required-output.json",
+      ".codex/skills/guru-review-branch/examples/public-invocation-error.json",
+      ".codex/skills/guru-review-branch/examples/public-passed-output.json",
+      ".codex/skills/guru-review-branch/examples/public-scope-confirmation-required-output.json",
+      ".codex/skills/guru-review-branch/examples/review-gate.json",
+      ".codex/skills/guru-review-branch/interface.json",
+      ".codex/skills/guru-review-branch/references/contract.md",
+      ".codex/skills/guru-review-branch/schemas/public-blocked-output.schema.json",
+      ".codex/skills/guru-review-branch/schemas/public-branch-review-input.schema.json",
+      ".codex/skills/guru-review-branch/schemas/public-implementation-required-output.schema.json",
+      ".codex/skills/guru-review-branch/schemas/public-input.schema.json",
+      ".codex/skills/guru-review-branch/schemas/public-invocation-error.schema.json",
+      ".codex/skills/guru-review-branch/schemas/public-passed-output.schema.json",
+      ".codex/skills/guru-review-branch/schemas/public-scope-confirmation-required-output.schema.json",
+      ".codex/skills/guru-review-branch/schemas/review-gate.schema.json",
+      ".codex/skills/guru-review-branch/scripts/check-review-gate.sh",
+      ".codex/skills/guru-review-branch/scripts/invoke.sh",
+      ".codex/skills/guru-review-branch/scripts/review-branch.sh",
+      ".codex/skills/guru-review-branch/tests/test_contract.py",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/skills/guru-create-task-commit/interface.json",
+      ".cursor/skills/guru-review-branch/SKILL.md",
+      ".cursor/skills/guru-review-branch/evals/evals.json",
+      ".cursor/skills/guru-review-branch/evals/files/blocked-stale-facts.json",
+      ".cursor/skills/guru-review-branch/evals/files/blocked-stale-input.json",
+      ".cursor/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      ".cursor/skills/guru-review-branch/evals/files/finding-fix-passed-input.json",
+      ".cursor/skills/guru-review-branch/evals/files/fresh-final-passed-facts.json",
+      ".cursor/skills/guru-review-branch/evals/files/fresh-final-passed-input.json",
+      ".cursor/skills/guru-review-branch/evals/files/implementation-required-facts.json",
+      ".cursor/skills/guru-review-branch/evals/files/implementation-required-input.json",
+      ".cursor/skills/guru-review-branch/evals/files/scope-confirmation-required-facts.json",
+      ".cursor/skills/guru-review-branch/evals/files/scope-confirmation-required-input.json",
+      ".cursor/skills/guru-review-branch/evals/files/standalone-passed-facts.json",
+      ".cursor/skills/guru-review-branch/evals/files/standalone-passed-input.json",
+      ".cursor/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+      ".cursor/skills/guru-review-branch/evals/files/workflow-passed-input.json",
+      ".cursor/skills/guru-review-branch/examples/public-blocked-output.json",
+      ".cursor/skills/guru-review-branch/examples/public-branch-review-authoring.json",
+      ".cursor/skills/guru-review-branch/examples/public-branch-review-input.json",
+      ".cursor/skills/guru-review-branch/examples/public-implementation-required-output.json",
+      ".cursor/skills/guru-review-branch/examples/public-invocation-error.json",
+      ".cursor/skills/guru-review-branch/examples/public-passed-output.json",
+      ".cursor/skills/guru-review-branch/examples/public-scope-confirmation-required-output.json",
+      ".cursor/skills/guru-review-branch/examples/review-gate.json",
+      ".cursor/skills/guru-review-branch/interface.json",
+      ".cursor/skills/guru-review-branch/references/contract.md",
+      ".cursor/skills/guru-review-branch/schemas/public-blocked-output.schema.json",
+      ".cursor/skills/guru-review-branch/schemas/public-branch-review-input.schema.json",
+      ".cursor/skills/guru-review-branch/schemas/public-implementation-required-output.schema.json",
+      ".cursor/skills/guru-review-branch/schemas/public-input.schema.json",
+      ".cursor/skills/guru-review-branch/schemas/public-invocation-error.schema.json",
+      ".cursor/skills/guru-review-branch/schemas/public-passed-output.schema.json",
+      ".cursor/skills/guru-review-branch/schemas/public-scope-confirmation-required-output.schema.json",
+      ".cursor/skills/guru-review-branch/schemas/review-gate.schema.json",
+      ".cursor/skills/guru-review-branch/scripts/check-review-gate.sh",
+      ".cursor/skills/guru-review-branch/scripts/invoke.sh",
+      ".cursor/skills/guru-review-branch/scripts/review-branch.sh",
+      ".cursor/skills/guru-review-branch/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/consumers/workflow/production/review-branch-implementation-required.schema.json",
+      ".trellis/guru-team/skills/consumers/workflow/production/review-branch-scope-confirmation.schema.json",
+      ".trellis/guru-team/skills/migrations/production-minimal-handoff.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/evals.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/blocked-stale-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/blocked-stale-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/finding-fix-passed-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/fresh-final-passed-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/fresh-final-passed-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/implementation-required-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/implementation-required-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/scope-confirmation-required-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/scope-confirmation-required-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/standalone-passed-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/standalone-passed-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/workflow-passed-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/workflow-passed-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-blocked-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-branch-review-authoring.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-branch-review-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-implementation-required-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-invocation-error.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-passed-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-scope-confirmation-required-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/examples/review-gate.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-blocked-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-branch-review-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-implementation-required-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-invocation-error.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-passed-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-scope-confirmation-required-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/schemas/review-gate.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/scripts/check-review-gate.sh",
+      ".trellis/guru-team/skills/packages/guru-review-branch/scripts/invoke.sh",
+      ".trellis/guru-team/skills/packages/guru-review-branch/scripts/review-branch.sh",
+      ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
+      ".trellis/guru-team/skills/registry.json",
+      ".trellis/guru-team/skills/schemas/production-migration-manifest.schema.json",
+      ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/check.jsonl",
+      ".trellis/tasks/07-23-131-guru-review-branch/context-discovery.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/contract-wording-review.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/implement.jsonl",
+      ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/issue-review.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/issue-scope-ledger.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/task-start-context.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/consumers/workflow/production/review-branch-implementation-required.schema.json",
+      "trellis/skills/guru-team/consumers/workflow/production/review-branch-scope-confirmation.schema.json",
+      "trellis/skills/guru-team/migrations/production-minimal-handoff.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/evals.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/blocked-stale-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/blocked-stale-input.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/finding-fix-passed-input.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/fresh-final-passed-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/fresh-final-passed-input.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/implementation-required-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/implementation-required-input.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/scope-confirmation-required-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/scope-confirmation-required-input.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/standalone-passed-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/standalone-passed-input.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/workflow-passed-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/evals/files/workflow-passed-input.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/examples/public-blocked-output.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/examples/public-branch-review-authoring.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/examples/public-branch-review-input.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/examples/public-implementation-required-output.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/examples/public-invocation-error.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/examples/public-passed-output.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/examples/public-scope-confirmation-required-output.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/examples/review-gate.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-blocked-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-branch-review-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-implementation-required-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-invocation-error.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-passed-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-scope-confirmation-required-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/schemas/review-gate.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/scripts/check-review-gate.sh",
+      "trellis/skills/guru-team/packages/guru-review-branch/scripts/invoke.sh",
+      "trellis/skills/guru-team/packages/guru-review-branch/scripts/review-branch.sh",
+      "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/schemas/production-migration-manifest.schema.json",
+      "trellis/skills/guru-team/schemas/skill-interface-1.3.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface-1.3.schema.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "captured_at": "2026-07-23T17:38:52Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:131",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/131",
+      "sha256": "e8882112452627643e81b19cf3a65c7e012f9654a6bb4ea85b73ef75ac6a6555",
+      "updated_at": "2026-07-22T11:04:45Z"
+    },
+    {
+      "id": "comment:131:5045031945",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/131#issuecomment-5045031945",
+      "sha256": "a4b986229401c031c71e09c60754e12ce76090d2e7011b8fd0ead628e1b71ecb",
+      "updated_at": null
+    },
+    {
+      "id": "issue:116",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/116",
+      "sha256": "ca0ec3ae6a48d225eb910d3330e89ac9525244beabc56ac6c85067b8137fcc06",
+      "updated_at": "2026-07-22T11:04:57Z"
+    },
+    {
+      "id": "comment:116:5045033833",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/116#issuecomment-5045033833",
+      "sha256": "b349380d822fe5b3a946564c1a8c1cdc725a6dfb8ce669acdaf73531ed8d6da4",
+      "updated_at": null
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    },
+    {
+      "id": "repo:skill-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "acef06e22b4f3b8b9f22e8cac4afa773feba273dd8fd64cc66ffebe4d47a0ce3",
+      "updated_at": null
+    },
+    {
+      "id": "task:issue-ledger",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-23-131-guru-review-branch/issue-scope-ledger.json",
+      "sha256": "b36ecb78ab11ed2405998673035dcd7cf5e2dfe3c9c22fe383e232120c91b2b1",
+      "updated_at": null
+    },
+    {
+      "id": "user:post-planning-approval",
+      "kind": "user_request",
+      "locator": "用户再次查看未变的 current prd.md、design.md、implement.md 链接，并在 durable requirement authority 明确四条 authoring-seed edges、同时保持 production migration 三个 Skills/十一个 exits 后回复“确认继续”；该确认只批准当前规划继续进入独立 Phase 2，不批准范围扩张。",
+      "sha256": "9620f0268225c2eb64e53800789e462a48f3866fbc34ddb7e6f60396e76a78e2",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+      "sha256": "6ad8c1137377203441afacc4bd2a1db03e2564cd6f47b1a23c16e1ba612902ec",
+      "size_bytes": 16135,
+      "modified_at": "2026-07-23T12:42:39.413562+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+      "sha256": "9b7db338b6c34ed261db10a22b07803fa4950929fbdfecf7dc741da980c5efce",
+      "size_bytes": 23473,
+      "modified_at": "2026-07-23T12:42:39.414122+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
+      "sha256": "fa902098b919fa30d8d5a9fee028eb9074f2e40b0cb1a42e4c6530efc2ec53cc",
+      "size_bytes": 16965,
+      "modified_at": "2026-07-23T12:42:39.414381+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+      "sha256": "6ad8c1137377203441afacc4bd2a1db03e2564cd6f47b1a23c16e1ba612902ec",
+      "size_bytes": 16135,
+      "modified_at": "2026-07-23T12:42:39.413562+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+      "sha256": "9b7db338b6c34ed261db10a22b07803fa4950929fbdfecf7dc741da980c5efce",
+      "size_bytes": 23473,
+      "modified_at": "2026-07-23T12:42:39.414122+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
+      "sha256": "fa902098b919fa30d8d5a9fee028eb9074f2e40b0cb1a42e4c6530efc2ec53cc",
+      "size_bytes": 16965,
+      "modified_at": "2026-07-23T12:42:39.414381+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+    "locator": "## 12. Docs SSOT Plan",
+    "durable_paths": [
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/docs/public-docs.md",
+      "docs/requirements/README.md",
+      "docs/requirements/requirement-main.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md"
+    ],
+    "statement_sha256": "c50eb8f7066d6b27f69dc06c18245ccf0dbf74f12adf95df3353fdfeb5a72970"
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "ebc7bf23c45f03246d65a8b75e8912a15612f3e4cea07a73d3f81d1e687e1e6d",
+    "facts_sha256": "fb815b7b744db7c405ce4ca9b6bd8d000bc33e468c19da46071300e470640e9c",
+    "scope_sha256": "103ea0a66e215031b6c7971651ab27aee3b799602704b839db2e8760b04b72b8",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session-issue-131-final-planning-wording",
+    "summary": "已在 planning adequacy revision后重新完整审查固定范围内的 prd.md、design.md、implement.md。受控词命中为零，current scan与三文件摘要一致。规划现已显式承接第4条 target-owned authoring-seed edge：#146 production migration manifest保持 3-Skill/11-exit集合与 activation identity，committed consumer/projection binding切换到 #131并同步 authoring edge清单。其余 #131 authority保持不变：qualification先于 severity，未确认 proposal只进入 clarification，finding fix强制经过 Phase 2、commit、closure与 fresh final review；planned #116 bridge只保留 producer seed并在 target package缺失时 fail closed。Workflow、Skill、runtime、artifact、eval、preset、update/reapply与 Docs SSOT均有单一 owner、机器可验证 gate和确定停止条件。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "R1",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R1. Active Skill package 与稳定身份",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945"
+        ],
+        "reason": "Issue #131 要求把 guru-review-branch 建成稳定 active Skill，并保持分发身份一致。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "e683cd02e00f9ae9bf686029c4bb911fc4ab9524d8ead1e63ca15b93402decdb"
+      },
+      {
+        "id": "R2",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R2. Target-owned public input",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "repo:skill-contract"
+        ],
+        "reason": "权威评论和 Interface 1.3 要求 target-owned public input 与 seed projection 分离。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "31fc4ab35e8bed5c5d67181ef224332a1f1fefa1a7bbad47a6e69ab26ec6e80b"
+      },
+      {
+        "id": "R3",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R3. Complete review entry evidence",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945"
+        ],
+        "reason": "Branch review 必须校验完整入口证据、HEAD、range、workspace 和 reviewer lifecycle。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "f42f621c62b7c36a8e2d0976773dd938c9ab616556288a1de5180202cef0d504"
+      },
+      {
+        "id": "R4",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R4. Independent review 与 upstream ownership",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "独立 review 必须复用未修改 upstream trellis-check reviewer，不能建立 overlay。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "9982b7ce7ccc60cbaf5be1df8a3f645c6b86969f2f2a6c36ac3cce1f79710c21"
+      },
+      {
+        "id": "R5",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R5. Qualification-first finding model",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945",
+          "repo:agents"
+        ],
+        "reason": "候选问题必须先按正常路径完成 scope qualification，再能进入 severity 和 route。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "a93ff2791e9335c6895b6309aa82cd0e6dcd79a6cc301be41fb0e1d0e7d240b5"
+      },
+      {
+        "id": "R6",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R6. Review closure 与 fresh final review",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945"
+        ],
+        "reason": "Finding 修复后必须完成 fresh Phase 2、fresh commit、closure review 和 fresh final review。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "385c42a27d685fba0ffe8a08c6da67234b01fb7cd485ff1a4da16aa1f9e82e21"
+      },
+      {
+        "id": "R7",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R7. Per-exit public outputs",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945",
+          "repo:skill-contract"
+        ],
+        "reason": "四个 typed exits 必须各有最小独立 output contract 和唯一 consumer。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "65d30424c329acfec70132aed41708de5165a6bb666f544eaea4458e31d11a3f"
+      },
+      {
+        "id": "R8",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R8. 唯一 consumer 与 planned #116 bridge",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:skill-contract"
+        ],
+        "reason": "当前任务只发布 planned #116 seed bridge，保持 #116 的 target-owned authoring contract 未定义且运行时 fail closed。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "70bcd6ae2a7c29371741b04157c209377e5cd9772090737b1a874945e470fb76"
+      },
+      {
+        "id": "R9",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R9. Artifact SSOT 与 script 边界",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "既有 review artifact chain 是唯一 SSOT，脚本只做 recorder、validator 和 executor。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "fdef87b5e29d7378c1157dfea7aa3b3ee9116a8b7e23385486b251df9d21650e"
+      },
+      {
+        "id": "R10",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R10. Real public wrapper 与 eval corpus",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "repo:skill-contract"
+        ],
+        "reason": "公共 wrapper 必须执行真实 gate，并由 production-equivalent corpus 覆盖实际 exits。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "1f20bb0cda48367576d6b39dbbbb3789bf3c59d8058e4b83d2786838c3299dd4"
+      },
+      {
+        "id": "R11",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R11. Workflow、distribution 与 upgrade",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945",
+          "repo:agents"
+        ],
+        "reason": "修改必须同步 canonical、installed、preset 和平台副本，并完成 clean install、update、reapply 验证。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "8c9e51cf57455b7744ad67eefbd49736856664f9d911ca484aaeb3432a85af1e"
+      },
+      {
+        "id": "R12",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "### R12. 正常运行边界与非目标",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "实现与测试只覆盖 honest-but-fallible 正常路径，排除恶意篡改、攻击和非要求加固。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "b3440020185e15ad3c33c3d751b0fdabd413159f68421e521b8638ba2f1cbe82"
+      },
+      {
+        "id": "AC1",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC1：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945"
+        ],
+        "reason": "稳定 active Skill 身份和所有分发面的同一性必须可验证。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "475aa29e64e1d09610a257da69a510a1cfa51ee160740235164251d698ee7d87"
+      },
+      {
+        "id": "AC2",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC2：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "repo:skill-contract"
+        ],
+        "reason": "Input schema、example、wrapper 和 seed/authoring union 必须精确通过。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "74fe68d43ee3781a1099373ffa65690a4e4d4efb4fa7b9344ea26700ef317097"
+      },
+      {
+        "id": "AC3",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC3：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131"
+        ],
+        "reason": "入口 checker 的所有 fail-closed 前置条件必须有负例。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "dd8381fe392c54a511ee278c256721de6dc817e5a5386561764ca1c33a44c9da"
+      },
+      {
+        "id": "AC4",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC4：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "独立 reviewer 和 qualification/closure gate 必须保持职责分层。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "9694365d892514932c29ba57c879c77958909254ff274d761aff72f64e7388a8"
+      },
+      {
+        "id": "AC5",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC5：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "五类 scenario、qualification-first 和未确认 proposal 的边界必须可证明。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "911ad96cd78102f96ece0ca5e203b5aeaa13cbaecc40444fb07a34654fb11861"
+      },
+      {
+        "id": "AC6",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC6：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945"
+        ],
+        "reason": "Finding fix 到 fresh final review 的闭环与角色约束必须全部通过。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "83dadd33782e46acc57ed64c7ef76afee071eb91a46934316b986728dec85c7a"
+      },
+      {
+        "id": "AC7",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC7：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:skill-contract"
+        ],
+        "reason": "四个最小 per-exit outputs 和 direct consumer use 必须通过 Interface 1.3 检查。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "262952cb0bc3aadd6fa928869c18dd0760560b3a1c73bb29ed1e3ad9b5eb16ad"
+      },
+      {
+        "id": "AC8",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC8：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "issue:116",
+          "comment:116:5045033833"
+        ],
+        "reason": "Passed bridge 只交付三个 committed seed，且 planned package 缺失时必须停止。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "648387a32d3bf03014408aaed0a3d9f4464cf440cb7b8e228a0fb6601556ab90"
+      },
+      {
+        "id": "AC9",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC9：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:131:5045031945"
+        ],
+        "reason": "其余三个 exits 必须各自只有一个 workflow consumer。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "27498ff4d8592901bc5ade54fb37eb98f838e1dc4f50bbe39f51c0b584f5df98"
+      },
+      {
+        "id": "AC10",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC10：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131"
+        ],
+        "reason": "既有 review artifact chain 的 schema、hash、HEAD、range、freshness 必须通过。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "6ea5d0bd1b0f8b5c229e2897eaea02dc74f1c3305a93d24ae48cd8661d2890d0"
+      },
+      {
+        "id": "AC11",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC11：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "Runtime traces 必须证明脚本没有替代 semantic scope、severity、route 或 pass 判断。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "e5ab9cb162b051ad5c56b49b1bc4acd12e1aa4a9401643752519c89af8aad7d9"
+      },
+      {
+        "id": "AC12",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC12：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:131:5045031945"
+        ],
+        "reason": "Corpus 必须覆盖四 exits、两 modes、finding-fix、fresh-final 以及四平台字节一致。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "e460a58b498c0f191825da31ef19c0d1fa19c2ca612af4c5695469984b1e64c7"
+      },
+      {
+        "id": "AC13",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC13：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:skill-contract"
+        ],
+        "reason": "Global workflow 只能 mandatory invoke Skill 并消费唯一 typed exits。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "0e1111b73032b616b515417c5719f2b9fedca1bf488bee33437389ce65ec72d5"
+      },
+      {
+        "id": "AC14",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC14：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "repo:skill-contract"
+        ],
+        "reason": "Production migration manifest 的集合、binding、edge 数和 live closure 必须精确保持。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "99c257aa822106ddfc86b8c844805a5faa944c490dd703e97eb6f3d0ccb6e8d7"
+      },
+      {
+        "id": "AC15",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC15：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "Source、installed、dogfood、平台、clean throwaway、update 和 reapply 必须无漂移。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "00c8dc808d428ba73512e8774ec4912286f2faee134d835585d3b40b30346e31"
+      },
+      {
+        "id": "AC16",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC16：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "Docs SSOT reconciliation 与公开安装命令必须在 throwaway repo 实测。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "412f42b114b365b70929b3aa9c4a224ddaaaba4bd72cd7d8288f4a39afa41e9d"
+      },
+      {
+        "id": "AC17",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/prd.md",
+        "locator": "AC17：",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "Phase 2 与 Branch Review 必须独立覆盖完整 scope 并收敛 current-scope findings。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "59ea41c61cd25a3c61897c4fabb634099a2f4d92bfa5c6126d3ddfd2e733ba50"
+      },
+      {
+        "id": "P13",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+        "locator": "| P13 |",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:skill-contract"
+        ],
+        "reason": "必须在不越权定义 #116 target-owned schema 的前提下解除当前 Interface 1.3 planned-consumer gap。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "planned-seed-bridge",
+              "tradeoff": "只保留 committed seed，当前运行时在 #116 package 缺失处 fail closed。"
+            },
+            {
+              "id": "define-116-input-now",
+              "tradeoff": "会越过 #131 边界并抢占 #116 的 target-owned authoring contract。"
+            },
+            {
+              "id": "leave-gap",
+              "tradeoff": "无法让 #131 package 通过 active closure 和生产验证。"
+            }
+          ],
+          "selected_id": "planned-seed-bridge",
+          "selection_reason": "该方案同时保持 target ownership、最小 DTO 和 fail-closed runtime。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "15f5cf66005021c9af75069329de35ed61c11fddb4a25f2276aa71ec67ee718b"
+      },
+      {
+        "id": "P14",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+        "locator": "| P14 |",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "repo:skill-contract"
+        ],
+        "reason": "Projection validator 需要在不污染业务 DTO 的情况下表达 routing discriminator。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "omit-exit-id-only",
+              "tradeoff": "通用规则只允许省略 routing identity，所有业务字段仍必须被消费。"
+            },
+            {
+              "id": "inject-exit-id-into-seed",
+              "tradeoff": "会把 route identity 泄漏进 #116 committed seed。"
+            }
+          ],
+          "selected_id": "omit-exit-id-only",
+          "selection_reason": "只豁免 discriminator，保持最小业务 handoff 与严格字段消费。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "6eaa02df860258f5b1c4c678bea2ab7b3283d1ada4b8ad77e4e5a6edd24aba3e"
+      },
+      {
+        "id": "P15",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+        "locator": "| P15 |",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "comment:131:5045031945",
+          "repo:skill-contract"
+        ],
+        "reason": "三类 review intent 共享相同结构，仅语义用途不同。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "single-profile-intent-enum",
+              "tradeoff": "一个 branch_review profile 配合受控 intent，保持 public surface 最小。"
+            },
+            {
+              "id": "three-duplicate-profiles",
+              "tradeoff": "重复 schema 和 examples，增加漂移面而无结构收益。"
+            }
+          ],
+          "selected_id": "single-profile-intent-enum",
+          "selection_reason": "结构相同不应复制 profiles，intent enum 足以表达调用语义。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "62188b2febf9db7b9e551e326caf2be155b9b1ac7cf55570d00e90969e92a8e3"
+      },
+      {
+        "id": "P16",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+        "locator": "| P16 |",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:131",
+          "comment:131:5045031945",
+          "repo:skill-contract"
+        ],
+        "reason": "Scope confirmation 和 implementation route 需要保持 fresh caller-owned semantic authoring。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "workflow-routers",
+              "tradeoff": "输出只交给 route，consumer 在调用目标 Skill 前生成 fresh target-owned input。"
+            },
+            {
+              "id": "embed-next-input",
+              "tradeoff": "会扩大 branch review DTO 并要求 producer 理解下游 semantic input。"
+            }
+          ],
+          "selected_id": "workflow-routers",
+          "selection_reason": "Router 保持 Skill 边界、target ownership 与 deterministic projection。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "fe4f19d89cd7513d4822bdfc34aa4467415672678e81603bb1877dd6d48a7094"
+      },
+      {
+        "id": "P17",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+        "locator": "| P17 |",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents",
+          "repo:skill-contract"
+        ],
+        "reason": "公共 Skill、workflow、script、preset 和 docs 同时变化，需要 durable SSOT 先行收敛。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "ssot-first",
+              "tradeoff": "同步 durable specs 和 public docs，再验证所有运行副本无漂移。"
+            },
+            {
+              "id": "task-only-delta",
+              "tradeoff": "只写 task delta 会留下 package、runtime 和公开文档漂移。"
+            }
+          ],
+          "selected_id": "ssot-first",
+          "selection_reason": "公共合同变更必须以 durable docs 和 canonical sources 为准。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "6dd6f138572762fdab1b1e8b2c794c61e12154c3a44a5b1563aa69fc1ae6f6a7"
+      },
+      {
+        "id": "IMPLEMENT-SEQUENCE",
+        "artifact_path": ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
+        "locator": "## 2. 有序实施步骤",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "reason": "跨 package、workflow、runtime、tests、distribution 和 docs 的变更存在明确依赖顺序。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "ordered-eleven-steps",
+              "tradeoff": "按合同、package、runtime、workflow、migration、sync、docs、tests、throwaway 的依赖顺序实施。"
+            },
+            {
+              "id": "unordered-parallel-edits",
+              "tradeoff": "会导致运行副本先于 canonical source、测试先于合同或文档遗漏。"
+            }
+          ],
+          "selected_id": "ordered-eleven-steps",
+          "selection_reason": "有序实施能保持 canonical-first、验证可定位并减少分发漂移。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "88bbd2478a84e416d65dd6cb1fe5879c1691e927008aaa82a6a22046889d3cfc"
+      }
+    ],
+    "coverage": {
+      "reviewer": "codex-main-session-issue-131-plan-four-edge-freshness-review",
+      "summary": "完整复核 R1-R12、AC1-AC17、P13-P17 与实施顺序；三份规划字节未变，current issue authority 未变。durable SSOT 仅将四条 target-owned authoring-seed edges 与 production migration 三个 Skills/十一个 exits 明确分离，并保持 active closure 十个 Skills/三十九 exits/二十三 targets，无产品或风险范围扩张。",
+      "reviewed_entry_ids": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11",
+        "R12",
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7",
+        "AC8",
+        "AC9",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15",
+        "AC16",
+        "AC17",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "IMPLEMENT-SEQUENCE"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "ec4b678702568aa6220d79656cc6847935a98c738923754cfc7f92322a2272ad"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "codex-main-session-issue-131-plan-four-edge-freshness-review",
+    "summary": "重新审查六类非常规场景；精确四条 authoring-seed edges 的 SSOT 对齐没有引入安全、恶意 actor、并发、故障注入、跨 OS 或其它非常规机制，所有既有 disposition 保持 current。",
+    "candidates": [
+      {
+        "id": "U1-security-threat",
+        "scenario_class": "security_or_threat",
+        "trigger_evidence": "Review artifact 含 digest、freshness 和 live reread，可能被误解为 hostile-input security boundary。",
+        "scope": "若纳入，将要求把内部正常流程证据升级为 authenticity 或 anti-tamper 机制。",
+        "cost": "扩大公共合同、validator、负例和审查范围，且与本仓库 honest-but-fallible 边界冲突。",
+        "alternatives": [
+          "保持 correctness/freshness 语义",
+          "另立明确安全需求 issue"
+        ],
+        "consequence": "当前任务仅验证正常 recorder/validator 错误和 stale/mismatch，不实现威胁模型。",
+        "source_requirement_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "c0d55921674c24f7c80dc8fc807af1bcffc0617e701b01c635689317b20bfc11"
+      },
+      {
+        "id": "U2-malicious-actor",
+        "scenario_class": "attack_or_malicious_actor",
+        "trigger_evidence": "公共 wrapper 和 artifact 可以被人为编辑，但 issue 未要求抵御故意伪造。",
+        "scope": "若纳入，将覆盖恶意调用方、对抗性输入和故意流程绕过。",
+        "cost": "需要新的攻击模型、认证边界和大量非正常路径测试。",
+        "alternatives": [
+          "按诚实协作处理普通错误",
+          "未来由独立安全需求定义"
+        ],
+        "consequence": "人为伪造 artifact/hash/state 的案例不得成为 current finding。",
+        "source_requirement_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "f4f1cf8bf59f37ecf226736c7fb5a283bf53a0d7abd5637bb7a9eb891d35f0ef"
+      },
+      {
+        "id": "U3-toctou-concurrency",
+        "scenario_class": "toctou_or_concurrency_race",
+        "trigger_evidence": "Freshness checker 涉及读取 live HEAD 和 workspace 状态。",
+        "scope": "候选机制是锁、原子事务或并发竞态压力验证。",
+        "cost": "引入非需求的锁协议、并发 harness 和复杂 recovery。",
+        "alternatives": [
+          "在每个 gate 进行 deterministic live reread",
+          "未来明确并发需求后单独设计"
+        ],
+        "consequence": "删除锁和 TOCTOU 加固机制，仅保留正常顺序执行下的 freshness 校验。",
+        "source_requirement_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "disposition": "mechanism_removed",
+        "confirmation": null,
+        "proposal_sha256": "6c0d85194d887f69f6c9924015b0e5555529ff3cfa7d1532524c1a2e2a263d2d"
+      },
+      {
+        "id": "U4-crash-consistency",
+        "scenario_class": "fault_injection_or_crash_consistency",
+        "trigger_evidence": "Recorder 会写 gate artifacts，理论上可能在异常退出时中断。",
+        "scope": "若纳入，将要求 fault injection、crash recovery 和额外原子写入协议。",
+        "cost": "显著扩大 companion script 与测试矩阵，且 issue 未要求。",
+        "alternatives": [
+          "覆盖正常写入失败并 fail closed",
+          "未来独立 reliability issue"
+        ],
+        "consequence": "当前只处理正常 I/O 失败，不做 crash-consistency fault injection。",
+        "source_requirement_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "8337c9651ab50d0a618a6ab7c9bbf2e3831d59fa164dd980c8534aad00de4657"
+      },
+      {
+        "id": "U5-cross-os",
+        "scenario_class": "cross_os_atomicity",
+        "trigger_evidence": "Preset 和 shell/Python scripts 可能在不同操作系统运行。",
+        "scope": "若纳入，将要求跨 OS 原子性和完整平台矩阵。",
+        "cost": "需要额外 CI、文件系统语义和安装器兼容设计。",
+        "alternatives": [
+          "验证仓库声明的当前支持路径",
+          "未来由明确平台需求扩展"
+        ],
+        "consequence": "不把未声明的跨 OS 原子性纳入 #131 current acceptance。",
+        "source_requirement_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "dbe252ff2075830ea3492f8cc32a77c60cd522b50df31f99e6f61c25451d3190"
+      },
+      {
+        "id": "U6-other-hardening",
+        "scenario_class": "other_nonstandard",
+        "trigger_evidence": "Branch review 可被泛化为持续监控、分布式协调或额外 defense-in-depth。",
+        "scope": "候选范围包括长期守护进程、分布式锁、额外审计后端或非需求 policy engine。",
+        "cost": "偏离一次 closed-loop Skill 交付并增加无人消费的状态。",
+        "alternatives": [
+          "保持当前 closed-loop Skill",
+          "未来通过明确 requirement 单独立项"
+        ],
+        "consequence": "本任务不增加未被 issue 和正常路径要求的非标准机制。",
+        "source_requirement_refs": [
+          "issue:131",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "bc9a9b00c73f084cab2580c8407a354ae0c617613665ed4f92a6d18a803aa9b3"
+      }
+    ],
+    "unresolved_count": 0,
+    "review_sha256": "72a7d9db3f330478beca2268f61c07a4087b2606b7d668421e49d7dc3786d713"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-131-plan-four-edge-freshness-review",
+      "summary": "完整重入 planning preconditions：current issue/comments、三份未变规划、Docs SSOT Plan、wording evidence、scope ledger 与 workspace 均已核对。durable requirement authority 的实际变化只是在既有获批合同内明确四条 authoring-seed edges，并与 production migration 三个 Skills/十一个 exits、active closure 十个 Skills/三十九 exits/二十三 targets 分层；无规划缺口、无 authority mutation proposal、无未确认 scope expansion，足以进入一轮全新的独立 Phase 2。",
+      "reviewed_at": "2026-07-23T17:37:31Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-23T17:37:31Z",
+    "confirmed_at": "2026-07-23T17:37:31Z",
+    "evidence_summary": "用户重新查看 current prd.md、design.md、implement.md 链接并获知四条 authoring-seed edges 与三 Skills/十一个 exits 生产迁移的 SSOT freshness 原因后再次回复“确认继续”；确认只授权当前规划继续到独立 Phase 2，不授权范围扩张。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "Current planning 文档未变；durable requirement authority 仅在已批准 ssot_first 内明确四条 authoring-seed edges 并保持 production migration 三 Skills/十一个 exits，已重新完成 semantic review 与用户 post-planning confirmation。",
+  "supersedes_facts_sha256": "3860530f34f23cd8961118e1c33a5b355633dafb3a58dde3e56df31918a00bb1",
+  "facts_sha256": "bdb2f2e720b2224eb65af1d0cb87dafde15b82753ef296f0291b7798a336257e"
+}

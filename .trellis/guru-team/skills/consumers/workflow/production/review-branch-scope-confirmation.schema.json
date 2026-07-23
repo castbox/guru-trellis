@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-review-branch-workflow-scope-confirmation-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "task_ref", "proposal_refs"],
+  "properties": {
+    "exit_id": {"const": "scope_confirmation_required"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "proposal_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}

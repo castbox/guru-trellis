@@ -41,7 +41,7 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
   `legacy`，1.3 representative fixture 仅用于测试；随后 #145 已把六个 Stage 0 Skills
   及其 24 exits 原子迁移到 `1.3+minimal_handoff`；#146 再以独立
   `production-minimal-handoff-v1` 把 planning/check/commit 三包、十个 profiles 与 11 exits
-  原子迁移到 1.3。当前 live closure 为 9 Skills / 35 exits，Stage 0 的 6/24 identity 保持不变。
+  原子迁移到 1.3。当前 live closure 为 10 Skills / 39 exits，Stage 0 的 6/24 identity 保持不变。
 
 ## 扩展重要性分层
 
@@ -114,12 +114,14 @@ unknown 或 mixed 1.2/1.3 Stage 0 graph 均失败关闭。Preset 以一次完整
 
 Production manifest 精确绑定 planning/check/commit 的十个 structured profiles、11 exits、
 per-exit output/example、consumer/projection、private artifact 与 eval cases；两个 manifests
-合并后形成当前 9/35 closure。`committed` DTO 只含 `exit_id`、`task_ref`、`base_ref`、
-`committed_head`，继续由 `branch-review-or-finding-closure` 消费，#146 不提前激活 #131。
+合并后形成当前 10/39 closure。`committed` DTO 只含 `exit_id`、`task_ref`、`base_ref`、
+`committed_head`；#146 交付时由 placeholder 消费，#131 现切换为 active
+`guru-review-branch`，不改变三包/11 exits activation identity。
 Commit candidate builder 只物化 private plan并复用既有 validator/executor transaction。
 
-Planning revision self-reentry、check passed 到 initial commit、commit revision self-reentry
-三条 edge 使用 target-owned `skill_input_authoring_seed`。Producer 只投影 minimal seed，
+Planning revision self-reentry、check passed 到 initial commit、commit revision self-reentry，
+以及 commit `committed` 到 active Branch Review 四条 edge 使用 target-owned
+`skill_input_authoring_seed`。Producer 只投影 minimal seed，
 caller AI 编写其余 required semantic fields；validator 证明字段分区无交集且完整、merge 无
 覆盖并通过完整 target schema。该 consumer kind 不新增 projection operation，也不允许
 private lookup、default 或 runtime semantic reconstruction。
@@ -199,7 +201,8 @@ Closed but unmerged PR：
 public-wrapper runner、deterministic/external-semantic/human 三边界，以及
 shared/Codex/Claude/Cursor 四个薄 adapter。#147 交付时，九个 production Skills 仍保持
 Interface 1.2 legacy；随后 #145 已迁移六个 Stage 0 production corpora 并完成其 24 exits
-coverage；#146 已完成 planning/check/commit 三包的 11-exit coverage 与 9/35 closure。
+coverage；#146 已完成 planning/check/commit 三包的 11-exit coverage，#131 将总 closure
+扩展为 10/39。
 四个 descriptor 必须绑定真实可执行 wrapper，并由 wrapper 从 `PATH` 检测 documented native
 command、组装平台 argv、加载 exact Skill/prompt/files、收集 public output/trace；隐藏
 executable 环境变量不能替代该公开安装路径。
@@ -209,3 +212,11 @@ Native trace 使用 closed `guru-team-skill-eval-native-trace-1.0` receipt：CLI
 repo 外 helper 读取 projected exact `SKILL.md` 并调用 exact public wrapper，receipt 与 request、
 projection、Skill/wrapper digest、wrapper result 和返回 DTO 不匹配或缺失时为
 `execution_error`。四平台直接读取 projection 内 eval/private runtime 必须真实失败，不能靠提示词。
+
+## Branch Review Skill（#131）
+
+#131 把 Phase 3.5 分支审查收敛为 active `guru-review-branch` Interface 1.3
+closed-loop package。它拥有 qualification-first、finding/closure/final reviewer lifecycle
+和既有 review artifacts；workflow 只路由四个 typed exits。Active graph 增长为
+10 Skills/39 exits；#146 production migration 仍保持 3 Skills/11 exits 与原 activation id。
+`passed` 只桥接 planned #116 的最小 seed，#116 未激活时确定性停止。

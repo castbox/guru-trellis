@@ -785,7 +785,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         )
         self.patches = [
             mock.patch.object(gtt, "assert_workspace_boundary", return_value={"status": "ok"}),
-            mock.patch.object(gtt, "validate_planning_approval", side_effect=lambda root, task_dir: (task_dir / "planning-approval.json", {}, [])),
+            mock.patch.object(gtt, "validate_planning_approval", side_effect=lambda root, task_dir, **kwargs: (task_dir / "planning-approval.json", {}, [])),
             mock.patch.object(
                 gtt,
                 "validate_phase2_check",
@@ -1101,6 +1101,46 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             evidence["errors"],  # type: ignore[index]
             ["Committed task candidate recovery evidence is stale."],
         )
+
+    def test_review_entry_accepts_current_task_commit_evidence_and_rejects_stale_identity(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        self.bind_public_phase2(["src/task.txt"])
+        candidate, _, _ = gtt.build_task_commit_candidate_from_public_input(
+            self.root,
+            self.task_dir,
+            self.public_commit_input(),
+        )
+        committed = gtt.execute_task_commit_candidate(
+            self.root,
+            candidate,
+            self.task_dir,
+        )
+        review_input = {
+            "task_ref": self.task_rel,
+            "base_ref": gtt.diff_base_ref(self.root, "main"),
+            "committed_head": committed["commit_sha"],
+        }
+
+        self.assertEqual(
+            gtt.review_branch_task_commit_evidence_errors(
+                self.root,
+                self.task_dir,
+                self.task,
+                self.context,
+                review_input,
+            ),
+            [],
+        )
+
+        review_input["committed_head"] = "f" * 40
+        errors = gtt.review_branch_task_commit_evidence_errors(
+            self.root,
+            self.task_dir,
+            self.task,
+            self.context,
+            review_input,
+        )
+        self.assertTrue(any("public task/base/committed HEAD identity is stale" in error for error in errors))
 
     def test_public_wrapper_builds_executes_and_serializes_minimal_committed_dto(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -9217,6 +9257,7 @@ class ReviewGateReportTest(unittest.TestCase):
                 "preflight": {"current_checkout": str(self.root)},
             }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "review_branch_entry_precondition_errors", return_value=[]),
             mock.patch.object(gtt, "validate_planning_approval", return_value=(self.task_dir / "planning-approval.json", {}, [])),
             mock.patch.object(gtt, "validate_phase2_check", return_value=(self.task_dir / "phase2-check.json", {}, [])),
             mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
@@ -9943,6 +9984,127 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertTrue(payload["conclusion"]["passed"])
         self.assertEqual(payload["verification_evidence"]["agent_assignment"]["review_rounds_count"], 3)
+
+    def test_review_branch_rejects_semantic_finding_with_unknown_owner_and_closure_report(self) -> None:
+        head = "a" * 40
+        rounds = [
+            {
+                "round": 1,
+                "logical_role": "问题发现审查代理",
+                "agent_id": "agent-a",
+                "platform_nickname": "发现代理",
+                "reviewed_head": head,
+                "findings_count": 1,
+                "reuse_policy": "发现问题后只进入实现与闭环。",
+                "reuse_decision": "new-agent",
+            },
+            {
+                "round": 2,
+                "logical_role": "问题闭环审查代理",
+                "agent_id": "agent-a",
+                "platform_nickname": "发现代理",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "同一 agent 只确认上一轮 finding 是否关闭。",
+                "reuse_decision": "reuse-for-closure",
+            },
+            {
+                "round": 3,
+                "logical_role": "最终放行审查代理",
+                "agent_id": "agent-b",
+                "platform_nickname": "最终代理",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "最终放行必须使用 fresh agent。",
+                "reuse_decision": "new-agent",
+            },
+        ]
+        assignment = self.write_agent_assignment(rounds)
+        assignment_payload = gtt.read_json(assignment)
+        assignment_payload["head"] = head
+        gtt.write_json(assignment, assignment_payload)
+        review_report = self.task_dir / "review.md"
+        review_report.write_text(
+            self.review_rollup_text(
+                "finding 已闭环，并由 fresh final reviewer 完整复核。",
+                self.raw_report_names_for_rounds(rounds),
+            ),
+            encoding="utf-8",
+        )
+        public_input = {
+            "profile": "branch_review",
+            "mode": "workflow",
+            "task_ref": ".trellis/tasks/07-04-review-gate",
+            "base_ref": "origin/main",
+            "committed_head": head,
+            "review_intent": "finding_fix_review",
+        }
+        semantic_input = {
+            "candidates": [{
+                "candidate_ref": "candidate-001",
+                "disposition": "qualified_finding",
+                "scenario_class": "normal_required_behavior",
+                "affected_behavior": "已批准行为需要修复。",
+                "path": "trellis/workflows/guru-team/workflow.md",
+                "evidence_refs": ["reviews/round-001-problem-finding.md"],
+                "requirement_refs": ["PRD R6"],
+                "scope_basis": "当前批准范围。",
+                "qualification_reason": "正常路径违反当前 requirement。",
+                "finding_ref": "F-001",
+                "severity": "P2",
+                "owner_round": 99,
+                "reviewed_head": head,
+                "status": "resolved",
+                "closure_evidence": ["reviews/nonexistent-closure.md"],
+            }],
+            "ai_review_gate": {
+                "status": "passed",
+                "summary": "所有 finding 已闭环。",
+            },
+        }
+        public_input_path = self.root / "review-public-input.json"
+        semantic_input_path = self.root / "review-semantic-input.json"
+        gtt.write_json(public_input_path, public_input)
+        gtt.write_json(semantic_input_path, semantic_input)
+        schema_path = (
+            Path(gtt.__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-branch-review-input.schema.json"
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with (
+                mock.patch.object(gtt, "current_head", return_value=head),
+                mock.patch.object(gtt, "git_object_exists", return_value=True),
+                mock.patch.object(
+                    gtt,
+                    "review_branch_public_input_schema",
+                    return_value=gtt.read_json(schema_path),
+                ),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        agent_assignment=str(assignment),
+                        reviewer="agent-b",
+                        skill_input=str(public_input_path),
+                        semantic_review_file=str(semantic_input_path),
+                        typed_exit="passed",
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(
+            any(
+                "owner_round" in error or "closure_evidence" in error
+                for error in raised.exception.payload.get("errors", [])
+            ),
+            raised.exception.payload,
+        )
 
     def test_final_review_round_errors_accepts_explicit_new_agent_closure(self) -> None:
         payload = {
@@ -11277,6 +11439,44 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("Phase 2 check report", str(raised.exception))
+
+    def test_review_branch_requires_current_task_commit_handoff(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text(
+            self.review_rollup_text("缺少当前 task commit handoff。"),
+            encoding="utf-8",
+        )
+        assignment = self.write_agent_assignment()
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with (
+                mock.patch.object(gtt, "git_object_exists", return_value=True),
+                mock.patch.object(
+                    gtt,
+                    "review_branch_entry_precondition_errors",
+                    return_value=["review entry task commit evidence is missing."],
+                ),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        agent_assignment=str(assignment),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(
+            any(
+                "task commit" in error.lower()
+                for error in raised.exception.payload.get("errors", [])
+            )
+        )
 
     def test_review_branch_requires_task_local_review_report(self) -> None:
         outside_report = self.root / "review.md"
@@ -13471,15 +13671,34 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
 
         workflow_text = canonical_workflow.read_text(encoding="utf-8")
         for expected in [
-            "reuse_decision: reuse-for-closure",
-            "decision: new-agent",
-            "`from_round`, `to_round`, closure `agent_id`, reviewed `head`",
-            "non-empty",
-            "replacement closure chain",
-            "becomes a new finding owner",
-            "finding owner or closure agent",
+            'guru-skill-invoke: {"skill":"guru-review-branch"',
+            'guru-skill-exit: {"skill":"guru-review-branch","exit":"passed"',
+            'guru-skill-exit: {"skill":"guru-review-branch","exit":"implementation_required"',
+            'guru-skill-exit: {"skill":"guru-review-branch","exit":"scope_confirmation_required"',
+            'guru-skill-exit: {"skill":"guru-review-branch","exit":"blocked"',
         ]:
             self.assertIn(expected, workflow_text)
+        for step_local_detail in [
+            "reuse_decision: reuse-for-closure",
+            "replacement closure chain",
+            "becomes a new finding owner",
+        ]:
+            self.assertNotIn(step_local_detail, workflow_text)
+
+        package_contract = " ".join(
+            (
+                root
+                / "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md"
+            ).read_text(encoding="utf-8").split()
+        )
+        for expected in [
+            "Qualification before severity",
+            "Same-agent closure needs explicit",
+            "replacement needs a complete recovery chain",
+            "fresh final reviewer that did not perform closure",
+            "reviewer reuse block",
+        ]:
+            self.assertIn(expected, package_contract)
 
         overlay_pairs = [
             (
@@ -13509,14 +13728,13 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
                 dogfood = root / dogfood_relative
                 self.assertEqual(canonical.read_bytes(), dogfood.read_bytes())
                 text = canonical.read_text(encoding="utf-8")
-                self.assertIn("reuse_decision: reuse-for-closure", text)
-                self.assertIn("reuse_decisions[] decision=new-agent", text)
-                self.assertIn("from_round", text)
-                self.assertIn("to_round", text)
-                self.assertIn("replacement", text)
-                self.assertIn("becomes a new finding owner", text)
-                self.assertIn("Neither a finding owner nor any closure agent may become final", text)
-                self.assertIn("reuse_decision: new-agent", text)
+                self.assertIn("mandatory invoke the active `guru-review-branch` package", text)
+                self.assertIn("must not reproduce or reconstruct those rules", text)
+                self.assertIn("`implementation_required`", text)
+                self.assertIn("`scope_confirmation_required`", text)
+                self.assertIn("Missing, unknown, multiple, or unmapped exits", text)
+                self.assertNotIn("reuse_decision: reuse-for-closure", text)
+                self.assertNotIn("reuse_decisions[] decision=new-agent", text)
 
     def test_scanner_detects_forbidden_reference_in_dogfood_codex_agent_copy(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

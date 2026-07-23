@@ -266,11 +266,12 @@ pair 选 schema，不从文件或 optional 字段猜版本。#144 阶段九个 p
 `guru-team-skill-interface-1.3 + minimal_handoff`；
 独立 `production-minimal-handoff-v1` 再把 `guru-approve-task-plan`、
 `guru-check-task`、`guru-create-task-commit` 三包、十个 profiles 与 11 exits 原子迁移到
-1.3。当前 active closure 为 9 Skills / 35 exits，`legacy_skill_ids=[]`，Stage 0 manifest
+1.3。当前 active closure 为 10 Skills / 39 exits，`legacy_skill_ids=[]`，Stage 0 manifest
 仍保持 6 Skills / 24 exits。
 
 Planning self-reentry、`guru-check-task:passed` 到 initial commit、commit
-self-reentry 三条 semantic edge 使用 target-owned
+self-reentry，以及 `guru-create-task-commit:committed` 到 active
+`guru-review-branch` 四条 semantic edge 使用 target-owned
 `skill_input_authoring_seed`。Producer 仍只用既有
 `direct|select|rename|normalize` projection 生成 minimal seed；caller AI 独立编写其余
 required semantic fields。Validator 证明 seed/authoring 字段不相交、union 精确等于 target
@@ -309,7 +310,8 @@ checker 后从 checker-passed `typed_exit` 推导 route。调用方不能传入 
 Planning/check wrappers 复用既有 recorder/checker；commit wrapper 由 deterministic builder
 物化 private candidate 后复用既有 validator/executor transaction。`committed` DTO 精确为
 `exit_id`、`task_ref`、`base_ref`、`committed_head`，继续交给未改变的
-`branch-review-or-finding-closure`；本迁移不提前激活 #131。
+`branch-review-or-finding-closure`；这是 #146 交付时的历史边界。#131 已将该 consumer
+切换为 active `guru-review-branch`，同时保持 #146 的三包/11 exits activation identity 不变。
 
 Interface 1.3 的每个 scalar argument 显式声明 boolean `required`；
 `guru-sync-base --base-branch` 可省略，省略时直接进入同一 owner resolver 的 configured
@@ -499,7 +501,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.20`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.21`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -960,6 +962,6 @@ wrapper stdout 与返回 DTO 一致时才产生 trace invariant；合法 DTO 无
 `execution_error`。Schema id 为 `guru-team-skill-eval-native-trace-1.0`，transcript 记录
 native argv、stdout/stderr、context 与 receipt locator；四平台 projection 内 eval/private
 runtime raw read 必须真实失败。九个 production packages 维护唯一 canonical
-corpora 并覆盖全部 35 exits/input profiles；Stage 0 的独立 24-exit corpus closure 保持不变。
+corpora 并覆盖全部 39 exits/input profiles；Stage 0 的独立 24-exit corpus closure 保持不变。
 执行 `trellis update` 后需重新应用
 workflow/preset，运行 source/installed/platform checks 并清理所有 `.new`/`.bak`。

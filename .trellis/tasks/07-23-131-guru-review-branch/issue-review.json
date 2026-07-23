@@ -1,0 +1,280 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-07-23T12:17:45Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "castbox/guru-trellis",
+    "issue_number": 131,
+    "url": "https://github.com/castbox/guru-trellis/issues/131",
+    "updated_at": "2026-07-22T11:04:45Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "737152c05fac4fe80ab4bd4632180080e947fff60f10846fb2a0e7abb927c57f",
+    "body_sha256": "9b9f6f9cef399bf1b2d7b21bd7dead3b998eeb56a900a280ff4b7af667509124",
+    "side_effect_free": false,
+    "identity_sha256": "27c76db8812f74627d87b2667a72d6d8b1a6a8763b7a2a367077e7dc5dc65ff8",
+    "content_sha256": "b971d571f099969615b50d0341730cfe7437743e2ed328e1590f73a7562e2c3a"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "7a3d81105d44ed69ff6a9ffbdcf47d7dd2f2922b2fd8a9e8d8d9b8ee27a7c6ab",
+      "snapshot_sha256": "b523bc26288067d0bd03a8ea3d32338837524cadeb37a17dfd0858d68b820ce1",
+      "base_sync_facts_sha256": "14887330bfa0bde429fb2b248dcc020e2943df398ec7e0729333183548396533",
+      "base_head": "ea132e350c4b6861fc955f17e590651a46e890ab",
+      "live_target_sha256": "8e8190e4a33c1f3883895259b0492a2491b30ae3322e1ea1c29735b34557830a",
+      "query_sha256": "955b5da80134db39750f337ce573e8e550098b1d120f3bca022d4abdd3016863",
+      "current_state_sha256": "d478b86c91edc2737e1e1730d9d75ffb6494286ed862dbede4429f6d0e24767e",
+      "history_sha256": "b50225467945ba7299de17adcd4dd35c9fa9dea925640534ba73d2922f48a32f",
+      "duplicate_sha256": "5ff6d4a799ce7a9f1812a2096a4abb0312f398b3bc659db7c58200d7903fa392",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-2.0",
+      "typed_exit": "clear",
+      "payload_sha256": "3f37079bf103126e2d93d3ecf991d7a6d09767416784f232a6d68b3e18921200",
+      "facts_sha256": "905514d07a1a0d8d5f298084e67397c0301dfcc1385b265240ac8f11a2dfdf44",
+      "target_sha256": "1ceae3deed35dc946abfd5aa25dea255f8f25bc5cf1f51edf392741ba62a71b5",
+      "disposition_sha256": "3f817201c3e07318630cc2367ff5547913d45dc764738814e3608f999852559a",
+      "content_sha256": "f09f8215334a024e09885bf355c4e2f70ade2fea4837c095d1501855e7da367f",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "cb8a26d23a9949edbc3f007c64450998e2a865070498c349cb973afca1d60cda",
+      "facts_sha256": "d1480d63d2257672c8d1ca497a7d7fb17f7518fa338b9d224959e9d4c7f36359",
+      "scope_sha256": "89a3d05f8f6de2a8750cccea36a3ae130ff439765489d7c70aff875116659cd6",
+      "scan_sha256": "c717264038e0d1f63d892e964c651c36bed55c7e214d49da839914c5e33187b6",
+      "target_content_sha256": "b971d571f099969615b50d0341730cfe7437743e2ed328e1590f73a7562e2c3a",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "27c76db8812f74627d87b2667a72d6d8b1a6a8763b7a2a367077e7dc5dc65ff8",
+    "target_content_sha256": "b971d571f099969615b50d0341730cfe7437743e2ed328e1590f73a7562e2c3a",
+    "base_head": "ea132e350c4b6861fc955f17e590651a46e890ab",
+    "current_state_sha256": "d478b86c91edc2737e1e1730d9d75ffb6494286ed862dbede4429f6d0e24767e",
+    "history_sha256": "b50225467945ba7299de17adcd4dd35c9fa9dea925640534ba73d2922f48a32f",
+    "duplicate_sha256": "5ff6d4a799ce7a9f1812a2096a4abb0312f398b3bc659db7c58200d7903fa392",
+    "clarity_facts_sha256": "905514d07a1a0d8d5f298084e67397c0301dfcc1385b265240ac8f11a2dfdf44",
+    "clarity_disposition_sha256": "3f817201c3e07318630cc2367ff5547913d45dc764738814e3608f999852559a",
+    "wording_facts_sha256": "d1480d63d2257672c8d1ca497a7d7fb17f7518fa338b9d224959e9d4c7f36359",
+    "linkage_sha256": "010a090bbafc8c8b5acfa4334be0308b3528919a411b44fdd4745a2e5abcda73"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "requirement_completeness",
+        "status": "passed",
+        "summary": "#131 body 与 accepted_current 评论完整定义目标、entry evidence、semantic loop、四个 exits、artifacts、Interface 1.3、normal-operation boundary 和验收。",
+        "evidence_refs": [
+          "target",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "b971d571f099969615b50d0341730cfe7437743e2ed328e1590f73a7562e2c3a",
+          "905514d07a1a0d8d5f298084e67397c0301dfcc1385b265240ac8f11a2dfdf44",
+          "d1480d63d2257672c8d1ca497a7d7fb17f7518fa338b9d224959e9d4c7f36359"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "delivery_unit_consistency",
+        "status": "passed",
+        "summary": "新增一个 guru-review-branch closed-loop Skill、同步其分发面并将 global workflow 收薄是一个可独立验收的交付单元。",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "010a090bbafc8c8b5acfa4334be0308b3528919a411b44fdd4745a2e5abcda73"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "implementation_target_evidence",
+        "status": "passed",
+        "summary": "context 已定位 canonical package/registry/workflow、installed platform copies、现有 runtime 与测试框架。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "d478b86c91edc2737e1e1730d9d75ffb6494286ed862dbede4429f6d0e24767e"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "claimed_behavior_current",
+        "status": "passed",
+        "summary": "当前 main 仍由 workflow 展开 Branch Review 内部行为，registry 不含 guru-review-branch，#146 consumer 仍是 placeholder；问题陈述与现状一致。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "d478b86c91edc2737e1e1730d9d75ffb6494286ed862dbede4429f6d0e24767e"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "current_implementation_gap",
+        "status": "passed",
+        "summary": "deterministic review substrate 已存在，但缺少 semantic package owner、Interface 1.3 public contracts、production evals、registry/distribution 和 thin workflow routing。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "d478b86c91edc2737e1e1730d9d75ffb6494286ed862dbede4429f6d0e24767e"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "docs_code_tests_consistency",
+        "status": "passed",
+        "summary": "Docs 已定义 Branch Review 业务语义，runtime/tests 已覆盖客观校验；两者一致显示下一步应新增 Skill package 而非复制或改写 upstream agent。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "d478b86c91edc2737e1e1730d9d75ffb6494286ed862dbede4429f6d0e24767e"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "archived_history_constraints",
+        "status": "passed",
+        "summary": "#130、#144、#146 的归档设计已深读，明确保留 check 闭环、minimal handoff、authoring seed 字段分区和 committed seed 三字段边界。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "b50225467945ba7299de17adcd4dd35c9fa9dea925640534ba73d2922f48a32f"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "duplicate_reuse_validity",
+        "status": "passed",
+        "summary": "精确 open-title 搜索仅命中当前 #131；无需 retarget 或复用其他 issue。",
+        "evidence_refs": [
+          "prerequisites.context",
+          "prerequisites.clarity"
+        ],
+        "affected_hashes": [
+          "5ff6d4a799ce7a9f1812a2096a4abb0312f398b3bc659db7c58200d7903fa392",
+          "3f817201c3e07318630cc2367ff5547913d45dc764738814e3608f999852559a"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "target_authority_current",
+        "status": "passed",
+        "summary": "Issue #131 的 live title/body/update time 与 context、clarity、wording 三项 evidence 完全绑定。",
+        "evidence_refs": [
+          "target",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "27c76db8812f74627d87b2667a72d6d8b1a6a8763b7a2a367077e7dc5dc65ff8",
+          "905514d07a1a0d8d5f298084e67397c0301dfcc1385b265240ac8f11a2dfdf44",
+          "d1480d63d2257672c8d1ca497a7d7fb17f7518fa338b9d224959e9d4c7f36359"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "prerequisite_hash_linkage",
+        "status": "passed",
+        "summary": "context、clarity、wording 均为 current expected exit，且 target/content/base/history/duplicate/disposition/wording hashes 完整相互绑定。",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "010a090bbafc8c8b5acfa4334be0308b3528919a411b44fdd4745a2e5abcda73"
+        ],
+        "finding_ids": []
+      }
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "#131 body、accepted_current 评论及三项 current prerequisites 共同定义当前范围。",
+      "delivery_unit_id": "issue-131-guru-review-branch",
+      "close_issues": [
+        131
+      ],
+      "related_issues": [
+        127,
+        130,
+        144,
+        146
+      ],
+      "followup_issues": [
+        116,
+        132
+      ],
+      "duplicate_reuse_decision": "精确 open-title 搜索没有发现替代 #131 的 duplicate；保留当前 issue。",
+      "implementation_target": "新增 canonical guru-review-branch package/registry/workflow/preset/platform copies，并复用现有 deterministic review runtime 与测试。",
+      "current_gap": "当前 registry 无 guru-review-branch，global workflow 仍展开 Branch Review 内部语义，#146 committed 输出仍指向 placeholder consumer。",
+      "archived_constraints": [
+        "保持 #130 的 guru-check-task 闭环与 upstream trellis-check agent 不变。",
+        "遵守 #144 Interface 1.3 minimal handoff 与逐出口 DTO。",
+        "消费 #146 committed seed 时不得扩张其三个字段。"
+      ],
+      "risk_boundary": [
+        "仅覆盖 honest-but-fallible 正常流程、普通 stale/mismatch/omission 与 issue 明列 correctness/compatibility 场景。"
+      ],
+      "excluded_scope": [
+        "恶意伪造、对抗性绕过、锁、TOCTOU、压力、fault injection 与跨 OS 加固。",
+        "publication/finish 实现由 #116 消费者拥有。",
+        "workflow graph 最终验证由 #132 拥有。"
+      ]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-change-request-review",
+      "reviewed_linkage_sha256": "010a090bbafc8c8b5acfa4334be0308b3528919a411b44fdd4745a2e5abcda73",
+      "summary": "十个 readiness dimensions 均已基于 current linkage 审查通过，未发现阻塞项；#131 可进入 workspace/task 创建确认。",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "b952ae06c63206390850eced963b1c053dfe0c256abd63b980b98ef242ed76a1"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "本次 readiness 结论没有提出任何改变已确认产品语义的 scope proposal。",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "#131 是一个边界清晰、依赖已完成、目标现状有证据且可独立验收的交付单元。",
+  "affected_evidence": [
+    {
+      "ref": "evidence_linkage",
+      "sha256": "010a090bbafc8c8b5acfa4334be0308b3528919a411b44fdd4745a2e5abcda73",
+      "summary": "完整 current prerequisite linkage。"
+    },
+    {
+      "ref": "current_state",
+      "sha256": "d478b86c91edc2737e1e1730d9d75ffb6494286ed862dbede4429f6d0e24767e",
+      "summary": "当前 docs/code/tests/registry/workflow 状态。"
+    },
+    {
+      "ref": "history",
+      "sha256": "b50225467945ba7299de17adcd4dd35c9fa9dea925640534ba73d2922f48a32f",
+      "summary": "#130/#144/#146 归档约束。"
+    }
+  ],
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-workspace"
+  },
+  "facts_sha256": "8140b7e09fc0d0c9c7481fea62a045bdca2c9f7c7a2267636f7ec8b81a102e5d"
+}

@@ -75,7 +75,7 @@ def assert_task_plan_clarify_scope_router_contract(
         "every referenced proposal",
         "`guru-clarify-requirements:active_task_scope_change`",
         "fourth `skill_input_authoring_seed`",
-        "cardinality remains exactly three",
+        "cardinality remains exactly four",
         "do not expand the producer DTO",
         "private runtime state",
     ):
@@ -215,14 +215,14 @@ class SourceValidationTests(unittest.TestCase):
         )
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
-        self.assertEqual(result["facts"]["planned_ids"], [])
+        self.assertEqual(result["facts"]["planned_ids"], ["guru-review-task-publication"])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
+            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 9)
-        self.assertEqual(result["facts"]["exit_markers"], 35)
-        self.assertEqual(result["facts"]["target_markers"], 21)
+        self.assertEqual(result["facts"]["invoke_markers"], 10)
+        self.assertEqual(result["facts"]["exit_markers"], 39)
+        self.assertEqual(result["facts"]["target_markers"], 23)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -3426,7 +3426,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -3537,12 +3537,70 @@ class Stage0MigrationManifestTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["stage0_activation_unit"], "stage0-minimal-handoff-v1")
-        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 9)
+        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 10)
         self.assertEqual(len(result["facts"]["legacy_ids"]), 0)
         self.assertEqual(
             result["facts"]["production_activation_unit"],
             "production-minimal-handoff-v1",
         )
+
+    def test_durable_docs_match_four_authoring_edges_and_three_skill_migration(self) -> None:
+        expected_docs = {
+            "README.md": "四条 semantic edge",
+            "trellis/workflows/guru-team/README.md": (
+                "四条 semantic package handoff"
+            ),
+            "trellis/presets/guru-team/README.md": "四条声明 edge",
+            "docs/requirements/README.md": "四条 edge 使用 target-owned",
+            "docs/requirements/requirement-main.md": (
+                "active Branch Review 四条 edge"
+            ),
+            "docs/requirements/guru-team-trellis-flow.md": (
+                "四条 semantic handoff"
+            ),
+            ".trellis/spec/workflow/skill-package-contract.md": (
+                "The four production semantic edges"
+            ),
+            ".trellis/spec/workflow/companion-scripts.md": (
+                "For the four approved production semantic edges"
+            ),
+            ".trellis/spec/workflow/quality-guidelines.md": (
+                "The four `skill_input_authoring_seed` edges"
+            ),
+            ".trellis/spec/preset/installer.md": (
+                "four target-owned authoring"
+            ),
+            ".trellis/spec/preset/upstream-ownership.md": (
+                "the four target-owned"
+            ),
+        }
+        for relative, expected in expected_docs.items():
+            with self.subTest(path=relative):
+                self.assertIn(
+                    expected,
+                    (REPO / relative).read_text(encoding="utf-8"),
+                )
+
+        manifest = json.loads((
+            SKILLS_ROOT / "migrations/production-minimal-handoff.json"
+        ).read_text(encoding="utf-8"))
+        self.assertEqual(
+            manifest["skill_ids"],
+            [
+                "guru-approve-task-plan",
+                "guru-check-task",
+                "guru-create-task-commit",
+            ],
+        )
+        self.assertEqual(len(manifest["skills"]), 3)
+        self.assertEqual(
+            sum(
+                len(skill["exit_bindings"])
+                for skill in manifest["skills"]
+            ),
+            11,
+        )
+        self.assertEqual(len(manifest["authoring_seed_edges"]), 4)
 
     def test_missing_exit_binding_fails_closed(self) -> None:
         manifest = self.read_manifest()
@@ -3682,11 +3740,13 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             "guru-approve-task-plan",
             "guru-check-task",
             "guru-create-task-commit",
+            "guru-review-branch",
         })
         cases = (
             ("guru-approve-task-plan", "approved-initial", "approved"),
             ("guru-check-task", "passed-initial", "passed"),
             ("guru-create-task-commit", "revision-required", "revision-required"),
+            ("guru-review-branch", "workflow-passed", "passed"),
         )
         fallback_request: dict | None = None
         for skill_id, case_id, expected_exit in cases:

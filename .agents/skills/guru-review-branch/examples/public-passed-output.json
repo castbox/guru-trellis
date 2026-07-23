@@ -1,0 +1,6 @@
+{
+  "exit_id": "passed",
+  "task_ref": ".trellis/tasks/example-task",
+  "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "review_ref": "review-gate:current"
+}

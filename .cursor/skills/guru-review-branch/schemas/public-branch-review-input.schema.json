@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-review-branch-input-branch-review-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "base_ref",
+    "committed_head",
+    "review_intent"
+  ],
+  "properties": {
+    "profile": {"const": "branch_review"},
+    "mode": {"type": "string", "enum": ["workflow", "standalone"]},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "base_ref": {"type": "string", "minLength": 1},
+    "committed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "review_intent": {
+      "type": "string",
+      "enum": ["initial_review", "finding_fix_review", "fresh_final_review"]
+    }
+  }
+}

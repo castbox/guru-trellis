@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "typed_exit", "head", "base_ref", "semantic_review", "facts_sha256"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "skill_id": {"const": "guru-review-branch"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "task_dir": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "mode": {"type": "string", "enum": ["workflow", "standalone"]},
+    "review_intent": {"type": "string", "enum": ["initial_review", "finding_fix_review", "fresh_final_review"]},
+    "typed_exit": {
+      "type": "string",
+      "enum": ["passed", "implementation_required", "scope_confirmation_required", "blocked"]
+    },
+    "base_branch": {"type": "string", "minLength": 1},
+    "head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "base_ref": {"type": "string", "minLength": 1},
+    "head_branch": {"type": "string", "minLength": 1},
+    "diff_range": {"type": "string", "minLength": 1},
+    "changed_files": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "review_scope": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "command": {"type": "array", "items": {"type": "string"}},
+    "conclusion": {"type": "object"},
+    "findings": {"type": "array", "items": {"type": "object"}},
+    "observations": {"type": "array", "items": {"type": "object"}},
+    "followup_candidates": {"type": "array", "items": {"type": "object"}},
+    "issue_scope": {"type": "object"},
+    "verification_evidence": {"type": "object"},
+    "deployment_impact": {"type": "object"},
+    "semantic_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualified_findings",
+        "scope_proposals",
+        "observations",
+        "followup_candidates",
+        "rejected_candidates",
+        "ai_review_gate"
+      ],
+      "properties": {
+        "qualified_findings": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/qualifiedFinding"}},
+        "scope_proposals": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/scopeProposal"}},
+        "observations": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "followup_candidates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "rejected_candidates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "ai_review_gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "summary"],
+          "properties": {
+            "status": {"type": "string", "enum": ["passed", "implementation_required", "scope_confirmation_required", "blocked"]},
+            "summary": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "scenario": {
+      "type": "string",
+      "enum": [
+        "normal_required_behavior",
+        "explicit_nonstandard_requirement",
+        "approved_nonstandard_expansion",
+        "unconfirmed_nonstandard_proposal",
+        "out_of_scope"
+      ]
+    },
+    "common": {
+      "type": "object",
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"type": "string", "minLength": 1},
+        "scenario_class": {"$ref": "#/$defs/scenario"},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "requirement_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "scope_basis": {"type": "string", "minLength": 1},
+        "qualification_reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "qualifiedFinding": {
+      "allOf": [
+        {"$ref": "#/$defs/common"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["candidate_ref", "disposition", "scenario_class", "affected_behavior", "path", "evidence_refs", "requirement_refs", "scope_basis", "qualification_reason", "finding_ref", "severity", "owner_round", "reviewed_head", "status", "closure_evidence"],
+          "properties": {
+            "candidate_ref": {"type": "string", "minLength": 1},
+            "disposition": {"const": "qualified_finding"},
+            "scenario_class": {"enum": ["normal_required_behavior", "explicit_nonstandard_requirement", "approved_nonstandard_expansion"]},
+            "affected_behavior": {"type": "string", "minLength": 1},
+            "path": {"type": "string"},
+            "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "requirement_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "scope_basis": {"type": "string", "minLength": 1},
+            "qualification_reason": {"type": "string", "minLength": 1},
+            "finding_ref": {"type": "string", "minLength": 1},
+            "severity": {"enum": ["P0", "P1", "P2", "P3"]},
+            "owner_round": {"type": "integer", "minimum": 1},
+            "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "status": {"enum": ["open", "resolved"]},
+            "closure_evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+          }
+        }
+      ]
+    },
+    "scopeProposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_ref", "disposition", "scenario_class", "affected_behavior", "path", "evidence_refs", "requirement_refs", "scope_basis", "qualification_reason", "proposal_ref", "proposal", "trigger_evidence", "clarification_route"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"const": "scope_proposal"},
+        "scenario_class": {"const": "unconfirmed_nonstandard_proposal"},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "requirement_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "scope_basis": {"type": "string", "minLength": 1},
+        "qualification_reason": {"type": "string", "minLength": 1},
+        "proposal_ref": {"type": "string", "minLength": 1},
+        "proposal": {"type": "string", "minLength": 1},
+        "trigger_evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "clarification_route": {"const": "guru-clarify-requirements"}
+      }
+    },
+    "nonFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_ref", "disposition", "scenario_class", "affected_behavior", "path", "evidence_refs", "requirement_refs", "scope_basis", "qualification_reason"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"enum": ["observation", "followup_candidate", "rejected_candidate"]},
+        "scenario_class": {"enum": ["unconfirmed_nonstandard_proposal", "out_of_scope"]},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "requirement_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "scope_basis": {"type": "string", "minLength": 1},
+        "qualification_reason": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

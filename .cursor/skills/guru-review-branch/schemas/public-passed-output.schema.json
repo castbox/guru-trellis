@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-review-branch-output-passed-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "task_ref", "reviewed_head", "review_ref"],
+  "properties": {
+    "exit_id": {"const": "passed"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "review_ref": {"type": "string", "minLength": 1}
+  }
+}

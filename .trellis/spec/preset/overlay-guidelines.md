@@ -408,10 +408,17 @@ six-package set and rejects partial activation or sidecars.
 
 The production planning/check/commit package trees follow the same copy and
 mode rules under the independent `production-minimal-handoff-v1` manifest.
-Together the two manifests yield nine byte-identical active package trees and
-35 exits. The frozen 43-path workflow/platform overlay payload is not expanded
+Together the two manifests plus active `guru-review-branch` yield ten
+byte-identical active package trees and 39 exits. The frozen 43-path
+workflow/platform overlay payload is not expanded
 for package assets; packages, shared consumers, schemas, manifests, and evals
 remain Guru-owned preset-managed additive assets.
-The Interface 1.3 `skill_input_authoring_seed` shape, three target-owned
+The Interface 1.3 `skill_input_authoring_seed` shape, four target-owned
 authoring examples, and partition/merge probes belong to that same managed
 package graph. They do not authorize a new or modified overlay path.
+
+`guru-review-branch` follows the same canonical-to-installed/shared/Codex/
+Claude/Cursor byte-and-mode projection. It is an additive Guru-owned package,
+not an overlay. Adding it does not expand the frozen 43-path upstream overlay
+payload and must not modify `.trellis/agents/check.md`, any platform
+`trellis-check` agent entry, or `.agents/skills/trellis-check/**`.

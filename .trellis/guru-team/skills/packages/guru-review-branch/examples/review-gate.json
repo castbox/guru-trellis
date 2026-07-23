@@ -1,0 +1,19 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-review-branch",
+  "typed_exit": "passed",
+  "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "base_ref": "origin/main",
+  "semantic_review": {
+    "qualified_findings": [],
+    "scope_proposals": [],
+    "observations": [],
+    "followup_candidates": [],
+    "rejected_candidates": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "The complete fresh final review passed."
+    }
+  },
+  "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

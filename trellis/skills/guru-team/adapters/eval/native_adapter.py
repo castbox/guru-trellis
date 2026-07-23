@@ -25,6 +25,7 @@ PRODUCTION_SKILLS = {
     "guru-approve-task-plan",
     "guru-check-task",
     "guru-create-task-commit",
+    "guru-review-branch",
 }
 
 TRACE_HELPER = r'''#!/usr/bin/env python3
@@ -341,6 +342,10 @@ def stage_clean_installed_owner_repo(
     if source_mode:
         if apply_script.is_symlink() or not os.access(apply_script, os.X_OK):
             raise ValueError("canonical preset inputs are unavailable for owner staging")
+        canonical_workflow = source_repo / "trellis/workflows/guru-team/workflow.md"
+        if canonical_workflow.is_symlink() or not canonical_workflow.is_file():
+            raise ValueError("canonical workflow input is unavailable for owner staging")
+        shutil.copy2(canonical_workflow, fixture / ".trellis/workflow.md")
         applied = subprocess.run(
             [str(apply_script), "--repo", str(fixture), "--all-platforms"],
             cwd=source_repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -1676,6 +1681,304 @@ def production_record_phase2(
     ))
 
 
+def production_commit_for_review(
+    runtime: Any,
+    fixture: Path,
+    task: Path,
+    checked: dict[str, Any],
+) -> tuple[str, str]:
+    public_input = {
+        "profile": "initial_commit",
+        "mode": "workflow",
+        "task_ref": task.relative_to(fixture).as_posix(),
+        "message_intent": {
+            "subject": "feat(workflow): #146 添加分支审查评测",
+            "body": (
+                "背景：\n"
+                "把 production Branch Review eval 绑定到真实 task commit。\n\n"
+                "变更：\n"
+                "提交精确的已检查 fixture 路径。\n\n"
+                "边界：\n"
+                "不执行真实发布或外部仓库写入。\n\n"
+                "验证：\n"
+                "运行 shared public Skill wrapper corpus。\n\n"
+                "Refs #146"
+            ),
+        },
+        "path_authorizations": runtime.git_status_paths(fixture),
+        "semantic_review": {
+            "status": "passed",
+            "summary": "The exact production review fixture paths passed semantic review.",
+        },
+        "human_authorization": {
+            "status": "confirmed",
+            "summary": "The production eval authorizes this isolated fixture commit.",
+        },
+        "exit_intent": "committed",
+        "source_exit": "passed",
+        "checked_head": checked["checked_head"],
+        "check_ref": runtime.task_commit_public_check_ref(
+            checked["artifact_sha256"]
+        ),
+    }
+    try:
+        candidate, plan, _ = runtime.build_task_commit_candidate_from_public_input(
+            fixture, task, public_input,
+        )
+        executed = runtime.execute_task_commit_candidate(fixture, candidate, task)
+    except runtime.WorkflowError as exc:
+        raise ValueError(
+            "production Branch Review fixture task commit failed: "
+            + json.dumps(exc.payload, ensure_ascii=False, sort_keys=True)
+        ) from exc
+    return str(executed["commit_sha"]), str(plan["git"]["base_ref"])
+
+
+def production_review_candidate(
+    exit_id: str,
+    head: str,
+    *,
+    resolved: bool = False,
+) -> list[dict[str, Any]]:
+    common = {
+        "candidate_ref": "candidate-001",
+        "affected_behavior": "The public Branch Review route must preserve the reviewed task behavior.",
+        "path": "src/production-eval.txt",
+        "evidence_refs": ["reviews/round-001-problem.md"],
+        "requirement_refs": ["PRD R1"],
+        "scope_basis": "The approved production eval requirement owns this behavior.",
+        "qualification_reason": "The candidate was classified before any severity was assigned.",
+    }
+    if exit_id == "implementation_required" or resolved:
+        return [{
+            **common,
+            "disposition": "qualified_finding",
+            "scenario_class": "normal_required_behavior",
+            "finding_ref": "F-001",
+            "severity": "P2",
+            "owner_round": 1,
+            "reviewed_head": head,
+            "status": "resolved" if resolved else "open",
+            "closure_evidence": (
+                ["reviews/round-002-closure.md"]
+                if resolved else []
+            ),
+        }]
+    if exit_id == "scope_confirmation_required":
+        return [{
+            **common,
+            "disposition": "scope_proposal",
+            "scenario_class": "unconfirmed_nonstandard_proposal",
+            "proposal_ref": "scope-proposal:R2",
+            "proposal": "Expand the eval beyond the approved public wrapper boundary.",
+            "trigger_evidence": ["The reviewer identified an unapproved optional expansion."],
+            "clarification_route": "guru-clarify-requirements",
+        }]
+    return []
+
+
+def production_review_rounds(
+    exit_id: str,
+    head: str,
+    *,
+    resolved: bool,
+) -> list[dict[str, Any]]:
+    if resolved:
+        return [
+            {
+                "round": 1,
+                "logical_role": "问题发现审查代理",
+                "agent_id": "review-finding-1",
+                "platform_nickname": "review-finding-1",
+                "reviewed_head": head,
+                "findings_count": 1,
+                "reuse_policy": "Finding owners may return only for closure review.",
+                "reuse_decision": "new-agent",
+                "report_name": "round-001-problem.md",
+            },
+            {
+                "round": 2,
+                "logical_role": "问题闭环审查代理",
+                "agent_id": "review-finding-1",
+                "platform_nickname": "review-finding-1",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "The finding owner is reused only for explicit closure.",
+                "reuse_decision": "reuse-for-closure",
+                "report_name": "round-002-closure.md",
+            },
+            {
+                "round": 3,
+                "logical_role": "最终放行审查代理",
+                "agent_id": "review-final-1",
+                "platform_nickname": "review-final-1",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "Final review uses a fresh agent across the complete range.",
+                "reuse_decision": "new-agent",
+                "report_name": "round-003-final.md",
+            },
+        ]
+    if exit_id == "passed":
+        role = "最终放行审查代理"
+        findings_count = 0
+        report_name = "round-001-final.md"
+        agent_id = "review-final-1"
+    else:
+        role = "问题发现审查代理"
+        findings_count = 1 if exit_id == "implementation_required" else 0
+        report_name = "round-001-problem.md"
+        agent_id = "review-finding-1"
+    return [{
+        "round": 1,
+        "logical_role": role,
+        "agent_id": agent_id,
+        "platform_nickname": agent_id,
+        "reviewed_head": head,
+        "findings_count": findings_count,
+        "reuse_policy": (
+            "Final review uses a fresh agent across the complete range."
+            if exit_id == "passed"
+            else "The owner records only the current qualification-first review round."
+        ),
+        "reuse_decision": "new-agent",
+        "report_name": report_name,
+    }]
+
+
+def production_record_review(
+    runtime: Any,
+    fixture: Path,
+    task: Path,
+    public_input: dict[str, Any],
+    recipe: str,
+) -> dict[str, Any]:
+    exit_id = recipe.removeprefix("review-")
+    resolved = exit_id == "finding-fix-passed"
+    if resolved:
+        exit_id = "passed"
+    elif exit_id == "fresh-final-passed":
+        exit_id = "passed"
+    head = runtime.current_head(fixture)
+    rounds = production_review_rounds(exit_id, head, resolved=resolved)
+    assignment_path = task / "agent-assignment.json"
+    assignment = runtime.read_json(assignment_path)
+    assignment["head"] = head
+    assignment["updated_at"] = "2026-07-23T00:12:00Z"
+    reports: list[str] = []
+    known_agents = {
+        str(item.get("agent_id") or "")
+        for item in assignment.get("agents", [])
+        if isinstance(item, dict)
+    }
+    for index, round_item in enumerate(rounds, start=1):
+        report_name = str(round_item.pop("report_name"))
+        report = task / "reviews" / report_name
+        report.parent.mkdir(parents=True, exist_ok=True)
+        report.write_text(
+            "# 分支审查原始报告\n\n"
+            f"第 {index} 轮对完整当前范围完成语义审查；"
+            f"findings_count={round_item['findings_count']}。\n",
+            encoding="utf-8",
+        )
+        digest = runtime.file_digest(fixture, report)
+        round_item.update({
+            "recorded_at": f"2026-07-23T00:{12 + index:02d}:00Z",
+            "review_report_path": digest["path"],
+            "review_report_sha256": digest["sha256"],
+            "review_report_size_bytes": digest["size_bytes"],
+            "review_report_modified_at": digest["modified_at"],
+        })
+        assignment.setdefault("review_rounds", []).append(round_item)
+        reports.append(digest["path"])
+        agent_id = str(round_item["agent_id"])
+        if agent_id not in known_agents:
+            assignment.setdefault("agents", []).append({
+                "logical_role": round_item["logical_role"],
+                "agent_id": agent_id,
+                "platform_nickname": round_item["platform_nickname"],
+                "assigned_at": f"2026-07-23T00:{10 + index:02d}:00Z",
+                "assigned_head": head,
+                "reason": "Assign the exact production Branch Review eval role.",
+                "event_id": f"evt-{agent_id}-assigned",
+            })
+            known_agents.add(agent_id)
+        assignment.setdefault("status_events", []).append({
+            "event_id": f"evt-{agent_id}-round-{index}-completed",
+            "event": "completed",
+            "agent_id": agent_id,
+            "logical_role": round_item["logical_role"],
+            "platform_nickname": round_item["platform_nickname"],
+            "observed_at": f"2026-07-23T00:{20 + index:02d}:00Z",
+            "recorded_at": f"2026-07-23T00:{20 + index:02d}:00Z",
+            "head": head,
+            "source": "main-session",
+            "evidence": "The production Branch Review eval round completed.",
+            "predecessor_agent_id": "",
+            "predecessor_event_id": "",
+            "termination_reason": "",
+            "termination_source_event_id": "",
+            "replacement_reason": "",
+            "handoff_summary": "",
+        })
+    runtime.write_json(assignment_path, assignment)
+    (task / "review.md").write_text(
+        "# 分支审查汇总\n\n"
+        "当前公开 Skill eval 已完成 qualification-first 语义审查。\n\n"
+        "## 原始报告链接\n\n"
+        + "".join(f"- {path}\n" for path in reports),
+        encoding="utf-8",
+    )
+    semantic = {
+        "candidates": production_review_candidate(
+            exit_id, head, resolved=resolved,
+        ),
+        "ai_review_gate": {
+            "status": exit_id,
+            "summary": "The production Branch Review semantic Gate selected the actual route.",
+        },
+    }
+    semantic_path = fixture / ".trellis/.runtime/guru-team/evals/review-owner-input.json"
+    runtime.write_json(semantic_path, semantic)
+    public_input.update({
+        "task_ref": task.relative_to(fixture).as_posix(),
+        "base_ref": runtime.diff_base_ref(fixture, "main"),
+        "committed_head": head,
+    })
+    runtime_input = fixture / OWNER_INPUT
+    runtime.write_json(runtime_input, public_input)
+    runtime.cmd_review_branch(argparse.Namespace(
+        root=str(fixture),
+        json=True,
+        task=task.relative_to(fixture).as_posix(),
+        base_branch="main",
+        pass_gate=exit_id == "passed",
+        summary="Branch Review eval 已完成当前语义路由。",
+        evidence=["已审查运行时、CI/CD、Docker、K8s、migration 与 Makefile 部署影响。"],
+        reviewer=str(rounds[-1]["agent_id"]),
+        review_source=runtime.INDEPENDENT_REVIEW_SOURCE,
+        review_report=(task / "review.md").relative_to(fixture).as_posix(),
+        agent_assignment=assignment_path.relative_to(fixture).as_posix(),
+        finding=[],
+        findings_file=None,
+        observation=[],
+        observations_file=None,
+        followup_candidate=[],
+        followup_candidates_file=None,
+        skill_input=runtime_input.relative_to(fixture).as_posix(),
+        semantic_review_file=semantic_path.relative_to(fixture).as_posix(),
+        typed_exit=exit_id,
+        dry_run=False,
+    ))
+    return runtime.cmd_check_review_gate(argparse.Namespace(
+        root=str(fixture),
+        task=task.relative_to(fixture).as_posix(),
+        allow_metadata_after_gate=False,
+        allow_nonpass=True,
+        expected_exit=exit_id,
+    ))
+
+
 def stage_production_owner_execution(
     request: dict[str, Any],
     fixture: Path,
@@ -1703,6 +2006,7 @@ def stage_production_owner_execution(
         "guru-approve-task-plan": "planning-",
         "guru-check-task": "check-",
         "guru-create-task-commit": "commit-",
+        "guru-review-branch": "review-",
     }[skill_id]
     if not recipe.startswith(expected_prefix):
         raise ValueError("production owner staging recipe does not match the evaluated package")
@@ -1723,13 +2027,42 @@ def stage_production_owner_execution(
         )
         phase2_package = fixture / ".trellis/guru-team/skills/packages/guru-check-task"
         checked = production_record_phase2(
-            runtime, fixture, task, phase2_package, "passed" if skill_id == "guru-create-task-commit" else str(public_input["exit_intent"]),
+            runtime,
+            fixture,
+            task,
+            phase2_package,
+            (
+                "passed"
+                if skill_id in {"guru-create-task-commit", "guru-review-branch"}
+                else str(public_input["exit_intent"])
+            ),
         )
         if skill_id == "guru-create-task-commit":
             public_input["checked_head"] = checked["checked_head"]
             public_input["check_ref"] = runtime.task_commit_public_check_ref(
                 checked["artifact_sha256"]
             )
+        elif skill_id == "guru-review-branch":
+            production_commit_for_review(runtime, fixture, task, checked)
+            production_record_review(
+                runtime,
+                fixture,
+                task,
+                public_input,
+                (
+                    "review-finding-fix-passed"
+                    if recipe == "review-blocked"
+                    else recipe
+                ),
+            )
+            if recipe == "review-blocked":
+                with (
+                    task / "reviews/round-002-closure.md"
+                ).open("a", encoding="utf-8") as handle:
+                    handle.write(
+                        "\n## 普通审查证据修订\n\n"
+                        "该正常路径修订使已登记的 closure raw report digest 过期。\n"
+                    )
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
     return package, fixture_runtime_target, {}

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-review-branch-input-aggregate-1.0",
+  "oneOf": [
+    {"$ref": "public-branch-review-input.schema.json"}
+  ]
+}

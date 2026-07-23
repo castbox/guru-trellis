@@ -1,0 +1,1 @@
+{"scenario":"A newly assigned final reviewer passes the complete current range with zero findings.","owner_evidence":{"semantic_gate":"passed","checker_required":true},"owner_staging":{"recipe":"review-fresh-final-passed"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/tasks/current/review-gate.json"]}}
