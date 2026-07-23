@@ -7238,6 +7238,7 @@ def finding_round_has_replacement_closure(
     rounds: list[Any],
     finding_round: dict[str, Any],
     final_round_number: int,
+    expected_closure_round: int | None = None,
 ) -> bool:
     finding_agent = str(finding_round.get("agent_id") or "").strip()
     finding_round_number = review_round_number(finding_round)
@@ -7258,6 +7259,10 @@ def finding_round_has_replacement_closure(
         if isinstance(item, dict)
         and review_round_number(item) > finding_round_number
         and review_round_number(item) < final_round_number
+        and (
+            expected_closure_round is None
+            or review_round_number(item) == expected_closure_round
+        )
         and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
         and str(item.get("agent_id") or "").strip()
         and str(item.get("agent_id") or "").strip() != finding_agent
@@ -12868,6 +12873,7 @@ def review_branch_finding_lifecycle_errors(
                         default=closure_number,
                     )
                     + 1,
+                    expected_closure_round=closure_number,
                 )
             )
             if (

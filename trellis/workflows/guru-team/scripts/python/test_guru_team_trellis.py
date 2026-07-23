@@ -10213,6 +10213,141 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    def test_review_branch_v2_lifecycle_rejects_unlinked_closure_report_when_other_replacement_is_valid(
+        self,
+    ) -> None:
+        head = "a" * 40
+        rounds = [
+            {
+                "round": 1,
+                "logical_role": "问题发现审查代理",
+                "agent_id": "agent-a",
+                "platform_nickname": "发现代理",
+                "reviewed_head": head,
+                "findings_count": 1,
+                "reuse_policy": "发现 finding 后原 agent 客观失败。",
+                "reuse_decision": "new-agent",
+            },
+            {
+                "round": 2,
+                "logical_role": "问题闭环审查代理",
+                "agent_id": "agent-c",
+                "platform_nickname": "替代闭环代理",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "替代失败的 finding owner，仅完成 closure。",
+                "reuse_decision": "replace",
+            },
+            {
+                "round": 3,
+                "logical_role": "问题闭环审查代理",
+                "agent_id": "agent-d",
+                "platform_nickname": "另一闭环代理",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "闭环另一轮产生的 finding，不与 round 1 owner 建立关系。",
+                "reuse_decision": "new-agent",
+            },
+            {
+                "round": 4,
+                "logical_role": "最终放行审查代理",
+                "agent_id": "agent-b",
+                "platform_nickname": "最终代理",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "fresh final reviewer 完整复核当前范围。",
+                "reuse_decision": "new-agent",
+            },
+        ]
+        assignment = self.write_agent_assignment(
+            rounds,
+            reuse_decisions=[
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "replace",
+                    "reason": "agent-a 已失败，由 agent-c 接管 round 1 finding closure。",
+                    "head": head,
+                    "from_round": 1,
+                    "to_round": 2,
+                },
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-d",
+                    "decision": "new-agent",
+                    "reason": "agent-d 只承接 round 2 后续闭环，不承接 round 1 finding。",
+                    "head": head,
+                    "from_round": 2,
+                    "to_round": 3,
+                },
+            ],
+            status_events=[
+                {
+                    "event": "failed",
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "head": head,
+                    "observed_at": "2026-07-24T00:10:00Z",
+                    "decision": "mark-failed",
+                    "reason": "finding report 已保留，但原 agent 无法继续 closure。",
+                },
+                {
+                    "event": "replacement-started",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "head": head,
+                    "observed_at": "2026-07-24T00:11:00Z",
+                    "decision": "start-replacement",
+                    "reason": "原 owner 已失败，启动 replacement closure。",
+                    "predecessor_agent_id": "agent-a",
+                    "handoff_summary": "复核并闭环 round 1 finding。",
+                },
+                {
+                    "event": "completed",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "head": head,
+                    "observed_at": "2026-07-24T00:20:00Z",
+                    "decision": "mark-completed",
+                    "reason": "replacement closure 已完成。",
+                },
+            ],
+        )
+        payload = gtt.read_json(assignment)
+        owner_report = payload["review_rounds"][0]["review_report_path"]
+        unlinked_closure_report = payload["review_rounds"][2]["review_report_path"]
+        semantic_review = {
+            "qualified_findings": [
+                {
+                    "finding_ref": "F-001",
+                    "owner_round": 1,
+                    "reviewed_head": head,
+                    "evidence_refs": [owner_report],
+                    "status": "resolved",
+                    "closure_evidence": [unlinked_closure_report],
+                }
+            ]
+        }
+
+        errors = gtt.review_branch_finding_lifecycle_errors(
+            self.root,
+            self.task_dir,
+            semantic_review,
+            payload,
+        )
+
+        self.assertTrue(
+            any("closure round lacks" in error for error in errors),
+            errors,
+        )
+        self.assertTrue(
+            any("no current bound closure_evidence" in error for error in errors),
+            errors,
+        )
+
     def test_review_branch_entry_rejects_paths_outside_exact_owner_metadata(self) -> None:
         task_ref = ".trellis/tasks/07-04-review-gate"
         task_context = {

@@ -1,9 +1,9 @@
 {
   "schema_version": "1.2",
   "generated_at": "2026-07-23T12:56:21Z",
-  "updated_at": "2026-07-23T20:11:02Z",
+  "updated_at": "2026-07-23T21:04:02Z",
   "task": ".trellis/tasks/07-23-131-guru-review-branch",
-  "head": "cdf0fa47d3d6f508851b9c0e91260276d9fde8f5",
+  "head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
   "agents": [
     {
       "logical_role": "实现代理",
@@ -110,6 +110,21 @@
       "review_report_sha256": "1fa16331617f20efd2855373abee6f9c9cd8e3d36b3b3dd6ae0e4abf3439d35b",
       "review_report_size_bytes": 15605,
       "review_report_modified_at": "2026-07-23T18:57:00.396452+00:00"
+    },
+    {
+      "round": 2,
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "/root/issue_131_branch_review_discovery",
+      "platform_nickname": "",
+      "reviewed_head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
+      "findings_count": 1,
+      "reuse_policy": "同一 round 1 finding owner 可验证原四项 closure 并发现新的 current-scope lifecycle finding；不得担任最终放行审查。F-131-BR2-01 修复后需要 fresh Phase 2、task commit 与新的 closure round。",
+      "reuse_decision": "reuse-for-closure",
+      "recorded_at": "2026-07-23T20:38:05Z",
+      "review_report_path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md",
+      "review_report_sha256": "013ab622c3281f00264721f4c9f5868bb5d053dd13a403ad5722a26679857ee4",
+      "review_report_size_bytes": 12269,
+      "review_report_modified_at": "2026-07-23T20:37:35.530739+00:00"
     }
   ],
   "reuse_decisions": [
@@ -160,6 +175,32 @@
       "reason": "Branch Review 4 findings 已由实现代理修复，planning approval 与 workspace boundary 新鲜通过。复用未参与修复的独立 Phase 2 检查代理，从当前 cdf0fa47+dirty candidate 完整重跑 trellis-check；旧 phase2 pass/report 不得复用，必须覆盖 4 个 closure、完整 dirty scope、Docs SSOT、测试与 throwaway/update 门禁。",
       "head": "cdf0fa47d3d6f508851b9c0e91260276d9fde8f5",
       "recorded_at": "2026-07-23T19:35:28Z"
+    },
+    {
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "/root/issue_131_branch_review_discovery",
+      "decision": "reuse-for-closure",
+      "reason": "首轮问题发现代理独立提出 F-131-BR-01..04，未参与实现修复；按已记录 round 1 continuity policy 复用其对新提交 0fdbb708 的完整 origin/main...HEAD 做 finding closure。该代理不得担任最终放行审查，闭环后仍需全新独立 reviewer。",
+      "head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
+      "recorded_at": "2026-07-23T20:21:57Z",
+      "from_round": 1,
+      "to_round": 2
+    },
+    {
+      "logical_role": "实现代理",
+      "agent_id": "/root/issue_131_implementation",
+      "decision": "reuse",
+      "reason": "Round 2 新 finding F-131-BR2-01 属于原实现代理拥有的 guru-review-branch lifecycle runtime/test/mirror 同一边界；复用保留实现上下文。修复后仍必须由独立 Phase 2 代理完整重跑、fresh task commit 与新的 closure round，不能复用现有测试 pass。",
+      "head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
+      "recorded_at": "2026-07-23T20:46:14Z"
+    },
+    {
+      "logical_role": "阶段二检查代理",
+      "agent_id": "/root/issue_131_phase2_check",
+      "decision": "reuse",
+      "reason": "F-131-BR2-01 已由实现代理最小修复；复用未参与本轮实现的独立 Phase 2 代理，从 current 0fdbb708+dirty candidate 完整重跑，不复用旧 Phase 2 或测试结论，覆盖 exact closure-round binding、全量 dirty scope、Docs SSOT、分发、测试与 throwaway/update 门禁。",
+      "head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2",
+      "recorded_at": "2026-07-23T21:04:02Z"
     }
   ],
   "status_events": [

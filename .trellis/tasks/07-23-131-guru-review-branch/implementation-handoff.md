@@ -312,6 +312,90 @@ commit与真实Branch Review。实现代理未执行这些职责。
 2. Current branch未commit/push，feature-ref marketplace安装仍未验证。
 3. #116、#132和Trellis CLI 0.6.8边界不变。
 
+## 13. Branch Review Round 2 finding-fix（2026-07-24）
+
+本节记录 `F-131-BR2-01` 的实现修复。实现代理只修改 runtime、回归测试、preset
+安装副本与本 handoff；没有修改 reviewer-owned
+`agent-assignment.json`、`review.md`、`review-gate.json`、`reviews/**`、
+`task-commit-plans/**`，也没有修改 planning / Phase 2 gate artifact，未创建
+commit、push 或 PR。
+
+### 13.1 Finding implementation
+
+- 原 finding 状态：current `review-gate.json` 中
+  `F-131-BR2-01` 为 `P2 / open`，gate typed exit 为
+  `implementation_required`。
+- 根因：per-finding lifecycle 已校验当前 `closure_evidence` 的 path、role、round 与
+  digest，但 replacement recovery helper 只证明 owner 在 final 前存在任意合法
+  replacement closure，没有证明该链对应当前 `closure_number`。因此 round 2 有合法
+  replacement chain 时，semantic finding 可错误引用未链接的 round 3 report。
+- 红例：新增正常 multi-closure fixture；round 2 保留完整
+  `failed -> replacement-started -> completed` 与 `decision=replace` chain，
+  semantic finding 则引用未链接 round 3。修复前 lifecycle 返回 `[]`，负例按预期
+  失败，证明复现有效。
+- 修复：既有 `finding_round_has_replacement_closure()` 增加可选
+  `expected_closure_round`，per-finding lifecycle 传入当前
+  `closure_number`；branch-wide final-round validation 仍不传此参数，继续保持“存在
+  任一合法 closure”的既有全局语义。没有新增第二套 lifecycle helper。
+- 绿例：上述负例现在同时返回 `closure round lacks` 与
+  `no current bound closure_evidence`；既有 valid replacement、same-agent closure、
+  explicit/chained new-agent 正向路径继续通过。
+- 新 finding 状态：实现层已修复且全量验证通过；reviewer-owned gate 未被实现代理
+  改写，所以正式语义状态仍为 `open / implementation_required`，须由下一轮独立
+  `guru-review-branch` finding closure 更新。
+
+### 13.2 Files and SSOT reconciliation
+
+- Canonical runtime：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`。
+- Canonical regression：
+  `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`。
+- Preset-installed runtime：
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`。
+- Installed inventory：
+  `.trellis/guru-team/extension.json`。
+- Task-local history：本节 `implementation-handoff.md`。
+
+Docs strategy 继续为批准的 `ssot_first`。本 finding 是 runtime 未完整承接现有
+per-finding exact closure evidence 合同，不产生新的 requirement authority；因此没有
+修改 PRD、design、implement、`.trellis/spec/**`、public Skill package、eval corpus
+或 contract wording。Canonical package、installed package及 Codex / Claude /
+Cursor / Agents 四个平台副本仍 byte-identical；canonical 与 installed runtime 已同步。
+
+### 13.3 Validation terminal states
+
+- 新增负例修复前：`FAILED (failures=1)`，实际 lifecycle errors 为 `[]`。
+- Focused lifecycle：5 tests，`OK`。
+- `ReviewGateReportTest`：74 tests，`OK`。
+- Runtime full suite：566 tests，`OK`，13 skipped，exit 0。
+- Skill full suite：167 tests，`OK`，exit 0。
+- Preset installer：45 tests，`OK`；upstream ownership：6 tests，`OK`；
+  `guru-review-branch` package：8 tests，`OK`。
+- Source shared real-wrapper eval：7/7 passed；installed shared real-wrapper
+  eval：7/7 passed。
+- Source / installed package validator：均 `passed`，10 active Skills /
+  39 exits / 23 targets；installed inventory 为1903 managed files，
+  sidecar/removal/conflict均为0。
+- Full throwaway install/update/reapply：exit 0；最终确认 public marketplace
+  discovery、本地 unpublished canonical workflow sample、fresh init、
+  existing-project preview/switch、all-platform preset、wrapper/eval、
+  `trellis update --force` 与 workflow/preset reapply。
+- `task.py validate`：passed；JSON parse：2633 files；shell syntax：295 files；
+  related Python `py_compile`：passed。
+- `git diff --check` 与 working-tree candidate
+  `git diff --check origin/main`：passed；index empty。
+- Dogfood overlay drift：passed；canonical/installed runtime与五份 package tree
+  parity：passed；public package敏感模式扫描、recursive sidecar/cache scan和六组
+  forbidden upstream path diff：均为0。
+
+### 13.4 Next gate and remaining limitations
+
+下一步必须由独立 `trellis-check` / Branch Review 重新读取当前候选实现并关闭
+`F-131-BR2-01`；实现代理没有用测试结果替代 semantic gate。分支仍未
+commit/push，故无法执行精确 current feature-ref 的远程 marketplace 安装验证；
+当前证据仅证明本地 canonical sample 与完整 throwaway install/update/reapply
+通过。#116、#132 与 Trellis CLI 0.6.8边界不变。
+
 ## 12. Branch Review finding-fix round（2026-07-24）
 
 本节承接独立 Branch Review 的 `F-131-BR-01` 至 `F-131-BR-04`。本轮只完成

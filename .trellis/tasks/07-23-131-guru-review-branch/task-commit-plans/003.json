@@ -1,0 +1,314 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "131-guru-review-branch",
+    "path": ".trellis/tasks/07-23-131-guru-review-branch",
+    "status": "in_progress",
+    "branch": "codex/131-guru-review-branch"
+  },
+  "issue": {
+    "primary_issue": 131,
+    "ledger_sha256": "e9e82419654384ac5a03cc7875b977bc83b4265ee21c1abd0f895d69f448f7b7"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "0fdbb708f91296847b5812c3c1b9dd80b6e488a2"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/planning-approval.json",
+      "sha256": "b93c510271199865f738493102c90abd058e6c86f4e9a4f5ffe7139090193e66",
+      "size": 69028
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      "sha256": "87df746a3e81554b57b5fa4e5873131f9cdcddcf90dfd915eddbe5e6e26f788c",
+      "size": 27657
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/issue-scope-ledger.json",
+      "sha256": "e9e82419654384ac5a03cc7875b977bc83b4265ee21c1abd0f895d69f448f7b7",
+      "size": 2710
+    },
+    "task": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task.json",
+      "sha256": "69841b4e5f914a965c1cbda7fb83bf6c8f8ec9d693e6a2dbed9920595cda2adb",
+      "size": 654
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "aabf2a2e250474f882e1ea2c2bd95752b8d9aa20",
+        "worktree_sha256": "934d9b81f90e61d2d6b21d1c3aee8a890f47222269abf846e0ecdf65a7dbebe0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8326d15eea65336e34cfa495b7452b731eb9553e",
+        "worktree_sha256": "3238372c1a11c68eda3ca9ce9174f4d91ccab1791417f60094ff22a869044880",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c7593f44c537d99e9819c6cb83969fb50a0dd90f",
+        "worktree_sha256": "c1d1c803fdf15e1e900f4065155d02e04c82ec2a55e316d63b201c0db48d45b0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f2e2bb39afe5d6b989d901002473efeb02f0e6d",
+        "worktree_sha256": "452aafdc7cc820a1fe192cc7d79e36a11e7c6cde95165a3b6385ed99eef90044",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0ed7cd94d1345e84989aaf8517ce7045d5fb4dba",
+        "worktree_sha256": "87df746a3e81554b57b5fa4e5873131f9cdcddcf90dfd915eddbe5e6e26f788c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "55f7ad81514606ff4913594f4f6aa93b9b482b2d1fb3228e4283ab270e11cbff",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bc08571f9c365552a8591fd1c5e2d33153ee55cc",
+        "worktree_sha256": "a1e555326f3772becad043a5acbda112b632ee3edb05efdd71b3800893be0d37",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "611569e5fb66d4546a763effece19d611039d516",
+        "worktree_sha256": "3f80ca0d2dbcf3e66b15b5edfd15fd6972389afbe33e0f4b4addc3b9603e34a2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "013ab622c3281f00264721f4c9f5868bb5d053dd13a403ad5722a26679857ee4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "718426a3b30986a23d68c8d471bc18f80066aeaf",
+        "worktree_sha256": "09152a53d34897d6bac603411fce705d293fc389952674afd52a52d25af796fa",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8326d15eea65336e34cfa495b7452b731eb9553e",
+        "worktree_sha256": "3238372c1a11c68eda3ca9ce9174f4d91ccab1791417f60094ff22a869044880",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "80da2775f8a5e298c3ed36745677d5f19c944fb1",
+        "worktree_sha256": "7274987a92750cce77e129a894ee6ea2f2a6bfc8a4dde4e42ef6fdbedd641962",
+        "mode": "100644"
+      }
+    ],
+    "digest": "0d776b1088c9c1264adc0812715e47dec789e3041979ef44ba5d3e993be1e02a"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/02-finding-closure.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #131 绑定精确闭环轮次",
+    "body": "背景：\nIssue #131 的 Round 2 Branch Review 发现 replacement recovery 可以由任意合法 closure round 为 finding 当前引用的另一 report 背书。\n\n变更：\n为 replacement helper 增加可选 exact closure-round 约束，并由 per-finding lifecycle 传入当前 closure number；保留 branch-wide final validator 的全局合法 closure 语义，补充正常 multi-closure 错误引用负例。\n\n边界：\n不改变 PRD、design、durable contract 或 upstream reviewer；#116 publication package 仍为 planned/missing；不包含 push、PR、部署或 issue close。\n\n验证：\n独立 Phase 2 通过 focused 6、runtime 566、Skill 167、contract 8、installer 45、ownership 6、双侧 eval 7/7、inventory 1903 与 full throwaway update/reapply。\n\nRefs #131",
+    "bytes": "fix(workflow): #131 绑定精确闭环轮次\n\n背景：\nIssue #131 的 Round 2 Branch Review 发现 replacement recovery 可以由任意合法 closure round 为 finding 当前引用的另一 report 背书。\n\n变更：\n为 replacement helper 增加可选 exact closure-round 约束，并由 per-finding lifecycle 传入当前 closure number；保留 branch-wide final validator 的全局合法 closure 语义，补充正常 multi-closure 错误引用负例。\n\n边界：\n不改变 PRD、design、durable contract 或 upstream reviewer；#116 publication package 仍为 planned/missing；不包含 push、PR、部署或 issue close。\n\n验证：\n独立 Phase 2 通过 focused 6、runtime 566、Skill 167、contract 8、installer 45、ownership 6、双侧 eval 7/7、inventory 1903 与 full throwaway update/reapply。\n\nRefs #131\n",
+    "sha256": "61e746fa49efd65fde7ce2a81dfc466fc89f3c79421daae575414c2c00365fed"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "已逐项复核 F-131-BR2-01 的红例、最小 exact round 修复、完整 Phase 2、12 个当前路径与提交消息；范围只包含 Issue #131 finding-fix 和审查证据，不包含发布副作用。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户多次回复“确认继续”，授权按已确认 Trellis 流程继续本地修复、Phase 2、task commit 与 Branch Review；不授权 push、PR、部署或 issue close。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-23T21:34:56Z",
+    "plan_digest": "ada5714058d28b1f530bc70589cf9173a7826b6e6a7a1e0b16dec8a80cb911d8"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}
