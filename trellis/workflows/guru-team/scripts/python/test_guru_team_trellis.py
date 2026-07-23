@@ -10106,6 +10106,367 @@ class ReviewGateReportTest(unittest.TestCase):
             raised.exception.payload,
         )
 
+    def test_review_branch_v2_lifecycle_accepts_valid_replacement_closure(self) -> None:
+        head = "a" * 40
+        rounds = [
+            {
+                "round": 1,
+                "logical_role": "问题发现审查代理",
+                "agent_id": "agent-a",
+                "platform_nickname": "发现代理",
+                "reviewed_head": head,
+                "findings_count": 1,
+                "reuse_policy": "发现 finding 后原 agent 客观失败。",
+                "reuse_decision": "new-agent",
+            },
+            {
+                "round": 2,
+                "logical_role": "问题闭环审查代理",
+                "agent_id": "agent-c",
+                "platform_nickname": "替代闭环代理",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "替代失败的 finding owner，仅完成 closure。",
+                "reuse_decision": "replace",
+            },
+            {
+                "round": 3,
+                "logical_role": "最终放行审查代理",
+                "agent_id": "agent-b",
+                "platform_nickname": "最终代理",
+                "reviewed_head": head,
+                "findings_count": 0,
+                "reuse_policy": "fresh final reviewer 完整复核当前范围。",
+                "reuse_decision": "new-agent",
+            },
+        ]
+        assignment = self.write_agent_assignment(
+            rounds,
+            reuse_decisions=[
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "replace",
+                    "reason": "agent-a 已失败，由 agent-c 接管 finding closure。",
+                    "head": head,
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+            status_events=[
+                {
+                    "event": "failed",
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "head": head,
+                    "observed_at": "2026-07-24T00:10:00Z",
+                    "decision": "mark-failed",
+                    "reason": "finding report 已保留，但原 agent 无法继续 closure。",
+                },
+                {
+                    "event": "replacement-started",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "head": head,
+                    "observed_at": "2026-07-24T00:11:00Z",
+                    "decision": "start-replacement",
+                    "reason": "原 owner 已失败，启动 replacement closure。",
+                    "predecessor_agent_id": "agent-a",
+                    "handoff_summary": "复核并闭环 round 1 finding。",
+                },
+                {
+                    "event": "completed",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "head": head,
+                    "observed_at": "2026-07-24T00:20:00Z",
+                    "decision": "mark-completed",
+                    "reason": "replacement closure 已完成。",
+                },
+            ],
+        )
+        payload = gtt.read_json(assignment)
+        owner_report = payload["review_rounds"][0]["review_report_path"]
+        closure_report = payload["review_rounds"][1]["review_report_path"]
+        semantic_review = {
+            "qualified_findings": [
+                {
+                    "finding_ref": "F-001",
+                    "owner_round": 1,
+                    "reviewed_head": head,
+                    "evidence_refs": [owner_report],
+                    "status": "resolved",
+                    "closure_evidence": [closure_report],
+                }
+            ]
+        }
+
+        errors = gtt.review_branch_finding_lifecycle_errors(
+            self.root,
+            self.task_dir,
+            semantic_review,
+            payload,
+        )
+
+        self.assertEqual(errors, [])
+
+    def test_review_branch_entry_rejects_paths_outside_exact_owner_metadata(self) -> None:
+        task_ref = ".trellis/tasks/07-04-review-gate"
+        task_context = {
+            "branch_name": "codex/20-review-gate",
+            "base_branch": "main",
+            "workspace_mode": "worktree",
+            "workspace_path": str(self.root),
+            "task_dir": task_ref,
+            "preflight": {"current_checkout": str(self.root)},
+        }
+        task_payload = {
+            "id": "07-04-review-gate",
+            "status": "in_progress",
+            "branch": "codex/20-review-gate",
+            "base_branch": "main",
+        }
+        (self.task_dir / "issue-scope-ledger.json").write_text(
+            '{"primary_issue":{"number":20},"close_issues":[],"related_issues":[],"followup_issues":[]}\n',
+            encoding="utf-8",
+        )
+        invalid_paths = [
+            ".trellis/tasks/unrelated/ordinary-note.md",
+            f"{task_ref}/ordinary-note.md",
+            f"{task_ref}/reviews/unregistered.md",
+            ".trellis/.runtime/guru-team/evals/undeclared.json",
+        ]
+        for invalid_path in invalid_paths:
+            with (
+                self.subTest(invalid_path=invalid_path),
+                mock.patch.object(gtt, "review_branch_public_input_schema", return_value={}),
+                mock.patch.object(gtt, "review_branch_gate_schema", return_value={}),
+                mock.patch.object(gtt, "task_commit_schema_path", return_value=self.root / "task-commit.schema.json"),
+                mock.patch.object(gtt, "load_task_start_context", return_value=task_context),
+                mock.patch.object(gtt, "assert_workspace_boundary"),
+                mock.patch.object(gtt, "task_json", return_value=task_payload),
+                mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
+                mock.patch.object(gtt, "current_head", return_value="a" * 40),
+                mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
+                mock.patch.object(gtt, "changed_files", return_value=[]),
+                mock.patch.object(gtt, "review_branch_task_commit_evidence_errors", return_value=[]),
+                mock.patch.object(
+                    gtt,
+                    "validate_planning_approval",
+                    return_value=(self.task_dir / "planning-approval.json", {}, []),
+                ),
+                mock.patch.object(
+                    gtt,
+                    "validate_phase2_check",
+                    return_value=(
+                        self.task_dir / "phase2-check.json",
+                        {
+                            "typed_exit": "passed",
+                            "docs_ssot_plan": {
+                                "strategy": "ssot_first",
+                                "task_delta_merged": True,
+                            },
+                        },
+                        [],
+                    ),
+                ),
+                mock.patch.object(gtt, "git_status_paths", return_value=[invalid_path]),
+            ):
+                errors = gtt.review_branch_entry_precondition_errors(
+                    self.root,
+                    self.task_dir,
+                    {**gtt.DEFAULTS, "github_repo": "owner/repo"},
+                )
+
+            self.assertTrue(
+                any("working tree" in error and invalid_path in error for error in errors),
+                errors,
+            )
+
+    def test_review_branch_entry_accepts_exact_owner_metadata_and_direct_runtime_input(self) -> None:
+        task_ref = ".trellis/tasks/07-04-review-gate"
+        head = "a" * 40
+        task_context = {
+            "branch_name": "codex/20-review-gate",
+            "base_branch": "main",
+            "workspace_mode": "worktree",
+            "workspace_path": str(self.root),
+            "task_dir": task_ref,
+            "preflight": {"current_checkout": str(self.root)},
+        }
+        task_payload = {
+            "id": "07-04-review-gate",
+            "status": "in_progress",
+            "branch": "codex/20-review-gate",
+            "base_branch": "main",
+        }
+        (self.task_dir / "issue-scope-ledger.json").write_text(
+            '{"primary_issue":{"number":20},"close_issues":[],"related_issues":[],"followup_issues":[]}\n',
+            encoding="utf-8",
+        )
+        assignment = self.write_agent_assignment()
+        assignment_payload = gtt.read_json(assignment)
+        assignment_payload["head"] = head
+        gtt.write_json(assignment, assignment_payload)
+        raw_report = assignment_payload["review_rounds"][0]["review_report_path"]
+        (self.task_dir / "review.md").write_text("# 审查汇总\n", encoding="utf-8")
+        gtt.write_json(self.task_dir / "review-gate.json", {"typed_exit": "passed"})
+        plan_dir = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR
+        plan_dir.mkdir()
+        gtt.write_json(
+            plan_dir / "001.json",
+            {
+                "sequence": "001",
+                "result": {
+                    "status": "committed",
+                    "commit_sha": head,
+                },
+            },
+        )
+        runtime_input = self.root / ".trellis/.runtime/guru-team/evals/public-input.json"
+        runtime_input.parent.mkdir(parents=True)
+        gtt.write_json(runtime_input, {"profile": "branch_review"})
+        dirty_paths = [
+            f"{task_ref}/agent-assignment.json",
+            f"{task_ref}/review.md",
+            f"{task_ref}/review-gate.json",
+            raw_report,
+            f"{task_ref}/task-commit-plans/001.json",
+            ".trellis/.runtime/guru-team/evals/public-input.json",
+        ]
+        with (
+            mock.patch.object(gtt, "review_branch_public_input_schema", return_value={}),
+            mock.patch.object(gtt, "review_branch_gate_schema", return_value={}),
+            mock.patch.object(gtt, "task_commit_schema_path", return_value=self.root / "task-commit.schema.json"),
+            mock.patch.object(gtt, "load_task_start_context", return_value=task_context),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "task_json", return_value=task_payload),
+            mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
+            mock.patch.object(gtt, "current_head", return_value=head),
+            mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
+            mock.patch.object(gtt, "changed_files", return_value=[]),
+            mock.patch.object(gtt, "review_branch_task_commit_evidence_errors", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "validate_planning_approval",
+                return_value=(self.task_dir / "planning-approval.json", {}, []),
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_phase2_check",
+                return_value=(
+                    self.task_dir / "phase2-check.json",
+                    {
+                        "typed_exit": "passed",
+                        "docs_ssot_plan": {
+                            "strategy": "ssot_first",
+                            "task_delta_merged": True,
+                        },
+                    },
+                    [],
+                ),
+            ),
+            mock.patch.object(gtt, "git_status_paths", return_value=dirty_paths),
+        ):
+            errors = gtt.review_branch_entry_precondition_errors(
+                self.root,
+                self.task_dir,
+                {**gtt.DEFAULTS, "github_repo": "owner/repo"},
+                direct_runtime_inputs=[
+                    ".trellis/.runtime/guru-team/evals/public-input.json",
+                ],
+            )
+
+        self.assertFalse(any("working tree" in error for error in errors), errors)
+
+    def test_review_branch_semantic_payload_accepts_current_scope_rejections(self) -> None:
+        head = "a" * 40
+        for scenario in (
+            "normal_required_behavior",
+            "explicit_nonstandard_requirement",
+            "approved_nonstandard_expansion",
+        ):
+            with self.subTest(scenario=scenario):
+                semantic_input = self.root / f"{scenario}.json"
+                gtt.write_json(
+                    semantic_input,
+                    {
+                        "candidates": [
+                            {
+                                "candidate_ref": f"candidate-{scenario}",
+                                "disposition": "rejected_candidate",
+                                "scenario_class": scenario,
+                                "affected_behavior": "Reviewer candidate was disproved by current evidence.",
+                                "path": "src/production-eval.txt",
+                                "evidence_refs": ["tests/current-evidence.md"],
+                                "requirement_refs": ["PRD R5"],
+                                "scope_basis": "The candidate was evaluated against the current approved contract.",
+                                "qualification_reason": "Current implementation evidence proves no contract violation.",
+                            }
+                        ],
+                        "ai_review_gate": {
+                            "status": "passed",
+                            "summary": "The candidate was rejected without assigning finding severity.",
+                        },
+                    },
+                )
+
+                result = gtt.review_branch_semantic_payload(
+                    self.root,
+                    str(semantic_input),
+                    "passed",
+                    head,
+                )
+
+                self.assertEqual(
+                    result["rejected_candidates"][0]["scenario_class"],
+                    scenario,
+                )
+                self.assertNotIn("severity", result["rejected_candidates"][0])
+                self.assertNotIn("finding_ref", result["rejected_candidates"][0])
+
+    def test_review_branch_semantic_payload_rejects_finding_fields_on_rejections(self) -> None:
+        head = "a" * 40
+        for forbidden_field, forbidden_value in (
+            ("severity", "P2"),
+            ("finding_ref", "F-001"),
+        ):
+            with self.subTest(forbidden_field=forbidden_field):
+                semantic_input = self.root / f"rejected-{forbidden_field}.json"
+                candidate = {
+                    "candidate_ref": f"candidate-{forbidden_field}",
+                    "disposition": "rejected_candidate",
+                    "scenario_class": "normal_required_behavior",
+                    "affected_behavior": "Reviewer candidate was disproved by current evidence.",
+                    "path": "src/production-eval.txt",
+                    "evidence_refs": ["tests/current-evidence.md"],
+                    "requirement_refs": ["PRD R5"],
+                    "scope_basis": "The candidate was evaluated against the current approved contract.",
+                    "qualification_reason": "Current implementation evidence proves no contract violation.",
+                    forbidden_field: forbidden_value,
+                }
+                gtt.write_json(
+                    semantic_input,
+                    {
+                        "candidates": [candidate],
+                        "ai_review_gate": {
+                            "status": "passed",
+                            "summary": "The candidate cannot carry finding fields.",
+                        },
+                    },
+                )
+
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.review_branch_semantic_payload(
+                        self.root,
+                        str(semantic_input),
+                        "passed",
+                        head,
+                    )
+
     def test_final_review_round_errors_accepts_explicit_new_agent_closure(self) -> None:
         payload = {
             "review_rounds": [

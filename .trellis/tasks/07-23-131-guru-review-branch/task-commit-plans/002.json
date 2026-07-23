@@ -1,0 +1,1169 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "002",
+  "task": {
+    "id": "131-guru-review-branch",
+    "path": ".trellis/tasks/07-23-131-guru-review-branch",
+    "status": "in_progress",
+    "branch": "codex/131-guru-review-branch"
+  },
+  "issue": {
+    "primary_issue": 131,
+    "ledger_sha256": "e9e82419654384ac5a03cc7875b977bc83b4265ee21c1abd0f895d69f448f7b7"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "cdf0fa47d3d6f508851b9c0e91260276d9fde8f5"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/planning-approval.json",
+      "sha256": "b93c510271199865f738493102c90abd058e6c86f4e9a4f5ffe7139090193e66",
+      "size": 69028
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      "sha256": "f0c786ee2f9296a0671fc0988cb0b0a41e99b0258d1b4066cfa6b22145e0cb05",
+      "size": 50749
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/issue-scope-ledger.json",
+      "sha256": "e9e82419654384ac5a03cc7875b977bc83b4265ee21c1abd0f895d69f448f7b7",
+      "size": 2710
+    },
+    "task": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task.json",
+      "sha256": "69841b4e5f914a965c1cbda7fb83bf6c8f8ec9d693e6a2dbed9920595cda2adb",
+      "size": 654
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-review-branch/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ae11a3418b0ebd87ff6f57fd46f92c909a497caf",
+        "worktree_sha256": "b6e3efe1116346dfb7fe2a4dea33709b693c6ab44cca869ac1f318aec3f83740",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "76d3cdd635a7875a48f1b57dc44635bb68a61ddf",
+        "worktree_sha256": "5b681a1f8f6011b2873c5db657d23b2a2cae230258999b4ec015eb52dd4f674f",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a4a392af26657c6e7ef92bc2dd5dc61f5c79e1a2",
+        "worktree_sha256": "224051a9c32c2b07a29dcfdc605dddf376f8f655aaf73306aa1a94fa710d0abf",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-review-branch/examples/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cac66545afa4da05ceeb03383de263c0326f1be0",
+        "worktree_sha256": "44b935f7953d58e99761db6ef8ad6c226136f79e62b09299098acea1b9474905",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-review-branch/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6dcca8a316f54366c397649f8d8594fc917cf7a5",
+        "worktree_sha256": "8c0cd68789390b73655ac896123a480ef82e84a8f0fd4ed307cf3d8965ae0476",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-review-branch/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c2f56d934d12c7c9538fac3a6940b782601028c9",
+        "worktree_sha256": "d914a66c6c23173b1403bd01f9d57e494a04a7078af3800a50311d4e50217cca",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-review-branch/schemas/review-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ec5a48679d47fd13707369dd6a505249fb719780",
+        "worktree_sha256": "8e4544f205fac63ad8fac7ac8266642694df10571bc0be9157d6e382bdc90175",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ae11a3418b0ebd87ff6f57fd46f92c909a497caf",
+        "worktree_sha256": "b6e3efe1116346dfb7fe2a4dea33709b693c6ab44cca869ac1f318aec3f83740",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "76d3cdd635a7875a48f1b57dc44635bb68a61ddf",
+        "worktree_sha256": "5b681a1f8f6011b2873c5db657d23b2a2cae230258999b4ec015eb52dd4f674f",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a4a392af26657c6e7ef92bc2dd5dc61f5c79e1a2",
+        "worktree_sha256": "224051a9c32c2b07a29dcfdc605dddf376f8f655aaf73306aa1a94fa710d0abf",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/examples/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cac66545afa4da05ceeb03383de263c0326f1be0",
+        "worktree_sha256": "44b935f7953d58e99761db6ef8ad6c226136f79e62b09299098acea1b9474905",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6dcca8a316f54366c397649f8d8594fc917cf7a5",
+        "worktree_sha256": "8c0cd68789390b73655ac896123a480ef82e84a8f0fd4ed307cf3d8965ae0476",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c2f56d934d12c7c9538fac3a6940b782601028c9",
+        "worktree_sha256": "d914a66c6c23173b1403bd01f9d57e494a04a7078af3800a50311d4e50217cca",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/schemas/review-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ec5a48679d47fd13707369dd6a505249fb719780",
+        "worktree_sha256": "8e4544f205fac63ad8fac7ac8266642694df10571bc0be9157d6e382bdc90175",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ae11a3418b0ebd87ff6f57fd46f92c909a497caf",
+        "worktree_sha256": "b6e3efe1116346dfb7fe2a4dea33709b693c6ab44cca869ac1f318aec3f83740",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "76d3cdd635a7875a48f1b57dc44635bb68a61ddf",
+        "worktree_sha256": "5b681a1f8f6011b2873c5db657d23b2a2cae230258999b4ec015eb52dd4f674f",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a4a392af26657c6e7ef92bc2dd5dc61f5c79e1a2",
+        "worktree_sha256": "224051a9c32c2b07a29dcfdc605dddf376f8f655aaf73306aa1a94fa710d0abf",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/examples/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cac66545afa4da05ceeb03383de263c0326f1be0",
+        "worktree_sha256": "44b935f7953d58e99761db6ef8ad6c226136f79e62b09299098acea1b9474905",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6dcca8a316f54366c397649f8d8594fc917cf7a5",
+        "worktree_sha256": "8c0cd68789390b73655ac896123a480ef82e84a8f0fd4ed307cf3d8965ae0476",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c2f56d934d12c7c9538fac3a6940b782601028c9",
+        "worktree_sha256": "d914a66c6c23173b1403bd01f9d57e494a04a7078af3800a50311d4e50217cca",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/schemas/review-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ec5a48679d47fd13707369dd6a505249fb719780",
+        "worktree_sha256": "8e4544f205fac63ad8fac7ac8266642694df10571bc0be9157d6e382bdc90175",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ae11a3418b0ebd87ff6f57fd46f92c909a497caf",
+        "worktree_sha256": "b6e3efe1116346dfb7fe2a4dea33709b693c6ab44cca869ac1f318aec3f83740",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "76d3cdd635a7875a48f1b57dc44635bb68a61ddf",
+        "worktree_sha256": "5b681a1f8f6011b2873c5db657d23b2a2cae230258999b4ec015eb52dd4f674f",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a4a392af26657c6e7ef92bc2dd5dc61f5c79e1a2",
+        "worktree_sha256": "224051a9c32c2b07a29dcfdc605dddf376f8f655aaf73306aa1a94fa710d0abf",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/examples/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cac66545afa4da05ceeb03383de263c0326f1be0",
+        "worktree_sha256": "44b935f7953d58e99761db6ef8ad6c226136f79e62b09299098acea1b9474905",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6dcca8a316f54366c397649f8d8594fc917cf7a5",
+        "worktree_sha256": "8c0cd68789390b73655ac896123a480ef82e84a8f0fd4ed307cf3d8965ae0476",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c2f56d934d12c7c9538fac3a6940b782601028c9",
+        "worktree_sha256": "d914a66c6c23173b1403bd01f9d57e494a04a7078af3800a50311d4e50217cca",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/schemas/review-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ec5a48679d47fd13707369dd6a505249fb719780",
+        "worktree_sha256": "8e4544f205fac63ad8fac7ac8266642694df10571bc0be9157d6e382bdc90175",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "15501f37d23d0071f81cd404a2b30059ace6bcce",
+        "worktree_sha256": "d369cec23a9e6fa53131d19ce7e6dda1479fe994e4333321be2237423e11816b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ecf53c03e3b4e13235d2a8cd6869f149cdfc57ca",
+        "worktree_sha256": "2c91e748280b3029ca001880e0c11ba0bbbdeca16c774ba77424d4f2f2716b58",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e32b1c056b352cee70a56b1e91d84ae976888e05",
+        "worktree_sha256": "27606710bb352d2c9b0190802714e48a702612ec8de6607485fd3952699dbbb2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ae11a3418b0ebd87ff6f57fd46f92c909a497caf",
+        "worktree_sha256": "b6e3efe1116346dfb7fe2a4dea33709b693c6ab44cca869ac1f318aec3f83740",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "76d3cdd635a7875a48f1b57dc44635bb68a61ddf",
+        "worktree_sha256": "5b681a1f8f6011b2873c5db657d23b2a2cae230258999b4ec015eb52dd4f674f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/workflow-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a4a392af26657c6e7ef92bc2dd5dc61f5c79e1a2",
+        "worktree_sha256": "224051a9c32c2b07a29dcfdc605dddf376f8f655aaf73306aa1a94fa710d0abf",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/examples/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cac66545afa4da05ceeb03383de263c0326f1be0",
+        "worktree_sha256": "44b935f7953d58e99761db6ef8ad6c226136f79e62b09299098acea1b9474905",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6dcca8a316f54366c397649f8d8594fc917cf7a5",
+        "worktree_sha256": "8c0cd68789390b73655ac896123a480ef82e84a8f0fd4ed307cf3d8965ae0476",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c2f56d934d12c7c9538fac3a6940b782601028c9",
+        "worktree_sha256": "d914a66c6c23173b1403bd01f9d57e494a04a7078af3800a50311d4e50217cca",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/review-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ec5a48679d47fd13707369dd6a505249fb719780",
+        "worktree_sha256": "8e4544f205fac63ad8fac7ac8266642694df10571bc0be9157d6e382bdc90175",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "96a5ea91eaec807491073da007e60db94ea9ea52",
+        "worktree_sha256": "a1817ed957e0fab251f39a6ce7b571394b741cef451e34a7285ca2058b615317",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7217667cf888a0d3f19aba461d7beb158cdec3ab",
+        "worktree_sha256": "44a0fcb782f480cd1592ff76ff25b425b73ef9a8537fc036779eb7fdb89463f2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e283b87d3792dd13134f56884d12425f2139eea6",
+        "worktree_sha256": "f0c786ee2f9296a0671fc0988cb0b0a41e99b0258d1b4066cfa6b22145e0cb05",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "93b690be36aa6ddccb2cb93eb67eabffddef854ce04189bcbe8d9dffb7291370",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cfb02d20206e44c18aad6434aad7ef19a5aa634d",
+        "worktree_sha256": "06f787c125b767a6be9246947143c222ca6593274fc662eba11ac937e6216a0a",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "5fb1f0745d4cefbec96585f8fdb351e0f3a55071a77ff5ebb3710c988b89bab9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2527cdd5c49a2c051123739187fc958f7b949a3e44c767039f6e33e517c35b5d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/01-problem-discovery.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "1fa16331617f20efd2855373abee6f9c9cd8e3d36b3b3dd6ae0e4abf3439d35b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8c1334d5a1604308c56fd58510f8143804d837ed",
+        "worktree_sha256": "5ba7999ed2c8d5d137cf0fa5764352d345e016169aa2ca6edfde8c70ea175bc6",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e32b1c056b352cee70a56b1e91d84ae976888e05",
+        "worktree_sha256": "27606710bb352d2c9b0190802714e48a702612ec8de6607485fd3952699dbbb2",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ae11a3418b0ebd87ff6f57fd46f92c909a497caf",
+        "worktree_sha256": "b6e3efe1116346dfb7fe2a4dea33709b693c6ab44cca869ac1f318aec3f83740",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "76d3cdd635a7875a48f1b57dc44635bb68a61ddf",
+        "worktree_sha256": "5b681a1f8f6011b2873c5db657d23b2a2cae230258999b4ec015eb52dd4f674f",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/evals/files/workflow-passed-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a4a392af26657c6e7ef92bc2dd5dc61f5c79e1a2",
+        "worktree_sha256": "224051a9c32c2b07a29dcfdc605dddf376f8f655aaf73306aa1a94fa710d0abf",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/examples/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cac66545afa4da05ceeb03383de263c0326f1be0",
+        "worktree_sha256": "44b935f7953d58e99761db6ef8ad6c226136f79e62b09299098acea1b9474905",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6dcca8a316f54366c397649f8d8594fc917cf7a5",
+        "worktree_sha256": "8c0cd68789390b73655ac896123a480ef82e84a8f0fd4ed307cf3d8965ae0476",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c2f56d934d12c7c9538fac3a6940b782601028c9",
+        "worktree_sha256": "d914a66c6c23173b1403bd01f9d57e494a04a7078af3800a50311d4e50217cca",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/schemas/review-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ec5a48679d47fd13707369dd6a505249fb719780",
+        "worktree_sha256": "8e4544f205fac63ad8fac7ac8266642694df10571bc0be9157d6e382bdc90175",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ecf53c03e3b4e13235d2a8cd6869f149cdfc57ca",
+        "worktree_sha256": "2c91e748280b3029ca001880e0c11ba0bbbdeca16c774ba77424d4f2f2716b58",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "856f9a9c0363a133347e35358f13ac260fcb45e1",
+        "worktree_sha256": "04300f508fa7bd4def4fb670cc2c6adb4f466787ba2f1df29033de31793bff77",
+        "mode": "100644"
+      }
+    ],
+    "digest": "e694253e4b93e40e88213f62d26acc8f18a3e793ff29c5f438428ab77febd33e"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-review-branch/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-review-branch/examples/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-review-branch/interface.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-review-branch/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-review-branch/schemas/review-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-branch/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-branch/examples/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-branch/interface.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-branch/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-branch/schemas/review-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-branch/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-branch/examples/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-branch/interface.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-branch/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-branch/schemas/review-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-branch/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-branch/examples/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-branch/interface.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-branch/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-branch/schemas/review-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/workflow-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-branch/examples/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/review-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/01-problem-discovery.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/001.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-branch/evals/files/workflow-passed-facts.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-branch/examples/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-branch/schemas/review-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-review-branch/SKILL.md",
+    ".agents/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+    ".agents/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+    ".agents/skills/guru-review-branch/examples/review-gate.json",
+    ".agents/skills/guru-review-branch/interface.json",
+    ".agents/skills/guru-review-branch/references/contract.md",
+    ".agents/skills/guru-review-branch/schemas/review-gate.schema.json",
+    ".claude/skills/guru-review-branch/SKILL.md",
+    ".claude/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+    ".claude/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+    ".claude/skills/guru-review-branch/examples/review-gate.json",
+    ".claude/skills/guru-review-branch/interface.json",
+    ".claude/skills/guru-review-branch/references/contract.md",
+    ".claude/skills/guru-review-branch/schemas/review-gate.schema.json",
+    ".codex/skills/guru-review-branch/SKILL.md",
+    ".codex/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+    ".codex/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+    ".codex/skills/guru-review-branch/examples/review-gate.json",
+    ".codex/skills/guru-review-branch/interface.json",
+    ".codex/skills/guru-review-branch/references/contract.md",
+    ".codex/skills/guru-review-branch/schemas/review-gate.schema.json",
+    ".cursor/skills/guru-review-branch/SKILL.md",
+    ".cursor/skills/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+    ".cursor/skills/guru-review-branch/evals/files/workflow-passed-facts.json",
+    ".cursor/skills/guru-review-branch/examples/review-gate.json",
+    ".cursor/skills/guru-review-branch/interface.json",
+    ".cursor/skills/guru-review-branch/references/contract.md",
+    ".cursor/skills/guru-review-branch/schemas/review-gate.schema.json",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+    ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+    ".trellis/guru-team/skills/packages/guru-review-branch/evals/files/workflow-passed-facts.json",
+    ".trellis/guru-team/skills/packages/guru-review-branch/examples/review-gate.json",
+    ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
+    ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-review-branch/schemas/review-gate.schema.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/01-problem-discovery.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/001.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
+    "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+    "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-review-branch/evals/files/finding-fix-passed-facts.json",
+    "trellis/skills/guru-team/packages/guru-review-branch/evals/files/workflow-passed-facts.json",
+    "trellis/skills/guru-team/packages/guru-review-branch/examples/review-gate.json",
+    "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
+    "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-review-branch/schemas/review-gate.schema.json",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #131 闭环分支审查问题",
+    "body": "背景：\nIssue #131 的首次独立 Branch Review 发现 replacement recovery、working-tree metadata 边界、candidate disposition 与 committed diff 校验缺口。\n\n变更：\n支持完整 decision=replace recovery chain，收紧精确 metadata/runtime allowlist，允许三类 current-scope no-defect rejected_candidate，并修复报告 EOF 空行；同步 canonical、installed、preset 与四平台副本。\n\n边界：\n保持 upstream trellis-check reviewer 零修改；#116 publication package 仍为 planned/missing；不包含 push、PR、部署或 issue close。\n\n验证：\n独立 finding-fix Phase 2 通过 focused 7、runtime 565、Skill 167、installer 45、双侧 eval 7/7、10/39/23、inventory 1903 与 full throwaway update/reapply。\n\nRefs #131",
+    "bytes": "fix(workflow): #131 闭环分支审查问题\n\n背景：\nIssue #131 的首次独立 Branch Review 发现 replacement recovery、working-tree metadata 边界、candidate disposition 与 committed diff 校验缺口。\n\n变更：\n支持完整 decision=replace recovery chain，收紧精确 metadata/runtime allowlist，允许三类 current-scope no-defect rejected_candidate，并修复报告 EOF 空行；同步 canonical、installed、preset 与四平台副本。\n\n边界：\n保持 upstream trellis-check reviewer 零修改；#116 publication package 仍为 planned/missing；不包含 push、PR、部署或 issue close。\n\n验证：\n独立 finding-fix Phase 2 通过 focused 7、runtime 565、Skill 167、installer 45、双侧 eval 7/7、10/39/23、inventory 1903 与 full throwaway update/reapply。\n\nRefs #131\n",
+    "sha256": "f07941a311cb3fe97465925d725bd1f2e53143e80ea859ef1e66f074ed364937"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "已逐项复核首次 Branch Review 的四个 finding、修复实现、同步副本、完整 Phase 2 报告与 57 个当前路径；提交消息和精确路径范围真实覆盖 Issue #131 finding-fix，未混入 push、PR、部署或 issue close。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户在查看当前工作进展后再次回复“确认继续”，授权按已确认范围完成本地 finding-fix task commit 与后续 Branch Review；不授权 push、PR、部署或 issue close。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-23T20:20:22Z",
+    "plan_digest": "96dc3f2baa21bff96c8ca59dcfe7a8f9ece79f5fcc461b642fcdc9233a98591f"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

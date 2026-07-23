@@ -13,6 +13,8 @@ official unchanged check/review agent with the package-owned review prompt,
 retain its task-local raw report, and qualify every candidate before assigning severity.
 Scripts never decide scope, scenario class, qualification, severity,
 review sufficiency, pass, or route.
+When current-scope evidence disproves a candidate, preserve it as
+`rejected_candidate` without severity or finding-only fields.
 
 Current-scope qualified findings return `implementation_required`; fixes must
 pass `guru-check-task`, a fresh task commit, and this Skill again. An

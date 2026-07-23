@@ -1749,8 +1749,35 @@ def production_review_candidate(
         "scope_basis": "The approved production eval requirement owns this behavior.",
         "qualification_reason": "The candidate was classified before any severity was assigned.",
     }
+    current_scope_rejections = [
+        {
+            "candidate_ref": f"candidate-rejected-{scenario}",
+            "disposition": "rejected_candidate",
+            "scenario_class": scenario,
+            "affected_behavior": (
+                "The reviewer candidate was evaluated against current scope "
+                "and disproved by implementation evidence."
+            ),
+            "path": "src/production-eval.txt",
+            "evidence_refs": ["src/production-eval.txt"],
+            "requirement_refs": ["PRD R5"],
+            "scope_basis": (
+                "The production eval preserves the current approved scenario "
+                "without inventing a finding."
+            ),
+            "qualification_reason": (
+                "The current implementation satisfies the bound contract, so "
+                "the candidate is rejected without severity or finding fields."
+            ),
+        }
+        for scenario in (
+            "normal_required_behavior",
+            "explicit_nonstandard_requirement",
+            "approved_nonstandard_expansion",
+        )
+    ]
     if exit_id == "implementation_required" or resolved:
-        return [{
+        findings = [{
             **common,
             "disposition": "qualified_finding",
             "scenario_class": "normal_required_behavior",
@@ -1764,6 +1791,7 @@ def production_review_candidate(
                 if resolved else []
             ),
         }]
+        return findings + (current_scope_rejections if resolved else [])
     if exit_id == "scope_confirmation_required":
         return [{
             **common,
@@ -1774,7 +1802,7 @@ def production_review_candidate(
             "trigger_evidence": ["The reviewer identified an unapproved optional expansion."],
             "clarification_route": "guru-clarify-requirements",
         }]
-    return []
+    return current_scope_rejections
 
 
 def production_review_rounds(
@@ -1799,12 +1827,12 @@ def production_review_rounds(
             {
                 "round": 2,
                 "logical_role": "问题闭环审查代理",
-                "agent_id": "review-finding-1",
-                "platform_nickname": "review-finding-1",
+                "agent_id": "review-closure-replacement-1",
+                "platform_nickname": "review-closure-replacement-1",
                 "reviewed_head": head,
                 "findings_count": 0,
-                "reuse_policy": "The finding owner is reused only for explicit closure.",
-                "reuse_decision": "reuse-for-closure",
+                "reuse_policy": "A replacement reviewer closes the failed finding owner through the complete recovery chain.",
+                "reuse_decision": "replace",
                 "report_name": "round-002-closure.md",
             },
             {
@@ -1903,23 +1931,98 @@ def production_record_review(
                 "event_id": f"evt-{agent_id}-assigned",
             })
             known_agents.add(agent_id)
-        assignment.setdefault("status_events", []).append({
-            "event_id": f"evt-{agent_id}-round-{index}-completed",
-            "event": "completed",
-            "agent_id": agent_id,
-            "logical_role": round_item["logical_role"],
-            "platform_nickname": round_item["platform_nickname"],
-            "observed_at": f"2026-07-23T00:{20 + index:02d}:00Z",
-            "recorded_at": f"2026-07-23T00:{20 + index:02d}:00Z",
+        if not resolved:
+            assignment.setdefault("status_events", []).append({
+                "event_id": f"evt-{agent_id}-round-{index}-completed",
+                "event": "completed",
+                "agent_id": agent_id,
+                "logical_role": round_item["logical_role"],
+                "platform_nickname": round_item["platform_nickname"],
+                "observed_at": f"2026-07-23T00:{20 + index:02d}:00Z",
+                "recorded_at": f"2026-07-23T00:{20 + index:02d}:00Z",
+                "head": head,
+                "source": "main-session",
+                "evidence": "The production Branch Review eval round completed.",
+                "predecessor_agent_id": "",
+                "predecessor_event_id": "",
+                "termination_reason": "",
+                "termination_source_event_id": "",
+                "replacement_reason": "",
+                "handoff_summary": "",
+            })
+    if resolved:
+        failed = runtime.build_liveness_event(
+            payload=assignment,
+            root=fixture,
+            logical_role="问题发现审查代理",
+            agent_id="review-finding-1",
+            platform_nickname="review-finding-1",
+            event_name="failed",
+            observed_at="2026-07-23T00:21:00Z",
+            evidence=(
+                "The finding report is retained, but the original owner "
+                "cannot continue the closure round."
+            ),
+            source="main-session",
+        )
+        assignment.setdefault("status_events", []).append(failed)
+        replacement = runtime.build_liveness_event(
+            payload=assignment,
+            root=fixture,
+            logical_role="问题闭环审查代理",
+            agent_id="review-closure-replacement-1",
+            platform_nickname="review-closure-replacement-1",
+            event_name="replacement-started",
+            observed_at="2026-07-23T00:22:00Z",
+            evidence="The replacement closure reviewer accepted the exact finding handoff.",
+            source="main-session",
+            predecessor_agent_id="review-finding-1",
+            predecessor_event_id=failed["event_id"],
+            replacement_reason="terminal_failed_incomplete",
+            handoff_summary="Close F-001 against the current committed review range.",
+        )
+        assignment["status_events"].append(replacement)
+        for event_index, (logical_role, agent_id, observed_at) in enumerate(
+            (
+                (
+                    "问题闭环审查代理",
+                    "review-closure-replacement-1",
+                    "2026-07-23T00:23:00Z",
+                ),
+                (
+                    "最终放行审查代理",
+                    "review-final-1",
+                    "2026-07-23T00:24:00Z",
+                ),
+            ),
+            start=1,
+        ):
+            assignment["status_events"].append(
+                runtime.build_liveness_event(
+                    payload=assignment,
+                    root=fixture,
+                    logical_role=logical_role,
+                    agent_id=agent_id,
+                    platform_nickname=agent_id,
+                    event_name="completed",
+                    observed_at=observed_at,
+                    evidence=(
+                        "The replacement closure completed."
+                        if event_index == 1
+                        else "The fresh final review completed."
+                    ),
+                    source="main-session",
+                )
+            )
+        assignment.setdefault("reuse_decisions", []).append({
+            "logical_role": "问题闭环审查代理",
+            "agent_id": "review-closure-replacement-1",
+            "decision": "replace",
+            "reason": "The original finding owner failed before closure.",
             "head": head,
-            "source": "main-session",
-            "evidence": "The production Branch Review eval round completed.",
-            "predecessor_agent_id": "",
-            "predecessor_event_id": "",
-            "termination_reason": "",
-            "termination_source_event_id": "",
-            "replacement_reason": "",
-            "handoff_summary": "",
+            "recorded_at": "2026-07-23T00:22:00Z",
+            "from_round": 1,
+            "to_round": 2,
         })
     runtime.write_json(assignment_path, assignment)
     (task / "review.md").write_text(
@@ -1947,6 +2050,14 @@ def production_record_review(
     })
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
+    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    direct_recorder_inputs = {runtime_input, semantic_path}
+    for runtime_artifact in runtime_dir.rglob("*"):
+        if (
+            runtime_artifact.is_file()
+            and runtime_artifact not in direct_recorder_inputs
+        ):
+            runtime_artifact.unlink()
     runtime.cmd_review_branch(argparse.Namespace(
         root=str(fixture),
         json=True,
@@ -2063,6 +2174,13 @@ def stage_production_owner_execution(
                         "\n## 普通审查证据修订\n\n"
                         "该正常路径修订使已登记的 closure raw report digest 过期。\n"
                     )
+            runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+            for runtime_artifact in runtime_dir.rglob("*"):
+                if (
+                    runtime_artifact.is_file()
+                    and runtime_artifact != fixture / OWNER_INPUT
+                ):
+                    runtime_artifact.unlink()
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
     return package, fixture_runtime_target, {}

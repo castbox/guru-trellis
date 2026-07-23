@@ -197,4 +197,3 @@ TypeCheck 说明：
 - 本报告不能支撑 passing `phase2-check.json`。
 - 建议 `guru-check-task` typed exit：`implementation_required`。
 - 应由 implement owner 修复 runtime/schema/eval/test 与 Docs SSOT，再重新执行完整 Phase 2 check。
-

@@ -54,7 +54,7 @@
     {"id": "issue_scope_ledger", "evidence": "current issue-scope-ledger.json", "binding": "primary, close, related and follow-up scope", "freshness": "current semantic projection"},
     {"id": "docs_ssot_outcome", "evidence": "approved Docs SSOT Plan and implementation handoff", "binding": "durable docs reconciliation", "freshness": "reviewed against current diff"},
     {"id": "review_range", "evidence": "origin base, committed HEAD and complete diff", "binding": "origin/<base>...<head>", "freshness": "rebuilt for every round"},
-    {"id": "working_tree", "evidence": "complete status snapshot", "binding": "clean or owner-declared review metadata only", "freshness": "checked before record and check"},
+    {"id": "working_tree", "evidence": "complete status snapshot", "binding": "clean or exact current-task assignment/rollup/gate/registered raw reports/current committed task-commit plan plus invocation-declared Guru runtime inputs only", "freshness": "checked before record and check"},
     {"id": "reviewer_assignment", "evidence": "agent-assignment.json and liveness/recovery chain", "binding": "independent finding, closure and fresh final roles", "freshness": "assignment checker rerun"},
     {"id": "review_evidence", "evidence": "reviews/*.md, review.md and report digests", "binding": "ordered current-head lifecycle", "freshness": "raw reports reread"},
     {"id": "invocation_freshness", "evidence": "public input, AI Gate, artifact and actual exit", "binding": "one complete owner invocation", "freshness": "checker rejects drift or ambiguity"}

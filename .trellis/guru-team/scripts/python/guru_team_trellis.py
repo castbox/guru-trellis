@@ -702,6 +702,12 @@ SELF_REVIEWER_PATTERNS = [
 ]
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/.runtime/")
 METADATA_ONLY_FILES: set[str] = set()
+BRANCH_REVIEW_TASK_METADATA_FILES = {
+    AGENT_ASSIGNMENT_ARTIFACT,
+    REVIEW_REPORT_ARTIFACT,
+    "review-gate.json",
+}
+BRANCH_REVIEW_RUNTIME_INPUT_PREFIX = ".trellis/.runtime/guru-team/"
 PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     "issue-scope-ledger.json",
     "pr-body.md",
@@ -12452,6 +12458,7 @@ def review_branch_entry_precondition_errors(
     config: dict[str, Any],
     public_input: dict[str, Any] | None = None,
     owner_result: dict[str, Any] | None = None,
+    direct_runtime_inputs: list[str] | None = None,
 ) -> list[str]:
     errors: list[str] = []
     try:
@@ -12576,19 +12583,101 @@ def review_branch_entry_precondition_errors(
     except WorkflowError as exc:
         errors.append(f"review entry working tree cannot be inspected: {exc}")
     else:
-        non_metadata = [
-            path
-            for path in dirty_paths
-            if not path.startswith(METADATA_ONLY_PREFIXES)
-            and path not in METADATA_ONLY_FILES
+        allowed_paths = review_branch_task_metadata_allowlist(
+            root,
+            task_dir,
+        ) | review_branch_runtime_input_allowlist(
+            root,
+            direct_runtime_inputs or [],
+        )
+        undeclared_paths = [
+            path for path in dirty_paths if path not in allowed_paths
         ]
-        if non_metadata:
+        if undeclared_paths:
             errors.append(
-                "review entry working tree has non-metadata changes: "
-                + ", ".join(non_metadata[:20])
+                "review entry working tree has paths outside the exact "
+                "owner metadata and direct runtime-input allowlist: "
+                + ", ".join(undeclared_paths[:20])
                 + "."
             )
     return errors
+
+
+def review_branch_task_metadata_allowlist(
+    root: Path,
+    task_dir: Path,
+) -> set[str]:
+    task_ref = repo_relative(root, task_dir).rstrip("/")
+    allowed = {
+        f"{task_ref}/{filename}"
+        for filename in BRANCH_REVIEW_TASK_METADATA_FILES
+    }
+
+    assignment_path = task_dir / AGENT_ASSIGNMENT_ARTIFACT
+    try:
+        assignment = read_json(assignment_path)
+    except WorkflowError:
+        assignment = {}
+    rounds = (
+        assignment.get("review_rounds")
+        if isinstance(assignment.get("review_rounds"), list)
+        else []
+    )
+    reports_root = Path(task_ref) / "reviews"
+    for item in rounds:
+        if not isinstance(item, dict):
+            continue
+        report_value = str(item.get("review_report_path") or "").strip()
+        report_relative = skill_safe_relative(report_value)
+        if (
+            report_relative is not None
+            and report_relative.parent == reports_root
+            and report_relative.suffix == ".md"
+        ):
+            allowed.add(report_relative.as_posix())
+
+    current = current_head(root)
+    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
+    current_plans: list[Path] = []
+    if plan_dir.is_dir():
+        for candidate in sorted(plan_dir.glob("[0-9][0-9][0-9].json")):
+            try:
+                payload = read_json(candidate)
+            except WorkflowError:
+                continue
+            result = (
+                payload.get("result")
+                if isinstance(payload.get("result"), dict)
+                else {}
+            )
+            if (
+                result.get("status") == "committed"
+                and result.get("commit_sha") == current
+            ):
+                current_plans.append(candidate)
+    if len(current_plans) == 1:
+        allowed.add(repo_relative(root, current_plans[0]))
+    return allowed
+
+
+def review_branch_runtime_input_allowlist(
+    root: Path,
+    input_values: list[str],
+) -> set[str]:
+    allowed: set[str] = set()
+    for input_value in input_values:
+        relative = skill_safe_relative(input_value)
+        if (
+            relative is None
+            or not relative.as_posix().startswith(
+                BRANCH_REVIEW_RUNTIME_INPUT_PREFIX
+            )
+        ):
+            continue
+        path = root / relative
+        if path.is_file() and not path.is_symlink():
+            allowed.add(relative.as_posix())
+    return allowed
 
 
 def review_branch_finding_lifecycle_errors(
@@ -12756,7 +12845,36 @@ def review_branch_finding_lifecycle_errors(
                 and item.get("decision") == "new-agent"
                 for item in reuse_decisions
             )
-            if not same_agent_closure and not replacement_closure:
+            final_round_numbers = [
+                review_round_number(item)
+                for item in rounds
+                if isinstance(item, dict)
+                and item.get("logical_role") == "最终放行审查代理"
+                and review_round_number(item) > closure_number
+            ]
+            replacement_recovery_closure = (
+                finding_round_has_replacement_closure(
+                    assignment_payload,
+                    rounds,
+                    owner,
+                    min(final_round_numbers)
+                    if final_round_numbers
+                    else max(
+                        [
+                            review_round_number(item)
+                            for item in rounds
+                            if isinstance(item, dict)
+                        ],
+                        default=closure_number,
+                    )
+                    + 1,
+                )
+            )
+            if (
+                not same_agent_closure
+                and not replacement_closure
+                and not replacement_recovery_closure
+            ):
                 errors.append(
                     f"resolved finding {finding_ref} closure round lacks "
                     "same-agent continuity or replacement linkage."
@@ -12907,9 +13025,18 @@ def review_branch_semantic_payload(
             proposal_refs.add(proposal_ref)
             normalized["scope_proposals"].append(item)
         else:
-            if set(raw) != common_fields or scenario not in {
-                "out_of_scope", "unconfirmed_nonstandard_proposal",
-            } or "severity" in raw:
+            allowed_non_finding_scenarios = {
+                "out_of_scope",
+                "unconfirmed_nonstandard_proposal",
+            }
+            if disposition == "rejected_candidate":
+                allowed_non_finding_scenarios = scenario_classes
+            if (
+                set(raw) != common_fields
+                or scenario not in allowed_non_finding_scenarios
+                or "severity" in raw
+                or "finding_ref" in raw
+            ):
                 raise WorkflowError(
                     f"{disposition} {candidate_ref} has an invalid scenario or finding fields.",
                     exit_code=2,
@@ -12953,6 +13080,10 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         root,
         task_dir,
         config,
+        direct_runtime_inputs=[
+            str(getattr(args, "skill_input", "") or ""),
+            str(getattr(args, "semantic_review_file", "") or ""),
+        ],
     )
     if entry_errors:
         raise WorkflowError(
@@ -20907,6 +21038,9 @@ def production_owner_result(
                 load_config(root),
                 public_input,
                 result,
+                direct_runtime_inputs=[
+                    str(getattr(args, "input", "") or ""),
+                ],
             )
             if entry_errors:
                 result = {

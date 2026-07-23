@@ -312,6 +312,125 @@ commit与真实Branch Review。实现代理未执行这些职责。
 2. Current branch未commit/push，feature-ref marketplace安装仍未验证。
 3. #116、#132和Trellis CLI 0.6.8边界不变。
 
+## 12. Branch Review finding-fix round（2026-07-24）
+
+本节承接独立 Branch Review 的 `F-131-BR-01` 至 `F-131-BR-04`。本轮只完成
+implementation boundary，没有运行 `trellis-check`、没有修改
+`planning-approval.json`、`phase2-check.json`、`agent-assignment.json`、
+`review.md`、`review-gate.json` 或 raw review reports，也没有创建
+commit/push/PR。
+
+### 12.1 Findings closure implementation
+
+- `F-131-BR-01`：v2 finding lifecycle现在接受合法 replacement closure。通过条件同时
+  要求 assignment reuse decision为 `replace`、closure round
+  `reuse_decision=replace`，以及 predecessor失败/过期/终止事件、
+  `replacement-started`、handoff/recovery linkage和replacement completion组成的完整
+  liveness/recovery chain。该路径由semantic recorder、persisted checker和public
+  wrapper真实串联验证。
+- `F-131-BR-02`：Branch Review clean-tree例外从宽泛目录前缀收敛为精确集合：current
+  task的 `agent-assignment.json`、`review.md`、`review-gate.json`；assignment实际登记的
+  direct `reviews/*.md`；绑定current HEAD的唯一 committed
+  `task-commit-plans/<sequence>.json`；以及本次 recorder/wrapper invocation明确命名、
+  位于 `.trellis/.runtime/guru-team/**` 且为普通非symlink文件的直接输入。其它task
+  artifact、current task ordinary artifact、未登记raw report和未声明runtime
+  artifact全部阻断。
+- `F-131-BR-03`：前三类current-scope scenario中经证据证明不构成缺陷的候选现在可保留
+  为 `rejected_candidate`；schema/runtime/contract/SKILL/example/eval事实已同步。
+  `rejected_candidate`仍禁止 `severity`、`finding_ref`及其它finding-only字段，
+  observation/follow-up的scenario限制不变。
+- `F-131-BR-04`：只删除已提交 `phase2-worker-report.md` 的EOF额外空行，没有改写旧
+  Phase 2结论或验证声明。当前working-tree候选执行
+  `git diff --check origin/main`通过；未包含working-tree修复的旧
+  `origin/main...HEAD`仍诚实报告原EOF问题，待下一次work commit后必须对新的完整
+  committed range重新执行并通过。
+
+### 12.2 Files changed and distribution sync
+
+- Canonical runtime与回归：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `test_guru_team_trellis.py`。
+- Canonical public Skill package：
+  `guru-review-branch`的 `SKILL.md`、`interface.json`、
+  `references/contract.md`、`schemas/review-gate.schema.json`、
+  `examples/review-gate.json`及两个eval facts。
+- Canonical真实eval adapter：
+  `trellis/skills/guru-team/adapters/eval/native_adapter.py`。
+- Preset apply同步：
+  installed runtime、adapter、package、`.agents` / `.codex` / `.claude` /
+  `.cursor` mirrors及extension inventory。两次finding-fix同步产生的精确sidecar均先
+  列表检查再删除，最终重复apply为no-op，1903 managed files且
+  sidecar/conflict/removal均为0。
+- Task-local实现历史：
+  `phase2-worker-report.md`的单一EOF修复和本节handoff。
+
+Reviewer拥有的 assignment、commit-plan和review artifacts保持原状态；实现代理没有
+回退、改写或纳入自己的判断。明确禁止修改的六组upstream check/reviewer路径相对本轮
+HEAD全部为零diff。
+
+### 12.3 Docs SSOT Plan reconciliation
+
+| Field | Branch Review finding-fix result |
+| --- | --- |
+| Strategy | 延续批准的 `ssot_first` |
+| Durable-doc implementation input | 已批准的 requirement/workflow/data/script/quality/preset SSOT继续作为主输入；package contract作为public Skill实现合同同步精确working-tree、replacement和non-finding语义 |
+| Task-delta input | Current PRD/design/implement与四个Branch Review findings限定本轮边界 |
+| Durable docs/spec/overlay sync | 没有改动PRD/design/implement或`.trellis/spec/**`；canonical package contract与所有installed/platform copies已同步，无overlay drift |
+| Task delta merged | 四个finding没有产生新的产品/流程requirement authority；可执行delta已合并到canonical runtime、public package contract、schema、eval和tests |
+| Task-history-only | red/green复现、临时eval/throwaway路径、sidecar清理过程、reviewer gate artifacts、旧committed-range空白失败和本handoff |
+| Current PR limitation | Branch仍未commit/push；public marketplace只发现public main，本地未发布current workflow已通过throwaway canonical sample |
+
+因此本轮没有改变 planning/durable requirement authority，也不需要重写或重新批准规划
+文档；最终planning checker仍应以现有fresh approval验证。
+
+### 12.4 Validation
+
+- 红例均先有效失败：合法replacement closure被拒；四类越界dirty artifact被放行；三类
+  current-scope rejection被runtime拒绝。
+- 新增5个focused regression通过；`ReviewGateReportTest` 73 tests通过。
+- Runtime full suite：565 tests，OK，13 skipped。
+- Skill full suite：167 tests，OK；`guru-review-branch` package：8 tests，OK。
+- Preset installer：45 tests，OK；upstream ownership：6 tests，OK。
+- Source与installed shared real-wrapper eval各7/7 passed；replacement
+  finding-fix实际返回 `passed`，blocked-stale实际返回 `blocked`。
+- Source与installed package validator均passed：10 active Skills / 39 exits /
+  23 targets；installed inventory为1903 managed files，0 sidecar/conflict/removal。
+- Full throwaway install/update/reapply verifier：exit 0，覆盖public marketplace
+  discovery、本地unpublished current workflow sample、fresh init、existing-project
+  preview/switch、all-platform preset、wrapper/eval、`trellis update --force`、
+  workflow/preset reapply、no-developer和pre-#146 fixtures。
+- `task.py validate`通过；2632个JSON parse、295个shell syntax、updated Python
+  `py_compile`、`git diff --check`、working-tree candidate完整
+  `git diff --check origin/main`、empty index、dogfood drift、canonical/installed/
+  all-platform parity、recursive sidecar/cache、public package敏感路径/credential
+  pattern scan和六组forbidden-path zero diff全部通过。
+
+### 12.5 Handoff for the next independent `trellis-check`
+
+下一轮应重新完整执行Phase 2，重点复核：
+
+1. replacement closure在recorder、checker和public wrapper三层只接受完整的
+   `decision=replace`、closure reuse和liveness/recovery chain，缺一即失败关闭。
+2. clean-tree例外只接受current task owner metadata、assignment登记raw report、
+   current committed task plan及invocation直接声明runtime输入，不回退为目录级allowlist。
+3. 三个current-scope scenario的无缺陷候选都能保留为无severity/finding字段的
+   `rejected_candidate`，而真正finding qualification与observation/follow-up限制不变。
+4. 新work commit完成后重新运行 `git diff --check origin/main...HEAD`，确认完整
+   committed range不再含EOF blank-line finding。
+5. Full throwaway/update/reapply、10/39/23 closure、1903-file inventory、
+   canonical/mirror parity和upstream reviewer zero-diff继续成立。
+
+有意留给后续gate的工作只有独立Phase 2复审、新Phase 2 artifact结论、task work
+commit和新的真实Branch Review；实现代理未替代这些semantic gate。
+
+### 12.6 Remaining risks / follow-ups
+
+1. Current branch仍未commit/push，feature-ref marketplace安装尚未验证；本地canonical
+   sample已通过，但不能冒充远端feature-ref证据。
+2. 旧 `origin/main...HEAD` 在work commit前仍包含已提交的EOF空行；当前候选修复已经由
+   `git diff --check origin/main`验证，提交后必须再次验证新完整range。
+3. #116、#132和Trellis CLI 0.6.8边界不变。
+
 ## 11. Phase 2 finding-fix round 2（2026-07-24）
 
 本节取代第 10.3、10.4、10.5、10.6 节中与当前状态冲突的描述，但保留旧文作为实现

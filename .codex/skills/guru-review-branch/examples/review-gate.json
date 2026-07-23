@@ -9,7 +9,41 @@
     "scope_proposals": [],
     "observations": [],
     "followup_candidates": [],
-    "rejected_candidates": [],
+    "rejected_candidates": [
+      {
+        "candidate_ref": "candidate-normal-no-defect",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "The reviewer candidate was disproved against normal required behavior.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": ["tests/normal-required-behavior.md"],
+        "requirement_refs": ["PRD R5"],
+        "scope_basis": "The current approved normal behavior was fully evaluated.",
+        "qualification_reason": "Current implementation evidence proves that the required behavior is not violated."
+      },
+      {
+        "candidate_ref": "candidate-explicit-no-defect",
+        "disposition": "rejected_candidate",
+        "scenario_class": "explicit_nonstandard_requirement",
+        "affected_behavior": "The reviewer candidate was disproved against an explicit nonstandard requirement.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": ["tests/explicit-nonstandard-requirement.md"],
+        "requirement_refs": ["PRD R5"],
+        "scope_basis": "The explicit nonstandard requirement is current approved scope.",
+        "qualification_reason": "Current implementation evidence proves that the explicit requirement is not violated."
+      },
+      {
+        "candidate_ref": "candidate-expansion-no-defect",
+        "disposition": "rejected_candidate",
+        "scenario_class": "approved_nonstandard_expansion",
+        "affected_behavior": "The reviewer candidate was disproved against an approved nonstandard expansion.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": ["tests/approved-nonstandard-expansion.md"],
+        "requirement_refs": ["PRD R5"],
+        "scope_basis": "The nonstandard expansion has exact current approval.",
+        "qualification_reason": "Current implementation evidence proves that the approved expansion is not violated."
+      }
+    ],
     "ai_review_gate": {
       "status": "passed",
       "summary": "The complete fresh final review passed."

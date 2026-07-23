@@ -19,7 +19,12 @@ Workflow and standalone modes both require, in order:
 7. issue scope ledger;
 8. Docs SSOT outcome;
 9. complete review range;
-10. clean or review-metadata-only working tree;
+10. clean working tree, or only the current task's
+    `agent-assignment.json`, `review.md`, `review-gate.json`,
+    assignment-registered direct `reviews/*.md`, the exact current committed
+    `task-commit-plans/<sequence>.json`, and regular
+    `.trellis/.runtime/guru-team/**` input files named by the current
+    recorder/wrapper invocation;
 11. reviewer assignment and recovery;
 12. raw review evidence;
 13. invocation freshness.
@@ -53,9 +58,13 @@ invariant, or explicitly confirmed expansion. Then select exactly one scenario:
 Only the first three may become `qualified_finding` and receive P0-P3. An
 unconfirmed proposal becomes `scope_proposal`, has no severity, and requires
 dedicated clarification. Out-of-scope candidates become observation,
-follow-up, or rejection. Ordinary continuation, planning approval, or reviewer
-severity is not expansion confirmation. A risk created only by an unnecessary
-mechanism should first be resolved by removing or replacing that mechanism.
+follow-up, or rejection. A candidate in any of the first three current-scope
+scenarios that evidence proves does not violate the current contract is
+preserved as `rejected_candidate`; it never carries `severity`, `finding_ref`,
+or another finding-only field. Ordinary continuation, planning approval, or
+reviewer severity is not expansion confirmation. A risk created only by an
+unnecessary mechanism should first be resolved by removing or replacing that
+mechanism.
 
 ### Finding closure and final review
 
@@ -63,7 +72,10 @@ Each qualified finding binds requirement refs, scope basis, scenario class,
 qualification reason, severity, owner round, reviewed HEAD, status, and closure
 evidence. The implementation owner repairs it, then a complete Phase 2 and task
 commit run occur before a closure round. Same-agent closure needs explicit
-continuity evidence; replacement needs a complete recovery chain.
+continuity evidence; replacement needs a complete recovery chain:
+`decision=replace`, a closure round with `reuse_decision=replace`, and the
+complete liveness/recovery evidence from the failed, stale, or terminated
+predecessor through `replacement-started` to the replacement's completion.
 
 When all findings are closed, a fresh final reviewer that did not perform
 closure reviews the complete final range. The final round is last, current,
