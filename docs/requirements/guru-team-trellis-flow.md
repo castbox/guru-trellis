@@ -841,5 +841,6 @@ stdout DTO 绑定后才产生三类 trace invariant；只有合法 DTO 而没有
 wrapper 源文本或依赖提示词代替执行边界。
 
 普通 Skill 调用不经过此支路。#147 交付基础设施与 representative fixture；随后 #145
-已迁移六个 Stage 0 production corpora 并完成 24 exits coverage，#146 仍负责
-planning/check/commit 三包的 11-exit coverage 与合并后的 9/35 closure。
+已迁移六个 Stage 0 production corpora 并完成 24 exits coverage，且其 Stage 0 identity
+保持 6 Skills/24 exits；#146 已完成 planning/check/commit 三个 production Skills、
+10 个 profiles、11 exits coverage 及合并后的 9 Skills/35 exits closure。

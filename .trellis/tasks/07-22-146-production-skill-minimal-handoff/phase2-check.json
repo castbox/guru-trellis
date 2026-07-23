@@ -1,35 +1,846 @@
 {
-  "mode": "workflow",
-  "requirement_provenance": {
-    "summary": "已复核 Issue #146 的 GitHub authority、fresh planning approval、R1-R17、AC1-AC22 与 close/related scope；#146 为唯一 close issue，#127/#131/#132 仅 related。",
-    "artifacts": [
+  "agent_assignment": {
+    "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+    "implementation_agent_ids": [
+      "/root/implement_146_findings_r1",
+      "/root/implement_146_p3_r18",
+      "/root/implement_146_r17_fixes",
+      "/root/implement_146_r5",
+      "/root/implement_146_r6",
+      "/root/implement_146_r8"
+    ],
+    "check_agent_ids": [
+      "/root/check_146",
+      "/root/check_146_p3_r18_full",
+      "/root/check_146_r17_full"
+    ],
+    "recovery_complete": true,
+    "phase2_state_sha256": "496cec1db27fe4f32ad44901f1288b1c3602b3bc2e46af6ffd642e791212a7bd",
+    "facts_sha256": "51380a14a09fdf6c2c7a733cff20a8a699f2eef57300c313c8f814a38cc8e814"
+  },
+  "check_execution": {
+    "commands": [
       {
-        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
-        "sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5",
-        "size_bytes": 34054
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "trellis/skills/guru-team/tests",
+          "-p",
+          "test_*.py"
+        ],
+        "exit_code": 0,
+        "id": "package-suite-166",
+        "stderr_sha256": "dad22f669fcfd57eadab032a800cf6b8fd5e9a14098420f76e16d1dcb0334037",
+        "stderr_size_bytes": 3656,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "本轮重跑完整输出 digest；Ran 166 tests in 193.018s，OK。"
       },
       {
-        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
-        "sha256": "5dc10038b5398cc8b15301f0c6f765f3eac356178395b470b6dccd9ba5f5d851",
-        "size_bytes": 17656
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "id": "runtime-suite-557",
+        "stderr_sha256": "837b2f7549950b816c44956047f7975cf6a96b659683616d384a51b749bc4512",
+        "stderr_size_bytes": 3492,
+        "stdout_sha256": "82f5734c65334358fc6c5054deabb698e76dfaa6dfb07b90b8d83c9fbc697072",
+        "stdout_size_bytes": 2548,
+        "summary": "本轮重跑完整输出 digest；Ran 557 tests in 177.415s，OK (skipped=13)。"
       },
       {
-        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/context-discovery.json",
-        "sha256": "6220ac4e532d57f6e9ee56c7d5461c33163c8af214dc7768f2453fe19b822037",
-        "size_bytes": 430839
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "exit_code": 0,
+        "id": "preset-suite-45",
+        "stderr_sha256": "9484af242903af5203fbb2fa0d48ec45b9fcbf151293b9ac6aac41a80d934652",
+        "stderr_size_bytes": 808,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "本轮重跑完整输出 digest；Ran 45 tests in 79.356s，OK。"
       },
       {
-        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
-        "sha256": "9c515772c376a3b12d3f7ab247ec62bccbaefdf1a021e17d78b2f312fcbd2e28",
-        "size_bytes": 3850
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+        ],
+        "exit_code": 0,
+        "id": "ownership-suite-6",
+        "stderr_sha256": "2a7b0b7f20df451dcce6189df74e1b6fb04cd8bd8a9370c35684e0a97c892be4",
+        "stderr_size_bytes": 104,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "本轮重跑完整输出 digest；Ran 6 tests in 0.755s，OK。"
       },
       {
-        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
-        "sha256": "d0bbefb789805ab0f4f26bd78a75760d1b8ab2412a2fd41b60d4ffbf9b81e335",
-        "size_bytes": 61726
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--json",
+          "--mode",
+          "source"
+        ],
+        "exit_code": 0,
+        "id": "source-package-closure",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "39013f5a2f3c59f72e75c6f0e5cc47bb2fcecebb0d2973f9030aa92568446601",
+        "stdout_size_bytes": 1069,
+        "summary": "完整 stdout digest；9 active Skills、35 exits、21 targets、0 legacy。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--json",
+          "--mode",
+          "installed"
+        ],
+        "exit_code": 0,
+        "id": "installed-package-closure",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "70be98f74c0d9e9fcfe98495151f54960d13cd54ec782cb15da285dd4c91487c",
+        "stdout_size_bytes": 1258,
+        "summary": "完整 stdout digest；9 active Skills、35 exits、21 targets、1711 managed files、sidecar/removal/conflict 均为 0。"
+      },
+      {
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+          "--repo",
+          "."
+        ],
+        "exit_code": 0,
+        "id": "dogfood-overlay-drift",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "cb49b1a93f3a07d96bee821abee031be6d737b0062529991e85ff1338ece189e",
+        "stdout_size_bytes": 1644,
+        "summary": "完整 stdout digest；dogfood overlay copies match canonical。"
+      },
+      {
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+          "--repo",
+          ".",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "upstream-ownership-validator",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "0e688545acc465dc1bdab556e666ad8ee78345f90cf012109b8f99ba18a0e195",
+        "stdout_size_bytes": 1585,
+        "summary": "完整 stdout digest；frozen inventory 43、materialized identity 匹配、errors=[]。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-sync-base",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-sync-base-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-sync-base",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "19af48cea1310c27eb82f1b451cd46cd7946db831c999adad47b9bee8d1f6b96",
+        "stdout_size_bytes": 3355,
+        "summary": "Digest 绑定保存的 shared-run result JSON；3/3 passed，exits=synced,skipped,blocked。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-clarify-requirements",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-clarify-requirements-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-clarify-requirements",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "48380bf646ac8d1dc585976549b9cfc188a8227a7b2742f4119a90d23ed1daf7",
+        "stdout_size_bytes": 5995,
+        "summary": "Digest 绑定保存的 shared-run result JSON；6/6 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-create-task-workspace",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-create-task-workspace-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-create-task-workspace",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "446dd38db21f319d117604e920b59cb133a9c4f0e4ad16af78620bad38ec6712",
+        "stdout_size_bytes": 4293,
+        "summary": "Digest 绑定保存的 shared-run result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-discover-change-context",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-discover-change-context-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-discover-change-context",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "9f52e7423b59ff802bd52e350566a5167f0aa4cb15af6c131af6a0ff0ff35320",
+        "stdout_size_bytes": 3475,
+        "summary": "Digest 绑定保存的 shared-run result JSON；3/3 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-review-change-request",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-review-change-request-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-review-change-request",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "cbdc63f3572875744028e8dd08bf447a364122b88f545a0583a029b66cf890a0",
+        "stdout_size_bytes": 5180,
+        "summary": "Digest 绑定保存的 shared-run result JSON；5/5 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-review-contract-wording",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-review-contract-wording-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-review-contract-wording",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "2be057e591038d663cfe6d5e26f5d3baafc123e54e0981ab9dc8c1ec5b95d735",
+        "stdout_size_bytes": 3457,
+        "summary": "Digest 绑定保存的 shared-run result JSON；3/3 passed；Stage 0 source 合计 24 exits。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-approve-task-plan",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-approve-task-plan",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-approve-task-plan",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "20bb926023cdd452560f04e90c3f2a9af63fc86ac31aaa7a15d4b96cb8c7b9d9",
+        "stdout_size_bytes": 4233,
+        "summary": "Digest 绑定保存的 shared-run result JSON；4/4 passed，含 clarify_scope。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-check-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-check-task",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-check-task",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "f200ba1be5f5f9a84ad35821f3f2b1c104151865c91bb8d0c0e13fb758de5709",
+        "stdout_size_bytes": 4199,
+        "summary": "Digest 绑定保存的 shared-run result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-create-task-commit",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-source-guru-create-task-commit",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "source-eval-guru-create-task-commit",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "2bb93519f372aa56fa8e6b9232fc4b7b24a5f96f487e276e33b061e888c91655",
+        "stdout_size_bytes": 4257,
+        "summary": "Digest 绑定保存的 shared-run result JSON；4/4 passed；production source 合计 12 cases。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-sync-base",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-sync-base-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-sync-base",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "b050b08400de694fb94f87b3de2904b3b8cf5899af999cfddf33353206ac5a5c",
+        "stdout_size_bytes": 3367,
+        "summary": "Digest 绑定保存的 installed shared-run result JSON；3/3 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-clarify-requirements",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-clarify-requirements-serial",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-clarify-requirements-serial",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "31413ecb67cd20849c9291468ea46529d624c394caad6e0e61a35ccd3f54a713",
+        "stdout_size_bytes": 6009,
+        "summary": "Digest 绑定保存的 installed serial result JSON；6/6 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-create-task-workspace",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-create-task-workspace-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-create-task-workspace",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "6b433e8bab039682536cdc5d137fbe57c76c775cb7d2ba633757cdc7be0247d1",
+        "stdout_size_bytes": 4308,
+        "summary": "Digest 绑定保存的 installed result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-discover-change-context",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-discover-change-context-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-discover-change-context",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "c5b2f8ee86dbed55f97879b1742d45e818099bf147039ae2036d945041f485c4",
+        "stdout_size_bytes": 3487,
+        "summary": "Digest 绑定保存的 installed result JSON；3/3 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-review-change-request",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-review-change-request-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-review-change-request",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "db3cfa59558bcbec9c6c26dba49dd8fe45eee2a9e62f6ea5c48080f2cf67a325",
+        "stdout_size_bytes": 5198,
+        "summary": "Digest 绑定保存的 installed result JSON；5/5 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-review-contract-wording",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-review-contract-wording-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-review-contract-wording",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "c15e68ebe853f6983f7435c2a64973b74642ee74a908f6cb580966cecd00020b",
+        "stdout_size_bytes": 3469,
+        "summary": "Digest 绑定保存的 installed result JSON；3/3 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-approve-task-plan",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-approve-task-plan-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-approve-task-plan",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "8bc39dce8061ca6b5a55d0e8fc25f98bc5ded7efa0e14457ab22bcc4e67c80e0",
+        "stdout_size_bytes": 4288,
+        "summary": "Digest 绑定保存的 installed result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-check-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-check-task-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-check-task",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "8dd89f157156efd19b2c48849e72549db292ce9ebaf639bd53fdce7a5bfae7bb",
+        "stdout_size_bytes": 4254,
+        "summary": "Digest 绑定保存的 installed result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-create-task-commit",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-create-task-commit-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-create-task-commit",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "54953919a60cb044491ae06eed48ae982c4f36839436b95739593445222f09fe",
+        "stdout_size_bytes": 4312,
+        "summary": "Digest 绑定保存的 installed result JSON；4/4 passed。"
+      },
+      {
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-clarify-requirements",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru146-phase2-evidence.huPcX0/eval-installed-guru-clarify-requirements-closure",
+          "--json"
+        ],
+        "exit_code": 0,
+        "id": "installed-eval-guru-clarify-requirements-concurrent-observation",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "2223d453849f36e841df0d9a4494902b3fad26587d8d7d66781df6109c1bc634",
+        "stdout_size_bytes": 4670,
+        "summary": "Digest 绑定保存的并发批跑 result JSON；runner exit 0 但 status=execution_error，2/6 case 读取空 response；随后 serial 6/6 通过。"
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "import json,subprocess,pathlib; a=subprocess.check_output(['git','diff','--name-only','--diff-filter=ACMR','origin/main...HEAD'],text=True).splitlines(); b=subprocess.check_output(['git','diff','--name-only','--diff-filter=ACMR'],text=True).splitlines(); p=list(dict.fromkeys(a+b)); j=[x for x in p if x.endswith('.json')]; [json.loads(pathlib.Path(x).read_text()) for x in j]; print(f'json_files={len(j)} status=passed')"
+        ],
+        "exit_code": 0,
+        "id": "json-parse-555",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "30aea8aa1193a54902df13973dcbae66e1687fdfa823d08713b82a22f538bc17",
+        "stdout_size_bytes": 29,
+        "summary": "完整输出 digest；555 changed JSON files parsed。"
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "py_compile",
+          ".agents/skills/guru-approve-task-plan/tests/test_contract.py",
+          ".agents/skills/guru-check-task/tests/test_contract.py",
+          ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+          ".agents/skills/guru-discover-change-context/tests/test_contract.py",
+          ".claude/skills/guru-approve-task-plan/tests/test_contract.py",
+          ".claude/skills/guru-check-task/tests/test_contract.py",
+          ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+          ".claude/skills/guru-discover-change-context/tests/test_contract.py",
+          ".codex/skills/guru-approve-task-plan/tests/test_contract.py",
+          ".codex/skills/guru-check-task/tests/test_contract.py",
+          ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+          ".codex/skills/guru-discover-change-context/tests/test_contract.py",
+          ".cursor/skills/guru-approve-task-plan/tests/test_contract.py",
+          ".cursor/skills/guru-check-task/tests/test_contract.py",
+          ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+          ".cursor/skills/guru-discover-change-context/tests/test_contract.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-check-task/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "id": "python-py-compile-31",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "本轮先前真实执行；31 changed Python files，完整 stdout/stderr 均为空；使用 repo 外 PYTHONPYCACHEPREFIX，生成缓存已清理。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-n",
+          ".agents/skills/guru-approve-task-plan/scripts/invoke.sh",
+          ".agents/skills/guru-check-task/scripts/invoke.sh",
+          ".agents/skills/guru-create-task-commit/scripts/invoke.sh",
+          ".claude/skills/guru-approve-task-plan/scripts/invoke.sh",
+          ".claude/skills/guru-check-task/scripts/invoke.sh",
+          ".claude/skills/guru-create-task-commit/scripts/invoke.sh",
+          ".codex/skills/guru-approve-task-plan/scripts/invoke.sh",
+          ".codex/skills/guru-check-task/scripts/invoke.sh",
+          ".codex/skills/guru-create-task-commit/scripts/invoke.sh",
+          ".cursor/skills/guru-approve-task-plan/scripts/invoke.sh",
+          ".cursor/skills/guru-check-task/scripts/invoke.sh",
+          ".cursor/skills/guru-create-task-commit/scripts/invoke.sh",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/invoke.sh",
+          ".trellis/guru-team/skills/packages/guru-check-task/scripts/invoke.sh",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/invoke.sh",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/invoke.sh",
+          "trellis/skills/guru-team/packages/guru-check-task/scripts/invoke.sh",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/invoke.sh"
+        ],
+        "exit_code": 0,
+        "id": "bash-syntax-19",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "f6d6d73210821a1b7951581258a25abb395376e932441587689775f02d6ffceb",
+        "stdout_size_bytes": 28,
+        "summary": "完整 batch 输出 digest；19 shell files passed bash -n。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-lc",
+          "git diff --check origin/main...HEAD; git diff --check; assert recursive .new/.bak and __pycache__ scans are empty"
+        ],
+        "exit_code": 0,
+        "id": "diff-sidecar-cache",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "7641f1d766fa0c3fe5c99b9fd18653fca619594ea51b6b68816e3f3c813729da",
+        "stdout_size_bytes": 59,
+        "summary": "实际 batch 包含两条 git diff --check 与递归 sidecar/cache assertions；输出 branch_diff=passed working_diff=passed sidecars=0 caches=0。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-lc",
+          "65 generated diff/cmp checks over three production package trees, nine corpora across five mirrors, adapter, runtime, workflow, production manifest and registry"
+        ],
+        "exit_code": 0,
+        "id": "canonical-installed-platform-identity",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "615cf6e58073933163cdd0293cd72adc212cbd64d17d7be7deba028cd71a334d",
+        "stdout_size_bytes": 33,
+        "summary": "完整 generated batch 输出 digest；identity_checks=65 status=passed。"
+      },
+      {
+        "argv": [
+          "stat",
+          "-f",
+          "%Lp %N",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval",
+          ".trellis/guru-team/skills/adapters/eval/guru-team-shared-eval"
+        ],
+        "exit_code": 0,
+        "id": "adapter-wrapper-modes",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "beb83d5255747790e6b3f8d7f7977c490093d759b31eaee28a11e7c32d5441ab",
+        "stdout_size_bytes": 254,
+        "summary": "完整 stdout digest；adapter modes 644/644，shared wrapper modes 755/755。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-lc",
+          "scan added branch and working-diff lines for private-key and common provider-token patterns; fail if matched"
+        ],
+        "exit_code": 0,
+        "id": "secret-pattern-scan",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "2b06ddb0b4923942e1d71ee9c8e98c7f73efb1208b23429c1784f817b6862a9c",
+        "stdout_size_bytes": 32,
+        "summary": "完整 batch 输出 digest；secret_patterns=0 status=passed。"
+      },
+      {
+        "argv": [
+          "bash",
+          "-lc",
+          "git diff --name-only origin/main...HEAD | rg deployment-impact path pattern"
+        ],
+        "exit_code": 0,
+        "id": "deployment-impact-path-scan",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "f2ef7783162c21c62a4a053485d7a130736ae702fd4c5cc52a9304dcf828e6d6",
+        "stdout_size_bytes": 137,
+        "summary": "完整 stdout digest；仅命中两个 production Skill migration manifest，未命中 CI/CD、container、K8s/Helm、DB migration 或 Makefile。"
+      },
+      {
+        "argv": [
+          "env",
+          "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 1,
+        "id": "throwaway-public-sample-attempt-1",
+        "stderr_sha256": "dde507f63053f7f252e3f9b1dbcdc4a7c7be1f9e628d17771c783e9f83890343",
+        "stderr_size_bytes": 121,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "仅保存并 hash 精确终端最终错误行，不声称绑定完整长 stdout；本轮输出已在超时前通过 initial init/preset/source-installed/package smoke，最终 public marketplace index request timeout。"
+      },
+      {
+        "argv": [
+          "env",
+          "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 1,
+        "id": "throwaway-public-sample-attempt-2",
+        "stderr_sha256": "dde507f63053f7f252e3f9b1dbcdc4a7c7be1f9e628d17771c783e9f83890343",
+        "stderr_size_bytes": 121,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "仅保存并 hash 精确终端最终错误行，不声称绑定完整长 stdout；本轮输出已在超时前通过 initial install、preview/switch、trellis update、preset reapply、after-update smoke、drift/ownership，最终 no-developer 子 fixture 的 public marketplace request timeout。"
+      },
+      {
+        "argv": [
+          "env",
+          "TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#codex/146-production-skill-minimal-handoff",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 1,
+        "id": "exact-unpublished-marketplace-ref",
+        "stderr_sha256": "0c4a789b0afaed71b6b587035e2515b2567f68b3f184d24f55dc925a7b07417f",
+        "stderr_size_bytes": 148,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "仅保存并 hash 精确终端最终错误行；未发布 feature ref 无 marketplace index，属于 push 后 PR-readiness limitation。"
+      },
+      {
+        "argv": [
+          "git",
+          "ls-remote",
+          "--heads",
+          "origin",
+          "refs/heads/codex/146-production-skill-minimal-handoff"
+        ],
+        "exit_code": 0,
+        "id": "exact-unpublished-ls-remote",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "完整 stdout/stderr 均为空，确认 exact feature branch ref 尚未发布。"
       }
     ],
-    "facts_sha256": "61c479f7b4c0d48929fcd3a94635c00342338cbf26cbead99520ecf17c6ef50b"
+    "unverified_items": [
+      {
+        "blocking": false,
+        "command_or_area": "exact unpublished branch remote marketplace verification",
+        "id": "U1",
+        "impact": "不影响本地实现与 Phase 2 语义充分性；在 reviewed commit push 后、PR readiness 前必须补 exact remote proof，且不得用 public sample 冒充。",
+        "reason": "codex/146-production-skill-minimal-handoff 尚未 push，git ls-remote 为空且 exact marketplace ref 按合同失败；public sample 两次远端 index 请求 timeout 也如实记录。"
+      }
+    ],
+    "worker_evidence": [
+      {
+        "agent_id": "/root/check_146",
+        "evidence_only": true,
+        "facts_sha256": "c02ef04af1c0c2fc2bf6603e1682cd827623dacca2122c0a30d94ee5172b0e17",
+        "source": "official_trellis_check",
+        "summary": "早期 completed Phase 2 checker 的历史 evidence；其结果不替代当前 P3-F003 修复后的 full rerun。"
+      },
+      {
+        "agent_id": "/root/check_146_r17_full",
+        "evidence_only": true,
+        "facts_sha256": "612bc5b82c90b210d6f3743b300e54f9b6af5bea5f12aee6691970ef3b5760bd",
+        "source": "official_trellis_check",
+        "summary": "R17 completed Phase 2 checker 的历史 evidence；其结果在 durable flow 文档修订后失效，不替代当前 full rerun。"
+      },
+      {
+        "agent_id": "/root/check_146_p3_r18_full",
+        "evidence_only": true,
+        "facts_sha256": "ce16acbe315d43b0d2fc71b94ad834c9328b3aae13daeb131919a8b59c4530be",
+        "source": "official_trellis_check",
+        "summary": "Fresh Phase 2 完整覆盖 Issue #146 的 requirements、design、implementation、tests、15-path ssot_first Docs SSOT、cross-layer contracts、compatibility、deployment/operations、agent recovery 与 verification completeness；P3-F003 已由当前 durable flow 文档修订关闭，P0-P3 当前均为 0，HEAD c945c73e1779f4e62409883bab5e1f6a907e4584，唯一 non-metadata dirty path 为 docs/requirements/guru-team-trellis-flow.md，typed exit 保持 passed。AC16 post-commit Branch Review 与 exact unpublished marketplace proof 是下游限制，不改变 Phase 2 结论。"
+      }
+    ],
+    "execution_sha256": "5840d8e2df79b14ccaa17b6ea371d4d7c9eef55314a80dee8411700daa53bee2"
+  },
+  "consumer": {
+    "id": "guru-create-task-commit",
+    "kind": "skill"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
@@ -91,8 +902,8 @@
       },
       {
         "path": "docs/requirements/guru-team-trellis-flow.md",
-        "sha256": "441fa56f36db32d338062b4444496eeaa5dc15b1f1726c98ff2a6368741c397a",
-        "size_bytes": 81249
+        "sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
+        "size_bytes": 81350
       },
       {
         "path": "README.md",
@@ -110,7 +921,7 @@
         "size_bytes": 63728
       }
     ],
-    "sync_result": "15/15 durable SSOT paths 已更新；production minimal I/O、consumer projection、authoring seed、manifest/registry、native staging、clarify_scope route、R14-R16 freshness、preset/install/update/reapply 与公开兼容合同均已合并。",
+    "sync_result": "15/15 durable SSOT paths 已完成 ssot_first 合并；Round 003 的 P3-F003 task delta 已修正 durable flow SSOT 的陈旧未来态，明确 #145 保持 6 Skills/24 exits、#146 已完成 3 production Skills、10 profiles、11 exits 及 combined 9 Skills/35 exits closure。",
     "task_delta_merged": true,
     "task_history_only": [
       "Issue intake、proposal/action、Phase 0/context 与 approval/ledger decision trail",
@@ -118,10 +929,16 @@
     ],
     "no_update_reason": null,
     "followup_or_pr_limit": "当前分支尚未 push；exact remote marketplace proof 必须在 reviewed commit push 后由 PR readiness 补验，public sample 不得冒充 exact branch proof。",
-    "facts_sha256": "355169437bf0cbe0310f38a3ffe69831f83185bc8d75e2715a8c5291bd21a85e"
+    "facts_sha256": "9920786757c8145aade0b1eb4fa989f6372936f12b5fabcf129474b67bd2dffe"
+  },
+  "human_confirmation": {
+    "confirmed_at": null,
+    "kind": "not-required",
+    "status": "not_required",
+    "summary": "Phase 2 没有无条件人工确认；fresh planning approval 与用户已授权的当前恢复边界保持有效。"
   },
   "implementation_handoff": {
-    "summary": "实现与 recovery handoff 已覆盖 R1-R17/AC1-AC22、15 个 durable SSOT、P2-F002 routing-only、R17 三个 production owner staging、R16 task-local freshness、完整测试结果、history-only 边界和 exact remote limitation；evt-0202 补齐 Docs SSOT 输入/输出分类。",
+    "summary": "实现与 recovery handoff 覆盖 R1-R17/AC1-AC22、15 个 durable SSOT、P2-F002 routing-only、R17 production owner staging、R16 task-local freshness；evt-0218/0219 进一步完成 P3-F003 的最小 durable flow 文档修复，明确 #145 6 Skills/24 exits 与 #146 已完成 3 Skills/10 profiles/11 exits/combined 9/35，随后由 fresh checker 完整重跑。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
@@ -135,62 +952,29 @@
       },
       {
         "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
-        "sha256": "5c547ef75c8874f2111485a9c96ec3689f81a1b8fc8a3ce2b434d0daead0eb9d",
-        "size_bytes": 221632
+        "sha256": "18bab6a41258e88e3f9fd244630f0274976be1c706f5dc14166e83fffd5a0830",
+        "size_bytes": 253685
       }
     ],
-    "facts_sha256": "f3772a68f1936a69d0e41abfcf6b25fb8939ebb5e15794f93238ee6ba6c4a851"
+    "facts_sha256": "cd54f9522efc920db326b35b6b0f1b8a4c0e1aa2f0b04cde332fa02cb8af50df"
   },
-  "agent_assignment": {
-    "artifact_path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
-    "implementation_agent_ids": [
-      "/root/implement_146_findings_r1",
-      "/root/implement_146_r17_fixes",
-      "/root/implement_146_r5",
-      "/root/implement_146_r6",
-      "/root/implement_146_r8"
-    ],
-    "check_agent_ids": [
-      "/root/check_146",
-      "/root/check_146_r17_full"
-    ],
-    "recovery_complete": true,
-    "phase2_state_sha256": "696edd52335d428779d531db4563c21e01b9f08a238452cba7d5d90e9e404e58",
-    "facts_sha256": "0b9dbcddb528ca40d2ce963ee02fde2da8d9348f03ca2afc75efa9e703b01569"
-  },
+  "mode": "workflow",
+  "reason": "当前完整 scope 的十个 adequacy 维度全部通过，P3-F003 已关闭且无开放 finding；exact remote proof limitation 由 push 后 PR readiness 消费。",
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c",
-    "head": "e3efc635e36039f0db94a9d24eddad676ad7fe7b",
+    "head": "c945c73e1779f4e62409883bab5e1f6a907e4584",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
-      ".agents/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-      ".claude/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-      ".codex/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-      ".cursor/skills/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-      ".trellis/guru-team/extension.json",
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
-      ".trellis/guru-team/skills/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
       ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
-      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/context-discovery.json",
-      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
-      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/design.md",
-      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/implement.md",
-      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
-      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
-      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
       ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review-gate.json",
       ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review.md",
       ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-001-final-release.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-002-finding-closure.md",
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-003-final-release.md",
       ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/001.json",
-      ".trellis/workflow.md",
-      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-refresh-base-facts.json",
-      "trellis/skills/guru-team/tests/test_skill_packages.py",
-      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "trellis/workflows/guru-team/workflow.md"
+      ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/002.json",
+      "docs/requirements/guru-team-trellis-flow.md"
     ],
     "reviewed_paths": [
       {
@@ -2655,8 +3439,8 @@
       },
       {
         "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
-        "sha256": "5c547ef75c8874f2111485a9c96ec3689f81a1b8fc8a3ce2b434d0daead0eb9d",
-        "size_bytes": 221632
+        "sha256": "18bab6a41258e88e3f9fd244630f0274976be1c706f5dc14166e83fffd5a0830",
+        "size_bytes": 253685
       },
       {
         "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/check.jsonl",
@@ -2710,13 +3494,13 @@
       },
       {
         "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review-gate.json",
-        "sha256": "113b5c75cfd8bbb2e0dc938f56f364bc3f4ede461f6783f9a67c502946573fea",
-        "size_bytes": 185378
+        "sha256": "ef121638c2dc3f2bf6661e43b77b99f1af8d07180c58d0de50f32772933fe31f",
+        "size_bytes": 187929
       },
       {
         "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review.md",
-        "sha256": "2a28ac1e6933ffb973e1857b64ce84d00b8ef6c20a88e81b855480a7c4d6a4f1",
-        "size_bytes": 4848
+        "sha256": "3e74fbc6508f7e1f0c1325063a1a8d667c5c544986f5703413b3790612f48b4c",
+        "size_bytes": 5769
       },
       {
         "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-001-final-release.md",
@@ -2755,8 +3539,8 @@
       },
       {
         "path": "docs/requirements/guru-team-trellis-flow.md",
-        "sha256": "441fa56f36db32d338062b4444496eeaa5dc15b1f1726c98ff2a6368741c397a",
-        "size_bytes": 81249
+        "sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
+        "size_bytes": 81350
       },
       {
         "path": "docs/requirements/requirement-main.md",
@@ -3339,734 +4123,40 @@
         "size_bytes": 134599
       }
     ],
-    "snapshot_sha256": "6ef95d8d5bcbf87c7d1e87ff9a6994ca696248653e9ebd23b68d2accaed55f0e"
+    "snapshot_sha256": "28b68b274cc581aa94e7054ee46974f60c0a543d199bbae39d56a82225fa5dde"
   },
-  "check_execution": {
-    "commands": [
+  "requirement_provenance": {
+    "summary": "已复核 Issue #146 的 GitHub authority、fresh planning approval、R1-R17、AC1-AC22、P3-F003 closure 与 close/related scope；#146 为唯一 close issue，#127/#131/#132 仅 related。",
+    "artifacts": [
       {
-        "id": "agent-assignment",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/check-agent-assignment.sh --root . --json --task .trellis/tasks/07-22-146-production-skill-minimal-handoff --require-current-head "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "63295a17406dac08330f460906113cb3b7ec38da7f8bf5f996ca3945618d21bf",
-        "stdout_size_bytes": 1353,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：agent-assignment"
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/prd.md",
+        "sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5",
+        "size_bytes": 34054
       },
       {
-        "id": "apply-all-platforms-1",
-        "argv": [
-          "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "7cce26850e7d3af7e862e069bc95c4ede4e587e5d683008c337267ae5ff95fc7",
-        "stdout_size_bytes": 661639,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：apply-all-platforms-1"
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
+        "sha256": "5dc10038b5398cc8b15301f0c6f765f3eac356178395b470b6dccd9ba5f5d851",
+        "size_bytes": 17656
       },
       {
-        "id": "apply-all-platforms-2",
-        "argv": [
-          "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "7cce26850e7d3af7e862e069bc95c4ede4e587e5d683008c337267ae5ff95fc7",
-        "stdout_size_bytes": 661639,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：apply-all-platforms-2"
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/context-discovery.json",
+        "sha256": "6220ac4e532d57f6e9ee56c7d5461c33163c8af214dc7768f2453fe19b822037",
+        "size_bytes": 430839
       },
       {
-        "id": "bash-syntax",
-        "argv": [
-          "bash -n trellis/workflows/guru-team/scripts/bash/backfill-finish-summary.sh trellis/workflows/guru-team/scripts/bash/check-agent-assignment.sh trellis/workflows/guru-team/scripts/bash/check-base-sync.sh trellis/workflows/guru-team/scripts/bash/check-change-request-review.sh trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh trellis/workflows/guru-team/scripts/bash/check-context-discovery.sh trellis/workflows/guru-team/scripts/bash/check-contract-wording-review.sh trellis/workflows/guru-team/scripts/bash/check-env.sh trellis/workflows/guru-team/scripts/bash/check-phase2-check.sh trellis/workflows/guru-team/scripts/bash/check-planning-approval.sh trellis/workflows/guru-team/scripts/bash/check-requirements-clarification.sh trellis/workflows/guru-team/scripts/bash/check-review-gate.sh trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh trellis/workflows/guru-team/scripts/bash/check-subagent-liveness.sh trellis/workflows/guru-team/scripts/bash/check-task-workspace-result.sh trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh trellis/workflows/guru-team/scripts/bash/create-task-commit.sh trellis/workflows/guru-team/scripts/bash/create-task-workspace.sh trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh trellis/workflows/guru-team/scripts/bash/discover-skill-evals.sh trellis/workflows/guru-team/scripts/bash/finish-work.sh trellis/workflows/guru-team/scripts/bash/format-merge-commit.sh trellis/workflows/guru-team/scripts/bash/invoke-stage0-skill.sh trellis/workflows/guru-team/scripts/bash/prepare-task.sh trellis/workflows/guru-team/scripts/bash/preview-change-context-history.sh trellis/workflows/guru-team/scripts/bash/publish-pr.sh trellis/workflows/guru-team/scripts/bash/record-agent-assignment.sh trellis/workflows/guru-team/scripts/bash/record-change-request-review.sh trellis/workflows/guru-team/scripts/bash/record-context-discovery.sh trellis/workflows/guru-team/scripts/bash/record-contract-wording-review.sh trellis/workflows/guru-team/scripts/bash/record-phase2-check.sh trellis/workflows/guru-team/scripts/bash/record-planning-approval.sh trellis/workflows/guru-team/scripts/bash/record-requirements-clarification.sh trellis/workflows/guru-team/scripts/bash/record-subagent-liveness-event.sh trellis/workflows/guru-team/scripts/bash/record-task-workspace-plan.sh trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh trellis/workflows/guru-team/scripts/bash/review-branch.sh trellis/workflows/guru-team/scripts/bash/run-skill-command.sh trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh trellis/workflows/guru-team/scripts/bash/sync-base.sh trellis/workflows/guru-team/scripts/bash/verify-marketplace.sh trellis/workflows/guru-team/scripts/bash/version.sh trellis/presets/guru-team/scripts/bash/apply.sh trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：bash-syntax"
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/contract-wording-review.json",
+        "sha256": "9c515772c376a3b12d3f7ab247ec62bccbaefdf1a021e17d78b2f312fcbd2e28",
+        "size_bytes": 3850
       },
       {
-        "id": "branch-log",
-        "argv": [
-          "git log --format=%H%n%s%n%b%n--- 7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c..HEAD "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f95f813a134cbc9f504cd15bdac7576cebddb95bb567ade7c50360bc8755fc2c",
-        "stdout_size_bytes": 992,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：branch-log"
-      },
-      {
-        "id": "changed-json-parse",
-        "argv": [
-          "bash -c $'set -euo pipefail\\ncount=0\\nwhile IFS= read -r path; do\\n  [[ -z \"$path\" ]] && continue\\n  jq empty \"$path\"\\n  count=$((count + 1))\\ndone < <(git diff --name-only 7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c -- \"*.json\")\\nprintf \"changed_json_files_parsed=%s\\\\n\" \"$count\"' "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3f159d127f6e8a1347e374cb38b7877330f05d6090fe2e47bb3126bf88239da",
-        "stdout_size_bytes": 30,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：changed-json-parse"
-      },
-      {
-        "id": "commit-messages",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh --json --task .trellis/tasks/07-22-146-production-skill-minimal-handoff "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f53617206ab07386b7f7bceeeada146c3f10601ffbbf6dbc3be808a3c7b5de42",
-        "stdout_size_bytes": 396,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：commit-messages"
-      },
-      {
-        "id": "contract-summary",
-        "argv": [
-          "jq \\{production:\\{schema_id\\,activation_unit_id\\,skill_ids\\,legacy_skill_ids\\,skill_count:\\(.skills\\|length\\)\\,profile_count:\\(\\[.skills\\[\\].input_profile_ids\\[\\]\\]\\|length\\)\\,exit_count:\\(\\[.skills\\[\\].exit_bindings\\[\\]\\]\\|length\\)\\,authoring_seed_edge_count:\\(.authoring_seed_edges\\|length\\)\\,skills:\\[.skills\\[\\]\\|\\{id\\,input_profile_ids\\,exits:\\[.exit_bindings\\[\\].exit_id\\]\\}\\]\\}\\} trellis/skills/guru-team/migrations/production-minimal-handoff.json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "fe8659428ca7c5808e514940451d843b05eff2f6bd48ad3405af4497b0fd14ce",
-        "stdout_size_bytes": 1372,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Production contract 为 3 Skills、10 profiles、11 exits、3 authoring-seed edges。"
-      },
-      {
-        "id": "deployment-path-classification",
-        "argv": [
-          "bash -c $'set -euo pipefail\\nchanged=$(git diff --name-only 7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c --)\\nfor pattern in \"^\\\\.github/\" \"(^|/)Dockerfile\" \"(^|/)docker-compose\" \"(^|/)(k8s|kustomize|helm|charts)/\" \"(^|/)(db|database)/migrations/|(^|/)migrations/.*\\\\.sql$\" \"(^|/)Makefile$\"; do\\n  if printf \"%s\\\\n\" \"$changed\" | rg -q \"$pattern\"; then exit 1; fi\\ndone\\nprintf \"ci_cd=0 container=0 k8s_helm=0 db_migration=0 makefile=0 skill_contract_migration_manifests=2\\\\n\"' "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f89e9d81333692b2f1e72c0c0684c9bbaf29ac47d390409b29fba10670554be4",
-        "stdout_size_bytes": 94,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：deployment-path-classification"
-      },
-      {
-        "id": "deployment-path-scan",
-        "argv": [
-          "bash -c $'set -euo pipefail\\npaths=$(git diff --name-only 7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c -- | rg \"(^|/)(\\\\.github|Dockerfile|docker-compose|k8s|kustomize|helm|charts|migrations|terraform|Makefile)(/|$|\\\\.)\" || true)\\nif [[ -n \"$paths\" ]]; then\\n  printf \"%s\\\\n\" \"$paths\"\\nelse\\n  printf \"ci_cd_container_k8s_migration_makefile_paths=0\\\\n\"\\nfi' "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f2ef7783162c21c62a4a053485d7a130736ae702fd4c5cc52a9304dcf828e6d6",
-        "stdout_size_bytes": 137,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：deployment-path-scan"
-      },
-      {
-        "id": "diff-check",
-        "argv": [
-          "git diff --check "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：diff-check"
-      },
-      {
-        "id": "discover-installed-guru-approve-task-plan",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode installed --skill guru-approve-task-plan --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "50fc5249117d808ad9dddd29277faaf7327f0b302c6f0dabb31c0528e7d60dd8",
-        "stdout_size_bytes": 7507,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package discovery/contract closure 通过：discover-installed-guru-approve-task-plan"
-      },
-      {
-        "id": "discover-installed-guru-check-task",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode installed --skill guru-check-task --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "60e589b23ff56913cd066760f26e01b46250cbea16d168a34b0fb30b83794dd1",
-        "stdout_size_bytes": 7581,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package discovery/contract closure 通过：discover-installed-guru-check-task"
-      },
-      {
-        "id": "discover-installed-guru-create-task-commit",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode installed --skill guru-create-task-commit --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "d1afafc3f2057e1f0178c57e52881213ce403e4ac58905c51a48e194c2fa2726",
-        "stdout_size_bytes": 7177,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package discovery/contract closure 通过：discover-installed-guru-create-task-commit"
-      },
-      {
-        "id": "discover-source-guru-approve-task-plan",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode source --skill guru-approve-task-plan --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "50fc5249117d808ad9dddd29277faaf7327f0b302c6f0dabb31c0528e7d60dd8",
-        "stdout_size_bytes": 7507,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package discovery/contract closure 通过：discover-source-guru-approve-task-plan"
-      },
-      {
-        "id": "discover-source-guru-check-task",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode source --skill guru-check-task --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "60e589b23ff56913cd066760f26e01b46250cbea16d168a34b0fb30b83794dd1",
-        "stdout_size_bytes": 7581,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package discovery/contract closure 通过：discover-source-guru-check-task"
-      },
-      {
-        "id": "discover-source-guru-create-task-commit",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode source --skill guru-create-task-commit --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "d1afafc3f2057e1f0178c57e52881213ce403e4ac58905c51a48e194c2fa2726",
-        "stdout_size_bytes": 7177,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package discovery/contract closure 通过：discover-source-guru-create-task-commit"
-      },
-      {
-        "id": "dogfood-drift",
-        "argv": [
-          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo . "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "cb49b1a93f3a07d96bee821abee031be6d737b0062529991e85ff1338ece189e",
-        "stdout_size_bytes": 1644,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：dogfood-drift"
-      },
-      {
-        "id": "eval-installed-guru-approve-task-plan",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-approve-task-plan --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-approve-task-plan --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "76e1c2f06ecf39c09773336569316dd6d607d3c3901f02d28e8a4e793240b3aa",
-        "stdout_size_bytes": 4208,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-approve-task-plan"
-      },
-      {
-        "id": "eval-installed-guru-check-task",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-check-task --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-check-task --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "2905257cec2ddd839e57f6f02aa5aa0a080faab9763e48d3e51e7354d55daf60",
-        "stdout_size_bytes": 4174,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-check-task"
-      },
-      {
-        "id": "eval-installed-guru-clarify-requirements",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-clarify-requirements --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-clarify-requirements --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f09c11ae5e056ef39996bd08b7410e1ea196e8487dd6cfabc2d11007472aba1f",
-        "stdout_size_bytes": 5904,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-clarify-requirements"
-      },
-      {
-        "id": "eval-installed-guru-create-task-commit",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-create-task-commit --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-create-task-commit --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "8f9eff0d918bf15dc3dad432816271c7dbbccaced06a5343f39d4987ea3dc3bc",
-        "stdout_size_bytes": 4232,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-create-task-commit"
-      },
-      {
-        "id": "eval-installed-guru-create-task-workspace",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-create-task-workspace --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-create-task-workspace --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "c3509ec3d74a826331fec8f489e7ccfe77e03e16de104f83aec18812f685f6ea",
-        "stdout_size_bytes": 4228,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-create-task-workspace"
-      },
-      {
-        "id": "eval-installed-guru-discover-change-context",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-discover-change-context --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-discover-change-context --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "be866a6732ba587d5f43bea7da7d31e5148f9dc3bfbb6efb02048e6691458c8c",
-        "stdout_size_bytes": 3423,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-discover-change-context"
-      },
-      {
-        "id": "eval-installed-guru-review-change-request",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-review-change-request --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-review-change-request --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "c42572ba9fe31297b21a41d276f4c1693e1c295bd29babd3e919224df08b4b8e",
-        "stdout_size_bytes": 5102,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-review-change-request"
-      },
-      {
-        "id": "eval-installed-guru-review-contract-wording",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-review-contract-wording --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-review-contract-wording --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "949a75cbcecb7760769751381b2765cc9157e8b539dc0684ed588f92fc436fb4",
-        "stdout_size_bytes": 3405,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-review-contract-wording"
-      },
-      {
-        "id": "eval-installed-guru-sync-base",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed --skill guru-sync-base --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/installed-guru-sync-base --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "c2c065bffaebcda5a490da79f59681758d773dae5e87096d7c347535a824c72c",
-        "stdout_size_bytes": 3303,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package eval corpus 执行通过：eval-installed-guru-sync-base"
-      },
-      {
-        "id": "eval-schema-frozen",
-        "argv": [
-          "git diff --exit-code 7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c -- trellis/skills/guru-team/schemas/skill-eval-adapter-request.schema.json trellis/skills/guru-team/schemas/skill-eval-adapter-response.schema.json trellis/skills/guru-team/schemas/skill-eval-human-feedback.schema.json trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json trellis/skills/guru-team/schemas/skill-eval-run.schema.json trellis/skills/guru-team/schemas/skill-eval-semantic-grading.schema.json trellis/skills/guru-team/schemas/skill-evals.schema.json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：eval-schema-frozen"
-      },
-      {
-        "id": "eval-source-guru-approve-task-plan",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-approve-task-plan --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-approve-task-plan --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "264e4213b3e8a3c31d759a0b04ccafcadc30d09fc2f44692f192a4865afafdc7",
-        "stdout_size_bytes": 4193,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-approve-task-plan"
-      },
-      {
-        "id": "eval-source-guru-check-task",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-check-task --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-check-task --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "4f031f704efc7be2df89605bbfb759108c64754f9996182d7b2a214ec5aaf305",
-        "stdout_size_bytes": 4159,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-check-task"
-      },
-      {
-        "id": "eval-source-guru-clarify-requirements",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-clarify-requirements --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-clarify-requirements --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "dcc303e0279ddc594475b4f57eb81171c9431448442d933b64a5a7a29ee981b6",
-        "stdout_size_bytes": 5883,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-clarify-requirements"
-      },
-      {
-        "id": "eval-source-guru-create-task-commit",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-create-task-commit --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-create-task-commit --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "d867e15f2e01ebe744d5c9722decb379d4fc83f0f54fdf5da63c12336b5d8f33",
-        "stdout_size_bytes": 4217,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-create-task-commit"
-      },
-      {
-        "id": "eval-source-guru-create-task-workspace",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-create-task-workspace --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-create-task-workspace --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "59fe4d034b4349209ff85975951fbe6401002fdb86e0a2259d31f0cfb992a1d3",
-        "stdout_size_bytes": 4213,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-create-task-workspace"
-      },
-      {
-        "id": "eval-source-guru-discover-change-context",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-discover-change-context --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-discover-change-context --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "4be6a09904439f5fc8f862706f88f4bc6e0bd34c28903ff12fc96e38a85997e4",
-        "stdout_size_bytes": 3411,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-discover-change-context"
-      },
-      {
-        "id": "eval-source-guru-review-change-request",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-review-change-request --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-review-change-request --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "2c2e914a5e02d86168159ed68b8943d4788fb3553448e9b619cc3026fd8aa7cb",
-        "stdout_size_bytes": 5084,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-review-change-request"
-      },
-      {
-        "id": "eval-source-guru-review-contract-wording",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-review-contract-wording --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-review-contract-wording --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "03b59ac070a99903ac20ae3848e234c4fe3009775cf73b47195a5e0a5e112341",
-        "stdout_size_bytes": 3393,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-review-contract-wording"
-      },
-      {
-        "id": "eval-source-guru-sync-base",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh --root . --mode source --skill guru-sync-base --adapter shared --run-root /private/tmp/guru-146-check-evals.wGLVjt/source-guru-sync-base --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "5ca30d6b8efd08c0ef8f906341409769cd37ddaf6d7de9707834d5439c8309d3",
-        "stdout_size_bytes": 3291,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source package eval corpus 执行通过：eval-source-guru-sync-base"
-      },
-      {
-        "id": "git-status",
-        "argv": [
-          "git status --short "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f508d0afb3d7cbb0381870ee52897923d495bc8c265d12324131db29d377fc0b",
-        "stdout_size_bytes": 1991,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：git-status"
-      },
-      {
-        "id": "installed-packages",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/check-skill-packages.sh --root . --json --mode installed "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "70be98f74c0d9e9fcfe98495151f54960d13cd54ec782cb15da285dd4c91487c",
-        "stdout_size_bytes": 1258,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：installed-packages"
-      },
-      {
-        "id": "json-production-manifest",
-        "argv": [
-          "python3 -m json.tool trellis/skills/guru-team/migrations/production-minimal-handoff.json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "038771170af1c97a24453bb3155378d69043cd8b712ca48ad5f905fccb3c5ec7",
-        "stdout_size_bytes": 11203,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：json-production-manifest"
-      },
-      {
-        "id": "json-production-schema",
-        "argv": [
-          "python3 -m json.tool trellis/skills/guru-team/schemas/production-migration-manifest.schema.json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "9e30a10f0e414b07d4140240911a3a944e088dc36bc0418570306f2723d77b96",
-        "stdout_size_bytes": 7261,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：json-production-schema"
-      },
-      {
-        "id": "ownership-tests",
-        "argv": [
-          "python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "f8d845847d19207964aaa0d409677e2dbbd6067bc4b9337091fb93d04735e199",
-        "stderr_size_bytes": 104,
-        "summary": "Upstream ownership tests 6/6 通过。"
-      },
-      {
-        "id": "package-byte-identity",
-        "argv": [
-          "bash -c $'set -euo pipefail\\ncount=0\\nwhile IFS= read -r skill; do\\n  for root in .trellis/guru-team/skills/packages .agents/skills .codex/skills .cursor/skills .claude/skills; do\\n    diff -qr -x __pycache__ -x \"*.pyc\" \"trellis/skills/guru-team/packages/$skill\" \"$root/$skill\" >/dev/null\\n    count=$((count + 1))\\n  done\\ndone < <(jq -r \".skills[] | select(.state == \\\\\"active\\\\\") | .id\" trellis/skills/guru-team/registry.json)\\ncmp trellis/skills/guru-team/adapters/eval/native_adapter.py .trellis/guru-team/skills/adapters/eval/native_adapter.py\\nprintf \"package_tree_comparisons=%s adapter_bytes=equal\\\\n\" \"$count\"' "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "0ba55001358443226cca92fc252103b796650308e7f3bea5b3aa70591b831f76",
-        "stdout_size_bytes": 48,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "45 组 package tree 与 native adapter bytes 一致。"
-      },
-      {
-        "id": "package-tests",
-        "argv": [
-          "python3 -m unittest discover -s trellis/skills/guru-team/tests -p test_\\*.py "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "647a2e8af9df882911917aada30aafd4d86cf783f870f2613be561ade6bd3a1f",
-        "stderr_size_bytes": 3656,
-        "summary": "Guru Team package tests 166/166 通过。"
-      },
-      {
-        "id": "planning-approval",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-22-146-production-skill-minimal-handoff "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "1c52d2500da46fe78b86b75001805e380658bf6b3f79c4616c07014df0a77e09",
-        "stdout_size_bytes": 794,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：planning-approval"
-      },
-      {
-        "id": "preset-tests",
-        "argv": [
-          "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "db945dff7d16c57eb934632c4c9f098cbed5c25fe74d998129769cc40dbe6c78",
-        "stderr_size_bytes": 808,
-        "summary": "Preset installer tests 45/45 通过。"
-      },
-      {
-        "id": "py-compile",
-        "argv": [
-          "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：py-compile"
-      },
-      {
-        "id": "runtime-tests",
-        "argv": [
-          "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "2110060b3872bacc66838ffd20bddc19fde24c8147f7429ce8919bc82e2e7f6d",
-        "stdout_size_bytes": 2548,
-        "stderr_sha256": "34b24be913c7fe60ecb191c24935acf3bf335fbf13e01c5f8358f97ce1173741",
-        "stderr_size_bytes": 3492,
-        "summary": "Shared runtime tests 557 passed、13 conditional skips。"
-      },
-      {
-        "id": "secret-scan",
-        "argv": [
-          "bash -c $'set -euo pipefail\\nif git diff --name-only 7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c -- | rg -qi \"(^|/)(\\\\.env($|\\\\.)|id_rsa|id_ed25519|.*\\\\.(pem|p12|pfx|key)$)\"; then\\n  echo \"secret-like filename detected\"\\n  exit 1\\nfi\\nif git diff --no-ext-diff 7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c -- | rg -q \"AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|-----BEGIN (RSA |OPENSSH |EC |DSA |PGP )?PRIVATE KEY-----\"; then\\n  echo \"secret-like content detected\"\\n  exit 1\\nfi\\nprintf \"secret_like_filenames=0 secret_like_content=0\\\\n\"' "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "53942f3d556165da81f16523c45629e73ccd7cf02d655ef008acedacd36cf069",
-        "stdout_size_bytes": 46,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：secret-scan"
-      },
-      {
-        "id": "sidecar-scan",
-        "argv": [
-          "find . -type f \\( -name \\*.new -o -name \\*.bak \\) -print "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：sidecar-scan"
-      },
-      {
-        "id": "source-packages",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh --root . --json --mode source "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "39013f5a2f3c59f72e75c6f0e5cc47bb2fcecebb0d2973f9030aa92568446601",
-        "stdout_size_bytes": 1069,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：source-packages"
-      },
-      {
-        "id": "spec-packages",
-        "argv": [
-          "python3 ./.trellis/scripts/get_context.py --mode packages "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "5adbfc63bab462907d3942e731fec357152f7cb2dc17ff8ee914c948992e967d",
-        "stdout_size_bytes": 82,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：spec-packages"
-      },
-      {
-        "id": "stage0-manifest-frozen",
-        "argv": [
-          "git diff --exit-code 7dc67e9aef08ca4928159d7d13db6fdbd40c5d4c -- trellis/skills/guru-team/migrations/stage0-minimal-handoff.json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：stage0-manifest-frozen"
-      },
-      {
-        "id": "task-validate",
-        "argv": [
-          "python3 ./.trellis/scripts/task.py validate 07-22-146-production-skill-minimal-handoff "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "44d545d9e6adcfd4f683aeed11e783245eff1e90614447ec98f56ef12381e61e",
-        "stdout_size_bytes": 339,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：task-validate"
-      },
-      {
-        "id": "throwaway-exact",
-        "argv": [
-          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh "
-        ],
-        "exit_code": 2,
-        "stdout_sha256": "825952c905879aa9ba2dc3edd64d20dfa263142d880d5e5c9f748445963704e9",
-        "stdout_size_bytes": 655,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Exact unpublished branch 未 push，验证器按合同 exit 2 并拒绝冒充 remote proof。"
-      },
-      {
-        "id": "throwaway-public-sample",
-        "argv": [
-          "env TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "5d7c7ed03e7e7628eb5d09311569d7c07af5c4e41d1b2540b1aa33b7b3121d94",
-        "stdout_size_bytes": 2679406,
-        "stderr_sha256": "fac055fb3721ffba1415eb2b8ee6f3f9b3a34fb611e376d8b41bd3fce3433dfe",
-        "stderr_size_bytes": 930,
-        "summary": "Public marketplace clean init/update/reapply sample 通过，1711 files 且零 sidecar/removal/conflict。"
-      },
-      {
-        "id": "upstream-ownership",
-        "argv": [
-          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "0e688545acc465dc1bdab556e666ad8ee78345f90cf012109b8f99ba18a0e195",
-        "stdout_size_bytes": 1585,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：upstream-ownership"
-      },
-      {
-        "id": "workspace-boundary",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task .trellis/tasks/07-22-146-production-skill-minimal-handoff "
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e908fc463aa710a0892fc3deb3d7b7c19e32cb73062a988965afc22d54fac693",
-        "stdout_size_bytes": 2871,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "独立 checker 执行并通过：workspace-boundary"
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
+        "sha256": "d0bbefb789805ab0f4f26bd78a75760d1b8ab2412a2fd41b60d4ffbf9b81e335",
+        "size_bytes": 61726
       }
     ],
-    "worker_evidence": [
-      {
-        "source": "official_trellis_check",
-        "agent_id": "/root/check_146",
-        "summary": "较早完整 Phase 2 round 覆盖 R1-R16，并在后续 scope/recovery 前留下历史 evidence；其结果不替代当前 R17 full rerun。",
-        "evidence_only": true,
-        "facts_sha256": "c02ef04af1c0c2fc2bf6603e1682cd827623dacca2122c0a30d94ee5172b0e17"
-      },
-      {
-        "source": "official_trellis_check",
-        "agent_id": "/root/check_146_r17_full",
-        "summary": "当前完整 Phase 2 round 独立覆盖 R1-R17、AC1-AC22、15 个 durable SSOT、base-to-HEAD diff、全部 dirty paths、58 项命令与 recovery chain；结论 passed。",
-        "evidence_only": true,
-        "facts_sha256": "612bc5b82c90b210d6f3743b300e54f9b6af5bea5f12aee6691970ef3b5760bd"
-      }
-    ],
-    "unverified_items": [
-      {
-        "id": "U1",
-        "command_or_area": "exact unpublished branch remote marketplace verification",
-        "reason": "codex/146-production-skill-minimal-handoff 尚未 push，origin 不存在 exact branch，验证器按合同 exit 2；public sample clean install/update/reapply 已通过。",
-        "impact": "不影响本地实现与 Phase 2 语义充分性；在 push 后、PR readiness 前必须补 exact remote proof，且不得用 public sample 冒充。",
-        "blocking": false
-      }
-    ],
-    "execution_sha256": "dc0dae4be0bf5950277b605b4620925e1fb9f3a94db85e856b37b4eafe66a337"
+    "facts_sha256": "773afbc25c6950310ae5ca324787c1791d8ecb84148c58e262d173121cec4bed"
   },
+  "route": null,
   "scope_qualification": {
     "candidates": [],
     "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
@@ -4074,119 +4164,117 @@
   "semantic_review": {
     "adequacy_dimensions": [
       {
-        "id": "requirements",
-        "status": "passed",
-        "summary": "R1-R17、AC1-AC22、GitHub authority 与 issue close/related 范围完整一致。",
+        "affected_sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5",
         "evidence_refs": [
           "planning",
           "requirement_provenance"
         ],
-        "affected_sha256": "96773f0a4dd5b5926f12d4b1bc2998f704116eca7c7a0b2782635795946a5ea5",
         "finding_ids": [],
+        "id": "requirements",
+        "status": "passed",
+        "summary": "R1-R17、AC1-AC22、GitHub authority、P3-F003 closure 与 issue close/related 范围完整一致。",
         "unverified_ids": []
       },
       {
-        "id": "design",
-        "status": "passed",
-        "summary": "Minimal public handoff、routing-only clarification、native owner staging 与 task-local freshness 设计均被实现。",
+        "affected_sha256": "962a380af4710d2f0b10499c3b55bb2143d2ec2665f10016a0a354c89aa6e322",
         "evidence_refs": [
           "planning",
           "docs_ssot_plan"
         ],
-        "affected_sha256": "962a380af4710d2f0b10499c3b55bb2143d2ec2665f10016a0a354c89aa6e322",
         "finding_ids": [],
+        "id": "design",
+        "status": "passed",
+        "summary": "Minimal public handoff、routing-only clarification、native owner staging 与 task-local freshness 设计均被实现。",
         "unverified_ids": []
       },
       {
-        "id": "implementation",
-        "status": "passed",
-        "summary": "P2-F002、R17 与 R16 normal-path correction 在 canonical、installed 和平台副本中一致，无开放实现缺陷。",
+        "affected_sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot"
         ],
-        "affected_sha256": "f256fe2a597624c62450ca4b8dfafa6eb63302e7902d2714562c61e66521ccd7",
         "finding_ids": [],
+        "id": "implementation",
+        "status": "passed",
+        "summary": "P2-F002、R17、R16 与 P3-F003 normal-path corrections 在 canonical、installed、平台副本及 durable flow SSOT 中一致，无开放实现缺陷。",
         "unverified_ids": []
       },
       {
-        "id": "tests",
-        "status": "passed",
-        "summary": "Package 166、runtime 557/13 skip、preset 45、ownership 6、Stage0 24 与 production 12 均通过。",
+        "affected_sha256": "dd4ad1fcb2cfca1d0c48c52d658c88d70eedb8e10099ca113601b1c8e9391e74",
         "evidence_refs": [
           "check_execution",
           "repository_snapshot"
         ],
-        "affected_sha256": "9be702aae1038d8db9005efa04d1a8159e709ec7cc80c02c2f91cd9ee7c3028b",
         "finding_ids": [],
+        "id": "tests",
+        "status": "passed",
+        "summary": "Fresh full rerun：Package 166、runtime 557/13 skip、preset 45、ownership 6、Stage0 source 24、production source 12、全九包 installed corpora 均通过；39 条 command evidence 如实保留 nonzero limitation。",
         "unverified_ids": []
       },
       {
-        "id": "docs_ssot",
-        "status": "passed",
-        "summary": "ssot_first 的 15/15 durable paths 与 task delta 已合并，task-history-only 内容未泄入长期合同。",
+        "affected_sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
         "evidence_refs": [
           "docs_ssot_plan",
           "implementation_handoff"
         ],
-        "affected_sha256": "8c0eb4eae096375119b09a1a5f8b7329dafbba80248263f4dd8be8db113bec59",
         "finding_ids": [],
+        "id": "docs_ssot",
+        "status": "passed",
+        "summary": "ssot_first 的 15/15 durable paths 与 task delta 已合并，P3-F003 的陈旧未来态已修正，task-history-only 内容未泄入长期合同。",
         "unverified_ids": []
       },
       {
-        "id": "cross_layer",
-        "status": "passed",
-        "summary": "Workflow、package interface、registry、adapter、runtime、schema、eval 与 tests 的跨层投影一致。",
+        "affected_sha256": "44f6ffbc35e923dd3593fa60b0d35d0233b58024beff9a14669dc4138910cbed",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution",
           "docs_ssot_plan"
         ],
-        "affected_sha256": "44f6ffbc35e923dd3593fa60b0d35d0233b58024beff9a14669dc4138910cbed",
         "finding_ids": [],
+        "id": "cross_layer",
+        "status": "passed",
+        "summary": "Workflow、package interface、registry、adapter、runtime、schema、eval 与 tests 的跨层投影一致。",
         "unverified_ids": []
       },
       {
-        "id": "compatibility",
-        "status": "passed",
-        "summary": "Stage0 manifest 与 #147 eval schema/runner/grader/protocol 保持冻结，source/installed 与全平台 bytes 一致。",
+        "affected_sha256": "f6968e57e92bbfb27b874577c19e96ae5ca81253b323b7aba4a1e8749c478c10",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution",
           "requirement_provenance"
         ],
-        "affected_sha256": "f6968e57e92bbfb27b874577c19e96ae5ca81253b323b7aba4a1e8749c478c10",
         "finding_ids": [],
+        "id": "compatibility",
+        "status": "passed",
+        "summary": "Stage0 manifest 与 #147 eval schema/runner/grader/protocol 保持冻结，source/installed 与全平台 bytes 一致。",
         "unverified_ids": []
       },
       {
-        "id": "deployment_and_operations",
-        "status": "passed",
-        "summary": "无 CI/CD、container、K8s/Helm、DB migration 或 Makefile 影响；安装/update/reapply 与 zero-sidecar 门禁通过。",
+        "affected_sha256": "94f45b7afc6584eda1bf8acb8d19894ddf271ec95e79147299c6573c7545bdf6",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "94f45b7afc6584eda1bf8acb8d19894ddf271ec95e79147299c6573c7545bdf6",
         "finding_ids": [],
+        "id": "deployment_and_operations",
+        "status": "passed",
+        "summary": "无 CI/CD、container、K8s/Helm、DB migration 或 Makefile 影响；安装/update/reapply 与 zero-sidecar 门禁通过。",
         "unverified_ids": []
       },
       {
-        "id": "agent_recovery",
-        "status": "passed",
-        "summary": "实现与 Phase 2 checker 的失败、恢复、补充 handoff 与 completed 链均闭合，只有 completed evidence 进入本轮。",
+        "affected_sha256": "18bab6a41258e88e3f9fd244630f0274976be1c706f5dc14166e83fffd5a0830",
         "evidence_refs": [
           "agent_assignment",
           "implementation_handoff"
         ],
-        "affected_sha256": "5c547ef75c8874f2111485a9c96ec3689f81a1b8fc8a3ce2b434d0daead0eb9d",
         "finding_ids": [],
+        "id": "agent_recovery",
+        "status": "passed",
+        "summary": "实现与 Phase 2 checker 的历史失败/恢复链均闭合；P3 修复实现代理和 fresh checker 均有 completed evidence，追加 command output 通过 evt-0228 记录。",
         "unverified_ids": []
       },
       {
-        "id": "verification_completeness",
-        "status": "passed",
-        "summary": "当前 round 58 项命令与所有适用 repository gate 已记录；exact remote branch proof 是 push 后 PR readiness 的 non-blocking limitation。",
+        "affected_sha256": "dd4ad1fcb2cfca1d0c48c52d658c88d70eedb8e10099ca113601b1c8e9391e74",
         "evidence_refs": [
           "check_execution",
           "planning",
@@ -4196,43 +4284,33 @@
           "repository_snapshot",
           "agent_assignment"
         ],
-        "affected_sha256": "9be702aae1038d8db9005efa04d1a8159e709ec7cc80c02c2f91cd9ee7c3028b",
         "finding_ids": [],
+        "id": "verification_completeness",
+        "status": "passed",
+        "summary": "当前 full round 的 39 条实际 command evidence 与所有适用 repository gate 已记录；exact remote branch proof 是 push 后 PR readiness 的 non-blocking limitation。",
         "unverified_ids": [
           "U1"
         ]
       }
     ],
-    "findings": [],
     "ai_review_gate": {
-      "status": "passed",
-      "summary": "独立 checker 对 R1-R17、AC1-AC22、Docs SSOT、完整 repository snapshot、agent recovery 与所有适用验证完成 fresh full rerun；无 current-scope P0-P3 finding 或 blocking unverified item。",
       "full_rerun": true,
+      "status": "passed",
+      "summary": "Fresh checker 对 R1-R17、AC1-AC22、P3-F003 closure、15-path Docs SSOT、完整 repository snapshot、agent recovery 与适用验证完成 full rerun；P0-P3=0，无 blocking unverified item。",
       "planning_facts_sha256": "7bd21858f8eac1ab85099e70095ff0762ff84ed5113216c2640afb0d67cb076a",
-      "snapshot_sha256": "6ef95d8d5bcbf87c7d1e87ff9a6994ca696248653e9ebd23b68d2accaed55f0e",
+      "snapshot_sha256": "28b68b274cc581aa94e7054ee46974f60c0a543d199bbae39d56a82225fa5dde",
       "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-      "adequacy_sha256": "43033dc02312e65c1fd01a4aa321c6e1b6dd1a49543cf51e3015baee424e2931",
+      "adequacy_sha256": "7527ab33f08d5fc7365e89fb0e1c191b9b4d333aeb24425ec59d2edf6c9beeae",
       "findings_count": 0,
-      "full_round_sha256": "4918d033057551e050ac53636941237a5776162cfe96e1b4ef34767558a2c36d"
+      "full_round_sha256": "c4e052a15cc536d2439321e078341adce61e924210b548c991bf2310cf24f21b"
     },
-    "adequacy_sha256": "43033dc02312e65c1fd01a4aa321c6e1b6dd1a49543cf51e3015baee424e2931"
-  },
-  "human_confirmation": {
-    "kind": "not-required",
-    "status": "not_required",
-    "summary": "Phase 2 没有无条件人工确认；已批准 planning 与 recovery exception 的 authority 保持有效。",
-    "confirmed_at": null
+    "findings": [],
+    "adequacy_sha256": "7527ab33f08d5fc7365e89fb0e1c191b9b4d333aeb24425ec59d2edf6c9beeae"
   },
   "typed_exit": "passed",
-  "route": null,
-  "reason": "当前完整 scope 的十个 adequacy 维度全部通过，无开放 finding；唯一 exact remote proof limitation 由 push 后 PR readiness 消费。",
-  "consumer": {
-    "kind": "skill",
-    "id": "guru-create-task-commit"
-  },
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-23T04:34:52Z",
+  "generated_at": "2026-07-23T06:40:01Z",
   "task": {
     "task_dir": ".trellis/tasks/07-22-146-production-skill-minimal-handoff",
     "task_id": "146-production-skill-minimal-handoff",
@@ -4270,5 +4348,5 @@
     ],
     "facts_sha256": "7bd21858f8eac1ab85099e70095ff0762ff84ed5113216c2640afb0d67cb076a"
   },
-  "facts_sha256": "3cc43ec73fd23c1f7f138aba554ceb0b3f164ccda044d7da2e9c5afc67358730"
+  "facts_sha256": "087ee8191fe3ee185a8148ed065eb4ea72f06f8e82865d0c98029a4d631dbe51"
 }

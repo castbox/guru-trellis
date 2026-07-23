@@ -1,0 +1,268 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "146-production-skill-minimal-handoff",
+    "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff",
+    "status": "in_progress",
+    "branch": "codex/146-production-skill-minimal-handoff"
+  },
+  "issue": {
+    "primary_issue": 146,
+    "ledger_sha256": "5dc10038b5398cc8b15301f0c6f765f3eac356178395b470b6dccd9ba5f5d851"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "c945c73e1779f4e62409883bab5e1f6a907e4584"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/planning-approval.json",
+      "sha256": "d0bbefb789805ab0f4f26bd78a75760d1b8ab2412a2fd41b60d4ffbf9b81e335",
+      "size": 61726
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json",
+      "sha256": "cb0053866e8ce36d73000353b0bc010f9a4299247cf53877b68585cb11e7f057",
+      "size": 196508
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/issue-scope-ledger.json",
+      "sha256": "5dc10038b5398cc8b15301f0c6f765f3eac356178395b470b6dccd9ba5f5d851",
+      "size": 17656
+    },
+    "task": {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task.json",
+      "sha256": "37b2b2474ac1a99b5a39f06ea99a8d340f0dea8d5c232c85d8a858b1d45ebb03",
+      "size": 706
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "358db9dcdec82b89f646a2ebeeff0b74a1e89967",
+        "worktree_sha256": "18bab6a41258e88e3f9fd244630f0274976be1c706f5dc14166e83fffd5a0830",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2a85ae714013edcbcab9de48e060f627c99cee05",
+        "worktree_sha256": "cb0053866e8ce36d73000353b0bc010f9a4299247cf53877b68585cb11e7f057",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ef121638c2dc3f2bf6661e43b77b99f1af8d07180c58d0de50f32772933fe31f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "3e74fbc6508f7e1f0c1325063a1a8d667c5c544986f5703413b3790612f48b4c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-001-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ac1709e74608a11fab1170cc37f1ba9a338ef436e265e72a65353ea1daddae96",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-002-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "226eec5a26f1ac18b3917b439cf19cc54673660e23278a74d80add37fbc4c1b2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-003-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ebf8e797ccfedb78b116482476726e24130bc019ac305bc234ed7fbd42834d1f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1d8682b747eee7e3ed19aec7b64ab237879b5639",
+        "worktree_sha256": "88af4092b2f439f578c6f2dc0411008f2f1888bce421e9eb752b94a26b12c82c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3edb484f57e8674f1d5d1ab696eef882508cea42",
+        "worktree_sha256": "f31300a7f6b248ad81ebe2e7765f8782b24bf7db113a5934f33e37123af0debf",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ef586783cca5b70ea2d9d081a96992ccd24ba323",
+        "worktree_sha256": "f8db73b8fb7cdecfe97cb832cb5963813d52e69bb28e6e201af57e3392b2fa00",
+        "mode": "100644"
+      }
+    ],
+    "digest": "26d84b6368207ca4eeb1c150b25fcef403a159960e4984ecb8483332480df9ac"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "The caller did not authorize this current dirty path for the task commit.",
+      "coverage_source": "public-path-authorization"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "AI 已审查 exact stage scope、中文 Conventional Commit message、Issue #146 引用、fresh Phase 2、Docs SSOT、upgrade/update、安全、部署与 preserved metadata 边界；仅授权 flow 文档、phase2-check.json 和自动生成的 plan 003，其他 dirty paths 保持不变。",
+      "coverage_source": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "The caller did not authorize this current dirty path for the task commit.",
+      "coverage_source": "public-path-authorization"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/review.md",
+      "category": "unrelated-preserved",
+      "reason": "The caller did not authorize this current dirty path for the task commit.",
+      "coverage_source": "public-path-authorization"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-001-final-release.md",
+      "category": "unrelated-preserved",
+      "reason": "The caller did not authorize this current dirty path for the task commit.",
+      "coverage_source": "public-path-authorization"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-002-finding-closure.md",
+      "category": "unrelated-preserved",
+      "reason": "The caller did not authorize this current dirty path for the task commit.",
+      "coverage_source": "public-path-authorization"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/reviews/round-003-final-release.md",
+      "category": "unrelated-preserved",
+      "reason": "The caller did not authorize this current dirty path for the task commit.",
+      "coverage_source": "public-path-authorization"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "The caller did not authorize this current dirty path for the task commit.",
+      "coverage_source": "public-path-authorization"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/002.json",
+      "category": "unrelated-preserved",
+      "reason": "The caller did not authorize this current dirty path for the task commit.",
+      "coverage_source": "public-path-authorization"
+    },
+    {
+      "path": "docs/requirements/guru-team-trellis-flow.md",
+      "category": "task-reviewed",
+      "reason": "AI 已审查 exact stage scope、中文 Conventional Commit message、Issue #146 引用、fresh Phase 2、Docs SSOT、upgrade/update、安全、部署与 preserved metadata 边界；仅授权 flow 文档、phase2-check.json 和自动生成的 plan 003，其他 dirty paths 保持不变。",
+      "coverage_source": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/tasks/07-22-146-production-skill-minimal-handoff/phase2-check.json",
+    ".trellis/tasks/07-22-146-production-skill-minimal-handoff/task-commit-plans/003.json",
+    "docs/requirements/guru-team-trellis-flow.md"
+  ],
+  "message": {
+    "subject": "docs(workflow): #146 修正 production closure 状态",
+    "body": "背景：\nRound 003 发现 durable flow SSOT 仍将 #146 描述为未完成。\n\n变更：\n修正 #145 与 #146 的 Skill、profile 和 exit closure 状态，并记录 fresh Phase 2 evidence。\n\n边界：\n不包含 push、PR、finish-work 或 Branch Review metadata；无部署资产影响。\n\n验证：\n通过 Package 166、runtime 557（13 skipped）、preset 45、ownership 6，以及 source/installed 9 Skills/35 exits closure。\n\nRefs #146",
+    "bytes": "docs(workflow): #146 修正 production closure 状态\n\n背景：\nRound 003 发现 durable flow SSOT 仍将 #146 描述为未完成。\n\n变更：\n修正 #145 与 #146 的 Skill、profile 和 exit closure 状态，并记录 fresh Phase 2 evidence。\n\n边界：\n不包含 push、PR、finish-work 或 Branch Review metadata；无部署资产影响。\n\n验证：\n通过 Package 166、runtime 557（13 skipped）、preset 45、ownership 6，以及 source/installed 9 Skills/35 exits closure。\n\nRefs #146\n",
+    "sha256": "39ca80c2dc232a8dd1ee1c25fecd77cb05f4adc5866721abe55cc7d584032c17"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "AI 已审查 exact stage scope、中文 Conventional Commit message、Issue #146 引用、fresh Phase 2、Docs SSOT、upgrade/update、安全、部署与 preserved metadata 边界；仅授权 flow 文档、phase2-check.json 和自动生成的 plan 003，其他 dirty paths 保持不变。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户已确认继续完成 #146 至 passing Branch Review Gate；本次 finding-fix 本地 commit 属于该精确授权，不包含 push、PR 或 finish-work。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-23T07:09:58Z",
+    "plan_digest": "e34c4409440d6bfd3ecbba56eaf3b5729c986805b45fcdf7630dd3cb71bc0582"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}
