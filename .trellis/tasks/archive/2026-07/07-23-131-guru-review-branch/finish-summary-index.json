@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team workflow 的 Phase 3.5 Branch Review 仍缺少独立 active closed-loop Skill，semantic review、finding lifecycle、fresh-final、public handoff 与平台入口之间没有统一且可机器校验的所有权边界。",
+    "outcome": "已实现 Interface 1.3 的 guru-review-branch semantic closed-loop Skill，闭合六字段 public input、四个 typed exits、review assignment、finding closure、fresh-final、deterministic recorder/validator、平台分发与 durable Docs SSOT。",
+    "changed_behavior": [
+      "guru-review-branch 成为 Phase 3.5 Branch Review 的唯一 semantic owner，并在 workflow 与 standalone mode 使用同一 entry、review、confirmation、recording 和 typed-exit 合同。",
+      "Public input 固定为 task_ref、base_branch、work_commit、phase2_ref、issue_scope_ref 与 implementation_handoff_ref 六字段，live Git、GitHub、Trellis facts 与完整审查历史保持 runtime private。",
+      "Skill 只返回 passed、implementation_required、scope_confirmation_required 或 blocked 四个稳定出口；missing、unknown、multiple、stale 或 unmapped 状态 fail closed。",
+      "独立 reviewer assignment、finding ownership、closure round、fresh-final replacement 与 gate freshness 由 task-local evidence 和确定性 recorder/validator 绑定。",
+      "trellis-continue 与五类平台入口只负责构造最小 public invocation、调用 stable Skill id 并消费唯一 typed route，不复制 Branch Review 内部流程。",
+      "Canonical package、installed runtime、Agents、Codex、Claude、Cursor、workflow/preset registry 与 durable Docs SSOT 保持同步。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-review-branch public package",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
+          "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md"
+        ],
+        "change": "新增 Interface 1.3 semantic closed-loop package、public schemas/examples、evals、recorder、validator 与 typed exits。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Phase 3.5 Branch Review routing",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "Global workflow 显式调用 stable Skill id，continue entry 收敛为最小 invocation 与唯一 typed-route consumer。"
+      },
+      {
+        "kind": "script",
+        "name": "Review evidence recorder and validator",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+        ],
+        "change": "确定性记录 gate、校验 freshness/assignment/round binding，并通过 P18 保护 historical/current ownership identity。"
+      },
+      {
+        "kind": "preset",
+        "name": "Skill activation and platform distribution",
+        "paths": [
+          "trellis/skills/guru-team/registry.json",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/ownership/upstream-ownership.json"
+        ],
+        "change": "激活并分发 guru-review-branch，保持 canonical、installed 与五类平台副本一致且 update/reapply 可恢复。"
+      },
+      {
+        "kind": "docs",
+        "name": "Branch Review durable SSOT and regression evidence",
+        "paths": [
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          "README.md",
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "同步唯一 semantic owner、public/private I/O、finding lifecycle、active 10/39 与 production 3/11 分层口径。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Phase 3.5 semantic ownership",
+        "before": "Workflow、continue entry 与 companion details 之间可能重复 Branch Review 内部判断和 route 规则。",
+        "after": "guru-review-branch 独占完整 semantic closed loop；global workflow 和平台入口仅显式调用并消费 typed exit。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Minimal public invocation",
+        "before": "Branch Review 调用边界可能要求 caller 理解 gate、assignment、finding round 或 live repository private state。",
+        "after": "Caller 只传六字段最小 input；owner runtime fresh 解析 live facts、完整 evidence 和 private checkpoints。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Stable typed exits",
+        "before": "Passed、实现返工、scope confirmation 与阻塞状态缺少逐出口最小 DTO 和唯一 consumer projection。",
+        "after": "四个 exit 分别拥有严格 output schema 与唯一 consumer；unknown、multiple、stale 或 unmapped route fail closed。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Finding lifecycle and fresh final",
+        "before": "Finding owner、closure、replacement reviewer 与最终无 finding 轮次缺少统一 task-local 绑定。",
+        "after": "Assignment、proposal/action、finding closure 与 fresh-final round 由 semantic review 先行，再由 recorder/validator 绑定当前 HEAD。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Historical and current ownership identity",
+        "before": "Upstream-owned entry 的历史边界与当前 payload binding 可能在 overlay 演进时漂移或混写。",
+        "after": "P18 同时固定 43 个历史 identity 与 5 个 current bindings，canonical/installed copies 漂移时 fail closed。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "guru-review-branch",
+        "check-review-gate.sh",
+        "validate_upstream_ownership.py",
+        "check-skill-packages"
+      ],
+      "config_keys": [
+        "workflow_route_id",
+        "io_contract_state"
+      ],
+      "schema_fields": [
+        "task_ref",
+        "base_branch",
+        "work_commit",
+        "phase2_ref",
+        "issue_scope_ref",
+        "implementation_handoff_ref",
+        "review_ref"
+      ],
+      "symbols": [
+        "review_branch",
+        "record_review_gate",
+        "validate_review_gate",
+        "production_owner_result"
+      ],
+      "phrases": [
+        "guru-review-branch closed-loop Skill 已完成",
+        "Phase 3.5 Branch Review 只有一个 semantic owner",
+        "六字段 public invocation 与四个 typed exits 已闭合",
+        "finding lifecycle 与 fresh-final review 已绑定当前 HEAD",
+        "active 10/39 与 production 3/11 分层一致"
+      ]
+    }
+  }
+}

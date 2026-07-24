@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 131,
+    "url": "https://github.com/castbox/guru-trellis/issues/131",
+    "title": "实现 guru-review-branch 闭环 Skill",
+    "reason": "当前唯一 independently deliverable 主目标。",
+    "acceptance_evidence": [
+      "guru-review-branch 已作为 Interface 1.3 active closed-loop Skill 实现：六字段 public input、四个 typed exits、独立 semantic owner、finding lifecycle、fresh-final、deterministic recorder/validator 与五类平台分发合同均已闭合。",
+      "Fresh Phase 2 typed exit 为 passed；runtime 566 passed/13 skipped、Skill 171/171、preset 45/45、contract 8/8、ownership 9/9、source/installed eval 各 7/7、package closure 10 Skills/39 exits/23 targets、installed 1903 managed files且 sidecar/removal/conflict 均为 0。",
+      "五个 task work commits 精确绑定最终 reviewed content HEAD c18efe0f73f03d216a7f4e873907569922e800be；2632 JSON、295 shell、116 Python compile、throwaway install/update/reapply、dogfood drift、P18 ownership 与 Docs SSOT 验证通过。",
+      "Branch Review Gate 绑定 origin/main...c18efe0f73f03d216a7f4e873907569922e800be；前序 findings 全部关闭，Round 12 fresh final reviewer 的 P0/P1/P2/P3 与 scope proposals 均为 0，typed exit 为 passed。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "7ad74946c209e036fee60ec55a9434bb65087736dfd58c629e45de7b454a3e5f",
+        "verified_content_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+        "remote_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+        "publish_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 131,
+      "url": "https://github.com/castbox/guru-trellis/issues/131",
+      "title": "实现 guru-review-branch 闭环 Skill",
+      "reason": "当前 task 明确承诺完整实现并由 Branch Review Gate 验收。",
+      "acceptance_evidence": [
+        "guru-review-branch 已作为 Interface 1.3 active closed-loop Skill 实现：六字段 public input、四个 typed exits、独立 semantic owner、finding lifecycle、fresh-final、deterministic recorder/validator 与五类平台分发合同均已闭合。",
+        "Fresh Phase 2 typed exit 为 passed；runtime 566 passed/13 skipped、Skill 171/171、preset 45/45、contract 8/8、ownership 9/9、source/installed eval 各 7/7、package closure 10 Skills/39 exits/23 targets、installed 1903 managed files且 sidecar/removal/conflict 均为 0。",
+        "五个 task work commits 精确绑定最终 reviewed content HEAD c18efe0f73f03d216a7f4e873907569922e800be；2632 JSON、295 shell、116 Python compile、throwaway install/update/reapply、dogfood drift、P18 ownership 与 Docs SSOT 验证通过。",
+        "Branch Review Gate 绑定 origin/main...c18efe0f73f03d216a7f4e873907569922e800be；前序 findings 全部关闭，Round 12 fresh final reviewer 的 P0/P1/P2/P3 与 scope proposals 均为 0，typed exit 为 passed。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "7ad74946c209e036fee60ec55a9434bb65087736dfd58c629e45de7b454a3e5f",
+          "verified_content_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+          "remote_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+          "publish_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "父级工作流收敛项目，仅建立关联，不由本 task 关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 130,
+      "url": "https://github.com/castbox/guru-trellis/issues/130",
+      "title": "实现 guru-check-task 闭环 Skill",
+      "reason": "已完成的上游 check 闭环依赖，必须保持语义与接口。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 144,
+      "url": "https://github.com/castbox/guru-trellis/issues/144",
+      "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+      "reason": "已完成的 Interface 1.3 基础设施依赖。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 146,
+      "url": "https://github.com/castbox/guru-trellis/issues/146",
+      "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+      "reason": "已完成的 committed seed 生产者依赖。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 116,
+      "url": "https://github.com/castbox/guru-trellis/issues/116",
+      "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+      "reason": "passed 出口的后续 publication consumer，由独立 task 实现。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "完整 workflow graph 与集成收口由独立 task 验证。",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

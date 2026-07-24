@@ -403,10 +403,10 @@ The source and installed closure algorithm reads the live registry, both
 manifests, Interface public contracts, and package-local corpora. It requires
 the active ids to equal the two manifest sets plus any future complete active
 1.3 rows; requires every active row to be `minimal_handoff`; and requires exact
-profile/exit/current-case set equality. Nine Skills and 35 exits are the current
+profile/exit/current-case set equality. Ten Skills and 39 exits are the current
 cardinality regression, not a hard-coded future registry allowlist.
 
-The production manifest also binds the exact three
+The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
 profile, projected `seed_fields`, target-owned `authoring_fields`, and the
 package-local authoring example id. Interface and manifest validation require
@@ -1768,3 +1768,27 @@ case files may carry exact wrapper arguments referencing a repo-local,
 checker-passed owner result, but never a caller-selected route. Actual wrapper
 output selects the per-exit schema before the runner performs the independent
 expected-versus-actual assertion.
+
+## Branch Review Data Boundary
+
+The Branch Review public input contains only the `branch_review` profile,
+workflow/standalone mode, task/base/committed-head identity, and one of
+`initial_review|finding_fix_review|fresh_final_review`. Its public outputs are
+the four minimal DTOs defined by the Skill package contract. `review_ref`,
+finding refs, and proposal refs are opaque consumer identities, not embedded
+artifact bodies.
+
+`reviews/*.md`, `review.md`, `review-gate.json`, and
+`agent-assignment.json` remain task-local tracked evidence. A reviewed
+candidate has exactly one of `qualified_finding`, `scope_proposal`,
+`observation`, `followup_candidate`, or `rejected_candidate`.
+`qualified_finding` alone carries P0-P3 severity and must bind requirement
+references, scope basis, scenario class, qualification reason, owner round,
+reviewed HEAD, and closure evidence. `scope_proposal` uses
+`unconfirmed_nonstandard_proposal`, contains no severity, and never selects an
+implementation route.
+
+The five closed scenario classes are `normal_required_behavior`,
+`explicit_nonstandard_requirement`, `approved_nonstandard_expansion`,
+`unconfirmed_nonstandard_proposal`, and `out_of_scope`. Qualification always
+precedes severity. The last two cannot become current P0-P3 findings.

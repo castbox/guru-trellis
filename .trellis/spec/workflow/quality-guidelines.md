@@ -102,7 +102,7 @@ as production serializer input.
 
 Repeat the same matrix for `production-minimal-handoff-v1`: exactly three
 packages, ten profiles, and 11 exits. Then validate the combined live-active
-closure at nine Skills and 35 exits. Negative tests cover missing, extra,
+closure at ten Skills and 39 exits. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or legacy entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Stage 0/production
@@ -113,11 +113,12 @@ Every production profile and exit executes the real package wrapper through
 the shared adapter. The runner validates the actual exit schema before
 comparing `expected_exit`; expected values never enter owner construction or
 route selection. Commit `committed` evals validate the exact projection into
-`branch-review-or-finding-closure` and do not dispatch Branch Review. Existing
+the active `guru-review-branch` package and dispatch Branch Review through that
+closed loop. Existing
 commit transaction tests remain mandatory because the new candidate builder is
 not authorization to replace or weaken the executor.
 
-The three `skill_input_authoring_seed` edges have positive partition/projection
+The four `skill_input_authoring_seed` edges have positive partition/projection
 probes and negative overlap, overwrite, missing, extra, unknown, private-lookup,
 runtime-semantic-reconstruction, and fifth-operation fixtures. Each positive
 probe independently validates seed and authoring example keys, proves disjoint
@@ -422,7 +423,9 @@ unverified items, four exit/consumer invariants, planning discriminator closure,
 finding-fix full rerun, failed/unfinished/stale/replacement/completed recovery,
 dirty/reviewed-path/post-commit freshness, legacy migration, and the single
 artifact owner. Distribution validation must compare canonical/shared/Codex/
-Claude/Cursor package bytes, preserve the frozen 43-entry upstream inventory,
+Claude/Cursor package bytes, preserve the frozen 43-entry historical
+path/baseline identity, validate the exact five issue #131 current continue
+payload bindings without generalizing them,
 run dogfood apply/drift and sidecar checks, and exercise clean marketplace init,
 preview/switch, preset apply, installed invocation, `trellis update --force`,
 and workflow/preset reapply.
@@ -570,3 +573,15 @@ Python or shell.
   and recursive zero `.new`/`.bak` scans.
 + A normal public invocation trace proves no eval corpus/descriptor/evidence or
   private runtime source enters ordinary Skill context.
++ Branch Review tests cover workflow and standalone input, all four actual
+  exits, finding-fix and fresh-final intent, qualification-before-severity, and
+  planned-publication missing-Skill failure.
++ Negative coverage includes incomplete qualification, mutually inconsistent
+  disposition, severity on a proposal/out-of-scope item, missing or
+  digest-mismatched report, round gap, stale HEAD, unfinished replacement, open
+  closure finding, reused final reviewer, unconsumed business field, and an
+  over-specified planned target contract.
++ Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
+  10-Skill/39-exit active closure while the production activation unit remains
+  three Skills/11 exits. Update and preset reapply must reproduce that closure
+  with zero unresolved `.new` or `.bak`.

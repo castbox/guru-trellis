@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "约束全局 workflow 只拥有 mandatory invocation、typed exits、唯一 consumers 与 fail-closed transition。"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "定义 active Skill package、Interface 1.3、最小 public DTO、planned consumer bridge 与 distribution 合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "约束 shared runtime 只能执行 recorder、validator、executor，并保持 dispatcher-only wrapper。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "约束 review-gate、agent-assignment、migration manifest、extension inventory 与 JSON schema 演进。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "提供 source/installed、eval、throwaway、update/reapply、dogfood 与 Branch Review 验证矩阵。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "约束 canonical-to-installed/platform 复制、managed hash、sidecar、transaction 与 executable mode。"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "固定 43-path upstream overlay 边界，禁止修改或 overlay trellis-check 资产。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "约束 generated guru-* discovery copies、四平台一致性与 overlay freeze。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "约束三份 README 对公共 Skill、安装、升级、发现、调用与验证命令的一致说明。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "用于追踪 registry、Interface、runtime、workflow、preset、platform 和 docs 的完整跨层数据流。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "要求先搜索并复用现有 package/runtime/schema/validator 模式，避免第二套 semantic 或 artifact 路径。"}

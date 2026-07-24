@@ -511,9 +511,10 @@ may occur.
 Commit invocation profiles are `initial_commit`, `revision_reentry`,
 `finding_fix_commit`, and `recovery_resume`. Only the `committed` DTO crosses
 the workflow boundary, with exact fields `exit_id`, `task_ref`, `base_ref`, and
-`committed_head`. The unchanged `branch-review-or-finding-closure` consumer
-accepts the last three fields; candidate/result bodies stay private and Issue
-#131 is not activated by this contract.
+`committed_head`. #131 preserves those seed fields and changes the consumer to
+active `guru-review-branch`; the caller authors only `profile`, `mode`, and
+`review_intent`. Candidate/result bodies stay private, and the production
+activation unit remains the same three Skills and 11 exits.
 The `revision-required` self-reentry similarly projects only
 `source_exit/task_ref`; the target package owns every remaining fresh semantic
 and re-entry field. Both self-reentry edges and the check-to-commit edge use
@@ -940,3 +941,22 @@ intake provenance only.
 For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
 
 `issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to task-relative `marketplace-verification.json`, and explicitly does not satisfy final publish. Formal closeout pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts, then commits and pushes the exact immutable plan/readiness/verifier/ledger evidence allowlist. Only after remote equality may it bind the unique draft PR, build the final summary once, and perform the archive transaction. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. The AI remains responsible for close scope and evidence sufficiency; scripts execute and validate deterministic facts. No release tag is created by this gate.
+
+## Phase 3.5 Branch Review Routing
+
+After `guru-create-task-commit:committed`, the global workflow must invoke
+`guru-review-branch` exactly once and consume exactly one of its four exits. The
+workflow owns only transitions:
+
+- `passed` targets the planned `guru-review-task-publication` Skill and stops
+  fail-closed while that package remains unavailable;
+- `implementation_required` resumes implementation, then requires a fresh
+  `guru-check-task`, task commit, and Branch Review re-entry;
+- `scope_confirmation_required` routes to requirements clarification with a
+  fresh caller-authored clarification input;
+- `blocked` stops.
+
+Reviewer prompts, qualification, severity, finding closure, final-review
+freshness, artifact construction, and recovery are step-local
+`guru-review-branch` behavior and must not be copied into this workflow.
+Unknown, multiple, unmapped, stale, or unavailable target routes fail closed.

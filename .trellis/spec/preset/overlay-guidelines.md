@@ -14,11 +14,16 @@ Overlay files are small platform entrypoints. They should point the AI back to
 duplicating the full workflow.
 
 The current overlay tree is also a frozen migration surface. Its exact 43 paths
-and payload hashes are recorded in
+and immutable issue #128 baseline hashes are recorded in
 `trellis/presets/guru-team/ownership/upstream-ownership.json`; no new
 upstream-owned path may be added. New reusable behavior belongs in Markdown
 workflow contracts or canonical `guru-*` packages. Reviewed removal keeps an
 `upstream_owned/removed` inventory tombstone instead of deleting audit history.
+Only the five active `trellis-continue` entries reviewed by issue #131 carry a
+separate pinned `current_payload_sha256`; that binding validates their thin
+current payload without rewriting the historical baseline. It is normal
+version/drift binding only, is not an authenticity boundary, must not spread to
+other entries, and does not perform issue #132 removal.
 
 Activating `guru-approve-task-plan` is additive distribution: install its
 canonical package below `.trellis/guru-team/skills/**`, shared runtime/schema
@@ -155,58 +160,21 @@ Continue entries must:
   continue/command/prompt/launcher entries must not copy candidate fields, AI
   review criteria, confirmation policy, executor steps, message template or
   postconditions
-- route `committed` to Branch Review/finding closure,
-  `revision-required` back to the same skill, and `blocked` to fail-closed stop;
-  non-metadata finding fixes return through implementation and full Phase 2
-  before another invocation
-- state that default `sub-agent` mode requires the main session to dispatch
-  `trellis-implement` / channel `implement`, then `trellis-check` / channel
-  `check`, and later a Branch Review review sub-agent; the main session cannot
-  replace those boundaries with its own implementation, check, self-review, or
-  script validation output
-- write task-local Chinese `reviews/*.md` raw reports and a Chinese
-  `review.md` rollup, run Branch Review Gate with `--review-source
-  independent-agent` and `--review-report <task-local review.md>`, then stop
-  before finish-work
-- state that Branch Review is the final verification of Phase 2 Docs SSOT
-  reconciliation: it reads the approved `Docs SSOT Plan`, implementation
-  handoff, `phase2-check.json`, durable docs, task artifacts, and the full diff;
-  it must not first merge durable docs or patch missing Phase 2 docs work
-- state that current-scope Docs SSOT inconsistency is a blocking finding and
-  may not be downgraded to `observation` or `followup_candidate`
-- state that any finding priority blocks Branch Review Gate, while
-  `observation` and `followup_candidate` are separate non-blocking records
-- state that a review agent with findings may only perform closure review and
-  must do that same-agent closure review before the passing gate can use a fresh
-  `最终放行审查代理`
-- state that independent review sub-agents review docs/code/diff evidence as AI
-  reviewers and must not run Guru Team recorder/validator extension scripts
-  such as `review-branch.sh`, `check-review-gate.sh`, or `record-*`; the main
-  session runs those scripts only after review
-- state that passing Branch Review Gate requires task-local
-  `--agent-assignment`
-- state that `wait_agent`, `trellis channel wait`, or equivalent timeout is only
-  a wait-window result, not failure or partial-completion evidence
-- state the #76 liveness loop: after dispatch the main session records
-  `assigned` through `record-subagent-liveness-event.sh`, runs
-  `check-subagent-liveness.sh` at `progress_scan_interval=120s` or
-  `next_wait_ms`, writes non-machine-readable progress to `status_events[]`
-  before checker evidence, sends status request only after
-  `status_request_required`, records `status-requested` then immediately
-  rechecks, does not repeat a pending ping, records `stale-assessed` only after
-  `stale_allowed`, and performs stale cutover with
-  `terminated-unfinished termination_reason=stale_cutover` plus
-  `replacement-started replacement_reason=max_progress_silence_exceeded`
-- state that `max_progress_silence=180s` is measured from
-  `progress_anchor_at`; `status-requested` does not refresh that anchor or
-  extend `max_progress_silence_deadline_at`
-- state that failed, stale, unfinished, or replacement partial output must not
-  become Phase 2 / Branch Review pass evidence until same-agent resume or
-  replacement recovery reaches `completed`; replacement `failed` requires
-  further recovery
-- state that main-session self-review cannot pass Branch Review Gate; if
-  independent Agent review is unavailable, continue must stop with the gate
-  pending
+- route `committed` by loading and mandatory invoking active
+  `guru-review-branch` with only its public `profile`, `mode`, `task_ref`,
+  `base_ref`, `committed_head`, and `review_intent` input. That package is the
+  sole Phase 3.5 semantic owner; continue/command/prompt/launcher entries only
+  invoke it and consume its typed route
+- consume exactly `passed -> guru-review-task-publication`,
+  `implementation_required -> guru-branch-review-implementation-router`,
+  `scope_confirmation_required -> guru-branch-review-scope-router`, and
+  `blocked -> branch-review-blocked`; unknown, multiple, stale, or unmapped
+  exits fail closed
+- do not copy the package's reviewer lifecycle, qualification/Gate rules,
+  liveness/recovery policy, scripts, command flags, task-local private
+  artifacts, recorder/checker sequence, or revision mechanics into a platform
+  entry. Those remain package-owned step-local semantics and deterministic
+  implementation details
 - state that `trellis-continue` must not stage/commit review metadata, push,
   create a PR, call `publish-pr`, or invoke `finish-work`
 - avoid adding a separate user-facing publish step
@@ -271,9 +239,11 @@ SessionStart, sub-agent context injection, brainstorm, and trellis-meta referenc
 
 Sub-agent overlay entries must:
 
-The 43 inventory-pinned upstream overlay payloads remain byte-frozen
-`transitional_legacy` assets owned by issue #132. Their legacy `schema 1.2`
-and `explicit-post-planning-review` implement-agent wording is retained only as
+The 43 inventory-pinned upstream overlay paths remain
+`transitional_legacy` assets whose removal is owned by issue #132. Their
+issue #128 path/baseline identity remains immutable; current bytes use that
+baseline except for the exact five issue #131 continue bindings. Historical
+`schema 1.2` and `explicit-post-planning-review` implement-agent wording is
 transitional history; it must not guide current Guru package/runtime behavior
 or be copied into canonical `guru-*` packages, workflow contracts, durable
 docs, or new non-frozen platform sources.
@@ -408,10 +378,17 @@ six-package set and rejects partial activation or sidecars.
 
 The production planning/check/commit package trees follow the same copy and
 mode rules under the independent `production-minimal-handoff-v1` manifest.
-Together the two manifests yield nine byte-identical active package trees and
-35 exits. The frozen 43-path workflow/platform overlay payload is not expanded
+Together the two manifests plus active `guru-review-branch` yield ten
+byte-identical active package trees and 39 exits. The frozen 43-path
+workflow/platform overlay payload is not expanded
 for package assets; packages, shared consumers, schemas, manifests, and evals
 remain Guru-owned preset-managed additive assets.
-The Interface 1.3 `skill_input_authoring_seed` shape, three target-owned
+The Interface 1.3 `skill_input_authoring_seed` shape, four target-owned
 authoring examples, and partition/merge probes belong to that same managed
 package graph. They do not authorize a new or modified overlay path.
+
+`guru-review-branch` follows the same canonical-to-installed/shared/Codex/
+Claude/Cursor byte-and-mode projection. It is an additive Guru-owned package,
+not an overlay. Adding it does not expand the frozen 43-path upstream overlay
+payload and must not modify `.trellis/agents/check.md`, any platform
+`trellis-check` agent entry, or `.agents/skills/trellis-check/**`.

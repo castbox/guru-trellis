@@ -55,6 +55,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
             "dogfood_status": "removed_with_audit_history",
             "target_business_repo_status": "no_longer_installed",
         })
+        entry.pop(ownership.CURRENT_PAYLOAD_KEY, None)
         (repo / ownership.OVERLAY_ROOT_RELATIVE / path).unlink()
 
         claims = inventory["managed_path_claims"]
@@ -213,10 +214,29 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["active_count"], 43)
         self.assertEqual(first["generated_in_clean_init_count"], 37)
         self.assertEqual(first["legacy_not_generated_count"], 6)
-        self.assertEqual(first["active_skill_count"], 9)
-        self.assertEqual(first["planned_skill_count"], 0)
+        self.assertEqual(first["active_payload_aggregate_sha256"], ownership.CURRENT_PAYLOAD_AGGREGATE_SHA256)
+        self.assertEqual(first["reviewed_current_payload_count"], 5)
+        self.assertEqual(
+            first["reviewed_current_payloads_sha256"],
+            ownership.canonical_sha256(ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH),
+        )
+        self.assertEqual(first["active_skill_count"], 10)
+        self.assertEqual(first["planned_skill_count"], 1)
         self.assertEqual(first["managed_asset_count"], 48)
         inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
+        reviewed_current_payloads = {
+            entry["path"]: entry[ownership.CURRENT_PAYLOAD_KEY]
+            for entry in inventory["legacy_entries"]
+            if ownership.CURRENT_PAYLOAD_KEY in entry
+        }
+        self.assertEqual(
+            reviewed_current_payloads,
+            ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH,
+        )
+        self.assertEqual(
+            inventory["baseline"]["active_payload_aggregate_sha256"],
+            ownership.BASELINE_PAYLOAD_AGGREGATE_SHA256,
+        )
         self.assertEqual(first["schema_sha256"], ownership.sha256_file(self.repo / ownership.SCHEMA_RELATIVE))
         self.assertEqual(first["inventory_sha256"], ownership.sha256_file(self.repo / ownership.INVENTORY_RELATIVE))
         self.assertEqual(first["guru_owned_rules_sha256"], ownership.canonical_sha256(inventory["guru_owned_rules"]))
@@ -224,7 +244,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["legacy_entries_sha256"], ownership.canonical_sha256(inventory["legacy_entries"]))
         self.assertEqual(first["frozen_legacy_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
         self.assertEqual(first["materialized_frozen_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
-        self.assertEqual(first["facts_sha256"], "89cd751b8f0acb4f2b47e3c47957d6c0ed9a8c37a37157e55e8800185322d840")
+        self.assertEqual(first["facts_sha256"], "8fd7f9dcc9f56a95ef5f81868361f87b4becde0c0457dbf2c499dcbd83af6fc8")
 
         recorded_owners = {
             owner
@@ -277,6 +297,68 @@ class UpstreamOwnershipTest(unittest.TestCase):
         ]
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0]["path"], inventory["legacy_entries"][0]["path"])
+
+    def test_reviewed_current_payload_bytes_are_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            path = next(iter(ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH))
+            overlay = repo / ownership.OVERLAY_ROOT_RELATIVE / path
+            overlay.write_bytes(overlay.read_bytes() + b"\nreviewed current payload drift\n")
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        matching = [
+            item
+            for item in payload["errors"]
+            if item["code"] == "active_payload_hash_mismatch" and item["path"] == path
+        ]
+        self.assertEqual(len(matching), 1)
+
+    def test_reviewed_current_payload_binding_cannot_be_silently_rewritten(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            path = next(iter(ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH))
+            overlay = repo / ownership.OVERLAY_ROOT_RELATIVE / path
+            overlay.write_bytes(overlay.read_bytes() + b"\nrewritten current payload binding\n")
+            inventory_path = repo / ownership.INVENTORY_RELATIVE
+            inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+            entry = next(item for item in inventory["legacy_entries"] if item["path"] == path)
+            entry[ownership.CURRENT_PAYLOAD_KEY] = ownership.sha256_file(overlay)
+            self.write_json(inventory_path, inventory)
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        matching = [
+            item
+            for item in payload["errors"]
+            if item["code"] == "reviewed_current_payload_digest_mismatch" and item["path"] == path
+        ]
+        self.assertEqual(len(matching), 1)
+
+    def test_current_payload_binding_is_rejected_outside_reviewed_entries(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            inventory_path = repo / ownership.INVENTORY_RELATIVE
+            inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+            entry = next(
+                item
+                for item in inventory["legacy_entries"]
+                if item["path"] not in ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH
+            )
+            entry[ownership.CURRENT_PAYLOAD_KEY] = entry["baseline_sha256"]
+            self.write_json(inventory_path, inventory)
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        matching = [
+            item
+            for item in payload["errors"]
+            if item["code"] == "unexpected_current_payload_digest" and item["path"] == entry["path"]
+        ]
+        self.assertEqual(len(matching), 1)
 
     def test_bash_entry_preserves_json_and_exit_status(self) -> None:
         command = self.repo / "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"

@@ -341,19 +341,21 @@ machine-local hidden state.
 
 All three public README files describe `production-minimal-handoff-v1` as a
 separate atomic unit containing planning, check, and commit with ten profiles
-and 11 exits. They state that all nine active packages now use Interface 1.3
-`minimal_handoff`, the combined current closure is 9-by-35, and the Stage 0
+and 11 exits. They state that all ten active packages now use Interface 1.3
+`minimal_handoff`, the combined current closure is 10-by-39, and the Stage 0
 manifest remains frozen at 6-by-24. They publish discovery, invocation, eval,
 pre-#146 upgrade, update/reapply, and drift-validation commands.
 
 The docs show the exact `committed` DTO fields `exit_id`, `task_ref`,
-`base_ref`, and `committed_head`, and name
-`workflow:branch-review-or-finding-closure` as the unchanged consumer. They do
-not claim Issue #131 is implemented, do not expose private approval/check/commit
-artifact bodies, and do not present eval `expected_exit` as a production input.
+`base_ref`, and `committed_head`, and name active `guru-review-branch` as the
+consumer while keeping the #146 committed seed shape unchanged. They state that
+#131, rather than #146, activates Branch Review, do not expose private
+approval/check/commit/review artifact bodies, and do not present eval
+`expected_exit` as a production input.
 
 The docs also name target-owned `skill_input_authoring_seed` for exactly the
-planning self-reentry, check-to-commit, and commit self-reentry edges. They
+planning self-reentry, check-to-commit, commit self-reentry, and
+commit-to-review edges. They
 explain that producer projection supplies only minimal seed fields, the caller
 AI authors every remaining required semantic field, validation proves a
 disjoint exact required-field partition and a no-overwrite full-schema merge,
@@ -366,3 +368,15 @@ binding, and exact-prior formal replacement of the fixed snapshot. They state
 that the existing target must be regular and trackable, a successful
 different-byte replacement records `superseded_snapshot_sha256`, failed
 pre-write validation preserves prior bytes, and same-byte retry is idempotent.
+
+After #131, public READMEs describe ten active Skills and 39 exits, identify
+`guru-review-branch` as the Phase 3.5 semantic owner, and show contract
+discovery, public wrapper, eval, fresh install, update and reapply commands.
+They show only minimal `exit_id` DTOs and explain that review artifacts remain
+private.
+
+They also state that `passed` points to planned
+`guru-review-task-publication`; no target schema/profile/authoring contract is
+claimed, and invocation fails closed until that package is activated. The
+production migration identity and three-Skill/11-exit membership remain
+unchanged even though its authoring-seed inventory grows to four.

@@ -26,7 +26,11 @@ Before `install_assets()` creates the target `.trellis/guru-team/` directory or
 performs any other target mutation, it must run the source ownership validator
 defined in [upstream-ownership.md](./upstream-ownership.md). The validator is
 read-only and source-repository scoped; it is not installed into business
-repositories or exposed as a workflow/Skill runtime command.
+repositories or exposed as a workflow/Skill runtime command. It validates the
+immutable issue #128 path/baseline identity and the exact five issue #131
+reviewed current-payload bindings before installer staging. Those current
+digests are normal version/drift bindings, not authenticity or anti-tamper
+boundaries, and cannot be added to any other entry.
 
 ## Managed Assets
 
@@ -64,10 +68,10 @@ and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
 
 The atomic production package inventory includes the Interface 1.3 additive
-`skill_input_authoring_seed` schema shape, three target-owned authoring
+`skill_input_authoring_seed` schema shape, four target-owned authoring
 examples, the production manifest bindings, and their validator/probe tests.
 Canonical, installed, shared, Codex, Cursor, and Claude copies must carry
-byte-identical contracts; a graph that has only part of those three edge
+byte-identical contracts; a graph that has only part of those four edge
 bindings is a mixed production activation and must fail before target mutation.
 
 Installed package validation parses the installed workflow target declarations
@@ -285,10 +289,13 @@ unknown document should be translated.
 
 The overlay path set is a frozen transitional exception, not a general-purpose
 extension surface. `upstream-ownership.json` retains exactly 43 baseline paths,
-and every active payload must match its recorded SHA-256. Do not add another
-Trellis-owned prompt, command, skill, agent, hook, or meta reference to the
-overlay tree. Reviewed removals keep their inventory entries as
-`upstream_owned/removed` audit history.
+and every active payload must match its binding: `baseline_sha256` for 38
+unchanged paths, or `current_payload_sha256` for the exact five active
+issue #131 continue entries. The historical baseline hashes and identity do not
+change, the current field cannot spread to other entries, and issue #132 alone
+owns removal. Do not add another Trellis-owned prompt, command, skill, agent,
+hook, or meta reference to the overlay tree. Reviewed removals keep their
+inventory entries as `upstream_owned/removed` audit history.
 
 Use `copy_overlay()` behavior:
 
@@ -501,9 +508,10 @@ The verifier scans recursively for `.new` and `.bak` after each transition.
 `production-minimal-handoff-v1` is staged and activated in the same preset
 transaction as its manifest/schema, three complete package trees, consumer
 schemas, registry, extension inventory, installed provenance, and selected
-platform copies. The transaction validates the complete nine-Skill/35-exit
+platform copies. The transaction validates the complete ten-Skill/39-exit
 graph before publishing any destination. A pre-#146 six-minimal/three-legacy
-install upgrades directly to nine minimal packages; any intermediate mixed
+install upgrades through nine minimal packages and then active
+`guru-review-branch`; any intermediate mixed
 graph fails staging and leaves the prior complete install in place.
 
 The Stage 0 manifest remains a separately managed immutable activation record.
@@ -512,3 +520,18 @@ but may not change the Stage 0 manifest's activation id, ordered skill ids, exit
 bindings, or legacy-boundary history. Update/reapply must reproduce identical
 canonical, installed, shared, Codex, Cursor, and Claude package bytes and
 executable modes without `.new` or `.bak` sidecars.
+
+## Branch Review Package Activation
+
+`guru-review-branch` is an additive active package installed in the same preset
+transaction as registry, extension inventory, shared consumers, Interface
+schema, runtime, workflow and selected platform copies. It extends the active
+closure to ten Skills and 39 exits without changing either existing migration
+activation id or the production manifest's three-Skill/11-exit membership.
+That manifest changes only its committed consumer/projection binding and
+authoring-seed edge inventory from three to four.
+
+The planned `guru-review-task-publication` registry identity is installed
+without a package, invoke marker, exit marker, schema or authoring contract.
+Fresh install, update, and reapply must all preserve that distinction and fail
+closed if a caller attempts to invoke it.

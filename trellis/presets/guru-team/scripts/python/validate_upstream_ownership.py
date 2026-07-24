@@ -23,8 +23,16 @@ OVERLAY_ROOT_RELATIVE = Path("trellis/presets/guru-team/overlays")
 BASE_COMMIT = "291b57b6c02872320a4dce0626a2f718399b8f56"
 FROZEN_PATH_COUNT = 43
 FROZEN_PATH_SET_SHA256 = "56874019bb93b6669aaeb36b7ca9506aed9127a28ef9f81637ea428a6b0a838b"
-BASELINE_PAYLOAD_AGGREGATE_SHA256 = "52dfb4036828865e070002f89712fc2bcd802d1f50263da5d9ef58e6edf5c5f0"
-FROZEN_LEGACY_IDENTITY_SHA256 = "0ca84016a32cd496c4a9ff2a6bdc6637a1e6393abd3d60f3bf3388657ebf8350"
+BASELINE_PAYLOAD_AGGREGATE_SHA256 = "c24122c8292ee2e6f7847d69069d5f3536eaa5a66a11434620228fe11cb89658"
+CURRENT_PAYLOAD_AGGREGATE_SHA256 = "ab94576c8d2d8768ffd50d1757179d8678de3a67923aeef3cd00ef006f76a86a"
+FROZEN_LEGACY_IDENTITY_SHA256 = "1e1faf9ffa95e1cbb1650c4eb9da1ceac035d045be70132b5c0b92ec5ccfc473"
+REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH = {
+    ".agents/skills/trellis-continue/SKILL.md": "9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc",
+    ".claude/commands/trellis/continue.md": "6260438ddc68e0f69e263f19bd40d952da5608c1e291afe1b71382953fcc43ea",
+    ".codex/prompts/trellis-continue.md": "26315341df30cabd67f854d4c2eb2edfb91250c0fcdf675815bd9b6dafa955d0",
+    ".codex/skills/trellis-continue/SKILL.md": "9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc",
+    ".cursor/commands/trellis-continue.md": "b0e8ea40324442d70e3aa76c123a1b4e0ddbcea00e94da599594b0e3b707301c",
+}
 OWNERSHIP_CATEGORIES = {
     "upstream_owned",
     "guru_owned",
@@ -84,6 +92,7 @@ LEGACY_ENTRY_KEYS = {
     "dogfood_status",
     "target_business_repo_status",
 }
+CURRENT_PAYLOAD_KEY = "current_payload_sha256"
 EXPECTED_GURU_RULES = [
     {"id": "installed-runtime", "match_type": "path_prefix", "pattern": ".trellis/guru-team/", "category": "guru_owned"},
     {"id": "canonical-workflow-root", "match_type": "path_prefix", "pattern": "trellis/workflows/guru-team/", "category": "guru_owned"},
@@ -480,7 +489,14 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         else:
             entries = [item for item in entry_values if isinstance(item, dict)]
             for index, entry in enumerate(entry_values):
-                require_exact_keys(entry, LEGACY_ENTRY_KEYS, f"$.legacy_entries[{index}]", errors)
+                expected_keys = set(LEGACY_ENTRY_KEYS)
+                if (
+                    isinstance(entry, dict)
+                    and entry.get("path") in REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH
+                    and entry.get("migration_state") == "active"
+                ):
+                    expected_keys.add(CURRENT_PAYLOAD_KEY)
+                require_exact_keys(entry, expected_keys, f"$.legacy_entries[{index}]", errors)
 
     if len(entries) > FROZEN_PATH_COUNT:
         errors.append(ownership_error("frozen_baseline_expanded", "$.legacy_entries", f"expected {FROZEN_PATH_COUNT}, found {len(entries)}"))
@@ -556,6 +572,29 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         digest = entry.get("baseline_sha256")
         if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
             errors.append(ownership_error("invalid_baseline_sha256", entry_path, "expected lowercase SHA-256"))
+        expected_current_digest = (
+            REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH.get(entry_path)
+            if state == "active"
+            else None
+        )
+        current_digest = entry.get(CURRENT_PAYLOAD_KEY)
+        if expected_current_digest is not None:
+            if current_digest != expected_current_digest:
+                errors.append(
+                    ownership_error(
+                        "reviewed_current_payload_digest_mismatch",
+                        entry_path,
+                        f"expected={expected_current_digest} actual={current_digest}",
+                    )
+                )
+        elif CURRENT_PAYLOAD_KEY in entry:
+            errors.append(
+                ownership_error(
+                    "unexpected_current_payload_digest",
+                    entry_path,
+                    "current payload binding is allowed only on the five active Issue 131 continue entries",
+                )
+            )
         if not isinstance(entry.get("generated_in_clean_init"), bool):
             errors.append(ownership_error("invalid_clean_init_fact", entry_path, "generated_in_clean_init must be boolean"))
         if state == "active":
@@ -618,7 +657,10 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         if overlay_path.is_symlink() or not overlay_path.is_file():
             errors.append(ownership_error("active_overlay_not_regular", path, "active overlay must be a regular file, not a symlink"))
             continue
-        expected = entry_by_path[path].get("baseline_sha256")
+        expected = (
+            REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH.get(path)
+            or entry_by_path[path].get("baseline_sha256")
+        )
         actual = sha256_file(overlay_path)
         if actual != expected:
             errors.append(ownership_error("active_payload_hash_mismatch", path, f"expected={expected} actual={actual}"))
@@ -630,7 +672,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         and all(not (overlay_root / path).is_symlink() and (overlay_root / path).is_file() for path in active_paths)
     ):
         actual_payload_aggregate = payload_aggregate_sha256(overlay_root, active_paths)
-        if not removed_paths and actual_payload_aggregate != BASELINE_PAYLOAD_AGGREGATE_SHA256:
+        if not removed_paths and actual_payload_aggregate != CURRENT_PAYLOAD_AGGREGATE_SHA256:
             errors.append(ownership_error("active_payload_aggregate_mismatch", OVERLAY_ROOT_RELATIVE.as_posix(), f"actual={actual_payload_aggregate}"))
     materialized_identity: list[dict[str, str]] = []
     materialized_identity_complete = len(entry_by_path) == FROZEN_PATH_COUNT
@@ -640,7 +682,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         digest: Any = None
         overlay_path = overlay_root / path
         if state == "active" and path in actual_overlay_paths and not overlay_path.is_symlink() and overlay_path.is_file():
-            digest = sha256_file(overlay_path)
+            digest = entry.get("baseline_sha256")
         elif state == "removed":
             digest = entry.get("baseline_sha256")
         else:
@@ -827,6 +869,8 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         "overlay_count": len(actual_overlay_paths),
         "sorted_path_set_sha256": path_set_sha256(frozen_paths),
         "active_payload_aggregate_sha256": actual_payload_aggregate,
+        "reviewed_current_payload_count": len(REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH),
+        "reviewed_current_payloads_sha256": canonical_sha256(REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH),
         "managed_claim_count": len(manifest_paths),
         "classified_managed_claim_count": len(set(manifest_paths) & set(claim_by_path)),
         "managed_asset_count": len(managed_assets),

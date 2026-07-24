@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "codex/131-guru-review-branch",
+    "reviewed_head_sha": "c18efe0f73f03d216a7f4e873907569922e800be",
+    "title": "实现 guru-review-branch 分支审查闭环",
+    "body_source": "pr-body.md",
+    "body_sha256": "a02b5d13a7e59d05ccd34ed543a97a6f943557b455ae711fe19124d42157d3e7",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "f1118b3234658e981e37306babed086ab1323faa32764319d70410fd0c6bf962"
+  },
+  "publish_inputs_sha256": "a9495e94f55e7f91ba91b9e8ed0ed9a5a12fc5262b171bd31ba21d4db849cb8f"
+}

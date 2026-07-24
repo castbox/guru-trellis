@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-review-branch",
+  "evals": [
+    {
+      "id": "workflow-passed",
+      "prompt": "Complete the workflow-mode initial Branch Review owner round and invoke the public wrapper using only checker-derived evidence.",
+      "expected_exit": "passed",
+      "expected_output": "The public DTO is the declared successful review handoff.",
+      "input_profile_id": "branch_review",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "passed"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ]
+      },
+      "files": ["evals/files/workflow-passed-input.json", "evals/files/workflow-passed-facts.json"]
+    },
+    {
+      "id": "standalone-passed",
+      "prompt": "Complete the standalone-mode initial Branch Review owner round and invoke the public wrapper using only checker-derived evidence.",
+      "expected_exit": "passed",
+      "expected_output": "The public DTO is the declared successful standalone review handoff.",
+      "input_profile_id": "branch_review",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "passed"}
+        ]
+      },
+      "files": ["evals/files/standalone-passed-input.json", "evals/files/standalone-passed-facts.json"]
+    },
+    {
+      "id": "implementation-required",
+      "prompt": "Complete a qualification-first Branch Review round with one current-scope defect and invoke the public wrapper.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The public DTO contains the current reviewed HEAD and exact finding references.",
+      "input_profile_id": "branch_review",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "implementation_required"}
+        ]
+      },
+      "files": ["evals/files/implementation-required-input.json", "evals/files/implementation-required-facts.json"]
+    },
+    {
+      "id": "scope-confirmation-required",
+      "prompt": "Complete a qualification-first Branch Review round with one unconfirmed nonstandard proposal and invoke the public wrapper.",
+      "expected_exit": "scope_confirmation_required",
+      "expected_output": "The public DTO contains only the task identity and exact proposal references.",
+      "input_profile_id": "branch_review",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "scope_confirmation_required"}
+        ]
+      },
+      "files": ["evals/files/scope-confirmation-required-input.json", "evals/files/scope-confirmation-required-facts.json"]
+    },
+    {
+      "id": "blocked-stale",
+      "prompt": "Complete a Branch Review owner round that detects stale required evidence and invoke the public wrapper after recording the blocked Gate.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO contains only the blocked routing identity.",
+      "input_profile_id": "branch_review",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}
+        ]
+      },
+      "files": ["evals/files/blocked-stale-input.json", "evals/files/blocked-stale-facts.json"]
+    },
+    {
+      "id": "finding-fix-passed",
+      "prompt": "Complete the finding-fix review lifecycle, preserve closure evidence, run a fresh final review, and invoke the public wrapper.",
+      "expected_exit": "passed",
+      "expected_output": "The public DTO is the declared successful review handoff after finding closure.",
+      "input_profile_id": "branch_review",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "passed"}
+        ]
+      },
+      "files": ["evals/files/finding-fix-passed-input.json", "evals/files/finding-fix-passed-facts.json"]
+    },
+    {
+      "id": "fresh-final-passed",
+      "prompt": "Complete a fresh final review over the complete current range and invoke the public wrapper from the checked owner artifact.",
+      "expected_exit": "passed",
+      "expected_output": "The public DTO is the declared successful fresh-final handoff.",
+      "input_profile_id": "branch_review",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "passed"}
+        ]
+      },
+      "files": ["evals/files/fresh-final-passed-input.json", "evals/files/fresh-final-passed-facts.json"]
+    }
+  ]
+}

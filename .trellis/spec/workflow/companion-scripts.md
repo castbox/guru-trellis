@@ -128,7 +128,7 @@ ordered typed argv in both public-input and invocation examples. Wrapper/handler
 non-object or multiple stdout values, unknown exits, and output-schema mismatch
 fail with stable portable errors.
 
-For the three approved production semantic edges, the same target ownership
+For the four approved production semantic edges, the same target ownership
 check accepts `skill_input_authoring_seed`. The validator exact-resolves the
 target structured profile and its package-local authoring example, requires
 disjoint `seed_fields` and `authoring_fields`, requires their union to equal the
@@ -1401,3 +1401,20 @@ owner checker, and returns the actual exit. Adapter and native requests omit
 `expected_exit`; only the runner reads it after wrapper completion. Codex runs
 from the installed runtime's trusted Git root, Claude uses safe non-interactive
 input, and missing Cursor authentication returns deterministic `unsupported`.
+
+## Branch Review Recorder And Checker
+
+`review-branch` records only an already completed AI semantic review. It may
+rebuild task/worktree/base/HEAD/range, planning, Phase 2, issue-ledger,
+commit-evidence, Docs SSOT, assignment, report, working-tree, hash, schema and
+freshness facts, then write the existing `review-gate.json`. It must not decide
+scope, scenario class, qualification, severity, reviewer sufficiency, route, or
+pass.
+
+`check-review-gate` revalidates the same objective facts, raw report retention,
+round ordering, finding closure, final-review freshness, `review.md` links and
+the selected typed exit. Existing CLI names remain compatibility entrypoints to
+the same owner runtime. The public package wrapper accepts a closed public input
+and repo-local owner-result locator, reruns the checker, reads the actual exit,
+and emits exactly one declared DTO. `expected_exit` is never a wrapper input,
+owner-result field, or route selector.

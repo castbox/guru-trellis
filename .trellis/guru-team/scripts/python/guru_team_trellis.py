@@ -702,6 +702,12 @@ SELF_REVIEWER_PATTERNS = [
 ]
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/.runtime/")
 METADATA_ONLY_FILES: set[str] = set()
+BRANCH_REVIEW_TASK_METADATA_FILES = {
+    AGENT_ASSIGNMENT_ARTIFACT,
+    REVIEW_REPORT_ARTIFACT,
+    "review-gate.json",
+}
+BRANCH_REVIEW_RUNTIME_INPUT_PREFIX = ".trellis/.runtime/guru-team/"
 PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     "issue-scope-ledger.json",
     "pr-body.md",
@@ -7232,6 +7238,7 @@ def finding_round_has_replacement_closure(
     rounds: list[Any],
     finding_round: dict[str, Any],
     final_round_number: int,
+    expected_closure_round: int | None = None,
 ) -> bool:
     finding_agent = str(finding_round.get("agent_id") or "").strip()
     finding_round_number = review_round_number(finding_round)
@@ -7252,6 +7259,10 @@ def finding_round_has_replacement_closure(
         if isinstance(item, dict)
         and review_round_number(item) > finding_round_number
         and review_round_number(item) < final_round_number
+        and (
+            expected_closure_round is None
+            or review_round_number(item) == expected_closure_round
+        )
         and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
         and str(item.get("agent_id") or "").strip()
         and str(item.get("agent_id") or "").strip() != finding_agent
@@ -7834,6 +7845,7 @@ def valid_agent_assignment_summary_fields(
     task_dir: Path,
     agent_assignment: Any,
     expected_head: str | None = None,
+    require_final: bool = True,
 ) -> list[str]:
     if not isinstance(agent_assignment, dict) or not agent_assignment:
         return ["Branch Review Gate 缺少 agent_assignment；passed gate 必须记录 fresh 最终放行审查代理的 agent-assignment.json digest。"]
@@ -7858,7 +7870,8 @@ def valid_agent_assignment_summary_fields(
         return errors
     payload = normalize_agent_assignment_for_task(root, task_dir, payload)
     errors.extend(validate_agent_assignment_payload(root, task_dir, payload, require_current_head=False))
-    errors.extend(final_review_round_errors(root, payload, expected_head=expected_head))
+    if require_final:
+        errors.extend(final_review_round_errors(root, payload, expected_head=expected_head))
     errors.extend(status_event_completion_errors(payload))
     roles = agent_assignment.get("roles")
     if not isinstance(roles, list) or not roles:
@@ -10664,24 +10677,132 @@ def metadata_only_since(root: Path, reviewed_head: str) -> tuple[bool, list[str]
     return all(path.startswith(METADATA_ONLY_PREFIXES) or path in METADATA_ONLY_FILES for path in files), files
 
 
+def review_branch_owner_evidence_precondition_errors(
+    root: Path,
+    task_dir: Path,
+    gate: dict[str, Any],
+) -> list[str]:
+    errors: list[str] = []
+    verification = (
+        gate.get("verification_evidence")
+        if isinstance(gate.get("verification_evidence"), dict)
+        else {}
+    )
+    evidence = verification.get("evidence")
+    if not (
+        isinstance(evidence, list)
+        and any(str(item).strip() for item in evidence)
+    ):
+        errors.append("Branch Review Gate 缺少具体 review evidence。")
+    reviewer = str(verification.get("reviewer") or "").strip()
+    review_source = str(verification.get("review_source") or "").strip()
+    errors.extend(independent_review_source_errors(review_source, reviewer))
+    review_report = (
+        verification.get("review_report")
+        if isinstance(verification.get("review_report"), dict)
+        else None
+    )
+    errors.extend(valid_review_report_fields(root, task_dir, review_report))
+    reviewed_head = str(gate.get("head") or "")
+    agent_assignment = verification.get("agent_assignment")
+    require_final_review = (
+        gate.get("schema_version") != "2.0"
+        or gate.get("typed_exit") == "passed"
+    )
+    errors.extend(
+        valid_agent_assignment_summary_fields(
+            root,
+            task_dir,
+            agent_assignment,
+            expected_head=reviewed_head,
+            require_final=require_final_review,
+        )
+    )
+    assignment_payload_for_reports: dict[str, Any] | None = None
+    if isinstance(agent_assignment, dict):
+        migrated_assignment = (
+            migrated_archive_entry(
+                root,
+                task_dir,
+                agent_assignment,
+                AGENT_ASSIGNMENT_ARTIFACT,
+            )
+            or agent_assignment
+        )
+        assignment_path_value = str(
+            migrated_assignment.get("path") or ""
+        ).strip()
+        if assignment_path_value:
+            assignment_path = resolve_repo_path(
+                root,
+                assignment_path_value,
+            ).resolve()
+            if (
+                assignment_path.is_file()
+                and task_dir.resolve()
+                in [assignment_path, *assignment_path.parents]
+            ):
+                try:
+                    assignment_payload_for_reports = (
+                        normalize_agent_assignment_for_task(
+                            root,
+                            task_dir,
+                            read_json(assignment_path),
+                        )
+                    )
+                except WorkflowError:
+                    assignment_payload_for_reports = None
+    review_reports = verification.get("review_reports")
+    errors.extend(
+        valid_review_reports_summary_fields(
+            root,
+            task_dir,
+            review_reports,
+            assignment_payload=assignment_payload_for_reports,
+        )
+    )
+    errors.extend(
+        review_report_language_template_errors(
+            root,
+            task_dir,
+            review_report,
+            review_reports,
+        )
+    )
+    semantic = gate.get("semantic_review")
+    if isinstance(semantic, dict):
+        errors.extend(
+            review_branch_finding_lifecycle_errors(
+                root,
+                task_dir,
+                semantic,
+                assignment_payload_for_reports,
+            )
+        )
+    return errors
+
+
 def validate_review_gate(
     root: Path,
     task_dir: Path,
     config: dict[str, Any],
     allow_metadata_after_gate: bool,
+    require_pass: bool = True,
 ) -> tuple[Path, dict[str, Any], list[str]]:
     path, gate = load_review_gate(task_dir, config)
     errors: list[str] = []
     conclusion = gate.get("conclusion") if isinstance(gate.get("conclusion"), dict) else {}
-    if conclusion.get("passed") is not True:
+    if require_pass and conclusion.get("passed") is not True:
         errors.append("Branch Review Gate 结论不是 passed=true。")
+    if not require_pass and not isinstance(conclusion.get("passed"), bool):
+        errors.append("Branch Review Gate conclusion.passed 必须是 boolean。")
     if not str(conclusion.get("summary") or "").strip():
         errors.append("Branch Review Gate 缺少中文 summary。")
     findings_raw = gate.get("findings", [])
     findings = findings_raw if isinstance(findings_raw, list) else []
     if "findings" in gate and not isinstance(findings_raw, list):
         errors.append("Branch Review Gate findings 必须是数组。")
-    if findings:
+    if require_pass and findings:
         errors.append("Branch Review Gate passed=true 但 findings[] 非空；任意 finding 均阻断。")
     for key in ["findings_count", "blocking_findings_count"]:
         raw_count = conclusion.get(key)
@@ -10693,49 +10814,18 @@ def validate_review_gate(
         if raw_count < 0:
             errors.append(f"Branch Review Gate conclusion.{key} 不能为负数。")
             continue
-        if raw_count > 0:
+        if require_pass and raw_count > 0:
             errors.append(f"Branch Review Gate passed=true 但 conclusion.{key}={raw_count}；任意 finding 均阻断。")
         if raw_count != len(findings):
             errors.append(
                 f"Branch Review Gate conclusion.{key}={raw_count} 与 findings[] 数量 {len(findings)} 不一致。"
             )
-    verification = gate.get("verification_evidence") if isinstance(gate.get("verification_evidence"), dict) else {}
-    evidence = verification.get("evidence")
-    if not (isinstance(evidence, list) and any(str(item).strip() for item in evidence)):
-        errors.append("Branch Review Gate 缺少具体 review evidence。")
-    reviewer = str(verification.get("reviewer") or "").strip()
-    review_source = str(verification.get("review_source") or "").strip()
-    errors.extend(independent_review_source_errors(review_source, reviewer))
-    review_report = verification.get("review_report") if isinstance(verification.get("review_report"), dict) else None
-    errors.extend(valid_review_report_fields(root, task_dir, review_report))
     reviewed_head = str(gate.get("head") or "")
-    agent_assignment = verification.get("agent_assignment")
-    errors.extend(valid_agent_assignment_summary_fields(root, task_dir, agent_assignment, expected_head=reviewed_head))
-    assignment_payload_for_reports: dict[str, Any] | None = None
-    if isinstance(agent_assignment, dict):
-        migrated_assignment = migrated_archive_entry(root, task_dir, agent_assignment, AGENT_ASSIGNMENT_ARTIFACT) or agent_assignment
-        assignment_path_value = str(migrated_assignment.get("path") or "").strip()
-        if assignment_path_value:
-            assignment_path = resolve_repo_path(root, assignment_path_value).resolve()
-            if assignment_path.is_file() and task_dir.resolve() in [assignment_path, *assignment_path.parents]:
-                try:
-                    assignment_payload_for_reports = normalize_agent_assignment_for_task(root, task_dir, read_json(assignment_path))
-                except WorkflowError:
-                    assignment_payload_for_reports = None
     errors.extend(
-        valid_review_reports_summary_fields(
+        review_branch_owner_evidence_precondition_errors(
             root,
             task_dir,
-            verification.get("review_reports"),
-            assignment_payload=assignment_payload_for_reports,
-        )
-    )
-    errors.extend(
-        review_report_language_template_errors(
-            root,
-            task_dir,
-            review_report,
-            verification.get("review_reports"),
+            gate,
         )
     )
     head = current_head(root)
@@ -10753,6 +10843,72 @@ def validate_review_gate(
                 )
         if not accepted_metadata_tail:
             errors.append(f"Branch Review Gate 记录的 HEAD {reviewed_head or '(missing)'} 与当前 HEAD {head} 不一致。")
+    if gate.get("schema_version") == "2.0":
+        try:
+            errors.extend(skill_json_schema_validation_errors(
+                gate,
+                review_branch_gate_schema(root),
+                "guru-review-branch review gate",
+            ))
+        except WorkflowError as exc:
+            errors.append(f"guru-review-branch review gate schema unavailable: {exc}")
+        typed_exit = str(gate.get("typed_exit") or "")
+        semantic = gate.get("semantic_review")
+        qualified = (
+            semantic.get("qualified_findings")
+            if isinstance(semantic, dict)
+            and isinstance(semantic.get("qualified_findings"), list)
+            else []
+        )
+        proposals = (
+            semantic.get("scope_proposals")
+            if isinstance(semantic, dict)
+            and isinstance(semantic.get("scope_proposals"), list)
+            else []
+        )
+        open_qualified = [
+            item for item in qualified
+            if isinstance(item, dict) and item.get("status") == "open"
+        ]
+        gate_status = (
+            (semantic.get("ai_review_gate") or {}).get("status")
+            if isinstance(semantic, dict)
+            else None
+        )
+        if (
+            gate.get("skill_id") != BRANCH_REVIEW_SKILL_ID
+            or typed_exit not in {
+                "passed", "implementation_required",
+                "scope_confirmation_required", "blocked",
+            }
+            or gate_status != typed_exit
+        ):
+            errors.append("guru-review-branch typed exit identity is invalid.")
+        if typed_exit == "passed" and (
+            conclusion.get("passed") is not True or open_qualified or proposals
+        ):
+            errors.append("guru-review-branch passed retains blocking semantic state.")
+        if typed_exit == "implementation_required" and (
+            conclusion.get("passed") is not False or not open_qualified
+        ):
+            errors.append("guru-review-branch implementation_required lacks an open qualified finding.")
+        if typed_exit == "scope_confirmation_required" and (
+            conclusion.get("passed") is not False or open_qualified or not proposals
+        ):
+            errors.append("guru-review-branch scope route is inconsistent.")
+        if typed_exit == "blocked" and (
+            conclusion.get("passed") is not False or open_qualified or proposals
+        ):
+            errors.append("guru-review-branch blocked hides a semantic route.")
+        expected_facts = context_digest({
+            key: value
+            for key, value in gate.items()
+            if key not in {"generated_at", "facts_sha256"}
+        })
+        if gate.get("facts_sha256") != expected_facts:
+            errors.append("guru-review-branch facts_sha256 mismatch.")
+    elif not require_pass:
+        errors.append("guru-review-branch non-pass checking requires schema 2.0 owner evidence.")
     return path, gate, errors
 
 
@@ -12101,6 +12257,823 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
+def review_branch_public_input_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-branch-review-input.schema.json",
+        root / ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-branch-review-input.schema.json",
+    ]
+    path = next((item for item in candidates if item.is_file() and not item.is_symlink()), None)
+    if path is None:
+        raise WorkflowError("guru-review-branch public input schema is unavailable.", exit_code=2)
+    errors: list[str] = []
+    schema = skill_read_schema(path, "guru-review-branch public input schema", errors)
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            "guru-review-branch public input schema is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return schema
+
+
+def review_branch_gate_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / "trellis/skills/guru-team/packages/guru-review-branch/schemas/review-gate.schema.json",
+        root / ".trellis/guru-team/skills/packages/guru-review-branch/schemas/review-gate.schema.json",
+    ]
+    path = next((item for item in candidates if item.is_file() and not item.is_symlink()), None)
+    if path is None:
+        raise WorkflowError("guru-review-branch review gate schema is unavailable.", exit_code=2)
+    errors: list[str] = []
+    schema = skill_read_schema(path, "guru-review-branch review gate schema", errors)
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            "guru-review-branch review gate schema is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return schema
+
+
+def review_branch_task_commit_evidence_errors(
+    root: Path,
+    task_dir: Path,
+    task: dict[str, Any],
+    task_context: dict[str, Any],
+    public_input: dict[str, Any] | None = None,
+) -> list[str]:
+    errors: list[str] = []
+    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
+    candidates = (
+        sorted(plan_dir.glob("[0-9][0-9][0-9].json"))
+        if plan_dir.is_dir()
+        else []
+    )
+    if not candidates:
+        return ["review entry task commit evidence is missing."]
+
+    current = current_head(root)
+    current_candidates: list[tuple[Path, dict[str, Any]]] = []
+    unreadable: list[str] = []
+    for candidate in candidates:
+        try:
+            payload = read_json(candidate)
+        except WorkflowError:
+            unreadable.append(repo_relative(root, candidate))
+            continue
+        result = payload.get("result") if isinstance(payload.get("result"), dict) else {}
+        if result.get("status") == "committed" and result.get("commit_sha") == current:
+            current_candidates.append((candidate, payload))
+    if len(current_candidates) != 1:
+        detail = (
+            "none"
+            if not current_candidates
+            else ", ".join(repo_relative(root, item[0]) for item in current_candidates)
+        )
+        errors.append(
+            "review entry task commit evidence does not identify exactly one current committed result: "
+            + detail
+            + "."
+        )
+        if unreadable:
+            errors.append(
+                "review entry task commit evidence contains unreadable candidates: "
+                + ", ".join(unreadable)
+                + "."
+            )
+        return errors
+
+    candidate_path, plan = current_candidates[0]
+    candidate_relative = repo_relative(root, candidate_path)
+    if plan.get("sequence") != candidate_path.stem:
+        errors.append("review entry task commit sequence does not match its artifact filename.")
+    errors.extend(
+        "review entry task commit result: " + item
+        for item in task_commit_result_validation_errors(root, plan)
+    )
+
+    planned = copy.deepcopy(plan)
+    planned["result"] = {"status": "planned", "exit": None}
+    freshness = plan.get("freshness") if isinstance(plan.get("freshness"), dict) else {}
+    if freshness.get("plan_digest") != task_commit_plan_digest(planned):
+        errors.append("review entry task commit plan digest is stale.")
+
+    task_plan = plan.get("task") if isinstance(plan.get("task"), dict) else {}
+    expected_task_path = repo_relative(root, task_dir)
+    expected_branch = current_branch(root)
+    if (
+        task_plan.get("id") != task.get("id")
+        or task_plan.get("path") != expected_task_path
+        or task_plan.get("status") != "in_progress"
+        or task.get("status") != "in_progress"
+        or task_plan.get("branch") != expected_branch
+        or task.get("branch") != expected_branch
+    ):
+        errors.append("review entry task commit task/branch identity is stale.")
+
+    base_branch = base_branch_from_sources(
+        argparse.Namespace(base_branch=None),
+        task,
+        task_context,
+    )
+    expected_base_ref = diff_base_ref(root, base_branch)
+    git_plan = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
+    if (
+        git_plan.get("base_branch") != base_branch
+        or git_plan.get("base_ref") != expected_base_ref
+        or result.get("parent") != git_plan.get("pre_commit_head")
+        or result.get("commit_sha") != current
+    ):
+        errors.append("review entry task commit Git identity is stale.")
+    if public_input is not None and (
+        public_input.get("task_ref") != expected_task_path
+        or public_input.get("base_ref") != expected_base_ref
+        or public_input.get("committed_head") != current
+    ):
+        errors.append("review entry public task/base/committed HEAD identity is stale.")
+
+    evidence = plan.get("evidence") if isinstance(plan.get("evidence"), dict) else {}
+    evidence_paths = {
+        "planning_approval": planning_approval_path(task_dir),
+        "phase2_check": phase2_check_path(task_dir),
+        "issue_scope_ledger": issue_scope_ledger_path(task_dir),
+        "task": task_dir / "task.json",
+    }
+    for label, path in evidence_paths.items():
+        errors.extend(
+            "review entry task commit " + item
+            for item in task_commit_evidence_errors(
+                root,
+                evidence.get(label),
+                path,
+                label,
+            )
+        )
+
+    try:
+        parents = run_stdout(
+            ["git", "show", "-s", "--format=%P", current],
+            cwd=root,
+        ).split()
+        if parents != [str(result.get("parent") or "")]:
+            errors.append("review entry task commit parent does not match the current commit.")
+        raw_message = task_commit_raw_message(root, current)
+        if hashlib.sha256(raw_message).hexdigest() != result.get("message_sha256"):
+            errors.append("review entry task commit message digest is stale.")
+        committed_paths = git_nul_path_set(
+            root,
+            [
+                "diff-tree", "--root", "--no-commit-id", "--name-only",
+                "--no-renames", "-r", "-z", current,
+            ],
+        )
+        exact_paths = {
+            item for item in plan.get("exact_stage_paths", []) if isinstance(item, str)
+        }
+        if committed_paths != exact_paths or set(result.get("committed_paths", [])) != exact_paths:
+            errors.append("review entry task commit path identity is stale.")
+        recorded_tree = (
+            result.get("tree_evidence")
+            if isinstance(result.get("tree_evidence"), dict)
+            else {}
+        )
+        expected_tree = str(recorded_tree.get("expected_tree") or "")
+        actual_tree = task_commit_commit_tree(root, current)
+        recomputed_tree = task_commit_tree_evidence(
+            root,
+            expected_tree,
+            actual_tree,
+            exact_paths,
+            actual_source="commit",
+        )
+        if recorded_tree != recomputed_tree or recomputed_tree.get("matches") is not True:
+            errors.append("review entry task commit tree evidence is stale.")
+    except WorkflowError as exc:
+        errors.append(f"review entry task commit object validation failed: {exc}")
+
+    if candidate_relative not in set(result.get("committed_paths", [])):
+        errors.append("review entry task commit result does not retain its own evidence artifact.")
+    return errors
+
+
+def review_branch_entry_precondition_errors(
+    root: Path,
+    task_dir: Path,
+    config: dict[str, Any],
+    public_input: dict[str, Any] | None = None,
+    owner_result: dict[str, Any] | None = None,
+    direct_runtime_inputs: list[str] | None = None,
+) -> list[str]:
+    errors: list[str] = []
+    try:
+        review_branch_public_input_schema(root)
+        review_branch_gate_schema(root)
+        task_commit_schema_path(root)
+    except WorkflowError as exc:
+        errors.append(f"review entry runtime dependency is unavailable: {exc}")
+
+    try:
+        task_context = load_task_start_context(task_dir, config)
+        assert_workspace_boundary(root, config, task_context, task_dir)
+        task = task_json(task_dir)
+    except WorkflowError as exc:
+        return errors + [f"review entry workspace/task identity is invalid: {exc}"]
+
+    expected_task = repo_relative(root, task_dir)
+    expected_branch = str(task_context.get("branch_name") or task.get("branch") or "")
+    expected_base_branch = str(
+        task_context.get("base_branch") or task.get("base_branch") or ""
+    )
+    current = current_head(root)
+    if (
+        task.get("status") != "in_progress"
+        or not expected_branch
+        or current_branch(root) != expected_branch
+        or not expected_base_branch
+    ):
+        errors.append("review entry task identity is not current.")
+
+    try:
+        expected_base_ref = diff_base_ref(root, expected_base_branch)
+        changed_files(root, f"{expected_base_ref}...HEAD")
+    except WorkflowError as exc:
+        expected_base_ref = ""
+        errors.append(f"review entry complete review range is unavailable: {exc}")
+    if public_input is not None and (
+        public_input.get("task_ref") != expected_task
+        or public_input.get("base_ref") != expected_base_ref
+        or public_input.get("committed_head") != current
+    ):
+        errors.append("review entry invocation freshness does not match task/base/HEAD.")
+
+    try:
+        errors.extend(
+            review_branch_task_commit_evidence_errors(
+                root,
+                task_dir,
+                task,
+                task_context,
+                public_input,
+            )
+        )
+    except WorkflowError as exc:
+        errors.append(f"review entry task commit evidence is invalid: {exc}")
+
+    try:
+        _planning_path, _planning, planning_errors = validate_planning_approval(
+            root,
+            task_dir,
+            allow_committed_head=True,
+            required_exit="approved",
+        )
+        errors.extend("review entry planning approval: " + item for item in planning_errors)
+    except WorkflowError as exc:
+        errors.append(f"review entry planning approval is unavailable: {exc}")
+
+    phase2: dict[str, Any] = {}
+    try:
+        _phase2_path, phase2, phase2_errors = validate_phase2_check(
+            root,
+            task_dir,
+            allow_committed_head=True,
+        )
+        errors.extend("review entry Phase 2: " + item for item in phase2_errors)
+        if phase2.get("typed_exit") != "passed":
+            errors.append("review entry Phase 2 typed exit is not passed.")
+    except WorkflowError as exc:
+        errors.append(f"review entry Phase 2 evidence is unavailable: {exc}")
+
+    ledger_path = issue_scope_ledger_path(task_dir)
+    if not ledger_path.is_file():
+        errors.append("review entry issue scope ledger is missing.")
+    else:
+        try:
+            ledger = read_json(ledger_path)
+            if (
+                not isinstance(ledger.get("primary_issue"), dict)
+                or not isinstance(ledger.get("close_issues"), list)
+                or not isinstance(ledger.get("related_issues"), list)
+                or not isinstance(ledger.get("followup_issues"), list)
+            ):
+                errors.append("review entry issue scope ledger identity is incomplete.")
+        except WorkflowError as exc:
+            errors.append(f"review entry issue scope ledger is invalid: {exc}")
+
+    docs = phase2.get("docs_ssot_plan") if isinstance(phase2.get("docs_ssot_plan"), dict) else {}
+    docs_strategy = docs.get("strategy")
+    docs_complete = (
+        docs_strategy
+        in {"ssot_first", "delta_first", "bootstrap_or_repair_docs"}
+        and docs.get("task_delta_merged") is True
+    ) or (
+        docs_strategy == "no_docs_update_needed"
+        and bool(str(docs.get("no_update_reason") or "").strip())
+    )
+    if not docs_complete:
+        errors.append("review entry Docs SSOT outcome is missing or incomplete.")
+
+    if owner_result is not None:
+        errors.extend(
+            "review entry owner evidence: " + item
+            for item in review_branch_owner_evidence_precondition_errors(
+                root,
+                task_dir,
+                owner_result,
+            )
+        )
+
+    try:
+        dirty_paths = git_status_paths(root, fail_closed=True)
+    except WorkflowError as exc:
+        errors.append(f"review entry working tree cannot be inspected: {exc}")
+    else:
+        allowed_paths = review_branch_task_metadata_allowlist(
+            root,
+            task_dir,
+        ) | review_branch_runtime_input_allowlist(
+            root,
+            direct_runtime_inputs or [],
+        )
+        undeclared_paths = [
+            path for path in dirty_paths if path not in allowed_paths
+        ]
+        if undeclared_paths:
+            errors.append(
+                "review entry working tree has paths outside the exact "
+                "owner metadata and direct runtime-input allowlist: "
+                + ", ".join(undeclared_paths[:20])
+                + "."
+            )
+    return errors
+
+
+def review_branch_task_metadata_allowlist(
+    root: Path,
+    task_dir: Path,
+) -> set[str]:
+    task_ref = repo_relative(root, task_dir).rstrip("/")
+    allowed = {
+        f"{task_ref}/{filename}"
+        for filename in BRANCH_REVIEW_TASK_METADATA_FILES
+    }
+
+    assignment_path = task_dir / AGENT_ASSIGNMENT_ARTIFACT
+    try:
+        assignment = read_json(assignment_path)
+    except WorkflowError:
+        assignment = {}
+    rounds = (
+        assignment.get("review_rounds")
+        if isinstance(assignment.get("review_rounds"), list)
+        else []
+    )
+    reports_root = Path(task_ref) / "reviews"
+    for item in rounds:
+        if not isinstance(item, dict):
+            continue
+        report_value = str(item.get("review_report_path") or "").strip()
+        report_relative = skill_safe_relative(report_value)
+        if (
+            report_relative is not None
+            and report_relative.parent == reports_root
+            and report_relative.suffix == ".md"
+        ):
+            allowed.add(report_relative.as_posix())
+
+    current = current_head(root)
+    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
+    current_plans: list[Path] = []
+    if plan_dir.is_dir():
+        for candidate in sorted(plan_dir.glob("[0-9][0-9][0-9].json")):
+            try:
+                payload = read_json(candidate)
+            except WorkflowError:
+                continue
+            result = (
+                payload.get("result")
+                if isinstance(payload.get("result"), dict)
+                else {}
+            )
+            if (
+                result.get("status") == "committed"
+                and result.get("commit_sha") == current
+            ):
+                current_plans.append(candidate)
+    if len(current_plans) == 1:
+        allowed.add(repo_relative(root, current_plans[0]))
+    return allowed
+
+
+def review_branch_runtime_input_allowlist(
+    root: Path,
+    input_values: list[str],
+) -> set[str]:
+    allowed: set[str] = set()
+    for input_value in input_values:
+        relative = skill_safe_relative(input_value)
+        if (
+            relative is None
+            or not relative.as_posix().startswith(
+                BRANCH_REVIEW_RUNTIME_INPUT_PREFIX
+            )
+        ):
+            continue
+        path = root / relative
+        if path.is_file() and not path.is_symlink():
+            allowed.add(relative.as_posix())
+    return allowed
+
+
+def review_branch_finding_lifecycle_errors(
+    root: Path,
+    task_dir: Path,
+    semantic_review: dict[str, Any],
+    assignment_payload: dict[str, Any] | None,
+) -> list[str]:
+    findings = (
+        semantic_review.get("qualified_findings")
+        if isinstance(semantic_review.get("qualified_findings"), list)
+        else []
+    )
+    if not findings:
+        return []
+    if not isinstance(assignment_payload, dict):
+        return [
+            "qualified findings require current agent-assignment.json review_rounds evidence."
+        ]
+    rounds = (
+        assignment_payload.get("review_rounds")
+        if isinstance(assignment_payload.get("review_rounds"), list)
+        else []
+    )
+    rounds_by_number = {
+        item.get("round"): item
+        for item in rounds
+        if isinstance(item, dict)
+        and isinstance(item.get("round"), int)
+        and not isinstance(item.get("round"), bool)
+    }
+    task_relative_prefix = repo_relative(root, task_dir).rstrip("/") + "/"
+
+    def task_local_report_refs(value: Any) -> set[str]:
+        report = str(value or "").strip()
+        if not report:
+            return set()
+        refs = {report}
+        if report.startswith(task_relative_prefix):
+            refs.add(report.removeprefix(task_relative_prefix))
+        return refs
+
+    rounds_by_report = {
+        report_ref: item
+        for item in rounds
+        if isinstance(item, dict)
+        for report_ref in task_local_report_refs(item.get("review_report_path"))
+    }
+    reuse_decisions = (
+        assignment_payload.get("reuse_decisions")
+        if isinstance(assignment_payload.get("reuse_decisions"), list)
+        else []
+    )
+    errors: list[str] = []
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        finding_ref = str(finding.get("finding_ref") or "(missing)")
+        owner_number = finding.get("owner_round")
+        owner = rounds_by_number.get(owner_number)
+        if not isinstance(owner, dict):
+            errors.append(
+                f"qualified finding {finding_ref} owner_round={owner_number} "
+                "does not identify an agent-assignment review round."
+            )
+            continue
+        owner_report = str(owner.get("review_report_path") or "")
+        evidence_refs = {
+            str(item)
+            for item in finding.get("evidence_refs", [])
+            if isinstance(item, str)
+        }
+        if (
+            owner.get("logical_role")
+            not in {"问题发现审查代理", "问题闭环审查代理"}
+            or not isinstance(owner.get("findings_count"), int)
+            or isinstance(owner.get("findings_count"), bool)
+            or owner.get("findings_count", 0) < 1
+            or finding.get("reviewed_head") != owner.get("reviewed_head")
+        ):
+            errors.append(
+                f"qualified finding {finding_ref} owner_round does not bind "
+                "a finding-producing review round at the recorded HEAD."
+            )
+        if (
+            not owner_report
+            or task_local_report_refs(owner_report).isdisjoint(evidence_refs)
+        ):
+            errors.append(
+                f"qualified finding {finding_ref} evidence_refs do not bind "
+                "the owner round raw report."
+            )
+
+        closure_paths = finding.get("closure_evidence")
+        if not isinstance(closure_paths, list):
+            continue
+        if finding.get("status") == "open" and closure_paths:
+            errors.append(
+                f"open qualified finding {finding_ref} cannot carry closure_evidence."
+            )
+            continue
+        if finding.get("status") != "resolved":
+            continue
+        matched_closure = False
+        for closure_path in closure_paths:
+            closure = rounds_by_report.get(str(closure_path or ""))
+            if not isinstance(closure, dict):
+                errors.append(
+                    f"resolved finding {finding_ref} closure_evidence "
+                    f"{closure_path!s} does not identify a registered raw report."
+                )
+                continue
+            closure_number = closure.get("round")
+            if (
+                closure.get("logical_role") != "问题闭环审查代理"
+                or not isinstance(closure_number, int)
+                or isinstance(closure_number, bool)
+                or not isinstance(owner_number, int)
+                or closure_number <= owner_number
+            ):
+                errors.append(
+                    f"resolved finding {finding_ref} closure_evidence "
+                    "does not belong to a later closure review round."
+                )
+                continue
+            try:
+                report_path = resolve_repo_path(
+                    root,
+                    str(closure.get("review_report_path") or ""),
+                ).resolve()
+                if (
+                    not report_path.is_file()
+                    or task_dir.resolve() not in [report_path, *report_path.parents]
+                ):
+                    raise WorkflowError("closure report is not task-local.", exit_code=2)
+                actual = file_digest(root, report_path)
+            except WorkflowError:
+                errors.append(
+                    f"resolved finding {finding_ref} closure raw report is missing."
+                )
+                continue
+            if any(
+                closure.get(recorded_field) != actual.get(actual_field)
+                for recorded_field, actual_field in (
+                    ("review_report_path", "path"),
+                    ("review_report_sha256", "sha256"),
+                    ("review_report_size_bytes", "size_bytes"),
+                    ("review_report_modified_at", "modified_at"),
+                )
+            ):
+                errors.append(
+                    f"resolved finding {finding_ref} closure raw report digest is stale."
+                )
+                continue
+            same_agent_closure = (
+                closure.get("agent_id") == owner.get("agent_id")
+                and closure.get("reuse_decision") == "reuse-for-closure"
+            )
+            replacement_closure = any(
+                isinstance(item, dict)
+                and item.get("logical_role") == "问题闭环审查代理"
+                and item.get("from_round") == owner_number
+                and item.get("to_round") == closure_number
+                and item.get("agent_id") == closure.get("agent_id")
+                and item.get("decision") == "new-agent"
+                for item in reuse_decisions
+            )
+            final_round_numbers = [
+                review_round_number(item)
+                for item in rounds
+                if isinstance(item, dict)
+                and item.get("logical_role") == "最终放行审查代理"
+                and review_round_number(item) > closure_number
+            ]
+            replacement_recovery_closure = (
+                finding_round_has_replacement_closure(
+                    assignment_payload,
+                    rounds,
+                    owner,
+                    min(final_round_numbers)
+                    if final_round_numbers
+                    else max(
+                        [
+                            review_round_number(item)
+                            for item in rounds
+                            if isinstance(item, dict)
+                        ],
+                        default=closure_number,
+                    )
+                    + 1,
+                    expected_closure_round=closure_number,
+                )
+            )
+            if (
+                not same_agent_closure
+                and not replacement_closure
+                and not replacement_recovery_closure
+            ):
+                errors.append(
+                    f"resolved finding {finding_ref} closure round lacks "
+                    "same-agent continuity or replacement linkage."
+                )
+                continue
+            matched_closure = True
+        if not matched_closure:
+            errors.append(
+                f"resolved finding {finding_ref} has no current bound closure_evidence."
+            )
+    return errors
+
+
+def review_branch_semantic_payload(
+    root: Path,
+    value: str | None,
+    typed_exit: str,
+    reviewed_head: str,
+) -> dict[str, Any]:
+    authored = contract_wording_read_input(root, value, "guru-review-branch semantic review")
+    if set(authored) != {"candidates", "ai_review_gate"}:
+        raise WorkflowError(
+            "guru-review-branch semantic review must contain exactly candidates and ai_review_gate.",
+            exit_code=2,
+        )
+    gate = authored.get("ai_review_gate")
+    if (
+        not isinstance(gate, dict)
+        or set(gate) != {"status", "summary"}
+        or gate.get("status") != typed_exit
+        or not str(gate.get("summary") or "").strip()
+    ):
+        raise WorkflowError(
+            "guru-review-branch semantic Gate must bind the exact typed exit and a substantive summary.",
+            exit_code=2,
+        )
+    candidates = authored.get("candidates")
+    if not isinstance(candidates, list):
+        raise WorkflowError("guru-review-branch semantic candidates must be an array.", exit_code=2)
+    normalized: dict[str, list[dict[str, Any]]] = {
+        "qualified_findings": [],
+        "scope_proposals": [],
+        "observations": [],
+        "followup_candidates": [],
+        "rejected_candidates": [],
+    }
+    candidate_refs: set[str] = set()
+    finding_refs: set[str] = set()
+    proposal_refs: set[str] = set()
+    scenario_classes = {
+        "normal_required_behavior",
+        "explicit_nonstandard_requirement",
+        "approved_nonstandard_expansion",
+        "unconfirmed_nonstandard_proposal",
+        "out_of_scope",
+    }
+    dispositions = {
+        "qualified_finding",
+        "scope_proposal",
+        "observation",
+        "followup_candidate",
+        "rejected_candidate",
+    }
+    finding_scenarios = {
+        "normal_required_behavior",
+        "explicit_nonstandard_requirement",
+        "approved_nonstandard_expansion",
+    }
+    for index, raw in enumerate(candidates):
+        if not isinstance(raw, dict):
+            raise WorkflowError(f"semantic candidate {index} must be an object.", exit_code=2)
+        candidate_ref = str(raw.get("candidate_ref") or "").strip()
+        disposition = str(raw.get("disposition") or "")
+        scenario = str(raw.get("scenario_class") or "")
+        common_fields = {
+            "candidate_ref", "disposition", "scenario_class", "affected_behavior",
+            "path", "evidence_refs", "requirement_refs", "scope_basis",
+            "qualification_reason",
+        }
+        if (
+            not candidate_ref
+            or candidate_ref in candidate_refs
+            or disposition not in dispositions
+            or scenario not in scenario_classes
+            or not str(raw.get("affected_behavior") or "").strip()
+            or not isinstance(raw.get("evidence_refs"), list)
+            or not raw.get("evidence_refs")
+            or not isinstance(raw.get("requirement_refs"), list)
+            or not str(raw.get("scope_basis") or "").strip()
+            or not str(raw.get("qualification_reason") or "").strip()
+        ):
+            raise WorkflowError(
+                f"semantic candidate {candidate_ref or index} lacks a complete qualification.",
+                exit_code=2,
+            )
+        candidate_refs.add(candidate_ref)
+        item = copy.deepcopy(raw)
+        if disposition == "qualified_finding":
+            allowed = common_fields | {
+                "finding_ref", "severity", "owner_round", "reviewed_head",
+                "status", "closure_evidence",
+            }
+            finding_ref = str(raw.get("finding_ref") or "").strip()
+            severity = str(raw.get("severity") or "")
+            status = str(raw.get("status") or "")
+            if (
+                set(raw) != allowed
+                or scenario not in finding_scenarios
+                or not raw.get("requirement_refs")
+                or not finding_ref
+                or finding_ref in finding_refs
+                or severity not in VALID_PRIORITIES
+                or isinstance(raw.get("owner_round"), bool)
+                or not isinstance(raw.get("owner_round"), int)
+                or raw.get("owner_round", 0) < 1
+                or raw.get("reviewed_head") != reviewed_head
+                or status not in {"open", "resolved"}
+                or not isinstance(raw.get("closure_evidence"), list)
+                or (status == "resolved" and not raw.get("closure_evidence"))
+            ):
+                raise WorkflowError(
+                    f"qualified finding {finding_ref or candidate_ref} is incomplete or contradictory.",
+                    exit_code=2,
+                )
+            finding_refs.add(finding_ref)
+            normalized["qualified_findings"].append(item)
+        elif disposition == "scope_proposal":
+            allowed = common_fields | {
+                "proposal_ref", "proposal", "trigger_evidence", "clarification_route",
+            }
+            proposal_ref = str(raw.get("proposal_ref") or "").strip()
+            if (
+                set(raw) != allowed
+                or scenario != "unconfirmed_nonstandard_proposal"
+                or not proposal_ref
+                or proposal_ref in proposal_refs
+                or not str(raw.get("proposal") or "").strip()
+                or not isinstance(raw.get("trigger_evidence"), list)
+                or not raw.get("trigger_evidence")
+                or raw.get("clarification_route") != "guru-clarify-requirements"
+                or "severity" in raw
+                or "finding_ref" in raw
+            ):
+                raise WorkflowError(
+                    f"scope proposal {proposal_ref or candidate_ref} is incomplete or carries finding fields.",
+                    exit_code=2,
+                )
+            proposal_refs.add(proposal_ref)
+            normalized["scope_proposals"].append(item)
+        else:
+            allowed_non_finding_scenarios = {
+                "out_of_scope",
+                "unconfirmed_nonstandard_proposal",
+            }
+            if disposition == "rejected_candidate":
+                allowed_non_finding_scenarios = scenario_classes
+            if (
+                set(raw) != common_fields
+                or scenario not in allowed_non_finding_scenarios
+                or "severity" in raw
+                or "finding_ref" in raw
+            ):
+                raise WorkflowError(
+                    f"{disposition} {candidate_ref} has an invalid scenario or finding fields.",
+                    exit_code=2,
+                )
+            normalized[
+                {
+                    "observation": "observations",
+                    "followup_candidate": "followup_candidates",
+                    "rejected_candidate": "rejected_candidates",
+                }[disposition]
+            ].append(item)
+    open_findings = [
+        item for item in normalized["qualified_findings"] if item.get("status") == "open"
+    ]
+    if typed_exit == "passed" and (open_findings or normalized["scope_proposals"]):
+        raise WorkflowError("passed cannot retain an open finding or scope proposal.", exit_code=2)
+    if typed_exit == "implementation_required" and not open_findings:
+        raise WorkflowError("implementation_required needs at least one open qualified finding.", exit_code=2)
+    if typed_exit == "scope_confirmation_required" and (
+        open_findings or not normalized["scope_proposals"]
+    ):
+        raise WorkflowError(
+            "scope_confirmation_required needs proposals and no open qualified finding.",
+            exit_code=2,
+        )
+    if typed_exit == "blocked" and (open_findings or normalized["scope_proposals"]):
+        raise WorkflowError("blocked cannot hide a semantic implementation or scope route.", exit_code=2)
+    normalized["ai_review_gate"] = copy.deepcopy(gate)
+    return normalized
+
+
 def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
@@ -12109,6 +13082,21 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
     base_branch = base_branch_from_sources(args, task, task_context)
+    entry_errors = review_branch_entry_precondition_errors(
+        root,
+        task_dir,
+        config,
+        direct_runtime_inputs=[
+            str(getattr(args, "skill_input", "") or ""),
+            str(getattr(args, "semantic_review_file", "") or ""),
+        ],
+    )
+    if entry_errors:
+        raise WorkflowError(
+            "Branch Review Gate blocked because current entry evidence is missing, stale, or incomplete.",
+            exit_code=2,
+            payload={"errors": entry_errors},
+        )
     ensure_issue_scope_ledger(task_dir, task_context)
     planning_path, _planning_payload, planning_errors = validate_planning_approval(
         root,
@@ -12129,9 +13117,80 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             payload={"artifact_path": str(phase2_path), "errors": phase2_errors},
         )
 
-    findings = load_findings(args)
-    observations = load_observations(args)
-    followup_candidates = load_followup_candidates(args)
+    public_input: dict[str, Any] | None = None
+    semantic_review: dict[str, Any] | None = None
+    typed_exit = str(getattr(args, "typed_exit", "") or "")
+    skill_contract_requested = any(
+        getattr(args, field, None)
+        for field in ("skill_input", "semantic_review_file", "typed_exit")
+    )
+    if skill_contract_requested:
+        if not all(
+            getattr(args, field, None)
+            for field in ("skill_input", "semantic_review_file", "typed_exit")
+        ):
+            raise WorkflowError(
+                "guru-review-branch recording requires --skill-input, --semantic-review-file and --typed-exit together.",
+                exit_code=2,
+            )
+        public_input = contract_wording_read_input(
+            root, args.skill_input, "guru-review-branch public input"
+        )
+        input_errors = skill_json_schema_validation_errors(
+            public_input,
+            review_branch_public_input_schema(root),
+            "guru-review-branch public input",
+        )
+        if input_errors:
+            raise WorkflowError(
+                "guru-review-branch public input is invalid.",
+                exit_code=2,
+                payload={"errors": input_errors},
+            )
+        if (
+            public_input.get("task_ref") != repo_relative(root, task_dir)
+            or public_input.get("base_ref") != diff_base_ref(root, base_branch)
+            or public_input.get("committed_head") != current_head(root)
+        ):
+            raise WorkflowError(
+                "guru-review-branch public task/base/HEAD identity is stale.",
+                exit_code=2,
+            )
+        semantic_review = review_branch_semantic_payload(
+            root, args.semantic_review_file, typed_exit, current_head(root)
+        )
+        findings = [
+            {
+                "priority": item["severity"],
+                "message": item["affected_behavior"],
+                "path": item["path"],
+                **copy.deepcopy(item),
+            }
+            for item in semantic_review["qualified_findings"]
+            if item["status"] == "open"
+        ]
+        observations = [
+            {
+                "kind": "observation",
+                "message": item["affected_behavior"],
+                "path": item["path"],
+                **copy.deepcopy(item),
+            }
+            for item in semantic_review["observations"]
+        ]
+        followup_candidates = [
+            {
+                "kind": "followup_candidate",
+                "message": item["affected_behavior"],
+                "path": item["path"],
+                **copy.deepcopy(item),
+            }
+            for item in semantic_review["followup_candidates"]
+        ]
+    else:
+        findings = load_findings(args)
+        observations = load_observations(args)
+        followup_candidates = load_followup_candidates(args)
     evidence = [str(item).strip() for item in (args.evidence or []) if str(item).strip()]
     summary = str(args.summary or "").strip()
     blockers = review_gate_blocking_findings(findings)
@@ -12193,6 +13252,19 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"artifact_path": str(assignment_path), "errors": assignment_errors},
         )
+    if semantic_review is not None:
+        lifecycle_errors = review_branch_finding_lifecycle_errors(
+            root,
+            task_dir,
+            semantic_review,
+            assignment_payload,
+        )
+        if lifecycle_errors:
+            raise WorkflowError(
+                "Branch Review Gate blocked because finding lifecycle evidence is invalid.",
+                exit_code=2,
+                payload={"errors": lifecycle_errors},
+            )
     agent_assignment_summary = assignment_summary
     review_reports = review_reports_from_assignment(root, task_dir, assignment_payload)
     template_errors = review_report_language_template_errors(root, task_dir, review_report, review_reports)
@@ -12210,7 +13282,11 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
                 exit_code=2,
                 payload={"errors": link_errors},
             )
-    if not args.pass_gate and not findings:
+    if (
+        not args.pass_gate
+        and not findings
+        and typed_exit not in {"scope_confirmation_required", "blocked"}
+    ):
         raise WorkflowError(
             "Branch Review Gate needs an explicit result. Use --pass after review found no findings, or provide --finding/--findings-file.",
             exit_code=2,
@@ -12235,6 +13311,24 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         agent_assignment=agent_assignment_summary,
         review_reports=review_reports,
     )
+    if public_input is not None and semantic_review is not None:
+        if typed_exit == "passed" and not args.pass_gate:
+            raise WorkflowError("guru-review-branch passed requires --pass.", exit_code=2)
+        if typed_exit != "passed" and args.pass_gate:
+            raise WorkflowError("Only guru-review-branch passed may use --pass.", exit_code=2)
+        payload.update({
+            "schema_version": "2.0",
+            "skill_id": BRANCH_REVIEW_SKILL_ID,
+            "mode": public_input["mode"],
+            "review_intent": public_input["review_intent"],
+            "typed_exit": typed_exit,
+            "semantic_review": semantic_review,
+        })
+        payload["facts_sha256"] = context_digest({
+            key: value
+            for key, value in payload.items()
+            if key not in {"generated_at", "facts_sha256"}
+        })
     if args.pass_gate and bool(review_gate_config(config).get("require_deployment_impact_evidence", True)):
         deployment_errors = deployment_evidence_errors(payload.get("deployment_impact", {}), evidence, findings)
         if deployment_errors:
@@ -12695,7 +13789,26 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     task_dir = resolve_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
-    path, gate, errors = validate_review_gate(root, task_dir, config, args.allow_metadata_after_gate)
+    allow_nonpass = bool(getattr(args, "allow_nonpass", False))
+    entry_errors = review_branch_entry_precondition_errors(
+        root,
+        task_dir,
+        config,
+    )
+    path, gate, errors = validate_review_gate(
+        root,
+        task_dir,
+        config,
+        bool(getattr(args, "allow_metadata_after_gate", False)),
+        require_pass=not allow_nonpass,
+    )
+    errors = [
+        *("review entry: " + item for item in entry_errors),
+        *errors,
+    ]
+    expected_exit = str(getattr(args, "expected_exit", "") or "")
+    if expected_exit and gate.get("typed_exit") != expected_exit:
+        errors.append("guru-review-branch expected typed exit does not match owner evidence.")
     if errors:
         raise WorkflowError(
             "Branch Review Gate has not passed for the current HEAD.",
@@ -12708,6 +13821,9 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
         "task_dir": str(task_dir),
         "head": current_head(root),
         "reviewed_head": gate.get("head"),
+        "typed_exit": gate.get("typed_exit") or "passed",
+        "facts_sha256": gate.get("facts_sha256"),
+        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
     }
 
 
@@ -15261,7 +16377,7 @@ SKILL_INTERFACE_SCHEMAS = {
         "schema_path": Path("schemas/skill-interface-1.3.schema.json"),
         "interface_ref": "../../schemas/skill-interface-1.3.schema.json",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.3.json",
-        "sha256": "3238ec24598e12903ad9c249a8000dbb970938871015de4a6464ae36053e46b6",
+        "sha256": "befa5fe3fd27b7b8929ecc5bf0981c2c906d0045bb20b26b221ba4d0a480a6dd",
         "io_contract_state": "minimal_handoff",
     },
 }
@@ -15301,7 +16417,12 @@ PRODUCTION_MIGRATION_SKILL_IDS = (
     "guru-check-task",
     "guru-create-task-commit",
 )
-PUBLIC_MIGRATION_SKILL_IDS = STAGE0_MIGRATION_SKILL_IDS + PRODUCTION_MIGRATION_SKILL_IDS
+BRANCH_REVIEW_SKILL_ID = "guru-review-branch"
+PUBLIC_MIGRATION_SKILL_IDS = (
+    STAGE0_MIGRATION_SKILL_IDS
+    + PRODUCTION_MIGRATION_SKILL_IDS
+    + (BRANCH_REVIEW_SKILL_ID,)
+)
 STAGE0_LEGACY_SKILL_IDS = PRODUCTION_MIGRATION_SKILL_IDS
 STAGE0_MIGRATION_MANIFEST = Path("migrations/stage0-minimal-handoff.json")
 STAGE0_MIGRATION_SCHEMA = Path("schemas/stage0-migration-manifest.schema.json")
@@ -17022,6 +18143,21 @@ def validate_skill_public_contracts(
     execute_fixture: bool = True,
 ) -> None:
     skill_id = str(interface.get("id") or "")
+    registry = skill_read_json(
+        skills_root / "registry.json",
+        f"skill registry for {skill_id} consumer validation",
+        errors,
+    )
+    registry_entries = (
+        registry.get("skills")
+        if isinstance(registry, dict) and isinstance(registry.get("skills"), list)
+        else []
+    )
+    planned_registry_entries = {
+        str(item.get("id") or ""): item
+        for item in registry_entries
+        if isinstance(item, dict) and item.get("state") == "planned"
+    }
     contracts = interface.get("public_contracts")
     if not isinstance(contracts, dict):
         errors.append(f"[public_contracts_missing] interface for {skill_id} has no public contracts")
@@ -17283,14 +18419,14 @@ def validate_skill_public_contracts(
         identity_kind = identity.get("kind")
         contract_kind = contract.get("kind")
         if identity_kind == "skill" and contract_kind not in {
-            "skill_input", "skill_input_authoring_seed",
+            "skill_input", "skill_input_authoring_seed", "planned_skill_input_seed",
         }:
             errors.append(
                 f"[consumer_skill_input] Skill consumer input {consumer_id} for {skill_id} must use the target-owned skill_input contract"
             )
             continue
         if identity_kind != "skill" and contract_kind in {
-            "skill_input", "skill_input_authoring_seed",
+            "skill_input", "skill_input_authoring_seed", "planned_skill_input_seed",
         }:
             errors.append(
                 f"[consumer_skill_input] non-Skill consumer input {consumer_id} for {skill_id} cannot use a Skill-owned input contract"
@@ -17323,6 +18459,27 @@ def validate_skill_public_contracts(
                 properties,
                 "structured_json",
                 set(required) if isinstance(required, list) else set(),
+            )
+        elif contract_kind == "planned_skill_input_seed":
+            target_skill_id = str(identity.get("id") or "")
+            target_entry = planned_registry_entries.get(target_skill_id)
+            seed_values = contract.get("seed_fields")
+            seed_fields = set(seed_values) if isinstance(seed_values, list) else set()
+            if not isinstance(target_entry, dict):
+                errors.append(
+                    f"[consumer_planned_skill_seed] consumer input {consumer_id} must reference an exact planned registry Skill"
+                )
+                continue
+            if set(contract) != {"kind", "seed_fields"} or not seed_fields:
+                errors.append(
+                    f"[consumer_planned_skill_seed] consumer input {consumer_id} may declare only non-empty seed_fields"
+                )
+                continue
+            consumer_contracts[consumer_id] = (
+                None,
+                seed_fields,
+                "planned_skill_seed",
+                seed_fields,
             )
         elif contract_kind in {"skill_input", "skill_input_authoring_seed"}:
             target_skill_id = str(identity.get("id") or "")
@@ -17537,11 +18694,11 @@ def validate_skill_public_contracts(
                 str(item.get("source") or "") for item in mappings if isinstance(item, dict)
             }
             routing_identity_only = (
-                operation == "select"
-                and consumer_by_id[consumer_id].get("consumer") == {
-                    "kind": "workflow", "id": "branch-review-or-finding-closure",
-                }
+                operation in {"select", "rename", "normalize"}
                 and set(output_properties) - source_fields == {"exit_id"}
+                and "exit_id" not in target_required
+                and isinstance(output_properties.get("exit_id"), dict)
+                and output_properties["exit_id"].get("const") == exit_id
             )
             if source_fields != set(output_properties) and not routing_identity_only:
                 errors.append(f"[public_output_unconsumed_field] typed output {exit_id} for {skill_id} has fields without direct consumer use")
@@ -17600,6 +18757,8 @@ def validate_skill_public_contracts(
                                 argument.get("type"),
                                 normalizer,
                             )
+                    elif target_kind == "planned_skill_seed":
+                        compatible = normalizer is None
                 if not compatible:
                     errors.append(
                         f"[projection_contract_compatibility] projection {projection.get('id')} cannot prove {source} produces valid {target} values"
@@ -17642,6 +18801,10 @@ def validate_skill_public_contracts(
                 argument_id = str(argument.get("id") or "")
                 if argument_id in projected and not skill_scalar_value_matches(projected[argument_id], argument.get("type")):
                     errors.append(f"[projection_scalar_type] projection {projection.get('id')} has an invalid value for {argument_id}")
+        elif target_kind == "planned_skill_seed" and set(projected) != target_fields:
+            errors.append(
+                f"[projection_planned_skill_seed] projection {projection.get('id')} must populate exactly the declared planned seed fields"
+            )
         use_ids = output.get("consumer_use_ids")
         if not isinstance(use_ids, list) or projection.get("id") not in use_ids:
             errors.append(f"[consumer_use_missing] typed output {exit_id} does not reference projection {projection.get('id')}")
@@ -18455,8 +19618,8 @@ def validate_production_migration_manifest(
             if profile_bindings.get(profile_id) != expected_cases or not expected_cases:
                 errors.append(f"production manifest profile coverage is incomplete for {skill_id}/{profile_id}")
 
-    if manifest.get("authoring_seed_edges") != expected_authoring_edges or len(expected_authoring_edges) != 3:
-        errors.append("production manifest authoring_seed_edges do not match the exact three Interface edges")
+    if manifest.get("authoring_seed_edges") != expected_authoring_edges or len(expected_authoring_edges) != 4:
+        errors.append("production manifest authoring_seed_edges do not match the exact four Interface edges")
     return str(manifest.get("activation_unit_id") or "") or None
 
 
@@ -18669,14 +19832,15 @@ def _validate_skill_source(
             for entry in active.values()
         ):
             errors.append("active registry contains a legacy, unknown, or missing I/O contract state")
-        if active_ids == stage0_ids | production_ids:
+        current_active_ids = stage0_ids | production_ids | {BRANCH_REVIEW_SKILL_ID}
+        if active_ids == current_active_ids:
             exit_count = sum(
                 len(interface.get("external_exits", []))
                 for interface in interfaces.values()
                 if isinstance(interface.get("external_exits"), list)
             )
-            if len(active_ids) != 9 or exit_count != 35:
-                errors.append("current active Skill closure must remain exactly 9 Skills and 35 exits")
+            if len(active_ids) != 10 or exit_count != 39:
+                errors.append("current active Skill closure must remain exactly 10 Skills and 39 exits")
 
     workflow_stat = None
     if not require_workflow:
@@ -19793,6 +20957,38 @@ def production_task_from_public_input(
     return task_dir
 
 
+def review_branch_owner_invocation_errors(
+    root: Path,
+    task_dir: Path,
+    result: dict[str, Any],
+    public_input: dict[str, Any],
+) -> list[str]:
+    errors = skill_json_schema_validation_errors(
+        result,
+        review_branch_gate_schema(root),
+        "guru-review-branch review gate",
+    )
+    expected_facts = context_digest({
+        key: value
+        for key, value in result.items()
+        if key not in {"generated_at", "facts_sha256"}
+    })
+    if result.get("facts_sha256") != expected_facts:
+        errors.append("guru-review-branch facts_sha256 mismatch.")
+    if (
+        result.get("task_dir") != repo_relative(root, task_dir)
+        or result.get("mode") != public_input.get("mode")
+        or result.get("review_intent") != public_input.get("review_intent")
+        or result.get("base_ref") != public_input.get("base_ref")
+        or result.get("head") != public_input.get("committed_head")
+    ):
+        errors.append(
+            "guru-review-branch owner artifact identity does not match "
+            "the public invocation."
+        )
+    return errors
+
+
 def production_owner_result(
     skill_id: str,
     root: Path,
@@ -19803,6 +20999,8 @@ def production_owner_result(
     artifact_name = (
         PLANNING_APPROVAL_ARTIFACT
         if skill_id == "guru-approve-task-plan"
+        else "review-gate.json"
+        if skill_id == BRANCH_REVIEW_SKILL_ID
         else PHASE2_CHECK_ARTIFACT
     )
     expected_path = task_dir / artifact_name
@@ -19826,6 +21024,54 @@ def production_owner_result(
                 root=str(root), task=repo_relative(root, task_dir),
             ))
             result_task_ref = (result.get("task") or {}).get("task_dir")
+        elif skill_id == BRANCH_REVIEW_SKILL_ID:
+            invocation_errors = review_branch_owner_invocation_errors(
+                root,
+                task_dir,
+                result,
+                public_input,
+            )
+            if invocation_errors:
+                raise WorkflowError(
+                    "Production Branch Review owner result is structurally "
+                    "invalid or belongs to another invocation.",
+                    exit_code=2,
+                    payload={"errors": invocation_errors},
+                )
+            entry_errors = review_branch_entry_precondition_errors(
+                root,
+                task_dir,
+                load_config(root),
+                public_input,
+                result,
+                direct_runtime_inputs=[
+                    str(getattr(args, "input", "") or ""),
+                ],
+            )
+            if entry_errors:
+                result = {
+                    "mode": public_input["mode"],
+                    "review_intent": public_input["review_intent"],
+                    "typed_exit": "blocked",
+                    "task_dir": public_input["task_ref"],
+                    "base_ref": public_input["base_ref"],
+                    "head": public_input["committed_head"],
+                    "entry_precondition_errors": entry_errors,
+                }
+                checked = {
+                    "status": "ok",
+                    "typed_exit": "blocked",
+                    "entry_precondition_errors": entry_errors,
+                }
+            else:
+                checked = cmd_check_review_gate(argparse.Namespace(
+                    root=str(root),
+                    task=repo_relative(root, task_dir),
+                    allow_metadata_after_gate=False,
+                    allow_nonpass=True,
+                    expected_exit=result.get("typed_exit"),
+                ))
+            result_task_ref = result.get("task_dir")
         else:
             raise WorkflowError("Unsupported production owner package.", exit_code=2)
     except WorkflowError as exc:
@@ -19835,17 +21081,28 @@ def production_owner_result(
             "Complete the owner recorder/checker loop against current facts before public serialization.",
             "Production owner result failed its objective checker.",
         ) from exc
-    semantic = result.get("semantic_review")
-    gate = semantic.get("ai_review_gate") if isinstance(semantic, dict) else None
     actual_exit = str(result.get("typed_exit") or "")
+    if skill_id == BRANCH_REVIEW_SKILL_ID:
+        input_matches = (
+            result.get("mode") == public_input.get("mode")
+            and result.get("review_intent") == public_input.get("review_intent")
+            and result.get("base_ref") == public_input.get("base_ref")
+            and result.get("head") == public_input.get("committed_head")
+        )
+    else:
+        semantic = result.get("semantic_review")
+        gate = semantic.get("ai_review_gate") if isinstance(semantic, dict) else None
+        input_matches = (
+            result.get("mode") == public_input.get("mode")
+            and public_input.get("exit_intent") == actual_exit
+            and isinstance(gate, dict)
+            and gate.get("status") == public_input.get("ai_review_gate", {}).get("status")
+        )
     if (
         checked.get("status") != "ok"
         or checked.get("typed_exit") != actual_exit
         or result_task_ref != public_input.get("task_ref")
-        or result.get("mode") != public_input.get("mode")
-        or public_input.get("exit_intent") != actual_exit
-        or not isinstance(gate, dict)
-        or gate.get("status") != public_input.get("ai_review_gate", {}).get("status")
+        or not input_matches
     ):
         raise stage0_invocation_error(
             "owner_result_input_mismatch",
@@ -20186,6 +21443,39 @@ def stage0_build_output(
             })
         elif exit_id == "revision-required":
             values["task_ref"] = public_input.get("task_ref")
+    elif skill_id == BRANCH_REVIEW_SKILL_ID and owner_result is not None:
+        semantic = (
+            owner_result.get("semantic_review")
+            if isinstance(owner_result.get("semantic_review"), dict)
+            else {}
+        )
+        if exit_id == "passed":
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "reviewed_head": owner_result.get("head"),
+                "review_ref": f"review-gate:{(owner_plan or {}).get('artifact_sha256')}",
+            })
+        elif exit_id == "implementation_required":
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "reviewed_head": owner_result.get("head"),
+                "finding_refs": [
+                    str(item.get("finding_ref"))
+                    for item in semantic.get("qualified_findings", [])
+                    if isinstance(item, dict)
+                    and item.get("status") == "open"
+                    and item.get("finding_ref")
+                ],
+            })
+        elif exit_id == "scope_confirmation_required":
+            values.update({
+                "task_ref": public_input.get("task_ref"),
+                "proposal_refs": [
+                    str(item.get("proposal_ref"))
+                    for item in semantic.get("scope_proposals", [])
+                    if isinstance(item, dict) and item.get("proposal_ref")
+                ],
+            })
 
     properties = schema.get("properties")
     required = schema.get("required")
@@ -20289,7 +21579,9 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
             exit_id = "blocked"
     else:
         public_input = stage0_structured_input(skill_id, root, package, interface, args.input)
-        if skill_id in {"guru-approve-task-plan", "guru-check-task"}:
+        if skill_id in {
+            "guru-approve-task-plan", "guru-check-task", BRANCH_REVIEW_SKILL_ID,
+        }:
             owner_result, owner_plan = production_owner_result(
                 skill_id, root, args, public_input
             )
@@ -31060,6 +32352,13 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--observations-file", help="JSON list or object with observations[].")
     review.add_argument("--followup-candidate", action="append", help="Out-of-scope follow-up candidate as message[|path].")
     review.add_argument("--followup-candidates-file", help="JSON list or object with followup_candidates[].")
+    review.add_argument("--skill-input", help="Repo-relative guru-review-branch public input used to bind mode, task, base, committed HEAD and review intent.")
+    review.add_argument("--semantic-review-file", help="Repo-relative AI-authored qualification-first semantic review payload.")
+    review.add_argument(
+        "--typed-exit",
+        choices=["passed", "implementation_required", "scope_confirmation_required", "blocked"],
+        help="AI-selected guru-review-branch exit. Requires --skill-input and --semantic-review-file.",
+    )
     review.add_argument("--dry-run", action="store_true")
 
     planning = sub.add_parser("record-planning-approval")
@@ -31183,6 +32482,12 @@ def build_parser() -> argparse.ArgumentParser:
     check_gate.add_argument("--json", action="store_true")
     check_gate.add_argument("--task")
     check_gate.add_argument("--allow-metadata-after-gate", action="store_true")
+    check_gate.add_argument("--allow-nonpass", action="store_true", help=argparse.SUPPRESS)
+    check_gate.add_argument(
+        "--expected-exit",
+        choices=["passed", "implementation_required", "scope_confirmation_required", "blocked"],
+        help=argparse.SUPPRESS,
+    )
 
     check_commits = sub.add_parser("check-commit-messages")
     check_commits.add_argument("--root")

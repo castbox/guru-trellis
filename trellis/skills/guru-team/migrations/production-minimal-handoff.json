@@ -34,6 +34,15 @@
     },
     {
       "producer_skill_id": "guru-create-task-commit",
+      "exit_id": "committed",
+      "consumer_skill_id": "guru-review-branch",
+      "profile_id": "branch_review",
+      "consumer_input_id": "branch_review_seed_input",
+      "projection_id": "project_committed",
+      "authoring_example_id": "branch_review_authoring"
+    },
+    {
+      "producer_skill_id": "guru-create-task-commit",
       "exit_id": "revision-required",
       "consumer_skill_id": "guru-create-task-commit",
       "profile_id": "revision_reentry",
@@ -150,7 +159,7 @@
           "exit_id": "committed",
           "output_schema_id": "guru-production-create-task-commit-output-committed-1.0",
           "output_example_id": "committed_output",
-          "consumer_input_id": "committed_workflow_input",
+          "consumer_input_id": "branch_review_seed_input",
           "projection_id": "project_committed",
           "eval_case_ids": ["committed-initial", "committed-finding-fix"]
         },

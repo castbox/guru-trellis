@@ -1,0 +1,1 @@
+{"scenario":"The standalone owner validates the same preconditions and records a clean current review.","owner_evidence":{"semantic_gate":"passed","checker_required":true},"owner_staging":{"recipe":"review-passed"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/tasks/current/review-gate.json"]}}

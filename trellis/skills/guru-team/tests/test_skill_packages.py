@@ -75,11 +75,86 @@ def assert_task_plan_clarify_scope_router_contract(
         "every referenced proposal",
         "`guru-clarify-requirements:active_task_scope_change`",
         "fourth `skill_input_authoring_seed`",
-        "cardinality remains exactly three",
+        "cardinality remains exactly four",
         "do not expand the producer DTO",
         "private runtime state",
     ):
         testcase.assertIn(phrase, normalized)
+
+
+def assert_branch_review_workflow_is_routing_only(
+    testcase: unittest.TestCase, workflow: str,
+) -> None:
+    start = workflow.index("#### 3.5 Branch Review Gate")
+    end = workflow.index("#### 3.6 Finish-work", start)
+    section = workflow[start:end]
+    testcase.assertEqual(
+        section.count('guru-skill-invoke: {"skill":"guru-review-branch"'),
+        1,
+    )
+    testcase.assertEqual(
+        section.count('guru-skill-exit: {"skill":"guru-review-branch"'),
+        4,
+    )
+    for phrase in (
+        "review-branch.sh",
+        "check-review-gate.sh",
+        "--review-source independent-agent",
+        "--findings-file",
+        "`问题发现审查代理`",
+        "`问题闭环审查代理`",
+        "`最终放行审查代理`",
+    ):
+        testcase.assertNotIn(phrase, workflow)
+    for phrase in (
+        "all 13 entry checks",
+        "independent-review dispatch",
+        "qualification before severity",
+        "raw-report retention",
+        "finding closure",
+        "fresh final review",
+        "recorder/checker",
+        "`reviews/*.md`",
+        "`review-gate.json`",
+    ):
+        testcase.assertNotIn(phrase, section)
+
+
+def assert_continue_entry_routes_only_branch_review(
+    testcase: unittest.TestCase, path: Path,
+) -> None:
+    text = path.read_text(encoding="utf-8")
+    testcase.assertIn("mandatory invoke the active `guru-review-branch` package", text, path)
+    testcase.assertIn("only Phase 3.5 semantic owner", text, path)
+    testcase.assertIn("Typed-exit route:", text, path)
+    for field in (
+        "`profile`",
+        "`mode`",
+        "`task_ref`",
+        "`base_ref`",
+        "`committed_head`",
+        "`review_intent`",
+    ):
+        testcase.assertIn(field, text, path)
+    for exit_id, consumer in (
+        ("`passed`", "`guru-review-task-publication`"),
+        ("`implementation_required`", "`guru-branch-review-implementation-router`"),
+        ("`scope_confirmation_required`", "`guru-branch-review-scope-router`"),
+        ("`blocked`", "`branch-review-blocked`"),
+    ):
+        testcase.assertIn(exit_id, text, path)
+        testcase.assertIn(consumer, text, path)
+    for phrase in (
+        "review-branch.sh",
+        "check-review-gate.sh",
+        "agent-assignment.json",
+        "review-gate.json",
+        "reviews/*.md",
+        "finding closure",
+        "fresh final review",
+        "recorder/checker",
+    ):
+        testcase.assertNotIn(phrase, text, path)
 
 
 class SourceValidationTests(unittest.TestCase):
@@ -215,14 +290,14 @@ class SourceValidationTests(unittest.TestCase):
         )
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
-        self.assertEqual(result["facts"]["planned_ids"], [])
+        self.assertEqual(result["facts"]["planned_ids"], ["guru-review-task-publication"])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
+            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 9)
-        self.assertEqual(result["facts"]["exit_markers"], 35)
-        self.assertEqual(result["facts"]["target_markers"], 21)
+        self.assertEqual(result["facts"]["invoke_markers"], 10)
+        self.assertEqual(result["facts"]["exit_markers"], 39)
+        self.assertEqual(result["facts"]["target_markers"], 23)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -270,6 +345,44 @@ class SourceValidationTests(unittest.TestCase):
         assert_task_plan_clarify_scope_router_contract(self, canonical)
         assert_task_plan_clarify_scope_router_contract(self, dogfood)
         self.assertEqual(canonical, dogfood)
+
+    def test_branch_review_workflow_is_routing_only_in_source_and_dogfood(self) -> None:
+        canonical = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(
+            encoding="utf-8"
+        )
+        dogfood = (REPO / ".trellis/workflow.md").read_text(encoding="utf-8")
+        assert_branch_review_workflow_is_routing_only(self, canonical)
+        assert_branch_review_workflow_is_routing_only(self, dogfood)
+        self.assertEqual(canonical, dogfood)
+
+    def test_throwaway_preview_checks_current_branch_review_routing(self) -> None:
+        script = (
+            REPO
+            / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ).read_text(encoding="utf-8")
+        start = script.index('test -f "$TARGET/.trellis/workflow.md.new"')
+        end = script.index(
+            'test ! -e "$TARGET/.trellis/workflow.md.new"',
+            start,
+        )
+        preview_check = script[start:end]
+        self.assertIn('if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]', preview_check)
+        self.assertIn(
+            'grep -q \'guru-skill-invoke: '
+            '{"skill":"guru-review-branch","required":true}\' '
+            '"$TARGET/.trellis/workflow.md.new"',
+            preview_check,
+        )
+        self.assertIn(
+            '! grep -q "review-source independent-agent" '
+            '"$TARGET/.trellis/workflow.md.new"',
+            preview_check,
+        )
+        self.assertNotIn(
+            '\ngrep -q "review-source independent-agent" '
+            '"$TARGET/.trellis/workflow.md.new"',
+            preview_check,
+        )
 
     def test_production_task_commit_package_contract(self) -> None:
         package = SKILLS_ROOT / "packages/guru-create-task-commit"
@@ -342,13 +455,15 @@ class SourceValidationTests(unittest.TestCase):
             encoding="utf-8"
         )
         for phrase in (
-            "43 inventory-pinned upstream overlay payloads",
-            "`transitional_legacy` assets owned by issue #132",
-            "legacy `schema 1.2`",
+            "43 inventory-pinned upstream overlay paths",
+            "`transitional_legacy` assets whose removal is owned by issue #132",
+            "issue #128 path/baseline identity remains immutable",
+            "exact five issue #131 continue bindings",
             "`explicit-post-planning-review` implement-agent wording",
             "must not guide current Guru package/runtime behavior",
         ):
             self.assertIn(phrase, overlay_spec)
+        self.assertRegex(overlay_spec, r"Historical\s+`schema 1\.2`")
 
     def test_sync_base_entrypoints_bind_prepare_to_reviewed_resolution(self) -> None:
         start_paths = [
@@ -450,6 +565,59 @@ class SourceValidationTests(unittest.TestCase):
             self.assertNotRegex(text, r"(?i)\bgit\s+commit\b", path)
             for phrase in workflow_forbidden:
                 self.assertNotIn(phrase, text, path)
+
+    def test_canonical_continue_entries_only_route_branch_review_skill(self) -> None:
+        entries = [
+            REPO / "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+            REPO / "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+            REPO / "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+            REPO / "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+            REPO / "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        ]
+        for path in entries:
+            assert_continue_entry_routes_only_branch_review(self, path)
+
+    def test_public_docs_report_current_branch_review_package_state(self) -> None:
+        readmes = [
+            REPO / "README.md",
+            REPO / "trellis/workflows/guru-team/README.md",
+            REPO / "trellis/presets/guru-team/README.md",
+        ]
+        stale_phrases = (
+            "All nine current production packages",
+            "all nine active production packages",
+            "all nine workflow packages",
+            "九个 production packages",
+            "九包 public contracts",
+            "九份 corpora",
+            "阶段九个 production",
+        )
+        for path in readmes:
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("guru-review-branch", text, path)
+            self.assertRegex(text, r"(?:10 Skills / 39 exits|10/39|十个 active packages 共声明\s*39)")
+            self.assertRegex(text, r"(?:唯一的|sole) Phase 3\.5 semantic owner")
+            self.assertIn("deterministic", text, path)
+            self.assertIn("11 exits", text, path)
+            for phrase in stale_phrases:
+                self.assertNotIn(phrase, text, path)
+
+        durable_docs = [
+            REPO / ".trellis/spec/workflow/skill-package-contract.md",
+            REPO / ".trellis/spec/workflow/index.md",
+        ]
+        for path in durable_docs:
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("ten active", text, path)
+            self.assertRegex(text, r"39\s+external\s+exits")
+            self.assertIn("guru-review-branch", text, path)
+            self.assertRegex(text, r"11\s+exits")
+            for phrase in stale_phrases:
+                self.assertNotIn(phrase, text, path)
+        self.assertRegex(
+            durable_docs[0].read_text(encoding="utf-8"),
+            r"three packages and 11\s+exits",
+        )
 
     def test_public_readmes_share_standalone_runtime_semantics(self) -> None:
         readmes = [
@@ -3426,7 +3594,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -3537,12 +3705,70 @@ class Stage0MigrationManifestTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["stage0_activation_unit"], "stage0-minimal-handoff-v1")
-        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 9)
+        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 10)
         self.assertEqual(len(result["facts"]["legacy_ids"]), 0)
         self.assertEqual(
             result["facts"]["production_activation_unit"],
             "production-minimal-handoff-v1",
         )
+
+    def test_durable_docs_match_four_authoring_edges_and_three_skill_migration(self) -> None:
+        expected_docs = {
+            "README.md": "四条 semantic edge",
+            "trellis/workflows/guru-team/README.md": (
+                "四条 semantic package handoff"
+            ),
+            "trellis/presets/guru-team/README.md": "四条声明 edge",
+            "docs/requirements/README.md": "四条 edge 使用 target-owned",
+            "docs/requirements/requirement-main.md": (
+                "active Branch Review 四条 edge"
+            ),
+            "docs/requirements/guru-team-trellis-flow.md": (
+                "四条 semantic handoff"
+            ),
+            ".trellis/spec/workflow/skill-package-contract.md": (
+                "The four production semantic edges"
+            ),
+            ".trellis/spec/workflow/companion-scripts.md": (
+                "For the four approved production semantic edges"
+            ),
+            ".trellis/spec/workflow/quality-guidelines.md": (
+                "The four `skill_input_authoring_seed` edges"
+            ),
+            ".trellis/spec/preset/installer.md": (
+                "four target-owned authoring"
+            ),
+            ".trellis/spec/preset/upstream-ownership.md": (
+                "the four target-owned"
+            ),
+        }
+        for relative, expected in expected_docs.items():
+            with self.subTest(path=relative):
+                self.assertIn(
+                    expected,
+                    (REPO / relative).read_text(encoding="utf-8"),
+                )
+
+        manifest = json.loads((
+            SKILLS_ROOT / "migrations/production-minimal-handoff.json"
+        ).read_text(encoding="utf-8"))
+        self.assertEqual(
+            manifest["skill_ids"],
+            [
+                "guru-approve-task-plan",
+                "guru-check-task",
+                "guru-create-task-commit",
+            ],
+        )
+        self.assertEqual(len(manifest["skills"]), 3)
+        self.assertEqual(
+            sum(
+                len(skill["exit_bindings"])
+                for skill in manifest["skills"]
+            ),
+            11,
+        )
+        self.assertEqual(len(manifest["authoring_seed_edges"]), 4)
 
     def test_missing_exit_binding_fails_closed(self) -> None:
         manifest = self.read_manifest()
@@ -3682,11 +3908,13 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             "guru-approve-task-plan",
             "guru-check-task",
             "guru-create-task-commit",
+            "guru-review-branch",
         })
         cases = (
             ("guru-approve-task-plan", "approved-initial", "approved"),
             ("guru-check-task", "passed-initial", "passed"),
             ("guru-create-task-commit", "revision-required", "revision-required"),
+            ("guru-review-branch", "workflow-passed", "passed"),
         )
         fallback_request: dict | None = None
         for skill_id, case_id, expected_exit in cases:
