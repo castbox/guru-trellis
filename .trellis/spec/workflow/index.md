@@ -38,7 +38,8 @@ Before editing workflow behavior:
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Interface 1.2 remains the frozen legacy contract. Registry 1.1 selects exact
   `interface_schema_id` plus `io_contract_state`; interface 1.3 is
-  production-active for all nine workflow packages. The frozen
+  production-active for all ten active workflow packages and 39 external
+  exits. The frozen
   `stage0-minimal-handoff-v1` manifest owns its original six packages and 24
   exits, while `production-minimal-handoff-v1` independently owns planning,
   check, and commit with 11 exits. The mixed fixture remains test-only.
@@ -60,6 +61,10 @@ Before editing workflow behavior:
   severity classification, Docs SSOT review, finding full rerun, four typed
   exits, and the single `phase2-check.json`; unchanged official `trellis-check`
   workers provide evidence only.
+- `guru-review-branch` is the sole Phase 3.5 semantic owner. Global workflow
+  and platform entries only invoke its six-field public input and consume its
+  four typed exits; review scripts are package-owned deterministic
+  recorder/validator implementation details.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 
 ## Required Validation

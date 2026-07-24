@@ -50,6 +50,40 @@ def assert_required_planning_context(testcase: unittest.TestCase, text: str) -> 
         testcase.assertNotIn(stale_hint, text)
 
 
+def assert_branch_review_route_only(testcase: unittest.TestCase, path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    testcase.assertIn("mandatory invoke the active `guru-review-branch` package", text, path)
+    testcase.assertIn("only Phase 3.5 semantic owner", text, path)
+    testcase.assertIn("Typed-exit route:", text, path)
+    for field in (
+        "`profile`",
+        "`mode`",
+        "`task_ref`",
+        "`base_ref`",
+        "`committed_head`",
+        "`review_intent`",
+    ):
+        testcase.assertIn(field, text, path)
+    for route in (
+        "`passed` targets planned `guru-review-task-publication`",
+        "`implementation_required` targets workflow `guru-branch-review-implementation-router`",
+        "`scope_confirmation_required` targets workflow `guru-branch-review-scope-router`",
+        "`blocked` targets stop `branch-review-blocked`",
+    ):
+        testcase.assertIn(route, text, path)
+    for forbidden in (
+        "review-branch.sh",
+        "check-review-gate.sh",
+        "agent-assignment.json",
+        "review-gate.json",
+        "reviews/*.md",
+        "finding closure",
+        "fresh final review",
+        "recorder/checker",
+    ):
+        testcase.assertNotIn(forbidden, text, path)
+
+
 def install_canonical_workflow(repo: Path) -> None:
     source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
     target = repo / ".trellis/workflow.md"
@@ -624,6 +658,20 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
         self.assertTrue(all_platforms)
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
+        ownership_facts = payload["upstream_ownership_validation"]
+        self.assertEqual(ownership_facts["reviewed_current_payload_count"], 5)
+        self.assertRegex(ownership_facts["reviewed_current_payloads_sha256"], r"^[0-9a-f]{64}$")
+        continue_paths = (
+            ".agents/skills/trellis-continue/SKILL.md",
+            ".codex/prompts/trellis-continue.md",
+            ".codex/skills/trellis-continue/SKILL.md",
+            ".cursor/commands/trellis-continue.md",
+            ".claude/commands/trellis/continue.md",
+        )
+        overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
+        for relative in continue_paths:
+            assert_branch_review_route_only(self, overlay_root / relative)
+            assert_branch_review_route_only(self, self.repo / relative)
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
@@ -1011,6 +1059,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         payload_loop = checker.index('while IFS= read -r source; do')
         self.assertLess(ownership_gate, payload_loop)
         self.assertIn("Missing executable ownership validator", checker)
+        self.assertIn("current payload bindings", checker)
 
     def test_generated_trellis_meta_task_system_docs_are_replaced_with_guru_team_overlay(self) -> None:
         shared_meta = self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"

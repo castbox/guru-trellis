@@ -423,7 +423,9 @@ unverified items, four exit/consumer invariants, planning discriminator closure,
 finding-fix full rerun, failed/unfinished/stale/replacement/completed recovery,
 dirty/reviewed-path/post-commit freshness, legacy migration, and the single
 artifact owner. Distribution validation must compare canonical/shared/Codex/
-Claude/Cursor package bytes, preserve the frozen 43-entry upstream inventory,
+Claude/Cursor package bytes, preserve the frozen 43-entry historical
+path/baseline identity, validate the exact five issue #131 current continue
+payload bindings without generalizing them,
 run dogfood apply/drift and sidecar checks, and exercise clean marketplace init,
 preview/switch, preset apply, installed invocation, `trellis update --force`,
 and workflow/preset reapply.

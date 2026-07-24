@@ -167,6 +167,10 @@ Checkpoint：source active graph完整；planned #116只有 registry identity与
   selected platform roots的 bytes及 executable mode。
 - [ ] 运行 dogfood overlay drift、source/installed contract validation、recursive sidecar
   scan与 upstream ownership检查。
+- [ ] 保持 issue #128 的 43-path historical `baseline_sha256` identity不变；仅为五个
+  active `trellis-continue` entry登记 reviewed `current_payload_sha256`，并用
+  schema/validator/negative regressions证明该字段不能扩到其它entry、不能随overlay
+  bytes一起静默改写、也不提前执行 #132 removal。
 - [ ] 更新 root README、workflow README、preset README中的 10/39、discovery、
   invocation、eval、install、update与 reapply命令。
 

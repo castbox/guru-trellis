@@ -312,6 +312,173 @@ commit与真实Branch Review。实现代理未执行这些职责。
 2. Current branch未commit/push，feature-ref marketplace安装仍未验证。
 3. #116、#132和Trellis CLI 0.6.8边界不变。
 
+## 13. Branch Review round 7 finding-fix（2026-07-24）
+
+本节记录 `F-131-BR7-01`（P2）与 `F-131-BR7-02`（P3）的实现修复。Formal
+`review.md`、`review-gate.json`、`agent-assignment.json`、`phase2-check.json`、
+`task-commit-plans/004.json` 与 raw review reports 均继续由 reviewer/main session
+拥有，本轮实现没有修改、重录或替代它们。当前 HEAD 仍为
+`f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53`，没有 commit、push 或 PR。
+
+### 13.1 `F-131-BR7-01` thin platform entry
+
+五个 canonical `trellis-continue` entry 已从 Branch Review step-local 合同复制者
+收敛为 thin invocation/route entry：
+
+- `trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md`
+- `trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md`
+- `trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md`
+- `trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md`
+- `trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md`
+
+每个 entry 现在只做以下事情：
+
+1. 在 `guru-create-task-commit:committed` 后 mandatory invoke active
+   `guru-review-branch`；
+2. 提供该 package 声明的 `profile`、`mode`、`task_ref`、`base_ref`、
+   `committed_head`、`review_intent` 六字段 public input；
+3. 消费四个 exact route：
+   `passed -> guru-review-task-publication`、
+   `implementation_required -> guru-branch-review-implementation-router`、
+   `scope_confirmation_required -> guru-branch-review-scope-router`、
+   `blocked -> branch-review-blocked`；
+4. 对 missing/unknown/multiple/stale/unmapped exit fail closed；
+5. 保留 continue 不发布以及显式 finish entry 独占 publication/archive 的全局边界。
+
+Entry 不再复制 `review-branch.sh` / `check-review-gate.sh`、raw/rollup/gate/assignment
+private artifacts、finding qualification、reviewer lifecycle、closure/fresh-final、
+Docs SSOT Gate、recorder/checker sequence 或 finish-work transaction。Active
+`guru-review-branch` 是唯一 Phase 3.5 semantic owner；脚本只是 package-owned
+deterministic recorder/validator implementation detail。
+
+Preset apply 已把上述 canonical bytes 同步到以下 installed dogfood copies：
+
+- `.agents/skills/trellis-continue/SKILL.md`
+- `.codex/prompts/trellis-continue.md`
+- `.codex/skills/trellis-continue/SKILL.md`
+- `.claude/commands/trellis/continue.md`
+- `.cursor/commands/trellis-continue.md`
+
+首次 all-platform apply 只报告上述五个 `replaced_overlays`，没有 `.new`、`.bak`、
+managed backup、conflict 或 removal；第二次 apply 为 no-op。Canonical/installed
+逐文件 byte parity 与 dogfood drift 均通过。
+
+### 13.2 历史 baseline 与 reviewed current payload compatibility
+
+Issue #128 的 immutable historical contract 保持不变：
+
+- frozen path count：43；
+- sorted path-set SHA-256：
+  `56874019bb93b6669aaeb36b7ca9506aed9127a28ef9f81637ea428a6b0a838b`；
+- baseline payload aggregate：
+  `c24122c8292ee2e6f7847d69069d5f3536eaa5a66a11434620228fe11cb89658`；
+- frozen legacy identity：
+  `1e1faf9ffa95e1cbb1650c4eb9da1ceac035d045be70132b5c0b92ec5ccfc473`。
+
+为允许本轮在不伪造历史 baseline 的前提下修正五个仍 active 的 transitional
+continue entry，inventory/schema/validator 增加窄 `current_payload_sha256` binding：
+
+| Path | Reviewed current SHA-256 |
+| --- | --- |
+| `.agents/skills/trellis-continue/SKILL.md` | `9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc` |
+| `.codex/prompts/trellis-continue.md` | `26315341df30cabd67f854d4c2eb2edfb91250c0fcdf675815bd9b6dafa955d0` |
+| `.codex/skills/trellis-continue/SKILL.md` | `9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc` |
+| `.claude/commands/trellis/continue.md` | `6260438ddc68e0f69e263f19bd40d952da5608c1e291afe1b71382953fcc43ea` |
+| `.cursor/commands/trellis-continue.md` | `b0e8ea40324442d70e3aa76c123a1b4e0ddbcea00e94da599594b0e3b707301c` |
+
+Current 43-path aggregate 为
+`ab94576c8d2d8768ffd50d1757179d8678de3a67923aeef3cd00ef006f76a86a`；
+reviewed-current binding digest 为
+`6d379a51aeb8ac9a52e15fd475285ea6bb84e6ac9cd1ad475133dbee5413b671`。
+Validator hard-code exact五路径/五digest，只对其 active state 使用 current binding；
+其余38条仍用 baseline，removed entry不得保留current字段，materialized historical
+identity仍从immutable baseline projection计算。普通bytes drift、同步改写inventory
+current digest、未授权路径新增current字段均有negative regression。
+
+该digest只用于正常版本绑定、freshness/stale与drift detection，不是authenticity、
+anti-tamper、anti-forgery或hostile-input security boundary；没有泛化到其它entry，
+没有执行或提前授权 #132 removal。
+
+相关实现路径：
+
+- `trellis/presets/guru-team/ownership/upstream-ownership.json`
+- `trellis/presets/guru-team/ownership/upstream-ownership.schema.json`
+- `trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py`
+- `trellis/presets/guru-team/scripts/python/test_upstream_ownership.py`
+- `trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh`
+- `trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py`
+
+### 13.3 `F-131-BR7-02` Docs SSOT reconciliation
+
+继续执行批准的 `ssot_first`。Current-state SSOT 已统一为：
+
+- 10 active packages / 39 external exits；
+- `guru-review-branch` 是唯一 Phase 3.5 semantic owner；
+- `production-minimal-handoff-v1` 仍独立保持 planning/check/commit
+  3 packages / 11 exits；
+- `review-branch.sh` 与 `check-review-gate.sh` 是 package-owned deterministic
+  implementation details，不是 public workflow/entry owner。
+
+Durable/current public docs：
+
+- `.trellis/spec/workflow/skill-package-contract.md`
+- `.trellis/spec/workflow/index.md`
+- `.trellis/spec/workflow/quality-guidelines.md`
+- `.trellis/spec/preset/index.md`
+- `.trellis/spec/preset/installer.md`
+- `.trellis/spec/preset/overlay-guidelines.md`
+- `.trellis/spec/preset/upstream-ownership.md`
+- `README.md`
+- `trellis/workflows/guru-team/README.md`
+- `trellis/presets/guru-team/README.md`
+
+Regression固定了五个canonical和五个installed entry的thin边界，并拒绝旧的
+“nine current/active packages”、`九个 production packages`、`九包 public contracts`、
+`九份 corpora` 等current-state表述。既有runtime回归中原本要求entry复制
+Branch Review与finish-work内部规则的断言也已迁移到package-owner/thin-entry合同：
+
+- `trellis/skills/guru-team/tests/test_skill_packages.py`
+- `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`
+
+Preset apply 同步后的安装 provenance 记录在
+`.trellis/guru-team/extension.json`。
+
+### 13.4 Validation evidence
+
+- upstream ownership：9 tests，OK；validator `status=ok`，43 active / 0 removed，
+  historical inventory/materialized identity相同，5 reviewed current bindings；
+- `guru-review-branch` package：8 tests，OK；
+- Skill package full suite：171 tests，OK；
+- preset installer full suite：45 tests，OK；
+- runtime full suite：566 tests，OK，13 skipped；
+- source/installed package validator：passed，10 active / 39 exits / 23 targets；
+  installed inventory 1903 managed files，0 sidecar/conflict/removal；
+- first all-platform apply：只替换五个continue overlay，0 sidecar；second apply：
+  no-op；
+- dogfood drift、canonical/installed byte parity、stale wording scan、
+  private Branch Review detail anti-dup scan：passed；
+- clean throwaway install/update/reapply verifier：exit 0，覆盖public marketplace
+  discovery、local unpublished current workflow/preset、fresh init、
+  existing-project preview/switch、all-platform apply、installed invocation、
+  `trellis update --force`、workflow/preset reapply、ownership checkpoints、
+  final drift与recursive zero-sidecar；
+- `task.py validate`、JSON parse、changed shell `bash -n`、changed Python
+  `py_compile`、workflow canonical/dogfood parity、`git diff --check`：passed。
+
+### 13.5 Remaining gates and limitations
+
+1. 当前 durable requirement authority 已变化，planning checker继续诚实返回
+   `planning_approval_requirement_authority_stale`。本轮没有自行重批 planning；
+   主会话必须按 workflow 重新展示/审查规划并取得 fresh confirmation，之后才能
+   dispatch 独立 `trellis-check`。
+2. Formal Branch Review gate仍保留 reviewer记录的 `implementation_required`；
+   本轮没有篡改 gate、rollup、raw reports、assignment、Phase 2 artifact或plan004。
+3. 分支没有commit/push，因此未验证远端 exact feature-ref marketplace install。
+   Throwaway使用public marketplace discovery加本地unpublished canonical
+   workflow/preset sample，不能冒充feature-ref证据。
+4. #116、#132与Trellis CLI 0.6.8边界不变。下一步仍需fresh planning approval、
+   独立完整Phase 2、new task work commit、finding closure与fresh final Branch Review。
+
 ## 14. Branch Review Round 5 finding-fix（2026-07-24）
 
 本节记录 `F-131-BR4-01` 的实现修复。实现代理未修改 reviewer-owned

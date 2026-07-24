@@ -346,7 +346,158 @@
     "plan_digest": "f2ab85cd0f65d98385d53ff2451b3393744b8471e40c561ac1f278679aa95d2a"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-23T23:39:10Z",
+    "commit_sha": "f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53",
+    "parent": "38a0e8dd2314b086378e0674f4bd377dc5e6f694",
+    "message_sha256": "06a59f3b91109040b1549b4339230029db9664c23a0bfd3b92fd49274a7c3292",
+    "committed_paths": [
+      ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
+      ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+      ".trellis/workflow.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "149df225be6d7b3319a8df0b6bd2bca7e0a043af",
+      "actual_tree": "149df225be6d7b3319a8df0b6bd2bca7e0a043af",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+          "expected_blob": "39d8b75e0899d1a565cc95e7724813a712cfc48b",
+          "expected_mode": "100644",
+          "actual_blob": "39d8b75e0899d1a565cc95e7724813a712cfc48b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+          "expected_blob": "d26b4df2f055aa8137a99aaee8b0607c2d767c53",
+          "expected_mode": "100644",
+          "actual_blob": "d26b4df2f055aa8137a99aaee8b0607c2d767c53",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+          "expected_blob": "037f3c6dc9b869f938304c215de0bf50e4bf4fcd",
+          "expected_mode": "100644",
+          "actual_blob": "037f3c6dc9b869f938304c215de0bf50e4bf4fcd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+          "expected_blob": "cf2d80d716768f4a80722ba297a55991ad59552c",
+          "expected_mode": "100644",
+          "actual_blob": "cf2d80d716768f4a80722ba297a55991ad59552c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+          "expected_blob": "c89b8ccb52c4ebbc85cb19b6964e64cb5add2214",
+          "expected_mode": "100644",
+          "actual_blob": "c89b8ccb52c4ebbc85cb19b6964e64cb5add2214",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+          "expected_blob": "94e9c239913cc2b5d92c739be37f9fd527da4ecc",
+          "expected_mode": "100644",
+          "actual_blob": "94e9c239913cc2b5d92c739be37f9fd527da4ecc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
+          "expected_blob": "787aaf2323d09d16cbde88adb56b8c16763db45b",
+          "expected_mode": "100644",
+          "actual_blob": "787aaf2323d09d16cbde88adb56b8c16763db45b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
+          "expected_blob": "446c3be1a10ed81793f31cda5668c87713e7b6b7",
+          "expected_mode": "100644",
+          "actual_blob": "446c3be1a10ed81793f31cda5668c87713e7b6b7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+          "expected_blob": "4350632b8fa6f7b5395ab378729e1ad467afbc3c",
+          "expected_mode": "100644",
+          "actual_blob": "4350632b8fa6f7b5395ab378729e1ad467afbc3c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
+          "expected_blob": "10acfc96d7791dc22fbaff9085e37d3ce945364c",
+          "expected_mode": "100644",
+          "actual_blob": "10acfc96d7791dc22fbaff9085e37d3ce945364c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+          "expected_blob": "8104038c06c8af0eb0237188ca92940cd0785c23",
+          "expected_mode": "100644",
+          "actual_blob": "8104038c06c8af0eb0237188ca92940cd0785c23",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/workflow.md",
+          "expected_blob": "98cb7d8e937a13626828f6b8bef07ecb023cb9a7",
+          "expected_mode": "100644",
+          "actual_blob": "98cb7d8e937a13626828f6b8bef07ecb023cb9a7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "expected_blob": "a32c610fb609aa1991fc87843d86a8aff3cacd6a",
+          "expected_mode": "100755",
+          "actual_blob": "a32c610fb609aa1991fc87843d86a8aff3cacd6a",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "b4e2c9626fc0ef4a0515fc2453ad4f03b449ed64",
+          "expected_mode": "100644",
+          "actual_blob": "b4e2c9626fc0ef4a0515fc2453ad4f03b449ed64",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/workflow.md",
+          "expected_blob": "98cb7d8e937a13626828f6b8bef07ecb023cb9a7",
+          "expected_mode": "100644",
+          "actual_blob": "98cb7d8e937a13626828f6b8bef07ecb023cb9a7",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

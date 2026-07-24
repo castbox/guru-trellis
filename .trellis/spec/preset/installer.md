@@ -26,7 +26,11 @@ Before `install_assets()` creates the target `.trellis/guru-team/` directory or
 performs any other target mutation, it must run the source ownership validator
 defined in [upstream-ownership.md](./upstream-ownership.md). The validator is
 read-only and source-repository scoped; it is not installed into business
-repositories or exposed as a workflow/Skill runtime command.
+repositories or exposed as a workflow/Skill runtime command. It validates the
+immutable issue #128 path/baseline identity and the exact five issue #131
+reviewed current-payload bindings before installer staging. Those current
+digests are normal version/drift bindings, not authenticity or anti-tamper
+boundaries, and cannot be added to any other entry.
 
 ## Managed Assets
 
@@ -285,10 +289,13 @@ unknown document should be translated.
 
 The overlay path set is a frozen transitional exception, not a general-purpose
 extension surface. `upstream-ownership.json` retains exactly 43 baseline paths,
-and every active payload must match its recorded SHA-256. Do not add another
-Trellis-owned prompt, command, skill, agent, hook, or meta reference to the
-overlay tree. Reviewed removals keep their inventory entries as
-`upstream_owned/removed` audit history.
+and every active payload must match its binding: `baseline_sha256` for 38
+unchanged paths, or `current_payload_sha256` for the exact five active
+issue #131 continue entries. The historical baseline hashes and identity do not
+change, the current field cannot spread to other entries, and issue #132 alone
+owns removal. Do not add another Trellis-owned prompt, command, skill, agent,
+hook, or meta reference to the overlay tree. Reviewed removals keep their
+inventory entries as `upstream_owned/removed` audit history.
 
 Use `copy_overlay()` behavior:
 

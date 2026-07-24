@@ -423,6 +423,11 @@ grader再断言 expected exit。
   Live active closure按现有未来
   complete Interface 1.3 row规则派生为 10 Skills、39 exits。
 - planned #116 bridge是暂态 fail-closed contract，不激活 #116。
+- Issue #128 固定的 43-path historical baseline identity保持不变。五个仍 active 的
+  transitional `trellis-continue` entry需要修订当前 bytes时，使用仅覆盖这五条路径的
+  reviewed `current_payload_sha256` 做正常版本绑定和漂移检测；其余路径继续使用
+  `baseline_sha256`。该 current binding不是 authenticity、anti-tamper或 anti-forgery
+  边界，不得泛化到其它 entry，也不授权或提前执行 #132 removal。
 
 ### 11.2 Rollback
 
@@ -527,6 +532,7 @@ Phase 2逐项复核，缺失或冲突返回 `implementation_required`。
 | P15 | 单 `branch_review` profile加 intent枚举 | `necessary_implementation_choice` | P2、production corpus范围 | 备选为三个重复 profiles；选定方案没有结构差异且保持最小 public surface |
 | P16 | Scope与 implementation使用 workflow routers | `necessary_implementation_choice` | P5、P6与 current clarification input ownership | 备选为扩大 DTO或新增 semantic reconstruction；router保持 caller AI fresh authoring |
 | P17 | Docs采用 `ssot_first` | `necessary_implementation_choice` | R11与公共合同变更 | 备选为 task-only delta；选定方案避免 package/runtime/docs漂移 |
+| P18 | 保留 issue #128 historical baseline，并为五个 active continue entry增加窄 current payload binding | `necessary_implementation_choice` | R11、AC15与 issue #128 immutable ownership baseline | 备选为伪造/重置历史 baseline或提前执行 #132 removal；选定方案只绑定五条当前 bytes，保持历史身份与 follow-up边界 |
 
-P13-P17 的 product scope expansion与 risk scope expansion均为 `false`。本规划无
+P13-P18 的 product scope expansion与 risk scope expansion均为 `false`。本规划无
 `approved_scope_expansion`，无待确认 unusual proposal。

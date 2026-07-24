@@ -104,7 +104,7 @@ workflow/standalone preconditions before a package command can run.
 
 `guru-team-skill-interface-1.2` is the frozen legacy contract. Its schema file,
 schema id, and field meanings are not reinterpreted by the minimal-handoff
-rollout. All nine current production packages now select the independent
+rollout. All ten active packages now select the independent
 `guru-team-skill-interface-1.3` contract; archived 1.2 artifacts remain
 historical and are never rewritten as public handoff state.
 
@@ -120,7 +120,9 @@ guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes both supported ids, names 1.3 as current for
 new work, uses compatibility scalar `interface_schema_id=1.3`, and publishes
 exact public-input, typed-output, and private-artifact schema inventories for
-all nine active production packages.
+all ten active packages and their 39 external exits. The independent
+`production-minimal-handoff-v1` manifest remains exactly three packages and 11
+exits; activating `guru-review-branch` does not rewrite that membership.
 
 ### 1. Scope And Trigger
 

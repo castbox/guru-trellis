@@ -14225,12 +14225,34 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
                 self.assertEqual(canonical.read_bytes(), dogfood.read_bytes())
                 text = canonical.read_text(encoding="utf-8")
                 self.assertIn("mandatory invoke the active `guru-review-branch` package", text)
-                self.assertIn("must not reproduce or reconstruct those rules", text)
-                self.assertIn("`implementation_required`", text)
-                self.assertIn("`scope_confirmation_required`", text)
-                self.assertIn("Missing, unknown, multiple, or unmapped exits", text)
-                self.assertNotIn("reuse_decision: reuse-for-closure", text)
-                self.assertNotIn("reuse_decisions[] decision=new-agent", text)
+                self.assertIn("only Phase 3.5 semantic owner", text)
+                for field in (
+                    "`profile`",
+                    "`mode`",
+                    "`task_ref`",
+                    "`base_ref`",
+                    "`committed_head`",
+                    "`review_intent`",
+                ):
+                    self.assertIn(field, text)
+                for route in (
+                    "`passed` targets planned `guru-review-task-publication`",
+                    "`implementation_required` targets workflow `guru-branch-review-implementation-router`",
+                    "`scope_confirmation_required` targets workflow `guru-branch-review-scope-router`",
+                    "`blocked` targets stop `branch-review-blocked`",
+                ):
+                    self.assertIn(route, text)
+                self.assertIn("Missing, unknown, multiple, stale, or unmapped exits", text)
+                for duplicated_detail in (
+                    "review-branch.sh",
+                    "check-review-gate.sh",
+                    "agent-assignment.json",
+                    "review-gate.json",
+                    "reviews/*.md",
+                    "reuse_decision: reuse-for-closure",
+                    "reuse_decisions[] decision=new-agent",
+                ):
+                    self.assertNotIn(duplicated_detail, text)
 
     def test_scanner_detects_forbidden_reference_in_dogfood_codex_agent_copy(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -14968,15 +14990,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "only remote HEAD/PR binding verification and draft-to-ready remain",
             "does not rebuild or rewrite local artifacts, create another commit, or push again",
         ]
-        missing = []
         for path in continue_surfaces:
             text = path.read_text(encoding="utf-8")
-            missing.extend(
-                f"{path.relative_to(repo)}: {phrase}"
-                for phrase in required
-                if phrase not in text
-            )
-        self.assertEqual(missing, [])
+            self.assertIn("explicit finish entry owns publication and archive behavior", text)
+            self.assertNotIn("finish-work.sh --json --from-trellis-finish-work", text)
+            for phrase in required:
+                self.assertNotIn(phrase, text)
 
     def test_final_summary_injects_only_plan_constrained_pr_runtime_facts(self) -> None:
         plan = self.build_plan()

@@ -120,6 +120,43 @@ def assert_branch_review_workflow_is_routing_only(
         testcase.assertNotIn(phrase, section)
 
 
+def assert_continue_entry_routes_only_branch_review(
+    testcase: unittest.TestCase, path: Path,
+) -> None:
+    text = path.read_text(encoding="utf-8")
+    testcase.assertIn("mandatory invoke the active `guru-review-branch` package", text, path)
+    testcase.assertIn("only Phase 3.5 semantic owner", text, path)
+    testcase.assertIn("Typed-exit route:", text, path)
+    for field in (
+        "`profile`",
+        "`mode`",
+        "`task_ref`",
+        "`base_ref`",
+        "`committed_head`",
+        "`review_intent`",
+    ):
+        testcase.assertIn(field, text, path)
+    for exit_id, consumer in (
+        ("`passed`", "`guru-review-task-publication`"),
+        ("`implementation_required`", "`guru-branch-review-implementation-router`"),
+        ("`scope_confirmation_required`", "`guru-branch-review-scope-router`"),
+        ("`blocked`", "`branch-review-blocked`"),
+    ):
+        testcase.assertIn(exit_id, text, path)
+        testcase.assertIn(consumer, text, path)
+    for phrase in (
+        "review-branch.sh",
+        "check-review-gate.sh",
+        "agent-assignment.json",
+        "review-gate.json",
+        "reviews/*.md",
+        "finding closure",
+        "fresh final review",
+        "recorder/checker",
+    ):
+        testcase.assertNotIn(phrase, text, path)
+
+
 class SourceValidationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
@@ -418,13 +455,15 @@ class SourceValidationTests(unittest.TestCase):
             encoding="utf-8"
         )
         for phrase in (
-            "43 inventory-pinned upstream overlay payloads",
-            "`transitional_legacy` assets owned by issue #132",
-            "legacy `schema 1.2`",
+            "43 inventory-pinned upstream overlay paths",
+            "`transitional_legacy` assets whose removal is owned by issue #132",
+            "issue #128 path/baseline identity remains immutable",
+            "exact five issue #131 continue bindings",
             "`explicit-post-planning-review` implement-agent wording",
             "must not guide current Guru package/runtime behavior",
         ):
             self.assertIn(phrase, overlay_spec)
+        self.assertRegex(overlay_spec, r"Historical\s+`schema 1\.2`")
 
     def test_sync_base_entrypoints_bind_prepare_to_reviewed_resolution(self) -> None:
         start_paths = [
@@ -526,6 +565,59 @@ class SourceValidationTests(unittest.TestCase):
             self.assertNotRegex(text, r"(?i)\bgit\s+commit\b", path)
             for phrase in workflow_forbidden:
                 self.assertNotIn(phrase, text, path)
+
+    def test_canonical_continue_entries_only_route_branch_review_skill(self) -> None:
+        entries = [
+            REPO / "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+            REPO / "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+            REPO / "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+            REPO / "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+            REPO / "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        ]
+        for path in entries:
+            assert_continue_entry_routes_only_branch_review(self, path)
+
+    def test_public_docs_report_current_branch_review_package_state(self) -> None:
+        readmes = [
+            REPO / "README.md",
+            REPO / "trellis/workflows/guru-team/README.md",
+            REPO / "trellis/presets/guru-team/README.md",
+        ]
+        stale_phrases = (
+            "All nine current production packages",
+            "all nine active production packages",
+            "all nine workflow packages",
+            "九个 production packages",
+            "九包 public contracts",
+            "九份 corpora",
+            "阶段九个 production",
+        )
+        for path in readmes:
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("guru-review-branch", text, path)
+            self.assertRegex(text, r"(?:10 Skills / 39 exits|10/39|十个 active packages 共声明\s*39)")
+            self.assertRegex(text, r"(?:唯一的|sole) Phase 3\.5 semantic owner")
+            self.assertIn("deterministic", text, path)
+            self.assertIn("11 exits", text, path)
+            for phrase in stale_phrases:
+                self.assertNotIn(phrase, text, path)
+
+        durable_docs = [
+            REPO / ".trellis/spec/workflow/skill-package-contract.md",
+            REPO / ".trellis/spec/workflow/index.md",
+        ]
+        for path in durable_docs:
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("ten active", text, path)
+            self.assertRegex(text, r"39\s+external\s+exits")
+            self.assertIn("guru-review-branch", text, path)
+            self.assertRegex(text, r"11\s+exits")
+            for phrase in stale_phrases:
+                self.assertNotIn(phrase, text, path)
+        self.assertRegex(
+            durable_docs[0].read_text(encoding="utf-8"),
+            r"three packages and 11\s+exits",
+        )
 
     def test_public_readmes_share_standalone_runtime_semantics(self) -> None:
         readmes = [

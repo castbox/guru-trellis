@@ -1,0 +1,903 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "005",
+  "task": {
+    "id": "131-guru-review-branch",
+    "path": ".trellis/tasks/07-23-131-guru-review-branch",
+    "status": "in_progress",
+    "branch": "codex/131-guru-review-branch"
+  },
+  "issue": {
+    "primary_issue": 131,
+    "ledger_sha256": "e9e82419654384ac5a03cc7875b977bc83b4265ee21c1abd0f895d69f448f7b7"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/planning-approval.json",
+      "sha256": "7ff2cf7b51e28b95e3f2402d34de250fbd5a1c8d0429485ca07948b3620e9b31",
+      "size": 47708
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      "sha256": "e346a557364e7b6a3815d65b36b8ab66bb1c9947d73f1855c62642c843a3eed0",
+      "size": 40833
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/issue-scope-ledger.json",
+      "sha256": "e9e82419654384ac5a03cc7875b977bc83b4265ee21c1abd0f895d69f448f7b7",
+      "size": 2710
+    },
+    "task": {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task.json",
+      "sha256": "69841b4e5f914a965c1cbda7fb83bf6c8f8ec9d693e6a2dbed9920595cda2adb",
+      "size": 654
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/trellis-continue/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bce42bb79de7abdf8984afd8b68fe2227c9c8189",
+        "worktree_sha256": "9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/commands/trellis/continue.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3b866c7976a253d9f317a12cb5557177fefe0a19",
+        "worktree_sha256": "6260438ddc68e0f69e263f19bd40d952da5608c1e291afe1b71382953fcc43ea",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/prompts/trellis-continue.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "966a757499ed935431fb5a9077bda72293be30d7",
+        "worktree_sha256": "26315341df30cabd67f854d4c2eb2edfb91250c0fcdf675815bd9b6dafa955d0",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/trellis-continue/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bce42bb79de7abdf8984afd8b68fe2227c9c8189",
+        "worktree_sha256": "9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/commands/trellis-continue.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4baffe190391d3922b48ad2f484ad3cfbb8de13b",
+        "worktree_sha256": "b0e8ea40324442d70e3aa76c123a1b4e0ddbcea00e94da599594b0e3b707301c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1e537c6f5bef4fa94443d840f9cebb02297ab348",
+        "worktree_sha256": "c62414712e19ca0b801adc266a357e9717b4fafa25322fca8ef56a021af39638",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/preset/index.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bdb47fedc34119fc025072497b4d7cf03080bad7",
+        "worktree_sha256": "7f33f39d881191c653ec0acb06a0e9e75345ecf3469b2675771fa17b25d26ce3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7df23092ce749f62958b0704e761419642741d2f",
+        "worktree_sha256": "d04ba7fe1ddc923f00aada24133d43e96ca3fe4efaefae802e2c527af5268265",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "33968f0366a8c7c98779edadef461351fbd085de",
+        "worktree_sha256": "e07288f50ed28955376285fe7d6cc1497e898dabe76cc30171fab0fd8587368e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1a1af13afdd46423b14b5d2e11a4b16fa9187e8e",
+        "worktree_sha256": "9ebb063e6051cf5cbc866c65dd15aacd2aa2c0d5a66a02461ea9daf5c89abeaa",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dc7ee63ab7d0e78363bfb07a70edb2bb0216b523",
+        "worktree_sha256": "922d9a637d07053320b30d4389a617c636693b58e20d5dc6dd53687c94fcb3b6",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5724f1895b2ef78232c300fb83b9f832f546cda",
+        "worktree_sha256": "45686a5ecf1406e35160786d501009c1fe749a1eee4a30b89d881a5946c45286",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5f817fa138bc6faa755674624e6b331e3731d20",
+        "worktree_sha256": "4f7dec0efdff396f635e3ac5aee9ae9b5e389220b1b4b060a3f0175b2bcdf873",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "39d8b75e0899d1a565cc95e7724813a712cfc48b",
+        "worktree_sha256": "0d8ed1e8c73e1cb05306b787858b41a5f6b57a51a009f0a3f2c0125c21759dcc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/contract-wording-review.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a974240164b6cf627093b0dfd62556eaec9cf388",
+        "worktree_sha256": "2ee7b44b88e64b2b2a77980961fd4b66d8d8570b96ab54b3e1c49406c7692754",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "14563f8dfe564751cb8d11009a6e87f620ac7389",
+        "worktree_sha256": "0a7928446195491ce0e6eeee1311040b81c36b843b2b365bc9c6cbd07dcc766d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ce611c06facef75484be447e7495d0fa6c5fdc9c",
+        "worktree_sha256": "022d4f1635c9fcbf25b6a3eac92b830f686ccd1ce906f3974e8df3090509c698",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d26b4df2f055aa8137a99aaee8b0607c2d767c53",
+        "worktree_sha256": "421a859cfbf457d64a40f45d807bd1f9bd93d240ea819526c22b11fa1b1bae3b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "037f3c6dc9b869f938304c215de0bf50e4bf4fcd",
+        "worktree_sha256": "e346a557364e7b6a3815d65b36b8ab66bb1c9947d73f1855c62642c843a3eed0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "be1ee33dafb82d451d4e480b25a4b7dc7597593770d0dbbaafc87d57e522f651",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/planning-approval.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "39c9c227ea7992cf956e4d6ded820530cb654ab0",
+        "worktree_sha256": "7ff2cf7b51e28b95e3f2402d34de250fbd5a1c8d0429485ca07948b3620e9b31",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c89b8ccb52c4ebbc85cb19b6964e64cb5add2214",
+        "worktree_sha256": "cfda983e34fee2ea22a8019a309bd9f915e10368dee67692ee9c7d6392aa6e2e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "94e9c239913cc2b5d92c739be37f9fd527da4ecc",
+        "worktree_sha256": "34620458b23ab01169f48cdd3578ea737acbaa796556f7c683aa427324af3db2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/06-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "64f985bcf4e70e5db36a16978d3eaffc165e058d3804018c69ef702c3b12bbcb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "023b3e780b10a23757af281192ff7ff61a66a329495fc054bd4a2798e423ca69",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2e1cf5b90c3ad2223159d20d9480bf3e22591f86c60632e4031ad40d14edb491",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8104038c06c8af0eb0237188ca92940cd0785c23",
+        "worktree_sha256": "1f85496fe7970117d62d59daaee765502ac6f14d18af7d3822833ef4335b4dcc",
+        "mode": "100644"
+      },
+      {
+        "path": "README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f8b5da7085f8dc788e4114d1cd1e19693c86e10",
+        "worktree_sha256": "2e8d7bba7f2178620f3ef1a2d0747aa5e770293bb6acc96ff08c850cc2922adb",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f468db27dc25d963ba9d9af4595f407f712892f9",
+        "worktree_sha256": "b7678b2456c36a4bfa745b09a9486f2ddf5d02932f7be77a9910d773b0e309ac",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bce42bb79de7abdf8984afd8b68fe2227c9c8189",
+        "worktree_sha256": "9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3b866c7976a253d9f317a12cb5557177fefe0a19",
+        "worktree_sha256": "6260438ddc68e0f69e263f19bd40d952da5608c1e291afe1b71382953fcc43ea",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "966a757499ed935431fb5a9077bda72293be30d7",
+        "worktree_sha256": "26315341df30cabd67f854d4c2eb2edfb91250c0fcdf675815bd9b6dafa955d0",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bce42bb79de7abdf8984afd8b68fe2227c9c8189",
+        "worktree_sha256": "9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4baffe190391d3922b48ad2f484ad3cfbb8de13b",
+        "worktree_sha256": "b0e8ea40324442d70e3aa76c123a1b4e0ddbcea00e94da599594b0e3b707301c",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "83e132343d342622a08433cda0314823088c6538",
+        "worktree_sha256": "1ac21e7800bbcc3879218acc6237589d78d41eb282e40565105efa095346f502",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8144fb88b5e38f6754738e09dcc1b2827340a409",
+        "worktree_sha256": "de95d0be187b4643f12add145f72fa7fe35d2649ad10b5f2e1f5eb18854df9f5",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "490e0db6a5100b2820de73948a973bc408b2e8ff",
+        "worktree_sha256": "e82e68e038c036f4b94199fd21d10ffffb97d19e3081274fe5a4c72050048eac",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b06800f2ff632e8cdd9bbd4cc29c345dd4135322",
+        "worktree_sha256": "c878e28a00724232d490bb6e2b37b92f20da101fc500f9cb9b2db681c930c9d7",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5d4832f92dd34bc31e188c67af58f8cd8ab874d8",
+        "worktree_sha256": "66ae92fc5f7841e4b9fc15fe20ba1184d731a600847740f2cf06b5b6beab573d",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "53608b1d148035ee87b0fe4f700a6065920e00ba",
+        "worktree_sha256": "b213f742ab5075b466adcff7bb242c35b90644637c3244d8e095bcb551227f35",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4e2c9626fc0ef4a0515fc2453ad4f03b449ed64",
+        "worktree_sha256": "5e79c693600a6e22293f5adfe176c88f9a2b41ba790c49aa1864477068533849",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0b6003deb5eb5bd9d481617079644e14fd0d9f2b",
+        "worktree_sha256": "4756205628b069257238889eabf3d5eb5fb3d4c6ce29156b3940e8f82760243a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6b649960ce11de5554ec9d5f94621a531cf36066",
+        "worktree_sha256": "53387ab365a12997fcb5b99527bbbf7d62a327d3d856340d2508b3e466c1942e",
+        "mode": "100644"
+      }
+    ],
+    "digest": "0e3e68307254b1bca7afb057fa314213e62dc967a9bb176036d6fa1c0d66b69e"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/trellis-continue/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".claude/commands/trellis/continue.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/prompts/trellis-continue.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/trellis-continue/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".cursor/commands/trellis-continue.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/preset/index.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/index.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/contract-wording-review.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/planning-approval.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/06-finding-closure.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "README.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+      "coverage_source": ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/005.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/spec/preset/index.md",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/preset/upstream-ownership.md",
+    ".trellis/spec/workflow/index.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/contract-wording-review.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/design.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/implementation-handoff.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/planning-approval.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/review-gate.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/review.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/06-finding-closure.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/005.json",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/ownership/upstream-ownership.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+    "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #131 收敛分支审查入口",
+    "body": "背景：\nRound 7 Branch Review 发现五个平台 trellis-continue 入口仍复制 Branch Review 私有闭环，public Docs 也未反映当前十个 active packages 与唯一 Phase 3.5 semantic owner。\n\n变更：\n将五个 canonical 入口及其 installed 副本收敛为 guru-review-branch 六字段 public invocation 与四条精确 typed routes；以 P18 为五个仍 active 的 continue 路径增加 current payload 版本绑定，同时保持 issue #128 的 43-path historical identity；同步 Docs SSOT、ownership validator、schema 与回归。\n\n边界：\n不修改现有 Skill id、exit id 或 public DTO；不执行 issue #132 removal；#116 publication package 仍为 planned/missing；本提交不包含 push、PR、部署或 issue close。\n\n验证：\nFresh Phase 2 通过 runtime 566、Skill 171、preset 45、contract 8、ownership 9、source/installed eval 各 7、10/39/23 validators、1903-file inventory、双 apply、clean throwaway、静态与敏感信息检查。\n\nRefs #131",
+    "bytes": "fix(workflow): #131 收敛分支审查入口\n\n背景：\nRound 7 Branch Review 发现五个平台 trellis-continue 入口仍复制 Branch Review 私有闭环，public Docs 也未反映当前十个 active packages 与唯一 Phase 3.5 semantic owner。\n\n变更：\n将五个 canonical 入口及其 installed 副本收敛为 guru-review-branch 六字段 public invocation 与四条精确 typed routes；以 P18 为五个仍 active 的 continue 路径增加 current payload 版本绑定，同时保持 issue #128 的 43-path historical identity；同步 Docs SSOT、ownership validator、schema 与回归。\n\n边界：\n不修改现有 Skill id、exit id 或 public DTO；不执行 issue #132 removal；#116 publication package 仍为 planned/missing；本提交不包含 push、PR、部署或 issue close。\n\n验证：\nFresh Phase 2 通过 runtime 566、Skill 171、preset 45、contract 8、ownership 9、source/installed eval 各 7、10/39/23 validators、1903-file inventory、双 apply、clean throwaway、静态与敏感信息检查。\n\nRefs #131\n",
+    "sha256": "d8188dae2bc55c65755ef580789977fed35732213f37ca614e5ccf7cf0a78648"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "已复核全部 43 个 current dirty paths 与 fresh Phase 2 的 42-path snapshot加正式 phase2-check recorder delta；全部属于 issue #131 BR7 finding-fix、P18 approved planning 或 task-local evidence。中文 Conventional Commit message准确陈述 current change、验证、publication/#132限制与 Refs #131；source checkout及 index均干净，无 unrelated、ambiguous、secret、部署或历史改写路径。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户在看到 P18 规划边界后再次明确回复“确认继续”，授权继续 fresh Phase 2、本地 finding-fix task commit 与 Branch Review；不授权 push、PR、发布、issue close、部署或 issue #132 removal。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-24T02:33:25Z",
+    "plan_digest": "d58104581d01af22ba68498d357ede7ead3ec4172261c7a866b7f1805b2bc194"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

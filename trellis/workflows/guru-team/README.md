@@ -53,7 +53,9 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 `guru-create-work-commit` reserved tombstone，并激活 `guru-sync-base`、
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request` 与
-`guru-create-task-workspace`、`guru-create-task-commit`。Workflow 不得为
+`guru-create-task-workspace`、`guru-approve-task-plan`、`guru-check-task`、
+`guru-create-task-commit`、`guru-review-branch`。这十个 active packages 共声明
+39 个 external exits。Workflow 不得为
 reserved/planned id 伪造 invocation route。当前 canonical
 extension version 是待发布的 `0.6.5-guru.21`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
@@ -786,36 +788,20 @@ sub-agent assignment 记录在 task-local `agent-assignment.json`。`logical_rol
 stale、interrupt、unfinished termination、resume/replacement、completed、failed 的状态
 处理也记录在 `status_events[]`；脚本不决定 timeout 是否等于 stale，也不决定是否终止 agent。
 
-Branch Review Gate 必须先让所有发现过 finding 的 reviewer 作为同一 technical
-`问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings；如果原 reviewer 失败/中断且无法继续，
-必须用 `status_events[]` + `reuse_decisions[] decision=replace` 记录替代闭环链，并由替代
-`问题闭环审查代理` 只闭环该 finding。之后再由 fresh
-`最终放行审查代理` 独立审查当前 HEAD 的完整 diff 并确认 0 findings，最后调用
-`review-branch.sh` 固化结论。任意 finding priority（P0/P1/P2/P3）都会阻断；
-`observation` 仅记录非阻断观察，`followup_candidate` 仅记录 scope 外后续候选。
-最终放行审查还必须验证 Docs SSOT reconciliation 已经在 Phase 2 完成：读取 approved
-`Docs SSOT Plan`、实现 handoff、`phase2-check.json`、durable docs、task artifacts
-和完整 diff，确认 `ssot_first` / `delta_first` / `bootstrap_or_repair_docs` /
-`no_docs_update_needed` 对应条件已经满足。当前 scope 的 Docs SSOT 不一致必须是 finding；
-final reviewer 不首次 merge durable docs，也不替 implement/check 代理补 Phase 2 docs 工作。
-独立 review sub-agent 只从 AI 角度审查文档、代码、测试、artifact 和 diff evidence，
-不继续实现、不替 implement/check 代理补工作，也不运行 `review-branch.sh`、
-`check-review-gate.sh` 或 `record-*` 这类 Guru Team recorder/validator 扩展脚本；
-这些脚本由 main session 在 review 完成后执行。
-`review-branch.sh` 是 recorder / validator，不是 reviewer；`--pass` 必须先写
-每轮 task-local `reviews/*.md` raw report，再写最终 `review.md` rollup；rollup
-必须链接所有 raw reports。然后带中文 `--summary`、至少一条 `--evidence`，
-`--review-source independent-agent`、`--review-report .trellis/tasks/<task>/review.md`
-和 `--agent-assignment .trellis/tasks/<task>/agent-assignment.json`。Gate 会记录
-final `review.md` digest、raw `review_reports[]` digest、assignment digest、中文角色摘要和 status event count，并校验同 agent 或替代闭环先于 fresh final、
-未完成终止的恢复/继任链已到达 `completed` 或 `failed`、最终放行代理不是 earlier
-finding owner 或替代闭环 reviewer。`--reviewer` 只记录身份，不能替代 review report digest；
-`*-main-session` / `self-review` 不能通过 gate。
-Phase 2 的官方 `trellis-check` sub-agent 只提供 commit 前 raw review evidence；随后
-active `guru-check-task` 独占完整 semantic check、四出口与 `phase2-check.json`。Phase 3 Branch Review 必须由独立 review sub-agent 审查完整
-`origin/<base>...HEAD` diff 并输出 `review.md`，最终门禁以 `review-gate.json` 为准，
-且 `review-branch.sh` 会先校验 Phase 2 check evidence 和 post-commit dirty-path
-覆盖关系。
+Active `guru-review-branch` 是唯一的 Phase 3.5 semantic owner。Global workflow 与
+平台 `trellis-continue` entry 只用 `profile`、`mode`、`task_ref`、`base_ref`、
+`committed_head`、`review_intent` 六字段 public input mandatory invoke 该 package，
+并消费 `passed`、`implementation_required`、
+`scope_confirmation_required`、`blocked` 四个 typed exits。Reviewer lifecycle、
+finding qualification、Docs SSOT Gate、liveness/recovery、private artifacts 与 re-entry
+规则均由 package 独占，入口不得复制。
+
+`review-branch.sh` 与 `check-review-gate.sh` 只是 package-owned deterministic
+recorder/validator implementation details，在 AI Review Gate 后记录和校验 objective
+facts；它们不能替代 semantic review，也不能决定 scope、finding、充分性、pass 或 route。
+Phase 2 的官方 `trellis-check` sub-agent 仍只提供 commit 前 raw evidence，active
+`guru-check-task` 独占 Phase 2 semantic check；Phase 3.5 的全部判断由
+`guru-review-branch` 独占。
 
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
 `finish-work`，也不得提交 `review.md` / `reviews/*.md` / `review-gate.json` 等 Trellis metadata。

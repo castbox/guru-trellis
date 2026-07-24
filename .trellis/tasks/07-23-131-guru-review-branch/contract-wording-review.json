@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "skill_id": "guru-review-contract-wording",
-  "generated_at": "2026-07-23T12:42:58Z",
+  "generated_at": "2026-07-24T01:35:24Z",
   "profile": "planning_artifacts",
   "mode": "workflow",
   "vocabulary_version": "contract-wording-v2",
@@ -20,18 +20,18 @@
         "kind": "markdown_file",
         "id": "file:.trellis/tasks/07-23-131-guru-review-branch/design.md",
         "path": ".trellis/tasks/07-23-131-guru-review-branch/design.md",
-        "size_bytes": 23473,
-        "content_sha256": "9b7db338b6c34ed261db10a22b07803fa4950929fbdfecf7dc741da980c5efce"
+        "size_bytes": 24307,
+        "content_sha256": "0a7928446195491ce0e6eeee1311040b81c36b843b2b365bc9c6cbd07dcc766d"
       },
       {
         "kind": "markdown_file",
         "id": "file:.trellis/tasks/07-23-131-guru-review-branch/implement.md",
         "path": ".trellis/tasks/07-23-131-guru-review-branch/implement.md",
-        "size_bytes": 16965,
-        "content_sha256": "fa902098b919fa30d8d5a9fee028eb9074f2e40b0cb1a42e4c6530efc2ec53cc"
+        "size_bytes": 17303,
+        "content_sha256": "022d4f1635c9fcbf25b6a3eac92b830f686ccd1ce906f3974e8df3090509c698"
       }
     ],
-    "scope_sha256": "103ea0a66e215031b6c7971651ab27aee3b799602704b839db2e8760b04b72b8"
+    "scope_sha256": "403a0161347a07d5a5f72a24dceaa58361959201185fab6ad8a24d86880f30a1"
   },
   "scan": {
     "hits": [],
@@ -43,8 +43,8 @@
     "unchecked_normative_hits": [],
     "ai_review_gate": {
       "status": "passed",
-      "reviewer": "codex-main-session-issue-131-final-planning-wording",
-      "summary": "已在 planning adequacy revision后重新完整审查固定范围内的 prd.md、design.md、implement.md。受控词命中为零，current scan与三文件摘要一致。规划现已显式承接第4条 target-owned authoring-seed edge：#146 production migration manifest保持 3-Skill/11-exit集合与 activation identity，committed consumer/projection binding切换到 #131并同步 authoring edge清单。其余 #131 authority保持不变：qualification先于 severity，未确认 proposal只进入 clarification，finding fix强制经过 Phase 2、commit、closure与 fresh final review；planned #116 bridge只保留 producer seed并在 target package缺失时 fail closed。Workflow、Skill、runtime、artifact、eval、preset、update/reapply与 Docs SSOT均有单一 owner、机器可验证 gate和确定停止条件。",
+      "reviewer": "codex-main-session-issue-131-br7-planning-wording-reentry",
+      "summary": "已在 content_changed 路由后对 current prd.md、design.md、implement.md 完成同 profile 全量重入。三份文档固定范围完整，受控词命中为零，P18 明确归类为 product/risk scope expansion 均为 false 的 necessary implementation choice。它只解决 issue #128 immutable baseline 与五个 active continue entry 当前 bytes 的正常兼容，不弱化 #131 requirement，不新增并行实现路径，不引入敌对安全模型，也不改变 #116/#132 边界。所有 conditional route、deterministic gate、AC 和 Docs SSOT owner 仍有精确触发、唯一 owner 与可观察结果。",
       "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
       "checked_dimensions": {
         "complete_profile_scope": true,
@@ -69,8 +69,8 @@
     "status": "not_required",
     "confirmed_by": null,
     "confirmed_at": null,
-    "reason": "本轮只修正 task-local planning adequacy并承接 accepted_current已授权的 producer-to-consumer edge；GitHub requirement authority未变，post-planning approval仍独立等待用户查看最终文档后确认。"
+    "reason": "同 profile re-entry 只确认 task-local wording 与 planning adequacy；post-planning approval 仍由用户在看到 current links 后单独确认。"
   },
   "typed_exit": "pass",
-  "facts_sha256": "fb815b7b744db7c405ce4ca9b6bd8d000bc33e468c19da46071300e470640e9c"
+  "facts_sha256": "6e84c63d23679863a5aac6d2c29c8849e1534c56e1d2012175d9e475459919fa"
 }

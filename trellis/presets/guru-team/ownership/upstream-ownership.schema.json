@@ -159,6 +159,10 @@
         "category": {"enum": ["transitional_legacy", "upstream_owned", "unclassified"]},
         "migration_state": {"enum": ["active", "removed"]},
         "baseline_sha256": {"$ref": "#/$defs/sha256"},
+        "current_payload_sha256": {
+          "description": "Reviewed current bytes for the five active Issue #131 continue entries; baseline_sha256 remains the immutable Issue #128 historical identity.",
+          "$ref": "#/$defs/sha256"
+        },
         "generated_in_clean_init": {"type": "boolean"},
         "upstream_producer": {"type": "string", "minLength": 1},
         "current_guru_behavior": {"type": "string", "minLength": 1},
