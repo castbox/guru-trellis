@@ -1,11 +1,11 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-07-24T00:24:41Z",
+  "generated_at": "2026-07-24T03:47:00Z",
   "task_dir": ".trellis/tasks/07-23-131-guru-review-branch",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/131-guru-review-branch",
-  "head": "f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53",
+  "head": "c18efe0f73f03d216a7f4e873907569922e800be",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/guru-create-task-commit/interface.json",
@@ -218,6 +218,7 @@
     ".trellis/guru-team/skills/schemas/production-migration-manifest.schema.json",
     ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
     ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/preset/index.md",
     ".trellis/spec/preset/installer.md",
     ".trellis/spec/preset/overlay-guidelines.md",
     ".trellis/spec/preset/upstream-ownership.md",
@@ -241,6 +242,7 @@
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-final-rerun.md",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
     ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
@@ -253,10 +255,14 @@
     ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
     ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
     ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/06-finding-closure.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md",
+    ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
     ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/001.json",
     ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
     ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
     ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+    ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/005.json",
     ".trellis/tasks/07-23-131-guru-review-branch/task-start-context.json",
     ".trellis/tasks/07-23-131-guru-review-branch/task.json",
     ".trellis/workflow.md",
@@ -272,6 +278,8 @@
     "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
     "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
     "trellis/presets/guru-team/ownership/upstream-ownership.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+    "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
     "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
     "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
     "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
@@ -347,16 +355,20 @@
   "command": [
     "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/131-guru-review-branch/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
     "review-branch",
+    "--json",
     "--task",
     ".trellis/tasks/07-23-131-guru-review-branch",
     "--base-branch",
     "main",
+    "--pass",
     "--summary",
-    "Round 7 fresh final review 与 Round 8 problem-discovery role re-entry 覆盖 origin/main...f4e2a62b；资格化 F-131-BR7-01 P2 与 F-131-BR7-02 P3，历史 findings 关闭但当前不能放行。",
+    "Round 12 全新独立最终审查覆盖 origin/main...c18efe0f 的完整 328-file committed range；全部历史 findings 已关闭，Round 11 transient candidate 经复核为 rejected，当前 P0-P3 与 scope proposals 均为 0，Branch Review semantic gate 通过。",
     "--evidence",
-    "全新 technical reviewer 独立覆盖 320-file range、planning/Phase2/commit/历史 reviews、platform entries、Docs SSOT、runtime566、Skill169、preset45、contract8、ownership6、source/installed eval7x2、validators与安全/部署边界；Round8仅重录相同 findings 为合法 owner evidence。",
+    "Fresh Phase 2、task commit 005 的 44/44 tree continuity、Round 9 owner closure、Round 11 qualification 与 Round 12 fresh-final report一致；五平台入口、43 historical+5 current ownership、active 10/39 与 production 3/11、throwaway/update、安全及部署边界均已复核。",
+    "--evidence",
+    "部署影响复核：deterministic 分类器将 production-minimal-handoff.json 及其 schema 归入 database 类别，但它们实际是 Skill API migration manifest，不是业务数据库 migration；无需 DB、CI/CD、容器、Kubernetes、Makefile 或 deploy 同步。",
     "--reviewer",
-    "/root/issue_131_branch_review_final2",
+    "/root/issue_131_branch_review_final4",
     "--review-source",
     "independent-agent",
     "--review-report",
@@ -364,122 +376,67 @@
     "--agent-assignment",
     ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
     "--skill-input",
-    ".trellis/.runtime/guru-team/issue131-branch-review-round8-public-input.json",
+    ".trellis/.runtime/guru-team/issue131-branch-review-round12-public-input.json",
     "--semantic-review-file",
-    ".trellis/.runtime/guru-team/issue131-branch-review-round8-semantic.json",
+    ".trellis/.runtime/guru-team/issue131-branch-review-round12-semantic.json",
     "--typed-exit",
-    "implementation_required",
-    "--json"
+    "passed"
   ],
   "conclusion": {
-    "passed": false,
-    "summary": "Round 7 fresh final review 与 Round 8 problem-discovery role re-entry 覆盖 origin/main...f4e2a62b；资格化 F-131-BR7-01 P2 与 F-131-BR7-02 P3，历史 findings 关闭但当前不能放行。",
+    "passed": true,
+    "summary": "Round 12 全新独立最终审查覆盖 origin/main...c18efe0f 的完整 328-file committed range；全部历史 findings 已关闭，Round 11 transient candidate 经复核为 rejected，当前 P0-P3 与 scope proposals 均为 0，Branch Review semantic gate 通过。",
     "block_priorities": [
       "P0",
       "P1",
       "P2",
       "P3"
     ],
-    "blocking_findings_count": 2,
-    "findings_count": 2,
+    "blocking_findings_count": 0,
+    "findings_count": 0,
     "observations_count": 1,
     "followup_candidates_count": 1
   },
-  "findings": [
-    {
-      "priority": "P2",
-      "message": "Platform trellis-continue entries 仍复制 guru-review-branch Branch Review step-local 合同",
-      "path": "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-      "candidate_ref": "C-131-BR7-01",
-      "disposition": "qualified_finding",
-      "scenario_class": "normal_required_behavior",
-      "affected_behavior": "Platform trellis-continue entries 仍复制 guru-review-branch Branch Review step-local 合同",
-      "evidence_refs": [
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
-      ],
-      "requirement_refs": [
-        "prd.md:R4",
-        "prd.md:R11",
-        "prd.md:AC13",
-        "prd.md:AC15",
-        "prd.md:AC16",
-        "design.md:9",
-        "implement.md:Step 6",
-        "implement.md:Step 8",
-        "AGENTS.md:3.1"
-      ],
-      "scope_basis": "Issue #131 approved platform-entry dispatcher-only and active Skill ownership boundary",
-      "qualification_reason": "普通 continue 路径会同时读取 entry 的 active-owner 声明与 legacy review-branch recorder、metadata audit、Phase 2 re-entry 规则，形成第二份相互矛盾的权威；无需恶意输入或非常规场景。",
-      "finding_ref": "F-131-BR7-01",
-      "severity": "P2",
-      "owner_round": 8,
-      "reviewed_head": "f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53",
-      "status": "open",
-      "closure_evidence": []
-    },
-    {
-      "priority": "P3",
-      "message": "Durable/public Docs SSOT 的 current active package 数量与 guru-review-branch owner 描述漂移",
-      "path": ".trellis/spec/workflow/skill-package-contract.md",
-      "candidate_ref": "C-131-BR7-02",
-      "disposition": "qualified_finding",
-      "scenario_class": "normal_required_behavior",
-      "affected_behavior": "Durable/public Docs SSOT 的 current active package 数量与 guru-review-branch owner 描述漂移",
-      "evidence_refs": [
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
-      ],
-      "requirement_refs": [
-        "design.md:12.1",
-        ".trellis/spec/docs/public-docs.md:342-376",
-        ".trellis/spec/workflow/skill-package-contract.md:107-123",
-        ".trellis/spec/workflow/index.md:39-44"
-      ],
-      "scope_basis": "Issue #131 approved ssot_first reconciliation and public documentation current-state contract",
-      "qualification_reason": "正常阅读、安装与 upgrade/update 指引会直接看到 9/10 active package 计数和 owner 叙述冲突；validator 真实状态为 10 packages/39 exits，当前 task_delta_merged 断言不完整。",
-      "finding_ref": "F-131-BR7-02",
-      "severity": "P3",
-      "owner_round": 8,
-      "reviewed_head": "f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53",
-      "status": "open",
-      "closure_evidence": []
-    }
-  ],
+  "findings": [],
   "observations": [
     {
       "kind": "observation",
-      "message": "仓库未配置且环境无 ruff、shellcheck、mypy、pyright",
-      "path": "AGENTS.md",
-      "candidate_ref": "C-131-BR7-04",
+      "message": "五个 continue entries 中仍有 pre-existing planning approval schema 1.2 文案",
+      "path": "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "candidate_ref": "C-131-R12-03",
       "disposition": "observation",
       "scenario_class": "out_of_scope",
-      "affected_behavior": "仓库未配置且环境无 ruff、shellcheck、mypy、pyright",
+      "affected_behavior": "五个 continue entries 中仍有 pre-existing planning approval schema 1.2 文案",
       "evidence_refs": [
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/12-final-release.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/09-finding-closure.md"
       ],
-      "requirement_refs": [],
-      "scope_basis": "当前仓库 executable validation baseline",
-      "qualification_reason": "JSON、Bash、Python compile、tests、validators 与 eval 已通过；缺失工具不用于降低或提高 finding severity。"
+      "requirement_refs": [
+        "origin/main",
+        "Issue #131 accepted-current"
+      ],
+      "scope_basis": "该文案在 origin/main 与本次 finding-fix 之前已存在，Issue #131 当前范围只收敛 Branch Review step-local ownership",
+      "qualification_reason": "当前 committed diff 未引入或扩大该行为；fresh Phase 2 与最终审查将其分类为 adjacent observation，不构成 Issue #131 current-scope finding。"
     }
   ],
   "followup_candidates": [
     {
       "kind": "followup_candidate",
-      "message": "当前未 push，无法验证 exact remote feature-ref marketplace install",
+      "message": "当前未 push，无法从 remote exact feature ref 安装并复验当前 marketplace workflow/preset",
       "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "candidate_ref": "C-131-BR7-03",
+      "candidate_ref": "C-131-R12-02",
       "disposition": "followup_candidate",
       "scenario_class": "out_of_scope",
-      "affected_behavior": "当前未 push，无法验证 exact remote feature-ref marketplace install",
+      "affected_behavior": "当前未 push，无法从 remote exact feature ref 安装并复验当前 marketplace workflow/preset",
       "evidence_refs": [
-        ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/12-final-release.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md"
       ],
       "requirement_refs": [
-        "AGENTS.md:开箱即用门禁"
+        "AGENTS.md:开箱即用门禁",
+        "Issue #131 accepted-current"
       ],
-      "scope_basis": "当前明确不授权 push/publication",
-      "qualification_reason": "远端 exact feature ref 只有 push 后才存在；publication 前必须复验，不能以 public main 冒充。"
+      "scope_basis": "当前明确不授权 push 或 publication，remote feature ref 尚不存在",
+      "qualification_reason": "本地 unpublished canonical throwaway 已通过，但 publication 前必须在 remote exact feature ref 存在后复验；当前不得用 public main 冒充，也不把授权边界误报为本地实现缺陷。"
     }
   ],
   "issue_scope": {
@@ -541,23 +498,23 @@
     ]
   },
   "verification_evidence": {
-    "base_head": "origin/main...f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53",
-    "changed_file_count": 320,
-    "reviewer": "/root/issue_131_branch_review_final2",
+    "base_head": "origin/main...c18efe0f73f03d216a7f4e873907569922e800be",
+    "changed_file_count": 328,
+    "reviewer": "/root/issue_131_branch_review_final4",
     "review_source": "independent-agent",
     "review_report": {
       "path": ".trellis/tasks/07-23-131-guru-review-branch/review.md",
-      "sha256": "34620458b23ab01169f48cdd3578ea737acbaa796556f7c683aa427324af3db2",
-      "size_bytes": 7783,
-      "modified_at": "2026-07-24T00:23:06.718843+00:00"
+      "sha256": "2c58f6f8081107033f34199e3c7220406437feb6010db118ae46143afc8e2019",
+      "size_bytes": 12383,
+      "modified_at": "2026-07-24T03:41:34.082731+00:00"
     },
     "agent_assignment": {
       "path": ".trellis/tasks/07-23-131-guru-review-branch/agent-assignment.json",
-      "sha256": "89895f1d4513e1b32f4061e66aef1a680b2538d23ace3beca1a3f32e4e149dfa",
-      "size_bytes": 146276,
-      "modified_at": "2026-07-24T00:22:32.210763+00:00",
+      "sha256": "181bf00e61aedb6ead7a51e7aec394a28161f268b82fb82c3dc634c09841b08f",
+      "size_bytes": 177799,
+      "modified_at": "2026-07-24T03:40:30.409453+00:00",
       "schema_version": "1.2",
-      "artifact_head": "f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53",
+      "artifact_head": "c18efe0f73f03d216a7f4e873907569922e800be",
       "roles": [
         "实现代理",
         "最终放行审查代理",
@@ -565,11 +522,11 @@
         "问题闭环审查代理",
         "阶段二检查代理"
       ],
-      "agents_count": 5,
-      "review_rounds_count": 8,
-      "reuse_decisions_count": 17,
-      "status_events_count": 145,
-      "effective_status_events_count": 145,
+      "agents_count": 7,
+      "review_rounds_count": 12,
+      "reuse_decisions_count": 23,
+      "status_events_count": 170,
+      "effective_status_events_count": 170,
       "event_corrections_count": 0,
       "recovery_links_count": 0,
       "task": ".trellis/tasks/07-23-131-guru-review-branch",
@@ -663,10 +620,55 @@
         "sha256": "2e1cf5b90c3ad2223159d20d9480bf3e22591f86c60632e4031ad40d14edb491",
         "size_bytes": 9971,
         "modified_at": "2026-07-24T00:21:26.389932+00:00"
+      },
+      {
+        "round": 9,
+        "logical_role": "问题闭环审查代理",
+        "agent_id": "/root/issue_131_branch_review_final2",
+        "reviewed_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/09-finding-closure.md",
+        "sha256": "6ce6546b0a1b81fc0e3590d8fad5bc4016384a1dd7369a1391140a7e2bc49155",
+        "size_bytes": 15726,
+        "modified_at": "2026-07-24T02:51:19.343989+00:00"
+      },
+      {
+        "round": 10,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/issue_131_branch_review_final3",
+        "reviewed_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/10-final-release.md",
+        "sha256": "34c630307da1fe318faecacb5c8084c8b5e66ca9aa20ef2048d1cd8276f1bde7",
+        "size_bytes": 17966,
+        "modified_at": "2026-07-24T03:02:02.092755+00:00"
+      },
+      {
+        "round": 11,
+        "logical_role": "问题发现审查代理",
+        "agent_id": "/root/issue_131_branch_review_final3",
+        "reviewed_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/11-problem-discovery.md",
+        "sha256": "487ae97d488b2e020a034fd00172a1c316d555715b6e6944e82982bc38fdfe5f",
+        "size_bytes": 6626,
+        "modified_at": "2026-07-24T03:30:22.647715+00:00"
+      },
+      {
+        "round": 12,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/issue_131_branch_review_final4",
+        "reviewed_head": "c18efe0f73f03d216a7f4e873907569922e800be",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-23-131-guru-review-branch/reviews/12-final-release.md",
+        "sha256": "b47f8903a32bdc2d30ab416e1835a3b4c12cee0978828568ebc7d5adb19f03b7",
+        "size_bytes": 11157,
+        "modified_at": "2026-07-24T03:39:28.553627+00:00"
       }
     ],
     "evidence": [
-      "全新 technical reviewer 独立覆盖 320-file range、planning/Phase2/commit/历史 reviews、platform entries、Docs SSOT、runtime566、Skill169、preset45、contract8、ownership6、source/installed eval7x2、validators与安全/部署边界；Round8仅重录相同 findings 为合法 owner evidence。"
+      "Fresh Phase 2、task commit 005 的 44/44 tree continuity、Round 9 owner closure、Round 11 qualification 与 Round 12 fresh-final report一致；五平台入口、43 historical+5 current ownership、active 10/39 与 production 3/11、throwaway/update、安全及部署边界均已复核。",
+      "部署影响复核：deterministic 分类器将 production-minimal-handoff.json 及其 schema 归入 database 类别，但它们实际是 Skill API migration manifest，不是业务数据库 migration；无需 DB、CI/CD、容器、Kubernetes、Makefile 或 deploy 同步。"
     ],
     "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
   },
@@ -695,6 +697,7 @@
         ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
         ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
         ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/index.md",
         ".trellis/spec/preset/installer.md",
         ".trellis/spec/preset/overlay-guidelines.md",
         ".trellis/spec/preset/upstream-ownership.md",
@@ -710,6 +713,7 @@
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-final-rerun.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
@@ -720,6 +724,9 @@
         ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
         ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
         ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/06-finding-closure.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
         ".trellis/workflow.md",
         "README.md",
         "docs/requirements/README.md",
@@ -799,6 +806,7 @@
         ".trellis/guru-team/skills/schemas/production-migration-manifest.schema.json",
         ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
         ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/index.md",
         ".trellis/spec/preset/installer.md",
         ".trellis/spec/preset/overlay-guidelines.md",
         ".trellis/spec/preset/upstream-ownership.md",
@@ -822,6 +830,7 @@
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-final-rerun.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
         ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
@@ -834,10 +843,14 @@
         ".trellis/tasks/07-23-131-guru-review-branch/reviews/03-finding-closure.md",
         ".trellis/tasks/07-23-131-guru-review-branch/reviews/04-final-release.md",
         ".trellis/tasks/07-23-131-guru-review-branch/reviews/05-problem-discovery.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/06-finding-closure.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md",
+        ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/001.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+        ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/005.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-start-context.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task.json",
         ".trellis/workflow.md",
@@ -849,6 +862,8 @@
         "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
         "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
         "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
         "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
         "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
         "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
@@ -1091,10 +1106,12 @@
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/002.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/003.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/004.json",
+        ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/005.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task-start-context.json",
         ".trellis/tasks/07-23-131-guru-review-branch/task.json",
         "trellis/guru-team-extension.json",
         "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
         "trellis/skills/guru-team/consumers/workflow/production/review-branch-implementation-required.schema.json",
         "trellis/skills/guru-team/consumers/workflow/production/review-branch-scope-confirmation.schema.json",
         "trellis/skills/guru-team/migrations/production-minimal-handoff.json",
@@ -1153,6 +1170,7 @@
         ".trellis/guru-team/skills/packages/guru-review-branch/scripts/check-review-gate.sh",
         ".trellis/guru-team/skills/packages/guru-review-branch/scripts/invoke.sh",
         ".trellis/guru-team/skills/packages/guru-review-branch/scripts/review-branch.sh",
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
         "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
         "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
         "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
@@ -1208,6 +1226,7 @@
         ".trellis/guru-team/skills/packages/guru-review-branch/schemas/review-gate.schema.json",
         ".trellis/guru-team/skills/schemas/production-migration-manifest.schema.json",
         ".trellis/guru-team/skills/schemas/skill-interface-1.3.schema.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
         "trellis/skills/guru-team/consumers/workflow/production/review-branch-implementation-required.schema.json",
         "trellis/skills/guru-team/consumers/workflow/production/review-branch-scope-confirmation.schema.json",
         "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-blocked-output.schema.json",
@@ -1303,11 +1322,13 @@
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-fix.md",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round2-fix.md",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round5-fix.md",
+      ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-final-rerun.md",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-finding-fix.md",
       ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report.md",
       "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
       "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
       "trellis/skills/guru-team/consumers/workflow/production/review-branch-implementation-required.schema.json",
       "trellis/skills/guru-team/consumers/workflow/production/review-branch-scope-confirmation.schema.json",
       "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-blocked-output.schema.json",
@@ -1327,136 +1348,107 @@
   "skill_id": "guru-review-branch",
   "mode": "workflow",
   "review_intent": "fresh_final_review",
-  "typed_exit": "implementation_required",
+  "typed_exit": "passed",
   "semantic_review": {
-    "qualified_findings": [
-      {
-        "candidate_ref": "C-131-BR7-01",
-        "disposition": "qualified_finding",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "Platform trellis-continue entries 仍复制 guru-review-branch Branch Review step-local 合同",
-        "path": "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-        "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
-        ],
-        "requirement_refs": [
-          "prd.md:R4",
-          "prd.md:R11",
-          "prd.md:AC13",
-          "prd.md:AC15",
-          "prd.md:AC16",
-          "design.md:9",
-          "implement.md:Step 6",
-          "implement.md:Step 8",
-          "AGENTS.md:3.1"
-        ],
-        "scope_basis": "Issue #131 approved platform-entry dispatcher-only and active Skill ownership boundary",
-        "qualification_reason": "普通 continue 路径会同时读取 entry 的 active-owner 声明与 legacy review-branch recorder、metadata audit、Phase 2 re-entry 规则，形成第二份相互矛盾的权威；无需恶意输入或非常规场景。",
-        "finding_ref": "F-131-BR7-01",
-        "severity": "P2",
-        "owner_round": 8,
-        "reviewed_head": "f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53",
-        "status": "open",
-        "closure_evidence": []
-      },
-      {
-        "candidate_ref": "C-131-BR7-02",
-        "disposition": "qualified_finding",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "Durable/public Docs SSOT 的 current active package 数量与 guru-review-branch owner 描述漂移",
-        "path": ".trellis/spec/workflow/skill-package-contract.md",
-        "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/08-problem-discovery.md",
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
-        ],
-        "requirement_refs": [
-          "design.md:12.1",
-          ".trellis/spec/docs/public-docs.md:342-376",
-          ".trellis/spec/workflow/skill-package-contract.md:107-123",
-          ".trellis/spec/workflow/index.md:39-44"
-        ],
-        "scope_basis": "Issue #131 approved ssot_first reconciliation and public documentation current-state contract",
-        "qualification_reason": "正常阅读、安装与 upgrade/update 指引会直接看到 9/10 active package 计数和 owner 叙述冲突；validator 真实状态为 10 packages/39 exits，当前 task_delta_merged 断言不完整。",
-        "finding_ref": "F-131-BR7-02",
-        "severity": "P3",
-        "owner_round": 8,
-        "reviewed_head": "f4e2a62b8264dceb5078fd3ceb2caa3e46c97a53",
-        "status": "open",
-        "closure_evidence": []
-      }
-    ],
+    "qualified_findings": [],
     "scope_proposals": [],
     "observations": [
       {
-        "candidate_ref": "C-131-BR7-04",
+        "candidate_ref": "C-131-R12-03",
         "disposition": "observation",
         "scenario_class": "out_of_scope",
-        "affected_behavior": "仓库未配置且环境无 ruff、shellcheck、mypy、pyright",
-        "path": "AGENTS.md",
+        "affected_behavior": "五个 continue entries 中仍有 pre-existing planning approval schema 1.2 文案",
+        "path": "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
         "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/12-final-release.md",
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/09-finding-closure.md"
         ],
-        "requirement_refs": [],
-        "scope_basis": "当前仓库 executable validation baseline",
-        "qualification_reason": "JSON、Bash、Python compile、tests、validators 与 eval 已通过；缺失工具不用于降低或提高 finding severity。"
+        "requirement_refs": [
+          "origin/main",
+          "Issue #131 accepted-current"
+        ],
+        "scope_basis": "该文案在 origin/main 与本次 finding-fix 之前已存在，Issue #131 当前范围只收敛 Branch Review step-local ownership",
+        "qualification_reason": "当前 committed diff 未引入或扩大该行为；fresh Phase 2 与最终审查将其分类为 adjacent observation，不构成 Issue #131 current-scope finding。"
       }
     ],
     "followup_candidates": [
       {
-        "candidate_ref": "C-131-BR7-03",
+        "candidate_ref": "C-131-R12-02",
         "disposition": "followup_candidate",
         "scenario_class": "out_of_scope",
-        "affected_behavior": "当前未 push，无法验证 exact remote feature-ref marketplace install",
+        "affected_behavior": "当前未 push，无法从 remote exact feature ref 安装并复验当前 marketplace workflow/preset",
         "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
         "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/12-final-release.md",
+          ".trellis/tasks/07-23-131-guru-review-branch/phase2-worker-report-branch-review-round7-fix.md"
         ],
         "requirement_refs": [
-          "AGENTS.md:开箱即用门禁"
+          "AGENTS.md:开箱即用门禁",
+          "Issue #131 accepted-current"
         ],
-        "scope_basis": "当前明确不授权 push/publication",
-        "qualification_reason": "远端 exact feature ref 只有 push 后才存在；publication 前必须复验，不能以 public main 冒充。"
+        "scope_basis": "当前明确不授权 push 或 publication，remote feature ref 尚不存在",
+        "qualification_reason": "本地 unpublished canonical throwaway 已通过，但 publication 前必须在 remote exact feature ref 存在后复验；当前不得用 public main 冒充，也不把授权边界误报为本地实现缺陷。"
       }
     ],
     "rejected_candidates": [
       {
-        "candidate_ref": "C-131-BR7-05",
-        "disposition": "rejected_candidate",
-        "scenario_class": "out_of_scope",
-        "affected_behavior": "敌对篡改、恶意伪造、TOCTOU、额外并发、锁或原子性加固",
-        "path": "AGENTS.md",
-        "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md"
-        ],
-        "requirement_refs": [],
-        "scope_basis": "仓库 honest-but-fallible 范围明确排除",
-        "qualification_reason": "这些候选不能在无需恶意伪造或非常规非功能扩展的受支持正常路径中复现。"
-      },
-      {
-        "candidate_ref": "C-131-BR7-06",
+        "candidate_ref": "C-131-R12-01",
         "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "历史 findings closure、runtime/package/preset/ownership/eval 与 canonical/dogfood 可能存在新缺陷",
+        "affected_behavior": "完整 committed range 的 Branch Review ownership、public/private I/O、finding lifecycle、platform distribution、Docs SSOT 与 upgrade/update normal path",
         "path": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
         "evidence_refs": [
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/07-final-release.md",
-          ".trellis/tasks/07-23-131-guru-review-branch/reviews/06-finding-closure.md"
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/12-final-release.md",
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/09-finding-closure.md",
+          ".trellis/tasks/07-23-131-guru-review-branch/phase2-check.json",
+          ".trellis/tasks/07-23-131-guru-review-branch/task-commit-plans/005.json"
+        ],
+        "requirement_refs": [
+          "prd.md:R1-R12",
+          "prd.md:AC1-AC17",
+          "design.md:P13-P18",
+          "AGENTS.md:3.1-5"
+        ],
+        "scope_basis": "Issue #131 approved current normal behavior and complete origin/main...c18efe0f range",
+        "qualification_reason": "Fresh Phase 2、exact commit-tree continuity、Round 9 closure 与全新 Round 12 full-range review证明当前实现满足 approved requirement，未在正常受支持路径中发现违反合同的行为。"
+      },
+      {
+        "candidate_ref": "C-131-R11-01",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Phase 2 到 commit 再到 Branch Review recorder 的 planning 与 Phase 2 committed-state validation",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/11-problem-discovery.md",
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/12-final-release.md"
         ],
         "requirement_refs": [
           "prd.md:R3",
           "prd.md:R6",
-          "prd.md:R7",
-          "prd.md:R9"
+          "prd.md:AC3",
+          "prd.md:AC17"
         ],
-        "scope_basis": "Issue #131 current normal behavior",
-        "qualification_reason": "Fresh full-range review 与 runtime566、Skill169、preset45、contract8、ownership6、source/installed eval7x2、validators 未发现这些当前合同被违反。"
+        "scope_basis": "Issue #131 Branch Review entry preconditions 与 post-commit evidence chain",
+        "qualification_reason": "首次 recorder 单次 fail closed 后，同一 HEAD、同一 artifact bytes 的 planning False/True validators、phase2_planning_projection 与 allow-committed Phase 2 validation均成功；初始未透传根因与函数体真实行为不符，没有稳定 normal-path reproduction可证明 current correctness defect。"
+      },
+      {
+        "candidate_ref": "C-131-R12-04",
+        "disposition": "rejected_candidate",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "敌对篡改、恶意伪造、TOCTOU、锁、额外并发或原子性、额外 fault injection",
+        "path": "AGENTS.md",
+        "evidence_refs": [
+          ".trellis/tasks/07-23-131-guru-review-branch/reviews/12-final-release.md"
+        ],
+        "requirement_refs": [],
+        "scope_basis": "仓库 honest-but-fallible 范围明确排除这些 hostile/nonstandard hardening 场景",
+        "qualification_reason": "这些候选不能在无需恶意伪造或非常规非功能扩展的受支持正常路径中复现，不得进入 current acceptance 或 finding。"
       }
     ],
     "ai_review_gate": {
-      "status": "implementation_required",
-      "summary": "Round 7 fresh final review 覆盖 origin/main...f4e2a62b 的完整 320-file range；历史 findings 已 closed，但资格化 F-131-BR7-01 P2 与 F-131-BR7-02 P3，并由 Round 8 合法 finding-owner evidence 固定，因此不能 passed。"
+      "status": "passed",
+      "summary": "全新 Round 12 reviewer 独立覆盖 origin/main...c18efe0f 的 328-file committed range，并复核 Round 11 transient candidate 的 rejected disposition；全部历史 findings 已关闭，fresh Phase 2、task commit 005、五平台入口、43+5 ownership、10/39 Docs SSOT、upgrade/update、security/deployment 证据一致，当前 P0-P3 与 scope proposals 均为 0。"
     }
   },
-  "facts_sha256": "ec0ed3caacb37e3d42f85325fbab5e0cdf3869f0fd99e94c3aae938699b0a47d"
+  "facts_sha256": "023826e9fbc9a7c68fe456d321e3051c03fe6c0848db45e0135f97aa52913210"
 }
