@@ -1088,8 +1088,9 @@ If implementation reveals a requirement defect, return to Phase 1 and update art
 - 3.3 Spec update and Docs SSOT reconciliation `[required · once]`
 - 3.4 Commit changes `[required · once]`
 - 3.5 Branch Review Gate `[required · repeatable]`
-- 3.6 Finish-work archive and finish-summary `[required · once]`
-- 3.7 Publish PR `[automatic after finish-work]`
+- 3.6 Task publication semantic review `[required · repeatable]`
+- 3.7 Finish-work archive and finish-summary `[required · once]`
+- 3.8 Publish PR `[automatic after finish-work]`
 
 [workflow-state:completed]
 Fallback/legacy closeout breadcrumb for an active task already marked `completed`; the normal path is `trellis-continue` stops after Branch Review Gate and the user/session explicitly invokes `/trellis:finish-work`.
@@ -1179,8 +1180,8 @@ authors only the target package's declared authoring fields. The active Skill
 owns its complete step-local closed loop; this workflow only invokes it and
 routes one declared exit.
 
-`passed` targets planned `guru-review-task-publication`; while that package is
-unavailable, stop fail closed and do not infer publication behavior.
+`passed` targets active `guru-review-task-publication` through its target-owned
+authoring seed.
 `implementation_required` resumes implementation and must then pass a complete
 `guru-check-task`, fresh task commit, and this Skill again.
 `scope_confirmation_required` routes to requirements clarification; the caller
@@ -1191,24 +1192,71 @@ unmapped results stop fail closed.
 Before any Phase 3.5 stop or pass reply, follow the global human-artifact
 resolution requirement.
 
-#### 3.6 Finish-work archive and finish-summary `[required · once]`
+#### 3.6 Task publication semantic review `[required · repeatable]`
 
-Start only after `guru-review-branch:passed` for the current HEAD. The
-finish-work owner validates that handoff and its declared metadata-tail
-preconditions; this global workflow does not invoke the Branch Review checker
-directly.
+After the current Branch Review `passed` exit and before the mandatory
+invocation below, the workflow caller is the explicit owner of initial
+publication-content authoring. Read the current task-local requirements,
+planning approval, Phase 2 result, Issue Scope Ledger, Docs SSOT reconciliation,
+Branch Review evidence, and complete reviewed diff, then author current
+candidates at `{TASK_DIR}/pr-body.md` and
+`{TASK_DIR}/finish-summary-index.json`.
 
-Then create and AI-review `{TASK_DIR}/finish-summary-index.json`. It contains only
+This is producer-side entry preparation, not a second publication review or a
+new workflow exit. The caller authors the candidate content but must not decide
+PR-body sufficiency, Issue closure, the ten publication dimensions, finding
+routes, or readiness. Scripts must not synthesize those semantic conclusions.
+The active `guru-review-task-publication` Skill remains the sole semantic owner;
+its existing recorder/checker later reuses the deterministic PR-body,
+finish-summary-index, artifact, HEAD, and freshness validators after the AI
+Review Gate. Do not call that recorder/checker to manufacture entry evidence.
+If either candidate is absent or objectively malformed, stop fail closed,
+complete this authoring preparation, and do not invoke the Skill.
+
+After both current candidates exist, load and invoke the active public Skill by
+stable id:
+
+<!-- guru-skill-invoke: {"skill":"guru-review-task-publication","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"ready","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-task-publication-work-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"blocked","consumer":{"kind":"stop","id":"task-publication-review-blocked"}} -->
+
+<!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
+<!-- guru-stop-target: {"id":"task-publication-review-blocked"} -->
+
+The caller merges the Branch Review seed with only the target package's fresh
+authoring fields. This workflow owns the invocation and the three routes above;
+the active Skill owns publication judgment, task-local evidence, metadata-only
+revision, recorder/checker, freshness, and re-entry.
+
+`ready` targets planned `guru-finalize-task` and stops fail closed until that
+package is activated. `return_to_task_work` resumes implementation and must
+then repeat complete Phase 2 check, task commit, Branch Review, and publication
+review. `blocked`, unknown, missing, multiple, stale, consumer-mismatched, or
+unmapped results stop fail closed.
+
+#### 3.7 Finish-work archive and finish-summary `[required · once]`
+
+Start only after `guru-review-task-publication:ready` for the current reviewed
+HEAD. The task-local `pr-body.md` and `finish-summary-index.json` were already
+authored before Phase 3.6 invocation, semantically reviewed by the active
+publication owner, and bound into the current `ready` artifact. Do not create,
+regenerate, or revise either file after `ready`; a required metadata-only change
+must re-enter `guru-review-task-publication`, while any non-metadata drift must
+return to task work. The planned finalization owner remains unavailable in this
+delivery, so normal workflow stops at its missing-Skill gate.
+
+The already reviewed `{TASK_DIR}/finish-summary-index.json` contains only
 `problem`, `outcome`, `changed_behavior`, `affected_surfaces`,
 `contract_changes`, and non-factual `commands` / `config_keys` /
 `schema_fields` / `symbols` / `phrases` search terms. The AI must not place
 issue, PR, branch, path, commit, timestamp, or derived retrieval facts in this
 input; the recorder injects those objective facts. AI input may contain at most
 19 `contract_changes`; the final summary remains bounded at 20 so the recorder
-can append the fixed protected-path filtering fact when required. Create or
-review the task-local PR body at `{TASK_DIR}/pr-body.md` and
-run the internal Guru Team finish helper first as a side-effect-free readiness
-preview, then as the formal finish:
+can append the fixed protected-path filtering fact when required. The already
+reviewed task-local PR body remains at `{TASK_DIR}/pr-body.md`. The future
+finalization owner will run the internal Guru Team finish helper first as a
+side-effect-free readiness preview, then as the formal finish:
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
@@ -1264,7 +1312,7 @@ that drift. Finish-work/archive must not be used to first execute Docs SSOT
 reconciliation; missing docs sync sends the task back to `trellis-continue` so
 Phase 2 check and Branch Review can run again.
 
-#### 3.7 Publish PR `[automatic after finish-work]`
+#### 3.8 Publish PR `[automatic after finish-work]`
 
 Publish is a set of internal `trellis-finish-work` closeout transitions, not a user-facing phase or separate command. `publish-pr.sh` is retained only as a compatibility blocker that fails closed and points to the same state-aware `trellis-finish-work` invocation.
 
@@ -1275,7 +1323,7 @@ Before draft PR create, finish-work writes and commits task-local `pr-readiness.
 The final active-task summary contains the canonical PR URL and exactly one derived `PR #<number>` ref before archive. The archive move carries it unchanged to the final locator. Any code, config, schema, workflow, preset, docs, test, CI/CD, deployment, migration, or Makefile path in the archive transaction fails closed. Multiple target-repo PRs or any cross-repository same-name candidate fail closed. Archived recovery never opens or rebinds the summary; it identifies the unique remote candidate from repo/head/base plus the plan's title/body digest.
 
 The final publish/finish response must use the archive-after-finish resolver
-result from Phase 3.6 for its `Markdown 产物 review 表`; do not reuse active
+result from Phase 3.7 for its `Markdown 产物 review 表`; do not reuse active
 task links captured before archive.
 
 Before invoking finish-work, the AI must generate or review the PR body for a

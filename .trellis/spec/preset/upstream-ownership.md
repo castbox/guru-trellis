@@ -273,7 +273,7 @@ manifest or the immutable issue #128 path/baseline identity. Registry,
 extension, installed provenance, and platform copies may change only as the
 atomic production activation projection of those canonical assets. Issue #131
 separately binds current bytes for only the five active continue entries.
-The Interface 1.3 `skill_input_authoring_seed` shape, the four target-owned
+The Interface 1.3 `skill_input_authoring_seed` shape, the five target-owned
 authoring examples, and their deterministic partition/merge probes are part of
 that same Guru-owned additive package graph. They do not expand the frozen
 overlay set or claim an upstream-managed platform entry.
@@ -286,3 +286,20 @@ contract; it never overlays or patches upstream `trellis-check` files. The
 ownership validator must continue to report the frozen 43-path set and
 historical identity unchanged while validating the five reviewed current
 continue payloads separately.
+
+The `guru-review-task-publication` package, its public/private schemas,
+consumer schemas, eval corpus, shared runtime commands, registry/extension
+inventory, workflow markers, and generated selected-platform copies are
+Guru-owned additive assets. They activate the #131 publication bridge. The same
+delivery revises only the reviewed current payload bytes for #131's existing
+five continue paths so they prepare task-local publication content and invoke
+the active owner; it does not add an overlay path or change any immutable
+baseline digest.
+
+`guru-finalize-task` remains a planned registry identity only. Issue #116 does
+not implement #118 finalization and does not modify or overlay upstream
+`trellis-finish-work` family assets. Their later integration/removal ownership
+remains with #119/#132. Ownership validation must therefore preserve the
+frozen overlay inventory and exact current payload hashes.
+Those current hashes bind the #116 active route; only the later
+`ready -> guru-finalize-task` edge remains a planned missing-Skill boundary.

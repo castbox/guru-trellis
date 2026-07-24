@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public Skill I/O、target-owned authoring seed、semantic profile、typed exits与private evidence的主合同。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Mandatory invocation、唯一consumer、re-entry、return loop与fail-closed全局编排合同。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "pr-readiness.json唯一gate、artifact freshness、public/private分层与兼容迁移合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Recorder、validator、executor边界及public wrapper的确定性职责。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Semantic review、finding closure、eval、Phase 2与Branch Review质量门禁。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "Canonical package安装、平台分发、throwaway、update与reapply要求。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Canonical到dogfood同步、drift与.new/.bak处置边界。"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "禁止修改或overlay upstream finish family并验证ownership。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "README与requirements durable SSOT的公开一致性要求。"}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-review-task-publication-stop-blocked-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "reason_code", "remediation"],
+  "properties": {
+    "exit_id": {"const": "blocked"},
+    "reason_code": {"type": "string", "minLength": 1},
+    "remediation": {"type": "string", "minLength": 1}
+  }
+}

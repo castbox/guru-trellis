@@ -38,7 +38,7 @@ Before editing workflow behavior:
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Interface 1.2 remains the frozen legacy contract. Registry 1.1 selects exact
   `interface_schema_id` plus `io_contract_state`; interface 1.3 is
-  production-active for all ten active workflow packages and 39 external
+  production-active for all eleven active workflow packages and 42 external
   exits. The frozen
   `stage0-minimal-handoff-v1` manifest owns its original six packages and 24
   exits, while `production-minimal-handoff-v1` independently owns planning,
@@ -65,6 +65,12 @@ Before editing workflow behavior:
   and platform entries only invoke its six-field public input and consume its
   four typed exits; review scripts are package-owned deterministic
   recorder/validator implementation details.
+- `guru-review-task-publication` is the sole publication semantic owner after
+  Branch Review. The workflow caller first authors the two current task-local
+  publication content candidates, then invokes this owner; the caller does not
+  judge readiness. The Skill owns two target-authored profiles, the single layered
+  `pr-readiness.json`, metadata-only internal revision, ten-dimension review,
+  and `ready` / `return_to_task_work` / `blocked`; workflow owns only routes.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 
 ## Required Validation
@@ -99,9 +105,18 @@ repository actually grows those assets.
 
 The durable contracts for `guru-review-branch` are split across:
 
-- `skill-package-contract.md`: public Interface 1.3 I/O, planned target bridge,
-  private state and routing discriminator;
+- `skill-package-contract.md`: public Interface 1.3 I/O, active publication
+  bridge, private state and routing discriminator;
 - `workflow-contract.md`: thin Phase 3.5 invocation and typed consumers;
 - `data-contracts.md`: scenario/disposition/finding artifact shapes;
 - `companion-scripts.md`: deterministic recorder/checker boundary;
 - `quality-guidelines.md`: lifecycle, eval, distribution and upgrade coverage.
+
+## Task Publication Review Closed-Loop Owner
+
+The durable contracts for `guru-review-task-publication` are split across
+`skill-package-contract.md`, `workflow-contract.md`, `data-contracts.md`,
+`companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
+Interface 1.3 profiles, minimal exits, layered private gate, semantic/runtime
+boundary, thin routing, real-wrapper eval, 11/42 closure, and install/update
+checks.

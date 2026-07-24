@@ -1,0 +1,300 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-07-24T15:40:03Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "castbox/guru-trellis",
+    "issue_number": 116,
+    "url": "https://github.com/castbox/guru-trellis/issues/116",
+    "updated_at": "2026-07-22T11:04:57Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "1cbc8a0da37326f7166ea10a401fa56b2f798c712ab9528678d862bce42e8d80",
+    "body_sha256": "bec80eaf00252f96bbb824b2288f157d0bed1c75b2005ef9b2236b8623014bdd",
+    "side_effect_free": false,
+    "identity_sha256": "06058230e1441394fb3e62271aed490b783b7faea8217f172cb8a542e30a869d",
+    "content_sha256": "01e1cfe4fa173b0da612b853a9dd379a8fc34bbeaef26559da3db864c72693a3"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "728e4045adc80b640fb4288b19236f27481412d2c890e417df10d5ac3429a195",
+      "snapshot_sha256": "0344d8b830b614e61aa2867357edea26f84221e70d07ff8c47236cc0e8e55e40",
+      "base_sync_facts_sha256": "c478c33cee5bc730cb0fc88b903e81557f7ae4db805063600ecc3c264b6fd59c",
+      "base_head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+      "live_target_sha256": "d7da44ca574882631b36e00216557fb6463387228b84c6b81cb8e97b493b582e",
+      "query_sha256": "ffbf580111e300b69f22232da477134120cf221c6d67c06a5545e1f5cafc2a2e",
+      "current_state_sha256": "aa4e9451815f933a7ad1dae66b495d8eecafd92e47bddffeb00214856bdfed73",
+      "history_sha256": "6f2aa3412fc1f1883753222c115f9e4e3de12de4a24bc30aa237976d8227df5b",
+      "duplicate_sha256": "cbe5acbfad9810d283d7f32d8110c51d66389b63369a684cbf096f96dd3b1b48",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-2.0",
+      "typed_exit": "clear",
+      "payload_sha256": "803dedf71d424f39c87e8b0b53cadad13d15c49ff96ada5ed9e68ace2fa0319b",
+      "facts_sha256": "1fa2c16723ad9d81925007857a6a6be4f4866e28a511d399c48ad558461827cf",
+      "target_sha256": "890f2cfbe05f4cb5b7459b5cc8d12309890a66fae325679c2c173046b3d4282a",
+      "disposition_sha256": "7aa35c97a966634f50e05adbf0aa2741ab031fd269aad0bb0a57ae9a2677a8c3",
+      "content_sha256": "1cd094719320cbf8083cec8101e1caeb5331ddb7a62fc0bd94e28ba10637624a",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "b1cd1f64cd305acc1d2bb85f2fe67545afcd2dda77993217ab36b022f70e08f8",
+      "facts_sha256": "934cedfe22f49c6256974c8b5bce1f521819840f85703de21a88cb2f20781164",
+      "scope_sha256": "22b3917b3aa89694a658779bc82f3d0b320181eb6760204603e6b89459758fda",
+      "scan_sha256": "3acc262017779c1584f8b87dd11ad446dc6fea7d8266d34133d3bb1618952f28",
+      "target_content_sha256": "01e1cfe4fa173b0da612b853a9dd379a8fc34bbeaef26559da3db864c72693a3",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "06058230e1441394fb3e62271aed490b783b7faea8217f172cb8a542e30a869d",
+    "target_content_sha256": "01e1cfe4fa173b0da612b853a9dd379a8fc34bbeaef26559da3db864c72693a3",
+    "base_head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+    "current_state_sha256": "aa4e9451815f933a7ad1dae66b495d8eecafd92e47bddffeb00214856bdfed73",
+    "history_sha256": "6f2aa3412fc1f1883753222c115f9e4e3de12de4a24bc30aa237976d8227df5b",
+    "duplicate_sha256": "cbe5acbfad9810d283d7f32d8110c51d66389b63369a684cbf096f96dd3b1b48",
+    "clarity_facts_sha256": "1fa2c16723ad9d81925007857a6a6be4f4866e28a511d399c48ad558461827cf",
+    "clarity_disposition_sha256": "7aa35c97a966634f50e05adbf0aa2741ab031fd269aad0bb0a57ae9a2677a8c3",
+    "wording_facts_sha256": "934cedfe22f49c6256974c8b5bce1f521819840f85703de21a88cb2f20781164",
+    "linkage_sha256": "e89a995d1eb86f9c7177a80fef641fb2166f0f97b8805e2a775573bdcde2cca8"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "requirement_completeness",
+        "status": "passed",
+        "summary": "#116 的正文与 2026-07-22 accepted_current 评论完整定义 semantic owner、双 input profile、target-owned authoring seed、metadata revision loop、private readiness SSOT、三 exits、re-entry、distribution 与 production eval 验收；不存在 load-bearing ambiguity。",
+        "evidence_refs": [
+          "target",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "01e1cfe4fa173b0da612b853a9dd379a8fc34bbeaef26559da3db864c72693a3",
+          "1fa2c16723ad9d81925007857a6a6be4f4866e28a511d399c48ad558461827cf",
+          "934cedfe22f49c6256974c8b5bce1f521819840f85703de21a88cb2f20781164"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "delivery_unit_consistency",
+        "status": "passed",
+        "summary": "交付单元仅实现并激活 guru-review-task-publication 及其 owned runtime、contracts、tests、distribution；#118、#119、#132 与不可逆发布事务保留为下游独立交付。",
+        "evidence_refs": [
+          "evidence_linkage",
+          "target"
+        ],
+        "affected_hashes": [
+          "e89a995d1eb86f9c7177a80fef641fb2166f0f97b8805e2a775573bdcde2cca8",
+          "06058230e1441394fb3e62271aed490b783b7faea8217f172cb8a542e30a869d"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "implementation_target_evidence",
+        "status": "passed",
+        "summary": "Current context 已定位 canonical registry/package、shared runtime、Interface 1.3 producer、platform copies、Docs、eval 与 test surfaces，足以规划具体修改范围。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "aa4e9451815f933a7ad1dae66b495d8eecafd92e47bddffeb00214856bdfed73"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "claimed_behavior_current",
+        "status": "passed",
+        "summary": "Live authority 与 main 当前状态一致：目标 package 仍 planned/absent，workflow 在该点 fail closed，runtime 仍保留 deterministic readiness snapshot builder。",
+        "evidence_refs": [
+          "prerequisites.context",
+          "target"
+        ],
+        "affected_hashes": [
+          "aa4e9451815f933a7ad1dae66b495d8eecafd92e47bddffeb00214856bdfed73",
+          "01e1cfe4fa173b0da612b853a9dd379a8fc34bbeaef26559da3db864c72693a3"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "current_implementation_gap",
+        "status": "passed",
+        "summary": "现有 build_pr_readiness_snapshot 会确定性构造 ready=true，但尚无 AI semantic publication gate、双入口 stale re-entry、三出口 public package 与 target-owned authoring seed；缺口可在 #116 内闭环。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "aa4e9451815f933a7ad1dae66b495d8eecafd92e47bddffeb00214856bdfed73"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "docs_code_tests_consistency",
+        "status": "passed",
+        "summary": "Docs、registry、runtime、package discovery、preset 与 throwaway tests 一致显示 #116 尚未激活；本交付必须同步迁移这些 surfaces，不存在要求先拆出另一 implementation issue 的冲突。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "aa4e9451815f933a7ad1dae66b495d8eecafd92e47bddffeb00214856bdfed73"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "archived_history_constraints",
+        "status": "passed",
+        "summary": "Archived #131 设计被深读并确认 passed handoff 只提供 task_ref、reviewed_head、review_ref；#116 必须拥有 fresh publication authoring fields 与 semantic loop，不能扩张 producer DTO。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "6f2aa3412fc1f1883753222c115f9e4e3de12de4a24bc30aa237976d8227df5b"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "duplicate_reuse_validity",
+        "status": "passed",
+        "summary": "保留 #116 为 primary delivery unit；#115 是 umbrella，#118/#119/#132/#81/#117 分别是 downstream、integration、global routing、release 或 remote-install consumers，不替代本实现。",
+        "evidence_refs": [
+          "prerequisites.context",
+          "prerequisites.clarity"
+        ],
+        "affected_hashes": [
+          "cbe5acbfad9810d283d7f32d8110c51d66389b63369a684cbf096f96dd3b1b48",
+          "7aa35c97a966634f50e05adbf0aa2741ab031fd269aad0bb0a57ae9a2677a8c3"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "target_authority_current",
+        "status": "passed",
+        "summary": "Live issue title/body 与唯一 selected 2026-07-22 additive authority 已重读；评论明确替代冲突的 exit 字段、consumer input 与 eval 表述，其余 publication 语义保持。",
+        "evidence_refs": [
+          "target",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "06058230e1441394fb3e62271aed490b783b7faea8217f172cb8a542e30a869d",
+          "01e1cfe4fa173b0da612b853a9dd379a8fc34bbeaef26559da3db864c72693a3",
+          "934cedfe22f49c6256974c8b5bce1f521819840f85703de21a88cb2f20781164"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "prerequisite_hash_linkage",
+        "status": "passed",
+        "summary": "Context、clarity、wording 三项 checker-passed evidence 均为 current，且目标 identity/content、base/current/history/duplicate、clarification disposition 与 wording digests 已完整绑定。",
+        "evidence_refs": [
+          "evidence_linkage",
+          "prerequisites.context",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "e89a995d1eb86f9c7177a80fef641fb2166f0f97b8805e2a775573bdcde2cca8",
+          "0344d8b830b614e61aa2867357edea26f84221e70d07ff8c47236cc0e8e55e40",
+          "1fa2c16723ad9d81925007857a6a6be4f4866e28a511d399c48ad558461827cf",
+          "934cedfe22f49c6256974c8b5bce1f521819840f85703de21a88cb2f20781164"
+        ],
+        "finding_ids": []
+      }
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "Live #116 body 与 selected 2026-07-22 additive accepted_current authority，并绑定本轮 current context、clarification 与 wording evidence。",
+      "delivery_unit_id": "issue-116-guru-review-task-publication",
+      "close_issues": [
+        116
+      ],
+      "related_issues": [
+        115,
+        131,
+        144,
+        146
+      ],
+      "followup_issues": [
+        81,
+        117,
+        118,
+        119,
+        132
+      ],
+      "duplicate_reuse_decision": "保留 #116 为唯一 primary delivery unit；#115 是 umbrella，#118/#119/#132/#81/#117 是 downstream、integration、global routing、release 或 remote-install consumers，已关闭 #131/#144/#146 仅提供前置合同。",
+      "implementation_target": "Canonical guru-review-task-publication Skill package、registry activation、shared deterministic runtime recorder/checker、Interface 1.3 public I/O 与 projections、production eval、preset/platform copies、Docs 和 tests。",
+      "current_gap": "Registry/package 仍 planned/absent，Phase 3.5 fail closed；现有 build_pr_readiness_snapshot 仍由 deterministic runtime 构造 ready=true，尚未建立 AI semantic publication owner、two-profile re-entry 与 three-exit package。",
+      "archived_constraints": [
+        "复用 #131 passed 的 task_ref、reviewed_head、review_ref minimal seed，不暴露 Branch Review private evidence。",
+        "遵守 current Interface 1.3 authoring seed 与 real-wrapper production eval，不把 expected_exit 输入 adapter。",
+        "保留 AI-reviewed PR body/readiness 与 script-not-judge 边界。"
+      ],
+      "risk_boundary": [
+        "仅覆盖 AI 与用户诚实协作下的正常路径、常见错误、stale/mismatch 与 correctness/compatibility。",
+        "Hash、digest 与 freshness 只用于版本绑定和过期检测，不扩张为 authenticity 或 hostile-input security boundary。",
+        "Metadata-only revision 可在 Skill 内闭环；code、test、docs、spec 或 workflow drift 必须返回 task work。"
+      ],
+      "excluded_scope": [
+        "push、GitHub PR mutation、archive、commit、draft-to-ready 或 finalization transaction。",
+        "#118 guru-finalize-task、#119 finish family integration、#132 global routing/overlay 收敛的实现。",
+        "修改或 overlay upstream trellis-finish-work。",
+        "恶意伪造、对抗性输入、锁、TOCTOU、压力、额外 fault injection 与跨 OS 原子性加固。"
+      ]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex 主会话 change-request semantic readiness review",
+      "reviewed_linkage_sha256": "e89a995d1eb86f9c7177a80fef641fb2166f0f97b8805e2a775573bdcde2cca8",
+      "summary": "十项 readiness dimension 已基于本轮 linked current evidence 逐项审查；#116 边界清晰、前置合同已满足、未被重复 issue 替代，可进入 workspace/task creation handoff。",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "08c7b003947c77d352c8ccef4fcca59cb0fb72ae0c6a3c7b4755f579e3bfe781"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "本轮 readiness review 未提出改变已确认产品语义的 scope proposal。",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "十项 readiness 均通过，三个 upstream owner evidence current 且完整绑定，#116 是可独立交付单元。",
+  "affected_evidence": [
+    {
+      "ref": "context_snapshot",
+      "sha256": "0344d8b830b614e61aa2867357edea26f84221e70d07ff8c47236cc0e8e55e40",
+      "summary": "本轮 checker-passed change context snapshot。"
+    },
+    {
+      "ref": "clarity_result",
+      "sha256": "1fa2c16723ad9d81925007857a6a6be4f4866e28a511d399c48ad558461827cf",
+      "summary": "本轮 checker-passed clarification result。"
+    },
+    {
+      "ref": "wording_result",
+      "sha256": "934cedfe22f49c6256974c8b5bce1f521819840f85703de21a88cb2f20781164",
+      "summary": "本轮 checker-passed contract wording result。"
+    },
+    {
+      "ref": "target_content",
+      "sha256": "01e1cfe4fa173b0da612b853a9dd379a8fc34bbeaef26559da3db864c72693a3",
+      "summary": "当前 issue title/body content identity。"
+    }
+  ],
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-workspace"
+  },
+  "facts_sha256": "caa1cd97d113ff2917c0b62307dd918c04a154a05adcc1291f1dc2ec337af5fc"
+}

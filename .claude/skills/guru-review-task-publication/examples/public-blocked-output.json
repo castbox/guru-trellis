@@ -1,0 +1,5 @@
+{
+  "exit_id": "blocked",
+  "reason_code": "external-confirmation-required",
+  "remediation": "Obtain the named external decision and re-enter."
+}

@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查十维semantic review、finding闭环、验证充分性与独立Phase 2口径。"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "检查双入口、authoring partition、三exits、consumer与public/private I/O。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查global workflow薄化、mandatory invocation、return/re-entry与fail-closed routes。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查唯一pr-readiness gate、freshness、replacement及legacy compatibility。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查脚本未替代AI judgment且wrapper真实投影actual exit。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查clean install、update/reapply、平台分发与开箱即用证据。"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "检查upstream finish family零越权修改。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查Docs SSOT reconciliation与公开命令/基线一致性。"}

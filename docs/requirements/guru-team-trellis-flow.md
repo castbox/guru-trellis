@@ -74,7 +74,7 @@ Interface 1.3；planning/check/commit 三包、十个 profiles 与 11 exits 由�
 consumer/projection、private artifact 和 eval case 绑定到同一 activation version，validator 对
 registry、workflow markers、extension、source/installed 与四平台 copies 做双向集合比较。
 Preset staging transaction、pre-activation upgrade、`trellis update` 与 reapply 都必须保持完整
-10 Skills/39 exits graph；Stage 0 identity 仍为 6/24，mixed graph、缺失 case、平台字节漂移或
+11 Skills/42 exits graph；Stage 0 identity 仍为 6/24，mixed graph、缺失 case、平台字节漂移或
 `.new`/`.bak` 均失败关闭。
 
 Planning/check wrappers 调用既有 recorder/checker 并仅投影 checker-passed actual exit；commit
@@ -84,11 +84,13 @@ live task/Phase 2/Git facts 物化 private plan，再复用既有 validator/exec
 `branch-review-or-finding-closure` 消费；这是 #146 的历史边界。#131 现将同一 seed
 交给 active `guru-review-branch`，不改变 production migration identity。
 
-四条 semantic handoff 使用 target-owned `skill_input_authoring_seed`：planning revision
+五条 semantic handoff 使用 target-owned `skill_input_authoring_seed`：planning revision
 self-reentry 的 seed 是 `source_exit/task_ref`，check passed 到 initial commit 的 seed 是
 `source_exit/task_ref/checked_head/check_ref`，commit revision self-reentry 的 seed 是
 `source_exit/task_ref`，commit `committed` 到 active Branch Review 的 seed 是
-`task_ref/base_ref/committed_head`。Target package authoring example 只包含 fresh caller AI fields；seed
+`task_ref/base_ref/committed_head`，Branch Review `passed` 到 active Task Publication
+Review 的 seed 是 `task_ref/reviewed_head/review_ref`。Target package authoring example
+只包含 fresh caller AI fields；seed
 与 authoring 分别验证、字段不相交且 union 精确覆盖 target required set，无覆盖 merge 后再
 验证完整 target profile。既有四种 projection operation 不变，runtime 不查 producer private
 artifact 或生成 semantic judgment。
@@ -150,8 +152,11 @@ flowchart TD
   Gate["review-branch.sh<br/>review-gate.json"]:::script
   GP{"Gate passed?<br/>0 findings + fresh final reviewer"}:::guru
 
+  PubContent["workflow caller authoring preparation<br/>pr-body.md + finish-summary-index.json"]:::guru
+  PubReview["mandatory guru-review-task-publication<br/>sole semantic owner"]:::guru
+  PubReady{"publication exit"}:::guru
   FWEntry["trellis-finish-work<br/>唯一用户可见 closeout 入口"]:::guru
-  PRBody["AI-reviewed pr-body.md<br/>+ finish-summary-index.json"]:::artifact
+  PRBody["ready-bound pr-body.md<br/>+ finish-summary-index.json"]:::artifact
   Dry["finish-work.sh --dry-run<br/>--from-trellis-finish-work"]:::script
   FW["finish-work.sh<br/>immutable plan + draft + archive transaction"]:::script
   Pub["publish-pr.sh<br/>compatibility-only fail closed"]:::script
@@ -198,7 +203,11 @@ flowchart TD
   P3 --> Rev --> Rpt --> Gate --> GP
   GP -->|"否：finding / stale / reviewer-only"| Fix["返回 Phase 2/3 修复并复审"]:::guru
   Fix --> P2
-  GP -->|"是"| FWEntry
+  GP -->|"是"| PubContent --> PubReview --> PubReady
+  PubContent -->|"缺失/结构错误"| StopPubContent["停止：publication content 未就绪"]:::artifact
+  PubReady -->|"return_to_task_work"| P2
+  PubReady -->|"blocked"| StopPub["停止：publication blocked"]:::artifact
+  PubReady -->|"ready -> planned guru-finalize-task"| StopFinalize["停止：#118 尚未激活"]:::artifact
   FWEntry --> PRBody --> Dry --> FW
   Pub -->|"固定拒绝并指向"| FWEntry
 
@@ -750,11 +759,11 @@ PR readiness 要求：
 | `reviews/*.md` | Phase 3.5 | Per-round raw review reports | 中文 human-readable artifact；`agent-assignment.json.review_rounds[]` flat digest fields、`review-gate.json.verification_evidence.review_reports[]`、archive path migration。 |
 | `review.md` | Phase 3.5 | Independent review rollup | 中文最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work；记录 final `review.md` digest 和 raw `review_reports[]` digest。 |
-| `finish-summary-index.json` | Phase 3.6 前 | AI-reviewed semantic input | recorder 只从该文件读取 problem/outcome/behavior/surface/contract/search terms 判断。 |
+| `finish-summary-index.json` | Branch Review `passed` 后、Phase 3.6 mandatory invocation 前 | workflow caller 编写的 current semantic candidate；publication Skill AI-reviewed input | caller 不判断 ready；recorder 只在 AI Gate 后从该文件读取 problem/outcome/behavior/surface/contract/search terms 判断。 |
 | `closeout-plan.json` | finish-work dry-run/formal | immutable closeout input | digest handshake、normalized repo、raw config NUL/origin 边界、rewrite base/pattern、effective cardinality 与 strict GitHub transport allowlist、head repository identity、sentinel final-summary template、task-relative verifier locator、完整 move/evidence path snapshot、commit lineage 与状态恢复。 |
 | `finish-summary.json` | draft PR 后、archive 前 | archived task-local 完成摘要 | #98 历史检索；一次生成 canonical PR URL/ref，deterministic bytes/digest 随 archive move 进入终态，并由 exact archive commit blob 为 fresh recovery 恢复原 PR identity。final/incomplete/exact 共用 strict PR URL parser：repo identity 大小写不敏感，canonical output 保留 remote 合法 casing；错误 repo/transport/number/path/query/fragment 拒绝。 |
-| `pr-body.md` | Phase 3.6 前 | AI-reviewed PR body | 原始 UTF-8 文本是 immutable body identity；空白与 Markdown-sensitive spaces 不做 trim/normalize；包含 Docs SSOT / 文档同步结果。 |
-| `pr-readiness.json` | formal finish draft PR 前 | immutable publish input snapshot | title/body/draft/repo/base/head 与 closeout plan digest 绑定。 |
+| `pr-body.md` | Branch Review `passed` 后、Phase 3.6 mandatory invocation 前 | workflow caller 编写的 current reviewer-facing candidate；publication Skill AI-reviewed PR body | caller 不判断充分性或 Issue closure；原始 UTF-8 文本是 immutable body identity；空白与 Markdown-sensitive spaces 不做 trim/normalize；包含 Docs SSOT / 文档同步结果。`ready` 后 Phase 3.7 不得首次创建或修改。 |
+| `pr-readiness.json` | Branch Review 后、finalization 前 | `guru-review-task-publication` 唯一 semantic gate | Schema `guru-task-publication-readiness-1.0` 分层保存 AI review/finding closure、deterministic current bindings 与 optional finalization-owned `publish_inputs`；compatibility helper 只能 augment checker-passed `ready` gate。 |
 | `marketplace-verification.json` | reviewed content push 后、draft PR create 前 | deterministic remote verifier evidence | required marketplace/preset/overlay/schema/public API 发布门禁；pending/passed machine identity 由 recorder 管理。 |
 
 ## 10. 演示时的讲解主线
@@ -845,7 +854,7 @@ wrapper 源文本或依赖提示词代替执行边界。
 普通 Skill 调用不经过此支路。#147 交付基础设施与 representative fixture；随后 #145
 已迁移六个 Stage 0 production corpora 并完成 24 exits coverage，且其 Stage 0 identity
 保持 6 Skills/24 exits；#146 已完成 planning/check/commit 三个 production Skills、
-10 个 profiles、11 exits coverage 及合并后的 10 Skills/39 exits closure。
+10 个 profiles、11 exits coverage；#131 达到 10/39，#116 激活后达到 11/42。
 
 ## Phase 3.5：`guru-review-branch`
 
@@ -856,7 +865,7 @@ finding closure、fresh final review、AI Gate、recorder/checker 与 exact type
 
 ```text
 committed -> guru-review-branch
-  passed                     -> planned guru-review-task-publication (missing 时 stop)
+  passed                     -> active guru-review-task-publication
   implementation_required    -> implementation -> check -> commit -> review
   scope_confirmation_required-> fresh requirements clarification
   blocked                    -> stop
@@ -866,3 +875,25 @@ Phase 3.5 workflow 不再内嵌 review dimensions、候选分类、severity、ar
 细节。Scope proposal 不会自动进入 implementation；普通“继续/确认”及 planning approval
 不能替代针对 exact proposal 的 dedicated scope confirmation。Package dispatch 未修改的
 upstream reviewer，禁止 overlay `trellis-check` 入口。
+
+## Phase 3.6：`guru-review-task-publication`
+
+```text
+guru-review-branch:passed
+  -> workflow caller authors current pr-body.md + finish-summary-index.json
+     -> missing/malformed -> fail closed before invocation
+  -> active publication_review
+     -> ready               -> planned guru-finalize-task (missing 时 stop)
+     -> return_to_task_work -> implementation -> phase2 -> commit -> review
+     -> blocked             -> stop
+
+future finalization stale handback
+  -> publication_review_stale -> same complete semantic review
+```
+
+Workflow caller 只拥有 invocation 前的 initial content authoring preparation，不判断
+PR body 充分性、Issue closure、十维结论、finding route 或 ready。Workflow 只拥有该
+顺序、mandatory invocation 和以上 routes。Skill 自己拥有十维 AI Gate、finding route、
+metadata-only revision、`pr-readiness.json` recorder/checker、freshness 与 typed
+conclusion。Phase 3.7 只消费 `ready` 已绑定的两份 content，不得首次创建或让其漂移。
+#116 不执行 finalization 或发布副作用。

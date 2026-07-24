@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.6.5-guru.21",
+  "version": "0.6.5-guru.22",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
   "target_trellis_cli": "0.6.5",
@@ -79,6 +79,8 @@
         "guru-production-create-task-commit-input-recovery-resume-1.0",
         "guru-production-create-task-commit-input-revision-reentry-1.0",
         "guru-production-review-branch-input-branch-review-1.0",
+        "guru-production-review-task-publication-input-publication-review-1.0",
+        "guru-production-review-task-publication-input-publication-review-stale-1.0",
         "guru-stage0-clarify-requirements-input-active-task-scope-change-1.0",
         "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
         "guru-stage0-clarify-requirements-input-standalone-review-1.0",
@@ -111,6 +113,9 @@
         "guru-production-review-branch-output-implementation-required-1.0",
         "guru-production-review-branch-output-passed-1.0",
         "guru-production-review-branch-output-scope-confirmation-required-1.0",
+        "guru-production-review-task-publication-output-blocked-1.0",
+        "guru-production-review-task-publication-output-ready-1.0",
+        "guru-production-review-task-publication-output-return-to-task-work-1.0",
         "guru-stage0-clarify-requirements-output-blocked-1.0",
         "guru-stage0-clarify-requirements-output-clear-1.0",
         "guru-stage0-clarify-requirements-output-needs-context-1.0",
@@ -146,6 +151,7 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-1.0.json"
       ],
@@ -159,6 +165,7 @@
         "guru-requirements-clarification-2.0",
         "guru-review-gate-2.0",
         "guru-task-commit-plan-1.0",
+        "guru-task-publication-readiness-1.0",
         "guru-task-workspace-plan-1.0",
         "guru-task-workspace-result-1.0"
       ],
@@ -172,10 +179,11 @@
         "guru-review-branch",
         "guru-review-change-request",
         "guru-review-contract-wording",
+        "guru-review-task-publication",
         "guru-sync-base"
       ],
       "planned_skill_ids": [
-        "guru-review-task-publication"
+        "guru-finalize-task"
       ],
       "reserved_skill_ids": [
         "guru-create-work-commit"
@@ -266,6 +274,8 @@
       "format-merge-commit",
       "review-branch",
       "check-review-gate",
+      "record-task-publication-review",
+      "check-task-publication-review",
       "verify-marketplace",
       "finish-work",
       "backfill-finish-summary",

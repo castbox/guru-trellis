@@ -27,6 +27,8 @@ Only after the AI Review Gate exists may the existing `review-branch` recorder
 write `review.md`/`review-gate.json`, and only after `check-review-gate` passes
 may the public wrapper emit exactly one of `passed`,
 `implementation_required`, `scope_confirmation_required`, or `blocked`.
-`passed` targets the planned `guru-review-task-publication` Skill and therefore
-fails closed at the missing-Skill boundary until that package is activated.
+`passed` targets the active `guru-review-task-publication` Skill through its
+target-owned authoring seed. The workflow caller performs the publication
+content authoring preparation required by the global Phase 3.6 order before
+invoking that active owner.
 This package is not self-contained or portable.

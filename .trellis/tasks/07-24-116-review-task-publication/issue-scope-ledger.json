@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 116,
+    "url": "https://github.com/castbox/guru-trellis/issues/116",
+    "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+    "reason": "当前唯一 primary independently deliverable change request。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 116,
+      "url": "https://github.com/castbox/guru-trellis/issues/116",
+      "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+      "reason": "本 task 完整承诺并由后续 review gate 验收的 issue。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 115,
+      "url": "https://github.com/castbox/guru-trellis/issues/115",
+      "title": "按 Skill-first 重构 Guru Team task 收尾流程 umbrella",
+      "reason": "上游 umbrella，仅建立 Related 关系。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 131,
+      "url": "https://github.com/castbox/guru-trellis/issues/131",
+      "title": "实现 guru-review-branch 闭环 Skill",
+      "reason": "已关闭的 producer contract 前置。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 144,
+      "url": "https://github.com/castbox/guru-trellis/issues/144",
+      "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+      "reason": "已关闭的 Interface 1.3 基础设施前置。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 146,
+      "url": "https://github.com/castbox/guru-trellis/issues/146",
+      "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+      "reason": "已关闭的迁移与 production eval 合同前置。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 81,
+      "url": "https://github.com/castbox/guru-trellis/issues/81",
+      "title": "v0.6.5-guru.3 发布门禁：全仓 Skill-first 收敛后的 tag-pinned 验证",
+      "reason": "版本发布验证在本 task 后独立执行。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 117,
+      "url": "https://github.com/castbox/guru-trellis/issues/117",
+      "title": "拆分 #115：实现 guru-verify-extension-installation 闭环 Skill",
+      "reason": "远端安装验证 Skill 是独立后续交付。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 118,
+      "url": "https://github.com/castbox/guru-trellis/issues/118",
+      "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
+      "reason": "下游 finalization consumer 独立交付。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 119,
+      "url": "https://github.com/castbox/guru-trellis/issues/119",
+      "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+      "reason": "Finish family integration 独立交付。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "全局 routing/overlay 收敛独立交付。",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

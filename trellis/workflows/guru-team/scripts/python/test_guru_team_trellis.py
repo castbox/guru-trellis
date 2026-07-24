@@ -519,6 +519,8 @@ class ProductionPublicInvocationTest(unittest.TestCase):
         artifact_name = (
             gtt.PLANNING_APPROVAL_ARTIFACT
             if skill_id == "guru-approve-task-plan"
+            else gtt.PR_READINESS_ARTIFACT
+            if skill_id == gtt.TASK_PUBLICATION_SKILL_ID
             else gtt.PHASE2_CHECK_ARTIFACT
         )
         owner_path = self.task_dir / artifact_name
@@ -528,6 +530,8 @@ class ProductionPublicInvocationTest(unittest.TestCase):
         checker_name = (
             "cmd_check_planning_approval"
             if skill_id == "guru-approve-task-plan"
+            else "cmd_check_task_publication_review"
+            if skill_id == gtt.TASK_PUBLICATION_SKILL_ID
             else "cmd_check_phase2_check"
         )
         with (
@@ -712,6 +716,68 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             stale_owner.exception.payload.get("code"),
             "owner_result_input_mismatch",
         )
+
+    def test_publication_stale_wrapper_binds_reason_context_and_prior_identity(self) -> None:
+        public_input = self.example_input(
+            gtt.TASK_PUBLICATION_SKILL_ID,
+            "public-publication-review-stale-input.json",
+        )
+        public_input["task_ref"] = self.task_rel
+        owner = {
+            "task_dir": self.task_rel,
+            "profile": "publication_review_stale",
+            "mode": public_input["mode"],
+            "review_intent": public_input["review_intent"],
+            "stale_reason": public_input["stale_reason"],
+            "reentry_context": public_input["reentry_context"],
+            "supersedes_publication_ref": "publication:prior-owner-round",
+            "review_identity": {
+                "reviewed_head": "c" * 40,
+                "review_ref": "review-gate:current",
+            },
+            "deterministic_bindings": {
+                "publication_ref": "publication:current-owner-round",
+            },
+            "semantic_review": {"findings": []},
+            "typed_exit": "ready",
+        }
+        checked = {
+            "status": "ok",
+            "typed_exit": "ready",
+            "publication_ref": "publication:current-owner-round",
+        }
+        output = self.invoke(
+            gtt.TASK_PUBLICATION_SKILL_ID,
+            public_input,
+            owner,
+            checked,
+        )
+        self.assertEqual(output, {
+            "exit_id": "ready",
+            "task_ref": self.task_rel,
+            "reviewed_head": "c" * 40,
+            "publication_ref": "publication:current-owner-round",
+        })
+
+        for field, replacement in (
+            ("stale_reason", "different stale reason"),
+            ("reentry_context", "different re-entry context"),
+            ("supersedes_publication_ref", ""),
+        ):
+            with self.subTest(field=field):
+                mismatched = copy.deepcopy(owner)
+                mismatched[field] = replacement
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    self.invoke(
+                        gtt.TASK_PUBLICATION_SKILL_ID,
+                        public_input,
+                        mismatched,
+                        checked,
+                    )
+                self.assertEqual(
+                    raised.exception.payload.get("code"),
+                    "owner_result_input_mismatch",
+                )
 
     def test_commit_public_semantic_route_rejects_contradictions(self) -> None:
         base = self.example_input(
@@ -8889,16 +8955,26 @@ class PublishBoundaryTest(unittest.TestCase):
         task_dir = root / ".trellis/tasks/archive/2026-07/task"
         task_dir.mkdir(parents=True)
         (task_dir / "pr-body.md").write_text(valid_pr_body("不可变快照 mutation fixture。"), encoding="utf-8")
-        readiness_path, artifact = gtt.write_pr_readiness_snapshot(
-            root,
-            task_dir,
-            repo="owner/repo",
-            base_branch="main",
-            head_branch="topic",
-            reviewed_head_sha=reviewed_head,
-            title="完成：#18 不可变发布输入",
-            draft=False,
-        )
+        body_path = task_dir / "pr-body.md"
+        publish_inputs = {
+            "repo": "owner/repo",
+            "base_branch": "main",
+            "head_branch": "topic",
+            "reviewed_head_sha": reviewed_head,
+            "title": "完成：#18 不可变发布输入",
+            "body_source": gtt.PR_BODY_ARTIFACT,
+            "body_sha256": hashlib.sha256(body_path.read_bytes()).hexdigest(),
+            "draft": False,
+            "reviewed_source": f"body-artifact:{gtt.PR_READINESS_ARTIFACT}",
+        }
+        readiness_path = task_dir / gtt.PR_READINESS_ARTIFACT
+        artifact = {
+            "ready": True,
+            "body_file": gtt.PR_BODY_ARTIFACT,
+            "publish_inputs": publish_inputs,
+            "publish_inputs_sha256": gtt.canonical_json_sha256(publish_inputs),
+        }
+        gtt.write_json(readiness_path, artifact)
         subprocess.run(["git", "add", ".trellis/tasks"], cwd=root, check=True)
         subprocess.run(["git", "commit", "-qm", "metadata"], cwd=root, check=True)
         return task_dir, readiness_path, {"head": reviewed_head}
@@ -14236,12 +14312,29 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
                 ):
                     self.assertIn(field, text)
                 for route in (
-                    "`passed` targets planned `guru-review-task-publication`",
+                    "`passed` enters global Phase 3.6",
+                    "mandatory invoke the active `guru-review-task-publication` package",
+                    "`ready` exit targets planned `guru-finalize-task`",
+                    "`return_to_task_work` targets workflow `guru-task-publication-work-router`",
+                    "publication `blocked` targets stop `task-publication-review-blocked`",
                     "`implementation_required` targets workflow `guru-branch-review-implementation-router`",
                     "`scope_confirmation_required` targets workflow `guru-branch-review-scope-router`",
-                    "`blocked` targets stop `branch-review-blocked`",
+                    "Branch Review `blocked` targets stop `branch-review-blocked`",
                 ):
                     self.assertIn(route, text)
+                self.assertIn(
+                    "workflow caller authors the initial task-local `pr-body.md` and "
+                    "`finish-summary-index.json` candidates",
+                    text,
+                )
+                self.assertIn(
+                    "If either candidate is absent or objectively malformed, stop fail closed",
+                    text,
+                )
+                self.assertNotIn(
+                    "`passed` targets planned `guru-review-task-publication`",
+                    text,
+                )
                 self.assertIn("Missing, unknown, multiple, stale, or unmapped exits", text)
                 for duplicated_detail in (
                     "review-branch.sh",
@@ -15425,29 +15518,218 @@ shutil.move(str(active), str(archived))
 
     def test_readiness_binds_closeout_digest_without_breaking_legacy_snapshot(self) -> None:
         digest = self.build_plan()["plan_digest"]
-        _path, closeout = gtt.build_pr_readiness_snapshot(
-            self.root,
-            self.task_dir,
-            repo="owner/repo",
-            base_branch="main",
-            head_branch="fix/105-closeout",
-            reviewed_head_sha=self.head,
-            title="#105 closeout",
-            draft=True,
-            closeout_plan_digest=digest,
-        )
+        semantic = {"owner": "preserved"}
+        publication_ref = "publication:checked"
+        gate = {
+            "skill_id": gtt.TASK_PUBLICATION_SKILL_ID,
+            "semantic_review": semantic,
+            "deterministic_bindings": {"publication_ref": publication_ref},
+            "typed_exit": "ready",
+        }
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, gate)
+        checked = {
+            "status": "ok",
+            "typed_exit": "ready",
+            "reviewed_head": self.head,
+            "publication_ref": publication_ref,
+        }
+        with mock.patch.object(
+            gtt,
+            "cmd_check_task_publication_review",
+            return_value=checked,
+        ):
+            _path, closeout = gtt.build_pr_readiness_snapshot(
+                self.root,
+                self.task_dir,
+                repo="owner/repo",
+                base_branch="main",
+                head_branch="fix/105-closeout",
+                reviewed_head_sha=self.head,
+                title="#105 closeout",
+                draft=True,
+                closeout_plan_digest=digest,
+            )
         self.assertEqual(closeout["publish_inputs"]["closeout_plan_digest"], digest)
-        _path, legacy = gtt.build_pr_readiness_snapshot(
-            self.root,
-            self.task_dir,
-            repo="owner/repo",
-            base_branch="main",
-            head_branch="fix/105-closeout",
-            reviewed_head_sha=self.head,
-            title="#105 closeout",
-            draft=False,
+        self.assertEqual(closeout["semantic_review"], semantic)
+        self.assertEqual(
+            closeout["deterministic_bindings"]["publication_ref"],
+            publication_ref,
         )
-        self.assertNotIn("closeout_plan_digest", legacy["publish_inputs"])
+
+    def test_readiness_builder_cannot_construct_ready_without_publication_gate(self) -> None:
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.build_pr_readiness_snapshot(
+                self.root,
+                self.task_dir,
+                repo="owner/repo",
+                base_branch="main",
+                head_branch="fix/105-closeout",
+                reviewed_head_sha=self.head,
+                title="#105 closeout",
+                draft=True,
+            )
+        self.assertIn("checked task publication gate", str(raised.exception))
+
+    def test_publication_finalization_augmentation_accepts_only_exact_closeout_plan(self) -> None:
+        digest = "f" * 64
+        task_relative = self.task_dir.relative_to(self.root).as_posix()
+        plan_relative = f"{task_relative}/{gtt.CLOSEOUT_PLAN_ARTIFACT}"
+        stored_repository = {
+            "head": self.head,
+            "branch": "fix/105-closeout",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/runtime.py"],
+            "status_paths": [f"{task_relative}/pr-body.md"],
+        }
+        stored_entries = {
+            entry_id: gtt.task_publication_binding(entry_id)
+            for entry_id in (
+                "runtime_dependency",
+                "task_workspace",
+                "task_identity",
+                "branch_review_handoff",
+                "planning_approval",
+                "phase2_check",
+                "issue_scope_ledger",
+                "docs_ssot_reconciliation",
+                "branch_review_evidence",
+                "publication_content",
+                "review_range_and_working_tree",
+                "invocation_freshness",
+            )
+        }
+        payload = {
+            "task_dir": task_relative,
+            "profile": "publication_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+            "supersedes_publication_ref": None,
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:checked",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "entry_preconditions": stored_entries,
+                "publication_ref": "publication:checked",
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(
+            self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT,
+            {"plan_digest": digest},
+        )
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, payload)
+        current_repository = {
+            **stored_repository,
+            "status_paths": sorted([
+                *stored_repository["status_paths"],
+                plan_relative,
+            ]),
+        }
+        current_entries = json.loads(json.dumps(stored_entries))
+        current_entries["review_range_and_working_tree"] = (
+            gtt.task_publication_binding(current_repository)
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                return_value=[
+                    "task publication repository binding is stale",
+                    "task publication entry precondition bindings are stale",
+                ],
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=current_repository,
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_entry_precondition_bindings",
+                return_value=(current_entries, [], {"head": self.head}, current_repository),
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_closeout_plan",
+                return_value={"plan_digest": digest},
+            ),
+        ):
+            checked = gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                expected_closeout_plan_digest=digest,
+            )
+        self.assertEqual(checked["typed_exit"], "ready")
+        self.assertEqual(checked["finalization_owned_delta"], [plan_relative])
+
+    def test_publication_finalization_augmentation_rejects_other_metadata_delta(self) -> None:
+        digest = "f" * 64
+        task_relative = self.task_dir.relative_to(self.root).as_posix()
+        plan_relative = f"{task_relative}/{gtt.CLOSEOUT_PLAN_ARTIFACT}"
+        stored_repository = {
+            "head": self.head,
+            "branch": "fix/105-closeout",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/runtime.py"],
+            "status_paths": [f"{task_relative}/pr-body.md"],
+        }
+        payload = {
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:checked",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "publication_ref": "publication:checked",
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(
+            self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT,
+            {"plan_digest": digest},
+        )
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, payload)
+        current_repository = {
+            **stored_repository,
+            "status_paths": sorted([
+                *stored_repository["status_paths"],
+                plan_relative,
+                f"{task_relative}/unexpected-finalization-note.md",
+            ]),
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                return_value=["task publication repository binding is stale"],
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=current_repository,
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_closeout_plan",
+                return_value={"plan_digest": digest},
+            ),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                expected_closeout_plan_digest=digest,
+            )
+        self.assertIn(
+            "task publication repository binding is stale",
+            raised.exception.payload["errors"],
+        )
 
     def test_draft_resolver_rejects_multiple_or_ready_before_archive(self) -> None:
         plan = self.build_plan()
@@ -16002,17 +16284,25 @@ shutil.move(str(active), str(archived))
             with self.subTest(case=name):
                 (self.task_dir / "pr-body.md").write_text(exact_body, encoding="utf-8")
                 plan = self.build_plan()
-                readiness_path, readiness = gtt.build_pr_readiness_snapshot(
-                    self.root,
-                    self.task_dir,
-                    repo="owner/repo",
-                    base_branch="main",
-                    head_branch="fix/105-closeout",
-                    reviewed_head_sha=self.head,
-                    title=plan["publish"]["title"],
-                    draft=True,
-                    closeout_plan_digest=plan["plan_digest"],
-                )
+                publish_inputs = {
+                    "repo": "owner/repo",
+                    "base_branch": "main",
+                    "head_branch": "fix/105-closeout",
+                    "reviewed_head_sha": self.head,
+                    "title": plan["publish"]["title"],
+                    "body_source": gtt.PR_BODY_ARTIFACT,
+                    "body_sha256": hashlib.sha256(exact_body.encode("utf-8")).hexdigest(),
+                    "draft": True,
+                    "reviewed_source": f"body-artifact:{gtt.PR_READINESS_ARTIFACT}",
+                    "closeout_plan_digest": plan["plan_digest"],
+                }
+                readiness_path = self.task_dir / gtt.PR_READINESS_ARTIFACT
+                readiness = {
+                    "ready": True,
+                    "body_file": gtt.PR_BODY_ARTIFACT,
+                    "publish_inputs": publish_inputs,
+                    "publish_inputs_sha256": gtt.canonical_json_sha256(publish_inputs),
+                }
                 gtt.write_json(readiness_path, readiness)
                 _path, _inputs, recovered_body = gtt.read_pr_readiness_publish_inputs(
                     self.root,
@@ -16583,6 +16873,16 @@ shutil.move(str(active), str(archived))
                 source_root / "trellis/workflows/guru-team/schemas",
                 root / "trellis/workflows/guru-team/schemas",
             )
+            publication_schema = (
+                source_root
+                / "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/pr-readiness.schema.json"
+            )
+            installed_publication_schema = (
+                root
+                / "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/pr-readiness.schema.json"
+            )
+            installed_publication_schema.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(publication_schema, installed_publication_schema)
             workflow = root / "trellis/workflows/guru-team/workflow.md"
             workflow.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source_root / "trellis/workflows/guru-team/workflow.md", workflow)
@@ -16685,10 +16985,137 @@ shutil.move(str(active), str(archived))
                 valid_pr_body("生产 closeout 集成。").replace("Closes #18", "Closes #105"),
                 encoding="utf-8",
             )
+            for name, content in {
+                "prd.md": "# 需求\n\n验证 production closeout fixture。\n",
+                "design.md": "# 设计\n\n## Docs SSOT Plan\n\nStrategy: no_docs_update_needed。\n",
+                "implement.md": "# 实施\n\n验证 production closeout fixture。\n",
+                "implementation-handoff.md": "# 实现交接\n\ncloseout fixture 已就绪。\n",
+            }.items():
+                (task_dir / name).write_text(content, encoding="utf-8")
+            for name in (
+                "planning-approval.json",
+                "phase2-check.json",
+                "agent-assignment.json",
+            ):
+                gtt.write_json(task_dir / name, {"fixture": name})
             subprocess.run(["git", "add", ".trellis/tasks"], cwd=root, check=True)
             subprocess.run(["git", "commit", "-qm", "reviewed"], cwd=root, check=True)
             reviewed_head = gtt.run_stdout(["git", "rev-parse", "HEAD"], cwd=root)
             gate["head"] = reviewed_head
+            review_ref = (
+                "review-gate:"
+                + hashlib.sha256((task_dir / "review-gate.json").read_bytes()).hexdigest()
+            )
+            publication_artifacts = gtt.task_publication_artifact_bindings(task_dir)
+            publication_repository = gtt.task_publication_repository_binding(root, task_dir)
+            publication_entries = {
+                entry_id: gtt.task_publication_binding({
+                    "fixture": "production-closeout",
+                    "entry_precondition_id": entry_id,
+                })
+                for entry_id in (
+                    "runtime_dependency",
+                    "task_workspace",
+                    "task_identity",
+                    "branch_review_handoff",
+                    "planning_approval",
+                    "phase2_check",
+                    "issue_scope_ledger",
+                    "docs_ssot_reconciliation",
+                    "branch_review_evidence",
+                    "publication_content",
+                    "review_range_and_working_tree",
+                    "invocation_freshness",
+                )
+            }
+            invocation_identity = {
+                "task_ref": ".trellis/tasks/07-11-closeout",
+                "profile": "publication_review",
+                "mode": "workflow",
+                "review_intent": "initial_review",
+                "stale_reason": None,
+                "reentry_context": None,
+                "supersedes_publication_ref": None,
+                "reviewed_head": reviewed_head,
+                "review_ref": review_ref,
+            }
+            publication_ref = "publication:" + gtt.context_digest({
+                "task": ".trellis/tasks/07-11-closeout",
+                "invocation": invocation_identity,
+                "head": reviewed_head,
+                "review_ref": review_ref,
+                "artifacts": publication_artifacts,
+                "repository": publication_repository,
+                "entry_preconditions": publication_entries,
+            })
+            publication_gate = {
+                "schema_version": "1.0",
+                "skill_id": gtt.TASK_PUBLICATION_SKILL_ID,
+                "generated_at": "2026-07-11T00:00:00Z",
+                "task_dir": ".trellis/tasks/07-11-closeout",
+                "profile": "publication_review",
+                "mode": "workflow",
+                "review_intent": "initial_review",
+                "review_identity": {
+                    "reviewed_head": reviewed_head,
+                    "review_ref": review_ref,
+                },
+                "semantic_review": {
+                    "dimensions": [{
+                        "id": dimension,
+                        "status": "passed",
+                        "summary": f"Reviewed {dimension}.",
+                        "evidence_refs": ["pr-body.md"],
+                    } for dimension in gtt.TASK_PUBLICATION_DIMENSIONS],
+                    "findings": [],
+                    "conclusions": {
+                        "issue_scope": {
+                            "status": "passed",
+                            "summary": "The closeout fixture issue scope was reviewed.",
+                            "evidence_refs": ["issue-scope-ledger.json"],
+                        },
+                        "docs_ssot": {
+                            "status": "passed",
+                            "summary": "The closeout fixture Docs SSOT outcome was reviewed.",
+                            "evidence_refs": ["design.md", "implementation-handoff.md"],
+                        },
+                        "safety_deployment": {
+                            "status": "passed",
+                            "summary": "The closeout fixture safety impact was reviewed.",
+                            "evidence_refs": ["pr-body.md"],
+                        },
+                    },
+                    "revision_history": [],
+                    "reviewer_process": {
+                        "reviewer": "production-closeout-fixture",
+                        "summary": "The fixture models a completed semantic publication review.",
+                        "evidence_refs": ["review.md", "review-gate.json"],
+                    },
+                    "human_confirmation": {
+                        "status": "not_required",
+                        "summary": "The fixture route does not require publication confirmation.",
+                        "confirmed_by": None,
+                        "confirmed_at": None,
+                    },
+                    "ai_review_gate": {
+                        "status": "passed",
+                        "summary": "The publication review passed.",
+                    },
+                },
+                "deterministic_bindings": {
+                    "artifacts": publication_artifacts,
+                    "repository": publication_repository,
+                    "entry_preconditions": publication_entries,
+                    "publication_ref": publication_ref,
+                },
+                "typed_exit": "ready",
+                "consumer": gtt.TASK_PUBLICATION_CONSUMERS["ready"],
+                "supersedes_publication_ref": None,
+            }
+            publication_gate["facts_sha256"] = gtt.context_digest(
+                gtt.task_publication_facts_payload(publication_gate)
+            )
+            gtt.write_json(task_dir / gtt.PR_READINESS_ARTIFACT, publication_gate)
 
             pr_store: dict[str, object] = {}
             original_run = gtt.run
@@ -17107,6 +17534,26 @@ shutil.move(str(active), str(archived))
                     "validate_review_gate",
                     return_value=(task_dir / "review-gate.json", gate, []),
                 ),
+                mock.patch.object(
+                    gtt,
+                    "cmd_check_task_publication_review",
+                    return_value={
+                        "status": "ok",
+                        "typed_exit": "ready",
+                        "reviewed_head": reviewed_head,
+                        "publication_ref": publication_ref,
+                    },
+                ),
+                mock.patch.object(
+                    gtt,
+                    "check_task_publication_for_finalization_augmentation",
+                    return_value={
+                        "status": "ok",
+                        "typed_exit": "ready",
+                        "reviewed_head": reviewed_head,
+                        "publication_ref": publication_ref,
+                    },
+                ),
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
                 mock.patch.object(gtt, "current_archive_month", side_effect=lambda: archive_month_clock),
             ):
@@ -17428,7 +17875,7 @@ shutil.move(str(active), str(archived))
         self.assertIsNone(state["remote_sha"])
         self.assertIsNone(state["pr_number"])
         self.assertIsNone(state["plan_bytes"])
-        self.assertIsNone(state["readiness_bytes"])
+        self.assertIsNotNone(state["readiness_bytes"])
         self.assertEqual(result["events"], [])
         self.assertEqual(
             [error.payload.get("stage") for error in result["errors"]],
@@ -17455,7 +17902,7 @@ shutil.move(str(active), str(archived))
         self.assertIsNone(state["remote_sha"])
         self.assertIsNone(state["pr_number"])
         self.assertIsNone(state["plan_bytes"])
-        self.assertIsNone(state["readiness_bytes"])
+        self.assertIsNotNone(state["readiness_bytes"])
         self.assertEqual(result["events"], [])
         self.assertEqual(
             [error.payload.get("active_children") for error in result["errors"]],
@@ -17472,7 +17919,7 @@ shutil.move(str(active), str(archived))
         self.assertIsNone(state["remote_sha"])
         self.assertIsNone(state["pr_number"])
         self.assertIsNone(state["plan_bytes"])
-        self.assertIsNone(state["readiness_bytes"])
+        self.assertIsNotNone(state["readiness_bytes"])
         self.assertEqual(result["events"], [])
         self.assertEqual(
             [error.payload.get("stage") for error in result["errors"]],
@@ -17497,7 +17944,7 @@ shutil.move(str(active), str(archived))
                 self.assertIsNone(state["remote_sha"])
                 self.assertIsNone(state["pr_number"])
                 self.assertIsNone(state["plan_bytes"])
-                self.assertIsNone(state["readiness_bytes"])
+                self.assertIsNotNone(state["readiness_bytes"])
                 self.assertEqual(state["archive_symlink_sentinel"], b"archive-path-sentinel\n")
                 self.assertEqual(result["events"], [])
                 self.assertEqual(
@@ -17737,7 +18184,10 @@ shutil.move(str(active), str(archived))
         self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
         self.assertIsNone(failed["archive_locator"])
         self.assertEqual(failed["task_status"], "in_progress")
-        self.assertEqual(failed["dirty_paths"], set())
+        self.assertEqual(
+            failed["dirty_paths"],
+            {".trellis/tasks/07-11-closeout/pr-readiness.json"},
+        )
         self.assertEqual(failed["staged_paths"], set())
         self.assertEqual(failed["local_sha"], result["reviewed_sha"])
         self.assertIsNone(failed["remote_sha"])
@@ -17757,7 +18207,10 @@ shutil.move(str(active), str(archived))
         self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
         self.assertIsNone(failed["archive_locator"])
         self.assertEqual(failed["task_status"], "in_progress")
-        self.assertEqual(failed["dirty_paths"], set())
+        self.assertEqual(
+            failed["dirty_paths"],
+            {".trellis/tasks/07-11-closeout/pr-readiness.json"},
+        )
         self.assertEqual(failed["staged_paths"], set())
         self.assertEqual(failed["local_sha"], result["reviewed_sha"])
         self.assertIsNone(failed["remote_sha"])
@@ -17777,7 +18230,10 @@ shutil.move(str(active), str(archived))
         self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
         self.assertIsNone(failed["archive_locator"])
         self.assertEqual(failed["task_status"], "in_progress")
-        self.assertEqual(failed["dirty_paths"], set())
+        self.assertEqual(
+            failed["dirty_paths"],
+            {".trellis/tasks/07-11-closeout/pr-readiness.json"},
+        )
         self.assertEqual(failed["staged_paths"], set())
         self.assertEqual(failed["local_sha"], result["reviewed_sha"])
         self.assertIsNone(failed["remote_sha"])
@@ -17816,22 +18272,42 @@ shutil.move(str(active), str(archived))
         archive_move_paths = {
             f"{active}/{name}"
             for name in [
-                "closeout-plan.json", "finish-summary-index.json", "issue-scope-ledger.json",
-                "pr-body.md", "pr-readiness.json", "review-gate.json", "review.md",
-                "task-start-context.json", "task.json",
+                "agent-assignment.json", "closeout-plan.json", "design.md",
+                "finish-summary-index.json", "implement.md", "implementation-handoff.md",
+                "issue-scope-ledger.json", "phase2-check.json", "planning-approval.json",
+                "pr-body.md", "pr-readiness.json", "prd.md", "review-gate.json",
+                "review.md", "task-start-context.json", "task.json",
             ]
         } | {
             f"{archive}/{name}"
             for name in [
-                "closeout-plan.json", "finish-summary-index.json", "finish-summary.json",
-                "issue-scope-ledger.json", "pr-body.md", "pr-readiness.json",
-                "review-gate.json", "review.md", "task-start-context.json", "task.json",
+                "agent-assignment.json", "closeout-plan.json", "design.md",
+                "finish-summary-index.json", "finish-summary.json", "implement.md",
+                "implementation-handoff.md", "issue-scope-ledger.json",
+                "phase2-check.json", "planning-approval.json", "pr-body.md",
+                "pr-readiness.json", "prd.md", "review-gate.json", "review.md",
+                "task-start-context.json", "task.json",
             ]
         }
         expected = {
-            "prepare": (active, None, "in_progress", {f"{active}/finish-summary-index.json"}, set(), "reviewed", None, None, None, None, None),
-            "plan-digest": (active, None, "in_progress", set(), set(), "reviewed", None, None, None, None, None),
-            "content-push": (active, None, "in_progress", set(), set(), "reviewed", None, None, None, None, None),
+            "prepare": (
+                active, None, "in_progress",
+                {
+                    f"{active}/finish-summary-index.json",
+                    f"{active}/pr-readiness.json",
+                },
+                set(), "reviewed", None, None, None, None, None,
+            ),
+            "plan-digest": (
+                active, None, "in_progress",
+                {f"{active}/pr-readiness.json"},
+                set(), "reviewed", None, None, None, None, None,
+            ),
+            "content-push": (
+                active, None, "in_progress",
+                {f"{active}/pr-readiness.json"},
+                set(), "reviewed", None, None, None, None, None,
+            ),
             "verifier": (
                 active, None, "in_progress",
                 evidence_paths | {f"{active}/issue-scope-ledger.json", f"{active}/marketplace-verification.json"},

@@ -1,0 +1,8 @@
+{
+  "profile": "publication_review_stale",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/07-24-example-publication",
+  "stale_reason": "finalization-precondition-drift",
+  "review_intent": "stale_reentry_review",
+  "reentry_context": "Rebuild publication evidence against current owner facts."
+}

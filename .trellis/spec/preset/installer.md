@@ -68,7 +68,7 @@ and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
 
 The atomic production package inventory includes the Interface 1.3 additive
-`skill_input_authoring_seed` schema shape, four target-owned authoring
+`skill_input_authoring_seed` schema shape, five target-owned authoring
 examples, the production manifest bindings, and their validator/probe tests.
 Canonical, installed, shared, Codex, Cursor, and Claude copies must carry
 byte-identical contracts; a graph that has only part of those four edge
@@ -508,7 +508,7 @@ The verifier scans recursively for `.new` and `.bak` after each transition.
 `production-minimal-handoff-v1` is staged and activated in the same preset
 transaction as its manifest/schema, three complete package trees, consumer
 schemas, registry, extension inventory, installed provenance, and selected
-platform copies. The transaction validates the complete ten-Skill/39-exit
+platform copies. The transaction validates the complete eleven-Skill/42-exit
 graph before publishing any destination. A pre-#146 six-minimal/three-legacy
 install upgrades through nine minimal packages and then active
 `guru-review-branch`; any intermediate mixed
@@ -531,7 +531,38 @@ activation id or the production manifest's three-Skill/11-exit membership.
 That manifest changes only its committed consumer/projection binding and
 authoring-seed edge inventory from three to four.
 
-The planned `guru-review-task-publication` registry identity is installed
-without a package, invoke marker, exit marker, schema or authoring contract.
-Fresh install, update, and reapply must all preserve that distinction and fail
-closed if a caller attempts to invoke it.
+The historical pre-#116 state installed
+`guru-review-task-publication` as a planned identity only. The current
+installation must not preserve that obsolete boundary: it installs the active
+package and routes Branch Review `passed` through the five continue entries to
+the active owner. Only `guru-finalize-task` remains planned and unavailable.
+
+## Task Publication Package Activation
+
+`guru-review-task-publication` is installed as an additive active Interface 1.3
+package together with its registry row, planned `guru-finalize-task` identity,
+consumer schemas, runtime commands, extension inventories, canonical workflow
+markers, installed shared package, and selected Codex/Cursor/Claude copies.
+Fresh install, update, and reapply require byte- and executable-mode identity
+for the package's Skill, Interface, references, schemas, examples, wrapper,
+tests, and canonical eval corpus.
+
+The activation produces eleven active Skills and 42 exits. The existing
+`production-minimal-handoff-v1` remains exactly three Skills and 11 exits with
+its original activation identity; #116 is derived as an additional complete
+active Interface 1.3 row. The #131 `passed` DTO bytes remain unchanged while
+its planned bridge becomes the target-owned `publication_review` authoring
+seed.
+
+The same preset transaction updates the five existing continue overlay payloads
+without expanding the frozen 43-path inventory. Those entries require
+caller-owned initial `pr-body.md` / `finish-summary-index.json` authoring before
+the active publication invocation, preserve the active Skill as sole semantic
+owner, and stop only at `ready -> guru-finalize-task` while #118 remains
+unimplemented.
+
+Clean throwaway install and post-`trellis update` preset reapply both run
+source/installed validation, workflow marker and consumer uniqueness checks,
+real wrapper/eval smoke, selected-platform byte identity, upstream ownership,
+dogfood drift, and recursive zero `.new`/`.bak` checks. Remote branch
+marketplace verification remains a later finish-work gate.

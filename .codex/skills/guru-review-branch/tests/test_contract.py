@@ -74,19 +74,29 @@ class ReviewBranchContractTest(unittest.TestCase):
         blocked = json.loads((PACKAGE / "schemas/public-blocked-output.schema.json").read_text())
         self.assertEqual(set(blocked["properties"]), {"exit_id"})
 
-    def test_planned_bridge_does_not_claim_target_contract(self) -> None:
+    def test_active_publication_bridge_uses_target_owned_authoring(self) -> None:
         consumer = next(
             item for item in self.interface["public_contracts"]["consumer_inputs"]
             if item["id"] == "publication_seed_input"
         )
+        self.assertEqual(consumer["contract"]["kind"], "skill_input_authoring_seed")
         self.assertEqual(
-            consumer["contract"],
-            {
-                "kind": "planned_skill_input_seed",
-                "seed_fields": ["task_ref", "reviewed_head", "review_ref"],
-            },
+            consumer["contract"]["seed_fields"],
+            ["task_ref", "reviewed_head", "review_ref"],
+        )
+        self.assertEqual(
+            consumer["contract"]["authoring_fields"],
+            ["profile", "mode", "review_intent"],
         )
         self.assertEqual(consumer["consumer"]["id"], "guru-review-task-publication")
+        skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
+        contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
+        self.assertIn("targets the active `guru-review-task-publication` Skill", skill)
+        self.assertIn("global Phase 3.6 order", skill)
+        self.assertNotIn("planned `guru-review-task-publication`", skill)
+        self.assertIn("minimal active publication seed", contract)
+        self.assertIn("two task-local publication content candidates", contract)
+        self.assertNotIn("minimal planned publication seed", contract)
 
     def test_contract_owns_qualification_and_preserves_upstream(self) -> None:
         text = (

@@ -1,0 +1,6 @@
+{
+  "exit_id": "return_to_task_work",
+  "task_ref": ".trellis/tasks/07-24-example-publication",
+  "finding_refs": ["PUB-001"],
+  "resume_target": "phase-2"
+}

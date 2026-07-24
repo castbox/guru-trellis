@@ -1,0 +1,1182 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-24T22:13:35Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-24-116-review-task-publication",
+    "task_identity_sha256": "3260d0a73c4d48dbc8e3f83e44ad1cda025e06221f4771d521be2a011d278e3f",
+    "scope_ledger_sha256": "0c2d8b13c00f27a0271bc638d077eccad8c09d0bbee138ab3c78ed5b5bd5809e",
+    "status": "in_progress",
+    "branch": "codex/116-review-task-publication",
+    "issue_numbers": [
+      116
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+    "head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+    "dirty_paths": [
+      ".agents/skills/guru-review-branch/SKILL.md",
+      ".agents/skills/guru-review-branch/interface.json",
+      ".agents/skills/guru-review-branch/references/contract.md",
+      ".agents/skills/guru-review-branch/tests/test_contract.py",
+      ".agents/skills/guru-review-task-publication/SKILL.md",
+      ".agents/skills/guru-review-task-publication/evals/evals.json",
+      ".agents/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
+      ".agents/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
+      ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+      ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+      ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+      ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+      ".agents/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+      ".agents/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+      ".agents/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+      ".agents/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+      ".agents/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+      ".agents/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+      ".agents/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+      ".agents/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+      ".agents/skills/guru-review-task-publication/examples/pr-readiness.json",
+      ".agents/skills/guru-review-task-publication/examples/public-blocked-output.json",
+      ".agents/skills/guru-review-task-publication/examples/public-invocation-error.json",
+      ".agents/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
+      ".agents/skills/guru-review-task-publication/examples/public-publication-review-input.json",
+      ".agents/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+      ".agents/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+      ".agents/skills/guru-review-task-publication/examples/public-ready-output.json",
+      ".agents/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+      ".agents/skills/guru-review-task-publication/interface.json",
+      ".agents/skills/guru-review-task-publication/references/contract.md",
+      ".agents/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
+      ".agents/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+      ".agents/skills/guru-review-task-publication/schemas/public-input.schema.json",
+      ".agents/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".agents/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+      ".agents/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+      ".agents/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
+      ".agents/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+      ".agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".agents/skills/guru-review-task-publication/scripts/invoke.sh",
+      ".agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".agents/skills/guru-review-task-publication/tests/test_contract.py",
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/skills/guru-review-branch/SKILL.md",
+      ".claude/skills/guru-review-branch/interface.json",
+      ".claude/skills/guru-review-branch/references/contract.md",
+      ".claude/skills/guru-review-branch/tests/test_contract.py",
+      ".claude/skills/guru-review-task-publication/SKILL.md",
+      ".claude/skills/guru-review-task-publication/evals/evals.json",
+      ".claude/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
+      ".claude/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
+      ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+      ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+      ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+      ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+      ".claude/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+      ".claude/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+      ".claude/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+      ".claude/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+      ".claude/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+      ".claude/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+      ".claude/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+      ".claude/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+      ".claude/skills/guru-review-task-publication/examples/pr-readiness.json",
+      ".claude/skills/guru-review-task-publication/examples/public-blocked-output.json",
+      ".claude/skills/guru-review-task-publication/examples/public-invocation-error.json",
+      ".claude/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
+      ".claude/skills/guru-review-task-publication/examples/public-publication-review-input.json",
+      ".claude/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+      ".claude/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+      ".claude/skills/guru-review-task-publication/examples/public-ready-output.json",
+      ".claude/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+      ".claude/skills/guru-review-task-publication/interface.json",
+      ".claude/skills/guru-review-task-publication/references/contract.md",
+      ".claude/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
+      ".claude/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+      ".claude/skills/guru-review-task-publication/schemas/public-input.schema.json",
+      ".claude/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".claude/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+      ".claude/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+      ".claude/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
+      ".claude/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+      ".claude/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".claude/skills/guru-review-task-publication/scripts/invoke.sh",
+      ".claude/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".claude/skills/guru-review-task-publication/tests/test_contract.py",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/guru-review-branch/SKILL.md",
+      ".codex/skills/guru-review-branch/interface.json",
+      ".codex/skills/guru-review-branch/references/contract.md",
+      ".codex/skills/guru-review-branch/tests/test_contract.py",
+      ".codex/skills/guru-review-task-publication/SKILL.md",
+      ".codex/skills/guru-review-task-publication/evals/evals.json",
+      ".codex/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
+      ".codex/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
+      ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+      ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+      ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+      ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+      ".codex/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+      ".codex/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+      ".codex/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+      ".codex/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+      ".codex/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+      ".codex/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+      ".codex/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+      ".codex/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+      ".codex/skills/guru-review-task-publication/examples/pr-readiness.json",
+      ".codex/skills/guru-review-task-publication/examples/public-blocked-output.json",
+      ".codex/skills/guru-review-task-publication/examples/public-invocation-error.json",
+      ".codex/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
+      ".codex/skills/guru-review-task-publication/examples/public-publication-review-input.json",
+      ".codex/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+      ".codex/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+      ".codex/skills/guru-review-task-publication/examples/public-ready-output.json",
+      ".codex/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+      ".codex/skills/guru-review-task-publication/interface.json",
+      ".codex/skills/guru-review-task-publication/references/contract.md",
+      ".codex/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
+      ".codex/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+      ".codex/skills/guru-review-task-publication/schemas/public-input.schema.json",
+      ".codex/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".codex/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+      ".codex/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+      ".codex/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
+      ".codex/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+      ".codex/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".codex/skills/guru-review-task-publication/scripts/invoke.sh",
+      ".codex/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".codex/skills/guru-review-task-publication/tests/test_contract.py",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/skills/guru-review-branch/SKILL.md",
+      ".cursor/skills/guru-review-branch/interface.json",
+      ".cursor/skills/guru-review-branch/references/contract.md",
+      ".cursor/skills/guru-review-branch/tests/test_contract.py",
+      ".cursor/skills/guru-review-task-publication/SKILL.md",
+      ".cursor/skills/guru-review-task-publication/evals/evals.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+      ".cursor/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+      ".cursor/skills/guru-review-task-publication/examples/pr-readiness.json",
+      ".cursor/skills/guru-review-task-publication/examples/public-blocked-output.json",
+      ".cursor/skills/guru-review-task-publication/examples/public-invocation-error.json",
+      ".cursor/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
+      ".cursor/skills/guru-review-task-publication/examples/public-publication-review-input.json",
+      ".cursor/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+      ".cursor/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+      ".cursor/skills/guru-review-task-publication/examples/public-ready-output.json",
+      ".cursor/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+      ".cursor/skills/guru-review-task-publication/interface.json",
+      ".cursor/skills/guru-review-task-publication/references/contract.md",
+      ".cursor/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
+      ".cursor/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+      ".cursor/skills/guru-review-task-publication/schemas/public-input.schema.json",
+      ".cursor/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".cursor/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+      ".cursor/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+      ".cursor/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
+      ".cursor/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+      ".cursor/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".cursor/skills/guru-review-task-publication/scripts/invoke.sh",
+      ".cursor/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".cursor/skills/guru-review-task-publication/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/consumers/stop/production/review-task-publication-blocked.schema.json",
+      ".trellis/guru-team/skills/consumers/workflow/production/review-task-publication-return-to-task-work.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
+      ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/evals.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/blocked-external-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/blocked-external-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/pr-readiness.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-blocked-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-invocation-error.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-authoring.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-ready-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/interface.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-ready-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/invoke.sh",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+      ".trellis/guru-team/skills/registry.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+      ".trellis/tasks/07-24-116-review-task-publication/check.jsonl",
+      ".trellis/tasks/07-24-116-review-task-publication/context-discovery.json",
+      ".trellis/tasks/07-24-116-review-task-publication/contract-wording-review.json",
+      ".trellis/tasks/07-24-116-review-task-publication/design.md",
+      ".trellis/tasks/07-24-116-review-task-publication/implement.jsonl",
+      ".trellis/tasks/07-24-116-review-task-publication/implement.md",
+      ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+      ".trellis/tasks/07-24-116-review-task-publication/issue-review.json",
+      ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round3.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report.md",
+      ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+      ".trellis/tasks/07-24-116-review-task-publication/task-start-context.json",
+      ".trellis/tasks/07-24-116-review-task-publication/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/consumers/stop/production/review-task-publication-blocked.schema.json",
+      "trellis/skills/guru-team/consumers/workflow/production/review-task-publication-return-to-task-work.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
+      "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/evals.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/blocked-external-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/blocked-external-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/pr-readiness.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-blocked-output.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-invocation-error.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-authoring.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-ready-output.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/interface.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-ready-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/invoke.sh",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/check-task-publication-review.sh",
+      "trellis/workflows/guru-team/scripts/bash/record-task-publication-review.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "captured_at": "2026-07-24T22:13:35Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:116",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/116",
+      "sha256": "ca0ec3ae6a48d225eb910d3330e89ac9525244beabc56ac6c85067b8137fcc06",
+      "updated_at": "2026-07-22T11:04:57Z"
+    },
+    {
+      "id": "comment:116:5045033833",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/116#issuecomment-5045033833",
+      "sha256": "b349380d822fe5b3a946564c1a8c1cdc725a6dfb8ce669acdaf73531ed8d6da4",
+      "updated_at": null
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    },
+    {
+      "id": "repo:skill-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "ad0ce0d5d682825aff56139f5f39ddcf2dcfe8ec5f578f874f8c527e05589397",
+      "updated_at": null
+    },
+    {
+      "id": "repo:workflow-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "c796d7d53389915d0acec988c5d0534ab958cdb7d46804ef70439c7d78722368",
+      "updated_at": null
+    },
+    {
+      "id": "repo:companion-scripts",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "296c40261e637a923e41b3b690935c8018f8324b5a9f08be6b394bd0ecc22030",
+      "updated_at": null
+    },
+    {
+      "id": "repo:preset-installer",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/preset/installer.md",
+      "sha256": "566a19ad0814d46b9c2aa88cf88a980fcd4631887d3b998f4af1895b0ac52dd0",
+      "updated_at": null
+    },
+    {
+      "id": "task:issue-ledger",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+      "sha256": "0c2d8b13c00f27a0271bc638d077eccad8c09d0bbee138ab3c78ed5b5bd5809e",
+      "updated_at": null
+    },
+    {
+      "id": "user:post-planning-approval",
+      "kind": "user_request",
+      "locator": "用户已查看 current prd.md、design.md、implement.md 链接，并在获知 implementation、sub-agent dispatch 与 Phase 2 仍被门禁阻塞后回复“确认继续”；该确认仅授权按 current #116 planning 启动实施，不授权 push、PR mutation、archive、finalization 或关闭 related/followup issues。",
+      "sha256": "6e4a0570360ac05c9f5a4c89e67c6c17fd20b7d2101ab94689015ce5c7385715",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+      "sha256": "9814f640a7a624740b7f0cb06dc6e9b010e428ed523a5bd70345ba2b8ab7de01",
+      "size_bytes": 18678,
+      "modified_at": "2026-07-24T16:01:26.467201+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+      "sha256": "b2a38854623d55558807732a72bd586cfa60e38aafe22a0fb1b80a1168d2a408",
+      "size_bytes": 23193,
+      "modified_at": "2026-07-24T16:01:26.467680+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/implement.md",
+      "sha256": "13f7ec2d8fa925a803b37c662cd796fd47a62b0a574b8f2ca96b031099520603",
+      "size_bytes": 16451,
+      "modified_at": "2026-07-24T15:58:52.866818+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+      "sha256": "9814f640a7a624740b7f0cb06dc6e9b010e428ed523a5bd70345ba2b8ab7de01",
+      "size_bytes": 18678,
+      "modified_at": "2026-07-24T16:01:26.467201+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+      "sha256": "b2a38854623d55558807732a72bd586cfa60e38aafe22a0fb1b80a1168d2a408",
+      "size_bytes": 23193,
+      "modified_at": "2026-07-24T16:01:26.467680+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/implement.md",
+      "sha256": "13f7ec2d8fa925a803b37c662cd796fd47a62b0a574b8f2ca96b031099520603",
+      "size_bytes": 16451,
+      "modified_at": "2026-07-24T15:58:52.866818+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+    "locator": "## 17. Docs SSOT Plan",
+    "durable_paths": [
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/docs/public-docs.md",
+      "docs/requirements/requirement-main.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/README.md",
+      "README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md"
+    ],
+    "statement_sha256": "0305fbbb2b378eaddec447a890e90370e37af04e3f2493bfd0e001402646542b"
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "a862d10267119c2bee220bf38e12f2be3a526fa75a4946dfe700963e990ed477",
+    "facts_sha256": "4b9f34f5d4734426ce843661aa7bde3520225b833559d8026e77d2b861a1866f",
+    "scope_sha256": "b907fdcfdf6508452be6e474071679cedcb506c78798057c75948961aab5989a",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session-issue-116-planning-wording",
+    "summary": "已对 current prd.md、design.md、implement.md 的固定 planning_artifacts profile 完成全量复审。首轮受控词命中已通过 task-local 修订消除，fresh scan 为零命中；修订把入口枚举、evidence集合、metadata allowlist、eval案例与停止条件改成闭合合同，未削弱 #116 当前权威，未创建平行实现路径。所有条件路由均有明确触发，AI semantic Gate 与 recorder/validator 边界清楚，AC1-AC19均映射到可验证实现或独立语义门禁。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "R1",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R1. Active semantic Skill 与稳定身份",
+        "statement_sha256": "1d099e76adb487b207605ca03e39be58fa90dd02fb2f3fcc0678af3de771725e",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:skill-contract"
+        ],
+        "reason": "#116明确要求active Interface 1.3 semantic Skill及固定阶段。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R2",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R2. 双入口 public input 与 target-owned authoring seed",
+        "statement_sha256": "6638726e50644c4db8f35fc3cf49fe30ed2b55c9165b4e94d934db8cc3f38b91",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:116:5045033833",
+          "repo:skill-contract"
+        ],
+        "reason": "accepted-current评论固定双入口及producer seed与target authoring partition。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R3",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R3. Private entry evidence",
+        "statement_sha256": "057755feb25709f53aa4d414a490412611ffb5b58edef3c0d588e956d4786d0c",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "repo:skill-contract",
+          "repo:workflow-contract"
+        ],
+        "reason": "Publication review必须绑定current task、HEAD、planning、Phase2、Branch Review、ledger与Docs证据。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R4",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R4. Publication semantic review dimensions",
+        "statement_sha256": "7f4d7b71e605d6875b700929f9a2d39e4b1697c9fdd79b304453703f008a9c6b",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:agents"
+        ],
+        "reason": "十维审查是#116的AI Review Gate主体，脚本成功不能替代。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R5",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R5. Finding 与内部 metadata revision loop",
+        "statement_sha256": "1cc6e67fb14b00a1fa7f0274cd92180c42344b2f6a1071c24983f511b82fa5d2",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833"
+        ],
+        "reason": "#116要求metadata-only finding在Skill内修订并fresh re-review，非metadata drift返回task work。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R6",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R6. 唯一 `pr-readiness.json` 与分层 ownership",
+        "statement_sha256": "86214c9f24a56b53c2383d7aa8dfab3ef8d416e6ded3026bf54365bd9c9e384c",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:companion-scripts"
+        ],
+        "reason": "#116明确规定唯一readiness gate与semantic/deterministic ownership迁移。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R7",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R7. 三个 typed exits 与唯一 consumers",
+        "statement_sha256": "15350eb2dc4b87c97ca87ba9ffa57b0bba6e6038989c29cf72f503a9f0998750",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:116:5045033833",
+          "repo:skill-contract",
+          "repo:workflow-contract"
+        ],
+        "reason": "三个exit_id DTO及唯一consumer由accepted-current Interface 1.3合同固定。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R8",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R8. Stale、replacement 与 re-entry",
+        "statement_sha256": "a5b4dfd8075a2a15f7d64421b1d85f573f9db2a073e62631672e5b07f7497af5",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:agents"
+        ],
+        "reason": "Stale入口必须完成相同semantic review并绑定current owner evidence。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R9",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R9. Script 边界",
+        "statement_sha256": "78bb39d1453ad289bab5579054663015630318069c9f3ebf7da4744c68856a8a",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "repo:agents",
+          "repo:companion-scripts"
+        ],
+        "reason": "AGENTS与#116均要求Markdown/AI拥有判断、脚本仅record/validate/project facts。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R10",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R10. Real public wrapper 与 production eval",
+        "statement_sha256": "d258feec38c27c574e850241b2e1f909268bd3bf72c11db6669b498670c9776f",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:116:5045033833",
+          "repo:skill-contract"
+        ],
+        "reason": "accepted-current评论要求真实wrapper、actual-exit schema选择及四平台byte-identical corpus。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R11",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R11. Workflow、registry、distribution 与 upgrade",
+        "statement_sha256": "1cc63b345a8ec492bd1ea0c13022887fc76dc3d4572611a6c486cc09330aa6ad",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:workflow-contract",
+          "repo:preset-installer",
+          "repo:agents"
+        ],
+        "reason": "Active closure、thin workflow、canonical/platform分发与update/reapply是当前验收范围。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R12",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "R12. 正常运行边界与非目标",
+        "statement_sha256": "ff59b530629164c8c8b349c5eefabd67b2fcbc3952ff3a434d9d705273fec90e",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "repo:agents",
+          "task:issue-ledger"
+        ],
+        "reason": "Issue与仓库合同明确排除发布副作用、后续Issues及异常加固范围。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC1-AC19",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        "locator": "## 6. 验收标准",
+        "statement_sha256": "cb1b13d1de9139b2ca0e8b2eb0be908ef797c73276ec02f09b59f05b5fbd43ba",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:agents"
+        ],
+        "reason": "AC1-AC19完整投影Issue acceptance、分发门禁和独立semantic review要求。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "IC-01",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+        "locator": "| IC-01 | `pr-readiness.json` 单一artifact分层 | 新建 semantic gate artifact | 需求明确唯一 gate，分层能保持 finalization compatibility |",
+        "statement_sha256": "9479a79a1d5385dc7436d4c2073637aa697df155d87daa8e2c0a4f0b4e106628",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:116",
+          "repo:companion-scripts"
+        ],
+        "reason": "唯一gate要求在同一artifact中分层保存semantic gate与future deterministic publish inputs。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "layer-single-artifact",
+              "tradeoff": "保持唯一artifact并要求reader区分owner layers。"
+            },
+            {
+              "id": "parallel-semantic-artifact",
+              "tradeoff": "结构直观但违反唯一pr-readiness gate要求。"
+            }
+          ],
+          "selected_id": "layer-single-artifact",
+          "selection_reason": "满足唯一gate与existing finalization compatibility。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "IC-02",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+        "locator": "| IC-02 | Target-owned authoring seed | #131预先定义#116 schema；runtime补字段 | 符合 Interface 1.3 owner与无推断边界 |",
+        "statement_sha256": "6677f08afd2c2d62d7601021638881acc866b5e913a396245baa9f5bef91e931",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "comment:116:5045033833",
+          "repo:skill-contract"
+        ],
+        "reason": "Target-owned authoring partition是激活#131 producer bridge的Interface 1.3兼容选择。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "target-owned-authoring",
+              "tradeoff": "Target拥有完整input合同，caller只fresh编写明确authoring fields。"
+            },
+            {
+              "id": "producer-or-runtime-authoring",
+              "tradeoff": "减少target配置但越权定义或推断semantic字段。"
+            }
+          ],
+          "selected_id": "target-owned-authoring",
+          "selection_reason": "保持producer DTO稳定并满足no-overwrite/complete partition。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "IC-03",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+        "locator": "| IC-03 | 新增 planned `guru-finalize-task` identity | ready 先路由 workflow placeholder | 为 ready 提供唯一 Skill consumer 且不越权实现 #118 |",
+        "statement_sha256": "3e5a2b9758d9173d852e73a185017ab432c076e17d5d5aee625137ce9b7e3d18",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "comment:116:5045033833",
+          "repo:skill-contract",
+          "repo:workflow-contract"
+        ],
+        "reason": "Ready需要唯一consumer identity，但#116不得实现或定义#118 target schema。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "planned-finalize-identity",
+              "tradeoff": "建立稳定planned consumer并在package缺失时fail closed。"
+            },
+            {
+              "id": "workflow-placeholder",
+              "tradeoff": "避免registry row但不能表达最终Skill consumer合同。"
+            }
+          ],
+          "selected_id": "planned-finalize-identity",
+          "selection_reason": "与现有planned consumer migration模式一致且不越权实现#118。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "IC-04",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+        "locator": "| IC-04 | Metadata fix在Skill内部re-review | 每次修订返回workflow | 需求明确内部闭环，避免重复Phase链 |",
+        "statement_sha256": "aeef932857328e13091f5dd9ecb12747277b0e165abbcfbeb6c1d4b592f0d2f7",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833"
+        ],
+        "reason": "Metadata-only finding必须在Skill边界内完成revision与fresh semantic review。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "internal-metadata-loop",
+              "tradeoff": "Skill闭环完整，但每次修订都必须fresh re-review。"
+            },
+            {
+              "id": "workflow-reentry-per-edit",
+              "tradeoff": "编排可见但制造不必要外部exit与重复Phase调用。"
+            }
+          ],
+          "selected_id": "internal-metadata-loop",
+          "selection_reason": "直接承接Issue定义的closed-loop owner。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "IC-05",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+        "locator": "| IC-05 | Compatibility helper只augment passing gate | 删除所有legacy publish input逻辑 | 保持现有finalization reader兼容且不冒充semantic pass |",
+        "statement_sha256": "69c13dac91b9d4bfb21a6deb15c0dbd0a2643024b4a3557615ddca57b44ead8d",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:116",
+          "repo:companion-scripts"
+        ],
+        "reason": "Existing finalization reader需要兼容publish inputs，但不能继续创建semantic ready。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "augment-passing-gate",
+              "tradeoff": "保留reader兼容并强制先有checker-passed semantic gate。"
+            },
+            {
+              "id": "remove-compatibility-immediately",
+              "tradeoff": "合同更纯但会破坏尚未迁移的finalization路径。"
+            }
+          ],
+          "selected_id": "augment-passing-gate",
+          "selection_reason": "在不新增gate的前提下保持迁移兼容。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "IC-06",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+        "locator": "| IC-06 | 复用shared runtime与Interface 1.3 | 新建独立publication runtime | 避免平行validator/dispatcher/schema机制 |",
+        "statement_sha256": "4f5d5db6e2272b511defc529279272351ca6a5a8cadb1f0ab45b76953853b24f",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "repo:skill-contract",
+          "repo:companion-scripts",
+          "repo:agents"
+        ],
+        "reason": "Shared runtime与Interface 1.3已提供facts、schema、dispatcher和source/installed验证基础。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "reuse-shared-runtime",
+              "tradeoff": "需扩展现有大runtime，但保持单一事实与validator实现。"
+            },
+            {
+              "id": "new-publication-runtime",
+              "tradeoff": "局部隔离但会形成重复schema/dispatcher/freshness机制。"
+            }
+          ],
+          "selected_id": "reuse-shared-runtime",
+          "selection_reason": "符合原子Skill与输入输出机制复用要求。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "DOCS-SSOT",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/design.md",
+        "locator": "## 17. Docs SSOT Plan",
+        "statement_sha256": "0305fbbb2b378eaddec447a890e90370e37af04e3f2493bfd0e001402646542b",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "repo:agents",
+          "repo:workflow-contract",
+          "repo:preset-installer"
+        ],
+        "reason": "Docs state、ssot_first durable paths、delta checkpoint与task-history边界是Phase1/Phase2必备合同。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "IMPLEMENT-SEQUENCE",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/implement.md",
+        "locator": "## 2. 有序实施步骤",
+        "statement_sha256": "a29a950f4983f90667b7026bdf05e67a452a67ff3586ea9b9e35bc333f7df930",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833",
+          "repo:agents"
+        ],
+        "reason": "有序步骤完整覆盖SSOT、package、bridges、runtime、workflow、eval、preset、throwaway、Phase2和Branch Review。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "VALIDATION-PLAN",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/implement.md",
+        "locator": "## 4. 验证命令计划",
+        "statement_sha256": "405264d62d089214d757737e35ffcd9e4479dec9e18164ee80b85280373f6c34",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "repo:agents",
+          "repo:preset-installer"
+        ],
+        "reason": "验证矩阵覆盖package/runtime/workflow/preset、real wrapper、平台一致性和clean update/reapply。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "AC-TRACE",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/implement.md",
+        "locator": "## 5. AC承接",
+        "statement_sha256": "4b1b8cfb9a2e59fdd8caa015ae36708cac3717b07f72f40b9497921d92925dac",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "comment:116:5045033833"
+        ],
+        "reason": "AC1-AC19均映射到明确实施步骤与验证checkpoint。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "RISK-STOPS",
+        "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/implement.md",
+        "locator": "## 6. 风险与停止条件",
+        "statement_sha256": "91387038e08fb035cd1c4edd0cb7b1ac310e318fe9981cfc610b96bb14b78e8c",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:116",
+          "repo:agents",
+          "task:issue-ledger"
+        ],
+        "reason": "Stop conditions防止API破坏、越权实现follow-up、semantic脚本化与隐藏安装状态。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      }
+    ],
+    "coverage": {
+      "reviewer": "codex-main-session-issue-116-planning-approval",
+      "summary": "已覆盖R1-R12、AC1-AC19、六个必要实现选择、Docs SSOT、实施序列、验证矩阵、AC trace和风险停止条件；不存在未承接的load-bearing requirement、design contract、acceptance或test obligation。",
+      "reviewed_entry_ids": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11",
+        "R12",
+        "AC1-AC19",
+        "IC-01",
+        "IC-02",
+        "IC-03",
+        "IC-04",
+        "IC-05",
+        "IC-06",
+        "DOCS-SSOT",
+        "IMPLEMENT-SEQUENCE",
+        "VALIDATION-PLAN",
+        "AC-TRACE",
+        "RISK-STOPS"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "47ed5095c4ed07d3ad1acf41b89e1e45793cca6e955d88118a058eb41a8ea464"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "codex-main-session-issue-116-planning-approval",
+    "summary": "已逐项审核恶意伪造、并发竞态、lock/atomic write、crash consistency、cross-OS atomicity与正常stale/mismatch；前五项均无当前权威触发并被排除或移除，正常stale/mismatch由Issue和AGENTS明确要求。不存在需要dedicated scope confirmation的候选。",
+    "candidates": [
+      {
+        "id": "US-01",
+        "scenario_class": "attack_or_malicious_actor",
+        "trigger_evidence": "当前Issue与AGENTS明确采用honest-but-fallible运行假设。",
+        "scope": "恶意伪造gate、hash、state或artifact。",
+        "cost": "需要authenticity与anti-tamper机制及额外负例。",
+        "alternatives": [
+          "保持正常freshness/correctness校验。"
+        ],
+        "consequence": "排除恶意模型，不影响正常错误digest或stale acceptance correctness bugs。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "387763818461fa50ad3a8069d06a773789ec7b3f1645152e8af3e77cd496cc1f",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "US-02",
+        "scenario_class": "toctou_or_concurrency_race",
+        "trigger_evidence": "当前Issue没有并发finalization或race压力要求。",
+        "scope": "并发publication/finalization竞态与TOCTOU。",
+        "cost": "需要并发协议、race tests与额外状态机。",
+        "alternatives": [
+          "使用current invocation freshness与normal fail-closed。"
+        ],
+        "consequence": "不实现并发加固，保留普通external state drift检查。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "8a83ce0bbc92124e37e41e1ab89f5507aa83f9332bf39089b92723e13e234524",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "US-03",
+        "scenario_class": "other_nonstandard",
+        "trigger_evidence": "设计中不需要额外lock或atomic write才能满足正常路径。",
+        "scope": "新增lock/atomic write protocol。",
+        "cost": "扩大运行时状态、恢复和测试范围。",
+        "alternatives": [
+          "复用现有recorder/checker invocation freshness。"
+        ],
+        "consequence": "移除非必要机制，保持当前确定性边界。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "23d2eb49044b03c1d562e511798642930b256eafeb59e85de36adf1045ea328a",
+        "disposition": "mechanism_removed",
+        "confirmation": null
+      },
+      {
+        "id": "US-04",
+        "scenario_class": "fault_injection_or_crash_consistency",
+        "trigger_evidence": "Issue未要求偶发crash consistency或额外fault injection。",
+        "scope": "Recorder中断、故障注入与事务恢复加固。",
+        "cost": "引入transaction protocol和独立failure matrix。",
+        "alternatives": [
+          "验证正常recorder错误与stale replacement correctness。"
+        ],
+        "consequence": "排除非常规故障加固，不削弱正常错误处理。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "f5754c9022dc22bf4f29439402752888aff7ef2d1b6da4537fb3580d69ae654b",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "US-05",
+        "scenario_class": "cross_os_atomicity",
+        "trigger_evidence": "Issue要求平台copy与installer兼容，不要求跨OS原子写协议。",
+        "scope": "跨OS filesystem atomicity hardening。",
+        "cost": "需要多OS故障语义与额外CI矩阵。",
+        "alternatives": [
+          "使用现有preset/platform/install contract tests。"
+        ],
+        "consequence": "不扩大为filesystem原子性项目。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "e7fdbeca90f6a70f8d442ec8d94908f154fac61f2f8ba4d9084a530d2f57f0b6",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "US-06",
+        "scenario_class": "other_nonstandard",
+        "trigger_evidence": "#116与AGENTS明确要求正常stale、mismatch和错误digest correctness。",
+        "scope": "正常owner evidence、HEAD、hash、body/index、working-tree drift。",
+        "cost": "需要facts materializer、checker和fresh re-entry tests。",
+        "alternatives": [
+          "省略freshness会让旧pass被错误消费。"
+        ],
+        "consequence": "作为current explicit requirement实施并验证。",
+        "source_requirement_refs": [
+          "issue:116",
+          "repo:agents"
+        ],
+        "proposal_sha256": "95dced0ea05c03d4c6a4f25202b609ecf8ac203798024d69edad030ed73a4253",
+        "disposition": "explicit_requirement",
+        "confirmation": null
+      }
+    ],
+    "unresolved_count": 0,
+    "review_sha256": "584def335e6ed5ebe92c1916c3b9c00a6545add6085e809aaeb28ec3b9eb4097"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-116-planning-round3-finding-fix-reentry",
+      "summary": "Fresh round-3 finding-fix re-entry已完整复核字节未变的prd/design/implement、未变的Issue #116 scope ledger、current implementation handoff、Phase2 round-3 evidence及更新后的repository authorities。Authority delta仅精确落实已批准F-004/F-005：把global workflow、guru-review-branch与五个平台trellis-continue入口统一路由到active guru-review-task-publication；并在Phase 3.6 mandatory invocation前由workflow caller准备task-local pr-body.md与finish-summary-index.json，缺失或客观malformed即fail closed。Publication Skill仍唯一拥有十维semantic review、finding/Issue closure/readiness route；Phase 3.7只消费ready绑定的既有bytes。F-001至F-005均在current handoff中闭合；11/42、production 3/11、Stage0 6/24、#131 output bytes、planned #118与无push/PR/finalization边界保持。未实现#118/#119/#132，无新增需求、设计、finding、revision action、scope proposal、unusual scenario或blocker；原post-planning confirmation仍绑定同一三份规划文档。",
+      "reviewed_at": "2026-07-24T22:13:32Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-24T16:02:00Z",
+    "confirmed_at": "2026-07-24T16:02:51Z",
+    "evidence_summary": "用户在看到current PRD、Design、Implement Plan链接以及未授权实施的明确门禁说明后回复“确认继续”。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "Phase2 round-3 current-scope finding fix更新durable authorities并触发fresh semantic re-entry；current planning、Issue scope与confirmation绑定不变，F-004/F-005修复完整承接已批准#116。",
+  "supersedes_facts_sha256": "cb056cea49bcbb312188a810f1e72328121095c9496ef408b1e9a5b00e749686",
+  "facts_sha256": "28aff0ac40604eae5857fb4432550c654f7bf1261ec4c9f50840e058ffb13e09"
+}

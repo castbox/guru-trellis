@@ -92,7 +92,10 @@ No second Branch Review pass artifact is allowed.
 
 Return exactly one:
 
-- `passed`: minimal planned publication seed;
+- `passed`: minimal active publication seed; the workflow caller next authors
+  the two task-local publication content candidates required by global Phase
+  3.6, then merges the target-owned authoring fields and invokes
+  `guru-review-task-publication`;
 - `implementation_required`: current finding refs;
 - `scope_confirmation_required`: exact proposal refs;
 - `blocked`: routing identity only.

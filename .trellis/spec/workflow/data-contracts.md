@@ -403,7 +403,7 @@ The source and installed closure algorithm reads the live registry, both
 manifests, Interface public contracts, and package-local corpora. It requires
 the active ids to equal the two manifest sets plus any future complete active
 1.3 rows; requires every active row to be `minimal_handoff`; and requires exact
-profile/exit/current-case set equality. Ten Skills and 39 exits are the current
+profile/exit/current-case set equality. Eleven Skills and 42 exits are the current
 cardinality regression, not a hard-coded future registry allowlist.
 
 The production manifest also binds the exact four
@@ -1792,3 +1792,51 @@ The five closed scenario classes are `normal_required_behavior`,
 `explicit_nonstandard_requirement`, `approved_nonstandard_expansion`,
 `unconfirmed_nonstandard_proposal`, and `out_of_scope`. Qualification always
 precedes severity. The last two cannot become current P0-P3 findings.
+
+## Publication Readiness Gate
+
+`{TASK_DIR}/pr-readiness.json` is the only publication readiness gate. Active
+schema `guru-task-publication-readiness-1.0` has three ownership layers:
+
+1. `semantic_review`: the two-profile invocation identity, all ten AI-reviewed
+   dimensions, findings and closure, scope/Docs/safety/deployment conclusions,
+   metadata revision history, reviewer-process and confirmation evidence, and
+   typed conclusion. Finding summary, scope basis, evidence refs, affected
+   artifacts, and closure evidence are all non-empty;
+2. `deterministic_bindings`: current task/workspace/base/HEAD/review identity,
+   planning/Phase 2/ledger/Docs/Branch Review/body/index/tail bindings,
+   recomputable facts digest, and opaque `publication_ref`;
+3. optional `publish_inputs`, written only by the later finalization owner
+   after the current artifact passes `check-task-publication-review`.
+
+`ready`, `return_to_task_work`, and `blocked` share this one artifact and a
+closed exit/consumer union. Replacement binds the prior publication identity;
+stale or non-ready evidence never becomes current by adding publish inputs.
+Every `ready` entry binding, dimension, and scope/Docs/safety conclusion is
+`passed`, and every finding is closed. `return_to_task_work` requires an open
+`task_work` finding bound to a `finding` dimension and has no blocked dimension
+or conclusion. `blocked` requires an open `external_blocker` finding bound to
+a `blocked` dimension and at least one blocked conclusion. All open findings
+reference non-passed dimensions, and an open metadata-revision finding cannot
+escape the internal rereview loop through an external exit. A
+checker-reproducible `failed` entry
+binding may be retained only on an already AI-selected non-ready route, so the
+recorder/checker record objective drift without deciding its semantic route.
+Stale gates preserve `stale_reason`, `reentry_context`, and the exact
+`supersedes_publication_ref`; the public wrapper must match the first two
+against the checked owner result.
+When finalization adds the exact validated `closeout-plan.json`, it reruns all
+twelve entry preconditions. The only accepted deterministic delta is the
+repository binding and its derived `review_range_and_working_tree` digest for
+that sole path; every other binding remains exact and passed.
+The compatibility reader may recognize the old `ready=true` snapshot shape,
+but the publication checker rejects it as a semantic pass.
+
+`pr-body.md` and `finish-summary-index.json` remain independent task-local
+content inputs, not public handoff state. In the global workflow the caller
+authors their initial current candidates after Branch Review `passed` and
+before publication invocation; the mandatory `publication_content` entry
+binding then validates both exact contents. `ready` binds those bytes, so
+Phase 3.7 cannot first create, regenerate, or revise them. Public output
+contains only each consumer's minimal DTO; full review bodies, paths, findings,
+histories, and digest bundles stay in the gate.

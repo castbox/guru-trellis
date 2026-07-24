@@ -1,0 +1,733 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "generated_at",
+    "task_dir",
+    "profile",
+    "mode",
+    "review_intent",
+    "review_identity",
+    "semantic_review",
+    "deterministic_bindings",
+    "typed_exit",
+    "consumer",
+    "supersedes_publication_ref",
+    "facts_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-review-task-publication"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "task_dir": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "profile": {"enum": ["publication_review", "publication_review_stale"]},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "review_intent": {"enum": ["initial_review", "metadata_revision_review", "stale_reentry_review"]},
+    "stale_reason": {"type": "string", "minLength": 1},
+    "reentry_context": {"type": "string", "minLength": 1},
+    "review_identity": {"$ref": "#/$defs/review_identity"},
+    "semantic_review": {"$ref": "#/$defs/semantic_review"},
+    "deterministic_bindings": {"$ref": "#/$defs/deterministic_bindings"},
+    "typed_exit": {"enum": ["ready", "return_to_task_work", "blocked"]},
+    "consumer": {"$ref": "#/$defs/consumer"},
+    "reason_code": {"type": "string", "minLength": 1},
+    "remediation": {"type": "string", "minLength": 1},
+    "publish_inputs": {"$ref": "#/$defs/publish_inputs"},
+    "supersedes_publication_ref": {"type": ["string", "null"], "minLength": 1},
+    "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"profile": {"const": "publication_review_stale"}}},
+      "then": {
+        "required": ["stale_reason", "reentry_context"],
+        "properties": {
+          "review_intent": {"const": "stale_reentry_review"},
+          "supersedes_publication_ref": {"type": "string", "minLength": 1}
+        }
+      },
+      "else": {
+        "properties": {"supersedes_publication_ref": {"type": "null"}},
+        "not": {
+          "anyOf": [
+            {"required": ["stale_reason"]},
+            {"required": ["reentry_context"]}
+          ]
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "ready"}}},
+      "then": {
+        "properties": {
+          "consumer": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "id"],
+            "properties": {
+              "kind": {"const": "skill"},
+              "id": {"const": "guru-finalize-task"}
+            }
+          },
+          "semantic_review": {
+            "allOf": [
+              {"$ref": "#/$defs/semantic_review"},
+              {
+                "properties": {
+                  "dimensions": {
+                    "items": {
+                      "allOf": [
+                        {"$ref": "#/$defs/dimension"},
+                        {"properties": {"status": {"const": "passed"}}}
+                      ]
+                    }
+                  },
+                  "findings": {
+                    "items": {
+                      "allOf": [
+                        {"$ref": "#/$defs/finding"},
+                        {"properties": {"status": {"const": "closed"}}}
+                      ]
+                    }
+                  },
+                  "conclusions": {
+                    "properties": {
+                      "issue_scope": {
+                        "allOf": [
+                          {"$ref": "#/$defs/conclusion"},
+                          {"properties": {"status": {"const": "passed"}}}
+                        ]
+                      },
+                      "docs_ssot": {
+                        "allOf": [
+                          {"$ref": "#/$defs/conclusion"},
+                          {"properties": {"status": {"const": "passed"}}}
+                        ]
+                      },
+                      "safety_deployment": {
+                        "allOf": [
+                          {"$ref": "#/$defs/conclusion"},
+                          {"properties": {"status": {"const": "passed"}}}
+                        ]
+                      }
+                    }
+                  },
+                  "ai_review_gate": {
+                    "allOf": [
+                      {"$ref": "#/$defs/ai_review_gate"},
+                      {"properties": {"status": {"const": "passed"}}}
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "deterministic_bindings": {
+            "allOf": [
+              {"$ref": "#/$defs/deterministic_bindings"},
+              {
+                "properties": {
+                  "entry_preconditions": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "runtime_dependency",
+                      "task_workspace",
+                      "task_identity",
+                      "branch_review_handoff",
+                      "planning_approval",
+                      "phase2_check",
+                      "issue_scope_ledger",
+                      "docs_ssot_reconciliation",
+                      "branch_review_evidence",
+                      "publication_content",
+                      "review_range_and_working_tree",
+                      "invocation_freshness"
+                    ],
+                    "properties": {
+                      "runtime_dependency": {"$ref": "#/$defs/passed_entry_binding"},
+                      "task_workspace": {"$ref": "#/$defs/passed_entry_binding"},
+                      "task_identity": {"$ref": "#/$defs/passed_entry_binding"},
+                      "branch_review_handoff": {"$ref": "#/$defs/passed_entry_binding"},
+                      "planning_approval": {"$ref": "#/$defs/passed_entry_binding"},
+                      "phase2_check": {"$ref": "#/$defs/passed_entry_binding"},
+                      "issue_scope_ledger": {"$ref": "#/$defs/passed_entry_binding"},
+                      "docs_ssot_reconciliation": {"$ref": "#/$defs/passed_entry_binding"},
+                      "branch_review_evidence": {"$ref": "#/$defs/passed_entry_binding"},
+                      "publication_content": {"$ref": "#/$defs/passed_entry_binding"},
+                      "review_range_and_working_tree": {"$ref": "#/$defs/passed_entry_binding"},
+                      "invocation_freshness": {"$ref": "#/$defs/passed_entry_binding"}
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "not": {
+          "anyOf": [
+            {"required": ["reason_code"]},
+            {"required": ["remediation"]}
+          ]
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "return_to_task_work"}}},
+      "then": {
+        "properties": {
+          "consumer": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "id"],
+            "properties": {
+              "kind": {"const": "workflow"},
+              "id": {"const": "guru-task-publication-work-router"}
+            }
+          },
+          "semantic_review": {
+            "allOf": [
+              {"$ref": "#/$defs/semantic_review"},
+              {
+                "properties": {
+                  "dimensions": {
+                    "type": "array",
+                    "contains": {
+                      "allOf": [
+                        {"$ref": "#/$defs/dimension"},
+                        {"properties": {"status": {"const": "finding"}}}
+                      ]
+                    },
+                    "not": {
+                      "contains": {
+                        "allOf": [
+                          {"$ref": "#/$defs/dimension"},
+                          {"properties": {"status": {"const": "blocked"}}}
+                        ]
+                      }
+                    }
+                  },
+                  "findings": {
+                    "type": "array",
+                    "contains": {
+                      "allOf": [
+                        {"$ref": "#/$defs/finding"},
+                        {
+                          "properties": {
+                            "route_class": {"const": "task_work"},
+                            "status": {"const": "open"}
+                          }
+                        }
+                      ]
+                    },
+                    "items": {
+                      "allOf": [
+                        {"$ref": "#/$defs/finding"},
+                        {
+                          "if": {
+                            "properties": {"status": {"const": "open"}},
+                            "required": ["status"]
+                          },
+                          "then": {
+                            "properties": {
+                              "route_class": {"const": "task_work"}
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "conclusions": {
+                    "properties": {
+                      "issue_scope": {
+                        "allOf": [
+                          {"$ref": "#/$defs/conclusion"},
+                          {"properties": {"status": {"enum": ["passed", "finding"]}}}
+                        ]
+                      },
+                      "docs_ssot": {
+                        "allOf": [
+                          {"$ref": "#/$defs/conclusion"},
+                          {"properties": {"status": {"enum": ["passed", "finding"]}}}
+                        ]
+                      },
+                      "safety_deployment": {
+                        "allOf": [
+                          {"$ref": "#/$defs/conclusion"},
+                          {"properties": {"status": {"enum": ["passed", "finding"]}}}
+                        ]
+                      }
+                    }
+                  },
+                  "ai_review_gate": {
+                    "allOf": [
+                      {"$ref": "#/$defs/ai_review_gate"},
+                      {"properties": {"status": {"const": "return_to_task_work"}}}
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "not": {
+          "anyOf": [
+            {"required": ["reason_code"]},
+            {"required": ["remediation"]}
+          ]
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "blocked"}}},
+      "then": {
+        "required": ["reason_code", "remediation"],
+        "properties": {
+          "consumer": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "id"],
+            "properties": {
+              "kind": {"const": "stop"},
+              "id": {"const": "task-publication-review-blocked"}
+            }
+          },
+          "semantic_review": {
+            "allOf": [
+              {"$ref": "#/$defs/semantic_review"},
+              {
+                "properties": {
+                  "dimensions": {
+                    "type": "array",
+                    "contains": {
+                      "allOf": [
+                        {"$ref": "#/$defs/dimension"},
+                        {"properties": {"status": {"const": "blocked"}}}
+                      ]
+                    }
+                  },
+                  "findings": {
+                    "type": "array",
+                    "contains": {
+                      "allOf": [
+                        {"$ref": "#/$defs/finding"},
+                        {
+                          "properties": {
+                            "route_class": {"const": "external_blocker"},
+                            "status": {"const": "open"}
+                          }
+                        }
+                      ]
+                    },
+                    "items": {
+                      "allOf": [
+                        {"$ref": "#/$defs/finding"},
+                        {
+                          "if": {
+                            "properties": {"status": {"const": "open"}},
+                            "required": ["status"]
+                          },
+                          "then": {
+                            "properties": {
+                              "route_class": {"const": "external_blocker"}
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "conclusions": {
+                    "allOf": [
+                      {
+                        "properties": {
+                          "issue_scope": {
+                            "allOf": [
+                              {"$ref": "#/$defs/conclusion"},
+                              {"properties": {"status": {"enum": ["passed", "blocked"]}}}
+                            ]
+                          },
+                          "docs_ssot": {
+                            "allOf": [
+                              {"$ref": "#/$defs/conclusion"},
+                              {"properties": {"status": {"enum": ["passed", "blocked"]}}}
+                            ]
+                          },
+                          "safety_deployment": {
+                            "allOf": [
+                              {"$ref": "#/$defs/conclusion"},
+                              {"properties": {"status": {"enum": ["passed", "blocked"]}}}
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "anyOf": [
+                          {"properties": {"issue_scope": {"properties": {"status": {"const": "blocked"}}}}},
+                          {"properties": {"docs_ssot": {"properties": {"status": {"const": "blocked"}}}}},
+                          {"properties": {"safety_deployment": {"properties": {"status": {"const": "blocked"}}}}}
+                        ]
+                      }
+                    ]
+                  },
+                  "ai_review_gate": {
+                    "allOf": [
+                      {"$ref": "#/$defs/ai_review_gate"},
+                      {"properties": {"status": {"const": "blocked"}}}
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "non_empty_strings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "review_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewed_head", "review_ref"],
+      "properties": {
+        "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "review_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "summary", "evidence_refs"],
+      "properties": {
+        "id": {
+          "enum": [
+            "diff_outcome_consistency",
+            "issue_scope_closure",
+            "pr_body_quality",
+            "validation_claims",
+            "branch_review_summary",
+            "docs_ssot_reconciliation",
+            "safety_deployment_impact",
+            "finish_summary_semantics",
+            "metadata_tail_integrity",
+            "artifact_binding_freshness"
+          ]
+        },
+        "status": {"enum": ["passed", "finding", "blocked"]},
+        "summary": {"type": "string", "minLength": 1},
+        "evidence_refs": {"$ref": "#/$defs/non_empty_strings"}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_ref",
+        "dimension",
+        "summary",
+        "scope_basis",
+        "evidence_refs",
+        "affected_artifacts",
+        "route_class",
+        "status",
+        "closure_evidence"
+      ],
+      "properties": {
+        "finding_ref": {"type": "string", "minLength": 1},
+        "dimension": {
+          "enum": [
+            "diff_outcome_consistency",
+            "issue_scope_closure",
+            "pr_body_quality",
+            "validation_claims",
+            "branch_review_summary",
+            "docs_ssot_reconciliation",
+            "safety_deployment_impact",
+            "finish_summary_semantics",
+            "metadata_tail_integrity",
+            "artifact_binding_freshness"
+          ]
+        },
+        "summary": {"type": "string", "minLength": 1},
+        "scope_basis": {"type": "string", "minLength": 1},
+        "evidence_refs": {"$ref": "#/$defs/non_empty_strings"},
+        "affected_artifacts": {"$ref": "#/$defs/non_empty_strings"},
+        "route_class": {"enum": ["metadata_revision", "task_work", "external_blocker"]},
+        "status": {"enum": ["open", "closed"]},
+        "closure_evidence": {"$ref": "#/$defs/non_empty_strings"}
+      }
+    },
+    "conclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "summary", "evidence_refs"],
+      "properties": {
+        "status": {"enum": ["passed", "finding", "blocked"]},
+        "summary": {"type": "string", "minLength": 1},
+        "evidence_refs": {"$ref": "#/$defs/non_empty_strings"}
+      }
+    },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision_ref", "kind", "summary", "evidence_refs"],
+      "properties": {
+        "revision_ref": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["metadata_revision", "stale_reentry", "replacement"]},
+        "summary": {"type": "string", "minLength": 1},
+        "evidence_refs": {"$ref": "#/$defs/non_empty_strings"}
+      }
+    },
+    "reviewer_process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewer", "summary", "evidence_refs"],
+      "properties": {
+        "reviewer": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "evidence_refs": {"$ref": "#/$defs/non_empty_strings"}
+      }
+    },
+    "human_confirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "summary", "confirmed_by", "confirmed_at"],
+      "properties": {
+        "status": {"enum": ["not_required", "confirmed"]},
+        "summary": {"type": "string", "minLength": 1},
+        "confirmed_by": {"type": ["string", "null"], "minLength": 1},
+        "confirmed_at": {"type": ["string", "null"], "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "confirmed"}}},
+          "then": {
+            "properties": {
+              "confirmed_by": {"type": "string", "minLength": 1},
+              "confirmed_at": {"type": "string", "minLength": 1}
+            }
+          },
+          "else": {
+            "properties": {
+              "confirmed_by": {"type": "null"},
+              "confirmed_at": {"type": "null"}
+            }
+          }
+        }
+      ]
+    },
+    "ai_review_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "summary"],
+      "properties": {
+        "status": {"enum": ["passed", "return_to_task_work", "blocked"]},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "semantic_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dimensions",
+        "findings",
+        "conclusions",
+        "revision_history",
+        "reviewer_process",
+        "human_confirmation",
+        "ai_review_gate"
+      ],
+      "properties": {
+        "dimensions": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {"$ref": "#/$defs/dimension"}
+        },
+        "findings": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/finding"}
+        },
+        "conclusions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["issue_scope", "docs_ssot", "safety_deployment"],
+          "properties": {
+            "issue_scope": {"$ref": "#/$defs/conclusion"},
+            "docs_ssot": {"$ref": "#/$defs/conclusion"},
+            "safety_deployment": {"$ref": "#/$defs/conclusion"}
+          }
+        },
+        "revision_history": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/revision"}
+        },
+        "reviewer_process": {"$ref": "#/$defs/reviewer_process"},
+        "human_confirmation": {"$ref": "#/$defs/human_confirmation"},
+        "ai_review_gate": {"$ref": "#/$defs/ai_review_gate"}
+      }
+    },
+    "artifact_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size"],
+      "properties": {
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size": {"type": "integer", "minimum": 0}
+      }
+    },
+    "entry_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "facts_sha256"],
+      "properties": {
+        "status": {"enum": ["passed", "failed"]},
+        "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "passed_entry_binding": {
+      "allOf": [
+        {"$ref": "#/$defs/entry_binding"},
+        {"properties": {"status": {"const": "passed"}}}
+      ]
+    },
+    "repository_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["head", "branch", "base_ref", "diff_paths", "status_paths"],
+      "properties": {
+        "head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "branch": {"type": "string", "minLength": 1},
+        "base_ref": {"type": "string", "minLength": 1},
+        "diff_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "status_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "deterministic_bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifacts", "repository", "entry_preconditions", "publication_ref"],
+      "properties": {
+        "artifacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "prd.md",
+            "design.md",
+            "implement.md",
+            "planning-approval.json",
+            "phase2-check.json",
+            "issue-scope-ledger.json",
+            "agent-assignment.json",
+            "review.md",
+            "review-gate.json",
+            "pr-body.md",
+            "finish-summary-index.json",
+            "implementation-handoff.md"
+          ],
+          "properties": {
+            "prd.md": {"$ref": "#/$defs/artifact_binding"},
+            "design.md": {"$ref": "#/$defs/artifact_binding"},
+            "implement.md": {"$ref": "#/$defs/artifact_binding"},
+            "planning-approval.json": {"$ref": "#/$defs/artifact_binding"},
+            "phase2-check.json": {"$ref": "#/$defs/artifact_binding"},
+            "issue-scope-ledger.json": {"$ref": "#/$defs/artifact_binding"},
+            "agent-assignment.json": {"$ref": "#/$defs/artifact_binding"},
+            "review.md": {"$ref": "#/$defs/artifact_binding"},
+            "review-gate.json": {"$ref": "#/$defs/artifact_binding"},
+            "pr-body.md": {"$ref": "#/$defs/artifact_binding"},
+            "finish-summary-index.json": {"$ref": "#/$defs/artifact_binding"},
+            "implementation-handoff.md": {"$ref": "#/$defs/artifact_binding"}
+          }
+        },
+        "repository": {"$ref": "#/$defs/repository_binding"},
+        "entry_preconditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "runtime_dependency",
+            "task_workspace",
+            "task_identity",
+            "branch_review_handoff",
+            "planning_approval",
+            "phase2_check",
+            "issue_scope_ledger",
+            "docs_ssot_reconciliation",
+            "branch_review_evidence",
+            "publication_content",
+            "review_range_and_working_tree",
+            "invocation_freshness"
+          ],
+          "properties": {
+            "runtime_dependency": {"$ref": "#/$defs/entry_binding"},
+            "task_workspace": {"$ref": "#/$defs/entry_binding"},
+            "task_identity": {"$ref": "#/$defs/entry_binding"},
+            "branch_review_handoff": {"$ref": "#/$defs/entry_binding"},
+            "planning_approval": {"$ref": "#/$defs/entry_binding"},
+            "phase2_check": {"$ref": "#/$defs/entry_binding"},
+            "issue_scope_ledger": {"$ref": "#/$defs/entry_binding"},
+            "docs_ssot_reconciliation": {"$ref": "#/$defs/entry_binding"},
+            "branch_review_evidence": {"$ref": "#/$defs/entry_binding"},
+            "publication_content": {"$ref": "#/$defs/entry_binding"},
+            "review_range_and_working_tree": {"$ref": "#/$defs/entry_binding"},
+            "invocation_freshness": {"$ref": "#/$defs/entry_binding"}
+          }
+        },
+        "publication_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "consumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["skill", "workflow", "stop"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    },
+    "publish_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "base_branch",
+        "head_branch",
+        "reviewed_head_sha",
+        "title",
+        "body_source",
+        "body_sha256",
+        "draft",
+        "reviewed_source"
+      ],
+      "properties": {
+        "repo": {"type": "string", "minLength": 1},
+        "base_branch": {"type": "string", "minLength": 1},
+        "head_branch": {"type": "string", "minLength": 1},
+        "reviewed_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "title": {"type": "string", "minLength": 1},
+        "body_source": {"const": "pr-body.md"},
+        "body_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "draft": {"type": "boolean"},
+        "reviewed_source": {"const": "body-artifact:pr-readiness.json"},
+        "closeout_plan_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

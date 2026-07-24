@@ -26,6 +26,7 @@ PRODUCTION_SKILLS = {
     "guru-check-task",
     "guru-create-task-commit",
     "guru-review-branch",
+    "guru-review-task-publication",
 }
 
 TRACE_HELPER = r'''#!/usr/bin/env python3
@@ -1344,8 +1345,14 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
         (task / name).write_text(content, encoding="utf-8")
     runtime.write_json(task / "issue-scope-ledger.json", {
         "schema_version": "1.0",
-        "primary_issue": {"number": 146},
-        "close_issues": [{"number": 146}],
+        "primary_issue": {
+            "number": 146,
+            "acceptance_evidence": ["The production eval acceptance passed."],
+        },
+        "close_issues": [{
+            "number": 146,
+            "acceptance_evidence": ["The production eval acceptance passed."],
+        }],
         "related_issues": [],
         "followup_issues": [],
     })
@@ -1399,6 +1406,7 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
 def production_planning_input(
     runtime: Any, fixture: Path, task: Path, exit_id: str,
 ) -> Path:
+    task_ref = task.relative_to(fixture).as_posix()
     statuses = {
         "approved": "passed",
         "revision_required": "revision_required",
@@ -1448,7 +1456,7 @@ def production_planning_input(
         "requirement_authorities": [{
             "id": "task-prd",
             "kind": "task_artifact",
-            "locator": ".trellis/tasks/current/prd.md",
+            "locator": f"{task_ref}/prd.md",
             "sha256": "0" * 64,
             "updated_at": None,
         }],
@@ -1520,6 +1528,7 @@ def production_record_planning(
 
 def production_agent_assignment(runtime: Any, fixture: Path, task: Path) -> None:
     head = run_git(fixture, "rev-parse", "HEAD")
+    task_ref = task.relative_to(fixture).as_posix()
     roles = (("实现代理", "implement-1"), ("阶段二检查代理", "check-1"))
     agents = [{
         "logical_role": role,
@@ -1552,7 +1561,7 @@ def production_agent_assignment(runtime: Any, fixture: Path, task: Path) -> None
         "schema_version": runtime.AGENT_ASSIGNMENT_SCHEMA_VERSION,
         "generated_at": "2026-07-23T00:04:00Z",
         "updated_at": "2026-07-23T00:05:00Z",
-        "task": ".trellis/tasks/current",
+        "task": task_ref,
         "head": head,
         "agents": agents,
         "liveness": {},
@@ -1567,6 +1576,7 @@ def production_agent_assignment(runtime: Any, fixture: Path, task: Path) -> None
 def production_phase2_input(
     runtime: Any, fixture: Path, task: Path, package: Path, exit_id: str,
 ) -> Path:
+    task_ref = task.relative_to(fixture).as_posix().rstrip("/") + "/"
     payload = json.loads(
         (package / "examples/phase2-check.json").read_text(encoding="utf-8")
     )
@@ -1588,17 +1598,32 @@ def production_phase2_input(
     }
     payload["implementation_handoff"] = {
         "summary": "The production eval implementation and checks completed.",
-        "artifacts": [{"path": ".trellis/tasks/current/implement.md"}],
+        "artifacts": [{"path": f"{task_ref}implement.md"}],
         "facts_sha256": "0" * 64,
     }
     payload["agent_assignment"] = {
         "implementation_agent_ids": ["implement-1"],
         "check_agent_ids": ["check-1"],
     }
+    task_payload = runtime.read_json(task / "task.json")
+    base_ref = runtime.diff_base_ref(
+        fixture,
+        str(task_payload.get("base_branch") or "main"),
+    )
+    implementation_paths = set(runtime.changed_files(fixture, f"{base_ref}...HEAD"))
+    implementation_paths.update(
+        path
+        for path in runtime.git_status_paths(fixture)
+        if not path.startswith(task_ref)
+        and not path.startswith(".trellis/.runtime/")
+    )
     payload["repository_snapshot"] = {
         "reviewed_paths": [
-            {"path": "src/production-eval.txt"},
-            {"path": ".trellis/tasks/current/agent-assignment.json"},
+            {"path": path}
+            for path in sorted({
+                *implementation_paths,
+                f"{task_ref}agent-assignment.json",
+            })
         ],
     }
     payload["check_execution"]["worker_evidence"] = [{
@@ -1687,12 +1712,14 @@ def production_commit_for_review(
     task: Path,
     checked: dict[str, Any],
 ) -> tuple[str, str]:
+    ledger = runtime.read_json(task / "issue-scope-ledger.json")
+    primary_issue = int((ledger.get("primary_issue") or {}).get("number"))
     public_input = {
         "profile": "initial_commit",
         "mode": "workflow",
         "task_ref": task.relative_to(fixture).as_posix(),
         "message_intent": {
-            "subject": "feat(workflow): #146 添加分支审查评测",
+            "subject": f"feat(workflow): #{primary_issue} 添加分支审查评测",
             "body": (
                 "背景：\n"
                 "把 production Branch Review eval 绑定到真实 task commit。\n\n"
@@ -1702,7 +1729,7 @@ def production_commit_for_review(
                 "不执行真实发布或外部仓库写入。\n\n"
                 "验证：\n"
                 "运行 shared public Skill wrapper corpus。\n\n"
-                "Refs #146"
+                f"Refs #{primary_issue}"
             ),
         },
         "path_authorizations": runtime.git_status_paths(fixture),
@@ -2090,6 +2117,180 @@ def production_record_review(
     ))
 
 
+def production_publication_authoring(
+    runtime: Any,
+    fixture: Path,
+    task: Path,
+    public_input: dict[str, Any],
+    recipe: str,
+) -> Path:
+    route = recipe.removeprefix("publication-")
+    typed_exit = (
+        "return_to_task_work"
+        if route in {"return", "metadata-durable-drift-return"}
+        else "blocked"
+        if route == "blocked"
+        else "ready"
+    )
+    dimension_status = {
+        item: "passed" for item in runtime.TASK_PUBLICATION_DIMENSIONS
+    }
+    findings: list[dict[str, Any]] = []
+    if typed_exit == "return_to_task_work":
+        dimension = (
+            "docs_ssot_reconciliation"
+            if route == "metadata-durable-drift-return"
+            else "diff_outcome_consistency"
+        )
+        dimension_status[dimension] = "finding"
+        findings.append({
+            "finding_ref": (
+                "PUB-DOCS-001"
+                if route == "metadata-durable-drift-return"
+                else "PUB-WORK-001"
+            ),
+            "dimension": dimension,
+            "summary": "The current publication review requires a complete task-work rerun.",
+            "scope_basis": "The approved production eval owns this current-scope behavior.",
+            "evidence_refs": ["docs/requirements.md"],
+            "affected_artifacts": ["docs/requirements.md"],
+            "route_class": "task_work",
+            "status": "open",
+            "closure_evidence": [
+                "Open route: rerun task work and replace this finding with fresh closure evidence."
+            ],
+        })
+    elif typed_exit == "blocked":
+        dimension_status["artifact_binding_freshness"] = "blocked"
+        findings.append({
+            "finding_ref": "PUB-BLOCK-001",
+            "dimension": "artifact_binding_freshness",
+            "summary": "An external publication dependency is unavailable.",
+            "scope_basis": "The dependency cannot be repaired by current task work.",
+            "evidence_refs": ["external:publication-dependency"],
+            "affected_artifacts": ["pr-body.md"],
+            "route_class": "external_blocker",
+            "status": "open",
+            "closure_evidence": [
+                "Open route: restore the external dependency before closure."
+            ],
+        })
+    elif route == "metadata-fix-ready":
+        findings.append({
+            "finding_ref": "PUB-META-001",
+            "dimension": "pr_body_quality",
+            "summary": "The task-local PR body metadata was revised and rereviewed.",
+            "scope_basis": "The contract permits an internal task-local metadata revision.",
+            "evidence_refs": ["pr-body.md"],
+            "affected_artifacts": ["pr-body.md"],
+            "route_class": "metadata_revision",
+            "status": "closed",
+            "closure_evidence": ["pr-body.md#metadata-fix"],
+        })
+    dimensions = [{
+        "id": dimension,
+        "status": dimension_status[dimension],
+        "summary": f"The semantic owner reviewed {dimension} against current evidence.",
+        "evidence_refs": [
+            "pr-body.md",
+            "finish-summary-index.json",
+            "review-gate.json",
+        ],
+    } for dimension in runtime.TASK_PUBLICATION_DIMENSIONS]
+    gate_status = {
+        "ready": "passed",
+        "return_to_task_work": "return_to_task_work",
+        "blocked": "blocked",
+    }[typed_exit]
+    authoring: dict[str, Any] = {
+        "profile": public_input["profile"],
+        "mode": public_input["mode"],
+        "review_intent": public_input["review_intent"],
+        "semantic_review": {
+            "dimensions": dimensions,
+            "findings": findings,
+            "conclusions": {
+                "issue_scope": {
+                    "status": (
+                        "passed"
+                        if typed_exit == "ready"
+                        else "finding"
+                        if typed_exit == "return_to_task_work"
+                        else "blocked"
+                    ),
+                    "summary": "The owner reviewed current issue closure scope.",
+                    "evidence_refs": ["issue-scope-ledger.json"],
+                },
+                "docs_ssot": {
+                    "status": (
+                        "finding"
+                        if route == "metadata-durable-drift-return"
+                        else "passed"
+                    ),
+                    "summary": "The owner reviewed the approved Docs SSOT outcome.",
+                    "evidence_refs": ["phase2-check.json"],
+                },
+                "safety_deployment": {
+                    "status": "blocked" if typed_exit == "blocked" else "passed",
+                    "summary": "The owner reviewed safety and deployment impact.",
+                    "evidence_refs": ["pr-body.md"],
+                },
+            },
+            "revision_history": (
+                [{
+                    "revision_ref": "revision:metadata-fix",
+                    "kind": "metadata_revision",
+                    "summary": "The task-local publication metadata was revised and rereviewed.",
+                    "evidence_refs": ["pr-body.md#metadata-fix"],
+                }]
+                if route == "metadata-fix-ready"
+                else [{
+                    "revision_ref": "revision:stale-reentry",
+                    "kind": "stale_reentry",
+                    "summary": "The stale owner round superseded the prior publication identity.",
+                    "evidence_refs": ["pr-readiness.json"],
+                }]
+                if public_input["profile"] == "publication_review_stale"
+                else []
+            ),
+            "reviewer_process": {
+                "reviewer": "production-publication-owner",
+                "summary": "The semantic owner completed the current ten-dimension review.",
+                "evidence_refs": ["review.md", "review-gate.json"],
+            },
+            "human_confirmation": {
+                "status": "not_required",
+                "summary": "No publication confirmation was required for this eval route.",
+                "confirmed_by": None,
+                "confirmed_at": None,
+            },
+            "ai_review_gate": {
+                "status": gate_status,
+                "summary": "The AI completed the fresh ten-dimension publication review.",
+            },
+        },
+        "typed_exit": typed_exit,
+        "consumer": copy.deepcopy(runtime.TASK_PUBLICATION_CONSUMERS[typed_exit]),
+    }
+    if public_input["profile"] == "publication_review_stale":
+        prior = runtime.read_json(task / runtime.PR_READINESS_ARTIFACT)
+        authoring.update({
+            "stale_reason": public_input["stale_reason"],
+            "reentry_context": public_input["reentry_context"],
+            "supersedes_publication_ref": (
+                prior["deterministic_bindings"]["publication_ref"]
+            ),
+        })
+    if typed_exit == "blocked":
+        authoring.update({
+            "reason_code": "external_publication_dependency",
+            "remediation": "Restore the external dependency and re-enter publication review.",
+        })
+    path = fixture / ".trellis/.runtime/guru-team/evals/publication-owner-input.json"
+    runtime.write_json(path, authoring)
+    return path
+
+
 def stage_production_owner_execution(
     request: dict[str, Any],
     fixture: Path,
@@ -2118,6 +2319,7 @@ def stage_production_owner_execution(
         "guru-check-task": "check-",
         "guru-create-task-commit": "commit-",
         "guru-review-branch": "review-",
+        "guru-review-task-publication": "publication-",
     }[skill_id]
     if not recipe.startswith(expected_prefix):
         raise ValueError("production owner staging recipe does not match the evaluated package")
@@ -2136,6 +2338,68 @@ def stage_production_owner_execution(
         (fixture / "src/production-eval.txt").write_text(
             f"{recipe}\n", encoding="utf-8",
         )
+        if skill_id == "guru-review-task-publication":
+            for name, content in {
+                "implementation-handoff.md": (
+                    "# 实现交接\n\n"
+                    "Docs SSOT 已按 ssot_first 完成，publication 证据已就绪。\n"
+                ),
+                "pr-body.md": (
+                    "# Production publication eval\n\n"
+                    "## 变更摘要\n\n"
+                    "- 完成真实 public wrapper、recorder 与 checker 闭环评测。\n\n"
+                    "## 影响范围\n\n"
+                    "影响 publication Skill、共享 runtime 与隔离评测仓库。\n\n"
+                    "## 验证结果\n\n"
+                    "已执行 recorder、checker 与 public wrapper 真实命令。\n\n"
+                    "## Review Gate\n\n"
+                    "Branch Review Gate 已通过并绑定当前 HEAD。\n\n"
+                    "## Issue 关闭范围\n\n"
+                    "Closes #146\n\n"
+                    "## 安全说明\n\n"
+                    "不写生产环境，不处理 secret，不执行真实 GitHub 发布。\n\n"
+                    "## Docs SSOT\n\n"
+                    "- strategy: ssot_first\n"
+                    "- durable docs: docs/requirements.md 已作为实现输入。\n"
+                    "- merged delta: task delta 已合并到 durable docs。\n"
+                    "- task history: eval staging evidence 仅保留在 task history。\n"
+                    "- follow-up: 当前 PR 无额外限制。\n"
+                ),
+            }.items():
+                (task / name).write_text(content, encoding="utf-8")
+            runtime.write_json(task / "finish-summary-index.json", {
+                "schema_version": 1,
+                "index": {
+                    "problem": "The production eval requires a publication review.",
+                    "outcome": "The semantic owner selected the current typed exit.",
+                    "changed_behavior": [
+                        "The wrapper projects only the checked owner result."
+                    ],
+                    "affected_surfaces": [{
+                        "kind": "skill",
+                        "name": "guru-review-task-publication",
+                        "paths": ["pr-body.md"],
+                        "change": "The production eval exercises the closed publication owner.",
+                    }],
+                    "contract_changes": [{
+                        "contract": "publication owner result projection",
+                        "before": "The eval did not bind the complete publication owner round.",
+                        "after": "The eval binds the complete checked publication owner round.",
+                        "source_artifact": "",
+                    }],
+                    "search_terms": {
+                    "commands": ["record-task-publication-review"],
+                    "config_keys": [],
+                    "schema_fields": ["publication_ref"],
+                    "symbols": ["TASK_PUBLICATION_SKILL_ID"],
+                        "phrases": [
+                            "完成 task publication review",
+                            "完成 publication_ref owner binding",
+                            "完成 record-task-publication-review 验证"
+                        ],
+                    },
+                },
+            })
         phase2_package = fixture / ".trellis/guru-team/skills/packages/guru-check-task"
         checked = production_record_phase2(
             runtime,
@@ -2144,7 +2408,11 @@ def stage_production_owner_execution(
             phase2_package,
             (
                 "passed"
-                if skill_id in {"guru-create-task-commit", "guru-review-branch"}
+                if skill_id in {
+                    "guru-create-task-commit",
+                    "guru-review-branch",
+                    "guru-review-task-publication",
+                }
                 else str(public_input["exit_intent"])
             ),
         )
@@ -2174,6 +2442,86 @@ def stage_production_owner_execution(
                         "\n## 普通审查证据修订\n\n"
                         "该正常路径修订使已登记的 closure raw report digest 过期。\n"
                     )
+            runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+            for runtime_artifact in runtime_dir.rglob("*"):
+                if (
+                    runtime_artifact.is_file()
+                    and runtime_artifact != fixture / OWNER_INPUT
+                ):
+                    runtime_artifact.unlink()
+        elif skill_id == "guru-review-task-publication":
+            production_commit_for_review(runtime, fixture, task, checked)
+            branch_input = {
+                "profile": "branch_review",
+                "mode": public_input["mode"],
+                "task_ref": task.relative_to(fixture).as_posix(),
+                "base_ref": "origin/main",
+                "committed_head": "0" * 40,
+                "review_intent": "initial_review",
+            }
+            branch_check = production_record_review(
+                runtime,
+                fixture,
+                task,
+                branch_input,
+                "review-passed",
+            )
+            public_input["task_ref"] = task.relative_to(fixture).as_posix()
+            if public_input["profile"] == "publication_review":
+                public_input["reviewed_head"] = branch_check["reviewed_head"]
+                public_input["review_ref"] = (
+                    f"review-gate:{branch_check['artifact_sha256']}"
+                )
+            else:
+                initial_input = {
+                    "profile": "publication_review",
+                    "mode": public_input["mode"],
+                    "task_ref": task.relative_to(fixture).as_posix(),
+                    "reviewed_head": branch_check["reviewed_head"],
+                    "review_ref": (
+                        f"review-gate:{branch_check['artifact_sha256']}"
+                    ),
+                    "review_intent": "initial_review",
+                }
+                initial_authoring_path = production_publication_authoring(
+                    runtime,
+                    fixture,
+                    task,
+                    initial_input,
+                    "publication-ready",
+                )
+                runtime.cmd_record_task_publication_review(argparse.Namespace(
+                    root=str(fixture),
+                    task=task.relative_to(fixture).as_posix(),
+                    input=initial_authoring_path.relative_to(fixture).as_posix(),
+                    dry_run=False,
+                ))
+            if recipe == "publication-metadata-fix-ready":
+                with (task / "pr-body.md").open("a", encoding="utf-8") as handle:
+                    handle.write(
+                        "\n<a id=\"metadata-fix\"></a>\n"
+                        "已完成 task-local metadata 修订并重新审查。\n"
+                    )
+            elif recipe == "publication-metadata-durable-drift-return":
+                with (fixture / "docs/requirements.md").open(
+                    "a", encoding="utf-8"
+                ) as handle:
+                    handle.write(
+                        "\nUncommitted durable drift requires a task-work rerun.\n"
+                    )
+            authoring_path = production_publication_authoring(
+                runtime,
+                fixture,
+                task,
+                public_input,
+                recipe,
+            )
+            runtime.cmd_record_task_publication_review(argparse.Namespace(
+                root=str(fixture),
+                task=task.relative_to(fixture).as_posix(),
+                input=authoring_path.relative_to(fixture).as_posix(),
+                dry_run=False,
+            ))
             runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
             for runtime_artifact in runtime_dir.rglob("*"):
                 if (

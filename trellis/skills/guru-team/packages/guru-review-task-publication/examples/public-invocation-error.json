@@ -1,0 +1,5 @@
+{
+  "code": "invalid_public_input",
+  "field_path": "public_input.profile",
+  "remediation": "Use one declared publication input profile."
+}

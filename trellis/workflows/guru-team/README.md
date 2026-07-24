@@ -30,7 +30,7 @@ spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`�
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 对应。当前已发布
-stable 是 `.2`；本分支 canonical `.21` 在 merge/tag/远端验证完成前不是 stable source。
+stable 是 `.2`；本分支 canonical `.22` 在 merge/tag/远端验证完成前不是 stable source。
 
 已有 Trellis 项目切换 active workflow：
 
@@ -54,10 +54,11 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request` 与
 `guru-create-task-workspace`、`guru-approve-task-plan`、`guru-check-task`、
-`guru-create-task-commit`、`guru-review-branch`。这十个 active packages 共声明
-39 个 external exits。Workflow 不得为
+`guru-create-task-commit`、`guru-review-branch`、
+`guru-review-task-publication`。这十一个 active packages 共声明
+42 个 external exits。Workflow 不得为
 reserved/planned id 伪造 invocation route。当前 canonical
-extension version 是待发布的 `0.6.5-guru.21`，已发布 stable source 仍是
+extension version 是待发布的 `0.6.5-guru.22`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
 
 Interface 1.2 保持冻结的 legacy 语义；独立 interface 1.3 是新建或实质修改 public
@@ -65,16 +66,26 @@ I/O 的 minimal handoff target。Registry 1.1 的 active row exact 声明
 `interface_schema_id` 与 `io_contract_state`，合法组合只有 `1.2+legacy` 和
 `1.3+minimal_handoff`。`stage0-minimal-handoff-v1` 已原子迁移六个 Stage 0 packages
 与 24 exits；独立 `production-minimal-handoff-v1` 已原子迁移 planning/check/commit
-三包、十个 profiles 与 11 exits。当前 active closure 为 10/39 且 `legacy_skill_ids=[]`；
+三包、十个 profiles 与 11 exits。当前 active closure 为 11/42 且 `legacy_skill_ids=[]`；
 Stage 0 manifest identity 保持 6/24。两版均保留 `workflow` / `standalone` mode id 和必填
 `judgment_mode`，并以
 `routing=global_workflow|direct_discovery` 区分 mandatory route 与平台直接发现。
 `semantic` profile 固定五阶段，`deterministic` profile 固定三阶段；任何需要 scope、
 sufficiency、finding、revision、用户选择或 route intent 判断的 Skill 不得降级。
 
-四条 semantic package handoff 使用 additive target-owned
+Phase 3.5 `guru-review-branch:passed` 现在指向 active
+`guru-review-task-publication`。在 Phase 3.6 mandatory invocation marker 之前，
+global workflow caller 只负责从 current reviewed evidence 编写 task-local
+`pr-body.md` 与 `finish-summary-index.json` 初始候选；它不判断充分性、Issue
+closure、十维结论、finding route 或 ready。Active publication Skill 仍是唯一
+semantic owner，缺失或结构错误先失败关闭。Phase 3.7 只消费 `ready` 已绑定的
+content bytes，不得首次创建或修改；只有
+`ready -> guru-finalize-task` 仍停在 planned missing-Skill boundary。
+
+五条 semantic package handoff 使用 additive target-owned
 `skill_input_authoring_seed`：planning revision self-reentry、Phase 2 passed 到 initial
-commit、commit revision self-reentry，以及 commit `committed` 到 active Branch Review。
+commit、commit revision self-reentry、commit `committed` 到 active Branch Review，
+以及 Branch Review `passed` 到 active Task Publication Review。
 Producer 只投影 minimal seed，caller AI 编写 target
 profile 剩余 required fields；validator 证明两组字段无交集、union 完整、merge 无覆盖且完整
 target schema 通过。Projection operation 仍只有
@@ -935,7 +946,7 @@ package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十个 packages 已维护 canonical corpora 并覆盖全部 39 exits/profile；Stage 0 的
+中的十一个 packages 已维护 canonical corpora 并覆盖全部 42 exits/profile；Stage 0 的
 24-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台
