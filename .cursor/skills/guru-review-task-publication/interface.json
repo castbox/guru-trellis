@@ -1,0 +1,157 @@
+{
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
+  "id": "guru-review-task-publication",
+  "name": "guru-review-task-publication",
+  "description": "Review task publication readiness through ten semantic dimensions, metadata-only revision, one private gate, and three typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": ["runtime_dependency", "task_workspace", "task_identity", "branch_review_handoff", "planning_approval", "phase2_check", "issue_scope_ledger", "docs_ssot_reconciliation", "branch_review_evidence", "publication_content", "review_range_and_working_tree", "invocation_freshness"]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": ["runtime_dependency", "task_workspace", "task_identity", "branch_review_handoff", "planning_approval", "phase2_check", "issue_scope_ledger", "docs_ssot_reconciliation", "branch_review_evidence", "publication_content", "review_range_and_working_tree", "invocation_freshness"]
+    }
+  },
+  "entry_preconditions": [
+    {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and publication commands", "binding": "complete compatible Guru Team preset", "freshness": "validated before each command"},
+    {"id": "task_workspace", "evidence": "task start context and portable worktree mapping", "binding": "actual root equals expected task worktree", "freshness": "rebuilt before record and check"},
+    {"id": "task_identity", "evidence": "active task.json and issue scope identity", "binding": "task, branch, issue and in_progress status", "freshness": "current task reread"},
+    {"id": "branch_review_handoff", "evidence": "guru-review-branch passed DTO", "binding": "task, reviewed HEAD and opaque review ref", "freshness": "current review checker rerun"},
+    {"id": "planning_approval", "evidence": "prd.md, design.md, implement.md and checker-passed planning-approval.json", "binding": "exact approved planning", "freshness": "planning checker rerun"},
+    {"id": "phase2_check", "evidence": "checker-passed phase2-check.json", "binding": "complete task scope and Docs SSOT outcome", "freshness": "Phase 2 checker rerun"},
+    {"id": "issue_scope_ledger", "evidence": "current issue-scope-ledger.json", "binding": "primary, close, related and follow-up scope", "freshness": "current semantic projection"},
+    {"id": "docs_ssot_reconciliation", "evidence": "approved Docs SSOT Plan and implementation handoff", "binding": "durable docs versus task-delta outcome", "freshness": "reviewed against current diff"},
+    {"id": "branch_review_evidence", "evidence": "agent assignment, raw reports, review.md and review-gate.json", "binding": "fresh final review and zero findings", "freshness": "current checker rerun"},
+    {"id": "publication_content", "evidence": "task-local pr-body.md and finish-summary-index.json", "binding": "current reviewer-facing content and semantic history index", "freshness": "reread after every metadata revision"},
+    {"id": "review_range_and_working_tree", "evidence": "current base-to-HEAD diff, status and metadata tail", "binding": "reviewed HEAD plus contract allowlist only", "freshness": "rebuilt before record and check"},
+    {"id": "invocation_freshness", "evidence": "public input, prior readiness identity, semantic Gate and actual exit", "binding": "one complete current owner invocation", "freshness": "checker rejects drift or ambiguity"}
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "readiness_example", "path": "examples/pr-readiness.json"},
+    {"id": "publication_review_input", "path": "examples/public-publication-review-input.json"},
+    {"id": "publication_review_authoring", "path": "examples/public-publication-review-authoring.json"},
+    {"id": "publication_review_stale_input", "path": "examples/public-publication-review-stale-input.json"},
+    {"id": "publication_review_stale_authoring", "path": "examples/public-publication-review-stale-authoring.json"},
+    {"id": "public_ready_output", "path": "examples/public-ready-output.json"},
+    {"id": "public_return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"},
+    {"id": "public_blocked_output", "path": "examples/public-blocked-output.json"},
+    {"id": "public_invocation_error", "path": "examples/public-invocation-error.json"}
+  ],
+  "schemas": [
+    {"id": "readiness_schema", "path": "schemas/pr-readiness.schema.json"},
+    {"id": "public_input_publication_review", "path": "schemas/public-publication-review-input.schema.json"},
+    {"id": "public_input_publication_review_stale", "path": "schemas/public-publication-review-stale-input.schema.json"},
+    {"id": "public_input_aggregate", "path": "schemas/public-input.schema.json"},
+    {"id": "public_ready_output", "path": "schemas/public-ready-output.schema.json"},
+    {"id": "public_return_to_task_work_output", "path": "schemas/public-return-to-task-work-output.schema.json"},
+    {"id": "public_blocked_output", "path": "schemas/public-blocked-output.schema.json"},
+    {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"}
+  ],
+  "validators": [
+    {"id": "publication_review_recorder", "command": "scripts/record-task-publication-review.sh", "runtime_command": "record-task-publication-review", "objective_scope": "Record an already completed publication semantic review while rebuilding current task, HEAD, review, artifact and content bindings"},
+    {"id": "publication_review_checker", "command": "scripts/check-task-publication-review.sh", "runtime_command": "check-task-publication-review", "objective_scope": "Validate the single readiness artifact schema, current bindings, metadata tail, exit, consumer and freshness without semantic judgment"},
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"}
+  ],
+  "external_exits": [
+    {"id": "ready", "evidence": "all ten current semantic dimensions pass and every current-scope finding is closed", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
+    {"id": "return_to_task_work", "evidence": "one or more non-metadata current-scope findings require implementation and full downstream rerun", "consumer": {"kind": "workflow", "id": "guru-task-publication-work-router"}},
+    {"id": "blocked", "evidence": "external decision, dependency or objective freshness prevents current completion", "consumer": {"kind": "stop", "id": "task-publication-review-blocked"}}
+  ],
+  "reentry": {
+    "identity": "profile, mode, task, reviewed HEAD, review ref, intent, prior publication identity, current artifacts, semantic Gate and actual exit",
+    "freshness": "metadata revision and stale handback both rerun all twelve preconditions and the complete ten-dimension review",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {"schema_id": "guru-production-review-task-publication-input-aggregate-1.0", "path": "schemas/public-input.schema.json"},
+      "profiles": [
+        {
+          "id": "publication_review",
+          "schema": {"schema_id": "guru-production-review-task-publication-input-publication-review-1.0", "path": "schemas/public-publication-review-input.schema.json"},
+          "example": {"id": "publication_review_input", "path": "examples/public-publication-review-input.json"},
+          "discriminator": {"field": "profile", "value": "publication_review"}
+        },
+        {
+          "id": "publication_review_stale",
+          "schema": {"schema_id": "guru-production-review-task-publication-input-publication-review-stale-1.0", "path": "schemas/public-publication-review-stale-input.schema.json"},
+          "example": {"id": "publication_review_stale_input", "path": "examples/public-publication-review-stale-input.json"},
+          "discriminator": {"field": "profile", "value": "publication_review_stale"}
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {"kind": "structured_json", "profile_id": "publication_review"},
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {"schema_id": "guru-production-review-task-publication-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
+      "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
+      "example_argv": ["--input", "examples/public-publication-review-input.json", "--owner-result", "examples/pr-readiness.json"]
+    },
+    "outputs": [
+      {"exit_id": "ready", "schema": {"schema_id": "guru-production-review-task-publication-output-ready-1.0", "path": "schemas/public-ready-output.schema.json"}, "example": {"id": "ready_output", "path": "examples/public-ready-output.json"}, "consumer_use_ids": ["project_ready"]},
+      {"exit_id": "return_to_task_work", "schema": {"schema_id": "guru-production-review-task-publication-output-return-to-task-work-1.0", "path": "schemas/public-return-to-task-work-output.schema.json"}, "example": {"id": "return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"}, "consumer_use_ids": ["project_return_to_task_work"]},
+      {"exit_id": "blocked", "schema": {"schema_id": "guru-production-review-task-publication-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
+    ],
+    "consumer_inputs": [
+      {
+        "id": "finalization_seed_input",
+        "consumer": {"kind": "skill", "id": "guru-finalize-task"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "planned_skill_input_seed", "seed_fields": ["task_ref", "reviewed_head", "publication_ref"]}
+      },
+      {
+        "id": "return_to_task_work_input",
+        "consumer": {"kind": "workflow", "id": "guru-task-publication-work-router"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-production-review-task-publication-workflow-return-to-task-work-input-1.0", "path": "consumers/workflow/production/review-task-publication-return-to-task-work.schema.json"}
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {"kind": "stop", "id": "task-publication-review-blocked"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-production-review-task-publication-stop-blocked-input-1.0", "path": "consumers/stop/production/review-task-publication-blocked.schema.json"}
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_ready",
+        "exit_id": "ready",
+        "consumer_input_id": "finalization_seed_input",
+        "operation": "select",
+        "mappings": [
+          {"source": "task_ref", "target": "task_ref"},
+          {"source": "reviewed_head", "target": "reviewed_head"},
+          {"source": "publication_ref", "target": "publication_ref"}
+        ]
+      },
+      {"id": "project_return_to_task_work", "exit_id": "return_to_task_work", "consumer_input_id": "return_to_task_work_input", "operation": "direct"},
+      {"id": "project_blocked", "exit_id": "blocked", "consumer_input_id": "blocked_stop_input", "operation": "direct"}
+    ],
+    "private_artifacts": [
+      {
+        "id": "publication_readiness",
+        "kind": "gate_evidence",
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.0.json", "path": "schemas/pr-readiness.schema.json"},
+        "persistence": "task_local_tracked"
+      }
+    ]
+  }
+}

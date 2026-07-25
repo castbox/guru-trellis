@@ -948,8 +948,9 @@ After `guru-create-task-commit:committed`, the global workflow must invoke
 `guru-review-branch` exactly once and consume exactly one of its four exits. The
 workflow owns only transitions:
 
-- `passed` targets the planned `guru-review-task-publication` Skill and stops
-  fail-closed while that package remains unavailable;
+- `passed` targets the active `guru-review-task-publication` Skill through its
+  target-owned authoring seed, after the workflow caller completes the
+  Phase 3.6 publication-content authoring preparation;
 - `implementation_required` resumes implementation, then requires a fresh
   `guru-check-task`, task commit, and Branch Review re-entry;
 - `scope_confirmation_required` routes to requirements clarification with a
@@ -960,3 +961,34 @@ Reviewer prompts, qualification, severity, finding closure, final-review
 freshness, artifact construction, and recovery are step-local
 `guru-review-branch` behavior and must not be copied into this workflow.
 Unknown, multiple, unmapped, stale, or unavailable target routes fail closed.
+
+## Phase 3.6 Task Publication Review Routing
+
+After `guru-review-branch:passed`, the workflow caller first authors the initial
+task-local `pr-body.md` and `finish-summary-index.json` candidates from current
+reviewed evidence. This producer-side entry preparation has no typed exit and
+does not judge body sufficiency, Issue closure, publication dimensions,
+findings, or readiness. Missing or objectively malformed content stops before
+invocation. The active publication Skill remains the sole semantic owner, and
+its recorder/checker reuse the existing deterministic content and freshness
+validators only after the AI Review Gate.
+
+After the candidates exist, the global workflow mandatory invokes active
+`guru-review-task-publication` with the target-owned `publication_review`
+authoring seed. It owns only these transitions:
+
+- `ready` -> planned Skill `guru-finalize-task`, with a fail-closed missing
+  package stop until that Skill is activated;
+- `return_to_task_work` -> `guru-task-publication-work-router`, which resumes
+  implementation and requires fresh Phase 2 check, task commit, Branch Review,
+  and publication review;
+- `blocked` -> stop `task-publication-review-blocked`.
+
+Future finalization stale handback uses the target-owned
+`publication_review_stale` profile and the same complete semantic review.
+Workflow prose never copies the dimensions, findings, metadata revision loop,
+artifact fields, or recorder/checker procedure. Unknown, missing, multiple,
+unmapped, consumer-mismatched, stale, or planned-target invocation fails
+closed. Phase 3.7 consumes the already reviewed bytes and must not first create,
+regenerate, or revise either content file after `ready`; a metadata-only change
+re-enters publication review and non-metadata drift returns to task work.

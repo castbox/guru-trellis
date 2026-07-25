@@ -120,7 +120,7 @@ guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes both supported ids, names 1.3 as current for
 new work, uses compatibility scalar `interface_schema_id=1.3`, and publishes
 exact public-input, typed-output, and private-artifact schema inventories for
-all ten active packages and their 39 external exits. The independent
+all eleven active packages and their 42 external exits. The independent
 `production-minimal-handoff-v1` manifest remains exactly three packages and 11
 exits; activating `guru-review-branch` does not rewrite that membership.
 
@@ -146,7 +146,7 @@ schema may use `oneOf` only as a validator index, never as an authoring template
 filled with nullable fields.
 
 The consumer independently owns its input contract. A `kind=skill` consumer
-normally uses `contract.kind=skill_input`. The four production semantic edges
+normally uses `contract.kind=skill_input`. The five production semantic edges
 declared below use the additive
 `contract.kind=skill_input_authoring_seed`; both kinds exact-reference the
 target Interface and profile, and the referenced interface id must equal the
@@ -590,14 +590,17 @@ calls the existing candidate validator and transaction executor unchanged.
 Caller-selected `expected_exit`, artifact bodies, digests, file metadata,
 absolute paths, and runtime snapshots are not public input.
 
-Exactly four semantic handoffs use target-owned authoring seeds:
+Exactly five semantic handoffs use target-owned authoring seeds:
 `guru-approve-task-plan:revision_required -> revision_reentry`,
 `guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
 `guru-create-task-commit:revision-required -> revision_reentry`, and
-`guru-create-task-commit:committed -> guru-review-branch:branch_review`. Their
+`guru-create-task-commit:committed -> guru-review-branch:branch_review`, and
+`guru-review-branch:passed -> guru-review-task-publication:publication_review`.
+Their
 projected seed fields are respectively `source_exit/task_ref`,
 `source_exit/task_ref/checked_head/check_ref`, and
-`source_exit/task_ref`, and `task_ref/base_ref/committed_head`. Target package
+`source_exit/task_ref`, `task_ref/base_ref/committed_head`, and
+`task_ref/reviewed_head/review_ref`. Target package
 authoring examples supply every remaining
 required fresh semantic field. The validator proves disjoint partition,
 required-set equality, no-overwrite merge, and full target-schema validity;
@@ -607,7 +610,7 @@ Active closure is derived from the live registry plus the frozen Stage 0
 manifest, the production manifest, and any future complete active Interface
 1.3 rows absent from both manifests. Every active profile and exit must have a
 current canonical case binding and byte-identical selected-platform corpus.
-The current cardinality assertion is ten active Skills and 39 exits; missing,
+The current cardinality assertion is eleven active Skills and 42 exits; missing,
 extra, duplicate, renamed, legacy, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1349,7 +1352,7 @@ corpus, fixtures, adapter descriptors, or runner evidence. The six Stage 0
 packages change atomically through #145, and the three production packages
 change atomically through the separate #146 activation unit.
 
-## Branch Review Owner And Planned Publication Bridge
+## Branch Review Owner And Active Publication Bridge
 
 `guru-review-branch` is the semantic owner of the post-commit full-range review.
 Its single `branch_review` input profile requires exactly `profile`, `mode`,
@@ -1376,9 +1379,99 @@ field while validating source field shapes only. Runtime invocation of the
 planned target fails closed as missing Skill. When the target becomes active,
 its owner must replace this bridge with `skill_input` or
 `skill_input_authoring_seed` and prove compatibility against its own input.
+The current Branch Review `passed` edge has completed that activation: its
+unchanged four-field output now supplies
+`task_ref/reviewed_head/review_ref` through
+`skill_input_authoring_seed`, while the caller authors only
+`profile/mode/review_intent` for active `guru-review-task-publication`.
 
 For every structured projection, an `exit_id` field whose schema is the exact
 matching const may be omitted only as the already selected route discriminator.
 Every other producer field must be consumed. If the consumer requires
 `exit_id`, it must still be projected. This rule is general and does not permit
 dropping business data or inventing another projection operation.
+
+## Task Publication Review Owner
+
+`guru-review-task-publication` is the active Interface 1.3 semantic owner
+between `guru-review-branch:passed` and finalization. Workflow and standalone
+use the same twelve entry preconditions, ten-dimension AI Review Gate,
+conditional confirmation, task-local recorder/checker, metadata revision loop,
+freshness rules, and typed-exit conditions.
+
+The package owns two closed structured profiles. `publication_review` requires
+`profile/mode/task_ref/reviewed_head/review_ref/review_intent`; the Branch
+Review producer supplies only `task_ref/reviewed_head/review_ref`, and the
+target-owned authoring example supplies `profile/mode/review_intent`.
+`publication_review_stale` requires
+`profile/mode/task_ref/stale_reason/review_intent/reentry_context`; its future
+producer supplies only `task_ref/stale_reason`. Both partitions are disjoint,
+cover the complete target required set, merge without overwrite, and introduce
+no defaults, private lookup, or semantic runtime reconstruction.
+
+In workflow mode, initial `pr-body.md` and `finish-summary-index.json` candidate
+authoring occurs immediately after Branch Review `passed` and before the
+mandatory publication invocation. This is caller-owned producer preparation,
+not another semantic Gate or public handoff. The publication Skill remains the
+sole owner of body/index sufficiency, Issue closure, all ten dimensions,
+finding routing, revision, and readiness; its mandatory `publication_content`
+entry precondition validates the current prepared bytes. Phase 3.7 may consume
+the `ready`-bound bytes but may not first create or mutate them.
+
+The independent minimal outputs are `ready(exit_id,task_ref,reviewed_head,
+publication_ref)` to planned `guru-finalize-task`,
+`return_to_task_work(exit_id,task_ref,finding_refs,resume_target=phase-2)` to
+the task-work workflow router, and `blocked(exit_id,reason_code,remediation)` to
+an explicit stop. `publication_ref` is opaque; review narrative, findings,
+artifact paths, and digest bundles remain private.
+
+The sole private gate is task-local `pr-readiness.json` under
+`guru-task-publication-readiness-1.0`. It separates AI-reviewed dimensions,
+findings, non-empty closure evidence, scope/Docs/safety conclusions, revisions,
+reviewer/confirmation evidence, and conclusion from the closed twelve-entry
+deterministic current task/HEAD/content bindings and optional
+finalization-owned `publish_inputs`. `ready` requires all twelve entry bindings
+to be `passed`, all ten dimensions and all three conclusions passed, and every
+finding closed. `return_to_task_work` requires an open `task_work` finding
+bound to a `finding` dimension and cannot carry blocked evidence. `blocked`
+requires an open `external_blocker` finding bound to a `blocked` dimension and
+at least one blocked scope/Docs/safety conclusion. Every open finding references
+a non-passed dimension; open metadata-revision findings remain inside the
+Skill loop and cannot satisfy an external exit. Non-ready routes may retain
+checker-reproducible failed
+bindings only after the AI owner has selected the route.
+Only a checker-passed `ready` gate may receive that compatibility layer.
+The finalization owner reruns all twelve entries after adding the exact
+validated `closeout-plan.json`; it accepts only the corresponding repository
+binding and derived `review_range_and_working_tree` digest change, with every
+other binding still exact and passed.
+Legacy deterministic `ready=true` snapshots never satisfy the semantic gate.
+
+For `publication_review_stale`, the recorder reads the exact current prior
+gate, requires the AI-authored `supersedes_publication_ref` to match it, and
+persists the public `stale_reason` and `reentry_context`. Public invocation
+must match those two fields against the checked owner result before projecting
+the actual exit.
+
+Metadata-only findings may revise only the contract-listed task-local PR body,
+finish-summary index, or Issue Scope Ledger publication metadata, followed by
+a fresh complete review. Source, test, durable docs, spec, workflow, schema,
+config, preset, CI/CD, deployment, or Branch Review drift exits to task work.
+Scripts preserve AI-authored conclusions and never decide sufficiency, issue
+closure, dimension status, finding route, or `ready`.
+
+The publication repository binding uses a closed task-metadata and direct
+runtime-input allowlist. It reuses Branch Review's exact
+`agent-assignment.json`, `review.md`, `review-gate.json`,
+assignment-referenced `reviews/*.md`, and sole current-HEAD completed
+`task-commit-plans/NNN.json` entries, then adds only
+`issue-scope-ledger.json`, `pr-body.md`, and `finish-summary-index.json`.
+The recorder-owned `pr-readiness.json` is excluded from its own snapshot.
+Runtime input is allowed only when the current command explicitly names that
+regular file under `.trellis/.runtime/guru-team/`; neither the whole task
+prefix nor the runtime prefix is allowed. Any other status path records a
+failed `review_range_and_working_tree` binding and prevents `ready`.
+
+Activation changes the live closure to eleven active Skills and 42 exits. It
+does not change either migration identity or the independent
+`production-minimal-handoff-v1` three-Skill/11-exit membership.

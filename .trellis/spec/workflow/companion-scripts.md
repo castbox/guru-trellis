@@ -128,7 +128,7 @@ ordered typed argv in both public-input and invocation examples. Wrapper/handler
 non-object or multiple stdout values, unknown exits, and output-schema mismatch
 fail with stable portable errors.
 
-For the four approved production semantic edges, the same target ownership
+For the five approved production semantic edges, the same target ownership
 check accepts `skill_input_authoring_seed`. The validator exact-resolves the
 target structured profile and its package-local authoring example, requires
 disjoint `seed_fields` and `authoring_fields`, requires their union to equal the
@@ -1418,3 +1418,61 @@ the same owner runtime. The public package wrapper accepts a closed public input
 and repo-local owner-result locator, reruns the checker, reads the actual exit,
 and emits exactly one declared DTO. `expected_exit` is never a wrapper input,
 owner-result field, or route selector.
+
+## Task Publication Recorder, Checker, And Invocation
+
+Stable commands are `record-task-publication-review` and
+`check-task-publication-review`. The recorder accepts only a caller-authored,
+already completed semantic review payload, rebuilds objective task and artifact
+facts, and writes the single task-local `pr-readiness.json`. The checker
+rebuilds those facts and validates schema, task/workspace, HEAD/review identity,
+planning, Phase 2, ledger, Docs, Branch Review, PR body, finish-summary index,
+metadata tail, exit/consumer, publication identity, and freshness.
+The deterministic layer records one closed status/digest binding for each of
+the twelve entry preconditions. `ready` requires all twelve to be `passed`;
+after the AI selects a non-ready route, recorder/checker may preserve the exact
+reproducible failed binding without deriving or changing that route.
+
+Neither command creates the initial `pr-body.md` or
+`finish-summary-index.json`. The global workflow caller authors those current
+content candidates after Branch Review `passed` and before the mandatory
+publication invocation. Existing deterministic content validators are reused
+inside the active owner's recorder/checker after semantic review; calling a
+recorder to fabricate missing entry content or a pass remains forbidden.
+
+Stale recording reads the current prior gate before replacement, requires the
+AI-authored `supersedes_publication_ref` to match its exact publication
+identity, and persists the public stale reason and re-entry context. The
+checker rebuilds those fields, and public invocation matches reason/context
+against the checker-passed owner result.
+
+Neither command decides review dimension status, issue disposition, PR body or
+Docs sufficiency, safety/deployment conclusions, finding route, metadata edit,
+human-confirmation need, or `ready`. Empty findings, scanner success, changed
+file classification, a `--pass` flag, or tests passing cannot synthesize a
+semantic conclusion.
+
+Both commands validate the already AI-authored closed union without selecting
+it: `ready` binds passed conclusions/dimensions and closed findings;
+`return_to_task_work` binds open `task_work` findings to `finding` dimensions
+without blocked evidence; `blocked` binds open `external_blocker` findings to
+`blocked` dimensions and at least one blocked conclusion. Every open finding
+references a non-passed dimension, and open metadata-revision findings cannot
+leave the internal rereview loop.
+
+The package `scripts/invoke.sh` remains the exact dispatcher-only wrapper. The
+shared public invocation validates one of the two target-owned inputs, reruns
+the owner checker against a repo-local result, selects the output schema from
+the checker's actual `exit_id`, and emits one minimal DTO. `expected_exit` is
+available only to the eval grader after wrapper completion.
+
+`build_pr_readiness_snapshot()` is a compatibility augmentation API, not a
+readiness builder. It must first validate a checker-passed current `ready`
+gate, then add or verify only finalization-owned deterministic
+`publish_inputs`. It preserves semantic review, conclusion, bindings,
+replacement identity, and `publication_ref`, and never creates `ready=true` or
+a second artifact. If the exact validated `closeout-plan.json` is the sole new
+path, the augmentation revalidates all twelve entries and accepts only the
+corresponding repository binding plus derived
+`review_range_and_working_tree` digest change; all other entries remain exact
+and passed.

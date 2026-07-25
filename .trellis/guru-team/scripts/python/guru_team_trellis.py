@@ -9767,6 +9767,30 @@ def phase2_path_digest(root: Path, path: Path) -> dict[str, Any]:
     }
 
 
+def phase2_requirement_artifact_digest(
+    root: Path,
+    path: Path,
+) -> dict[str, Any]:
+    relative = Path(repo_relative(root, path))
+    if (
+        relative.name == "issue-scope-ledger.json"
+        and relative.parts[:2] == (".trellis", "tasks")
+    ):
+        scope = planning_scope_ledger_projection(read_json(path))
+        canonical = json.dumps(
+            scope,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        return {
+            "path": relative.as_posix(),
+            "sha256": context_digest(scope),
+            "size_bytes": len(canonical),
+        }
+    return phase2_path_digest(root, path)
+
+
 def phase2_evidence_projection(
     root: Path,
     value: Any,
@@ -9794,7 +9818,11 @@ def phase2_evidence_projection(
                 "size_bytes": item.get("size_bytes"),
             })
         else:
-            current.append(phase2_path_digest(root, path))
+            current.append(
+                phase2_requirement_artifact_digest(root, path)
+                if label == "requirement_provenance"
+                else phase2_path_digest(root, path)
+            )
     projection = {"summary": str(value["summary"]).strip(), "artifacts": current}
     projection["facts_sha256"] = context_digest(projection)
     return projection
@@ -11402,7 +11430,78 @@ def build_pr_readiness_snapshot(
     title: str,
     draft: bool,
     closeout_plan_digest: str | None = None,
+    allow_closeout_digest_replacement: bool = False,
 ) -> tuple[Path, dict[str, Any]]:
+    readiness_path = task_dir / PR_READINESS_ARTIFACT
+    if not readiness_path.is_file() or readiness_path.is_symlink():
+        raise WorkflowError(
+            "PR readiness augmentation requires the checked task publication gate.",
+            exit_code=2,
+            payload={"artifact_path": str(readiness_path)},
+        )
+    artifact = read_json(readiness_path)
+    current_inputs = artifact.get("publish_inputs")
+    if current_inputs is None:
+        if closeout_plan_path(task_dir).is_file():
+            checked = check_task_publication_for_finalization_augmentation(
+                root,
+                task_dir,
+                artifact,
+                expected_closeout_plan_digest=closeout_plan_digest,
+            )
+        else:
+            checked = cmd_check_task_publication_review(
+                argparse.Namespace(
+                    root=str(root),
+                    task=repo_relative(root, task_dir),
+                    expected_exit="ready",
+                )
+            )
+        checked_head = checked.get("reviewed_head")
+        checked_publication_ref = checked.get("publication_ref")
+    else:
+        if artifact.get("skill_id") != TASK_PUBLICATION_SKILL_ID:
+            raise WorkflowError(
+                "Legacy PR readiness cannot be upgraded into the semantic publication gate.",
+                exit_code=2,
+            )
+        config = load_config(root)
+        review_path, review_gate, review_errors = validate_review_gate(
+            root,
+            task_dir,
+            config,
+            True,
+            require_pass=True,
+        )
+        if review_errors:
+            raise WorkflowError(
+                "Existing task publication finalization layer lost its Branch Review binding.",
+                exit_code=2,
+                payload={"artifact_path": str(review_path), "errors": review_errors},
+            )
+        read_pr_readiness_publish_inputs(
+            root,
+            task_dir,
+            str(readiness_path),
+            review_gate,
+            require_committed=False,
+        )
+        checked_head = (artifact.get("review_identity") or {}).get("reviewed_head")
+        checked_publication_ref = (
+            artifact.get("deterministic_bindings") or {}
+        ).get("publication_ref")
+    if reviewed_head_sha != checked_head:
+        raise WorkflowError(
+            "Finalization reviewed HEAD does not match the checked task publication gate.",
+            exit_code=2,
+        )
+    if checked_publication_ref != (
+        artifact.get("deterministic_bindings") or {}
+    ).get("publication_ref"):
+        raise WorkflowError(
+            "PR readiness publication identity changed after its objective check.",
+            exit_code=2,
+        )
     body_path = (task_dir / PR_BODY_ARTIFACT).resolve()
     if not body_path.is_file():
         raise WorkflowError(
@@ -11425,13 +11524,22 @@ def build_pr_readiness_snapshot(
         if not re.fullmatch(r"[0-9a-f]{64}", closeout_plan_digest):
             raise WorkflowError("PR readiness closeout plan digest is invalid.", exit_code=2)
         publish_inputs["closeout_plan_digest"] = closeout_plan_digest
-    artifact = {
-        "ready": True,
-        "body_file": PR_BODY_ARTIFACT,
-        "publish_inputs": publish_inputs,
-        "publish_inputs_sha256": canonical_json_sha256(publish_inputs),
-    }
-    return task_dir / PR_READINESS_ARTIFACT, artifact
+    if current_inputs is not None and current_inputs != publish_inputs:
+        changed_fields = {
+            key
+            for key in set(current_inputs) | set(publish_inputs)
+            if current_inputs.get(key) != publish_inputs.get(key)
+        }
+        if (
+            not allow_closeout_digest_replacement
+            or changed_fields != {"closeout_plan_digest"}
+        ):
+            raise WorkflowError(
+                "Existing task publication publish_inputs differ from the requested finalization inputs.",
+                exit_code=2,
+            )
+    artifact["publish_inputs"] = publish_inputs
+    return readiness_path, artifact
 
 
 def write_pr_readiness_snapshot(
@@ -11454,19 +11562,118 @@ def read_pr_readiness_publish_inputs(
 ) -> tuple[Path, dict[str, Any], str]:
     path = task_local_pr_readiness_path(root, task_dir, artifact_arg)
     artifact = read_json(path)
-    if set(artifact) != {"ready", "body_file", "publish_inputs", "publish_inputs_sha256"}:
-        raise WorkflowError("pr-readiness.json keys are invalid.", exit_code=2)
-    if artifact.get("ready") is not True or artifact.get("body_file") != PR_BODY_ARTIFACT:
-        raise WorkflowError("pr-readiness.json must bind ready=true to task-local pr-body.md.", exit_code=2)
+    active_publication_gate = artifact.get("skill_id") == TASK_PUBLICATION_SKILL_ID
+    if active_publication_gate:
+        schema_errors = skill_json_schema_validation_errors(
+            artifact,
+            task_publication_schema(root),
+            "task publication readiness",
+        )
+        semantic_errors = task_publication_semantic_errors(
+            {
+                "profile": artifact.get("profile"),
+                "mode": artifact.get("mode"),
+                "review_intent": artifact.get("review_intent"),
+                "reviewed_head": (artifact.get("review_identity") or {}).get("reviewed_head"),
+                "review_ref": (artifact.get("review_identity") or {}).get("review_ref"),
+                "typed_exit": artifact.get("typed_exit"),
+                "consumer": artifact.get("consumer"),
+                "semantic_review": artifact.get("semantic_review"),
+                "reason_code": artifact.get("reason_code"),
+                "remediation": artifact.get("remediation"),
+                "stale_reason": artifact.get("stale_reason"),
+                "reentry_context": artifact.get("reentry_context"),
+                "supersedes_publication_ref": artifact.get(
+                    "supersedes_publication_ref"
+                ),
+            },
+            reviewed_head=str((artifact.get("review_identity") or {}).get("reviewed_head") or ""),
+            review_ref=str((artifact.get("review_identity") or {}).get("review_ref") or ""),
+        )
+        bindings = artifact.get("deterministic_bindings")
+        artifacts = bindings.get("artifacts") if isinstance(bindings, dict) else None
+        repository = bindings.get("repository") if isinstance(bindings, dict) else None
+        entry_preconditions = (
+            bindings.get("entry_preconditions")
+            if isinstance(bindings, dict)
+            else None
+        )
+        invocation_identity = {
+            "task_ref": artifact.get("task_dir"),
+            "profile": artifact.get("profile"),
+            "mode": artifact.get("mode"),
+            "review_intent": artifact.get("review_intent"),
+            "stale_reason": artifact.get("stale_reason"),
+            "reentry_context": artifact.get("reentry_context"),
+            "supersedes_publication_ref": artifact.get(
+                "supersedes_publication_ref"
+            ),
+            "reviewed_head": (
+                artifact.get("review_identity") or {}
+            ).get("reviewed_head"),
+            "review_ref": (
+                artifact.get("review_identity") or {}
+            ).get("review_ref"),
+        }
+        expected_publication_ref = (
+            f"publication:{context_digest({'task': repo_relative(root, task_dir), 'invocation': invocation_identity, 'head': (artifact.get('review_identity') or {}).get('reviewed_head'), 'review_ref': (artifact.get('review_identity') or {}).get('review_ref'), 'artifacts': artifacts, 'repository': repository, 'entry_preconditions': entry_preconditions})}"
+            if (
+                isinstance(artifacts, dict)
+                and isinstance(repository, dict)
+                and isinstance(entry_preconditions, dict)
+            )
+            else None
+        )
+        identity_errors = []
+        if artifact.get("task_dir") != repo_relative(root, task_dir):
+            identity_errors.append("task publication task identity mismatch")
+        if artifact.get("typed_exit") != "ready":
+            identity_errors.append("task publication gate is not ready")
+        review_identity = artifact.get("review_identity")
+        if not isinstance(review_identity, dict) or review_identity.get("reviewed_head") != gate.get("head"):
+            identity_errors.append("task publication reviewed HEAD does not match Branch Review Gate")
+        review_gate_path = task_dir / "review-gate.json"
+        expected_review_ref = (
+            f"review-gate:{hashlib.sha256(review_gate_path.read_bytes()).hexdigest()}"
+            if review_gate_path.is_file() and not review_gate_path.is_symlink()
+            else None
+        )
+        if not isinstance(review_identity, dict) or review_identity.get("review_ref") != expected_review_ref:
+            identity_errors.append("task publication review_ref does not match Branch Review artifact")
+        if (
+            not isinstance(bindings, dict)
+            or bindings.get("publication_ref") != expected_publication_ref
+        ):
+            identity_errors.append("task publication identity is invalid")
+        if artifact.get("facts_sha256") != context_digest(
+            task_publication_facts_payload(artifact)
+        ):
+            identity_errors.append("task publication facts digest is invalid")
+        errors = sorted(set([*schema_errors, *semantic_errors, *identity_errors]))
+        if errors:
+            raise WorkflowError(
+                "Active pr-readiness.json is not a valid checked ready gate.",
+                exit_code=2,
+                payload={"errors": errors},
+            )
+    else:
+        if set(artifact) != {"ready", "body_file", "publish_inputs", "publish_inputs_sha256"}:
+            raise WorkflowError("Legacy pr-readiness.json keys are invalid.", exit_code=2)
+        if artifact.get("ready") is not True or artifact.get("body_file") != PR_BODY_ARTIFACT:
+            raise WorkflowError(
+                "Legacy pr-readiness.json must bind ready=true to task-local pr-body.md.",
+                exit_code=2,
+            )
     publish_inputs = artifact.get("publish_inputs")
     if not isinstance(publish_inputs, dict) or frozenset(publish_inputs) not in {
         frozenset(PR_READINESS_PUBLISH_INPUT_KEYS),
         frozenset(PR_READINESS_CLOSEOUT_INPUT_KEYS),
     }:
         raise WorkflowError("pr-readiness.json publish_inputs keys are invalid.", exit_code=2)
-    digest = str(artifact.get("publish_inputs_sha256") or "")
-    if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != canonical_json_sha256(publish_inputs):
-        raise WorkflowError("pr-readiness.json publish_inputs digest does not match canonical content.", exit_code=2)
+    if not active_publication_gate:
+        digest = str(artifact.get("publish_inputs_sha256") or "")
+        if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != canonical_json_sha256(publish_inputs):
+            raise WorkflowError("pr-readiness.json publish_inputs digest does not match canonical content.", exit_code=2)
     if publish_inputs.get("body_source") != PR_BODY_ARTIFACT:
         raise WorkflowError("pr-readiness.json body_source must equal pr-body.md.", exit_code=2)
     if publish_inputs.get("reviewed_source") != f"body-artifact:{PR_READINESS_ARTIFACT}":
@@ -13824,6 +14031,1391 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
         "typed_exit": gate.get("typed_exit") or "passed",
         "facts_sha256": gate.get("facts_sha256"),
         "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+
+
+TASK_PUBLICATION_DIMENSIONS = (
+    "diff_outcome_consistency",
+    "issue_scope_closure",
+    "pr_body_quality",
+    "validation_claims",
+    "branch_review_summary",
+    "docs_ssot_reconciliation",
+    "safety_deployment_impact",
+    "finish_summary_semantics",
+    "metadata_tail_integrity",
+    "artifact_binding_freshness",
+)
+TASK_PUBLICATION_CONSUMERS = {
+    "ready": {"kind": "skill", "id": "guru-finalize-task"},
+    "return_to_task_work": {
+        "kind": "workflow",
+        "id": "guru-task-publication-work-router",
+    },
+    "blocked": {"kind": "stop", "id": "task-publication-review-blocked"},
+}
+TASK_PUBLICATION_EVIDENCE_FILES = (
+    "prd.md",
+    "design.md",
+    "implement.md",
+    "planning-approval.json",
+    "phase2-check.json",
+    "issue-scope-ledger.json",
+    "agent-assignment.json",
+    "review.md",
+    "review-gate.json",
+    "pr-body.md",
+    "finish-summary-index.json",
+    "implementation-handoff.md",
+)
+TASK_PUBLICATION_TASK_METADATA_FILES = {
+    "issue-scope-ledger.json",
+    "pr-body.md",
+    "finish-summary-index.json",
+}
+
+
+def task_publication_schema(root: Path) -> dict[str, Any]:
+    candidates = (
+        root
+        / "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
+        root
+        / ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
+    )
+    for path in candidates:
+        if path.is_file() and not path.is_symlink():
+            errors: list[str] = []
+            schema = skill_read_schema(path, "task publication readiness schema", errors)
+            if isinstance(schema, dict) and not errors:
+                return schema
+    raise WorkflowError(
+        "guru-review-task-publication readiness schema is unavailable.",
+        exit_code=2,
+    )
+
+
+def task_publication_path(task_dir: Path) -> Path:
+    return task_dir / PR_READINESS_ARTIFACT
+
+
+def task_publication_artifact_bindings(task_dir: Path) -> dict[str, dict[str, Any]]:
+    bindings: dict[str, dict[str, Any]] = {}
+    for name in TASK_PUBLICATION_EVIDENCE_FILES:
+        path = task_dir / name
+        if not path.is_file() or path.is_symlink():
+            raise WorkflowError(
+                f"Task publication review requires task-local {name}.",
+                exit_code=2,
+            )
+        content = path.read_bytes()
+        bindings[name] = {
+            "sha256": hashlib.sha256(content).hexdigest(),
+            "size": len(content),
+        }
+    return bindings
+
+
+def task_publication_repository_binding(
+    root: Path,
+    task_dir: Path,
+) -> dict[str, Any]:
+    task = task_json(task_dir)
+    base_branch = str(task.get("base_branch") or "")
+    base_ref = diff_base_ref(root, base_branch) if base_branch else ""
+    diff_process = run(
+        ["git", "diff", "--name-only", f"{base_ref}...HEAD"],
+        cwd=root,
+        check=False,
+    )
+    if diff_process.returncode != 0:
+        raise WorkflowError(
+            "Task publication review could not rebuild the current diff.",
+            exit_code=2,
+        )
+    readiness_relative = repo_relative(root, task_dir / PR_READINESS_ARTIFACT)
+    return {
+        "head": current_head(root),
+        "branch": current_branch(root),
+        "base_ref": base_ref,
+        "diff_paths": sorted(
+            line.strip()
+            for line in diff_process.stdout.splitlines()
+            if line.strip()
+        ),
+        "status_paths": sorted(
+            path
+            for path in git_status_paths(root, fail_closed=True)
+            if path != readiness_relative
+        ),
+    }
+
+
+def task_publication_task_metadata_allowlist(
+    root: Path,
+    task_dir: Path,
+) -> set[str]:
+    """Return the closed task-local metadata tail accepted at publication."""
+    task_ref = repo_relative(root, task_dir).rstrip("/")
+    return review_branch_task_metadata_allowlist(root, task_dir) | {
+        f"{task_ref}/{filename}"
+        for filename in TASK_PUBLICATION_TASK_METADATA_FILES
+    }
+
+
+def task_publication_runtime_input_allowlist(
+    root: Path,
+    input_values: list[str],
+) -> set[str]:
+    """Reuse the direct, repo-local runtime-input contract from Branch Review."""
+    return review_branch_runtime_input_allowlist(root, input_values)
+
+
+def task_publication_finalization_owned_status_allowlist(
+    root: Path,
+    task_dir: Path,
+    input_values: list[str],
+) -> set[str]:
+    """Accept only the explicitly named finalization-owned closeout plan."""
+    plan_path = closeout_plan_path(task_dir)
+    plan_relative = repo_relative(root, plan_path)
+    return (
+        {plan_relative}
+        if (
+            plan_relative in input_values
+            and plan_path.is_file()
+            and not plan_path.is_symlink()
+        )
+        else set()
+    )
+
+
+def task_publication_unexpected_status_paths(
+    root: Path,
+    task_dir: Path,
+    status_paths: list[str],
+    *,
+    direct_runtime_inputs: list[str] | None = None,
+    finalization_owned_paths: list[str] | None = None,
+) -> list[str]:
+    allowed_paths = task_publication_task_metadata_allowlist(
+        root,
+        task_dir,
+    ) | task_publication_runtime_input_allowlist(
+        root,
+        direct_runtime_inputs or [],
+    ) | task_publication_finalization_owned_status_allowlist(
+        root,
+        task_dir,
+        finalization_owned_paths or [],
+    )
+    return sorted(path for path in status_paths if path not in allowed_paths)
+
+
+def task_publication_binding(
+    value: Any,
+    *,
+    status: str = "passed",
+) -> dict[str, str]:
+    return {
+        "status": status,
+        "facts_sha256": context_digest(value),
+    }
+
+
+def task_publication_entry_precondition_bindings(
+    root: Path,
+    task_dir: Path,
+    config: dict[str, Any],
+    invocation: dict[str, Any],
+    *,
+    prior_payload: dict[str, Any] | None = None,
+    require_prior_artifact: bool = False,
+    direct_runtime_inputs: list[str] | None = None,
+    finalization_owned_paths: list[str] | None = None,
+) -> tuple[dict[str, dict[str, str]], list[str], dict[str, Any], dict[str, Any]]:
+    """Rebuild the twelve objective publication-entry preconditions.
+
+    The function records only deterministic facts after the semantic owner has
+    authored its review. It never selects a finding route, dimension status, or
+    typed exit.
+    """
+    bindings: dict[str, dict[str, str]] = {}
+    errors: list[str] = []
+
+    step_errors: list[str] = []
+    try:
+        readiness_schema = task_publication_schema(root)
+        package_candidates = (
+            root / "trellis/skills/guru-team/packages/guru-review-task-publication",
+            root / ".trellis/guru-team/skills/packages/guru-review-task-publication",
+        )
+        package = next(
+            (
+                candidate
+                for candidate in package_candidates
+                if (candidate / "interface.json").is_file()
+                and (candidate / "schemas/public-input.schema.json").is_file()
+            ),
+            None,
+        )
+        if package is None:
+            raise WorkflowError(
+                "guru-review-task-publication package is unavailable.",
+                exit_code=2,
+            )
+        runtime_facts = {
+            "schema": readiness_schema,
+            "interface_sha256": hashlib.sha256(
+                (package / "interface.json").read_bytes()
+            ).hexdigest(),
+            "public_input_schema_sha256": hashlib.sha256(
+                (package / "schemas/public-input.schema.json").read_bytes()
+            ).hexdigest(),
+        }
+    except (OSError, WorkflowError) as exc:
+        step_errors.append(f"runtime_dependency:{exc}")
+    if step_errors:
+        errors.extend(step_errors)
+    else:
+        bindings["runtime_dependency"] = task_publication_binding(runtime_facts)
+
+    task_context: dict[str, Any] = {}
+    task: dict[str, Any] = {}
+    step_errors = []
+    try:
+        task_context = load_task_start_context(task_dir, config)
+        assert_workspace_boundary(root, config, task_context, task_dir)
+        task = task_json(task_dir)
+    except WorkflowError as exc:
+        step_errors.append(f"task_workspace:{exc}")
+    if step_errors:
+        errors.extend(step_errors)
+    else:
+        bindings["task_workspace"] = task_publication_binding({
+            "task_artifact_dir": task_context.get("task_artifact_dir"),
+            "task_workspace_id": task_context.get("task_workspace_id"),
+            "workspace_mode": config.get("workspace_mode"),
+            "repo_root": str(root.resolve()),
+        })
+
+    step_errors = []
+    expected_task = repo_relative(root, task_dir)
+    expected_branch = str(
+        task_context.get("branch_name") or task.get("branch") or ""
+    )
+    expected_base = str(
+        task_context.get("base_branch") or task.get("base_branch") or ""
+    )
+    if (
+        not task
+        or task.get("status") != "in_progress"
+        or not expected_branch
+        or current_branch(root) != expected_branch
+        or not expected_base
+        or invocation.get("task_ref", expected_task) != expected_task
+    ):
+        step_errors.append("task_identity:current task, branch, base, or status mismatch")
+    if step_errors:
+        errors.extend(step_errors)
+    else:
+        bindings["task_identity"] = task_publication_binding({
+            "task_ref": expected_task,
+            "task_id": task.get("id"),
+            "status": task.get("status"),
+            "branch": expected_branch,
+            "base_branch": expected_base,
+        })
+
+    review_path = task_dir / "review-gate.json"
+    review_gate: dict[str, Any] = {}
+    review_errors: list[str] = []
+    try:
+        review_path, review_gate, review_errors = validate_review_gate(
+            root,
+            task_dir,
+            config,
+            False,
+            require_pass=True,
+        )
+    except WorkflowError as exc:
+        review_errors = [str(exc)]
+    if review_gate.get("typed_exit") != "passed":
+        review_errors.append("Branch Review typed exit is not passed.")
+    reviewed_head = str(review_gate.get("head") or "")
+    review_ref = (
+        f"review-gate:{hashlib.sha256(review_path.read_bytes()).hexdigest()}"
+        if review_path.is_file() and not review_path.is_symlink()
+        else ""
+    )
+    if (
+        invocation.get("reviewed_head", reviewed_head) != reviewed_head
+        or invocation.get("review_ref", review_ref) != review_ref
+    ):
+        review_errors.append("invocation Branch Review identity mismatch")
+    if review_errors:
+        errors.extend(
+            f"branch_review_handoff:{item}" for item in sorted(set(review_errors))
+        )
+    else:
+        bindings["branch_review_handoff"] = task_publication_binding({
+            "reviewed_head": reviewed_head,
+            "review_ref": review_ref,
+            "typed_exit": review_gate.get("typed_exit"),
+        })
+
+    planning_payload: dict[str, Any] = {}
+    planning_errors: list[str] = []
+    try:
+        planning_path, planning_payload, planning_errors = validate_planning_approval(
+            root,
+            task_dir,
+            allow_committed_head=True,
+            required_exit="approved",
+        )
+    except WorkflowError as exc:
+        planning_path = planning_approval_path(task_dir)
+        planning_errors = [str(exc)]
+    if planning_errors:
+        errors.extend(
+            f"planning_approval:{item}" for item in sorted(set(planning_errors))
+        )
+    else:
+        bindings["planning_approval"] = task_publication_binding({
+            "artifact_sha256": hashlib.sha256(planning_path.read_bytes()).hexdigest(),
+            "facts_sha256": planning_payload.get("facts_sha256"),
+            "typed_exit": planning_payload.get("typed_exit"),
+        })
+
+    phase2_payload: dict[str, Any] = {}
+    phase2_errors: list[str] = []
+    try:
+        phase2_path, phase2_payload, phase2_errors = validate_phase2_check(
+            root,
+            task_dir,
+            allow_committed_head=True,
+        )
+    except WorkflowError as exc:
+        phase2_path = phase2_check_path(task_dir)
+        phase2_errors = [str(exc)]
+    if phase2_payload.get("typed_exit") != "passed":
+        phase2_errors.append("Phase 2 typed exit is not passed.")
+    if phase2_errors:
+        errors.extend(f"phase2_check:{item}" for item in sorted(set(phase2_errors)))
+    else:
+        bindings["phase2_check"] = task_publication_binding({
+            "artifact_sha256": hashlib.sha256(phase2_path.read_bytes()).hexdigest(),
+            "facts_sha256": phase2_payload.get("facts_sha256"),
+            "typed_exit": phase2_payload.get("typed_exit"),
+        })
+
+    ledger: dict[str, Any] = {}
+    ledger_errors: list[str] = []
+    ledger_path = issue_scope_ledger_path(task_dir)
+    try:
+        ledger = read_json(ledger_path)
+    except WorkflowError as exc:
+        ledger_errors.append(str(exc))
+    if (
+        not isinstance(ledger.get("primary_issue"), dict)
+        or not isinstance(ledger.get("close_issues"), list)
+        or not isinstance(ledger.get("related_issues"), list)
+        or not isinstance(ledger.get("followup_issues"), list)
+    ):
+        ledger_errors.append("issue scope ledger identity is incomplete")
+    if not ledger_errors:
+        ledger_errors.extend(
+            validate_ledger_for_publish(
+                ledger,
+                review_gate,
+                allow_pending_remote_marketplace=True,
+            )
+        )
+    if ledger_errors:
+        errors.extend(
+            f"issue_scope_ledger:{item}" for item in sorted(set(ledger_errors))
+        )
+    else:
+        bindings["issue_scope_ledger"] = task_publication_binding({
+            "artifact_sha256": hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
+            "primary_issue": ledger.get("primary_issue"),
+            "close_issues": ledger.get("close_issues"),
+            "related_issues": ledger.get("related_issues"),
+            "followup_issues": ledger.get("followup_issues"),
+        })
+
+    docs = (
+        phase2_payload.get("docs_ssot_plan")
+        if isinstance(phase2_payload.get("docs_ssot_plan"), dict)
+        else {}
+    )
+    docs_strategy = docs.get("strategy")
+    docs_complete = (
+        docs_strategy
+        in {"ssot_first", "delta_first", "bootstrap_or_repair_docs"}
+        and docs.get("task_delta_merged") is True
+    ) or (
+        docs_strategy == "no_docs_update_needed"
+        and bool(str(docs.get("no_update_reason") or "").strip())
+    )
+    if not docs_complete:
+        errors.append("docs_ssot_reconciliation:current outcome is incomplete")
+    else:
+        bindings["docs_ssot_reconciliation"] = task_publication_binding(docs)
+
+    branch_evidence_paths = (
+        task_dir / "agent-assignment.json",
+        task_dir / "review.md",
+        review_path,
+    )
+    branch_evidence_errors = [
+        f"missing or unsafe {path.name}"
+        for path in branch_evidence_paths
+        if not path.is_file() or path.is_symlink()
+    ]
+    review_reports = sorted((task_dir / "reviews").glob("*.md"))
+    if not review_reports:
+        branch_evidence_errors.append("missing raw Branch Review reports")
+    if branch_evidence_errors or review_errors:
+        errors.extend(
+            f"branch_review_evidence:{item}"
+            for item in sorted(set([*branch_evidence_errors, *review_errors]))
+        )
+    else:
+        bindings["branch_review_evidence"] = task_publication_binding({
+            "artifacts": {
+                repo_relative(root, path): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in (*branch_evidence_paths, *review_reports)
+            },
+            "reviewed_head": reviewed_head,
+        })
+
+    publication_content_errors: list[str] = []
+    pr_body_path = task_dir / PR_BODY_ARTIFACT
+    try:
+        body = pr_body_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        body = ""
+        publication_content_errors.append(f"pr-body.md is unavailable: {exc}")
+    if not body.strip():
+        publication_content_errors.append("pr-body.md is empty")
+    elif ledger:
+        publication_content_errors.extend(validate_pr_body_quality(body, ledger, False))
+    try:
+        index_path, index_payload = load_finish_summary_index(
+            task_dir,
+            FINISH_SUMMARY_INDEX_ARTIFACT,
+        )
+    except WorkflowError as exc:
+        index_path = task_dir / FINISH_SUMMARY_INDEX_ARTIFACT
+        index_payload = {}
+        publication_content_errors.append(str(exc))
+    if publication_content_errors:
+        errors.extend(
+            f"publication_content:{item}"
+            for item in sorted(set(publication_content_errors))
+        )
+    else:
+        bindings["publication_content"] = task_publication_binding({
+            "pr_body_sha256": hashlib.sha256(pr_body_path.read_bytes()).hexdigest(),
+            "finish_summary_index_sha256": hashlib.sha256(
+                index_path.read_bytes()
+            ).hexdigest(),
+            "finish_summary_index": index_payload,
+        })
+
+    try:
+        repository = task_publication_repository_binding(root, task_dir)
+    except WorkflowError as exc:
+        repository = {}
+        errors.append(f"review_range_and_working_tree:{exc}")
+    else:
+        unexpected_status_paths = task_publication_unexpected_status_paths(
+            root,
+            task_dir,
+            repository["status_paths"],
+            direct_runtime_inputs=direct_runtime_inputs,
+            finalization_owned_paths=finalization_owned_paths,
+        )
+        if unexpected_status_paths:
+            errors.append(
+                "review_range_and_working_tree:working tree has paths outside "
+                "the exact publication task metadata and direct runtime-input "
+                "allowlist: "
+                + ", ".join(unexpected_status_paths[:20])
+                + "."
+            )
+        else:
+            bindings["review_range_and_working_tree"] = task_publication_binding(
+                repository
+            )
+
+    invocation_errors: list[str] = []
+    profile = invocation.get("profile")
+    prior_ref = invocation.get("supersedes_publication_ref")
+    if profile == "publication_review_stale":
+        for key in ("stale_reason", "reentry_context", "supersedes_publication_ref"):
+            if not isinstance(invocation.get(key), str) or not str(
+                invocation.get(key) or ""
+            ).strip():
+                invocation_errors.append(f"{key} is required for stale re-entry")
+        if require_prior_artifact:
+            prior_bindings = (
+                prior_payload.get("deterministic_bindings")
+                if isinstance(prior_payload, dict)
+                else None
+            )
+            actual_prior_ref = (
+                prior_bindings.get("publication_ref")
+                if isinstance(prior_bindings, dict)
+                else None
+            )
+            if (
+                not isinstance(prior_payload, dict)
+                or prior_payload.get("skill_id") != TASK_PUBLICATION_SKILL_ID
+                or prior_payload.get("task_dir") != expected_task
+                or prior_payload.get("facts_sha256")
+                != context_digest(task_publication_facts_payload(prior_payload))
+                or not isinstance(actual_prior_ref, str)
+                or prior_ref != actual_prior_ref
+            ):
+                invocation_errors.append(
+                    "supersedes_publication_ref does not match the exact prior owner artifact"
+                )
+    else:
+        if prior_payload is not None and require_prior_artifact:
+            invocation_errors.append(
+                "replacement of an existing publication artifact requires the stale profile"
+            )
+        if (
+            invocation.get("stale_reason") is not None
+            or invocation.get("reentry_context") is not None
+            or prior_ref is not None
+        ):
+            invocation_errors.append(
+                "initial publication review cannot carry stale replacement fields"
+            )
+    if invocation_errors:
+        errors.extend(
+            f"invocation_freshness:{item}"
+            for item in sorted(set(invocation_errors))
+        )
+    else:
+        bindings["invocation_freshness"] = task_publication_binding({
+            "profile": profile,
+            "mode": invocation.get("mode"),
+            "review_intent": invocation.get("review_intent"),
+            "stale_reason": invocation.get("stale_reason"),
+            "reentry_context": invocation.get("reentry_context"),
+            "supersedes_publication_ref": prior_ref,
+            "reviewed_head": reviewed_head,
+            "review_ref": review_ref,
+        })
+
+    expected_ids = {
+        "runtime_dependency",
+        "task_workspace",
+        "task_identity",
+        "branch_review_handoff",
+        "planning_approval",
+        "phase2_check",
+        "issue_scope_ledger",
+        "docs_ssot_reconciliation",
+        "branch_review_evidence",
+        "publication_content",
+        "review_range_and_working_tree",
+        "invocation_freshness",
+    }
+    for entry_id in sorted(expected_ids - set(bindings)):
+        entry_errors = [
+            item
+            for item in errors
+            if item.startswith(entry_id + ":")
+        ]
+        bindings[entry_id] = task_publication_binding(
+            {
+                "entry_precondition_id": entry_id,
+                "errors": entry_errors or ["objective evidence unavailable"],
+            },
+            status="failed",
+        )
+    return bindings, sorted(set(errors)), review_gate, repository
+
+
+def task_publication_semantic_errors(
+    authored: dict[str, Any],
+    *,
+    reviewed_head: str,
+    review_ref: str,
+) -> list[str]:
+    errors: list[str] = []
+    if authored.get("profile") not in {"publication_review", "publication_review_stale"}:
+        errors.append("publication profile is invalid")
+    if authored.get("mode") not in {"workflow", "standalone"}:
+        errors.append("publication mode is invalid")
+    if authored.get("review_intent") not in {
+        "initial_review",
+        "metadata_revision_review",
+        "stale_reentry_review",
+    }:
+        errors.append("publication review_intent is invalid")
+    if authored.get("reviewed_head", reviewed_head) != reviewed_head:
+        errors.append("publication reviewed_head does not match current Branch Review")
+    if authored.get("review_ref", review_ref) != review_ref:
+        errors.append("publication review_ref does not match current Branch Review")
+    if authored.get("profile") == "publication_review_stale":
+        if authored.get("review_intent") != "stale_reentry_review":
+            errors.append("stale publication requires stale_reentry_review intent")
+        for key in ("stale_reason", "reentry_context", "supersedes_publication_ref"):
+            if not isinstance(authored.get(key), str) or not str(
+                authored.get(key) or ""
+            ).strip():
+                errors.append(f"stale publication requires non-empty {key}")
+    elif (
+        authored.get("stale_reason") is not None
+        or authored.get("reentry_context") is not None
+        or authored.get("supersedes_publication_ref") is not None
+    ):
+        errors.append("initial publication review cannot carry stale replacement fields")
+    typed_exit = authored.get("typed_exit")
+    if typed_exit not in TASK_PUBLICATION_CONSUMERS:
+        errors.append("publication typed_exit is invalid")
+    if authored.get("consumer") != TASK_PUBLICATION_CONSUMERS.get(str(typed_exit)):
+        errors.append("publication consumer does not match typed_exit")
+    semantic = authored.get("semantic_review")
+    if not isinstance(semantic, dict):
+        return [*errors, "publication semantic_review must be an object"]
+    required_semantic_fields = {
+        "dimensions",
+        "findings",
+        "conclusions",
+        "revision_history",
+        "reviewer_process",
+        "human_confirmation",
+        "ai_review_gate",
+    }
+    if set(semantic) != required_semantic_fields:
+        errors.append("publication semantic_review fields are incomplete or unknown")
+    dimensions = semantic.get("dimensions")
+    if not isinstance(dimensions, list):
+        errors.append("publication dimensions must be a list")
+        dimensions = []
+    ids = [
+        item.get("id")
+        for item in dimensions
+        if isinstance(item, dict)
+    ]
+    if ids != list(TASK_PUBLICATION_DIMENSIONS):
+        errors.append("publication dimensions must contain the exact ordered ten ids")
+    for item in dimensions:
+        if (
+            not isinstance(item, dict)
+            or item.get("status") not in {"passed", "finding", "blocked"}
+            or not isinstance(item.get("summary"), str)
+            or not item.get("summary")
+            or not isinstance(item.get("evidence_refs"), list)
+            or not item.get("evidence_refs")
+        ):
+            errors.append("publication dimension evidence is incomplete")
+            break
+    findings = semantic.get("findings")
+    if not isinstance(findings, list):
+        errors.append("publication findings must be a list")
+        findings = []
+    refs: list[str] = []
+    for finding in findings:
+        if not isinstance(finding, dict):
+            errors.append("publication finding must be an object")
+            continue
+        required = {
+            "finding_ref",
+            "dimension",
+            "summary",
+            "scope_basis",
+            "evidence_refs",
+            "affected_artifacts",
+            "route_class",
+            "status",
+            "closure_evidence",
+        }
+        if set(finding) != required:
+            errors.append("publication finding fields are incomplete or unknown")
+            continue
+        refs.append(str(finding.get("finding_ref") or ""))
+        if (
+            finding.get("dimension") not in TASK_PUBLICATION_DIMENSIONS
+            or finding.get("route_class")
+            not in {"metadata_revision", "task_work", "external_blocker"}
+            or finding.get("status") not in {"open", "closed"}
+        ):
+            errors.append("publication finding enum is invalid")
+        if (
+            not isinstance(finding.get("summary"), str)
+            or not str(finding.get("summary") or "").strip()
+            or not isinstance(finding.get("scope_basis"), str)
+            or not str(finding.get("scope_basis") or "").strip()
+            or not isinstance(finding.get("evidence_refs"), list)
+            or not finding.get("evidence_refs")
+            or any(
+                not isinstance(item, str) or not item.strip()
+                for item in finding.get("evidence_refs", [])
+            )
+            or not isinstance(finding.get("affected_artifacts"), list)
+            or not finding.get("affected_artifacts")
+            or any(
+                not isinstance(item, str) or not item.strip()
+                for item in finding.get("affected_artifacts", [])
+            )
+            or not isinstance(finding.get("closure_evidence"), list)
+            or not finding.get("closure_evidence")
+            or any(
+                not isinstance(item, str) or not item.strip()
+                for item in finding.get("closure_evidence", [])
+            )
+        ):
+            errors.append("publication finding evidence and closure must be non-empty")
+    if len(refs) != len(set(refs)) or any(not value for value in refs):
+        errors.append("publication finding refs must be unique and non-empty")
+    dimension_statuses = {
+        str(item.get("id")): str(item.get("status"))
+        for item in dimensions
+        if isinstance(item, dict)
+        and item.get("id") in TASK_PUBLICATION_DIMENSIONS
+        and item.get("status") in {"passed", "finding", "blocked"}
+    }
+    open_findings = [
+        item
+        for item in findings
+        if isinstance(item, dict) and item.get("status") == "open"
+    ]
+    for finding in open_findings:
+        dimension = str(finding.get("dimension") or "")
+        if dimension_statuses.get(dimension) == "passed":
+            errors.append(
+                "open publication finding must reference a non-passed dimension"
+            )
+    open_finding_dimensions = {
+        str(item.get("dimension") or "")
+        for item in open_findings
+    }
+    if any(
+        status != "passed" and dimension not in open_finding_dimensions
+        for dimension, status in dimension_statuses.items()
+    ):
+        errors.append(
+            "every non-passed publication dimension requires open finding evidence"
+        )
+    conclusions = semantic.get("conclusions")
+    if not isinstance(conclusions, dict) or set(conclusions) != {
+        "issue_scope",
+        "docs_ssot",
+        "safety_deployment",
+    }:
+        errors.append("publication conclusions are incomplete")
+    else:
+        for conclusion in conclusions.values():
+            if (
+                not isinstance(conclusion, dict)
+                or set(conclusion) != {"status", "summary", "evidence_refs"}
+                or conclusion.get("status") not in {"passed", "finding", "blocked"}
+                or not isinstance(conclusion.get("summary"), str)
+                or not conclusion.get("summary")
+                or not isinstance(conclusion.get("evidence_refs"), list)
+                or not conclusion.get("evidence_refs")
+            ):
+                errors.append("publication conclusion evidence is incomplete")
+                break
+    revisions = semantic.get("revision_history")
+    if not isinstance(revisions, list):
+        errors.append("publication revision_history must be a list")
+    else:
+        for revision in revisions:
+            if (
+                not isinstance(revision, dict)
+                or set(revision)
+                != {"revision_ref", "kind", "summary", "evidence_refs"}
+                or revision.get("kind")
+                not in {"metadata_revision", "stale_reentry", "replacement"}
+                or not isinstance(revision.get("revision_ref"), str)
+                or not revision.get("revision_ref")
+                or not isinstance(revision.get("summary"), str)
+                or not revision.get("summary")
+                or not isinstance(revision.get("evidence_refs"), list)
+                or not revision.get("evidence_refs")
+            ):
+                errors.append("publication revision_history evidence is incomplete")
+                break
+    reviewer_process = semantic.get("reviewer_process")
+    if (
+        not isinstance(reviewer_process, dict)
+        or set(reviewer_process) != {"reviewer", "summary", "evidence_refs"}
+        or not isinstance(reviewer_process.get("reviewer"), str)
+        or not reviewer_process.get("reviewer")
+        or not isinstance(reviewer_process.get("summary"), str)
+        or not reviewer_process.get("summary")
+        or not isinstance(reviewer_process.get("evidence_refs"), list)
+        or not reviewer_process.get("evidence_refs")
+    ):
+        errors.append("publication reviewer_process evidence is incomplete")
+    confirmation = semantic.get("human_confirmation")
+    if (
+        not isinstance(confirmation, dict)
+        or set(confirmation)
+        != {"status", "summary", "confirmed_by", "confirmed_at"}
+        or confirmation.get("status") not in {"not_required", "confirmed"}
+        or not isinstance(confirmation.get("summary"), str)
+        or not confirmation.get("summary")
+        or (
+            confirmation.get("status") == "confirmed"
+            and (
+                not isinstance(confirmation.get("confirmed_by"), str)
+                or not confirmation.get("confirmed_by")
+                or not isinstance(confirmation.get("confirmed_at"), str)
+                or not confirmation.get("confirmed_at")
+            )
+        )
+        or (
+            confirmation.get("status") == "not_required"
+            and (
+                confirmation.get("confirmed_by") is not None
+                or confirmation.get("confirmed_at") is not None
+            )
+        )
+    ):
+        errors.append("publication human_confirmation evidence is incomplete")
+    gate = semantic.get("ai_review_gate")
+    if (
+        not isinstance(gate, dict)
+        or gate.get("status") not in {"passed", "return_to_task_work", "blocked"}
+        or not isinstance(gate.get("summary"), str)
+        or not gate.get("summary")
+    ):
+        errors.append("publication AI Review Gate is incomplete")
+    elif (
+        (typed_exit == "ready" and gate.get("status") != "passed")
+        or (typed_exit == "return_to_task_work" and gate.get("status") != "return_to_task_work")
+        or (typed_exit == "blocked" and gate.get("status") != "blocked")
+    ):
+        errors.append("publication AI Review Gate does not match typed_exit")
+    if typed_exit == "ready":
+        if any(
+            isinstance(item, dict) and item.get("status") != "passed"
+            for item in dimensions
+        ):
+            errors.append("ready requires every publication dimension to pass")
+        if any(
+            isinstance(item, dict) and item.get("status") != "closed"
+            for item in findings
+        ):
+            errors.append("ready requires every publication finding to close")
+        if isinstance(conclusions, dict) and any(
+            isinstance(item, dict) and item.get("status") != "passed"
+            for item in conclusions.values()
+        ):
+            errors.append("ready requires every publication conclusion to pass")
+    if typed_exit == "return_to_task_work":
+        if not any(status == "finding" for status in dimension_statuses.values()):
+            errors.append(
+                "return_to_task_work requires a finding publication dimension"
+            )
+        if any(status == "blocked" for status in dimension_statuses.values()):
+            errors.append(
+                "return_to_task_work cannot carry a blocked publication dimension"
+            )
+        if not any(
+            item.get("route_class") == "task_work"
+            for item in open_findings
+        ):
+            errors.append("return_to_task_work requires an open task_work finding")
+        if any(
+            item.get("route_class") != "task_work"
+            or dimension_statuses.get(str(item.get("dimension") or "")) != "finding"
+            for item in open_findings
+        ):
+            errors.append(
+                "return_to_task_work open findings must reference finding dimensions"
+            )
+        if isinstance(conclusions, dict) and any(
+            isinstance(item, dict) and item.get("status") == "blocked"
+            for item in conclusions.values()
+        ):
+            errors.append(
+                "return_to_task_work cannot carry a blocked publication conclusion"
+            )
+    if typed_exit == "blocked" and (
+        not isinstance(authored.get("reason_code"), str)
+        or not str(authored.get("reason_code") or "").strip()
+        or not isinstance(authored.get("remediation"), str)
+        or not str(authored.get("remediation") or "").strip()
+    ):
+        errors.append("blocked requires non-empty reason_code and remediation")
+    if typed_exit == "blocked":
+        if not any(status == "blocked" for status in dimension_statuses.values()):
+            errors.append("blocked requires a blocked publication dimension")
+        if not any(
+            item.get("route_class") == "external_blocker"
+            for item in open_findings
+        ):
+            errors.append("blocked requires an open external_blocker finding")
+        if any(
+            item.get("route_class") != "external_blocker"
+            or dimension_statuses.get(str(item.get("dimension") or "")) != "blocked"
+            for item in open_findings
+        ):
+            errors.append(
+                "blocked open findings must reference blocked dimensions"
+            )
+        if not isinstance(conclusions, dict) or not any(
+            isinstance(item, dict) and item.get("status") == "blocked"
+            for item in conclusions.values()
+        ):
+            errors.append("blocked requires a blocked publication conclusion")
+        elif any(
+            isinstance(item, dict) and item.get("status") == "finding"
+            for item in conclusions.values()
+        ):
+            errors.append("blocked cannot carry a finding publication conclusion")
+    return sorted(set(errors))
+
+
+def task_publication_facts_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    normalized = copy.deepcopy(payload)
+    normalized.pop("generated_at", None)
+    normalized.pop("facts_sha256", None)
+    normalized.pop("publish_inputs", None)
+    return normalized
+
+
+def task_publication_check_errors(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    *,
+    direct_runtime_inputs: list[str] | None = None,
+    finalization_owned_paths: list[str] | None = None,
+) -> list[str]:
+    errors = skill_json_schema_validation_errors(
+        payload,
+        task_publication_schema(root),
+        "task publication readiness",
+    )
+    expected_facts = context_digest(task_publication_facts_payload(payload))
+    if payload.get("facts_sha256") != expected_facts:
+        errors.append("task publication facts_sha256 mismatch")
+    if payload.get("task_dir") != repo_relative(root, task_dir):
+        errors.append("task publication task identity mismatch")
+    review_identity = payload.get("review_identity")
+    invocation = {
+        "task_ref": payload.get("task_dir"),
+        "profile": payload.get("profile"),
+        "mode": payload.get("mode"),
+        "review_intent": payload.get("review_intent"),
+        "stale_reason": payload.get("stale_reason"),
+        "reentry_context": payload.get("reentry_context"),
+        "supersedes_publication_ref": payload.get("supersedes_publication_ref"),
+        "reviewed_head": (
+            review_identity.get("reviewed_head")
+            if isinstance(review_identity, dict)
+            else None
+        ),
+        "review_ref": (
+            review_identity.get("review_ref")
+            if isinstance(review_identity, dict)
+            else None
+        ),
+    }
+    current_entry_bindings, entry_errors, current_review_gate, current_repository = (
+        task_publication_entry_precondition_bindings(
+            root,
+            task_dir,
+            load_config(root),
+            invocation,
+            direct_runtime_inputs=direct_runtime_inputs,
+            finalization_owned_paths=finalization_owned_paths,
+        )
+    )
+    if payload.get("typed_exit") == "ready":
+        errors.extend(entry_errors)
+    current_reviewed_head = str(current_review_gate.get("head") or "")
+    if (
+        not isinstance(review_identity, dict)
+        or review_identity.get("reviewed_head") != current_reviewed_head
+    ):
+        errors.append("task publication reviewed HEAD is stale")
+    bindings = payload.get("deterministic_bindings")
+    artifacts = bindings.get("artifacts") if isinstance(bindings, dict) else None
+    repository = bindings.get("repository") if isinstance(bindings, dict) else None
+    entry_bindings = (
+        bindings.get("entry_preconditions")
+        if isinstance(bindings, dict)
+        else None
+    )
+    if entry_bindings != current_entry_bindings:
+        errors.append("task publication entry precondition bindings are stale")
+    if not isinstance(artifacts, dict):
+        errors.append("task publication artifact bindings are missing")
+    else:
+        try:
+            current = task_publication_artifact_bindings(task_dir)
+        except WorkflowError as exc:
+            errors.append(str(exc))
+        else:
+            if artifacts != current:
+                errors.append("task publication artifact bindings are stale")
+    if current_repository:
+        if repository != current_repository:
+            errors.append("task publication repository binding is stale")
+    expected_publication_ref = (
+        f"publication:{context_digest({'task': repo_relative(root, task_dir), 'invocation': invocation, 'head': (review_identity or {}).get('reviewed_head'), 'review_ref': (review_identity or {}).get('review_ref'), 'artifacts': artifacts, 'repository': repository, 'entry_preconditions': entry_bindings})}"
+        if (
+            isinstance(artifacts, dict)
+            and isinstance(repository, dict)
+            and isinstance(entry_bindings, dict)
+        )
+        else None
+    )
+    if not isinstance(bindings, dict) or bindings.get("publication_ref") != expected_publication_ref:
+        errors.append("task publication opaque identity mismatch")
+    semantic = payload.get("semantic_review")
+    authored = {
+        "profile": payload.get("profile"),
+        "mode": payload.get("mode"),
+        "review_intent": payload.get("review_intent"),
+        "reviewed_head": (review_identity or {}).get("reviewed_head"),
+        "review_ref": (review_identity or {}).get("review_ref"),
+        "typed_exit": payload.get("typed_exit"),
+        "consumer": payload.get("consumer"),
+        "semantic_review": semantic,
+        "stale_reason": payload.get("stale_reason"),
+        "reentry_context": payload.get("reentry_context"),
+        "supersedes_publication_ref": payload.get("supersedes_publication_ref"),
+    }
+    if payload.get("typed_exit") == "blocked":
+        authored["reason_code"] = payload.get("reason_code")
+        authored["remediation"] = payload.get("remediation")
+    errors.extend(
+        task_publication_semantic_errors(
+            authored,
+            reviewed_head=str((review_identity or {}).get("reviewed_head") or ""),
+            review_ref=str((review_identity or {}).get("review_ref") or ""),
+        )
+    )
+    return sorted(set(errors))
+
+
+def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
+    authored = contract_wording_read_input(
+        root,
+        args.input,
+        "guru-review-task-publication recorder",
+    )
+    path = task_publication_path(task_dir)
+    prior_payload = (
+        read_json(path)
+        if path.is_file() and not path.is_symlink()
+        else None
+    )
+    invocation = {
+        **authored,
+        "task_ref": repo_relative(root, task_dir),
+    }
+    entry_bindings, entry_errors, review_gate, repository = (
+        task_publication_entry_precondition_bindings(
+            root,
+            task_dir,
+            config,
+            invocation,
+            prior_payload=prior_payload,
+            require_prior_artifact=True,
+            direct_runtime_inputs=[str(args.input)],
+        )
+    )
+    review_path = task_dir / "review-gate.json"
+    if entry_errors and authored.get("typed_exit") == "ready":
+        raise WorkflowError(
+            "Ready task publication entry preconditions are missing, stale, or incomplete.",
+            exit_code=2,
+            payload={
+                "artifact_path": str(review_path),
+                "error_codes": entry_errors,
+            },
+        )
+    reviewed_head = str(review_gate.get("head") or "")
+    review_ref = f"review-gate:{hashlib.sha256(review_path.read_bytes()).hexdigest()}"
+    errors = task_publication_semantic_errors(
+        authored,
+        reviewed_head=reviewed_head,
+        review_ref=review_ref,
+    )
+    if errors:
+        raise WorkflowError(
+            "AI-authored task publication review is structurally invalid.",
+            exit_code=2,
+            payload={"error_codes": errors},
+        )
+    artifacts = task_publication_artifact_bindings(task_dir)
+    invocation_identity = {
+        "task_ref": repo_relative(root, task_dir),
+        "profile": authored["profile"],
+        "mode": authored["mode"],
+        "review_intent": authored["review_intent"],
+        "stale_reason": authored.get("stale_reason"),
+        "reentry_context": authored.get("reentry_context"),
+        "supersedes_publication_ref": authored.get("supersedes_publication_ref"),
+        "reviewed_head": reviewed_head,
+        "review_ref": review_ref,
+    }
+    publication_ref = f"publication:{context_digest({'task': repo_relative(root, task_dir), 'invocation': invocation_identity, 'head': reviewed_head, 'review_ref': review_ref, 'artifacts': artifacts, 'repository': repository, 'entry_preconditions': entry_bindings})}"
+    payload: dict[str, Any] = {
+        "schema_version": "1.0",
+        "skill_id": TASK_PUBLICATION_SKILL_ID,
+        "generated_at": now_iso(),
+        "task_dir": repo_relative(root, task_dir),
+        "profile": authored["profile"],
+        "mode": authored["mode"],
+        "review_intent": authored["review_intent"],
+        "review_identity": {
+            "reviewed_head": reviewed_head,
+            "review_ref": review_ref,
+        },
+        "semantic_review": copy.deepcopy(authored["semantic_review"]),
+        "deterministic_bindings": {
+            "artifacts": artifacts,
+            "repository": repository,
+            "entry_preconditions": entry_bindings,
+            "publication_ref": publication_ref,
+        },
+        "typed_exit": authored["typed_exit"],
+        "consumer": copy.deepcopy(authored["consumer"]),
+        "supersedes_publication_ref": authored.get("supersedes_publication_ref"),
+    }
+    if authored["profile"] == "publication_review_stale":
+        payload["stale_reason"] = authored["stale_reason"]
+        payload["reentry_context"] = authored["reentry_context"]
+    if authored["typed_exit"] == "blocked":
+        payload["reason_code"] = authored["reason_code"]
+        payload["remediation"] = authored.get("remediation", "Resolve the recorded blocker and re-enter.")
+    payload["facts_sha256"] = context_digest(task_publication_facts_payload(payload))
+    errors = task_publication_check_errors(
+        root,
+        task_dir,
+        payload,
+        direct_runtime_inputs=[str(args.input)],
+    )
+    if errors:
+        raise WorkflowError(
+            "Task publication readiness materialization failed validation.",
+            exit_code=2,
+            payload={"error_codes": errors},
+        )
+    if not args.dry_run:
+        write_json(path, payload)
+    return {
+        **payload,
+        "artifact_path": str(path),
+        "dry_run": bool(args.dry_run),
+    }
+
+
+def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
+    path = task_publication_path(task_dir)
+    if not path.is_file() or path.is_symlink():
+        raise WorkflowError(
+            "Task publication readiness artifact is missing or unsafe.",
+            exit_code=2,
+        )
+    payload = read_json(path)
+    errors = task_publication_check_errors(
+        root,
+        task_dir,
+        payload,
+        direct_runtime_inputs=list(
+            getattr(args, "direct_runtime_inputs", None) or []
+        ),
+    )
+    expected_exit = str(getattr(args, "expected_exit", "") or "")
+    if expected_exit and payload.get("typed_exit") != expected_exit:
+        errors.append("task publication expected exit mismatch")
+    if errors:
+        raise WorkflowError(
+            "Task publication readiness is missing, stale, or incomplete.",
+            exit_code=2,
+            payload={"artifact_path": str(path), "errors": sorted(set(errors))},
+        )
+    bindings = payload["deterministic_bindings"]
+    return {
+        "status": "ok",
+        "artifact_path": str(path),
+        "task_dir": str(task_dir),
+        "reviewed_head": payload["review_identity"]["reviewed_head"],
+        "review_ref": payload["review_identity"]["review_ref"],
+        "typed_exit": payload["typed_exit"],
+        "publication_ref": bindings["publication_ref"],
+        "facts_sha256": payload["facts_sha256"],
+        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+
+
+def check_task_publication_for_finalization_augmentation(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    *,
+    expected_closeout_plan_digest: str | None,
+) -> dict[str, Any]:
+    """Recheck a ready gate after the exact finalization-owned plan is added."""
+    repository_stale = "task publication repository binding is stale"
+    entries_stale = "task publication entry precondition bindings are stale"
+    plan_path = closeout_plan_path(task_dir)
+    plan_relative = repo_relative(root, plan_path)
+    errors = task_publication_check_errors(
+        root,
+        task_dir,
+        payload,
+        finalization_owned_paths=[plan_relative],
+    )
+    bindings = payload.get("deterministic_bindings")
+    stored_repository = (
+        bindings.get("repository") if isinstance(bindings, dict) else None
+    )
+    try:
+        current_repository = task_publication_repository_binding(root, task_dir)
+    except WorkflowError as exc:
+        current_repository = None
+        errors.append(str(exc))
+    plan: dict[str, Any] | None = None
+    if (
+        not plan_path.is_file()
+        or plan_path.is_symlink()
+        or not re.fullmatch(r"[0-9a-f]{64}", expected_closeout_plan_digest or "")
+    ):
+        errors.append(
+            "task publication finalization augmentation requires the exact closeout plan"
+        )
+    else:
+        try:
+            plan = validate_closeout_plan(read_json(plan_path))
+        except WorkflowError as exc:
+            errors.append(str(exc))
+        if (
+            plan is not None
+            and plan.get("plan_digest") != expected_closeout_plan_digest
+        ):
+            errors.append(
+                "task publication finalization closeout plan digest mismatch"
+            )
+    if payload.get("typed_exit") != "ready":
+        errors.append("task publication finalization augmentation requires ready")
+
+    if repository_stale in errors:
+        stored_without_status = (
+            {key: value for key, value in stored_repository.items() if key != "status_paths"}
+            if isinstance(stored_repository, dict)
+            else None
+        )
+        current_without_status = (
+            {key: value for key, value in current_repository.items() if key != "status_paths"}
+            if isinstance(current_repository, dict)
+            else None
+        )
+        stored_status = (
+            stored_repository.get("status_paths")
+            if isinstance(stored_repository, dict)
+            else None
+        )
+        current_status = (
+            current_repository.get("status_paths")
+            if isinstance(current_repository, dict)
+            else None
+        )
+        exact_finalization_delta = (
+            stored_without_status == current_without_status
+            and isinstance(stored_status, list)
+            and isinstance(current_status, list)
+            and current_status == sorted({*stored_status, plan_relative})
+            and plan_relative not in stored_status
+        )
+        if exact_finalization_delta:
+            errors.remove(repository_stale)
+            if entries_stale in errors:
+                stored_entries = (
+                    bindings.get("entry_preconditions")
+                    if isinstance(bindings, dict)
+                    else None
+                )
+                review_identity = (
+                    payload.get("review_identity")
+                    if isinstance(payload.get("review_identity"), dict)
+                    else {}
+                )
+                invocation = {
+                    "task_ref": payload.get("task_dir"),
+                    "profile": payload.get("profile"),
+                    "mode": payload.get("mode"),
+                    "review_intent": payload.get("review_intent"),
+                    "stale_reason": payload.get("stale_reason"),
+                    "reentry_context": payload.get("reentry_context"),
+                    "supersedes_publication_ref": payload.get(
+                        "supersedes_publication_ref"
+                    ),
+                    "reviewed_head": review_identity.get("reviewed_head"),
+                    "review_ref": review_identity.get("review_ref"),
+                }
+                current_entries, entry_errors, _review_gate, _repository = (
+                    task_publication_entry_precondition_bindings(
+                        root,
+                        task_dir,
+                        load_config(root),
+                        invocation,
+                        finalization_owned_paths=[plan_relative],
+                    )
+                )
+                expected_entries = (
+                    copy.deepcopy(stored_entries)
+                    if isinstance(stored_entries, dict)
+                    else None
+                )
+                if isinstance(expected_entries, dict):
+                    expected_entries["review_range_and_working_tree"] = (
+                        task_publication_binding(current_repository)
+                    )
+                if not entry_errors and current_entries == expected_entries:
+                    errors.remove(entries_stale)
+
+    errors = sorted(set(errors))
+    if errors:
+        raise WorkflowError(
+            "Task publication gate is not fresh for finalization augmentation.",
+            exit_code=2,
+            payload={
+                "artifact_path": str(task_publication_path(task_dir)),
+                "errors": errors,
+                "allowed_finalization_path": plan_relative,
+            },
+        )
+    review_identity = payload["review_identity"]
+    return {
+        "status": "ok",
+        "artifact_path": str(task_publication_path(task_dir)),
+        "task_dir": str(task_dir),
+        "reviewed_head": review_identity["reviewed_head"],
+        "review_ref": review_identity["review_ref"],
+        "typed_exit": payload["typed_exit"],
+        "publication_ref": bindings["publication_ref"],
+        "facts_sha256": payload["facts_sha256"],
+        "artifact_sha256": hashlib.sha256(
+            task_publication_path(task_dir).read_bytes()
+        ).hexdigest(),
+        "finalization_owned_delta": [plan_relative],
     }
 
 
@@ -16418,10 +18010,11 @@ PRODUCTION_MIGRATION_SKILL_IDS = (
     "guru-create-task-commit",
 )
 BRANCH_REVIEW_SKILL_ID = "guru-review-branch"
+TASK_PUBLICATION_SKILL_ID = "guru-review-task-publication"
 PUBLIC_MIGRATION_SKILL_IDS = (
     STAGE0_MIGRATION_SKILL_IDS
     + PRODUCTION_MIGRATION_SKILL_IDS
-    + (BRANCH_REVIEW_SKILL_ID,)
+    + (BRANCH_REVIEW_SKILL_ID, TASK_PUBLICATION_SKILL_ID)
 )
 STAGE0_LEGACY_SKILL_IDS = PRODUCTION_MIGRATION_SKILL_IDS
 STAGE0_MIGRATION_MANIFEST = Path("migrations/stage0-minimal-handoff.json")
@@ -19832,15 +21425,18 @@ def _validate_skill_source(
             for entry in active.values()
         ):
             errors.append("active registry contains a legacy, unknown, or missing I/O contract state")
-        current_active_ids = stage0_ids | production_ids | {BRANCH_REVIEW_SKILL_ID}
+        current_active_ids = stage0_ids | production_ids | {
+            BRANCH_REVIEW_SKILL_ID,
+            TASK_PUBLICATION_SKILL_ID,
+        }
         if active_ids == current_active_ids:
             exit_count = sum(
                 len(interface.get("external_exits", []))
                 for interface in interfaces.values()
                 if isinstance(interface.get("external_exits"), list)
             )
-            if len(active_ids) != 10 or exit_count != 39:
-                errors.append("current active Skill closure must remain exactly 10 Skills and 39 exits")
+            if len(active_ids) != 11 or exit_count != 42:
+                errors.append("current active Skill closure must remain exactly 11 Skills and 42 exits")
 
     workflow_stat = None
     if not require_workflow:
@@ -20999,6 +22595,8 @@ def production_owner_result(
     artifact_name = (
         PLANNING_APPROVAL_ARTIFACT
         if skill_id == "guru-approve-task-plan"
+        else PR_READINESS_ARTIFACT
+        if skill_id == TASK_PUBLICATION_SKILL_ID
         else "review-gate.json"
         if skill_id == BRANCH_REVIEW_SKILL_ID
         else PHASE2_CHECK_ARTIFACT
@@ -21072,6 +22670,18 @@ def production_owner_result(
                     expected_exit=result.get("typed_exit"),
                 ))
             result_task_ref = result.get("task_dir")
+        elif skill_id == TASK_PUBLICATION_SKILL_ID:
+            checked = cmd_check_task_publication_review(
+                argparse.Namespace(
+                    root=str(root),
+                    task=repo_relative(root, task_dir),
+                    expected_exit=result.get("typed_exit"),
+                    direct_runtime_inputs=[
+                        str(getattr(args, "input", "") or ""),
+                    ],
+                )
+            )
+            result_task_ref = result.get("task_dir")
         else:
             raise WorkflowError("Unsupported production owner package.", exit_code=2)
     except WorkflowError as exc:
@@ -21088,6 +22698,32 @@ def production_owner_result(
             and result.get("review_intent") == public_input.get("review_intent")
             and result.get("base_ref") == public_input.get("base_ref")
             and result.get("head") == public_input.get("committed_head")
+        )
+    elif skill_id == TASK_PUBLICATION_SKILL_ID:
+        input_matches = (
+            result.get("mode") == public_input.get("mode")
+            and result.get("profile") == public_input.get("profile")
+            and result.get("review_intent") == public_input.get("review_intent")
+            and (
+                (
+                    public_input.get("profile") == "publication_review_stale"
+                    and result.get("stale_reason")
+                    == public_input.get("stale_reason")
+                    and result.get("reentry_context")
+                    == public_input.get("reentry_context")
+                    and isinstance(
+                        result.get("supersedes_publication_ref"),
+                        str,
+                    )
+                    and bool(result.get("supersedes_publication_ref"))
+                )
+                or (
+                    (result.get("review_identity") or {}).get("reviewed_head")
+                    == public_input.get("reviewed_head")
+                    and (result.get("review_identity") or {}).get("review_ref")
+                    == public_input.get("review_ref")
+                )
+            )
         )
     else:
         semantic = result.get("semantic_review")
@@ -21476,6 +23112,47 @@ def stage0_build_output(
                     if isinstance(item, dict) and item.get("proposal_ref")
                 ],
             })
+    elif skill_id == TASK_PUBLICATION_SKILL_ID and owner_result is not None:
+        bindings = (
+            owner_result.get("deterministic_bindings")
+            if isinstance(owner_result.get("deterministic_bindings"), dict)
+            else {}
+        )
+        semantic = (
+            owner_result.get("semantic_review")
+            if isinstance(owner_result.get("semantic_review"), dict)
+            else {}
+        )
+        if exit_id == "ready":
+            values.update(
+                {
+                    "task_ref": public_input.get("task_ref"),
+                    "reviewed_head": (owner_result.get("review_identity") or {}).get("reviewed_head"),
+                    "publication_ref": bindings.get("publication_ref"),
+                }
+            )
+        elif exit_id == "return_to_task_work":
+            values.update(
+                {
+                    "task_ref": public_input.get("task_ref"),
+                    "finding_refs": [
+                        str(item.get("finding_ref"))
+                        for item in semantic.get("findings", [])
+                        if isinstance(item, dict)
+                        and item.get("route_class") == "task_work"
+                        and item.get("status") == "open"
+                        and item.get("finding_ref")
+                    ],
+                    "resume_target": "phase-2",
+                }
+            )
+        elif exit_id == "blocked":
+            values.update(
+                {
+                    "reason_code": owner_result.get("reason_code"),
+                    "remediation": owner_result.get("remediation"),
+                }
+            )
 
     properties = schema.get("properties")
     required = schema.get("required")
@@ -21580,7 +23257,10 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
     else:
         public_input = stage0_structured_input(skill_id, root, package, interface, args.input)
         if skill_id in {
-            "guru-approve-task-plan", "guru-check-task", BRANCH_REVIEW_SKILL_ID,
+            "guru-approve-task-plan",
+            "guru-check-task",
+            BRANCH_REVIEW_SKILL_ID,
+            TASK_PUBLICATION_SKILL_ID,
         }:
             owner_result, owner_plan = production_owner_result(
                 skill_id, root, args, public_input
@@ -24012,6 +25692,20 @@ def resolve_closeout_pre_draft_state(
     readiness_path = task_dir / PR_READINESS_ARTIFACT
     if not plan_path.exists() and not readiness_path.exists():
         return "prepared"
+    if not plan_path.exists() and readiness_path.is_file():
+        readiness = read_json(readiness_path)
+        if (
+            readiness.get("skill_id") == TASK_PUBLICATION_SKILL_ID
+            and "publish_inputs" not in readiness
+        ):
+            cmd_check_task_publication_review(
+                argparse.Namespace(
+                    root=str(root),
+                    task=repo_relative(root, task_dir),
+                    expected_exit="ready",
+                )
+            )
+            return "prepared"
     if not plan_path.is_file() or not readiness_path.is_file():
         raise WorkflowError("Interrupted closeout has an incomplete plan/readiness pair.", exit_code=2)
     if validate_closeout_plan(read_json(plan_path)) != plan:
@@ -25301,6 +26995,7 @@ def apply_active_closeout_month_supersession(
         title=plan["publish"]["title"],
         draft=True,
         closeout_plan_digest=plan["plan_digest"],
+        allow_closeout_digest_replacement=True,
     )
     write_json(readiness_path, readiness)
     return "evidence_ready" if committed else str(supersession["prior_state"])
@@ -32404,6 +34099,26 @@ def build_parser() -> argparse.ArgumentParser:
     check_phase2.add_argument("--json", action="store_true")
     check_phase2.add_argument("--task")
 
+    publication = sub.add_parser("record-task-publication-review")
+    publication.add_argument("--root")
+    publication.add_argument("--json", action="store_true")
+    publication.add_argument("--task")
+    publication.add_argument(
+        "--input",
+        required=True,
+        help="AI-authored guru-review-task-publication semantic review JSON file, or - for stdin.",
+    )
+    publication.add_argument("--dry-run", action="store_true")
+
+    check_publication = sub.add_parser("check-task-publication-review")
+    check_publication.add_argument("--root")
+    check_publication.add_argument("--json", action="store_true")
+    check_publication.add_argument("--task")
+    check_publication.add_argument(
+        "--expected-exit",
+        choices=sorted(TASK_PUBLICATION_CONSUMERS),
+    )
+
     assignment = sub.add_parser("record-agent-assignment")
     assignment.add_argument("--root")
     assignment.add_argument("--json", action="store_true")
@@ -32644,6 +34359,10 @@ def main() -> int:
             payload = cmd_record_phase2_check(args)
         elif args.command == "check-phase2-check":
             payload = cmd_check_phase2_check(args)
+        elif args.command == "record-task-publication-review":
+            payload = cmd_record_task_publication_review(args)
+        elif args.command == "check-task-publication-review":
+            payload = cmd_check_task_publication_review(args)
         elif args.command == "record-agent-assignment":
             payload = cmd_record_agent_assignment(args)
         elif args.command == "check-agent-assignment":

@@ -341,8 +341,8 @@ machine-local hidden state.
 
 All three public README files describe `production-minimal-handoff-v1` as a
 separate atomic unit containing planning, check, and commit with ten profiles
-and 11 exits. They state that all ten active packages now use Interface 1.3
-`minimal_handoff`, the combined current closure is 10-by-39, and the Stage 0
+and 11 exits. They state that all eleven active packages now use Interface 1.3
+`minimal_handoff`, the combined current closure is 11-by-42, and the Stage 0
 manifest remains frozen at 6-by-24. They publish discovery, invocation, eval,
 pre-#146 upgrade, update/reapply, and drift-validation commands.
 
@@ -369,14 +369,46 @@ that the existing target must be regular and trackable, a successful
 different-byte replacement records `superseded_snapshot_sha256`, failed
 pre-write validation preserves prior bytes, and same-byte retry is idempotent.
 
-After #131, public READMEs describe ten active Skills and 39 exits, identify
-`guru-review-branch` as the Phase 3.5 semantic owner, and show contract
+After #116, public READMEs describe eleven active Skills and 42 exits, identify
+`guru-review-branch` as the Phase 3.5 semantic owner and
+`guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
 They show only minimal `exit_id` DTOs and explain that review artifacts remain
 private.
 
-They also state that `passed` points to planned
-`guru-review-task-publication`; no target schema/profile/authoring contract is
-claimed, and invocation fails closed until that package is activated. The
-production migration identity and three-Skill/11-exit membership remain
-unchanged even though its authoring-seed inventory grows to four.
+They also state that Branch Review `passed` points to active
+`guru-review-task-publication` through the target-owned authoring seed. The
+workflow caller authors initial task-local `pr-body.md` and
+`finish-summary-index.json` candidates before invocation without deciding
+readiness; only publication `ready` points to planned `guru-finalize-task` and
+fails closed until #118 activates it. The production migration identity and
+three-Skill/11-exit membership remain unchanged even though its
+authoring-seed inventory grows to four.
+
+## Task Publication Review Documentation
+
+All three public README files describe active Interface 1.3 semantic
+`guru-review-task-publication`, its two target-owned input profiles, runtime
+commands `record-task-publication-review` /
+`check-task-publication-review`, public dispatcher invocation, and three
+minimal exits. They state that `ready` targets planned
+`guru-finalize-task`, `return_to_task_work` repeats implementation through
+Branch Review, and `blocked` stops.
+
+Docs identify task-local `pr-readiness.json` as the sole semantic gate under
+schema `guru-task-publication-readiness-1.0`, distinguish AI review,
+deterministic current bindings, and optional finalization-owned
+`publish_inputs`, and state that a legacy deterministic `ready=true` snapshot
+cannot pass. They do not expose artifact bodies or duplicate the package's
+ten-dimension review and metadata revision procedure.
+
+README closure numbers are eleven active Skills and 42 exits. The separate
+`production-minimal-handoff-v1` remains three Skills/11 exits; the Stage 0
+manifest remains six Skills/24 exits. The #131 `passed` bytes remain unchanged
+while its target-owned authoring partition is documented.
+
+Install/update text requires canonical/installed/shared/Codex/Cursor/Claude
+byte identity, source and installed validation, real-wrapper eval, workflow
+consumer uniqueness, preset reapply after `trellis update`, dogfood drift, and
+zero unresolved `.new`/`.bak`. It explicitly leaves remote branch marketplace
+verification to finish-work and does not claim #118, #119, or #132 completion.

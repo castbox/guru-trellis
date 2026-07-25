@@ -65,12 +65,30 @@ def assert_branch_review_route_only(testcase: unittest.TestCase, path: Path) -> 
     ):
         testcase.assertIn(field, text, path)
     for route in (
-        "`passed` targets planned `guru-review-task-publication`",
+        "`passed` enters global Phase 3.6",
+        "mandatory invoke the active `guru-review-task-publication` package",
+        "`ready` exit targets planned `guru-finalize-task`",
+        "`return_to_task_work` targets workflow `guru-task-publication-work-router`",
+        "publication `blocked` targets stop `task-publication-review-blocked`",
         "`implementation_required` targets workflow `guru-branch-review-implementation-router`",
         "`scope_confirmation_required` targets workflow `guru-branch-review-scope-router`",
-        "`blocked` targets stop `branch-review-blocked`",
+        "Branch Review `blocked` targets stop `branch-review-blocked`",
     ):
         testcase.assertIn(route, text, path)
+    for phrase in (
+        "workflow caller authors the initial task-local `pr-body.md` and "
+        "`finish-summary-index.json` candidates",
+        "entry preparation only",
+        "does not decide PR-body sufficiency",
+        "If either candidate is absent or objectively malformed, stop fail closed",
+        "only its declared target-owned authoring fields",
+    ):
+        testcase.assertIn(phrase, text, path)
+    testcase.assertNotIn(
+        "targets planned `guru-review-task-publication`",
+        text,
+        path,
+    )
     for forbidden in (
         "review-branch.sh",
         "check-review-gate.sh",
@@ -459,6 +477,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 "codex",
                 "claude",
                 "cursor",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
             ],
         )
 
@@ -495,6 +517,20 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-evals.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-evals.sh", os.X_OK))
+        self.assertTrue(
+            os.access(
+                self.repo
+                / ".trellis/guru-team/scripts/bash/record-task-publication-review.sh",
+                os.X_OK,
+            )
+        )
+        self.assertTrue(
+            os.access(
+                self.repo
+                / ".trellis/guru-team/scripts/bash/check-task-publication-review.sh",
+                os.X_OK,
+            )
+        )
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/sync-base.sh", os.X_OK))
@@ -715,7 +751,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 92)
+        self.assertEqual(len(managed_assets), 94)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -981,7 +1017,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('verify_contract_wording_standalone_profiles "after-update"', verifier)
         self.assertIn('verify_change_request_review_package "initial"', verifier)
         self.assertIn('verify_change_request_review_package "after-update"', verifier)
-        self.assertIn('"planned_skill_ids"] == ["guru-review-task-publication"]', verifier)
+        self.assertIn('"planned_skill_ids"] == ["guru-finalize-task"]', verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"', verifier)
         self.assertIn('test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"', verifier)
         self.assertIn('test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
@@ -1012,7 +1048,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 92", verifier)
+        self.assertIn("assert len(assets) == 94", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
             self.assertIn(
@@ -1564,7 +1600,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.21")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.22")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -1588,6 +1624,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("run-skill-command", public_api["companion_scripts"])
         self.assertIn("record-planning-approval", public_api["companion_scripts"])
         self.assertIn("check-planning-approval", public_api["companion_scripts"])
+        self.assertIn("record-task-publication-review", public_api["companion_scripts"])
+        self.assertIn("check-task-publication-review", public_api["companion_scripts"])
         self.assertIn(
             "guru-planning-approval-2.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
@@ -1603,9 +1641,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
         for field, expected_count in (
-            ("public_input_schema_ids", 26),
-            ("typed_output_schema_ids", 39),
-            ("private_artifact_schema_ids", 11),
+            ("public_input_schema_ids", 28),
+            ("typed_output_schema_ids", 42),
+            ("private_artifact_schema_ids", 12),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -1658,12 +1696,13 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-review-branch",
                 "guru-review-change-request",
                 "guru-review-contract-wording",
+                "guru-review-task-publication",
                 "guru-sync-base",
             ],
         )
         self.assertEqual(
             public_api["skill_contracts"]["planned_skill_ids"],
-            ["guru-review-task-publication"],
+            ["guru-finalize-task"],
         )
         self.assertIn(
             "guru-base-sync-result-1.0",
@@ -1679,6 +1718,10 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertIn(
             "guru-change-request-review-1.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-task-publication-readiness-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         schema_relative = Path("schemas/contract-wording-review.schema.json")

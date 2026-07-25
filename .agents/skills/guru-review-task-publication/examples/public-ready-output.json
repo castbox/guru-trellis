@@ -1,0 +1,6 @@
+{
+  "exit_id": "ready",
+  "task_ref": ".trellis/tasks/07-24-example-publication",
+  "reviewed_head": "0123456789abcdef0123456789abcdef01234567",
+  "publication_ref": "publication-current:example"
+}

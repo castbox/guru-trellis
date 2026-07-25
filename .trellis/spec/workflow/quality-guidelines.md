@@ -102,7 +102,7 @@ as production serializer input.
 
 Repeat the same matrix for `production-minimal-handoff-v1`: exactly three
 packages, ten profiles, and 11 exits. Then validate the combined live-active
-closure at ten Skills and 39 exits. Negative tests cover missing, extra,
+closure at eleven Skills and 42 exits. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or legacy entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Stage 0/production
@@ -118,7 +118,7 @@ closed loop. Existing
 commit transaction tests remain mandatory because the new candidate builder is
 not authorization to replace or weaken the executor.
 
-The four `skill_input_authoring_seed` edges have positive partition/projection
+The five `skill_input_authoring_seed` edges have positive partition/projection
 probes and negative overlap, overwrite, missing, extra, unknown, private-lookup,
 runtime-semantic-reconstruction, and fifth-operation fixtures. Each positive
 probe independently validates seed and authoring example keys, proves disjoint
@@ -438,6 +438,15 @@ post-commit fixture must include `agent-assignment.json` in implementation
 handoff and distinguish legal review assignment/status/completed/round metadata
 tail from implementation/check/recovery drift.
 
+Publication regression coverage must additionally reject missing stale reason
+or re-entry context, a missing/mismatched prior publication identity, any
+`ready` gate with a failed or stale one of the twelve entry bindings, open
+objects hidden by the private schema, duplicate finding refs that remain
+schema-valid, and empty finding scope/evidence/affected/closure fields.
+Source and installed real-wrapper cases must prove stale replacement and
+durable-drift return behavior without allowing the runtime to choose the
+semantic route.
+
 Before Branch Review Gate, obtain an independent Agent review of the full branch
 diff from the task's intake base branch, then record the result with
 `review-branch.sh --review-source independent-agent`. Main-session self-review
@@ -582,6 +591,50 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  10-Skill/39-exit active closure while the production activation unit remains
+  11-Skill/42-exit active closure while the production activation unit remains
   three Skills/11 exits. Update and preset reapply must reproduce that closure
   with zero unresolved `.new` or `.bak`.
+
+## Task Publication Review Quality
+
+Phase 3 publication review uses active semantic
+`guru-review-task-publication`. The AI reviews diff/outcome consistency, Issue
+scope closure, PR body quality, validation claims, Branch Review summary, Docs
+SSOT reconciliation, safety/deployment impact, finish-summary semantics,
+metadata-tail integrity, and artifact-binding freshness. Every dimension has
+current evidence and every finding has a stable ref, scope basis, route,
+status, and closure evidence.
+
+Global-route tests must prove the normal authoring order independently of eval
+fixtures: Branch Review `passed` first enters caller-owned creation of current
+`pr-body.md` and `finish-summary-index.json` candidates, missing candidates
+fail closed before invocation, and only then may the active publication owner
+run. Tests must also prove Phase 3.7 never first creates or mutates either file
+after `ready`; an eval adapter that prewrites content is not sufficient
+workflow-order evidence.
+
+Metadata-only corrections require a reread/rescan and complete fresh review
+inside the Skill. Any durable implementation drift returns to task work and
+must repeat implementation, Phase 2, task commit, Branch Review, and
+publication review. A current-scope defect cannot be downgraded to an
+observation or follow-up.
+
+Exit-quality tests exercise the complete semantic union in both schema and
+runtime: `ready` rejects any non-passed conclusion, `return_to_task_work`
+requires open task-work evidence bound to a finding dimension, and `blocked`
+requires blocked dimension/conclusion plus matching open external-blocker
+evidence. Normal AI-authored contradictory combinations must fail before the
+recorder writes and must remain invalid to the checker and public wrapper.
+
+Package/runtime/eval tests cover both profiles and modes, three exits, stale
+re-entry, metadata correction to fresh pass, metadata correction that reveals
+durable drift, legacy readiness rejection, and finalization augmentation only
+after a passing gate. Finalization tests prove that adding only the exact
+validated closeout plan reruns all twelve entries, changes only the repository
+and derived review-range binding, and rejects any additional metadata drift.
+Shared, Codex, Claude, and Cursor consume byte-identical
+canonical corpus bytes; every semantic case executes the real public wrapper,
+and actual exit selects the schema before grader comparison.
+
+Source/installed/platform/throwaway checks assert eleven active Skills and 42
+exits while `production-minimal-handoff-v1` remains three Skills/11 exits.

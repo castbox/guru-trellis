@@ -1,0 +1,615 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "004",
+  "task": {
+    "id": "116-review-task-publication",
+    "path": ".trellis/tasks/07-24-116-review-task-publication",
+    "status": "in_progress",
+    "branch": "codex/116-review-task-publication"
+  },
+  "issue": {
+    "primary_issue": 116,
+    "ledger_sha256": "034f7601ec87a2ad382d5bf61a8ca7c3d9be45e2952ba482e6f8dfdd79264080"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+      "sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
+      "size": 38810
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      "sha256": "f041601cbae0d7f2cba7d5ecaa10994144cc00fe0510f12a821d5c5cf843eec2",
+      "size": 110073
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+      "sha256": "034f7601ec87a2ad382d5bf61a8ca7c3d9be45e2952ba482e6f8dfdd79264080",
+      "size": 6494
+    },
+    "task": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task.json",
+      "sha256": "b9b2fb7e53a7e40d5c10d3a217d88c1719f2ca1b0a2a48ed93521676061a220c",
+      "size": 679
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6c64879670bbafd2a19505333b186f897ad1f05c",
+        "worktree_sha256": "50b7ee6c0353173d001553f73ad707f8695b1c05c0a0954667a6d93572f4cf5b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a575d71ef87f18148da4ccc493e89f69b9d5d331",
+        "worktree_sha256": "f7a043e184776c868014050806fc8b9a39e358fc816c9bd7cf38ce4c406498c9",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f9302c198dc9e29dc80d7b8d71b5036b7aec79c3",
+        "worktree_sha256": "5f832ff61a2c3ca5b020d681d9ccf7dc4364862e8b6a6e7d89e5c4e2e6ebc3d7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "a886ae5e33dccd5c7c69ba8d074ea46ee0a7f80ec2ffa9f49f7fa1ac58789d02",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4c414e0b045ef71ceb0ead9e6d1b8e367514c350",
+        "worktree_sha256": "828d35472eac2e084a9d5f293e3ea411a824a497d1d172b7a73e539b76b49ec3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9a9e0cc2692a60ecf21beb3189a0b0bd3ea1a771",
+        "worktree_sha256": "034f7601ec87a2ad382d5bf61a8ca7c3d9be45e2952ba482e6f8dfdd79264080",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "778a7263e868e070cb3011ab8feeaf5e50afb595",
+        "worktree_sha256": "f041601cbae0d7f2cba7d5ecaa10994144cc00fe0510f12a821d5c5cf843eec2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "e3b363fd4ba96daa0209a02e590f28704703cfae25938ea31b0d5c953c30accd",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f03ece534f392025fba1a7ba335c1bb9b3ccefcfa19411dac9d27494a1ecb096",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "691d7dc048ed51b0d679e602f008ee48660975ef2a4c4c92e418c799bbf47eee",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "e42b267a3912de8e64d95977b8c2b567373b0478a7479a24d3c2bda715bd7af8",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1747c1e7f8302b30523193738df420a7d09ceb77",
+        "worktree_sha256": "a3687bee0cbbe47f8438f2a2200ddb61e32a68ba61e5cb560ed17b6b3faf3303",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f924c07fb6738ea4d524fb5b8f3d1429eed19f59",
+        "worktree_sha256": "18c61ef5c39d51b49d323dce957a6e502970b985e7d5e25184bb3eb0bf385369",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "091fc7369ea55e583e676926400f2d0b3b99858a58980a281aa2ace883fcb15e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6a36d69e7208b282df5a09d37451cf891b3596d43f116e4720ed9899b39d60ca",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d58e70ee92acf1f2f6c5d957733c0e905ed46263",
+        "worktree_sha256": "4d40c4ec1c965d73ec98cddbe9310ecee26e29e4964d78d554d7d0d35b678ac1",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a575d71ef87f18148da4ccc493e89f69b9d5d331",
+        "worktree_sha256": "f7a043e184776c868014050806fc8b9a39e358fc816c9bd7cf38ce4c406498c9",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c8bf98e2f2c6903b2ee21e1e85cc999fdb3de17e",
+        "worktree_sha256": "3339b699598a17b725bd1606d61b641f49802064a1079c42bfcdeaaf17768f70",
+        "mode": "100644"
+      }
+    ],
+    "digest": "6563bb73d9e186377e60721d3bd8dfb34bd1baf688832db9c75551028e73ab44"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+    ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
+    ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+    ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+    ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
+    ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
+    ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+    ".trellis/tasks/07-24-116-review-task-publication/review.md",
+    ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
+    ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+    ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+    ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #116 修复 Phase 2 publication 元数据 freshness",
+    "body": "背景：\nPublication semantic review 合法补齐 issue ledger 的 acceptance 与 pending remote metadata 后，Phase 2 requirement provenance 仍绑定 ledger 全文件 digest，导致 metadata-only revision 被误判为 scope stale。\n\n变更：\n仅对 task-local issue-scope-ledger 的 requirement provenance 复用 issue number-set 投影；其它 label、非 task-local ledger 与非法 ledger 保持 full digest 或 fail closed，并补齐五项正常路径回归、implementation handoff、Phase 2 与 publication/Branch Review 历史证据。\n\n边界：\nPublic Skill I/O、typed exits、consumer mapping 与 semantic/script ownership 不变；guru-finalize-task 仍为 #118 planned consumer；未执行 push、PR、Issue close、archive、remote verifier、部署或 production write。\n\n验证：\nFresh Round11 通过 runtime 573/573（13 skipped）、Skill 174/174、preset 45/45、ownership 9/9、publication contracts 18x2、eval 7x2、六布局/六副本 parity、zero drift/sidecar，以及完整 throwaway fresh install/update/reapply。\n\nRefs #116",
+    "bytes": "fix(workflow): #116 修复 Phase 2 publication 元数据 freshness\n\n背景：\nPublication semantic review 合法补齐 issue ledger 的 acceptance 与 pending remote metadata 后，Phase 2 requirement provenance 仍绑定 ledger 全文件 digest，导致 metadata-only revision 被误判为 scope stale。\n\n变更：\n仅对 task-local issue-scope-ledger 的 requirement provenance 复用 issue number-set 投影；其它 label、非 task-local ledger 与非法 ledger 保持 full digest 或 fail closed，并补齐五项正常路径回归、implementation handoff、Phase 2 与 publication/Branch Review 历史证据。\n\n边界：\nPublic Skill I/O、typed exits、consumer mapping 与 semantic/script ownership 不变；guru-finalize-task 仍为 #118 planned consumer；未执行 push、PR、Issue close、archive、remote verifier、部署或 production write。\n\n验证：\nFresh Round11 通过 runtime 573/573（13 skipped）、Skill 174/174、preset 45/45、ownership 9/9、publication contracts 18x2、eval 7x2、六布局/六副本 parity、zero drift/sidecar，以及完整 throwaway fresh install/update/reapply。\n\nRefs #116\n",
+    "sha256": "1b9535c8f382ed5fb8cb130c5bd741f88c13172479783d256ffbecc86fa18a29"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "主会话已复核 exact 18-path dirty snapshot、Issue #116 ledger、fresh Round11 Phase 2 pass、中文 Conventional Commit message、Docs SSOT、四平台同步、upgrade/update、安全与部署边界；全部路径均为 task-reviewed，无 unrelated、ambiguous、unreviewed 或已暂存路径。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户在 current #116 workflow 中明确回复“确认继续”；授权仅绑定本次 sequence 004 本地 finding-fix commit、上述 18 个 reviewed paths 及自动生成的 plan artifact，不包含 push、PR、Issue close、archive、finalization、history rewrite 或 force 操作。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-25T06:56:42Z",
+    "plan_digest": "6ba4f2968a4b3f3584c9c48db99ee3c0707d28b80691fb344034535437f7290f"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-25T06:57:06Z",
+    "commit_sha": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+    "parent": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+    "message_sha256": "1b9535c8f382ed5fb8cb130c5bd741f88c13172479783d256ffbecc86fa18a29",
+    "committed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+      ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
+      ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+      ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+      ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
+      ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
+      ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+      ".trellis/tasks/07-24-116-review-task-publication/review.md",
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "ef49ed8b5b33322b39ed4fe0f3cc399e72325174",
+      "actual_tree": "ef49ed8b5b33322b39ed4fe0f3cc399e72325174",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "5b64c34162334d113e3140969c629604ae9f994b",
+          "expected_mode": "100644",
+          "actual_blob": "5b64c34162334d113e3140969c629604ae9f994b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "70817412e7d5e88442a6e4a14309c0c7fc87ede4",
+          "expected_mode": "100755",
+          "actual_blob": "70817412e7d5e88442a6e4a14309c0c7fc87ede4",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+          "expected_blob": "295fdb189b1c0292d5c7ef3d5a991b8ead3bcc37",
+          "expected_mode": "100644",
+          "actual_blob": "295fdb189b1c0292d5c7ef3d5a991b8ead3bcc37",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
+          "expected_blob": "a4b9f37fc1bb03f84c02ee683705c45c1465550b",
+          "expected_mode": "100644",
+          "actual_blob": "a4b9f37fc1bb03f84c02ee683705c45c1465550b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+          "expected_blob": "039b1ca9c2fd29e58d8c7d0a2092aef91a0bbc60",
+          "expected_mode": "100644",
+          "actual_blob": "039b1ca9c2fd29e58d8c7d0a2092aef91a0bbc60",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+          "expected_blob": "5975bf0cd42b51fdc672374c732f86eaf9adb04a",
+          "expected_mode": "100644",
+          "actual_blob": "5975bf0cd42b51fdc672374c732f86eaf9adb04a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+          "expected_blob": "02e3697a034987f4a7c46827dbc9c0f64b126577",
+          "expected_mode": "100644",
+          "actual_blob": "02e3697a034987f4a7c46827dbc9c0f64b126577",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
+          "expected_blob": "a6501d2e2fb40879532d5bc4c5cf3b939915633f",
+          "expected_mode": "100644",
+          "actual_blob": "a6501d2e2fb40879532d5bc4c5cf3b939915633f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+          "expected_blob": "2a9c7533d87f90198374a7d9114fc7d45adf5b42",
+          "expected_mode": "100644",
+          "actual_blob": "2a9c7533d87f90198374a7d9114fc7d45adf5b42",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
+          "expected_blob": "2225ba97567d89bdbbd92325d76cdb4746cef1fe",
+          "expected_mode": "100644",
+          "actual_blob": "2225ba97567d89bdbbd92325d76cdb4746cef1fe",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
+          "expected_blob": "3460b4b7e684759ab5cc1f51d5ddf0328e3992b3",
+          "expected_mode": "100644",
+          "actual_blob": "3460b4b7e684759ab5cc1f51d5ddf0328e3992b3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+          "expected_blob": "869fa775120ef55778b625e2bf0e0ec2f5e4ba14",
+          "expected_mode": "100644",
+          "actual_blob": "869fa775120ef55778b625e2bf0e0ec2f5e4ba14",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+          "expected_blob": "2f05b2623ce5d19a385e6cc1a58e7f4d6e716ad9",
+          "expected_mode": "100644",
+          "actual_blob": "2f05b2623ce5d19a385e6cc1a58e7f4d6e716ad9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
+          "expected_blob": "b607e8f4088f652cc066d300958d19e2f4e2bfeb",
+          "expected_mode": "100644",
+          "actual_blob": "b607e8f4088f652cc066d300958d19e2f4e2bfeb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+          "expected_blob": "871773056c988834a711ac05b002f93c9aea9538",
+          "expected_mode": "100644",
+          "actual_blob": "871773056c988834a711ac05b002f93c9aea9538",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+          "expected_blob": "a6dde25b68766163305b8e0aff9bb8214040e4f3",
+          "expected_mode": "100644",
+          "actual_blob": "a6dde25b68766163305b8e0aff9bb8214040e4f3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+          "expected_blob": "5fdac40915a1f53784309308673d6137368e5dc3",
+          "expected_mode": "100644",
+          "actual_blob": "5fdac40915a1f53784309308673d6137368e5dc3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "70817412e7d5e88442a6e4a14309c0c7fc87ede4",
+          "expected_mode": "100755",
+          "actual_blob": "70817412e7d5e88442a6e4a14309c0c7fc87ede4",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "d9fe47d56a13d45c6e3d8ab150b57d9137a240f8",
+          "expected_mode": "100644",
+          "actual_blob": "d9fe47d56a13d45c6e3d8ab150b57d9137a240f8",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}

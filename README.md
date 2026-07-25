@@ -262,7 +262,7 @@ Public Skill interface 采用独立版本共存：1.2 是冻结的 legacy contra
 `interface_schema_id` 与 `io_contract_state=legacy|minimal_handoff`，validator 按该 exact
 pair 选 schema，不从文件或 optional 字段猜版本。#144 的 Interface 1.2 结论只描述冻结
 历史 snapshot，不是当前 active
-状态。当前十个 active Skills / 39 exits 全部使用 Interface 1.3；
+状态。当前十一个 active Skills / 42 exits 全部使用 Interface 1.3；
 `stage0-minimal-handoff-v1` 已把 `guru-sync-base`、
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request` 与
@@ -270,12 +270,25 @@ pair 选 schema，不从文件或 optional 字段猜版本。#144 的 Interface 
 `guru-team-skill-interface-1.3 + minimal_handoff`；
 独立 `production-minimal-handoff-v1` 再把 `guru-approve-task-plan`、
 `guru-check-task`、`guru-create-task-commit` 三包、十个 profiles 与 11 exits 原子迁移到
-1.3。当前 active closure 为 10 Skills / 39 exits，`legacy_skill_ids=[]`，Stage 0 manifest
+1.3。`guru-review-branch` 之后的 `guru-review-task-publication` 以两个 closed
+profiles、三个 minimal exits 和唯一 task-local `pr-readiness.json` 负责 Phase 3.6
+publication semantic gate；`ready` 只向 planned `guru-finalize-task` 投影
+`task_ref/reviewed_head/publication_ref`。当前 active closure 为 11 Skills / 42 exits，
+`legacy_skill_ids=[]`，Stage 0 manifest
 仍保持 6 Skills / 24 exits。
 
+Branch Review `passed` 后，global workflow caller 先从 current reviewed evidence
+编写 task-local `pr-body.md` 与 `finish-summary-index.json` 初始候选，再 mandatory
+invoke active `guru-review-task-publication`。该 preparation 不判断内容充分性、Issue
+closure、十维结论、finding route 或 ready；这些 semantic judgment 仍只属于
+publication Skill。缺失或结构错误在 invocation 前失败关闭，Phase 3.7 不得在
+`ready` 后首次创建、重写或修改这两份已绑定内容。当前唯一 planned missing-Skill
+边界是 publication `ready -> guru-finalize-task`。
+
 Planning self-reentry、`guru-check-task:passed` 到 initial commit、commit
-self-reentry，以及 `guru-create-task-commit:committed` 到 active
-`guru-review-branch` 四条 semantic edge 使用 target-owned
+self-reentry、`guru-create-task-commit:committed` 到 active
+`guru-review-branch`，以及 `guru-review-branch:passed` 到 active
+`guru-review-task-publication` 五条 semantic edge 使用 target-owned
 `skill_input_authoring_seed`。Producer 仍只用既有
 `direct|select|rename|normalize` projection 生成 minimal seed；caller AI 独立编写其余
 required semantic fields。Validator 证明 seed/authoring 字段不相交、union 精确等于 target
@@ -505,7 +518,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.21`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.22`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -955,7 +968,7 @@ runtime locator。Native CLI 通过 trace helper 读取 projected `SKILL.md`、�
 wrapper stdout 与返回 DTO 一致时才产生 trace invariant；合法 DTO 无 receipt 为
 `execution_error`。Schema id 为 `guru-team-skill-eval-native-trace-1.0`，transcript 记录
 native argv、stdout/stderr、context 与 receipt locator；四平台 projection 内 eval/private
-runtime raw read 必须真实失败。十个 active packages 维护唯一 canonical
-corpora 并覆盖全部 39 exits/input profiles；Stage 0 的独立 24-exit corpus closure 保持不变。
+runtime raw read 必须真实失败。十一个 active packages 维护唯一 canonical
+corpora 并覆盖全部 42 exits/input profiles；Stage 0 的独立 24-exit corpus closure 保持不变。
 执行 `trellis update` 后需重新应用
 workflow/preset，运行 source/installed/platform checks 并清理所有 `.new`/`.bak`。

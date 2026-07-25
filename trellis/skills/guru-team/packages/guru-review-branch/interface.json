@@ -145,7 +145,18 @@
         "id": "publication_seed_input",
         "consumer": {"kind": "skill", "id": "guru-review-task-publication"},
         "payload_kind": "structured_json",
-        "contract": {"kind": "planned_skill_input_seed", "seed_fields": ["task_ref", "reviewed_head", "review_ref"]}
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-publication/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "publication_review",
+          "seed_fields": ["task_ref", "reviewed_head", "review_ref"],
+          "authoring_fields": ["profile", "mode", "review_intent"],
+          "authoring_example": {
+            "id": "publication_review_authoring",
+            "path": "examples/public-publication-review-authoring.json"
+          }
+        }
       },
       {
         "id": "implementation_required_workflow_input",

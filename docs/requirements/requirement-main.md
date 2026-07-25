@@ -44,8 +44,10 @@ GitHub issue / PR 历史，包括已 closed issue、已 merged PR、已 closed �
   dispatcher。#144 交付时，九个 production Skills 全部维持 1.2 `legacy`，1.3
   只由 mixed test-only fixture 验证；随后 #145 已把六个 Stage 0 Skills 及其 24 exits
   原子迁移到 `1.3+minimal_handoff`；#146 再通过独立 production manifest 将
-  planning/check/commit 三包、十个 profiles 与 11 exits 原子迁移到 1.3，live closure
-  达到 10 Skills / 39 exits，Stage 0 的 6/24 identity 保持不变。
+  planning/check/commit 三包、十个 profiles 与 11 exits 原子迁移到 1.3；#131
+  激活 Branch Review，#116 再激活 publication review，live closure 达到
+  11 Skills / 42 exits。Stage 0 的 6/24 identity 与 production 3/11 membership
+  保持不变。
 - Issue #110：Phase 0 在任何 repo/network semantic read 前 mandatory invoke
   `guru-sync-base`。Skill 拥有 selected-base resolve/sync/validate 闭环，workflow
   只消费 `synced` / `skipped` / `blocked`。
@@ -85,12 +87,13 @@ Canonical 资产：
 | 业务项目中文文档默认规则 | 业务项目 `.trellis/spec/**`、`.trellis/tasks/**`（含 `reviews/*.md` raw reports 与 `review.md` rollup）、`docs/**` durable docs、`00-bootstrap-guidelines` 生成或补齐的 docs SSOT，以及 workflow artifact human-readable 字段默认中文；literal token 可保留英文。 |
 | Phase 1 planning | Trellis task 创建后写中文 `prd.md` / `design.md` / `implement.md`，并定位同一个 `Docs SSOT Plan`；current wording pass 后 mandatory invoke `guru-approve-task-plan`。该 Skill 完成 adequacy/provenance/unusual proposal/AI Gate、展示三份 task-local 规划文档链接并取得独立 post-planning confirmation；Phase 0 handoff 或普通确认不能替代专用 proposal confirmation。只有 `approved` 进入 task activation。 |
 | Phase 2 execute/check | 默认 sub-agent mode 下实现由 `trellis-implement` / channel `implement` 完成并输出 handoff；official unchanged `trellis-check` / channel `check` 只提供 raw review evidence。Workflow 随后 mandatory invoke active semantic Skill `guru-check-task`，由该 Skill 独占完整 task-scope adequacy、scope qualification、current-scope severity、finding/full-rerun loop、Docs SSOT reconciliation、最终 AI Gate、`phase2-check.json` 与四个 typed exits。实现/check 都必须消费 Phase 1 `Docs SSOT Plan`，按 `ssot_first` / `delta_first` / `bootstrap_or_repair_docs` / `no_docs_update_needed` 策略说明 docs 同步结果并复核 durable docs / task artifacts / code / test 一致性；不用 worker 输出、主会话自检、coverage flags、命令 exit 0 或 recorder/checker 成功替代 semantic pass。 |
-| Phase 3 task work commit / review / finish / publish | Final Phase 2 check 通过后，workflow mandatory invoke `guru-create-task-commit`；skill 由 AI 审查 exact stage scope 与中文消息，由 deterministic validator/executor 校验 fresh evidence、只提交计划路径并验证真实 commit。任何 merge/cherry-pick/revert/rebase/sequencer/am state 都必须在 candidate、stage 与 commit 边界 fail closed；ordinary SHA-256/mode/delete、gitlink `gitlink_head` 和 validated candidate deterministic bytes 是 exact-index authority。Snapshot 以 `renamed_from` 和 `copied_from` 区分 rename/copy；只有 rename source 随 reviewed destination 进入 exact stage 并被删除，copy source 只能作为自身 independently reviewed path 进入计划，否则保留或因 unrelated staged content 阻断。Executor 在 isolated index/detached transaction HEAD 上执行真实 hooks 与 `git commit`，校验 commit/worktree/candidate/operation/live-index preimage 后，持有真实 `index.lock` sentinel、CAS 后立即复核的 loose-ref guard 与 candidate guard 完成 conditional ref/candidate publication/rollback；独立 final-index temp 在 sentinel 存在时发布，ref/index/result 已为 transaction state 且 guards 仍持有时的最终 candidate inode/content identity read 是线性化点。Read 前并发 C 触发 owned ref/index rollback 并保留 C；read 后 C 是 later operation，immutable commit blob/returned result digest 仍授权 `committed`。`committed` 进入 Branch Review，`revision-required` 重入本 skill，`blocked` fail closed；finding fix 必须回到实现和完整 Phase 2，再创建新 sequence。随后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff；每轮保留 task-local中文 `reviews/*.md` raw report，最终中文 `review.md` 作为 rollup 汇总并链接 raw reports，再经过 Branch Review Gate；之后由 `trellis-finish-work` 完成 archive 与 publish。 |
-| Public Skill typed handoff | Interface 1.2 与 1.3 独立共存；registry active row exact 选择 `1.2+legacy` 或 `1.3+minimal_handoff`。`stage0-minimal-handoff-v1` 将六包/24 exits 原子激活到 1.3，`production-minimal-handoff-v1` 独立将 planning/check/commit 三包/十 profiles/11 exits 激活到 1.3；active `legacy_skill_ids=[]`，当前 closure 为 10/39，Stage 0 identity 保持 6/24。1.3 structured input 使用 closed schema/discriminator/`oneOf`；每个 exit 独立 output schema/example，每个字段绑定直接 consumer use，consumer input 由 Skill/workflow/stop 自身拥有，projection 只允许 direct/select/rename/closed normalize。Runtime/private checkpoint 与 gate evidence 不进入 public DTO。`committed` 精确为 `exit_id`/`task_ref`/`base_ref`/`committed_head` 并交给 active `guru-review-branch`；candidate builder 只生成 private plan并复用既有 transaction。`discover-skill-contract`、真实 wrappers 与 canonical corpora 覆盖全部 profiles/exits。两个 manifests、registry、workflow、extension、source/installed/selected-platform copies 必须 set-equal，preset transaction、pre-activation upgrade、update/reapply 不得产生 mixed graph 或 sidecar。Existing task 由 owner re-entry，archive 保持只读。 |
+| Phase 3 task work commit / review / publication / finish | Final Phase 2 后依次 mandatory invoke `guru-create-task-commit` 与 `guru-review-branch`。Branch Review `passed` 后，workflow caller 先基于 current reviewed evidence 编写 task-local `pr-body.md` 与 `finish-summary-index.json` 初始候选；这只是 publication entry preparation，不判断充分性、Issue closure、十维结论、finding route 或 ready。两份 current 候选存在后，以不变 DTO bytes 和 target-owned authoring seed mandatory invoke active `guru-review-task-publication`；该 Skill 独占十维 publication semantic review、metadata-only 内部修订、唯一分层 `pr-readiness.json` 和 `ready` / `return_to_task_work` / `blocked`。缺失/结构错误在 invocation 前失败关闭，Phase 3.7 不得在 `ready` 后首次创建或修改两份 content。非 metadata drift 必须回 implementation -> Phase 2 -> commit -> Branch Review；legacy deterministic `ready=true` 不能代表 pass。`ready` 仅指向 planned `guru-finalize-task`，#116 不执行 push、PR mutation、archive 或 finalization。 |
+| Public Skill typed handoff | Interface 1.3 current closure 为 11/42；Stage 0 保持 6/24，production manifest 保持 3 Skills/11 exits。`guru-review-task-publication` 拥有 `publication_review` 与 `publication_review_stale` 两个 closed profile、三个独立 minimal exits 与 private `guru-task-publication-readiness-1.0`。#131 只投影 `task_ref/reviewed_head/review_ref`，caller 编写剩余 semantic fields；`ready` 只投影 `task_ref/reviewed_head/publication_ref` 给 planned `guru-finalize-task`。Public DTO 不暴露 gate body、findings、artifact paths 或 digest bundles。 |
 | Auto-bootstrap 日常入口 | 用户日常直接描述任务、贴 issue URL 或说 issue number；`trellis-start` 是 fallback / explicit orientation，不是每个任务的必需入口。 |
 
 Production semantic handoff 的 planning self-reentry、check passed 到 initial
-commit、commit self-reentry，以及 commit `committed` 到 active Branch Review 四条 edge
+commit、commit self-reentry、commit `committed` 到 active Branch Review，以及 Branch
+Review `passed` 到 active Task Publication Review 五条 edge
 使用 target-owned
 `skill_input_authoring_seed`。Producer 只生成 minimal seed，caller AI 编写其余 required
 semantic fields；两组字段不相交、union 精确覆盖 target required set，无覆盖 merge 后完整
@@ -514,6 +517,15 @@ findings 与 hash/range/freshness 均由 owner runtime task-local 读取。
 只进入 observation/follow-up。Finding fix 必须重新经过 Phase 2、task commit 和本 Skill；
 全部 finding 关闭后必须由未参与 closure 的 fresh final reviewer 覆盖完整 current range。
 
-`passed` 只生成给 planned `guru-review-task-publication` 的三字段 seed；#131 不定义其
-schema/profile/authoring fields，目标缺失时 fail closed。Source/installed closure 为
-10 Skills/39 exits，production migration 仍是原 3 Skills/11 exits。
+#131 交付时，`passed` 只为当时尚未激活、仍为 planned
+`guru-review-task-publication` 的 target 生成三字段 seed；该交付不定义 target 的
+package/schema/profile/authoring fields，target package 当时缺失时按 planned bridge
+fail closed。#116 激活后，此历史边界已由 current active contract 替代：
+`guru-review-task-publication` 现为 active target，其 target-owned authoring-seed
+contract 与 target-owned package/interface
+拥有 input schema、`publication_review` profile 与
+`profile/mode/review_intent` authoring fields；#131 的 unchanged `passed` DTO bytes
+只投影 `task_ref/reviewed_head/review_ref` seed，并与 caller-authored fields
+disjoint、no-overwrite merge。现在只剩 publication `ready` -> planned
+`guru-finalize-task` 因 target 尚未交付而 fail closed。Source/installed closure 为
+11 Skills/42 exits，production migration 仍是原 3 Skills/11 exits。

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import os
@@ -44,6 +45,20 @@ def load_installed_companion(root: Path) -> Any:
     spec = importlib.util.spec_from_file_location("installed_guru_team_trellis", path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"could not load installed companion: {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_installed_eval_adapter(root: Path) -> Any:
+    path = root / ".trellis/guru-team/skills/adapters/eval/native_adapter.py"
+    spec = importlib.util.spec_from_file_location(
+        "installed_guru_team_eval_adapter",
+        path,
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"could not load installed eval adapter: {path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
@@ -265,7 +280,106 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
     _path, _payload, gate_errors = gtt.validate_review_gate(root, task_dir, config, True)
     if gate_errors:
         raise RuntimeError("invalid installed closeout review gate: " + "; ".join(gate_errors))
-    return task_dir, branch, reviewed_head
+
+    for name, content in (
+        (
+            "prd.md",
+            "# 需求\n\n## R1. Production eval\n\n验证安装后的 closeout 事务。\n",
+        ),
+        ("design.md", "# 设计\n\n使用已安装 Guru Team runtime 完成收尾。\n"),
+        ("implement.md", "# 实施\n\n先通过 publication gate，再执行 finish-work。\n"),
+        (
+            "implementation-handoff.md",
+            "# 实现交接\n\n已完成 throwaway fixture，并保留验证证据。\n",
+        ),
+    ):
+        (task_dir / name).write_text(content, encoding="utf-8")
+    adapter = load_installed_eval_adapter(root)
+    for stale_review_path in (
+        task_dir / "review-gate.json",
+        task_dir / "review.md",
+    ):
+        stale_review_path.unlink(missing_ok=True)
+    shutil.rmtree(task_dir / "reviews", ignore_errors=True)
+
+    docs_path = root / "docs/requirements.md"
+    docs_path.parent.mkdir(parents=True, exist_ok=True)
+    if not docs_path.exists():
+        docs_path.write_text(
+            "# Requirements\n\nInstalled closeout uses the checked publication gate.\n",
+            encoding="utf-8",
+        )
+    design_path = task_dir / "design.md"
+    design_path.write_text(
+        "# 设计\n\n## Docs SSOT Plan\n\n"
+        "Strategy: ssot_first. Durable requirements own the closeout contract.\n",
+        encoding="utf-8",
+    )
+    task_payload = gtt.read_json(task_dir / "task.json")
+    task_payload.update({"status": "planning", "branch": branch})
+    gtt.write_json(task_dir / "task.json", task_payload)
+    adapter.production_wording_evidence(gtt, root, task_dir)
+    adapter.production_record_planning(
+        gtt,
+        root,
+        task_dir,
+        "approved",
+    )
+    task_payload["status"] = "in_progress"
+    gtt.write_json(task_dir / "task.json", task_payload)
+    adapter.production_agent_assignment(gtt, root, task_dir)
+    checked = adapter.production_record_phase2(
+        gtt,
+        root,
+        task_dir,
+        root / ".trellis/guru-team/skills/packages/guru-check-task",
+        "passed",
+    )
+    adapter.production_commit_for_review(gtt, root, task_dir, checked)
+    branch_input = {
+        "profile": "branch_review",
+        "mode": "workflow",
+        "task_ref": task_dir.relative_to(root).as_posix(),
+        "base_ref": "origin/main",
+        "committed_head": "0" * 40,
+        "review_intent": "initial_review",
+    }
+    branch_check = adapter.production_record_review(
+        gtt,
+        root,
+        task_dir,
+        branch_input,
+        "review-passed",
+    )
+    publication_input = {
+        "profile": "publication_review",
+        "mode": "workflow",
+        "task_ref": task_dir.relative_to(root).as_posix(),
+        "reviewed_head": branch_check["reviewed_head"],
+        "review_ref": f"review-gate:{branch_check['artifact_sha256']}",
+        "review_intent": "initial_review",
+    }
+    authoring_path = adapter.production_publication_authoring(
+        gtt,
+        root,
+        task_dir,
+        publication_input,
+        "publication-ready",
+    )
+    gtt.cmd_record_task_publication_review(argparse.Namespace(
+        root=str(root),
+        task=task_dir.relative_to(root).as_posix(),
+        input=authoring_path.relative_to(root).as_posix(),
+        dry_run=False,
+    ))
+    checked_publication = gtt.cmd_check_task_publication_review(
+        argparse.Namespace(
+            root=str(root),
+            task=task_dir.relative_to(root).as_posix(),
+            expected_exit="ready",
+        )
+    )
+    return task_dir, branch, str(checked_publication["reviewed_head"])
 
 
 def install_fake_commands(fake_bin: Path) -> None:

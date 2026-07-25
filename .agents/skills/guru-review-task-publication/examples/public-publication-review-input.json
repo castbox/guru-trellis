@@ -1,0 +1,8 @@
+{
+  "profile": "publication_review",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/07-24-example-publication",
+  "reviewed_head": "0123456789abcdef0123456789abcdef01234567",
+  "review_ref": "review-current:example",
+  "review_intent": "initial_review"
+}

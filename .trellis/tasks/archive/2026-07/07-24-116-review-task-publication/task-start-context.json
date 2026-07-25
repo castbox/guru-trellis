@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 116,
+    "url": "https://github.com/castbox/guru-trellis/issues/116",
+    "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/116"
+  },
+  "task_slug": "116-review-task-publication",
+  "task_title": "#116 实现 guru-review-task-publication 闭环 Skill",
+  "task_artifact_dir": ".trellis/tasks/07-24-116-review-task-publication",
+  "branch_name": "codex/116-review-task-publication",
+  "base_branch": "main",
+  "base_ref": "refs/remotes/origin/main",
+  "base_head_sha": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+  "remote_head_sha": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+  "workspace_slug": "116-review-task-publication",
+  "task_workspace_id": "116-review-task-publication",
+  "assignee": "wesleywu",
+  "actor": {
+    "login": "wesleywu"
+  },
+  "issue_scope_ledger_seed": {
+    "schema_version": "1.0",
+    "primary_issue": {
+      "number": 116,
+      "url": "https://github.com/castbox/guru-trellis/issues/116",
+      "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+      "reason": "当前唯一 primary independently deliverable change request。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 116,
+        "url": "https://github.com/castbox/guru-trellis/issues/116",
+        "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+        "reason": "本 task 完整承诺并由后续 review gate 验收的 issue。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 115,
+        "url": "https://github.com/castbox/guru-trellis/issues/115",
+        "title": "按 Skill-first 重构 Guru Team task 收尾流程 umbrella",
+        "reason": "上游 umbrella，仅建立 Related 关系。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 131,
+        "url": "https://github.com/castbox/guru-trellis/issues/131",
+        "title": "实现 guru-review-branch 闭环 Skill",
+        "reason": "已关闭的 producer contract 前置。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 144,
+        "url": "https://github.com/castbox/guru-trellis/issues/144",
+        "title": "实现 Guru Team Skill 最小 typed handoff I/O 基础设施",
+        "reason": "已关闭的 Interface 1.3 基础设施前置。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 146,
+        "url": "https://github.com/castbox/guru-trellis/issues/146",
+        "title": "迁移 Guru planning、Phase 2 与 task commit Skills 到最小 typed handoff I/O",
+        "reason": "已关闭的迁移与 production eval 合同前置。",
+        "acceptance_evidence": []
+      }
+    ],
+    "followup_issues": [
+      {
+        "number": 81,
+        "url": "https://github.com/castbox/guru-trellis/issues/81",
+        "title": "v0.6.5-guru.3 发布门禁：全仓 Skill-first 收敛后的 tag-pinned 验证",
+        "reason": "版本发布验证在本 task 后独立执行。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 117,
+        "url": "https://github.com/castbox/guru-trellis/issues/117",
+        "title": "拆分 #115：实现 guru-verify-extension-installation 闭环 Skill",
+        "reason": "远端安装验证 Skill 是独立后续交付。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 118,
+        "url": "https://github.com/castbox/guru-trellis/issues/118",
+        "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
+        "reason": "下游 finalization consumer 独立交付。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 119,
+        "url": "https://github.com/castbox/guru-trellis/issues/119",
+        "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+        "reason": "Finish family integration 独立交付。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 132,
+        "url": "https://github.com/castbox/guru-trellis/issues/132",
+        "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+        "reason": "全局 routing/overlay 收敛独立交付。",
+        "acceptance_evidence": []
+      }
+    ],
+    "rules": [
+      "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+      "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+      "followup_issues 表示新范围或后续任务，不能自动关闭。"
+    ]
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": true,
+      "selected_issue": 116
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "名称同时绑定 issue identity 与 publication semantic review action。"
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    },
+    "final_source_issue_binding": {
+      "repo": "castbox/guru-trellis",
+      "number": 116,
+      "url": "https://github.com/castbox/guru-trellis/issues/116",
+      "state": "open",
+      "title_sha256": "1cbc8a0da37326f7166ea10a401fa56b2f798c712ab9528678d862bce42e8d80",
+      "body_sha256": "bec80eaf00252f96bbb824b2288f157d0bed1c75b2005ef9b2236b8623014bdd",
+      "updated_at": "2026-07-22T11:04:57Z",
+      "target_disposition_sha256": "31bb018059ac67d6563c88e538361cd73a03c694dd3c0ba76e3f242c77c81161",
+      "created_issue_binding_sha256": null
+    },
+    "prerequisite_evidence": {
+      "base": {
+        "skill_id": "guru-sync-base",
+        "schema_id": "guru-base-sync-result-1.0",
+        "typed_exit": "synced",
+        "payload_sha256": "4a8de8ad5d0b826fe6bf1676300c27c9768b3ba1d0c6b466e5d02cb42ad2cee3",
+        "facts_sha256": "c478c33cee5bc730cb0fc88b903e81557f7ae4db805063600ecc3c264b6fd59c",
+        "content_sha256": null,
+        "linkage_sha256": null
+      },
+      "context": {
+        "skill_id": "guru-discover-change-context",
+        "schema_id": "guru-context-discovery-1.0",
+        "typed_exit": "context_ready",
+        "payload_sha256": "cede42aaf9610b3095a27ca7167dacff4fc8669c51b07462c6a5885438a9e290",
+        "facts_sha256": "0344d8b830b614e61aa2867357edea26f84221e70d07ff8c47236cc0e8e55e40",
+        "content_sha256": "d7da44ca574882631b36e00216557fb6463387228b84c6b81cb8e97b493b582e",
+        "linkage_sha256": "0344d8b830b614e61aa2867357edea26f84221e70d07ff8c47236cc0e8e55e40"
+      },
+      "clarity": {
+        "skill_id": "guru-clarify-requirements",
+        "schema_id": "guru-requirements-clarification-2.0",
+        "typed_exit": "clear",
+        "payload_sha256": "8fee661b2867b01c3db64cf5cf401ea4ecda7e9467849ac76aa5e3025d436993",
+        "facts_sha256": "1fa2c16723ad9d81925007857a6a6be4f4866e28a511d399c48ad558461827cf",
+        "content_sha256": "1cd094719320cbf8083cec8101e1caeb5331ddb7a62fc0bd94e28ba10637624a",
+        "linkage_sha256": "c2b637c8cd7a88caf84582c1e37286e37abf2f45a5d3a24e1fe890a5de512a03"
+      },
+      "wording": {
+        "skill_id": "guru-review-contract-wording",
+        "schema_id": "guru-contract-wording-review-1.0",
+        "typed_exit": "pass",
+        "payload_sha256": "5835b7616bf0c120f2d2f9978621cfc364eb77f5426618a55acfebcd8db1bb5c",
+        "facts_sha256": "934cedfe22f49c6256974c8b5bce1f521819840f85703de21a88cb2f20781164",
+        "content_sha256": "22b3917b3aa89694a658779bc82f3d0b320181eb6760204603e6b89459758fda",
+        "linkage_sha256": "3acc262017779c1584f8b87dd11ad446dc6fea7d8266d34133d3bb1618952f28"
+      },
+      "readiness": {
+        "skill_id": "guru-review-change-request",
+        "schema_id": "guru-change-request-review-1.0",
+        "typed_exit": "ready",
+        "payload_sha256": "738ad1e5dae876bcfaf985bd65d1d5058cb44041627af5e4a6323c7592b1b323",
+        "facts_sha256": "caa1cd97d113ff2917c0b62307dd918c04a154a05adcc1291f1dc2ec337af5fc",
+        "content_sha256": "01e1cfe4fa173b0da612b853a9dd379a8fc34bbeaef26559da3db864c72693a3",
+        "linkage_sha256": "e89a995d1eb86f9c7177a80fef641fb2166f0f97b8805e2a775573bdcde2cca8"
+      }
+    }
+  }
+}

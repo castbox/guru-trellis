@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-review-task-publication",
+  "evals": [
+    {
+      "id": "workflow-initial-ready",
+      "prompt": "Complete the workflow-mode initial publication review and invoke the public wrapper from the checker-passed owner gate.",
+      "expected_exit": "ready",
+      "expected_output": "The DTO contains only task identity, reviewed HEAD, and opaque publication identity.",
+      "input_profile_id": "publication_review",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"},
+        {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+      ]},
+      "files": ["evals/files/workflow-initial-ready-input.json", "evals/files/workflow-initial-ready-facts.json"]
+    },
+    {
+      "id": "standalone-initial-ready",
+      "prompt": "Complete the standalone-mode initial publication review with the same owner and checker contract.",
+      "expected_exit": "ready",
+      "expected_output": "The standalone DTO is the same minimal ready handoff.",
+      "input_profile_id": "publication_review",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
+      ]},
+      "files": ["evals/files/standalone-initial-ready-input.json", "evals/files/standalone-initial-ready-facts.json"]
+    },
+    {
+      "id": "return-to-task-work",
+      "prompt": "Record a current-scope non-metadata finding and invoke the wrapper after the owner selects task-work re-entry.",
+      "expected_exit": "return_to_task_work",
+      "expected_output": "The DTO contains exact finding references and the fixed phase-2 resume target.",
+      "input_profile_id": "publication_review",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "return_to_task_work"}
+      ]},
+      "files": ["evals/files/return-to-task-work-input.json", "evals/files/return-to-task-work-facts.json"]
+    },
+    {
+      "id": "blocked-external",
+      "prompt": "Record an external publication blocker and invoke the wrapper without converting it into task work.",
+      "expected_exit": "blocked",
+      "expected_output": "The DTO contains only the stable blocker reason and remediation.",
+      "input_profile_id": "publication_review",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}
+      ]},
+      "files": ["evals/files/blocked-external-input.json", "evals/files/blocked-external-facts.json"]
+    },
+    {
+      "id": "stale-reentry-ready",
+      "prompt": "Re-enter through the stale profile, rerun all publication dimensions, and emit a fresh ready handoff.",
+      "expected_exit": "ready",
+      "expected_output": "The stale profile produces a new checked publication identity.",
+      "input_profile_id": "publication_review_stale",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
+      ]},
+      "files": ["evals/files/stale-reentry-ready-input.json", "evals/files/stale-reentry-ready-facts.json"]
+    },
+    {
+      "id": "metadata-fix-fresh-ready",
+      "prompt": "Revise only task-local publication metadata, rerun the complete semantic review, and emit ready.",
+      "expected_exit": "ready",
+      "expected_output": "The closed metadata finding remains private and the public DTO stays minimal.",
+      "input_profile_id": "publication_review",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
+      ]},
+      "files": ["evals/files/metadata-fix-fresh-ready-input.json", "evals/files/metadata-fix-fresh-ready-facts.json"]
+    },
+    {
+      "id": "metadata-fix-durable-drift-return",
+      "prompt": "During metadata rereview, detect ordinary durable-document drift and return to task work.",
+      "expected_exit": "return_to_task_work",
+      "expected_output": "The actual owner exit selects the return schema and exact finding reference.",
+      "input_profile_id": "publication_review",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "return_to_task_work"}
+      ]},
+      "files": ["evals/files/metadata-fix-durable-drift-return-input.json", "evals/files/metadata-fix-durable-drift-return-facts.json"]
+    }
+  ]
+}

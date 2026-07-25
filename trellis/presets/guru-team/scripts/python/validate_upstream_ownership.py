@@ -24,14 +24,14 @@ BASE_COMMIT = "291b57b6c02872320a4dce0626a2f718399b8f56"
 FROZEN_PATH_COUNT = 43
 FROZEN_PATH_SET_SHA256 = "56874019bb93b6669aaeb36b7ca9506aed9127a28ef9f81637ea428a6b0a838b"
 BASELINE_PAYLOAD_AGGREGATE_SHA256 = "c24122c8292ee2e6f7847d69069d5f3536eaa5a66a11434620228fe11cb89658"
-CURRENT_PAYLOAD_AGGREGATE_SHA256 = "ab94576c8d2d8768ffd50d1757179d8678de3a67923aeef3cd00ef006f76a86a"
+CURRENT_PAYLOAD_AGGREGATE_SHA256 = "88d5c5e7df8130c67304f70475e676d33202eb457d7a5fa332993eaaa455d0a9"
 FROZEN_LEGACY_IDENTITY_SHA256 = "1e1faf9ffa95e1cbb1650c4eb9da1ceac035d045be70132b5c0b92ec5ccfc473"
 REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH = {
-    ".agents/skills/trellis-continue/SKILL.md": "9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc",
-    ".claude/commands/trellis/continue.md": "6260438ddc68e0f69e263f19bd40d952da5608c1e291afe1b71382953fcc43ea",
-    ".codex/prompts/trellis-continue.md": "26315341df30cabd67f854d4c2eb2edfb91250c0fcdf675815bd9b6dafa955d0",
-    ".codex/skills/trellis-continue/SKILL.md": "9ebc8e0cca985b31bf0fc48c9fca4d9374b33106462ec788c297ddf292f9bebc",
-    ".cursor/commands/trellis-continue.md": "b0e8ea40324442d70e3aa76c123a1b4e0ddbcea00e94da599594b0e3b707301c",
+    ".agents/skills/trellis-continue/SKILL.md": "ca34ccf881f558306d40b9478c7c241ac6375a51960303a1b9cf99b339fae859",
+    ".claude/commands/trellis/continue.md": "349e0bbab9619fe2ae1ae66d07d72ea33ce27295657d19bcb80240d4b1ba4a1b",
+    ".codex/prompts/trellis-continue.md": "d42283aeac720454c491678dc6f730c7174326d41e1f6348fed40e2625522085",
+    ".codex/skills/trellis-continue/SKILL.md": "ca34ccf881f558306d40b9478c7c241ac6375a51960303a1b9cf99b339fae859",
+    ".cursor/commands/trellis-continue.md": "59242f5a3cdbe0dd3fb8e20819a98a9e24f16e9fa14cdfcb4a8e48620815f873",
 }
 OWNERSHIP_CATEGORIES = {
     "upstream_owned",
@@ -592,7 +592,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
                 ownership_error(
                     "unexpected_current_payload_digest",
                     entry_path,
-                    "current payload binding is allowed only on the five active Issue 131 continue entries",
+                    "current payload binding is allowed only on the five active Issue 131/116 continue entries",
                 )
             )
         if not isinstance(entry.get("generated_in_clean_init"), bool):

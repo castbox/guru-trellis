@@ -1,0 +1,1063 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "116-review-task-publication",
+    "path": ".trellis/tasks/07-24-116-review-task-publication",
+    "status": "in_progress",
+    "branch": "codex/116-review-task-publication"
+  },
+  "issue": {
+    "primary_issue": 116,
+    "ledger_sha256": "f7d6bd0734c2513e3be38283d4e9ebdfc1d31fa056e7f08b63960d5faae8eb9f"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "1dd2ef8af1cf583eeaf302a11c4770a07922b0b2"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+      "sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
+      "size": 38810
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      "sha256": "a8d7d6ffaef2883356f6de06851fa2b57aa48f80be07a34b8bf62cac5171fd1f",
+      "size": 104304
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+      "sha256": "f7d6bd0734c2513e3be38283d4e9ebdfc1d31fa056e7f08b63960d5faae8eb9f",
+      "size": 3524
+    },
+    "task": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task.json",
+      "sha256": "b9b2fb7e53a7e40d5c10d3a217d88c1719f2ca1b0a2a48ed93521676061a220c",
+      "size": 679
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6222c1de372876f469c43d1d6eeae6d4373dd2d5",
+        "worktree_sha256": "e5326136ead37814aa38dff6dd9a4aa430b07dae8f8ed910a86b57a2d4f32894",
+        "mode": "100755"
+      },
+      {
+        "path": ".agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c8cb8a6d3ff016372a7b207a1cf795169398b421",
+        "worktree_sha256": "d0bc4a10b9843ca34c804a79bd5a68b9d6377e0a55adf73131ce82ab80e6a342",
+        "mode": "100755"
+      },
+      {
+        "path": ".agents/skills/guru-review-task-publication/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bf66c4723e5863e89721f214c5518dccd9874561",
+        "worktree_sha256": "f25d14a990d92f5590b46ca9b6fbecf2bb6d9e758c8fca0437b3cebad341bcd4",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6222c1de372876f469c43d1d6eeae6d4373dd2d5",
+        "worktree_sha256": "e5326136ead37814aa38dff6dd9a4aa430b07dae8f8ed910a86b57a2d4f32894",
+        "mode": "100755"
+      },
+      {
+        "path": ".claude/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c8cb8a6d3ff016372a7b207a1cf795169398b421",
+        "worktree_sha256": "d0bc4a10b9843ca34c804a79bd5a68b9d6377e0a55adf73131ce82ab80e6a342",
+        "mode": "100755"
+      },
+      {
+        "path": ".claude/skills/guru-review-task-publication/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bf66c4723e5863e89721f214c5518dccd9874561",
+        "worktree_sha256": "f25d14a990d92f5590b46ca9b6fbecf2bb6d9e758c8fca0437b3cebad341bcd4",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6222c1de372876f469c43d1d6eeae6d4373dd2d5",
+        "worktree_sha256": "e5326136ead37814aa38dff6dd9a4aa430b07dae8f8ed910a86b57a2d4f32894",
+        "mode": "100755"
+      },
+      {
+        "path": ".codex/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c8cb8a6d3ff016372a7b207a1cf795169398b421",
+        "worktree_sha256": "d0bc4a10b9843ca34c804a79bd5a68b9d6377e0a55adf73131ce82ab80e6a342",
+        "mode": "100755"
+      },
+      {
+        "path": ".codex/skills/guru-review-task-publication/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bf66c4723e5863e89721f214c5518dccd9874561",
+        "worktree_sha256": "f25d14a990d92f5590b46ca9b6fbecf2bb6d9e758c8fca0437b3cebad341bcd4",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6222c1de372876f469c43d1d6eeae6d4373dd2d5",
+        "worktree_sha256": "e5326136ead37814aa38dff6dd9a4aa430b07dae8f8ed910a86b57a2d4f32894",
+        "mode": "100755"
+      },
+      {
+        "path": ".cursor/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c8cb8a6d3ff016372a7b207a1cf795169398b421",
+        "worktree_sha256": "d0bc4a10b9843ca34c804a79bd5a68b9d6377e0a55adf73131ce82ab80e6a342",
+        "mode": "100755"
+      },
+      {
+        "path": ".cursor/skills/guru-review-task-publication/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bf66c4723e5863e89721f214c5518dccd9874561",
+        "worktree_sha256": "f25d14a990d92f5590b46ca9b6fbecf2bb6d9e758c8fca0437b3cebad341bcd4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3a59f3256058eb6069ea26624a94354074af7e04",
+        "worktree_sha256": "5e9a9b4d70fced2a862656398617b4a010c9770682e9763764807d28c000a2f5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/bash/check-task-publication-review.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c2762acd60a1c0d6de9118e5072e7f59a5e222a4b9f75315a173f52f1fce4b03",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/bash/record-task-publication-review.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "37a0c591941de09288fac384a93ae5f61f24e26ebf96c57a5b8dcea7eb01f149",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6222c1de372876f469c43d1d6eeae6d4373dd2d5",
+        "worktree_sha256": "e5326136ead37814aa38dff6dd9a4aa430b07dae8f8ed910a86b57a2d4f32894",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c8cb8a6d3ff016372a7b207a1cf795169398b421",
+        "worktree_sha256": "d0bc4a10b9843ca34c804a79bd5a68b9d6377e0a55adf73131ce82ab80e6a342",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bf66c4723e5863e89721f214c5518dccd9874561",
+        "worktree_sha256": "f25d14a990d92f5590b46ca9b6fbecf2bb6d9e758c8fca0437b3cebad341bcd4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "156340d88d1a24ac40e24bc05064c3e337a9b0a8",
+        "worktree_sha256": "e80a9fcdcfcf225013fc4f5c7377f94437184cf3b6dd3ddd31dd4529360d86e3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7f4eef6ebbce1920120e09144e92eaee1309051d",
+        "worktree_sha256": "9a66904e270dcd9d0e31472a4df9259d4ce6ef42f6b75c02ccdde4150cfc26bb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "23ba9f241cb896464bf5a5eb86a9f02c9b77bbef",
+        "worktree_sha256": "a8d7d6ffaef2883356f6de06851fa2b57aa48f80be07a34b8bf62cac5171fd1f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round8.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6555ff6267602b609694ad7262c11843488f4782d5411a2ccfaa9bf31232be1c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round9.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "1e3157eae75ae5d87e21661e6b4d9ed24f7d7371157076ce62f27b801376fcb3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "29d4d1231618e17d29c16161fbbd6bd90a31597f",
+        "worktree_sha256": "7ea2aa2aa3b6d99dff67d52478c968a879980a23f448aa263b06535c0663d738",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-03-problem-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "45fc22f13dfd9f66f0e60a78c82642a6c89abe5644e47553bbdd2062d8a127e0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "826df0e0c65515b2afc6a54948272fe59863dcd9825215f5be160eba8faacc1a",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2187a71a08895603c82c08bb621d3b30e3de3ff4",
+        "worktree_sha256": "e29d96420345afa64b80e86bce6c3c851af7eb989c22420769e6b456dab68d10",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "91cf1255b6d0a70da8764d914e52ac9c868080a3",
+        "worktree_sha256": "609f1f1f59638f0daddccf56dd5e2a20f463bf0c4efe1a134478d15308f2c62c",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a1cfb598023b920f8fee5468c18702de79ebedc0",
+        "worktree_sha256": "9b4a992f6450fbe9d57419f361f2fae60d8959776f137fe97057e286031feb88",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b62486d8a64574f72a461ca6d04be90edbd95fba",
+        "worktree_sha256": "1b4831bf89c97e98a51708ccb1755fd5468647d7a70c816b27e7ec94f0cd9bce",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "734f11849ff1477c5f1a0654d2ff13e7cb5c8cbf",
+        "worktree_sha256": "1d931f546bd098f566c5b0002b8d88fffb1bd51f1c50515d49d02ab73a00fd97",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6222c1de372876f469c43d1d6eeae6d4373dd2d5",
+        "worktree_sha256": "e5326136ead37814aa38dff6dd9a4aa430b07dae8f8ed910a86b57a2d4f32894",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c8cb8a6d3ff016372a7b207a1cf795169398b421",
+        "worktree_sha256": "d0bc4a10b9843ca34c804a79bd5a68b9d6377e0a55adf73131ce82ab80e6a342",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bf66c4723e5863e89721f214c5518dccd9874561",
+        "worktree_sha256": "f25d14a990d92f5590b46ca9b6fbecf2bb6d9e758c8fca0437b3cebad341bcd4",
+        "mode": "100644"
+      }
+    ],
+    "digest": "271ff557f9555fad99466f1c9e0ac82400c5deb17ab18a04f00c6c8ec4ff76d0"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-review-task-publication/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-task-publication/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-task-publication/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-task-publication/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/bash/check-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/bash/record-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round8.md",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round9.md",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-03-problem-closure.md",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+    ".agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+    ".agents/skills/guru-review-task-publication/tests/test_contract.py",
+    ".claude/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+    ".claude/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+    ".claude/skills/guru-review-task-publication/tests/test_contract.py",
+    ".codex/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+    ".codex/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+    ".codex/skills/guru-review-task-publication/tests/test_contract.py",
+    ".cursor/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+    ".cursor/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+    ".cursor/skills/guru-review-task-publication/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/bash/check-task-publication-review.sh",
+    ".trellis/guru-team/scripts/bash/record-task-publication-review.sh",
+    ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+    ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+    ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+    ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+    ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round8.md",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round9.md",
+    ".trellis/tasks/07-24-116-review-task-publication/review.md",
+    ".trellis/tasks/07-24-116-review-task-publication/reviews/round-03-problem-closure.md",
+    ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
+    ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+    ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+    "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+    "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #116 修复 publication 六布局命令入口",
+    "body": "背景：\nBranch Review 与 fresh Phase 2 在正常安装路径发现 publication recorder/checker 无法从 installed shared 与平台 Skill 布局定位 dispatcher，preset 自测仍保留旧 managed-asset 数量。\n\n变更：\n为 publication recorder/checker 增加 canonical、installed shared、Agents、Codex、Cursor、Claude 六布局解析；安装已声明的共享命令 wrapper，补齐真实命令与 fresh/update/reapply 回归，并将 preset verifier 与测试统一为 94 个 managed assets。\n\n边界：\nPublic I/O、三个 typed exits 与 semantic/script ownership 不变；guru-finalize-task 仍为 #118 planned consumer；未执行 push、PR、Issue close、archive、部署或 production write。\n\n验证：\nFresh Round9 通过 runtime 572/572、Skill 174/174、preset 45/45、ownership 9/9、contracts 18x2、eval 7x2、canonical/installed/platform 真实命令，以及 clean throwaway fresh/update/reapply 10x3。\n\nRefs #116",
+    "bytes": "fix(workflow): #116 修复 publication 六布局命令入口\n\n背景：\nBranch Review 与 fresh Phase 2 在正常安装路径发现 publication recorder/checker 无法从 installed shared 与平台 Skill 布局定位 dispatcher，preset 自测仍保留旧 managed-asset 数量。\n\n变更：\n为 publication recorder/checker 增加 canonical、installed shared、Agents、Codex、Cursor、Claude 六布局解析；安装已声明的共享命令 wrapper，补齐真实命令与 fresh/update/reapply 回归，并将 preset verifier 与测试统一为 94 个 managed assets。\n\n边界：\nPublic I/O、三个 typed exits 与 semantic/script ownership 不变；guru-finalize-task 仍为 #118 planned consumer；未执行 push、PR、Issue close、archive、部署或 production write。\n\n验证：\nFresh Round9 通过 runtime 572/572、Skill 174/174、preset 45/45、ownership 9/9、contracts 18x2、eval 7x2、canonical/installed/platform 真实命令，以及 clean throwaway fresh/update/reapply 10x3。\n\nRefs #116\n",
+    "sha256": "c80fab39893c13b75d77be804f187fdf677acf1d575b2476f85c3f6185fa29b7"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "The exact 34 current dirty paths are within Issue #116 current scope, are covered by the fresh Round9 Phase 2 pass, keep public I/O and the #118 finalization boundary unchanged, and contain no unrelated staged or dirty work.",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "The user confirmed continuation of Issue #116, including the disclosed local finding-fix commit plan; authorization is limited to the exact paths and message shown immediately before execution."
+  },
+  "freshness": {
+    "captured_at": "2026-07-25T04:33:53Z",
+    "plan_digest": "fb90fd3b38114753e3f06f38bb4709cd891d7cf8e77c438f69b5f85eec8cbad9"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-25T04:34:13Z",
+    "commit_sha": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+    "parent": "1dd2ef8af1cf583eeaf302a11c4770a07922b0b2",
+    "message_sha256": "c80fab39893c13b75d77be804f187fdf677acf1d575b2476f85c3f6185fa29b7",
+    "committed_paths": [
+      ".agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".agents/skills/guru-review-task-publication/tests/test_contract.py",
+      ".claude/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".claude/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".claude/skills/guru-review-task-publication/tests/test_contract.py",
+      ".codex/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".codex/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".codex/skills/guru-review-task-publication/tests/test_contract.py",
+      ".cursor/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".cursor/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".cursor/skills/guru-review-task-publication/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/bash/check-task-publication-review.sh",
+      ".trellis/guru-team/scripts/bash/record-task-publication-review.sh",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+      ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+      ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round8.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round9.md",
+      ".trellis/tasks/07-24-116-review-task-publication/review.md",
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-03-problem-closure.md",
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
+      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "f688b1c9e62ee4b8117de40eb1e019f40fa716b6",
+      "actual_tree": "f688b1c9e62ee4b8117de40eb1e019f40fa716b6",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+          "expected_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "expected_mode": "100755",
+          "actual_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+          "expected_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "expected_mode": "100755",
+          "actual_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-task-publication/tests/test_contract.py",
+          "expected_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "expected_mode": "100644",
+          "actual_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+          "expected_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "expected_mode": "100755",
+          "actual_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+          "expected_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "expected_mode": "100755",
+          "actual_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-task-publication/tests/test_contract.py",
+          "expected_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "expected_mode": "100644",
+          "actual_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+          "expected_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "expected_mode": "100755",
+          "actual_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+          "expected_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "expected_mode": "100755",
+          "actual_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-task-publication/tests/test_contract.py",
+          "expected_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "expected_mode": "100644",
+          "actual_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+          "expected_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "expected_mode": "100755",
+          "actual_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+          "expected_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "expected_mode": "100755",
+          "actual_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-task-publication/tests/test_contract.py",
+          "expected_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "expected_mode": "100644",
+          "actual_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "6c64879670bbafd2a19505333b186f897ad1f05c",
+          "expected_mode": "100644",
+          "actual_blob": "6c64879670bbafd2a19505333b186f897ad1f05c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/bash/check-task-publication-review.sh",
+          "expected_blob": "c148e2478bc1522cc63dd46a18af62ffbd1168db",
+          "expected_mode": "100755",
+          "actual_blob": "c148e2478bc1522cc63dd46a18af62ffbd1168db",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/bash/record-task-publication-review.sh",
+          "expected_blob": "26127762ab038a59c8206ea34098ce3d99bff65c",
+          "expected_mode": "100755",
+          "actual_blob": "26127762ab038a59c8206ea34098ce3d99bff65c",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+          "expected_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "expected_mode": "100755",
+          "actual_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+          "expected_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "expected_mode": "100755",
+          "actual_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+          "expected_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "expected_mode": "100644",
+          "actual_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+          "expected_blob": "f9302c198dc9e29dc80d7b8d71b5036b7aec79c3",
+          "expected_mode": "100644",
+          "actual_blob": "f9302c198dc9e29dc80d7b8d71b5036b7aec79c3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+          "expected_blob": "4c414e0b045ef71ceb0ead9e6d1b8e367514c350",
+          "expected_mode": "100644",
+          "actual_blob": "4c414e0b045ef71ceb0ead9e6d1b8e367514c350",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+          "expected_blob": "778a7263e868e070cb3011ab8feeaf5e50afb595",
+          "expected_mode": "100644",
+          "actual_blob": "778a7263e868e070cb3011ab8feeaf5e50afb595",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round8.md",
+          "expected_blob": "f974514b1cc97d9c4b75e0954b0e45834f1c9762",
+          "expected_mode": "100644",
+          "actual_blob": "f974514b1cc97d9c4b75e0954b0e45834f1c9762",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round9.md",
+          "expected_blob": "741a92f7e37875dd15f617b3a6b0600e076e38c3",
+          "expected_mode": "100644",
+          "actual_blob": "741a92f7e37875dd15f617b3a6b0600e076e38c3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+          "expected_blob": "f924c07fb6738ea4d524fb5b8f3d1429eed19f59",
+          "expected_mode": "100644",
+          "actual_blob": "f924c07fb6738ea4d524fb5b8f3d1429eed19f59",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-03-problem-closure.md",
+          "expected_blob": "1513dffe460597ef2e1e99226c723e846b5e5876",
+          "expected_mode": "100644",
+          "actual_blob": "1513dffe460597ef2e1e99226c723e846b5e5876",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
+          "expected_blob": "c0cd9d90f2d829a2a56e91b2f360605b538c2699",
+          "expected_mode": "100644",
+          "actual_blob": "c0cd9d90f2d829a2a56e91b2f360605b538c2699",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+          "expected_blob": "402f26d461963516a6da56c64dc8a5964d2b7cf7",
+          "expected_mode": "100644",
+          "actual_blob": "402f26d461963516a6da56c64dc8a5964d2b7cf7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+          "expected_blob": "d58e70ee92acf1f2f6c5d957733c0e905ed46263",
+          "expected_mode": "100644",
+          "actual_blob": "d58e70ee92acf1f2f6c5d957733c0e905ed46263",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "expected_blob": "9c077238c35b6e55e4a2611a1e0cb42547095996",
+          "expected_mode": "100755",
+          "actual_blob": "9c077238c35b6e55e4a2611a1e0cb42547095996",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "expected_blob": "4a704e65084b5a2bd254b3dad4db2a6075201777",
+          "expected_mode": "100755",
+          "actual_blob": "4a704e65084b5a2bd254b3dad4db2a6075201777",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "74e62be94c27a2c0e6ea203308a0ea62ac92bbdc",
+          "expected_mode": "100644",
+          "actual_blob": "74e62be94c27a2c0e6ea203308a0ea62ac92bbdc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "expected_blob": "b4202ba97dab7177e88f3c850bbb64b544e2d42c",
+          "expected_mode": "100644",
+          "actual_blob": "b4202ba97dab7177e88f3c850bbb64b544e2d42c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+          "expected_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "expected_mode": "100755",
+          "actual_blob": "23465ad5c08809cd2cedd67c7d84ba88a030492a",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+          "expected_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "expected_mode": "100755",
+          "actual_blob": "abb14d36426c58c784bc4dbea996b04ffa6f2c35",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+          "expected_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "expected_mode": "100644",
+          "actual_blob": "df9bdfc6fd5151008b76eebae4349365e45b7e6c",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}

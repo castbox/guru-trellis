@@ -1,0 +1,842 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-task-publication",
+  "generated_at": "2026-07-25T09:54:31Z",
+  "task_dir": ".trellis/tasks/07-24-116-review-task-publication",
+  "profile": "publication_review_stale",
+  "mode": "workflow",
+  "review_intent": "stale_reentry_review",
+  "review_identity": {
+    "reviewed_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+    "review_ref": "review-gate:10ae9604c45b599e86700f32e64d13d6335041dbc317b3cca268ae3d16f48281"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "diff_outcome_consistency",
+        "status": "passed",
+        "summary": "完整五提交结果已兑现 #116 的 publication semantic owner、双入口、十二前置、十维 Gate、metadata-only revision、单 readiness artifact 与三 typed exits；sequence 004 关闭 scope freshness 缺口，sequence 005 关闭 mutable readiness 被 Phase 2 handoff 绑定的 evidence lifecycle 缺口。",
+        "evidence_refs": [
+          "prd.md",
+          "design.md",
+          "implement.md",
+          "phase2-check.json",
+          "review-gate.json",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "issue_scope_closure",
+        "status": "passed",
+        "summary": "仅 #116 进入 close scope；#115、#131、#144、#146 保持 related，#81、#117、#118、#119、#132 保持 follow-up，primary 与 close acceptance evidence 完全一致且绑定当前 reviewed HEAD。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "phase2-check.json",
+          "review-gate.json"
+        ]
+      },
+      {
+        "id": "pr_body_quality",
+        "status": "passed",
+        "summary": "PR body 使用中文且具体、自包含，准确说明最终行为、影响、573 项 runtime 验证、两次 freshness 回流闭环、Round 08、Issue 语义、安全部署和 Docs SSOT，没有占位或陈旧的必须返工声明。",
+        "evidence_refs": [
+          "pr-body.md",
+          "phase2-check.json",
+          "phase2-worker-report-round12.md",
+          "review.md",
+          "reviews/round-08-final-release.md"
+        ]
+      },
+      {
+        "id": "validation_claims",
+        "status": "passed",
+        "summary": "验证声明与 fresh evidence 一致：runtime 573/13 skipped、Skill 174、publication 18x2、Branch Review 8x2、actual-wrapper eval 7x2、preset 45、ownership 9、registry 11/42/25、targeted 5、六布局、drift/parity 与完整 throwaway install/update/reselect/reapply 均通过；exact remote candidate ref 限制被明确保留。",
+        "evidence_refs": [
+          "phase2-check.json",
+          "phase2-worker-report-round12.md",
+          "review.md",
+          "reviews/round-08-final-release.md",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "branch_review_summary",
+        "status": "passed",
+        "summary": "PR body 准确记录 origin/main@bdc8f50...26c6b01 的完整 356-file/5-commit 范围、完整 closure lifecycle、Round 08 fresh reviewer 与零 P0-P3 finding，并与当前正式 passed gate 一致。",
+        "evidence_refs": [
+          "review.md",
+          "review-gate.json",
+          "agent-assignment.json",
+          "reviews/round-08-final-release.md",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "docs_ssot_reconciliation",
+        "status": "passed",
+        "summary": "ssot_first 计划已把 approved publication contract 合并到 durable workflow、spec、Skill、preset 与 public docs；sequence 004 对齐 scope freshness，sequence 005 只收敛 task evidence authoring，均不产生新的 durable semantic delta，task artifacts 仅保留审计历史。",
+        "evidence_refs": [
+          "planning-approval.json",
+          "phase2-check.json",
+          "implementation-handoff.md",
+          "review.md",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "safety_deployment_impact",
+        "status": "passed",
+        "summary": "当前证据未发现 secret 或敏感数据；无 CI/CD、Docker/Compose、Kubernetes/Kustomize/Helm、DB/data migration、Makefile、依赖、配置或生产部署资产变化，无需迁移、配置同步、部署或回滚步骤。",
+        "evidence_refs": [
+          "review.md",
+          "review-gate.json",
+          "reviews/round-08-final-release.md",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "finish_summary_semantics",
+        "status": "passed",
+        "summary": "Finish summary index 以 problem、outcome、八项 changed behavior、七类 affected surfaces、八项 contract changes 和可检索术语记录最终语义；contract-change source artifacts 均投影到最终 summary 可携带证据，派生 retrieval text 为 2872/3000 字符，且不携带 HEAD、runtime 数量、digest、绝对路径或外部状态快照。",
+        "evidence_refs": [
+          "finish-summary-index.json",
+          "prd.md",
+          "design.md",
+          "phase2-check.json"
+        ]
+      },
+      {
+        "id": "metadata_tail_integrity",
+        "status": "passed",
+        "summary": "当前 working tree 仅包含 contract-listed Branch Review evidence、Round 08 raw report、sole current-HEAD completed commit plan，以及 publication-owned ledger、PR body、finish summary index；pr-readiness 自排除，没有 source、test、durable docs、workflow、schema、preset 或 deployment drift。",
+        "evidence_refs": [
+          "agent-assignment.json",
+          "task-commit-plans/005.json",
+          "review.md",
+          "review-gate.json",
+          "reviews/round-08-final-release.md",
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "finish-summary-index.json"
+        ]
+      },
+      {
+        "id": "artifact_binding_freshness",
+        "status": "passed",
+        "summary": "Fresh Phase 2 Round 12、completed sequence 005、Branch Review Round 08、stable implementation handoff、ledger number-set projection 与 publication content 均绑定 current workflow state；stale profile 精确 supersede prior return ref，post-commit consumer audit 与十二项 deterministic preconditions 可重新建立为 passed。",
+        "evidence_refs": [
+          "phase2-check.json",
+          "task-commit-plans/005.json",
+          "review-gate.json",
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "finish-summary-index.json"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "finding_ref": "PUB116-M1",
+        "dimension": "issue_scope_closure",
+        "summary": "首次 publication dry-run 发现 primary/close #116 的 acceptance_evidence 为空，缺少验收承接与唯一 remote_marketplace_verification pending 结构。",
+        "scope_basis": "Issue #116 的 close scope 必须同时由 Phase 2、Branch Review 验收证据和当前未 push 阶段的固定 pending remote marketplace 合同承接；该修订只涉及 contract-listed issue-scope-ledger publication metadata。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "phase2-check.json",
+          "review-gate.json"
+        ],
+        "affected_artifacts": [
+          "issue-scope-ledger.json"
+        ],
+        "route_class": "metadata_revision",
+        "status": "closed",
+        "closure_evidence": [
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "review-gate.json"
+        ]
+      },
+      {
+        "finding_ref": "PUB116-TW1",
+        "dimension": "diff_outcome_consistency",
+        "summary": "Metadata-only ledger revision 路径曾未兑现 Skill 合同：补齐 acceptance evidence 后 publication recorder 无法继续到 fresh semantic review 与 ready。",
+        "scope_basis": "PRD、design 与 public Skill contract 明确把 contract-listed ledger publication metadata 纳入内部修订；普通缺失 evidence 后补齐是受支持的正常路径。",
+        "evidence_refs": [
+          "phase2-check.json",
+          "implementation-handoff.md",
+          "review.md",
+          "reviews/round-07-final-release.md"
+        ],
+        "affected_artifacts": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "route_class": "task_work",
+        "status": "closed",
+        "closure_evidence": [
+          "Fresh Phase 2 Round 11 passed the five-case scope projection regression and complete V01-V23 matrix.",
+          "Sequence 004 committed the reviewed fix at a1629fae4150bfbac9032aab8ca47497cba4e605.",
+          "Branch Review Round 07 independently passed the complete 353-file/4-commit range with zero P0-P3 findings."
+        ]
+      },
+      {
+        "finding_ref": "PUB116-TW2",
+        "dimension": "artifact_binding_freshness",
+        "summary": "Phase 2 freshness 曾绑定 issue-scope-ledger.json 全文件 digest，使只改变 acceptance_evidence 的合法 publication metadata 被误判 stale。",
+        "scope_basis": "Publication entry 必须保持真实 scope drift 失败关闭，同时允许 acceptance evidence 与 pending remote marketplace machine object 在 Phase 3.6 合法更新；scope identity 与 publication metadata 需要分离。",
+        "evidence_refs": [
+          "phase2-check.json",
+          "implementation-handoff.md",
+          "task-commit-plans/004.json",
+          "reviews/round-07-final-release.md"
+        ],
+        "affected_artifacts": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "route_class": "task_work",
+        "status": "closed",
+        "closure_evidence": [
+          "Phase 2 now reuses the task-local issue number-set projection for requirement provenance.",
+          "Positive acceptance metadata and negative primary/close/related/follow-up number-set cases all pass.",
+          "Other labels, non-task ledgers and invalid task-local ledgers retain full-digest or fail-closed behavior."
+        ]
+      },
+      {
+        "finding_ref": "PUB116-TW3",
+        "dimension": "artifact_binding_freshness",
+        "summary": "Phase 2 Round 11 的 implementation_handoff evidence 将旧 pr-readiness.json 作为精确 artifact 绑定；publication stale re-entry 正常替换该唯一 gate 后，独立 publication checker 因 phase2_check_implementation_handoff_stale 拒绝刚写入的 ready gate。",
+        "scope_basis": "Publication contract 明确 pr-readiness.json 是可被 stale re-entry 替换的唯一 recorder-owned gate；把该可变下游 gate 作为上游 Phase 2 implementation evidence 的长期精确输入会形成正常路径自失效。该问题无需伪造或并发即可由 recorder 后接 checker 复现。",
+        "evidence_refs": [
+          "phase2-check.json",
+          "pr-readiness.json",
+          "implementation-handoff.md"
+        ],
+        "affected_artifacts": [
+          "phase2-check.json"
+        ],
+        "route_class": "task_work",
+        "status": "closed",
+        "closure_evidence": [
+          "Fresh Phase 2 Round 12 binds only implementation-handoff.md and Round1-Round12 raw reports as implementation evidence, excluding pr-readiness and all downstream mutable publication/review metadata.",
+          "Sequence 005 committed the stable evidence artifact set at 26c6b01c7a0128eecdb9978793aa48d4115dcf89 with 12/12 tree/blob/mode matches and hook_mutation=false.",
+          "Branch Review Round 08 independently passed the complete 356-file/5-commit range and verified post-commit Phase2/publication entry freshness with zero P0-P3 findings."
+        ]
+      }
+    ],
+    "conclusions": {
+      "issue_scope": {
+        "status": "passed",
+        "summary": "#116 是唯一被完整验收并允许使用 close keyword 的 issue；related 与 follow-up 集合未被扩大或改写，remote marketplace verification 仍是未 push 阶段的 pending publication-time evidence。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "phase2-check.json",
+          "review-gate.json",
+          "pr-body.md"
+        ]
+      },
+      "docs_ssot": {
+        "status": "passed",
+        "summary": "批准的 durable publication contract 已完成 SSOT 合并；最终 freshness 修复只对齐既有合同，task planning/check/review/publication artifacts 不承担长期定义，#118/#119 边界保持明确。",
+        "evidence_refs": [
+          "planning-approval.json",
+          "phase2-check.json",
+          "implementation-handoff.md",
+          "pr-body.md"
+        ]
+      },
+      "safety_deployment": {
+        "status": "passed",
+        "summary": "不存在未披露 secret、生产数据、配置、migration 或部署资产影响；extension 安装、upgrade/update、reapply 与多平台分发均有 fresh evidence，当前 publication review 本身不执行外部副作用。",
+        "evidence_refs": [
+          "phase2-worker-report-round12.md",
+          "review.md",
+          "reviews/round-08-final-release.md",
+          "pr-body.md"
+        ]
+      }
+    },
+    "revision_history": [
+      {
+        "revision_ref": "PUB116-M1-ledger-acceptance-evidence",
+        "kind": "metadata_revision",
+        "summary": "为 primary/close #116 补入相同验收 evidence 与固定 pending remote marketplace 对象，未改变 close、related 或 follow-up issue 集合。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "phase2-check.json",
+          "review-gate.json"
+        ]
+      },
+      {
+        "revision_ref": "PUB116-R2-current-head-publication-content",
+        "kind": "stale_reentry",
+        "summary": "在 task-work freshness 修复、Fresh Phase 2 Round 11、sequence 004 与 Branch Review Round 07 后，将 ledger acceptance evidence、PR body 与 finish summary index 更新到当前 final reviewed outcome，并完整重审十个维度。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "finish-summary-index.json",
+          "phase2-check.json",
+          "review-gate.json"
+        ]
+      },
+      {
+        "revision_ref": "PUB116-R3-attempted-ready-post-write-check",
+        "kind": "replacement",
+        "summary": "Attempted-ready recorder 成功后，独立 checker 复现 phase2_check_implementation_handoff_stale；本次 replacement 不保留 ready 断言，而是记录 PUB116-TW3 并返回 task work。",
+        "evidence_refs": [
+          "phase2-check.json",
+          "pr-readiness.json",
+          "implementation-handoff.md"
+        ]
+      },
+      {
+        "revision_ref": "PUB116-R4-final-current-head-publication-content",
+        "kind": "stale_reentry",
+        "summary": "在 Fresh Phase 2 Round 12、sequence 005 与 Branch Review Round 08 关闭 PUB116-TW3 后，将 ledger acceptance/pending head、PR body 与 finish summary index 更新到 26c6b01 最终 reviewed outcome，并重新执行全部十个 publication dimensions。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "finish-summary-index.json",
+          "phase2-check.json",
+          "task-commit-plans/005.json",
+          "review-gate.json"
+        ]
+      },
+      {
+        "revision_ref": "PUB116-R5-finish-summary-contract-projection",
+        "kind": "metadata_revision",
+        "summary": "根据 finalization dry-run 的机器合同，将 changed behavior 去重收敛为八项、缩短重复 contract wording，并把四个不可进入 final summary 的 source_artifact 投影到 design.md 或 phase2-check.json；不改变实现、验收、Issue scope、PR body 或 Branch Review 结论。",
+        "evidence_refs": [
+          "finish-summary-index.json",
+          "design.md",
+          "phase2-check.json",
+          "review-gate.json"
+        ]
+      }
+    ],
+    "reviewer_process": {
+      "reviewer": "Codex /root publication semantic owner",
+      "summary": "按 guru-review-task-publication stale profile 重新读取当前 #116 task、批准规划、Phase 2 Round 12、sequence 005、八轮 raw Branch Review、current gate、ledger、完整 PR body 与修订后的 finish summary index，逐项重做十维判断；确认 R5 仅为 contract-listed metadata revision，retrieval text 与 source artifact projection 满足 finalization 合同，未以 dry-run、recorder、checker、空 findings 或旧 snapshot 代替语义判断。",
+      "evidence_refs": [
+        "prd.md",
+        "design.md",
+        "phase2-check.json",
+        "task-commit-plans/005.json",
+        "review.md",
+        "review-gate.json",
+        "reviews/round-08-final-release.md",
+        "issue-scope-ledger.json",
+        "pr-body.md",
+        "finish-summary-index.json"
+      ]
+    },
+    "human_confirmation": {
+      "status": "not_required",
+      "summary": "Close scope、consumer 与副作用边界均沿用已批准的 #116 authority；本轮仅记录 stale re-entry publication readiness，不执行 push、PR、Issue close、archive、deploy 或 finalization，因此不需要新的 destructive-action confirmation。",
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "十个 publication dimensions与三项 scope/Docs/safety conclusions在 R5 metadata-only revision 后均重新审查通过；PUB116-M1、PUB116-TW1、PUB116-TW2、PUB116-TW3 保持关闭，metadata tail 仅含 allowlisted artifacts。recorder 后必须重建并由 checker 验证十二项 current entry preconditions；通过后 stale re-entry 可返回 ready，唯一 consumer 为 guru-finalize-task。"
+    }
+  },
+  "deterministic_bindings": {
+    "artifacts": {
+      "prd.md": {
+        "sha256": "9814f640a7a624740b7f0cb06dc6e9b010e428ed523a5bd70345ba2b8ab7de01",
+        "size": 18678
+      },
+      "design.md": {
+        "sha256": "b2a38854623d55558807732a72bd586cfa60e38aafe22a0fb1b80a1168d2a408",
+        "size": 23193
+      },
+      "implement.md": {
+        "sha256": "13f7ec2d8fa925a803b37c662cd796fd47a62b0a574b8f2ca96b031099520603",
+        "size": 16451
+      },
+      "planning-approval.json": {
+        "sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
+        "size": 38810
+      },
+      "phase2-check.json": {
+        "sha256": "68ae193ccfaaf8984524bd938d7d52cbfdae977ecefb1585ead6808b062e9c2d",
+        "size": 111942
+      },
+      "issue-scope-ledger.json": {
+        "sha256": "145390719d2a0dbc2380d8962074a1397227ef91ae0a9bdd71640c34adb6e337",
+        "size": 6806
+      },
+      "agent-assignment.json": {
+        "sha256": "bac5c3fe929a07621f0062da241e9731ce842cb27ea5363b110aaf7ff13ea764",
+        "size": 388314
+      },
+      "review.md": {
+        "sha256": "d408a7c7ebd011cdd5532a9caac9761089c1ffd8dcf7ab22a0067822d7cbf270",
+        "size": 8776
+      },
+      "review-gate.json": {
+        "sha256": "10ae9604c45b599e86700f32e64d13d6335041dbc317b3cca268ae3d16f48281",
+        "size": 120447
+      },
+      "pr-body.md": {
+        "sha256": "0c052c42a111cbc41a7abf4c3f5f5713d770d7d18c26932ca753f3d09407a0a6",
+        "size": 5982
+      },
+      "finish-summary-index.json": {
+        "sha256": "a7d3b08021d77dae0bd2a577bf14d1091ef25fe49fdbc873c298662a49d0a2cb",
+        "size": 8962
+      },
+      "implementation-handoff.md": {
+        "sha256": "828d35472eac2e084a9d5f293e3ea411a824a497d1d172b7a73e539b76b49ec3",
+        "size": 56036
+      }
+    },
+    "repository": {
+      "head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+      "branch": "codex/116-review-task-publication",
+      "base_ref": "origin/main",
+      "diff_paths": [
+        ".agents/skills/guru-review-branch/SKILL.md",
+        ".agents/skills/guru-review-branch/interface.json",
+        ".agents/skills/guru-review-branch/references/contract.md",
+        ".agents/skills/guru-review-branch/tests/test_contract.py",
+        ".agents/skills/guru-review-task-publication/SKILL.md",
+        ".agents/skills/guru-review-task-publication/evals/evals.json",
+        ".agents/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
+        ".agents/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
+        ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+        ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+        ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+        ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+        ".agents/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+        ".agents/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+        ".agents/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+        ".agents/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+        ".agents/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+        ".agents/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+        ".agents/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+        ".agents/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+        ".agents/skills/guru-review-task-publication/examples/pr-readiness.json",
+        ".agents/skills/guru-review-task-publication/examples/public-blocked-output.json",
+        ".agents/skills/guru-review-task-publication/examples/public-invocation-error.json",
+        ".agents/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
+        ".agents/skills/guru-review-task-publication/examples/public-publication-review-input.json",
+        ".agents/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+        ".agents/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+        ".agents/skills/guru-review-task-publication/examples/public-ready-output.json",
+        ".agents/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+        ".agents/skills/guru-review-task-publication/interface.json",
+        ".agents/skills/guru-review-task-publication/references/contract.md",
+        ".agents/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
+        ".agents/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+        ".agents/skills/guru-review-task-publication/schemas/public-input.schema.json",
+        ".agents/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".agents/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+        ".agents/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+        ".agents/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
+        ".agents/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+        ".agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        ".agents/skills/guru-review-task-publication/scripts/invoke.sh",
+        ".agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        ".agents/skills/guru-review-task-publication/tests/test_contract.py",
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".claude/skills/guru-review-branch/SKILL.md",
+        ".claude/skills/guru-review-branch/interface.json",
+        ".claude/skills/guru-review-branch/references/contract.md",
+        ".claude/skills/guru-review-branch/tests/test_contract.py",
+        ".claude/skills/guru-review-task-publication/SKILL.md",
+        ".claude/skills/guru-review-task-publication/evals/evals.json",
+        ".claude/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
+        ".claude/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
+        ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+        ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+        ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+        ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+        ".claude/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+        ".claude/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+        ".claude/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+        ".claude/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+        ".claude/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+        ".claude/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+        ".claude/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+        ".claude/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+        ".claude/skills/guru-review-task-publication/examples/pr-readiness.json",
+        ".claude/skills/guru-review-task-publication/examples/public-blocked-output.json",
+        ".claude/skills/guru-review-task-publication/examples/public-invocation-error.json",
+        ".claude/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
+        ".claude/skills/guru-review-task-publication/examples/public-publication-review-input.json",
+        ".claude/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+        ".claude/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+        ".claude/skills/guru-review-task-publication/examples/public-ready-output.json",
+        ".claude/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+        ".claude/skills/guru-review-task-publication/interface.json",
+        ".claude/skills/guru-review-task-publication/references/contract.md",
+        ".claude/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
+        ".claude/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+        ".claude/skills/guru-review-task-publication/schemas/public-input.schema.json",
+        ".claude/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".claude/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+        ".claude/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+        ".claude/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
+        ".claude/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+        ".claude/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        ".claude/skills/guru-review-task-publication/scripts/invoke.sh",
+        ".claude/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        ".claude/skills/guru-review-task-publication/tests/test_contract.py",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/guru-review-branch/SKILL.md",
+        ".codex/skills/guru-review-branch/interface.json",
+        ".codex/skills/guru-review-branch/references/contract.md",
+        ".codex/skills/guru-review-branch/tests/test_contract.py",
+        ".codex/skills/guru-review-task-publication/SKILL.md",
+        ".codex/skills/guru-review-task-publication/evals/evals.json",
+        ".codex/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
+        ".codex/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
+        ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+        ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+        ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+        ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+        ".codex/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+        ".codex/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+        ".codex/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+        ".codex/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+        ".codex/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+        ".codex/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+        ".codex/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+        ".codex/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+        ".codex/skills/guru-review-task-publication/examples/pr-readiness.json",
+        ".codex/skills/guru-review-task-publication/examples/public-blocked-output.json",
+        ".codex/skills/guru-review-task-publication/examples/public-invocation-error.json",
+        ".codex/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
+        ".codex/skills/guru-review-task-publication/examples/public-publication-review-input.json",
+        ".codex/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+        ".codex/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+        ".codex/skills/guru-review-task-publication/examples/public-ready-output.json",
+        ".codex/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+        ".codex/skills/guru-review-task-publication/interface.json",
+        ".codex/skills/guru-review-task-publication/references/contract.md",
+        ".codex/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
+        ".codex/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+        ".codex/skills/guru-review-task-publication/schemas/public-input.schema.json",
+        ".codex/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".codex/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+        ".codex/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+        ".codex/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
+        ".codex/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+        ".codex/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        ".codex/skills/guru-review-task-publication/scripts/invoke.sh",
+        ".codex/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        ".codex/skills/guru-review-task-publication/tests/test_contract.py",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".cursor/skills/guru-review-branch/SKILL.md",
+        ".cursor/skills/guru-review-branch/interface.json",
+        ".cursor/skills/guru-review-branch/references/contract.md",
+        ".cursor/skills/guru-review-branch/tests/test_contract.py",
+        ".cursor/skills/guru-review-task-publication/SKILL.md",
+        ".cursor/skills/guru-review-task-publication/evals/evals.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+        ".cursor/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+        ".cursor/skills/guru-review-task-publication/examples/pr-readiness.json",
+        ".cursor/skills/guru-review-task-publication/examples/public-blocked-output.json",
+        ".cursor/skills/guru-review-task-publication/examples/public-invocation-error.json",
+        ".cursor/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
+        ".cursor/skills/guru-review-task-publication/examples/public-publication-review-input.json",
+        ".cursor/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+        ".cursor/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+        ".cursor/skills/guru-review-task-publication/examples/public-ready-output.json",
+        ".cursor/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+        ".cursor/skills/guru-review-task-publication/interface.json",
+        ".cursor/skills/guru-review-task-publication/references/contract.md",
+        ".cursor/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
+        ".cursor/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+        ".cursor/skills/guru-review-task-publication/schemas/public-input.schema.json",
+        ".cursor/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".cursor/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+        ".cursor/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+        ".cursor/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
+        ".cursor/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+        ".cursor/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        ".cursor/skills/guru-review-task-publication/scripts/invoke.sh",
+        ".cursor/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        ".cursor/skills/guru-review-task-publication/tests/test_contract.py",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/bash/check-task-publication-review.sh",
+        ".trellis/guru-team/scripts/bash/record-task-publication-review.sh",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/consumers/stop/production/review-task-publication-blocked.schema.json",
+        ".trellis/guru-team/skills/consumers/workflow/production/review-task-publication-return-to-task-work.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
+        ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/evals.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/blocked-external-facts.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/blocked-external-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/pr-readiness.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-blocked-output.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-invocation-error.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-authoring.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-ready-output.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/interface.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-input.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-ready-output.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/invoke.sh",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+        ".trellis/guru-team/skills/registry.json",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/preset/upstream-ownership.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/index.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/skill-package-contract.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+        ".trellis/tasks/07-24-116-review-task-publication/check.jsonl",
+        ".trellis/tasks/07-24-116-review-task-publication/context-discovery.json",
+        ".trellis/tasks/07-24-116-review-task-publication/contract-wording-review.json",
+        ".trellis/tasks/07-24-116-review-task-publication/design.md",
+        ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
+        ".trellis/tasks/07-24-116-review-task-publication/implement.jsonl",
+        ".trellis/tasks/07-24-116-review-task-publication/implement.md",
+        ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+        ".trellis/tasks/07-24-116-review-task-publication/issue-review.json",
+        ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round3.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round4.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round5.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round8.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round9.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report.md",
+        ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+        ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
+        ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
+        ".trellis/tasks/07-24-116-review-task-publication/prd.md",
+        ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+        ".trellis/tasks/07-24-116-review-task-publication/review.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-03-problem-closure.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task-start-context.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+        "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/consumers/stop/production/review-task-publication-blocked.schema.json",
+        "trellis/skills/guru-team/consumers/workflow/production/review-task-publication-return-to-task-work.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
+        "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/evals.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/blocked-external-facts.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/blocked-external-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/return-to-task-work-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/pr-readiness.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-blocked-output.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-invocation-error.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-authoring.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-stale-input.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-ready-output.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-return-to-task-work-output.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/interface.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-blocked-output.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-input.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-ready-output.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/invoke.sh",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+        "trellis/skills/guru-team/registry.json",
+        "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/bash/check-task-publication-review.sh",
+        "trellis/workflows/guru-team/scripts/bash/record-task-publication-review.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "status_paths": [
+        ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+        ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
+        ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+        ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
+        ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+        ".trellis/tasks/07-24-116-review-task-publication/review.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json"
+      ]
+    },
+    "entry_preconditions": {
+      "runtime_dependency": {
+        "status": "passed",
+        "facts_sha256": "1a2635297b61ceb2d90c8ba9cbc11e31d2d29b8d6607e128806719b533b7d7e0"
+      },
+      "task_workspace": {
+        "status": "passed",
+        "facts_sha256": "750ed80a4c6db36aee711991ad041f7c7a0e5576d860d32bfddbca2a4bc8ea4a"
+      },
+      "task_identity": {
+        "status": "passed",
+        "facts_sha256": "a511e76aac22cadfec0f26c5b3b3d19ba0c4731c6f62b3fd05d5e1c6ea236466"
+      },
+      "branch_review_handoff": {
+        "status": "passed",
+        "facts_sha256": "2351e56f556b88d2ddbb82e31289aa928a4546fef9a34ef666d98e36310090bb"
+      },
+      "planning_approval": {
+        "status": "passed",
+        "facts_sha256": "e1861ebe717a28f8bea8462a4b0c59276d516eda1e0dd17e81020961462d3920"
+      },
+      "phase2_check": {
+        "status": "passed",
+        "facts_sha256": "8732437feb31120d18eda63c28625c264a4145cbee0921d6394efc765efbc347"
+      },
+      "issue_scope_ledger": {
+        "status": "passed",
+        "facts_sha256": "e4603c70dee2d4c9b2e28d8a64681a3ad065dd41933fbec68f60e05d24b5a959"
+      },
+      "docs_ssot_reconciliation": {
+        "status": "passed",
+        "facts_sha256": "56f59ade8cc6421f09e46ab60b75f078432e1c2b418a28a4921c111e3ed2d535"
+      },
+      "branch_review_evidence": {
+        "status": "passed",
+        "facts_sha256": "ec3873765a8cdcaec5cf3f43852aeb773ff3c9e21b87560a53fe389e111db094"
+      },
+      "publication_content": {
+        "status": "passed",
+        "facts_sha256": "9f3f587c388e2a9c11cefc5b4a6bcfeb6b054567d5b5d2e72f911cc748dc7209"
+      },
+      "review_range_and_working_tree": {
+        "status": "passed",
+        "facts_sha256": "d79e74382dc17afb32687563500d19169f475f3cb8172ab046ad5d2b828deb4a"
+      },
+      "invocation_freshness": {
+        "status": "passed",
+        "facts_sha256": "6598975bf6437a8e506a508a9fe1e8058782647336d828d3d38deacdc746759d"
+      }
+    },
+    "publication_ref": "publication:4125905d59bb4b5a72012828b2b461ee52d37918ca63661742271dff16df28e8"
+  },
+  "typed_exit": "ready",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-finalize-task"
+  },
+  "supersedes_publication_ref": "publication:4e5f682d0c11f28a65aab110911011d53bce6a36564961cc1a7adbb8834f9c67",
+  "stale_reason": "The prior ready publication identity predates the contract-valid metadata-only revision of finish-summary-index.json required by the finalization dry-run.",
+  "reentry_context": "Rebuild all twelve entry preconditions and all ten semantic dimensions against 26c6b01c7a0128eecdb9978793aa48d4115dcf89 after the finish summary index was shortened and its contract-change source artifacts were projected to valid final-summary evidence.",
+  "facts_sha256": "ef6f2eb81a1491c369a2b946c6354c06348683ca87a64830f57dda8245c9405e",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "codex/116-review-task-publication",
+    "reviewed_head_sha": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+    "title": "完成：#116 实现 guru-review-task-publication 闭环 Skill",
+    "body_source": "pr-body.md",
+    "body_sha256": "0c052c42a111cbc41a7abf4c3f5f5713d770d7d18c26932ca753f3d09407a0a6",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "3a111ed9272810953cc868065d3ae2f536684e14376ce53c4fa4a13b362c0257"
+  }
+}

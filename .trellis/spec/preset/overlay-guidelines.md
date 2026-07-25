@@ -378,8 +378,9 @@ six-package set and rejects partial activation or sidecars.
 
 The production planning/check/commit package trees follow the same copy and
 mode rules under the independent `production-minimal-handoff-v1` manifest.
-Together the two manifests plus active `guru-review-branch` yield ten
-byte-identical active package trees and 39 exits. The frozen 43-path
+Together the two manifests plus active `guru-review-branch` and
+`guru-review-task-publication` yield eleven byte-identical active package trees
+and 42 exits. The frozen 43-path
 workflow/platform overlay payload is not expanded
 for package assets; packages, shared consumers, schemas, manifests, and evals
 remain Guru-owned preset-managed additive assets.
@@ -392,3 +393,18 @@ Claude/Cursor byte-and-mode projection. It is an additive Guru-owned package,
 not an overlay. Adding it does not expand the frozen 43-path upstream overlay
 payload and must not modify `.trellis/agents/check.md`, any platform
 `trellis-check` agent entry, or `.agents/skills/trellis-check/**`.
+
+`guru-review-task-publication` follows the same additive
+canonical-to-installed/shared/Codex/Claude/Cursor byte-and-mode projection. It
+does not add an upstream overlay path. Issue #116 updates the reviewed current
+bytes of the same five #131 continue-entry payloads so their Branch Review
+`passed` route invokes the now-active publication owner after caller-owned
+content preparation; baseline identities and the frozen 43-path inventory stay
+unchanged. It does not alter any `trellis-finish-work` Skill, command, prompt,
+agent, or launcher.
+
+Canonical workflow and dogfood workflow add only the mandatory invocation,
+three typed transitions, re-entry, and fail-closed targets. Platform package
+copies contain the package-owned step-local contract; no platform entry may
+duplicate its ten review dimensions, findings, metadata revision loop, gate
+fields, or recorder/checker behavior.

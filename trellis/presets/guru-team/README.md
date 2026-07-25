@@ -231,9 +231,9 @@ Preset 同时安装冻结的 interface 1.2 与独立 interface 1.3 schema，并�
 Active registry row 以 exact `interface_schema_id` / `io_contract_state` 选择
 `1.2+legacy` 或 `1.3+minimal_handoff`；`stage0-minimal-handoff-v1` 中六个 Stage 0
 packages/24 exits 已全部使用 1.3；独立 `production-minimal-handoff-v1` 中
-planning/check/commit 三包/十 profiles/11 exits 也使用 1.3。当前 active closure 为 10/39，
+planning/check/commit 三包/十 profiles/11 exits 也使用 1.3。当前 active closure 为 11/42，
 `legacy_skill_ids=[]`，Stage 0 identity 保持 6/24。
-Preset 在一次 staging transaction 中安装两个 migration manifests/schemas、十包 public
+Preset 在一次 staging transaction 中安装两个 migration manifests/schemas、十一包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Mixed 1.2/1.3 representative fixture、fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
@@ -241,7 +241,8 @@ production registry、extension inventory、installed files 或 selected-platfor
 planning/check/commit 三包与 11 exits；第十包 `guru-review-branch` 不改写该 manifest。
 同一 transaction 还安装 Interface 1.3 additive
 `skill_input_authoring_seed` shape、planning self-reentry、check passed 到 initial commit、
-commit self-reentry 与 commit-to-Branch-Review 四条声明 edge 的 target-owned
+commit self-reentry、commit-to-Branch-Review 与 Branch-Review-to-publication
+五条声明 edge 的 target-owned
 authoring examples 与 partition/no-overwrite/full-target-schema probes。该 kind 不增加第五种
 projection operation；部分 edge、缺失 authoring example 或 canonical/installed/platform
 字节不一致均视为 mixed production graph。
@@ -251,6 +252,16 @@ Fixture source validation 强制 Skill consumer 使用 active registry exact can
 相同 target id 的 target-owned input，对非 direct projection 与 direct 到 scalar CLI 做
 required 与映射/normalizer 后全域兼容证明，分别检查 public/private
 schema id/path 互斥，并要求 wrapper 完整匹配 dispatcher-only template。
+
+Preset 保持原 frozen 43-path overlay inventory，同时更新其中五条已有
+`trellis-continue` current payload：Branch Review `passed` 进入 active Phase 3.6，
+workflow caller 先编写 task-local `pr-body.md` 与
+`finish-summary-index.json` 初始候选，再 mandatory invoke active
+`guru-review-task-publication`。Caller preparation 不判断 publication semantic
+结论；缺失或结构错误先失败关闭。Phase 3.7 不得在 `ready` 后首次创建或修改两份
+content，唯一 planned missing-Skill stop 为
+`ready -> guru-finalize-task`。Baseline SHA 与 overlay path 集合保持不变，reviewed
+current payload hashes 随本次 active route 更新。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -341,6 +352,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/format-merge-commit.sh`
 - `.trellis/guru-team/scripts/bash/review-branch.sh`
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
+- `.trellis/guru-team/scripts/bash/record-task-publication-review.sh`
+- `.trellis/guru-team/scripts/bash/check-task-publication-review.sh`
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
 - `.trellis/guru-team/scripts/bash/backfill-finish-summary.sh`
@@ -351,10 +364,11 @@ Production skill registry 同时保留 reserved `guru-create-work-commit`，以�
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request`、
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
-`guru-review-branch`。这十个 active packages 共声明 39 个 external exits。Planned id
+`guru-review-branch`、`guru-review-task-publication`。这十一个 active packages 共声明
+42 个 external exits。Planned `guru-finalize-task`
 不安装 package，也不能拥有 invoke/exit marker。当前
 canonical extension version 是待发布的
-`0.6.5-guru.21`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`0.6.5-guru.22`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -649,6 +663,13 @@ six-field public input (`profile`, `mode`, `task_ref`, `base_ref`,
 `implementation_required`, `scope_confirmation_required`, `blocked`).
 Reviewer lifecycle, finding qualification, Docs SSOT Gate, liveness/recovery,
 private artifacts and re-entry remain package-owned step-local contracts.
+
+Its `passed` exit proceeds through the same entries to active
+`guru-review-task-publication`: the caller first authors the two current
+task-local publication content candidates, then invokes the active owner with
+only its declared target-owned fields. The caller does not decide publication
+sufficiency or readiness, and the route stops only at the later planned
+`guru-finalize-task` consumer.
 
 `review-branch.sh` and `check-review-gate.sh` are package-owned deterministic
 recorder/validator implementation details. They run only after the AI Review
