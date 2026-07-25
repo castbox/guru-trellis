@@ -1,0 +1,199 @@
+{
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
+  "id": "guru-verify-extension-installation",
+  "name": "guru-verify-extension-installation",
+  "description": "Verify extension installation through AI-owned applicability, profile selection, adequacy review, one private gate, and four typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": ["runtime_dependency", "public_input", "repository_identity", "remote_identity", "extension_surface", "ownership_inventory", "persistence_boundary", "invocation_freshness"]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": ["runtime_dependency", "public_input", "repository_identity", "remote_identity", "extension_surface", "ownership_inventory", "persistence_boundary", "invocation_freshness"]
+    }
+  },
+  "entry_preconditions": [
+    {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and verification commands", "binding": "complete compatible Guru Team preset", "freshness": "validated before every command"},
+    {"id": "public_input", "evidence": "one closed workflow or standalone profile", "binding": "mode, target, repository and caller intent", "freshness": "validated at invocation"},
+    {"id": "repository_identity", "evidence": "current Git root, task mapping when present and credentials-safe repository locator", "binding": "public repository and task identity", "freshness": "rebuilt before execute, record and check"},
+    {"id": "remote_identity", "evidence": "requested remote/ref, ls-remote HEAD and cloned checkout HEAD", "binding": "reviewed or frozen requested HEAD", "freshness": "resolved for the current invocation"},
+    {"id": "extension_surface", "evidence": "reviewed diff, marketplace, preset, workflow, schema, runtime, platform and public docs facts", "binding": "AI applicability and profile coverage", "freshness": "reread before AI Gate"},
+    {"id": "ownership_inventory", "evidence": "current managed and frozen transitional legacy inventory", "binding": "Guru versus Trellis upstream ownership", "freshness": "validated from the remote source"},
+    {"id": "persistence_boundary", "evidence": "task-bearing or session-only input branch", "binding": "one task-local artifact or no repository artifact", "freshness": "checked before and after invocation"},
+    {"id": "invocation_freshness", "evidence": "plan/ref/HEAD, prior verification identity, semantic Gate and actual exit", "binding": "one complete current owner round", "freshness": "checker rejects drift, ambiguity and superseded evidence"}
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "workflow_input", "path": "examples/public-verification-required-input.json"},
+    {"id": "standalone_input", "path": "examples/public-standalone-verification-input.json"},
+    {"id": "execution_facts", "path": "examples/execution-facts.json"},
+    {"id": "semantic_review_input", "path": "examples/semantic-review-input.json"},
+    {"id": "private_evidence", "path": "examples/marketplace-verification.json"},
+    {"id": "verified_output", "path": "examples/public-verified-output.json"},
+    {"id": "not_required_output", "path": "examples/public-not-required-output.json"},
+    {"id": "return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"},
+    {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
+    {"id": "public_invocation_error", "path": "examples/public-invocation-error.json"}
+  ],
+  "schemas": [
+    {"id": "public_input_verification_required", "path": "schemas/public-verification-required-input.schema.json"},
+    {"id": "public_input_standalone_verification", "path": "schemas/public-standalone-verification-input.schema.json"},
+    {"id": "public_input_aggregate", "path": "schemas/public-input.schema.json"},
+    {"id": "public_verified_output", "path": "schemas/public-verified-output.schema.json"},
+    {"id": "public_not_required_output", "path": "schemas/public-not-required-output.schema.json"},
+    {"id": "public_return_to_task_work_output", "path": "schemas/public-return-to-task-work-output.schema.json"},
+    {"id": "public_blocked_output", "path": "schemas/public-blocked-output.schema.json"},
+    {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
+    {"id": "execution_facts", "path": "schemas/execution-facts.schema.json"},
+    {"id": "semantic_review_input", "path": "schemas/semantic-review-input.schema.json"},
+    {"id": "private_marketplace_verification", "path": "schemas/marketplace-verification.schema.json"}
+  ],
+  "validators": [
+    {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Freeze the remote ref and execute the closed clean-install capability catalog while recording only sanitized deterministic facts"},
+    {"id": "verification_recorder", "command": "scripts/record-extension-verification.sh", "runtime_command": "record-extension-verification", "objective_scope": "Record already completed AI applicability, profile, adequacy, findings and route with rebuilt machine facts"},
+    {"id": "verification_checker", "command": "scripts/check-extension-verification.sh", "runtime_command": "check-extension-verification", "objective_scope": "Validate the one private evidence schema, identity, freshness, redaction, persistence and consumer without semantic judgment"},
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-extension-verification", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema branch and emit one minimal DTO"}
+  ],
+  "external_exits": [
+    {"id": "verified", "evidence": "AI adequacy passed for every affected extension surface and every selected deterministic capability passed", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
+    {"id": "not_required", "evidence": "AI applicability review found no installable extension surface and no execution profile was fabricated", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
+    {"id": "return_to_task_work", "evidence": "a task-bearing invocation has one or more open task-work findings", "consumer": {"kind": "workflow", "id": "guru-extension-verification-work-router"}},
+    {"id": "blocked", "evidence": "remote, auth, network, taskless installation failure or another external dependency prevents completion", "consumer": {"kind": "stop", "id": "extension-installation-verification-blocked"}}
+  ],
+  "reentry": {
+    "identity": "profile, mode, task or session boundary, plan, repo, remote, ref, reviewed and remote HEAD, semantic Gate, actual exit and prior verification identity",
+    "freshness": "same-identity transient retry reruns the complete Skill; plan, ref, HEAD or task implementation drift supersedes prior evidence",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {"schema_id": "guru-extension-verify-installation-input-aggregate-1.0", "path": "schemas/public-input.schema.json"},
+      "profiles": [
+        {
+          "id": "verification_required",
+          "schema": {"schema_id": "guru-extension-verify-installation-input-verification-required-1.0", "path": "schemas/public-verification-required-input.schema.json"},
+          "example": {"id": "verification_required_input", "path": "examples/public-verification-required-input.json"},
+          "discriminator": {"field": "profile", "value": "verification_required"}
+        },
+        {
+          "id": "standalone_verification",
+          "schema": {"schema_id": "guru-extension-verify-installation-input-standalone-verification-1.0", "path": "schemas/public-standalone-verification-input.schema.json"},
+          "example": {"id": "standalone_verification_input", "path": "examples/public-standalone-verification-input.json"},
+          "discriminator": {"field": "profile", "value": "standalone_verification"}
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {"kind": "structured_json", "profile_id": "verification_required"},
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {"schema_id": "guru-extension-verify-installation-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
+      "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
+      "example_argv": ["--input", "examples/public-verification-required-input.json", "--owner-result", "examples/marketplace-verification.json"]
+    },
+    "outputs": [
+      {"exit_id": "verified", "schema": {"schema_id": "guru-extension-verify-installation-output-verified-1.0", "path": "schemas/public-verified-output.schema.json"}, "example": {"id": "verified_output", "path": "examples/public-verified-output.json"}, "consumer_use_ids": ["project_verified"]},
+      {"exit_id": "not_required", "schema": {"schema_id": "guru-extension-verify-installation-output-not-required-1.0", "path": "schemas/public-not-required-output.schema.json"}, "example": {"id": "not_required_output", "path": "examples/public-not-required-output.json"}, "consumer_use_ids": ["project_not_required"]},
+      {"exit_id": "return_to_task_work", "schema": {"schema_id": "guru-extension-verify-installation-output-return-to-task-work-1.0", "path": "schemas/public-return-to-task-work-output.schema.json"}, "example": {"id": "return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"}, "consumer_use_ids": ["project_return_to_task_work"]},
+      {"exit_id": "blocked", "schema": {"schema_id": "guru-extension-verify-installation-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
+    ],
+    "consumer_inputs": [
+      {
+        "id": "verified_finalization_seed",
+        "consumer": {"kind": "skill", "id": "guru-finalize-task"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "planned_skill_input_seed", "seed_fields": ["task_ref", "plan_ref", "reviewed_head", "verification_ref"]}
+      },
+      {
+        "id": "not_required_finalization_seed",
+        "consumer": {"kind": "skill", "id": "guru-finalize-task"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "planned_skill_input_seed", "seed_fields": ["task_ref", "plan_ref", "reviewed_head"]}
+      },
+      {
+        "id": "return_to_task_work_input",
+        "consumer": {"kind": "workflow", "id": "guru-extension-verification-work-router"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-extension-verify-installation-workflow-return-to-task-work-input-1.0", "path": "consumers/workflow/production/verify-extension-installation-return-to-task-work.schema.json"}
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {"kind": "stop", "id": "extension-installation-verification-blocked"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-extension-verify-installation-stop-blocked-input-1.0", "path": "consumers/stop/production/verify-extension-installation-blocked.schema.json"}
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_verified",
+        "exit_id": "verified",
+        "consumer_input_id": "verified_finalization_seed",
+        "operation": "select",
+        "mappings": [
+          {"source": "task_ref", "target": "task_ref"},
+          {"source": "plan_ref", "target": "plan_ref"},
+          {"source": "reviewed_head", "target": "reviewed_head"},
+          {"source": "verification_ref", "target": "verification_ref"}
+        ]
+      },
+      {
+        "id": "project_not_required",
+        "exit_id": "not_required",
+        "consumer_input_id": "not_required_finalization_seed",
+        "operation": "select",
+        "mappings": [
+          {"source": "task_ref", "target": "task_ref"},
+          {"source": "plan_ref", "target": "plan_ref"},
+          {"source": "reviewed_head", "target": "reviewed_head"}
+        ]
+      },
+      {
+        "id": "project_return_to_task_work",
+        "exit_id": "return_to_task_work",
+        "consumer_input_id": "return_to_task_work_input",
+        "operation": "select",
+        "mappings": [
+          {"source": "exit_id", "target": "exit_id"},
+          {"source": "task_ref", "target": "task_ref"},
+          {"source": "finding_refs", "target": "finding_refs"},
+          {"source": "resume_target", "target": "resume_target"}
+        ]
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": [
+          {"source": "exit_id", "target": "exit_id"},
+          {"source": "reason_code", "target": "reason_code"},
+          {"source": "remediation", "target": "remediation"}
+        ]
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "marketplace_verification",
+        "kind": "gate_evidence",
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json", "path": "schemas/marketplace-verification.schema.json"},
+        "persistence": "task_local_tracked"
+      }
+    ]
+  }
+}

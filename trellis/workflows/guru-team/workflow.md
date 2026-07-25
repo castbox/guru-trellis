@@ -1235,6 +1235,27 @@ then repeat complete Phase 2 check, task commit, Branch Review, and publication
 review. `blocked`, unknown, missing, multiple, stale, consumer-mismatched, or
 unmapped results stop fail closed.
 
+The active extension verifier is independently discoverable for standalone use
+and owns the future finalizer target bootstrap, but this workflow does not
+activate the #118 producer edge:
+
+<!-- guru-skill-invoke: {"skill":"guru-verify-extension-installation","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"verified","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"not_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-extension-verification-work-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"blocked","consumer":{"kind":"stop","id":"extension-installation-verification-blocked"}} -->
+
+<!-- guru-workflow-target: {"id":"guru-extension-verification-work-router"} -->
+<!-- guru-stop-target: {"id":"extension-installation-verification-blocked"} -->
+
+The `verification_required` target schema is owned by the verifier package and
+contains only `task_ref`, `plan_ref`, `repo_ref`, `reviewed_head`, and
+`verification_target` plus its fixed discriminators. Until #118 activates the
+producer, the marker above is a contract/discovery declaration and not a
+reachable transition from publication `ready`. The verifier alone owns
+applicability, capability selection, adequacy, findings, retry and actual exit;
+the runtime only executes, records and checks objective facts.
+
 #### 3.7 Finish-work archive and finish-summary `[required · once]`
 
 Start only after `guru-review-task-publication:ready` for the current reviewed

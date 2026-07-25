@@ -1,0 +1,116 @@
+from __future__ import annotations
+
+import json
+import stat
+import unittest
+from pathlib import Path
+
+import jsonschema
+
+
+PACKAGE = Path(__file__).resolve().parents[1]
+
+
+def load(relative: str):
+    return json.loads((PACKAGE / relative).read_text(encoding="utf-8"))
+
+
+class ExtensionVerificationContractTests(unittest.TestCase):
+    def test_interface_identity_and_semantic_profile(self) -> None:
+        interface = load("interface.json")
+        self.assertEqual(interface["schema_version"], "1.3")
+        self.assertEqual(interface["id"], "guru-verify-extension-installation")
+        self.assertEqual(interface["judgment_mode"], "semantic")
+        self.assertEqual(
+            interface["ordered_stages"],
+            [
+                "forward_behavior",
+                "ai_review_gate",
+                "conditional_human_confirmation",
+                "recorder_validator",
+                "typed_exit",
+            ],
+        )
+        self.assertEqual(
+            {item["id"] for item in interface["external_exits"]},
+            {"verified", "not_required", "return_to_task_work", "blocked"},
+        )
+
+    def test_distinct_inputs_and_taskless_standalone_branch(self) -> None:
+        workflow_schema = load("schemas/public-verification-required-input.schema.json")
+        standalone_schema = load("schemas/public-standalone-verification-input.schema.json")
+        workflow = load("examples/public-verification-required-input.json")
+        standalone = load("examples/public-standalone-verification-input.json")
+        jsonschema.Draft202012Validator(workflow_schema).validate(workflow)
+        jsonschema.Draft202012Validator(standalone_schema).validate(standalone)
+        self.assertFalse(jsonschema.Draft202012Validator(workflow_schema).is_valid(standalone))
+        self.assertFalse(jsonschema.Draft202012Validator(standalone_schema).is_valid(workflow))
+        self.assertNotIn("task_ref", standalone)
+        with_task = {**standalone, "task_ref": ".trellis/tasks/current"}
+        jsonschema.Draft202012Validator(standalone_schema).validate(with_task)
+
+    def test_every_exit_uses_closed_mode_branches(self) -> None:
+        for exit_id in ("verified", "not-required", "return-to-task-work", "blocked"):
+            schema = load(f"schemas/public-{exit_id}-output.schema.json")
+            branches = schema["oneOf"]
+            self.assertEqual(len(branches), 2)
+            self.assertEqual(
+                {branch["properties"]["mode"]["const"] for branch in branches},
+                {"workflow", "standalone"},
+            )
+            for branch in branches:
+                self.assertFalse(branch["additionalProperties"])
+                self.assertIn("exit_id", branch["required"])
+
+    def test_public_outputs_exclude_private_state(self) -> None:
+        forbidden = {
+            "applicability",
+            "verification_profile",
+            "execution",
+            "semantic_review",
+            "machine_facts_sha256",
+            "semantic_review_sha256",
+            "facts_sha256",
+        }
+        for path in (PACKAGE / "schemas").glob("public-*-output.schema.json"):
+            schema = json.loads(path.read_text(encoding="utf-8"))
+            fields = {
+                field
+                for branch in schema["oneOf"]
+                for field in branch["properties"]
+            }
+            self.assertFalse(fields & forbidden, path)
+
+    def test_examples_validate_and_wrappers_are_executable(self) -> None:
+        mapping = {
+            "verified": "verified",
+            "not-required": "not-required",
+            "return-to-task-work": "return-to-task-work",
+            "blocked": "blocked",
+        }
+        for schema_name, example_name in mapping.items():
+            schema = load(f"schemas/public-{schema_name}-output.schema.json")
+            example = load(f"examples/public-{example_name}-output.json")
+            jsonschema.Draft202012Validator(schema).validate(example)
+        private_schema = load("schemas/marketplace-verification.schema.json")
+        private_example = load("examples/marketplace-verification.json")
+        jsonschema.Draft202012Validator(private_schema).validate(private_example)
+        for wrapper in (PACKAGE / "scripts").glob("*.sh"):
+            self.assertTrue(wrapper.stat().st_mode & stat.S_IXUSR, wrapper)
+
+    def test_session_only_input_has_no_task_work_route_fixture(self) -> None:
+        standalone = load("examples/public-standalone-verification-input.json")
+        self.assertNotIn("task_ref", standalone)
+        returned = load("examples/public-return-to-task-work-output.json")
+        self.assertEqual(returned["mode"], "workflow")
+        self.assertIn("task_ref", returned)
+
+    def test_no_secret_marker_in_contract_assets(self) -> None:
+        marker = "synthetic-" + "secret-marker"
+        for path in PACKAGE.rglob("*"):
+            if path.is_file() and "__pycache__" not in path.parts:
+                self.assertNotIn(marker, path.read_text(encoding="utf-8"))
+
+
+if __name__ == "__main__":
+    unittest.main()

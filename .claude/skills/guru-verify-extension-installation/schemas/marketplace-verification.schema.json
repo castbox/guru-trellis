@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "skill_id", "generated_at", "mode", "profile",
+    "public_input", "repository", "applicability", "verification_profile",
+    "execution", "semantic_review", "typed_exit", "consumer",
+    "identity", "blocker", "freshness", "redaction", "machine_facts_sha256",
+    "semantic_review_sha256", "facts_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-verify-extension-installation"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "profile": {"enum": ["verification_required", "standalone_verification"]},
+    "public_input": {"type": "object"},
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref", "remote", "ref", "reviewed_head", "remote_head",
+        "task_worktree_sha256"
+      ],
+      "properties": {
+        "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
+        "ref": {"type": "string", "minLength": 1},
+        "reviewed_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "remote_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "task_worktree_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason", "evidence_paths"],
+      "properties": {
+        "status": {"enum": ["required", "not_required"]},
+        "reason": {"type": "string", "minLength": 1},
+        "evidence_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "verification_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selected_capabilities", "selection_reason", "coverage"],
+      "properties": {
+        "selected_capabilities": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/capability"}},
+        "selection_reason": {"type": "string", "minLength": 1},
+        "coverage": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "commands", "capabilities", "asset_digests", "ownership", "sidecars"],
+      "properties": {
+        "status": {"enum": ["not_run", "passed", "failed", "blocked"]},
+        "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
+        "capabilities": {"type": "array", "items": {"$ref": "#/$defs/capabilityFact"}},
+        "asset_digests": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          }
+        },
+        "ownership": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["frozen_transitional_legacy_count", "new_legacy_entries"],
+          "properties": {
+            "frozen_transitional_legacy_count": {"type": "integer", "minimum": 0},
+            "new_legacy_entries": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "sidecars": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "semantic_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adequacy", "findings", "conclusion"],
+      "properties": {
+        "adequacy": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/adequacy"}},
+        "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+        "conclusion": {"enum": ["verified", "not_required", "return_to_task_work", "blocked"]}
+      }
+    },
+    "typed_exit": {"enum": ["verified", "not_required", "return_to_task_work", "blocked"]},
+    "consumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["skill", "workflow", "stop", "session"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verification_ref"],
+      "properties": {
+        "verification_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "blocker": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reason_code", "remediation"],
+          "properties": {
+            "reason_code": {"type": "string", "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"},
+            "remediation": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan_ref", "supersedes_verification_ref", "current"],
+      "properties": {
+        "plan_ref": {"type": ["string", "null"]},
+        "supersedes_verification_ref": {"type": ["string", "null"]},
+        "current": {"type": "boolean"}
+      }
+    },
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "scanned_surfaces"],
+      "properties": {
+        "status": {"enum": ["passed", "failed"]},
+        "scanned_surfaces": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "machine_facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "semantic_review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "capability": {
+      "enum": [
+        "marketplace_index", "new_repo_init", "existing_repo_preview_switch",
+        "preset_initial_apply", "preset_reapply", "trellis_update_reapply",
+        "managed_conflict_sidecars", "skill_contract_discovery",
+        "platform_equality", "ownership_inventory", "readme_commands",
+        "redaction"
+      ]
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["argv", "exit_code", "stdout_sha256", "stderr_sha256", "stdout_size_bytes", "stderr_size_bytes"],
+      "properties": {
+        "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "exit_code": {"type": "integer"},
+        "stdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "stderr_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "stdout_size_bytes": {"type": "integer", "minimum": 0},
+        "stderr_size_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "capabilityFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "evidence_step"],
+      "properties": {
+        "id": {"$ref": "#/$defs/capability"},
+        "status": {"enum": ["passed", "failed", "blocked", "not_run"]},
+        "evidence_step": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "adequacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "evidence_refs"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "status": {"enum": ["passed", "failed", "blocked", "not_applicable"]},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["finding_ref", "evidence", "route_class", "status", "closure_evidence"],
+      "properties": {
+        "finding_ref": {"type": "string", "minLength": 1},
+        "evidence": {"type": "string", "minLength": 1},
+        "route_class": {"enum": ["task_work", "external_blocker"]},
+        "status": {"enum": ["open", "closed"]},
+        "closure_evidence": {"type": "string"}
+      }
+    }
+  }
+}

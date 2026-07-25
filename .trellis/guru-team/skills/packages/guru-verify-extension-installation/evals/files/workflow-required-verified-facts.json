@@ -1,0 +1,1 @@
+{"scenario":"The semantic owner passes every selected extension capability and adequacy dimension.","owner_staging":{"recipe":"extension-workflow-verified"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/tasks/current/marketplace-verification.json"]}}

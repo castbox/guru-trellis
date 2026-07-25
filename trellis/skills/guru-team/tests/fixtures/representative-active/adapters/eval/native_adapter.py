@@ -250,8 +250,10 @@ def start_public_runtime_boundary(
 ) -> tuple[Path, threading.Thread, threading.Event]:
     request_path = execution_root / "public-invocation-request.json"
     response_path = execution_root / "public-invocation-response.json"
+    response_draft_path = execution_root / "public-invocation-response.pending.json"
     request_path.unlink(missing_ok=True)
     response_path.unlink(missing_ok=True)
+    response_draft_path.unlink(missing_ok=True)
     stop = threading.Event()
 
     def serve() -> None:
@@ -281,9 +283,10 @@ def start_public_runtime_boundary(
                 }
             except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 response_payload = {"returncode": 2, "stdout": "", "stderr": str(exc)}
-            response_path.write_text(
+            response_draft_path.write_text(
                 json.dumps(response_payload, separators=(",", ":")), encoding="utf-8",
             )
+            response_draft_path.replace(response_path)
             while request_path.exists() or response_path.exists():
                 if stop.wait(0.01):
                     return
@@ -292,6 +295,7 @@ def start_public_runtime_boundary(
                 try:
                     request_path.unlink(missing_ok=True)
                     response_path.unlink(missing_ok=True)
+                    response_draft_path.unlink(missing_ok=True)
                 except OSError:
                     pass
 
@@ -505,9 +509,12 @@ def native_argv(
             "--output-last-message", str(output_path), context,
         ], output_path
     if adapter == "claude":
+        trace_helper = native_request_path.with_name("native-trace-helper.py")
         return [
             command, "--print", "--safe-mode", "--output-format", "json", "--no-session-persistence",
-            "--permission-mode", "dontAsk", "--add-dir", str(projection_root),
+            "--permission-mode", "dontAsk",
+            f"--allowedTools=Bash({trace_helper} *)",
+            "--add-dir", str(projection_root),
         ], None
     return [command, "--print", "--output-format", "json", context], None
 

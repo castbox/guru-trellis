@@ -1330,11 +1330,53 @@ the result. No invocation creates a committed global archive index. Per-task
 errors contain only repo-relative task/artifact paths and reasons, never source
 content or secrets.
 
-### Remote Marketplace Verification Gate
+### Extension Installation Verification Runtime
 
-For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
+The stable runtime commands for `guru-verify-extension-installation` are
+`execute-extension-verification`, `record-extension-verification`,
+`check-extension-verification`, and `invoke-extension-verification`. Canonical
+package wrappers call those commands only through `run-skill-command`.
+`verify-marketplace` remains a compatibility entry for the current closeout
+family and projects into the same executor; it does not retain a second
+installation implementation or semantic route owner.
 
-`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to task-relative `marketplace-verification.json`, and explicitly does not satisfy final publish. Formal closeout pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts, then commits the immutable plan/readiness/verifier/ledger evidence allowlist and pushes it before binding a draft PR. The final summary is created once in the active task with that draft identity and is included only in the archive transaction; no post-PR or post-archive metadata tail is allowed. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. No release tag is created by this gate.
+`marketplace_verification_required()` returns changed-surface facts only. The
+legacy closeout boolean is an explicitly named compatibility projection for
+existing consumers. Neither function may decide applicability for the active
+Skill.
+
+The executor accepts an already AI-selected closed capability list, resolves a
+credentials-safe remote locator, freezes the requested ref with
+`git ls-remote`, checks out that exact HEAD, and runs the selected clean install,
+preview/switch, preset, update/reapply, ownership, sidecar, discovery, platform,
+README, and redaction probes. It records sanitized argv, exit code, output
+digest/size, capability status, asset digests, frozen ownership inventory, and
+sidecar facts. It neither chooses the capability set nor turns command success
+into `verified`.
+
+The recorder consumes the public input, deterministic execution facts, and an
+already completed AI review containing applicability, profile coverage,
+adequacy, findings, route, redaction, and optional supersession. It rebuilds
+current identity and writes the sole task-local
+`marketplace-verification.json`, or returns the same owner result without a
+repository write for taskless standalone. The checker validates the closed
+schema, task/session persistence, repo/remote/ref/HEAD and plan bindings,
+machine/semantic/final digests, redaction, unique consumer, and current
+supersession. It does not revisit semantic conclusions.
+
+The public invocation reruns the checker, reads the actual exit only from the
+checked owner result, selects that exit's schema, and emits one minimal DTO.
+`expected_exit` is eval-only. Workflow `not_required` is rejected; when a
+plan-required target conflicts with AI `applicability=not_required`, private
+evidence records the conflict and returns `blocked` without fabricating an
+execution profile. A taskless installation failure also returns a standalone
+`blocked` report rather than a false task-work route.
+
+The ownership fact reader consumes the canonical `legacy_entries` inventory and
+frozen baseline digest. Any new transitional legacy entry fails verification.
+Raw command output, credential URLs, tokens, and temporary repository locators
+are never retained; only safe locators and digest/size facts cross the runtime
+boundary.
 
 ## Skill Eval Discovery And Runner
 

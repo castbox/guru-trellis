@@ -9,6 +9,7 @@ import contextlib
 import hashlib
 import importlib.util
 import inspect
+import io
 import json
 import os
 import re
@@ -14512,45 +14513,59 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             apply_script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
             expected = "a" * 40
             commands: list[list[str]] = []
+            environments: list[dict[str, str] | None] = []
 
-            def fake_run(command: list[str], cwd: Path, check: bool = True) -> mock.Mock:
+            def fake_run(
+                command: list[str],
+                cwd: Path,
+                check: bool = True,
+                env: dict[str, str] | None = None,
+            ) -> mock.Mock:
                 commands.append(command)
-                if command[:4] == ["git", "ls-remote", "--heads", "origin"]:
+                environments.append(env)
+                if command[:3] == ["git", "ls-remote", "origin"]:
                     return mock.Mock(returncode=0, stdout=f"{expected}\trefs/heads/codex/096-task-runtime-boundary\n", stderr="")
                 if command[:4] == ["git", "remote", "get-url", "origin"]:
                     return mock.Mock(returncode=0, stdout="https://github.com/owner/repo.git\n", stderr="")
                 if command[:2] == ["git", "clone"]:
                     source_checkout = Path(command[-1])
-                    script = source_checkout / "trellis/presets/guru-team/scripts/bash/apply.sh"
-                    script.parent.mkdir(parents=True)
-                    script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
-                    workflow = source_checkout / "trellis/workflows/guru-team/workflow.md"
-                    schema = source_checkout / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
-                    finish_schema = source_checkout / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
-                    closeout_schema = source_checkout / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
-                    workflow.parent.mkdir(parents=True, exist_ok=True)
-                    schema.parent.mkdir(parents=True, exist_ok=True)
-                    workflow.write_text("workflow", encoding="utf-8")
-                    schema.write_text("{}", encoding="utf-8")
-                    finish_schema.write_text('{"title":"finish"}', encoding="utf-8")
-                    closeout_schema.write_text('{"title":"closeout"}', encoding="utf-8")
+                    assets = {
+                        "trellis/index.json": "{}",
+                        "trellis/guru-team-extension.json": "{}",
+                        "trellis/workflows/guru-team/workflow.md": "workflow",
+                        "trellis/presets/guru-team/scripts/bash/apply.sh": "#!/usr/bin/env bash\n",
+                        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh": "#!/usr/bin/env bash\n",
+                        "trellis/skills/guru-team/registry.json": "{}",
+                        "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json": "{}",
+                        "trellis/workflows/guru-team/schemas/task-start-context.schema.json": "{}",
+                        "trellis/workflows/guru-team/schemas/finish-summary.schema.json": '{"title":"finish"}',
+                        "trellis/workflows/guru-team/schemas/closeout-plan.schema.json": '{"title":"closeout"}',
+                    }
+                    for relative, content in assets.items():
+                        target = source_checkout / relative
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        target.write_text(content, encoding="utf-8")
+                    legacy_entries = [
+                        {
+                            "category": "transitional_legacy",
+                            "path": f"legacy/{index}",
+                        }
+                        for index in range(43)
+                    ]
+                    legacy_paths = sorted(item["path"] for item in legacy_entries)
+                    gtt.write_json(
+                        source_checkout / "trellis/presets/guru-team/ownership/upstream-ownership.json",
+                        {
+                            "baseline": {
+                                "frozen_path_count": 43,
+                                "sorted_path_set_sha256": hashlib.sha256(
+                                    ("\n".join(legacy_paths) + "\n").encode("utf-8")
+                                ).hexdigest(),
+                            },
+                            "legacy_entries": legacy_entries,
+                        },
+                    )
                     return mock.Mock(returncode=0, stdout="", stderr="")
-                if command[:2] == ["git", "init"]:
-                    return mock.Mock(returncode=0, stdout="", stderr="")
-                project = cwd
-                (project / ".trellis/guru-team/schemas").mkdir(parents=True, exist_ok=True)
-                if command[:2] == ["trellis", "init"]:
-                    (project / ".trellis/workflow.md").write_text("workflow", encoding="utf-8")
-                elif "--create-new" in command:
-                    (project / ".trellis/workflow.md.new").write_text("workflow", encoding="utf-8")
-                elif command[:2] == ["trellis", "workflow"]:
-                    (project / ".trellis/workflow.md").write_text("workflow", encoding="utf-8")
-                elif command[0].endswith("trellis/presets/guru-team/scripts/bash/apply.sh"):
-                    (project / ".trellis/guru-team/schemas/task-start-context.schema.json").write_text("{}", encoding="utf-8")
-                    (project / ".trellis/guru-team/schemas/finish-summary.schema.json").write_text('{"title":"finish"}', encoding="utf-8")
-                    (project / ".trellis/guru-team/schemas/closeout-plan.schema.json").write_text('{"title":"closeout"}', encoding="utf-8")
-                    (project / ".gitignore").write_text(".trellis/.runtime/\n.trellis/workspace/\n", encoding="utf-8")
-                    (project / ".trellis/config.yaml").write_text("session_auto_commit: false\n", encoding="utf-8")
                 return mock.Mock(returncode=0, stdout="ok", stderr="")
 
             with mock.patch.object(gtt, "run", side_effect=fake_run):
@@ -14559,13 +14574,15 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             self.assertEqual(payload["status"], "passed")
             self.assert_public_schema_valid(payload)
             self.assertEqual(payload["remote_head"], expected)
-            self.assertEqual([step["passed"] for step in payload["steps"]], [True] * 7)
+            self.assertEqual([step["passed"] for step in payload["steps"]], [True] * 5)
             self.assertEqual(commands[2][0:2], ["git", "clone"])
-            self.assertEqual(commands[4][0:2], ["trellis", "init"])
-            self.assertIn("--create-new", commands[5])
-            self.assertIn("--force", commands[6])
-            self.assertTrue(commands[7][0].endswith("trellis/presets/guru-team/scripts/bash/apply.sh"))
-            self.assertEqual(payload["steps"][-1]["command"][0], "<temp-source>/trellis/presets/guru-team/scripts/bash/apply.sh")
+            self.assertEqual(commands[3][0:2], ["git", "checkout"])
+            self.assertTrue(commands[4][0].endswith("verify-throwaway-install.sh"))
+            self.assertEqual(
+                environments[4]["TRELLIS_WORKFLOW_SOURCE"],
+                "gh:owner/repo/trellis#refs/heads/codex/096-task-runtime-boundary",
+            )
+            self.assertEqual(payload["steps"][-1]["command"][0], "<temp-source>/trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh")
             self.assertTrue(payload["assets"]["workflow_sha256"])
             self.assertTrue(payload["assets"]["finish_summary_schema_sha256"])
             self.assertTrue(payload["assets"]["workspace_gitignore_present"])
@@ -14608,15 +14625,13 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             task_dir.mkdir(parents=True)
             expected = "a" * 40
             def fake_run(command: list[str], cwd: Path, check: bool = True) -> mock.Mock:
-                if command[:4] == ["git", "ls-remote", "--heads", "origin"]:
+                if command[:3] == ["git", "ls-remote", "origin"]:
                     return mock.Mock(returncode=0, stdout=f"{expected}\trefs/heads/codex/task\n", stderr="")
                 if command[:4] == ["git", "remote", "get-url", "origin"]:
                     return mock.Mock(returncode=0, stdout="https://github.com/owner/repo.git\n", stderr="")
                 if command[:2] == ["git", "clone"]:
                     source = Path(command[-1])
                     (source / "trellis/presets/guru-team/scripts/bash").mkdir(parents=True)
-                    return mock.Mock(returncode=0, stdout="", stderr="")
-                if command[:2] == ["git", "init"]:
                     return mock.Mock(returncode=0, stdout="", stderr="")
                 return mock.Mock(returncode=3, stdout="", stderr="init failed")
             with mock.patch.object(gtt, "run", side_effect=fake_run), self.assertRaises(gtt.WorkflowError):
@@ -14625,11 +14640,689 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             self.assertEqual(payload["status"], "failed")
             self.assertEqual(gtt.marketplace_verification_contract_errors(payload), [])
             self.assert_public_schema_valid(payload)
-            self.assertGreater(len(payload["steps"]), 3)
+            self.assertGreaterEqual(len(payload["steps"]), 3)
 
     def test_marketplace_verification_required_for_public_extension_paths(self) -> None:
-        self.assertTrue(gtt.marketplace_verification_required({"changed_files": ["trellis/workflows/guru-team/workflow.md"]}))
-        self.assertFalse(gtt.marketplace_verification_required({"changed_files": ["docs/internal-note.md"]}))
+        facts = gtt.marketplace_verification_required(
+            {"changed_files": ["trellis/workflows/guru-team/workflow.md"]}
+        )
+        self.assertEqual(
+            facts,
+            {
+                "changed_paths": ["trellis/workflows/guru-team/workflow.md"],
+                "candidate_surfaces": ["workflow"],
+            },
+        )
+        self.assertEqual(
+            gtt.marketplace_verification_required(
+                {"changed_files": ["docs/internal-note.md"]}
+            ),
+            {"changed_paths": [], "candidate_surfaces": []},
+        )
+        expanded_facts = gtt.marketplace_verification_required(
+            {
+                "changed_files": [
+                    "README.md",
+                    "docs/requirements/requirement-main.md",
+                    "trellis/skills/guru-team/registry.json",
+                ]
+            }
+        )
+        self.assertEqual(
+            expanded_facts,
+            {
+                "changed_paths": [
+                    "README.md",
+                    "docs/requirements/requirement-main.md",
+                    "trellis/skills/guru-team/registry.json",
+                ],
+                "candidate_surfaces": ["public_docs", "skill_contract"],
+            },
+        )
+        self.assertTrue(
+            gtt.legacy_closeout_marketplace_verification_required(
+                {"changed_files": ["trellis/workflows/guru-team/workflow.md"]}
+            )
+        )
+        self.assertFalse(
+            gtt.legacy_closeout_marketplace_verification_required(
+                {"changed_files": ["docs/internal-note.md"]}
+            )
+        )
+        self.assertFalse(
+            gtt.legacy_closeout_marketplace_verification_required(
+                {
+                    "changed_files": [
+                        "README.md",
+                        "docs/requirements/requirement-main.md",
+                        "trellis/skills/guru-team/registry.json",
+                    ]
+                }
+            )
+        )
+
+
+class ExtensionVerificationRuntimeTest(unittest.TestCase):
+    PACKAGE = (
+        Path(__file__).resolve().parents[5]
+        / "trellis/skills/guru-team/packages/guru-verify-extension-installation"
+    )
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        subprocess.run(
+            ["git", "init", "-q", "-b", "main"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "extension-eval@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Extension Eval"],
+            cwd=self.root,
+            check=True,
+        )
+        self.task_dir = self.root / ".trellis/tasks/current"
+        self.task_dir.mkdir(parents=True)
+        gtt.write_json(
+            self.task_dir / "task.json",
+            {
+                "id": "current",
+                "name": "current",
+                "title": "Extension verification",
+                "status": "in_progress",
+                "branch": "main",
+                "base_branch": "main",
+            },
+        )
+        (self.root / "README.md").write_text("fixture\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "fixture"],
+            cwd=self.root,
+            check=True,
+        )
+        self.head = gtt.current_head(self.root)
+        self.env = mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INVOKED_PACKAGE_ROOT": str(self.PACKAGE)},
+        )
+        self.env.start()
+
+    def tearDown(self) -> None:
+        self.env.stop()
+        self.tmp.cleanup()
+
+    def public_input(
+        self,
+        mode: str,
+        *,
+        task: bool,
+        plan_ref: str = "closeout-plan:current",
+    ) -> dict[str, Any]:
+        if mode == "workflow":
+            return {
+                "profile": "verification_required",
+                "mode": "workflow",
+                "task_ref": ".trellis/tasks/current",
+                "plan_ref": plan_ref,
+                "repo_ref": "example/guru-extension",
+                "reviewed_head": self.head,
+                "verification_target": "extension-installation",
+            }
+        payload: dict[str, Any] = {
+            "profile": "standalone_verification",
+            "mode": "standalone",
+            "repo_ref": "example/guru-extension",
+            "remote": "origin",
+            "ref": "refs/heads/main",
+            "caller_intent": "verify-extension-installation",
+        }
+        if task:
+            payload["task_ref"] = ".trellis/tasks/current"
+        return payload
+
+    def execution(
+        self,
+        public_input: dict[str, Any],
+        status: str,
+        selected: list[str],
+        *,
+        sensitive_argv: str | None = None,
+    ) -> dict[str, Any]:
+        reviewed_head = (
+            public_input["reviewed_head"]
+            if public_input["mode"] == "workflow"
+            else None
+        )
+        commands = (
+            []
+            if status == "not_run"
+            else [{
+                "argv": [
+                    sensitive_argv
+                    or "git",
+                    "ls-remote",
+                    "origin",
+                    public_input.get("ref", "refs/heads/main"),
+                ],
+                "exit_code": 0,
+                "stdout_sha256": gtt.digest_text(""),
+                "stderr_sha256": gtt.digest_text(""),
+                "stdout_size_bytes": 0,
+                "stderr_size_bytes": 0,
+            }]
+        )
+        capability_status = (
+            "passed"
+            if status == "passed"
+            else "failed"
+            if status == "failed"
+            else "blocked"
+            if status == "blocked"
+            else "not_run"
+        )
+        return {
+            "schema_version": "1.0",
+            "repo_ref": public_input["repo_ref"],
+            "remote": public_input.get("remote", "origin"),
+            "ref": public_input.get("ref", "refs/heads/main"),
+            "reviewed_head": reviewed_head,
+            "remote_head": (
+                None
+                if status == "blocked" and public_input["mode"] == "standalone"
+                else reviewed_head or "a" * 40
+            ),
+            "status": status,
+            "commands": commands,
+            "capabilities": [
+                {
+                    "id": capability,
+                    "status": capability_status,
+                    "evidence_step": 0 if commands else None,
+                }
+                for capability in selected
+            ],
+            "asset_digests": [],
+            "ownership": {
+                "frozen_transitional_legacy_count": 43,
+                "new_legacy_entries": [],
+            },
+            "sidecars": [],
+        }
+
+    def review(
+        self,
+        typed_exit: str,
+        selected: list[str],
+        *,
+        supersedes: str | None = None,
+        applicability_status: str | None = None,
+    ) -> dict[str, Any]:
+        finding = {
+            "finding_ref": "extension-finding-001",
+            "evidence": "The selected extension capability requires follow-up.",
+            "route_class": (
+                "task_work"
+                if typed_exit == "return_to_task_work"
+                else "external_blocker"
+            ),
+            "status": "open",
+            "closure_evidence": "",
+        }
+        payload: dict[str, Any] = {
+            "applicability": {
+                "status": (
+                    applicability_status
+                    if applicability_status is not None
+                    else "not_required"
+                    if typed_exit == "not_required"
+                    else "required"
+                ),
+                "reason": "The semantic owner reviewed the current extension surface.",
+                "evidence_paths": ["trellis/skills/guru-team/registry.json"],
+            },
+            "verification_profile": {
+                "selected_capabilities": selected,
+                "selection_reason": "The closed profile covers the reviewed surface.",
+                "coverage": [
+                    f"surface -> {capability}" for capability in selected
+                ],
+            },
+            "semantic_review": {
+                "adequacy": [{
+                    "id": "profile_coverage",
+                    "status": (
+                        "passed"
+                        if typed_exit == "verified"
+                        else "not_applicable"
+                        if typed_exit == "not_required"
+                        else "failed"
+                        if typed_exit == "return_to_task_work"
+                        else "blocked"
+                    ),
+                    "evidence_refs": ["execution:0"],
+                }],
+                "findings": (
+                    [finding]
+                    if typed_exit in {"return_to_task_work", "blocked"}
+                    else []
+                ),
+                "conclusion": typed_exit,
+            },
+            "typed_exit": typed_exit,
+            "redaction": {
+                "status": "passed",
+                "scanned_surfaces": ["artifact", "wrapper_stdout"],
+            },
+        }
+        if typed_exit == "blocked":
+            payload.update({
+                "reason_code": "remote_unavailable",
+                "remediation": "Restore remote access and retry.",
+            })
+        if supersedes is not None:
+            payload["supersedes_verification_ref"] = supersedes
+        return payload
+
+    def record(
+        self,
+        public_input: dict[str, Any],
+        execution: dict[str, Any],
+        review: dict[str, Any],
+    ) -> dict[str, Any]:
+        runtime_dir = self.root / ".trellis/.runtime/guru-team/tests"
+        runtime_dir.mkdir(parents=True, exist_ok=True)
+        input_path = runtime_dir / "public-input.json"
+        execution_path = runtime_dir / "execution.json"
+        review_path = runtime_dir / "review.json"
+        gtt.write_json(input_path, public_input)
+        gtt.write_json(execution_path, execution)
+        gtt.write_json(review_path, review)
+        return gtt.cmd_record_extension_verification(argparse.Namespace(
+            root=str(self.root),
+            input=input_path.relative_to(self.root).as_posix(),
+            execution_input=execution_path.relative_to(self.root).as_posix(),
+            review_input=review_path.relative_to(self.root).as_posix(),
+        ))
+
+    def test_taskless_standalone_is_session_only(self) -> None:
+        public_input = self.public_input("standalone", task=False)
+        owner = self.record(
+            public_input,
+            self.execution(public_input, "not_run", []),
+            self.review("not_required", []),
+        )
+
+        self.assertEqual(owner["consumer"], {"kind": "session", "id": "direct-caller"})
+        self.assertEqual(list(self.root.rglob("marketplace-verification.json")), [])
+        with mock.patch.object(
+            gtt,
+            "run",
+            return_value=mock.Mock(
+                returncode=0,
+                stdout=f"{'a' * 40}\trefs/heads/main\n",
+                stderr="",
+            ),
+        ):
+            checked = gtt.check_extension_verification_result(
+                self.root,
+                owner,
+                "<stdin>",
+                public_input,
+            )
+        self.assertEqual(checked["typed_exit"], "not_required")
+
+    def test_taskless_remote_unavailable_emits_blocked_without_fake_head(self) -> None:
+        public_input = self.public_input("standalone", task=False)
+        public_input["remote"] = "missing-remote"
+        selected = ["marketplace_index"]
+        execution = gtt.extension_verification_execute_facts(
+            self.root,
+            public_input,
+            selected,
+        )
+        self.assertEqual(execution["status"], "blocked")
+        self.assertIsNone(execution["remote_head"])
+        owner = self.record(
+            public_input,
+            execution,
+            self.review("blocked", selected),
+        )
+
+        checked = gtt.check_extension_verification_result(
+            self.root,
+            owner,
+            "<stdin>",
+            public_input,
+        )
+        self.assertEqual(checked["typed_exit"], "blocked")
+        input_path = (
+            ".trellis/.runtime/guru-team/tests/public-input.json"
+        )
+        with mock.patch.object(sys, "stdin", io.StringIO(json.dumps(owner))):
+            output = gtt.cmd_invoke_extension_verification(
+                argparse.Namespace(
+                    root=str(self.root),
+                    input=input_path,
+                    owner_result="-",
+                )
+            )
+        self.assertEqual(
+            output,
+            {
+                "exit_id": "blocked",
+                "mode": "standalone",
+                "repo_ref": "example/guru-extension",
+                "reason_code": "remote_unavailable",
+                "remediation": "Restore remote access and retry.",
+            },
+        )
+
+    def test_exit_zero_does_not_override_failed_adequacy(self) -> None:
+        public_input = self.public_input("standalone", task=True)
+        selected = ["marketplace_index"]
+        owner = self.record(
+            public_input,
+            self.execution(public_input, "passed", selected),
+            self.review("return_to_task_work", selected),
+        )
+
+        self.assertEqual(owner["typed_exit"], "return_to_task_work")
+        self.assertEqual(owner["execution"]["commands"][0]["exit_code"], 0)
+        self.assertEqual(
+            owner["semantic_review"]["adequacy"][0]["status"],
+            "failed",
+        )
+
+    def test_workflow_applicability_conflict_blocks_without_execution(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        review = self.review(
+            "blocked",
+            [],
+            applicability_status="not_required",
+        )
+        review["reason_code"] = "applicability_conflict"
+        review["remediation"] = (
+            "Reconcile the reviewed applicability with the required workflow plan."
+        )
+        owner = self.record(
+            public_input,
+            self.execution(public_input, "not_run", []),
+            review,
+        )
+
+        self.assertEqual(owner["typed_exit"], "blocked")
+        self.assertEqual(owner["applicability"]["status"], "not_required")
+        self.assertEqual(owner["execution"]["status"], "not_run")
+        self.assertEqual(owner["verification_profile"]["selected_capabilities"], [])
+        self.assertEqual(
+            owner["blocker"]["reason_code"],
+            "applicability_conflict",
+        )
+
+    def test_sensitive_command_fails_closed(self) -> None:
+        public_input = self.public_input("standalone", task=False)
+        selected = ["redaction"]
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            self.record(
+                public_input,
+                self.execution(
+                    public_input,
+                    "passed",
+                    selected,
+                    sensitive_argv="https://token@example.invalid/repo.git",
+                ),
+                self.review("verified", selected),
+            )
+        self.assertIn(
+            "unredacted sensitive material",
+            json.dumps(raised.exception.payload),
+        )
+
+    def test_same_identity_retry_requires_exact_supersession(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        selected = ["marketplace_index"]
+        prior = self.record(
+            public_input,
+            self.execution(public_input, "blocked", selected),
+            self.review("blocked", selected),
+        )
+        prior_ref = prior["identity"]["verification_ref"]
+
+        with self.assertRaises(gtt.WorkflowError):
+            self.record(
+                public_input,
+                self.execution(public_input, "passed", selected),
+                self.review("verified", selected),
+            )
+        current = self.record(
+            public_input,
+            self.execution(public_input, "passed", selected),
+            self.review("verified", selected, supersedes=prior_ref),
+        )
+        self.assertEqual(
+            current["freshness"]["supersedes_verification_ref"],
+            prior_ref,
+        )
+        self.assertNotEqual(current["identity"]["verification_ref"], prior_ref)
+
+    def test_checker_rejects_local_and_remote_head_drift(self) -> None:
+        workflow_input = self.public_input("workflow", task=True)
+        selected = ["marketplace_index"]
+        workflow_owner = self.record(
+            workflow_input,
+            self.execution(workflow_input, "passed", selected),
+            self.review("verified", selected),
+        )
+        (self.root / "drift.txt").write_text("drift\n", encoding="utf-8")
+        subprocess.run(["git", "add", "drift.txt"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "drift"],
+            cwd=self.root,
+            check=True,
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "run",
+                return_value=mock.Mock(
+                    returncode=0,
+                    stdout=f"{self.head}\trefs/heads/main\n",
+                    stderr="",
+                ),
+            ),
+            self.assertRaises(gtt.WorkflowError) as local_drift,
+        ):
+            gtt.check_extension_verification_result(
+                self.root,
+                workflow_owner,
+                ".trellis/tasks/current/marketplace-verification.json",
+                workflow_input,
+            )
+        self.assertIn(
+            "local HEAD drift",
+            json.dumps(local_drift.exception.payload),
+        )
+
+        standalone_input = self.public_input("standalone", task=False)
+        standalone_owner = self.record(
+            standalone_input,
+            self.execution(standalone_input, "not_run", []),
+            self.review("not_required", []),
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "run",
+                return_value=mock.Mock(
+                    returncode=0,
+                    stdout=f"{'b' * 40}\trefs/heads/main\n",
+                    stderr="",
+                ),
+            ),
+            self.assertRaises(gtt.WorkflowError) as remote_drift,
+        ):
+            gtt.check_extension_verification_result(
+                self.root,
+                standalone_owner,
+                "<stdin>",
+                standalone_input,
+            )
+        self.assertIn(
+            "remote ref HEAD",
+            json.dumps(remote_drift.exception.payload),
+        )
+
+    def test_task_modes_reject_same_head_tracked_content_drift(self) -> None:
+        for mode in ("workflow", "standalone"):
+            with self.subTest(mode=mode):
+                public_input = self.public_input(mode, task=True)
+                selected = ["marketplace_index"]
+                readme = self.root / "README.md"
+                readme.write_text("reviewed dirty content\n", encoding="utf-8")
+                owner = self.record(
+                    public_input,
+                    self.execution(public_input, "passed", selected),
+                    self.review("verified", selected),
+                )
+                recorded_binding = owner["repository"]["task_worktree_sha256"]
+                self.assertRegex(recorded_binding, r"^[0-9a-f]{64}$")
+
+                readme.write_text("later dirty content\n", encoding="utf-8")
+                remote_head = (
+                    self.head if mode == "workflow" else "a" * 40
+                )
+                with (
+                    mock.patch.object(
+                        gtt,
+                        "run",
+                        return_value=mock.Mock(
+                            returncode=0,
+                            stdout=f"{remote_head}\trefs/heads/main\n",
+                            stderr="",
+                        ),
+                    ),
+                    self.assertRaises(gtt.WorkflowError) as drift,
+                ):
+                    gtt.check_extension_verification_result(
+                        self.root,
+                        owner,
+                        ".trellis/tasks/current/marketplace-verification.json",
+                        public_input,
+                    )
+                self.assertIn(
+                    "worktree content drift",
+                    json.dumps(drift.exception.payload),
+                )
+                readme.write_text("fixture\n", encoding="utf-8")
+                (
+                    self.task_dir / "marketplace-verification.json"
+                ).unlink(missing_ok=True)
+
+    def test_taskless_return_to_task_work_is_rejected(self) -> None:
+        public_input = self.public_input("standalone", task=False)
+        selected = ["marketplace_index"]
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            self.record(
+                public_input,
+                self.execution(public_input, "failed", selected),
+                self.review("return_to_task_work", selected),
+            )
+        self.assertIn(
+            "taskless standalone",
+            json.dumps(raised.exception.payload),
+        )
+
+    def test_frozen_legacy_inventory_detects_added_owner(self) -> None:
+        canonical = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/presets/guru-team/ownership/upstream-ownership.json"
+        )
+        facts = gtt.extension_verification_ownership_facts(canonical)
+        self.assertEqual(facts, {
+            "frozen_transitional_legacy_count": 43,
+            "new_legacy_entries": [],
+        })
+        payload = gtt.read_json(canonical)
+        payload["legacy_entries"].append({
+            "path": ".new/legacy-owner",
+            "category": "transitional_legacy",
+        })
+        modified = self.root / "ownership.json"
+        gtt.write_json(modified, payload)
+        drift = gtt.extension_verification_ownership_facts(modified)
+        self.assertEqual(drift["frozen_transitional_legacy_count"], 44)
+        self.assertTrue(drift["new_legacy_entries"])
+
+    def test_executor_pins_throwaway_marketplace_to_requested_remote_ref(self) -> None:
+        self.assertEqual(
+            gtt.extension_verification_workflow_source(
+                "example/guru-extension",
+                "refs/tags/v0.6.5-guru.23",
+            ),
+            "gh:example/guru-extension/trellis#refs/tags/v0.6.5-guru.23",
+        )
+        public_input = self.public_input("standalone", task=False)
+        public_input["ref"] = "refs/heads/feature/117"
+        remote_head = "b" * 40
+        observed_env: list[dict[str, str] | None] = []
+
+        def fake_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> mock.Mock:
+            if command[:2] == ["git", "ls-remote"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{remote_head}\trefs/heads/feature/117\n",
+                    stderr="",
+                )
+            if command[:3] == ["git", "remote", "get-url"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout="https://github.com/example/guru-extension.git\n",
+                    stderr="",
+                )
+            if command[:2] == ["git", "clone"]:
+                source = Path(command[-1])
+                throwaway = (
+                    source
+                    / "trellis/presets/guru-team/scripts/bash/"
+                    "verify-throwaway-install.sh"
+                )
+                throwaway.parent.mkdir(parents=True)
+                throwaway.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "checkout", "--detach"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            observed_env.append(env)
+            return mock.Mock(returncode=0, stdout="", stderr="")
+
+        with mock.patch.object(gtt, "run", side_effect=fake_run):
+            gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                ["marketplace_index"],
+                expected_head=remote_head,
+            )
+
+        self.assertEqual(
+            observed_env,
+            [
+                {
+                    "TRELLIS_WORKFLOW_SOURCE": (
+                        "gh:example/guru-extension/trellis#refs/heads/feature/117"
+                    )
+                }
+            ],
+        )
 
 
 class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
@@ -17940,6 +18633,80 @@ shutil.move(str(active), str(archived))
                     ),
                 }
 
+            def fake_marketplace_verification(
+                verification_root: Path,
+                verification_task_dir: Path,
+                repo: str,
+                remote_name: str,
+                branch: str,
+                expected_head: str,
+                verification_config: dict[str, object] | None = None,
+            ) -> dict[str, object]:
+                record_transition("verifier")
+                failed = injected_stage == "verifier"
+                digest = gtt.digest_text("verified marketplace asset")
+                payload = {
+                    "schema_version": "1.0",
+                    "generated_at": gtt.now_iso(),
+                    "status": "failed" if failed else "passed",
+                    "repo": repo,
+                    "remote": remote_name,
+                    "branch": branch,
+                    "marketplace_source": f"gh:{repo}/trellis#{branch}",
+                    "verified_head": expected_head,
+                    "remote_head": expected_head,
+                    "task_dir": gtt.repo_relative(
+                        verification_root, verification_task_dir
+                    ),
+                    "steps": [
+                        {
+                            "command": ["trellis", "init", "--workflow", "guru-team"],
+                            "exit_code": 1 if failed else 0,
+                            "stdout_sha256": gtt.digest_text(""),
+                            "stderr_sha256": gtt.digest_text(
+                                "injected verifier" if failed else ""
+                            ),
+                            "stdout_size_bytes": 0,
+                            "stderr_size_bytes": (
+                                len("injected verifier".encode("utf-8"))
+                                if failed
+                                else 0
+                            ),
+                            "passed": not failed,
+                        }
+                    ],
+                    "assets": {
+                        "workflow_sha256": "" if failed else digest,
+                        "preview_sha256": "" if failed else digest,
+                        "task_start_context_schema_sha256": (
+                            "" if failed else digest
+                        ),
+                        "finish_summary_schema_sha256": "" if failed else digest,
+                        "closeout_plan_schema_sha256": "" if failed else digest,
+                        "runtime_gitignore_present": not failed,
+                        "workspace_gitignore_present": not failed,
+                        "session_auto_commit_false": not failed,
+                        "legacy_handoff_absent": not failed,
+                        "legacy_intake_schema_absent": not failed,
+                    },
+                }
+                self.assertEqual(
+                    gtt.marketplace_verification_contract_errors(payload), []
+                )
+                gtt.write_json(
+                    gtt.marketplace_verification_path(
+                        verification_task_dir, verification_config
+                    ),
+                    payload,
+                )
+                if failed:
+                    raise gtt.WorkflowError(
+                        "injected verifier",
+                        exit_code=2,
+                        payload=payload,
+                    )
+                return payload
+
             dry_args = finish_args(
                 root=str(root),
                 task=str(task_dir),
@@ -17976,6 +18743,11 @@ shutil.move(str(active), str(archived))
                         "reviewed_head": reviewed_head,
                         "publication_ref": publication_ref,
                     },
+                ),
+                mock.patch.object(
+                    gtt,
+                    "execute_marketplace_verification",
+                    side_effect=fake_marketplace_verification,
                 ),
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
                 mock.patch.object(gtt, "current_archive_month", side_effect=lambda: archive_month_clock),

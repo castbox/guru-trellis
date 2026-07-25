@@ -102,7 +102,7 @@ as production serializer input.
 
 Repeat the same matrix for `production-minimal-handoff-v1`: exactly three
 packages, ten profiles, and 11 exits. Then validate the combined live-active
-closure at eleven Skills and 42 exits. Negative tests cover missing, extra,
+closure at twelve Skills and 46 exits. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or legacy entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Stage 0/production
@@ -636,5 +636,35 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert eleven active Skills and 42
+Source/installed/platform/throwaway checks assert twelve active Skills and 46
 exits while `production-minimal-handoff-v1` remains three Skills/11 exits.
+
+## Extension Installation Verification Quality
+
+`guru-verify-extension-installation` tests cover both structurally distinct
+inputs, four independent outputs/consumers/projections, workflow target
+bootstrap without a #118 producer edge, task-local and session-only
+persistence, and public/private field exclusion.
+
+Runtime coverage includes changed-surface facts without route ownership,
+workflow-required applicability conflict, command exit zero plus failed
+adequacy, partial/early failure, remote/local HEAD drift, same-identity retry
+with exact supersession, stale plan re-entry, taskless route limits, sanitized
+argv/output, and frozen legacy inventory rejection. The conflict case must
+prove private `applicability=not_required`, no selected capability or execution
+profile, `typed_exit=blocked`, and stable remediation.
+
+The package-local production corpus contains seven real-wrapper cases spanning
+workflow/standalone, all four exits, transient retry, remote unavailable, and
+stale plan. Shared/Codex/Claude/Cursor consume byte-identical canonical corpus
+and package bytes. Actual exit chooses the output schema before
+`expected_exit` comparison; native requests must not receive expected exit or
+private verification state.
+
+Remote installation acceptance must use a real pushed ref and prove marketplace
+index, new init, existing preview/switch, initial apply/reapply, `trellis
+update`, second workflow selection/apply, package/runtime/schema/executable
+inventory, platform equality, ownership freeze, managed sidecars, README
+commands, redaction, and final zero unresolved `.new`/`.bak`. Production eval
+and this remote-ref run are recorded independently and neither substitutes for
+the other.

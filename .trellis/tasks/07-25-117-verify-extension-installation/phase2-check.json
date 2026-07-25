@@ -1,0 +1,1415 @@
+{
+  "mode": "workflow",
+  "requirement_provenance": {
+    "summary": "已复核 Issue #117 accepted_current authority、approved planning、issue scope ledger 与 durable requirements。Round 5 重新覆盖 applicability、workflow/standalone profiles、四 typed exits、dirty freshness、native response readiness、source/installed production eval、throwaway/update/reapply 与 remote publication边界。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
+        "size_bytes": 10446
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d",
+        "size_bytes": 21341
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "sha256": "7922efb0ec9d5995370f2868ea69a1eef46aef56d53007d6b39325b43cab9102",
+        "size_bytes": 11831
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+        "sha256": "c6d293512f914bb914a96a6ed290e36fea0021b3e2ea464af1d40bd85c2bb417",
+        "size_bytes": 116
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "8352ea29eb6a574905690756757ccebbbc313a461caa4e848b4db97d59dc7347",
+        "size_bytes": 86743
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "4f008a2d5d3769bf4b1a50cecde50766e19061cfa2d2b73511b7d3cd20906b07",
+        "size_bytes": 73045
+      }
+    ],
+    "facts_sha256": "d3e348640b2677bd13b7a74633cdd1e5e651d9d08cebc6718030924f7d1b38ca"
+  },
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "durable_paths": [
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "sha256": "fc063fa5fe9928fee90e383b979cd54ef64afb5e1b99fce70cd5da722b166b02",
+        "size_bytes": 115174
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
+        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
+        "size_bytes": 982
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+        "sha256": "efda513a35310467a6d237ce30c18493294ec6afad9cb4a3b1fd804f4abc0b33",
+        "size_bytes": 4669
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "af80932037c4a59dfde07220646b91d9a3eacb4f64b7a62ee4da11c6e2fe0a97",
+        "size_bytes": 92101
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "94d7977be45b5f3354ab350db9fe327b64e026aa5b387bd7340d73153850d552",
+        "size_bytes": 96693
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "08a3adf99113c1b0ba15de79e312781ea5b133d52eaaa34f5b4183196d83a7a8",
+        "size_bytes": 32830
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "41ac4fefa51289534172f2dce3a6ebed730043307a6bdc02618ab099dab7a5bc",
+        "size_bytes": 25868
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "8352ea29eb6a574905690756757ccebbbc313a461caa4e848b4db97d59dc7347",
+        "size_bytes": 86743
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "4f008a2d5d3769bf4b1a50cecde50766e19061cfa2d2b73511b7d3cd20906b07",
+        "size_bytes": 73045
+      },
+      {
+        "path": "README.md",
+        "sha256": "447a9a20c7b4c91798712410f9feb90dcfb6ba0ca137f77712059592caa740e5",
+        "size_bytes": 79463
+      }
+    ],
+    "sync_result": "ssot_first 已落实到 canonical Skill、workflow/spec、requirements、README、preset/runtime 与所有 installed/platform copies；F3 task working-tree freshness binding 和 F4 pending-to-final native response protocol 已同步到 durable contract、实现和回归。",
+    "task_delta_merged": true,
+    "task_history_only": [
+      "Issue provenance、planning approval、agent liveness 与 Phase 2 review 过程证据",
+      "命令 session、失败复现与修复后完整 rerun 的任务级审计轨迹"
+    ],
+    "no_update_reason": null,
+    "followup_or_pr_limit": "真实 pushed feature-ref clean install 必须在后续允许 commit/push 后单独执行；当前 public-main discovery 加 local unpublished current-source throwaway 不得冒充该 publication gate。",
+    "facts_sha256": "cdf094e25c7761e208415730f37fe8441efc997d0f265abe39d66569b787d50b"
+  },
+  "implementation_handoff": {
+    "summary": "Round 4 实现已完成 F3/F4：task-bearing workflow/standalone evidence 绑定 HEAD、task ref、working bytes、index blob/status、mode、delete、rename/copy，并排除 owner artifact 与 ignored runtime；native adapter 先完整写入 pending response 再 replace 发布 final。Round 5 独立全范围检查确认 F1-F4 均 resolved，Docs SSOT 与 canonical/installed/platform copies 一致。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "sha256": "7922efb0ec9d5995370f2868ea69a1eef46aef56d53007d6b39325b43cab9102",
+        "size_bytes": 11831
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        "sha256": "e6a3c2d0deddfe77c64fadd56bc5e8c2b16e9889934461fc9e5a32078da9d7bb",
+        "size_bytes": 185199
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "2bca977c035cf397e824085c76c157869589a16a75c14d08f8630ce6f3e487f7",
+        "size_bytes": 1592257
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "3f62dc18ee794959f00a6a945c9c4e53c6e5c063746985a9c81202f0fb6a53d2",
+        "size_bytes": 1197795
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
+        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
+        "size_bytes": 982
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "5daa369632a758149f572885af0615509d924582a12547dda6fdbeef7d14ec13",
+        "size_bytes": 5052
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "0cd0a8d072380b053cf0468c51640f14c42b59213b201ea266881f043ddd658d",
+        "size_bytes": 153172
+      }
+    ],
+    "facts_sha256": "b646060aade4bcdacb3c5e48ba2c10513af6b84444048591c3738933907a6b97"
+  },
+  "agent_assignment": {
+    "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+    "implementation_agent_ids": [
+      "/root/issue117_fix_phase2_round4",
+      "/root/issue117_implement_final"
+    ],
+    "check_agent_ids": [
+      "/root/issue117_phase2_check",
+      "/root/issue117_phase2_check_auth_rerun",
+      "/root/issue117_phase2_check_credentials_restored",
+      "/root/issue117_phase2_check_round5"
+    ],
+    "recovery_complete": true,
+    "phase2_state_sha256": "3467349183e5dca6d6ad9037ed6c9f3044044fbcdffbd02540cfa1c7add84e43",
+    "facts_sha256": "6b0bbb233be736e45adb25f359da1561a5af2bd840f5ce5f01e2e4cac227082e"
+  },
+  "repository_snapshot": {
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "0cd2498f821b38ce91bd82fa9e232b1528241e5d",
+    "head": "0cd2498f821b38ce91bd82fa9e232b1528241e5d",
+    "diff_range": "origin/main...HEAD",
+    "dirty_paths": [
+      ".agents/skills/guru-verify-extension-installation/SKILL.md",
+      ".agents/skills/guru-verify-extension-installation/evals/evals.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+      ".agents/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+      ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".agents/skills/guru-verify-extension-installation/examples/public-blocked-output.json",
+      ".agents/skills/guru-verify-extension-installation/examples/public-invocation-error.json",
+      ".agents/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+      ".agents/skills/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+      ".agents/skills/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+      ".agents/skills/guru-verify-extension-installation/examples/public-verification-required-input.json",
+      ".agents/skills/guru-verify-extension-installation/examples/public-verified-output.json",
+      ".agents/skills/guru-verify-extension-installation/examples/semantic-review-input.json",
+      ".agents/skills/guru-verify-extension-installation/interface.json",
+      ".agents/skills/guru-verify-extension-installation/references/contract.md",
+      ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/public-input.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+      ".agents/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+      ".agents/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+      ".agents/skills/guru-verify-extension-installation/scripts/invoke.sh",
+      ".agents/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+      ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".claude/skills/guru-verify-extension-installation/SKILL.md",
+      ".claude/skills/guru-verify-extension-installation/evals/evals.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+      ".claude/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+      ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".claude/skills/guru-verify-extension-installation/examples/public-blocked-output.json",
+      ".claude/skills/guru-verify-extension-installation/examples/public-invocation-error.json",
+      ".claude/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+      ".claude/skills/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+      ".claude/skills/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+      ".claude/skills/guru-verify-extension-installation/examples/public-verification-required-input.json",
+      ".claude/skills/guru-verify-extension-installation/examples/public-verified-output.json",
+      ".claude/skills/guru-verify-extension-installation/examples/semantic-review-input.json",
+      ".claude/skills/guru-verify-extension-installation/interface.json",
+      ".claude/skills/guru-verify-extension-installation/references/contract.md",
+      ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/public-input.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+      ".claude/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+      ".claude/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+      ".claude/skills/guru-verify-extension-installation/scripts/invoke.sh",
+      ".claude/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+      ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".codex/skills/guru-verify-extension-installation/SKILL.md",
+      ".codex/skills/guru-verify-extension-installation/evals/evals.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+      ".codex/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+      ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".codex/skills/guru-verify-extension-installation/examples/public-blocked-output.json",
+      ".codex/skills/guru-verify-extension-installation/examples/public-invocation-error.json",
+      ".codex/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+      ".codex/skills/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+      ".codex/skills/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+      ".codex/skills/guru-verify-extension-installation/examples/public-verification-required-input.json",
+      ".codex/skills/guru-verify-extension-installation/examples/public-verified-output.json",
+      ".codex/skills/guru-verify-extension-installation/examples/semantic-review-input.json",
+      ".codex/skills/guru-verify-extension-installation/interface.json",
+      ".codex/skills/guru-verify-extension-installation/references/contract.md",
+      ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/public-input.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+      ".codex/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+      ".codex/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+      ".codex/skills/guru-verify-extension-installation/scripts/invoke.sh",
+      ".codex/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+      ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".cursor/skills/guru-verify-extension-installation/SKILL.md",
+      ".cursor/skills/guru-verify-extension-installation/evals/evals.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/public-blocked-output.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/public-invocation-error.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/public-verification-required-input.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/public-verified-output.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/semantic-review-input.json",
+      ".cursor/skills/guru-verify-extension-installation/interface.json",
+      ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+      ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/public-input.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+      ".cursor/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+      ".cursor/skills/guru-verify-extension-installation/scripts/invoke.sh",
+      ".cursor/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+      ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/bash/check-extension-verification.sh",
+      ".trellis/guru-team/scripts/bash/execute-extension-verification.sh",
+      ".trellis/guru-team/scripts/bash/invoke-extension-verification.sh",
+      ".trellis/guru-team/scripts/bash/record-extension-verification.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/consumers/stop/production/verify-extension-installation-blocked.schema.json",
+      ".trellis/guru-team/skills/consumers/workflow/production/verify-extension-installation-return-to-task-work.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/evals.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-blocked-output.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-invocation-error.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-verification-required-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-verified-output.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/semantic-review-input.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/scripts/invoke.sh",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/guru-team/skills/registry.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/check.jsonl",
+      ".trellis/tasks/07-25-117-verify-extension-installation/context-discovery.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/contract-wording-review.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/implement.jsonl",
+      ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/issue-review.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-start-context.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/consumers/stop/production/verify-extension-installation-blocked.schema.json",
+      "trellis/skills/guru-team/consumers/workflow/production/verify-extension-installation-return-to-task-work.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/evals.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-blocked-output.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-invocation-error.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-verification-required-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-verified-output.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/semantic-review-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/invoke.sh",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/check-extension-verification.sh",
+      "trellis/workflows/guru-team/scripts/bash/execute-extension-verification.sh",
+      "trellis/workflows/guru-team/scripts/bash/invoke-extension-verification.sh",
+      "trellis/workflows/guru-team/scripts/bash/record-extension-verification.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "reviewed_paths": [
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
+        "size_bytes": 10446
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d",
+        "size_bytes": 21341
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "sha256": "7922efb0ec9d5995370f2868ea69a1eef46aef56d53007d6b39325b43cab9102",
+        "size_bytes": 11831
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        "sha256": "e6a3c2d0deddfe77c64fadd56bc5e8c2b16e9889934461fc9e5a32078da9d7bb",
+        "size_bytes": 185199
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "2bca977c035cf397e824085c76c157869589a16a75c14d08f8630ce6f3e487f7",
+        "size_bytes": 1592257
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "3f62dc18ee794959f00a6a945c9c4e53c6e5c063746985a9c81202f0fb6a53d2",
+        "size_bytes": 1197795
+      },
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "sha256": "fc063fa5fe9928fee90e383b979cd54ef64afb5e1b99fce70cd5da722b166b02",
+        "size_bytes": 115174
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "6d1bbfe4f535de1ae51663e3478e410880b9105fcac7c412b744afab5337489f",
+        "size_bytes": 69095
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
+        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
+        "size_bytes": 982
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+        "sha256": "b0c517ab906dab70981d10e21ac3ad096b131e189cb14c2e24819010aa9b4d04",
+        "size_bytes": 14172
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+        "sha256": "efda513a35310467a6d237ce30c18493294ec6afad9cb4a3b1fd804f4abc0b33",
+        "size_bytes": 4669
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "f1a8a8b55e5ee82273e808379acec67b7df04d1dbeaf9e9524766ffd44aa8535",
+        "size_bytes": 1947
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "da3177784e439e2c1df275544af3ad68a090b787c92693431f2de1c6dddc8b77",
+        "size_bytes": 8596
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+        "sha256": "eeecd08c6cbfbfe1dd607403cdfe97d287300885776ed3fcb6929a52dd2ae1a6",
+        "size_bytes": 1039
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "5daa369632a758149f572885af0615509d924582a12547dda6fdbeef7d14ec13",
+        "size_bytes": 5052
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "0cd0a8d072380b053cf0468c51640f14c42b59213b201ea266881f043ddd658d",
+        "size_bytes": 153172
+      },
+      {
+        "path": "trellis/skills/guru-team/registry.json",
+        "sha256": "048fc4aafe09fd5a41a8e4927ca5851ef338526cd085221f6a0c1d4bc3a83c11",
+        "size_bytes": 7357
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "sha256": "1bbdad90ee6dd2b9b46d9c2de00bc2ac2623edd3d30e9e58b8993bed8b245721",
+        "size_bytes": 12903
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "sha256": "f322972ee36bdf72b1dfa1b03a63c1fc04b0bd849063306b09932f4cf056b552",
+        "size_bytes": 73016
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "sha256": "27b2e5a14981457f6896e1638ad8492a06541b5b6f27acb670c3977d8c67c024",
+        "size_bytes": 98959
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "sha256": "60f49be0bfb5e3796fd2047a301d0234f0b1585d804badb2fa56e679f0189f60",
+        "size_bytes": 19152
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "17d293efddaf39599c72f1c0551bda00fbf3923d33f5a4c821c218e7d0fb59cb",
+        "size_bytes": 191988
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/SKILL.md",
+        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
+        "size_bytes": 982
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/SKILL.md",
+        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
+        "size_bytes": 982
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/SKILL.md",
+        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
+        "size_bytes": 982
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/SKILL.md",
+        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
+        "size_bytes": 982
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/SKILL.md",
+        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
+        "size_bytes": 982
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "af80932037c4a59dfde07220646b91d9a3eacb4f64b7a62ee4da11c6e2fe0a97",
+        "size_bytes": 92101
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "94d7977be45b5f3354ab350db9fe327b64e026aa5b387bd7340d73153850d552",
+        "size_bytes": 96693
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "08a3adf99113c1b0ba15de79e312781ea5b133d52eaaa34f5b4183196d83a7a8",
+        "size_bytes": 32830
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "41ac4fefa51289534172f2dce3a6ebed730043307a6bdc02618ab099dab7a5bc",
+        "size_bytes": 25868
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "8352ea29eb6a574905690756757ccebbbc313a461caa4e848b4db97d59dc7347",
+        "size_bytes": 86743
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "4f008a2d5d3769bf4b1a50cecde50766e19061cfa2d2b73511b7d3cd20906b07",
+        "size_bytes": 73045
+      },
+      {
+        "path": "README.md",
+        "sha256": "447a9a20c7b4c91798712410f9feb90dcfb6ba0ca137f77712059592caa740e5",
+        "size_bytes": 79463
+      }
+    ],
+    "snapshot_sha256": "e036f6b9e0328c67ca1023029dded1dd85e5f9cb3e5699583b8fcad5918c7015"
+  },
+  "check_execution": {
+    "commands": [
+      {
+        "id": "runtime_unittest_round6",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "81627608957d28f4c99cb7cb1d7623ff9b95aaed4753a8f60ba1a2afc197e999",
+        "stdout_size_bytes": 2548,
+        "stderr_sha256": "0a75749783aeae8610a163ccb3cbed5fc4ddd5e358d50f506f4a960c4d09b5ef",
+        "stderr_size_bytes": 3881,
+        "summary": "Fresh runtime 全量 584 passed，13 skipped。"
+      },
+      {
+        "id": "skill_packages_unittest_round6",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/tests/test_skill_packages.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "825ce89a3890bb7534c6078282feebc8cb2b62f38b2a2347945d5153fed4b237",
+        "stderr_size_bytes": 4064,
+        "summary": "Fresh public Skill package 全量 175 passed。"
+      },
+      {
+        "id": "preset_unittest_round6",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "fd2c04fcdbaa69cba9654465337b721f68b0fdb00d576ac83b013f0ad1680dd1",
+        "stderr_size_bytes": 809,
+        "summary": "Fresh preset installer 回归 45 passed。"
+      },
+      {
+        "id": "ownership_unittest_round6",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "dacf1fdbbe60049e7153386a78f573e79a1353aaaaa20135e38853dcc4d2958e",
+        "stderr_size_bytes": 107,
+        "summary": "Fresh upstream ownership 回归 9 passed。"
+      },
+      {
+        "id": "verification_skill_contract_round6",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "21c7e48d0b1ec908feef784bbce1fa55f2c9a7acf76382fa7578754a78bd1ed8",
+        "stderr_size_bytes": 105,
+        "summary": "Fresh guru-verify-extension-installation contract 回归 7 passed。"
+      },
+      {
+        "id": "skill_packages_source_validator_round6",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--json",
+          "--mode",
+          "source"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "c26bbae76ccab153d845b81cb4e8261025cb5fdc669a3caa1d387e69e4c27338",
+        "stdout_size_bytes": 1322,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Fresh source package validator status=passed，errors=[]。"
+      },
+      {
+        "id": "skill_packages_installed_validator_round6",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--json",
+          "--mode",
+          "installed"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "ff1f196406a78ef3b0788ffeb7c999412fcf7525cc564b40fde7606278e28739",
+        "stdout_size_bytes": 1511,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Fresh installed package validator status=passed，errors=[]。"
+      },
+      {
+        "id": "dogfood_overlay_drift_round6",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a4d1fc6245408be090a084662c1f1c1da93723e968fea8d4b8bca28f641cdf9e",
+        "stdout_size_bytes": 1790,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Ownership inventory 43/43、managed claims 13/13、active Skill 12，dogfood overlay 与 canonical 一致。"
+      },
+      {
+        "id": "task_context_validate_round6",
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-25-117-verify-extension-installation"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "edb6d263c4dec752d4a567d1225a598f69b87b3bdb83984e146620b12d07ba72",
+        "stdout_size_bytes": 333,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Task implement/check JSONL context validation passed。"
+      },
+      {
+        "id": "bash_syntax_round6",
+        "argv": [
+          "find",
+          ".trellis/guru-team/scripts/bash",
+          "trellis/workflows/guru-team/scripts/bash",
+          "trellis/presets/guru-team/scripts/bash",
+          "-type",
+          "f",
+          "-name",
+          "*.sh",
+          "-exec",
+          "bash",
+          "-n",
+          "{}",
+          ";"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Canonical、installed 与 preset shell scripts 全部通过 bash -n。"
+      },
+      {
+        "id": "python_compileall_round6",
+        "argv": [
+          "python3",
+          "-m",
+          "compileall",
+          "-q",
+          ".trellis/guru-team/scripts/python",
+          ".trellis/guru-team/skills/adapters",
+          "trellis/workflows/guru-team/scripts/python",
+          "trellis/presets/guru-team/scripts/python",
+          "trellis/skills/guru-team/adapters"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Canonical 与 installed Python runtime/adapters compileall passed。"
+      },
+      {
+        "id": "git_diff_check_round6",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Current tracked diff whitespace validation passed。"
+      },
+      {
+        "id": "eval_shared_source_round5",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-verify-extension-installation",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/source-shared",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "65206ddc44c503986cb069786fbbabffa6cea12ca07154962a9fd41ea2dfb069",
+        "stdout_size_bytes": 6846,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 Shared source 7/7 passed。"
+      },
+      {
+        "id": "eval_shared_installed_round5",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-verify-extension-installation",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/installed-shared",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "4bf374482bfd40a53dac6b1383e109f605d2003933e3387ff790a8b6b9292157",
+        "stdout_size_bytes": 6870,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 Shared installed 7/7 passed。"
+      },
+      {
+        "id": "eval_codex_source_round5",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-verify-extension-installation",
+          "--adapter",
+          "codex",
+          "--run-root",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/source-codex",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "006f47c6ceaaab4a47fa986d0aab0166d87e22f255831c9567940a010cf7f24a",
+        "stdout_size_bytes": 6842,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 Codex source 7/7 passed。"
+      },
+      {
+        "id": "eval_codex_installed_round5",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-verify-extension-installation",
+          "--adapter",
+          "codex",
+          "--run-root",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/installed-codex",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "51f57e5dcce53e5249186172ea4b3fdc41ffe1134b26b7a852b7bd622888d996",
+        "stdout_size_bytes": 6866,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 Codex installed 7/7 passed。"
+      },
+      {
+        "id": "eval_claude_source_round5",
+        "argv": [
+          "env",
+          "-u",
+          "ANTHROPIC_AUTH_TOKEN",
+          "-u",
+          "ANTHROPIC_BASE_URL",
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-verify-extension-installation",
+          "--adapter",
+          "claude",
+          "--run-root",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/source-claude",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "4526c85820ff5a48ac7df13b9a3af1affdec50a135452bfcd5f7479f838edacc",
+        "stdout_size_bytes": 6853,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 Claude source 7/7 passed，OAuth native trace 无 permission denial。"
+      },
+      {
+        "id": "eval_claude_installed_round5",
+        "argv": [
+          "env",
+          "-u",
+          "ANTHROPIC_AUTH_TOKEN",
+          "-u",
+          "ANTHROPIC_BASE_URL",
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-verify-extension-installation",
+          "--adapter",
+          "claude",
+          "--run-root",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/installed-claude",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "bab8b2632df3772fef4e8d2c889243f928eb08d95a6057002bc1bd52b094e310",
+        "stdout_size_bytes": 6877,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 Claude installed 7/7 passed，OAuth native trace 无 permission denial。"
+      },
+      {
+        "id": "eval_cursor_source_round5",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-verify-extension-installation",
+          "--adapter",
+          "cursor",
+          "--run-root",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/source-cursor",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "de89f729f38758e4ff8f4bebf63fe4f1fbe541b33cb4f2c71a567e39594c1b39",
+        "stdout_size_bytes": 3239,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 Cursor source 按 capability contract 返回 unsupported，7 cases 均为 unsupported。"
+      },
+      {
+        "id": "eval_cursor_installed_round5",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-verify-extension-installation",
+          "--adapter",
+          "cursor",
+          "--run-root",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/installed-cursor",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "c46ae095ea5153652e589129809c26a5710377c3ad690ee6ab830b0202dd261d",
+        "stdout_size_bytes": 3263,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 Cursor installed 按 capability contract 返回 unsupported，7 cases 均为 unsupported。"
+      },
+      {
+        "id": "full_local_source_throwaway_round5",
+        "argv": [
+          "env",
+          "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "/private/tmp/guru-issue117-production-evals.d2djQb/throwaway"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a44ad38b7b3e0790f987b3d406707319a8ce132c75e9b78bf4d13845820206dc",
+        "stdout_size_bytes": 3647739,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round 5 full local-source throwaway exit 0，覆盖 clean init、preview/switch、update/reapply、ownership、sidecar、平台分发与 production eval。"
+      }
+    ],
+    "worker_evidence": [
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue117_phase2_check",
+        "summary": "首轮独立 Phase 2 覆盖完整 scope，发现并关闭 remote unavailable fake HEAD P1；Claude 认证当时阻塞。",
+        "evidence_only": true,
+        "facts_sha256": "e6a3c2d0deddfe77c64fadd56bc5e8c2b16e9889934461fc9e5a32078da9d7bb"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue117_phase2_check_auth_rerun",
+        "summary": "第二轮独立 Phase 2 发现并关闭 exact refs heads/tags namespace P1；Claude 认证当时仍阻塞。",
+        "evidence_only": true,
+        "facts_sha256": "e6a3c2d0deddfe77c64fadd56bc5e8c2b16e9889934461fc9e5a32078da9d7bb"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue117_phase2_check_credentials_restored",
+        "summary": "第三轮独立 Phase 2 在可用 OAuth 下发现 F3 task dirty freshness 与 F4 native response readiness 两个正常路径 P1，返回 implementation_required。",
+        "evidence_only": true,
+        "facts_sha256": "e6a3c2d0deddfe77c64fadd56bc5e8c2b16e9889934461fc9e5a32078da9d7bb"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue117_phase2_check_round5",
+        "summary": "Round 5 独立完整重跑确认 F1-F4 均 resolved，无 open current-scope finding；runtime/package/preset/ownership/contract、Shared/Codex/Claude 双矩阵、Cursor unsupported、full throwaway、validators、drift 与 byte/mode equality 均通过，推荐 passed。",
+        "evidence_only": true,
+        "facts_sha256": "e6a3c2d0deddfe77c64fadd56bc5e8c2b16e9889934461fc9e5a32078da9d7bb"
+      }
+    ],
+    "unverified_items": [
+      {
+        "id": "U2",
+        "command_or_area": "pushed feature-ref clean installation",
+        "reason": "origin/feat/117-verify-extension-installation 尚不存在，trellis-continue 与 Phase 2 检查均禁止未授权 push。",
+        "impact": "本地 public-main discovery 加 unpublished current-source sample 不替代后续 exact pushed-ref clean install；该门禁在 commit/push 后、总体 #117 publication readiness 前执行。",
+        "blocking": false
+      }
+    ],
+    "execution_sha256": "7d3b991471deb76d743af1d5ffe444cc80223b65d84c9778de4683b035903841"
+  },
+  "scope_qualification": {
+    "candidates": [
+      {
+        "id": "C1",
+        "summary": "真实 remote ref 不可用时 executor 记录全零 HEAD，checker 将 live unresolved HEAD 判为 mismatch，导致 standalone blocked(remote_unavailable) 正常出口不可达。",
+        "trigger_refs": [
+          "prd.md: Auth、network、remote unavailable 必须返回 blocked",
+          "implement.md: 无 task standalone 安装或覆盖失败不得伪造 identity",
+          "design.md: auth/network/remote unavailable route 为 external_blocker -> blocked"
+        ],
+        "normal_path_reproduction": "对不存在的 remote/ref 执行 standalone executor 得到 blocked 和全零 remote_head；随后 recorder/checker 重查同一 ref 得空 HEAD并报 remote ref HEAD mismatch。",
+        "disposition": "current_scope",
+        "route_basis": "属于 #117 已批准 blocked route 与真实 remote unavailable 正常路径，必须在当前实现中修复并完整重跑。",
+        "severity": "P1",
+        "finding_id": "F1"
+      },
+      {
+        "id": "C2",
+        "summary": "workflow source 将 refs/heads/ 与 refs/tags/ 都折叠为同一个短 ref；当远端存在同名 branch/tag 时，安装命令不能保证解析到已审查的 exact ref。",
+        "trigger_refs": [
+          "prd.md: remote clean installation 必须绑定 exact branch 或 tag ref",
+          "design.md: exact-ref pinning 不得回落到隐式 main 或歧义短 ref",
+          "implement.md: branch/tag workflow source 与 remote HEAD 必须可确定性对应"
+        ],
+        "normal_path_reproduction": "创建同名 refs/heads/release 与 refs/tags/release；旧 workflow source 对两者都生成 #release，Trellis CLI 无法从输入区分调用方审查的是 branch 还是 tag。",
+        "disposition": "current_scope",
+        "route_basis": "属于 #117 已批准 exact remote-ref 安装合同的正常 branch/tag 路径，必须保留完整 namespace 并补回归。",
+        "severity": "P1",
+        "finding_id": "F2"
+      },
+      {
+        "id": "C3",
+        "summary": "Task-bearing verification 仅绑定 local/remote HEAD，同一 HEAD 下 tracked dirty implementation 变化后旧 evidence 仍返回 verified。",
+        "trigger_refs": [
+          "contract.md:90-93 要求 implementation/code/docs/tests drift 使旧 evidence stale",
+          "prd.md:110-113 要求 task/worktree content drift fail closed"
+        ],
+        "normal_path_reproduction": "在临时 task repo 记录 workflow verified 后，仅修改 tracked README.md 且不提交；remote HEAD 保持不变，checker 仍返回 status=ok/typed_exit=verified。",
+        "disposition": "current_scope",
+        "route_basis": "属于 #117 已批准 freshness 合同的普通 dirty-worktree 路径，必须在当前实现补 content binding。",
+        "severity": "P1",
+        "finding_id": "F3"
+      },
+      {
+        "id": "C4",
+        "summary": "Shared native eval consumer 仅等待 response 文件存在，producer 尚未完整写入时会解析空 JSON。",
+        "trigger_refs": [
+          "implement.md 要求完整 source/installed native production eval",
+          "PRD 要求 throwaway install/update/reapply 与 production eval 稳定通过"
+        ],
+        "normal_path_reproduction": "完整 throwaway 的 pre-#146 shared eval 在正常 stale-reentry-ready case 中，response_path 已创建但内容未完成，consumer json.loads 空串并抛 JSONDecodeError；同 target 后续 rerun 通过。",
+        "disposition": "current_scope",
+        "route_basis": "required full throwaway 正常路径真实触发，属于 #117 验收所覆盖的 eval adapter readiness correctness。",
+        "severity": "P1",
+        "finding_id": "F4"
+      }
+    ],
+    "scope_sha256": "4a9d218e5b9ed3e481fb3d4f24cc5aacc95cc7821ac7349fbdba19bdf5016488"
+  },
+  "semantic_review": {
+    "adequacy_dimensions": [
+      {
+        "id": "requirements",
+        "status": "passed",
+        "summary": "Issue #117 accepted_current 与 approved planning 的 applicability、两个 profile、四 exits、双验收、retry/stale/redaction 和 out-of-scope 均被当前实现与 durable requirements承接。",
+        "evidence_refs": [
+          "planning",
+          "requirement_provenance"
+        ],
+        "affected_sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "design",
+        "status": "passed",
+        "summary": "semantic owner 与 deterministic executor/recorder/checker 分离，public DTO/private evidence、exact-ref pinning、pre-#146 nesting 与 #118 bootstrap-only 边界符合设计。",
+        "evidence_refs": [
+          "planning",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "implementation",
+        "status": "passed",
+        "summary": "F1-F4 均已实现并由 current diff、定向回归和 full rerun 复核；task dirty freshness 与 pending-to-final response protocol 已在 canonical/installed copies 一致落地。",
+        "evidence_refs": [
+          "implementation_handoff",
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "2bca977c035cf397e824085c76c157869589a16a75c14d08f8630ce6f3e487f7",
+        "finding_ids": [
+          "F1",
+          "F2",
+          "F3"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "tests",
+        "status": "passed",
+        "summary": "Fresh runtime 584/13 skipped、Skill 175、preset 45、ownership 9、contract 7、package validators、platform eval 双矩阵和 full throwaway 全部通过。",
+        "evidence_refs": [
+          "check_execution",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "0cd0a8d072380b053cf0468c51640f14c42b59213b201ea266881f043ddd658d",
+        "finding_ids": [
+          "F1",
+          "F2",
+          "F3",
+          "F4"
+        ],
+        "unverified_ids": [
+          "U2"
+        ]
+      },
+      {
+        "id": "docs_ssot",
+        "status": "passed",
+        "summary": "ssot_first 已执行；canonical workflow/spec/package contract、requirements 与 README 是实现主输入，task delta 已合并，task artifacts 仅保留历史证据。",
+        "evidence_refs": [
+          "docs_ssot_plan",
+          "planning"
+        ],
+        "affected_sha256": "af80932037c4a59dfde07220646b91d9a3eacb4f64b7a62ee4da11c6e2fe0a97",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "cross_layer",
+        "status": "passed",
+        "summary": "Interface/schema/runtime/registry/manifest/workflow/consumer closure 和 canonical/installed/platform distribution 保持一致，source/installed graph 为 12 Skills/46 exits/27 targets。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution",
+          "implementation_handoff"
+        ],
+        "affected_sha256": "048fc4aafe09fd5a41a8e4927ca5851ef338526cd085221f6a0c1d4bc3a83c11",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "compatibility",
+        "status": "passed",
+        "summary": "Exact branch/tag workflow source 保留完整 refs/heads 或 refs/tags namespace且不回落隐式 main；pre-#146 upgrade、manifest install.managed_assets nesting、update/reapply、ownership freeze 与零 sidecar均通过。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "1bbdad90ee6dd2b9b46d9c2de00bc2ac2623edd3d30e9e58b8993bed8b245721",
+        "finding_ids": [
+          "F2"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "deployment_and_operations",
+        "status": "passed",
+        "summary": "影响限于 Guru Team workflow/preset/public extension package；未修改 CI/CD、容器、K8s/Kustomize、DB migration、Makefile、生产数据、依赖或部署配置，secret/redaction scan无凭据值。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "requirement_provenance"
+        ],
+        "affected_sha256": "447a9a20c7b4c91798712410f9feb90dcfb6ba0ca137f77712059592caa740e5",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "agent_recovery",
+        "status": "passed",
+        "summary": "两个 completed implementation agent 与四个 completed check agent 的 liveness/recovery chain 已闭合，Round 5 是 current complete check evidence。",
+        "evidence_refs": [
+          "agent_assignment",
+          "implementation_handoff"
+        ],
+        "affected_sha256": "e6a3c2d0deddfe77c64fadd56bc5e8c2b16e9889934461fc9e5a32078da9d7bb",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "verification_completeness",
+        "status": "passed",
+        "summary": "完整 current-scope Phase 2 证据已覆盖；exact pushed feature-ref clean install 明确保留为 push 后 publication gate，当前为 nonblocking U2 且未被本地样本冒充。",
+        "evidence_refs": [
+          "check_execution",
+          "agent_assignment",
+          "docs_ssot_plan"
+        ],
+        "affected_sha256": "efda513a35310467a6d237ce30c18493294ec6afad9cb4a3b1fd804f4abc0b33",
+        "finding_ids": [
+          "F3",
+          "F4"
+        ],
+        "unverified_ids": [
+          "U2"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "id": "F1",
+        "candidate_id": "C1",
+        "severity": "P1",
+        "summary": "Remote unavailable 正常路径的 blocked 出口因伪全零 HEAD 与 checker live unresolved HEAD 不一致而不可达；已改为 null、补真实回归并完整重跑，状态 resolved。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "F2",
+        "candidate_id": "C2",
+        "severity": "P1",
+        "summary": "同名 branch/tag 被折叠为同一短 workflow source，无法保证安装已审查 exact ref；已保留完整 refs/heads 或 refs/tags namespace并补定向及全量回归，状态 resolved。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "F3",
+        "candidate_id": "C3",
+        "severity": "P1",
+        "summary": "Task-bearing verification 旧证据未绑定 working-tree dirty content；现已加入 task_worktree_sha256，覆盖 working bytes、index blob/status、mode、delete、rename/copy并排除 owner artifact/ignored runtime，定向与全量回归通过。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "F4",
+        "candidate_id": "C4",
+        "severity": "P1",
+        "summary": "Shared native eval 旧 response readiness 存在 partial-file 窗口；现改为 pending 文件完整写入后 replace final，consumer 只等待 final 且 cleanup 覆盖 pending，定向与 full throwaway 回归通过。",
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "blocking": true,
+        "status": "resolved"
+      }
+    ],
+    "adequacy_sha256": "17cab383cd59b17f186a52fa0d8b2469dd6392c2994bc62b707081e6da29f3aa",
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "Round 5 与 fresh recorder 前验证覆盖 #117 完整 approved scope、current diff、Docs SSOT、agent recovery、F1-F4 fixes、repository commands、source/installed production eval 和 full throwaway；所有 current-scope finding 已 resolved，无 blocking unverified item。",
+      "full_rerun": true,
+      "planning_facts_sha256": "5b3b445f6988e80cd8108676b4f0df727f1b4e1646ae079233ed6c967b851657",
+      "snapshot_sha256": "e036f6b9e0328c67ca1023029dded1dd85e5f9cb3e5699583b8fcad5918c7015",
+      "scope_sha256": "4a9d218e5b9ed3e481fb3d4f24cc5aacc95cc7821ac7349fbdba19bdf5016488",
+      "adequacy_sha256": "17cab383cd59b17f186a52fa0d8b2469dd6392c2994bc62b707081e6da29f3aa",
+      "findings_count": 4,
+      "full_round_sha256": "5848f2801266d82565c694dc3d773b347c35eb489d82918aca5db4dfe1a595f1"
+    }
+  },
+  "human_confirmation": {
+    "kind": "not-required",
+    "status": "not_required",
+    "summary": "Phase 2 passed 路径未扩大或缩小已批准 scope；pushed feature-ref 验证仍按既有 publication gate 后置，因此无需额外 human confirmation。",
+    "confirmed_at": null
+  },
+  "typed_exit": "passed",
+  "route": null,
+  "reason": "F1-F4 全部 resolved，十个 adequacy dimensions 通过，完整验证证据 current，唯一未验证项 U2 为既有 push 后 nonblocking publication gate。",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-commit"
+  },
+  "schema_version": "2.0",
+  "skill_id": "guru-check-task",
+  "generated_at": "2026-07-25T19:06:04Z",
+  "task": {
+    "task_dir": ".trellis/tasks/07-25-117-verify-extension-installation",
+    "task_id": "117-verify-extension-installation",
+    "branch": "feat/117-verify-extension-installation",
+    "base_branch": "main",
+    "issue_numbers": [
+      117
+    ],
+    "task_identity_sha256": "be6a7f54c599b8d9cf94a46eca7d8b76abe7a78250fad8c1b3e881c626372b9d"
+  },
+  "planning": {
+    "schema_id": "guru-planning-approval-2.0",
+    "typed_exit": "approved",
+    "artifact": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
+      "sha256": "c36a8ceee4ddd5995033a86d41243db673803afa3ba5d21fe1bdb642ef74ea71",
+      "size_bytes": 40762
+    },
+    "reviewed_artifacts": [
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
+        "size_bytes": 10446
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d",
+        "size_bytes": 21341
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "sha256": "7922efb0ec9d5995370f2868ea69a1eef46aef56d53007d6b39325b43cab9102",
+        "size_bytes": 11831
+      }
+    ],
+    "facts_sha256": "5b3b445f6988e80cd8108676b4f0df727f1b4e1646ae079233ed6c967b851657"
+  },
+  "facts_sha256": "c07478d90c13ff80507c990c6436d675fc2b524a7f42dea98300fec80c79b2c7"
+}

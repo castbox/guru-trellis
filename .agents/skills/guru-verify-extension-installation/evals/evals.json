@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-verify-extension-installation",
+  "evals": [
+    {
+      "id": "workflow-required-verified",
+      "prompt": "Complete workflow extension verification and invoke the checker-passed owner result.",
+      "expected_exit": "verified",
+      "expected_output": "The DTO contains only task, plan, reviewed HEAD and opaque verification identity.",
+      "input_profile_id": "verification_required",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "verified"},
+        {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+      ]},
+      "files": ["evals/files/workflow-required-verified-input.json", "evals/files/workflow-required-verified-facts.json"]
+    },
+    {
+      "id": "workflow-applicability-conflict-blocked",
+      "prompt": "Keep the workflow target fail closed when the required target conflicts with applicability.",
+      "expected_exit": "blocked",
+      "expected_output": "The DTO contains only the stable conflict reason and remediation.",
+      "input_profile_id": "verification_required",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}
+      ]},
+      "files": ["evals/files/workflow-applicability-conflict-blocked-input.json", "evals/files/workflow-applicability-conflict-blocked-facts.json"]
+    },
+    {
+      "id": "standalone-not-required",
+      "prompt": "Conclude that a standalone non-extension target does not require installation verification.",
+      "expected_exit": "not_required",
+      "expected_output": "The session DTO contains repository, resolved HEAD and opaque verification identity.",
+      "input_profile_id": "standalone_verification",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "not_required"}
+      ]},
+      "files": ["evals/files/standalone-not-required-input.json", "evals/files/standalone-not-required-facts.json"]
+    },
+    {
+      "id": "task-install-finding-return",
+      "prompt": "Return a task-bearing installation coverage finding to Phase 2.",
+      "expected_exit": "return_to_task_work",
+      "expected_output": "The DTO contains the exact task finding reference and phase-2 resume target.",
+      "input_profile_id": "standalone_verification",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "return_to_task_work"}
+      ]},
+      "files": ["evals/files/task-install-finding-return-input.json", "evals/files/task-install-finding-return-facts.json"]
+    },
+    {
+      "id": "standalone-remote-unavailable",
+      "prompt": "Preserve a remote-unavailable failure as a standalone blocked session result.",
+      "expected_exit": "blocked",
+      "expected_output": "The session DTO contains repository identity, stable reason and remediation.",
+      "input_profile_id": "standalone_verification",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}
+      ]},
+      "files": ["evals/files/standalone-remote-unavailable-input.json", "evals/files/standalone-remote-unavailable-facts.json"]
+    },
+    {
+      "id": "workflow-transient-retry-verified",
+      "prompt": "Rerun the complete verifier after a same-plan transient blocker and emit the current verified result.",
+      "expected_exit": "verified",
+      "expected_output": "The replacement owner result supersedes exactly one prior identity.",
+      "input_profile_id": "verification_required",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "verified"}
+      ]},
+      "files": ["evals/files/workflow-transient-retry-verified-input.json", "evals/files/workflow-transient-retry-verified-facts.json"]
+    },
+    {
+      "id": "workflow-stale-plan-reentry-verified",
+      "prompt": "Reject the stale plan-bound result, complete a fresh owner round, and emit the new verified identity.",
+      "expected_exit": "verified",
+      "expected_output": "The current plan produces a fresh checked verification identity.",
+      "input_profile_id": "verification_required",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "verified"}
+      ]},
+      "files": ["evals/files/workflow-stale-plan-reentry-verified-input.json", "evals/files/workflow-stale-plan-reentry-verified-facts.json"]
+    }
+  ]
+}

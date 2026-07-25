@@ -9,8 +9,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO = Path(__file__).resolve().parents[4]
@@ -347,11 +349,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(result["facts"]["planned_ids"], ["guru-finalize-task"])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base"],
+            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 11)
-        self.assertEqual(result["facts"]["exit_markers"], 42)
-        self.assertEqual(result["facts"]["target_markers"], 25)
+        self.assertEqual(result["facts"]["invoke_markers"], 12)
+        self.assertEqual(result["facts"]["exit_markers"], 46)
+        self.assertEqual(result["facts"]["target_markers"], 27)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -717,7 +719,7 @@ class SourceValidationTests(unittest.TestCase):
         for path in readmes:
             text = path.read_text(encoding="utf-8")
             self.assertIn("guru-review-branch", text, path)
-            self.assertRegex(text, r"(?:11 Skills / 42 exits|11/42|十一个 active packages 共声明\s*42)")
+            self.assertRegex(text, r"(?:12 Skills / 46 exits|12/46|十二个 active packages 共声明\s*46)")
             self.assertRegex(text, r"(?:唯一的|sole) Phase 3\.5 semantic owner")
             self.assertIn("deterministic", text, path)
             self.assertIn("11 exits", text, path)
@@ -730,8 +732,8 @@ class SourceValidationTests(unittest.TestCase):
         ]
         for path in durable_docs:
             text = path.read_text(encoding="utf-8")
-            self.assertIn("eleven active", text, path)
-            self.assertRegex(text, r"42\s+external\s+exits")
+            self.assertIn("twelve active", text, path)
+            self.assertRegex(text, r"46\s+external\s+exits")
             self.assertIn("guru-review-branch", text, path)
             self.assertRegex(text, r"11\s+exits")
             for phrase in stale_phrases:
@@ -2705,6 +2707,86 @@ class EvalRunnerTests(unittest.TestCase):
             cwd=self.repo, env=environment, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
 
+    def test_public_runtime_boundary_publishes_only_complete_response(self) -> None:
+        execution_root = Path(self.temp.name) / "response-readiness"
+        target = (
+            execution_root
+            / "repo/.trellis/guru-team/scripts/bash/test-runtime.py"
+        )
+        target.parent.mkdir(parents=True)
+        target.write_text(
+            "#!/usr/bin/env python3\n"
+            "import json\n"
+            "print(json.dumps({'exit_id':'ready'}))\n",
+            encoding="utf-8",
+        )
+        target.chmod(0o755)
+        package_root = execution_root / "runtime-package"
+        projection_root = execution_root / "projection-package"
+        package_root.mkdir()
+        projection_root.mkdir()
+        response_path = execution_root / "public-invocation-response.json"
+        response_started = threading.Event()
+        allow_response_completion = threading.Event()
+        original_write_text = Path.write_text
+
+        def delayed_response_write(
+            path: Path,
+            data: str,
+            *args: object,
+            **kwargs: object,
+        ) -> int:
+            if path.name in {
+                "public-invocation-response.json",
+                "public-invocation-response.pending.json",
+            }:
+                path.touch()
+                response_started.set()
+                if not allow_response_completion.wait(5):
+                    raise RuntimeError("test response completion timed out")
+            return original_write_text(path, data, *args, **kwargs)
+
+        boundary_thread: threading.Thread | None = None
+        boundary_stop: threading.Event | None = None
+        process: subprocess.Popen[str] | None = None
+        try:
+            with mock.patch.object(Path, "write_text", delayed_response_write):
+                boundary, boundary_thread, boundary_stop = (
+                    native_adapter.start_public_runtime_boundary(
+                        execution_root,
+                        target,
+                        package_root,
+                        projection_root,
+                        {},
+                    )
+                )
+                process = subprocess.Popen(
+                    [
+                        str(boundary),
+                        "--package-root",
+                        str(projection_root),
+                    ],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                self.assertTrue(response_started.wait(5))
+                self.assertFalse(response_path.exists())
+                self.assertIsNone(process.poll())
+                allow_response_completion.set()
+                stdout, stderr = process.communicate(timeout=5)
+            self.assertEqual(process.returncode, 0, stderr)
+            self.assertEqual(json.loads(stdout), {"exit_id": "ready"})
+        finally:
+            allow_response_completion.set()
+            if process is not None and process.poll() is None:
+                process.kill()
+                process.communicate()
+            if boundary_stop is not None:
+                boundary_stop.set()
+            if boundary_thread is not None:
+                boundary_thread.join(timeout=5)
+
     def test_four_adapters_execute_same_corpus_and_expected_non_success_exits(self) -> None:
         discovery_process = self.run_cli(
             "discover-skill-evals", "--root", str(self.repo), "--mode", "source",
@@ -2783,7 +2865,12 @@ class EvalRunnerTests(unittest.TestCase):
                     if case["case_id"] == "complete-normal":
                         self.assertIn("evals/files/context.txt", context)
                         self.assertIn("Representative non-sensitive context", context)
-                argv = json.loads(Path(payload["cases"][0]["transcript_locator"]).read_text(encoding="utf-8"))["argv"]
+                argv_transcript = json.loads(
+                    Path(payload["cases"][0]["transcript_locator"]).read_text(
+                        encoding="utf-8"
+                    )
+                )
+                argv = argv_transcript["argv"]
                 if adapter == "codex":
                     self.assertIn("exec", argv)
                     self.assertIn("--output-last-message", argv)
@@ -2793,6 +2880,14 @@ class EvalRunnerTests(unittest.TestCase):
                     self.assertIn("--output-format", argv)
                     if adapter == "claude":
                         self.assertIn("--safe-mode", argv)
+                        trace_helper = Path(
+                            argv_transcript["native_request_path"]
+                        ).with_name("native-trace-helper.py")
+                        self.assertIn(
+                            f"--allowedTools=Bash({trace_helper} *)",
+                            argv,
+                        )
+                        self.assertNotIn("--allowedTools=Bash", argv)
                         self.assertNotIn("--bare", argv)
                 else:
                     self.assertIn("--request", argv)
@@ -3716,7 +3811,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -3731,6 +3826,19 @@ class ProductionDistributionTests(unittest.TestCase):
                 self.assertTrue((sync_base / "SKILL.md").is_file())
                 self.assertTrue((sync_base / "schemas/base-sync-result.schema.json").is_file())
                 self.assertTrue(os.access(sync_base / "scripts/sync-base.sh", os.X_OK))
+                extension_verifier = (
+                    repo / root / "skills/guru-verify-extension-installation"
+                )
+                self.assertTrue((extension_verifier / "SKILL.md").is_file())
+                self.assertTrue(
+                    (
+                        extension_verifier
+                        / "schemas/marketplace-verification.schema.json"
+                    ).is_file()
+                )
+                self.assertTrue(
+                    os.access(extension_verifier / "scripts/invoke.sh", os.X_OK)
+                )
                 clarification = repo / root / "skills/guru-clarify-requirements"
                 self.assertTrue((clarification / "SKILL.md").is_file())
                 self.assertEqual(
@@ -3827,7 +3935,7 @@ class Stage0MigrationManifestTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["stage0_activation_unit"], "stage0-minimal-handoff-v1")
-        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 11)
+        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 12)
         self.assertEqual(len(result["facts"]["legacy_ids"]), 0)
         self.assertEqual(
             result["facts"]["production_activation_unit"],
@@ -4060,6 +4168,7 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             "guru-create-task-commit",
             "guru-review-branch",
             "guru-review-task-publication",
+            "guru-verify-extension-installation",
         })
         cases = (
             ("guru-approve-task-plan", "approved-initial", "approved"),
@@ -4067,6 +4176,11 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             ("guru-create-task-commit", "revision-required", "revision-required"),
             ("guru-review-branch", "workflow-passed", "passed"),
             ("guru-review-task-publication", "workflow-initial-ready", "ready"),
+            (
+                "guru-verify-extension-installation",
+                "workflow-required-verified",
+                "verified",
+            ),
         )
         fallback_request: dict | None = None
         for skill_id, case_id, expected_exit in cases:

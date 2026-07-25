@@ -27,6 +27,7 @@ PRODUCTION_SKILLS = {
     "guru-create-task-commit",
     "guru-review-branch",
     "guru-review-task-publication",
+    "guru-verify-extension-installation",
 }
 
 TRACE_HELPER = r'''#!/usr/bin/env python3
@@ -2291,6 +2292,346 @@ def production_publication_authoring(
     return path
 
 
+def extension_verification_execution(
+    runtime: Any,
+    public_input: dict[str, Any],
+    status: str,
+    selected: list[str],
+) -> dict[str, Any]:
+    reviewed_head = (
+        public_input["reviewed_head"]
+        if public_input["mode"] == "workflow"
+        else None
+    )
+    remote_head = (
+        None
+        if status == "blocked" and public_input["mode"] == "standalone"
+        else reviewed_head or "a" * 40
+    )
+    capability_status = {
+        "passed": "passed",
+        "failed": "failed",
+        "blocked": "blocked",
+        "not_run": "not_run",
+    }[status]
+    commands = (
+        []
+        if status == "not_run"
+        else [{
+            "argv": [
+                "git",
+                "ls-remote",
+                "origin",
+                public_input.get("ref", "refs/heads/main"),
+            ],
+            "exit_code": 0 if status == "passed" else 2,
+            "stdout_sha256": runtime.digest_text(""),
+            "stderr_sha256": runtime.digest_text(
+                "" if status == "passed" else "synthetic unavailable"
+            ),
+            "stdout_size_bytes": 0,
+            "stderr_size_bytes": 0 if status == "passed" else 21,
+        }]
+    )
+    return {
+        "schema_version": "1.0",
+        "repo_ref": public_input["repo_ref"],
+        "remote": public_input.get("remote", "origin"),
+        "ref": public_input.get("ref", "refs/heads/main"),
+        "reviewed_head": reviewed_head,
+        "remote_head": remote_head,
+        "status": status,
+        "commands": commands,
+        "capabilities": [
+            {
+                "id": capability,
+                "status": capability_status,
+                "evidence_step": 0 if commands else None,
+            }
+            for capability in selected
+        ],
+        "asset_digests": (
+            [{
+                "path": "trellis/index.json",
+                "sha256": "0" * 64,
+            }]
+            if status == "passed"
+            else []
+        ),
+        "ownership": {
+            "frozen_transitional_legacy_count": 43,
+            "new_legacy_entries": [],
+        },
+        "sidecars": [],
+    }
+
+
+def extension_verification_review(
+    typed_exit: str,
+    selected: list[str],
+    *,
+    supersedes: str | None = None,
+    applicability_status: str | None = None,
+) -> dict[str, Any]:
+    applicability = (
+        applicability_status
+        if applicability_status is not None
+        else "not_required"
+        if typed_exit == "not_required"
+        else "required"
+    )
+    execution_status = {
+        "verified": "passed",
+        "not_required": "not_run",
+        "return_to_task_work": "failed",
+        "blocked": "blocked",
+    }[typed_exit]
+    adequacy_status = (
+        "passed"
+        if typed_exit == "verified"
+        else "not_applicable"
+        if typed_exit == "not_required"
+        else "failed"
+        if typed_exit == "return_to_task_work"
+        else "blocked"
+    )
+    findings: list[dict[str, Any]] = []
+    if typed_exit == "return_to_task_work":
+        findings.append({
+            "finding_ref": "extension-eval-finding-001",
+            "evidence": "The selected install capability did not meet the reviewed contract.",
+            "route_class": "task_work",
+            "status": "open",
+            "closure_evidence": "",
+        })
+    elif typed_exit == "blocked":
+        findings.append({
+            "finding_ref": "extension-eval-blocker-001",
+            "evidence": "The synthetic remote is unavailable for the current owner round.",
+            "route_class": "external_blocker",
+            "status": "open",
+            "closure_evidence": "",
+        })
+    review: dict[str, Any] = {
+        "applicability": {
+            "status": applicability,
+            "reason": (
+                "The reviewed target does not change an installable extension surface."
+                if applicability == "not_required"
+                else "The reviewed target requires extension installation verification."
+            ),
+            "evidence_paths": ["trellis/skills/guru-team/registry.json"],
+        },
+        "verification_profile": {
+            "selected_capabilities": selected,
+            "selection_reason": (
+                "No execution profile is selected for a not-required target."
+                if not selected
+                else "The closed profile covers every synthetic extension surface."
+            ),
+            "coverage": (
+                []
+                if not selected
+                else [f"extension surface -> {capability}" for capability in selected]
+            ),
+        },
+        "semantic_review": {
+            "adequacy": [{
+                "id": "profile_coverage",
+                "status": adequacy_status,
+                "evidence_refs": ["owner-staging:extension-verification"],
+            }],
+            "findings": findings,
+            "conclusion": typed_exit,
+        },
+        "typed_exit": typed_exit,
+        "redaction": {
+            "status": "passed",
+            "scanned_surfaces": [
+                "artifact",
+                "wrapper_stdout",
+                "eval_trace",
+                "retained_logs",
+            ],
+        },
+    }
+    if typed_exit == "blocked":
+        review.update(
+            {
+                "reason_code": (
+                    "applicability_conflict"
+                    if applicability == "not_required"
+                    else "remote_unavailable"
+                ),
+                "remediation": (
+                    "Reconcile the reviewed applicability with the required workflow plan and rerun the complete verification."
+                    if applicability == "not_required"
+                    else "Restore remote access and rerun the complete verification."
+                ),
+            }
+        )
+    if supersedes is not None:
+        review["supersedes_verification_ref"] = supersedes
+    return review
+
+
+def stage_extension_verification_owner_execution(
+    runtime: Any,
+    fixture: Path,
+    fixture_runtime_target: Path,
+    request_package: Path,
+    recipe: str,
+    public_input_path: Path,
+) -> tuple[Path, Path, dict[str, str]]:
+    if not recipe.startswith("extension-"):
+        raise ValueError("extension owner staging recipe is invalid")
+    package = (
+        fixture
+        / ".trellis/guru-team/skills/packages/"
+        "guru-verify-extension-installation"
+    )
+    if (
+        hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
+        or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
+    ):
+        raise ValueError(
+            "extension owner staging package does not match the evaluated contract"
+        )
+    task = fixture / ".trellis/tasks/current"
+    task.mkdir(parents=True, exist_ok=True)
+    runtime.write_json(task / "task.json", {
+        "id": "current",
+        "name": "current",
+        "title": "Extension verification eval",
+        "status": "in_progress",
+        "branch": "main",
+        "base_branch": "main",
+    })
+    run_git(fixture, "add", ".")
+    run_git(fixture, "commit", "-q", "-m", "stage extension verification owner")
+    head = run_git(fixture, "rev-parse", "HEAD")
+    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+    if public_input["mode"] == "workflow":
+        public_input["reviewed_head"] = head
+    runtime_input = fixture / OWNER_INPUT
+    runtime.write_json(runtime_input, public_input)
+    all_capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
+
+    def record(
+        invocation_input: dict[str, Any],
+        typed_exit: str,
+        *,
+        supersedes: str | None = None,
+        applicability_status: str | None = None,
+    ) -> dict[str, Any]:
+        invocation_path = (
+            fixture / ".trellis/.runtime/guru-team/evals/"
+            "extension-invocation-input.json"
+        )
+        execution_path = (
+            fixture / ".trellis/.runtime/guru-team/evals/"
+            "extension-execution-input.json"
+        )
+        review_path = (
+            fixture / ".trellis/.runtime/guru-team/evals/"
+            "extension-review-input.json"
+        )
+        runtime.write_json(invocation_path, invocation_input)
+        selected = (
+            []
+            if typed_exit == "not_required" or applicability_status == "not_required"
+            else all_capabilities
+        )
+        status = {
+            "verified": "passed",
+            "not_required": "not_run",
+            "return_to_task_work": "failed",
+            "blocked": "blocked",
+        }[typed_exit]
+        if applicability_status == "not_required":
+            status = "not_run"
+        runtime.write_json(
+            execution_path,
+            extension_verification_execution(
+                runtime,
+                invocation_input,
+                status,
+                selected,
+            ),
+        )
+        runtime.write_json(
+            review_path,
+            extension_verification_review(
+                typed_exit,
+                selected,
+                supersedes=supersedes,
+                applicability_status=applicability_status,
+            ),
+        )
+        return runtime.cmd_record_extension_verification(argparse.Namespace(
+            root=str(fixture),
+            input=invocation_path.relative_to(fixture).as_posix(),
+            execution_input=execution_path.relative_to(fixture).as_posix(),
+            review_input=review_path.relative_to(fixture).as_posix(),
+        ))
+
+    if recipe in {
+        "extension-workflow-retry-verified",
+        "extension-workflow-stale-reentry-verified",
+    }:
+        prior_input = copy.deepcopy(public_input)
+        if recipe == "extension-workflow-stale-reentry-verified":
+            prior_input["plan_ref"] = "closeout-plan:stale"
+        prior = record(prior_input, "blocked")
+        prior_ref = prior["identity"]["verification_ref"]
+        owner = record(public_input, "verified", supersedes=prior_ref)
+    elif recipe == "extension-workflow-conflict-blocked":
+        owner = record(
+            public_input,
+            "blocked",
+            applicability_status="not_required",
+        )
+    else:
+        typed_exit = {
+            "extension-workflow-verified": "verified",
+            "extension-standalone-not-required": "not_required",
+            "extension-task-return": "return_to_task_work",
+            "extension-standalone-unavailable": "blocked",
+        }.get(recipe)
+        if typed_exit is None:
+            raise ValueError(
+                f"unsupported extension owner staging recipe: {recipe}"
+            )
+        owner = record(public_input, typed_exit)
+
+    task_bearing = isinstance(public_input.get("task_ref"), str)
+    owner_locator = (
+        fixture / ".trellis/tasks/current/marketplace-verification.json"
+        if task_bearing
+        else fixture / OWNER_RESULT
+    )
+    if not task_bearing:
+        runtime.write_json(owner_locator, owner)
+    previous_eval = os.environ.get("GURU_TEAM_EVAL_STAGING")
+    os.environ["GURU_TEAM_EVAL_STAGING"] = "1"
+    try:
+        runtime.check_extension_verification_result(
+            fixture,
+            owner,
+            owner_locator.relative_to(fixture).as_posix(),
+            public_input,
+        )
+    finally:
+        if previous_eval is None:
+            os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
+        else:
+            os.environ["GURU_TEAM_EVAL_STAGING"] = previous_eval
+    runtime.write_json(runtime_input, public_input)
+    return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
+
+
 def stage_production_owner_execution(
     request: dict[str, Any],
     fixture: Path,
@@ -2304,6 +2645,15 @@ def stage_production_owner_execution(
     if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
         raise ValueError("fixture public invocation runtime is unavailable")
     runtime = load_owner_runtime(fixture_runtime_target)
+    if skill_id == "guru-verify-extension-installation":
+        return stage_extension_verification_owner_execution(
+            runtime,
+            fixture,
+            fixture_runtime_target,
+            request_package,
+            recipe,
+            public_input_path,
+        )
     task, _ = production_task_fixture(runtime, fixture)
     package = fixture / ".trellis/guru-team/skills/packages" / skill_id
     if (
@@ -2320,6 +2670,7 @@ def stage_production_owner_execution(
         "guru-create-task-commit": "commit-",
         "guru-review-branch": "review-",
         "guru-review-task-publication": "publication-",
+        "guru-verify-extension-installation": "extension-",
     }[skill_id]
     if not recipe.startswith(expected_prefix):
         raise ValueError("production owner staging recipe does not match the evaluated package")
@@ -2689,8 +3040,10 @@ def start_public_runtime_boundary(
 ) -> tuple[Path, threading.Thread, threading.Event]:
     request_path = execution_root / "public-invocation-request.json"
     response_path = execution_root / "public-invocation-response.json"
+    response_draft_path = execution_root / "public-invocation-response.pending.json"
     request_path.unlink(missing_ok=True)
     response_path.unlink(missing_ok=True)
+    response_draft_path.unlink(missing_ok=True)
     stop = threading.Event()
 
     def serve() -> None:
@@ -2722,9 +3075,10 @@ def start_public_runtime_boundary(
                 }
             except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 response_payload = {"returncode": 2, "stdout": "", "stderr": str(exc)}
-            response_path.write_text(
+            response_draft_path.write_text(
                 json.dumps(response_payload, separators=(",", ":")), encoding="utf-8",
             )
+            response_draft_path.replace(response_path)
             while request_path.exists() or response_path.exists():
                 if stop.wait(0.01):
                     return
@@ -2733,6 +3087,7 @@ def start_public_runtime_boundary(
                 try:
                     request_path.unlink(missing_ok=True)
                     response_path.unlink(missing_ok=True)
+                    response_draft_path.unlink(missing_ok=True)
                 except OSError:
                     pass
 
@@ -2941,9 +3296,12 @@ def native_argv(
             "--output-last-message", str(output_path), context,
         ], output_path
     if adapter == "claude":
+        trace_helper = native_request_path.with_name("native-trace-helper.py")
         return [
             command, "--print", "--safe-mode", "--output-format", "json", "--no-session-persistence",
-            "--permission-mode", "dontAsk", "--add-dir", str(projection_root),
+            "--permission-mode", "dontAsk",
+            f"--allowedTools=Bash({trace_helper} *)",
+            "--add-dir", str(projection_root),
         ], None
     return [command, "--print", "--output-format", "json", context], None
 

@@ -1,0 +1,823 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-25T12:17:44Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-25-117-verify-extension-installation",
+    "task_identity_sha256": "be6a7f54c599b8d9cf94a46eca7d8b76abe7a78250fad8c1b3e881c626372b9d",
+    "scope_ledger_sha256": "c6d293512f914bb914a96a6ed290e36fea0021b3e2ea464af1d40bd85c2bb417",
+    "status": "in_progress",
+    "branch": "feat/117-verify-extension-installation",
+    "issue_numbers": [
+      117
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "0cd2498f821b38ce91bd82fa9e232b1528241e5d",
+    "head": "0cd2498f821b38ce91bd82fa9e232b1528241e5d",
+    "dirty_paths": [
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/check.jsonl",
+      ".trellis/tasks/07-25-117-verify-extension-installation/context-discovery.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/contract-wording-review.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/implement.jsonl",
+      ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/issue-review.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-start-context.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
+      "README.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/consumers/stop/production/verify-extension-installation-blocked.schema.json",
+      "trellis/skills/guru-team/consumers/workflow/production/verify-extension-installation-return-to-task-work.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/evals.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-blocked-output.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-invocation-error.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-verification-required-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-verified-output.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/semantic-review-input.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/invoke.sh",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/check-extension-verification.sh",
+      "trellis/workflows/guru-team/scripts/bash/execute-extension-verification.sh",
+      "trellis/workflows/guru-team/scripts/bash/invoke-extension-verification.sh",
+      "trellis/workflows/guru-team/scripts/bash/record-extension-verification.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "captured_at": "2026-07-25T12:17:44Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:117",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/117",
+      "sha256": "1a8c7b40dbb4c9135fad93717c96a8d9448c2b8a6c888f25736c199630c029d6",
+      "updated_at": "2026-07-22T11:05:06Z"
+    },
+    {
+      "id": "comment:117:5045035361",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/117#issuecomment-5045035361",
+      "sha256": "1df2ec5c5ff4f6dda4c6d6aa5c8598c806900098d94ecea96d840dc35d05261b",
+      "updated_at": null
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    },
+    {
+      "id": "repo:skill-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "af80932037c4a59dfde07220646b91d9a3eacb4f64b7a62ee4da11c6e2fe0a97",
+      "updated_at": null
+    },
+    {
+      "id": "repo:workflow-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "1f18e12a78f5a1ae661eb6386a3140fefcf625edb0a4ea77bc0d9e31d205bde0",
+      "updated_at": null
+    },
+    {
+      "id": "repo:companion-scripts",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "94d7977be45b5f3354ab350db9fe327b64e026aa5b387bd7340d73153850d552",
+      "updated_at": null
+    },
+    {
+      "id": "repo:upstream-ownership",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "a4ee7063738234e8a623df0ffdb87a81fe5ac4f7405ccb95259074d390ab3c1a",
+      "updated_at": null
+    },
+    {
+      "id": "task:issue-ledger",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+      "sha256": "c6d293512f914bb914a96a6ed290e36fea0021b3e2ea464af1d40bd85c2bb417",
+      "updated_at": null
+    },
+    {
+      "id": "user:post-planning-approval",
+      "kind": "user_request",
+      "locator": "用户已重新看到 #117 current prd.md、design.md、implement.md 的绝对链接与 fresh semantic review 结论，并在 implementation-induced repository authority drift 被明确说明后再次独立回复‘确认继续’。",
+      "sha256": "6e31c666aabfd4bc014a2abe9485629b18d30f3a2dddd6e8f2bf56870ebeddae",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+      "sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
+      "size_bytes": 10446,
+      "modified_at": "2026-07-25T10:43:31.601428+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+      "sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d",
+      "size_bytes": 21341,
+      "modified_at": "2026-07-25T10:47:45.141884+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+      "sha256": "7922efb0ec9d5995370f2868ea69a1eef46aef56d53007d6b39325b43cab9102",
+      "size_bytes": 11831,
+      "modified_at": "2026-07-25T10:46:52.808445+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+      "sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
+      "size_bytes": 10446,
+      "modified_at": "2026-07-25T10:43:31.601428+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+      "sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d",
+      "size_bytes": 21341,
+      "modified_at": "2026-07-25T10:47:45.141884+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+      "sha256": "7922efb0ec9d5995370f2868ea69a1eef46aef56d53007d6b39325b43cab9102",
+      "size_bytes": 11831,
+      "modified_at": "2026-07-25T10:46:52.808445+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+    "locator": "## 9. Docs SSOT Plan",
+    "durable_paths": [
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      "docs/requirements/README.md",
+      "docs/requirements/requirement-main.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md"
+    ],
+    "statement_sha256": "ccf898ac646e966532b26d4baea71bb79d62322de5a1f6951ba1e01d7dd3aa14"
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "6f4665ab122d725c08d10f8628770b7b70d5819815f725f60911db331993194f",
+    "facts_sha256": "5d01439b65fe64abf576d438f764e4ca36959f0e7ac65502b658753406c066dc",
+    "scope_sha256": "cd871353e3e3e3194a991263cf52c0417102a6c1f8b86ec239e91e876d569da2",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "Codex main session",
+    "summary": "已逐份审核修订后的 prd.md、design.md、implement.md 完整固定范围。扫描无受控词命中；workflow 与 standalone output 已收敛为每个 exit 的 closed oneOf 单一路径，需求 authority、条件触发、deterministic gate、可观察验收与非合同引用边界均明确，未弱化 Issue #117。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "R1-goal",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "# #117：实现 `guru-verify-extension-installation` 闭环 Skill",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "comment:117:5045035361"
+        ],
+        "reason": "Issue #117 明确要求新增可独立调用并供未来 finalizer 消费的 semantic closed-loop Skill。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714"
+      },
+      {
+        "id": "R2-authority-scope",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "## 2. 权威与交付边界",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "comment:117:5045035361",
+          "task:issue-ledger"
+        ],
+        "reason": "Current authority 与 ledger 固定 #117 为唯一 close issue，并保持 #118、#119、#132 为后续 ownership。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "9577a672d36635f7f367c8dd4c5ae6eef7dd427755ecb5fa952b252adb1e8629"
+      },
+      {
+        "id": "R3-input-modes",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "### 3.1 Skill 与模式",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "comment:117:5045035361",
+          "repo:skill-contract"
+        ],
+        "reason": "Workflow 与 standalone input 必须结构独立，verification_required seed 由 accepted-current comment 精确固定。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "0f5d8ebfe1aecc26daae42b5a3c21136b7d72f705ca40959410f8aa8a4147919"
+      },
+      {
+        "id": "R4-semantic-loop",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "### 3.2 Semantic closed loop",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents",
+          "repo:workflow-contract"
+        ],
+        "reason": "Issue 与仓库合同要求 applicability、profile、adequacy、finding 和 route 由 AI 判断，脚本成功不得替代 Gate。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "4c4be067d165cefa734dacf42732b67d020fa3ed470d79dd33e76d4d84051edf"
+      },
+      {
+        "id": "R5-private-public-boundary",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "### 3.4 Private evidence 与 public I/O",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "comment:117:5045035361",
+          "repo:skill-contract"
+        ],
+        "reason": "Accepted Interface 1.3 authority 固定 exit_id、四个最小 DTO、private marketplace evidence 与 #118 不解析 artifact 的边界。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "af7eb507f451722ecb5a2249172a189df7ba534b4bea38966a15563b50013233"
+      },
+      {
+        "id": "R6-install-update",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "### 3.5 安装、升级与 ownership 验证",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents",
+          "repo:upstream-ownership"
+        ],
+        "reason": "Issue、开箱门禁与 ownership SSOT 共同要求真实 remote clean install、update/reapply、sidecar、平台和 frozen legacy 验证。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "ef009e640f27bd327920ab92912435615939da07ec26f5590ec67d7abe9cf19e"
+      },
+      {
+        "id": "R7-retry-stale",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "### 3.6 Retry、stale 与失败路由",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:skill-contract"
+        ],
+        "reason": "Issue 固定 transient retry、task-fix stale、HEAD drift 与 return/block route，不得在失败后 archive 或建 PR。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "2e179b82926759c3f9ed14a6734d1c93472a3a5fc5c12e6e72d1710cfbec6732"
+      },
+      {
+        "id": "R8-redaction",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "### 3.7 Redaction",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "reason": "Issue 与仓库安全合同要求 credential-safe URL 和 secret redaction，同时只保留 digest/size machine facts。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "970b2b304a15f8dfcf9e9a76d4861735066c56b47aaee3b84de149d93cee0635"
+      },
+      {
+        "id": "R9-compatibility",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "## 4. 非功能与兼容要求",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents",
+          "repo:skill-contract"
+        ],
+        "reason": "公共 API、canonical/install copy、Markdown-vs-script boundary 与 upstream 禁改均是当前仓库强制合同。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "c2f01830b0845099757c5ce29f7fe698eef94be88199a64d12dfbaa8cc616020"
+      },
+      {
+        "id": "R10-exclusions",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "## 5. 明确排除",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "reason": "Issue 与 AGENTS.md 精确排除 #118/#119/#132 实现、恶意模型、TOCTOU、锁、额外 fault/crash 与跨 OS 原子性。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "295b56627e0d2c66754ad6a9313b3782badbc6b9cb4ba1bca7ccd2a522e0df54"
+      },
+      {
+        "id": "R11-acceptance",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "locator": "## 6. 验收标准",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "comment:117:5045035361",
+          "repo:agents"
+        ],
+        "reason": "验收覆盖 package contract、四 exits、production corpus、remote clean install、redaction、dogfood drift 与 upgrade/reapply。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "c1477319785af818406f5f8aec432fe6f781954e3d369c6233197da4ba947cf2"
+      },
+      {
+        "id": "C1-runtime-owner",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "locator": "### 2.2 Shared runtime",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents",
+          "repo:companion-scripts"
+        ],
+        "reason": "显式合同要求整理现有 verifier 职责；必须选定单一 runtime owner，避免旧函数与新 package 并行作 route 判断。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "single-runtime-dispatch",
+              "tradeoff": "重用并收敛现有 runtime，兼容 wrapper 只 dispatch 到同一实现。"
+            },
+            {
+              "id": "duplicate-package-runtime",
+              "tradeoff": "package 初期隔离较强，但会形成双实现、双 schema 与 drift。"
+            }
+          ],
+          "selected_id": "single-runtime-dispatch",
+          "selection_reason": "符合 companion script 单一确定性 owner 和 issue 的职责整理要求。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "9738689c0b6cbb84beb65967ca782dc19b7f8c3622d873fdc2e7cccd5c275948"
+      },
+      {
+        "id": "C2-output-shape",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "locator": "### 3.2 Outputs",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:117",
+          "comment:117:5045035361",
+          "repo:skill-contract"
+        ],
+        "reason": "Workflow 固定 task/plan DTO，同时 standalone 无 task 必须返回 session report；需要一个不伪造 identity 的 closed schema 方案。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "closed-oneof-per-exit",
+              "tradeoff": "每个 exit 只有一个 schema，内部按 mode 使用 closed oneOf 分支，保持四 schema 公共 API。"
+            },
+            {
+              "id": "nullable-aggregate-dto",
+              "tradeoff": "字段共用较短，但会产生大量 nullable/private-like 字段并违反 minimal handoff。"
+            }
+          ],
+          "selected_id": "closed-oneof-per-exit",
+          "selection_reason": "同时满足四个 per-exit schema、workflow 最小 DTO 和 session-only identity 边界。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "25991c4662dd5b41f8317eaeed713b76572b22237202a9a55e1429c25713704e"
+      },
+      {
+        "id": "C3-verification-profile",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "locator": "### 4.3 Verification profile",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents",
+          "repo:skill-contract"
+        ],
+        "reason": "Issue 要求 AI 选择足够 profile 且 runtime 不得按路径自行删减，因此 profile 必须使用可审核 closed capability catalog。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "closed-capability-catalog",
+              "tradeoff": "AI 显式建立 change-to-capability 覆盖，checker 验证 selected set。"
+            },
+            {
+              "id": "path-prefix-command-selection",
+              "tradeoff": "执行简单，但把 semantic applicability/profile 交给脚本路径表。"
+            }
+          ],
+          "selected_id": "closed-capability-catalog",
+          "selection_reason": "保持 AI semantic ownership，同时提供可确定性验证的执行 profile。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "514034228368551afdfe40bfe7be03b93320cd4618b93018ff3b067411ed7356"
+      },
+      {
+        "id": "R12-docs-ssot",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "locator": "## 9. Docs SSOT Plan",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "repo:agents",
+          "repo:workflow-contract",
+          "repo:skill-contract"
+        ],
+        "reason": "公共 Skill、workflow、runtime 与安装合同变更必须采用 ssot_first 并把 task delta 合并到 durable owners。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "ccf898ac646e966532b26d4baea71bb79d62322de5a1f6951ba1e01d7dd3aa14"
+      },
+      {
+        "id": "R13-implementation-order",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "locator": "## 2. 有序实施清单",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents",
+          "repo:workflow-contract"
+        ],
+        "reason": "Package contract、runtime、clean install、registry/distribution、eval、Docs SSOT 和回归必须按依赖顺序闭环。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "f64bab3f06ce65031a7d710b8ff1d14f8c5516973660290b30aaf18d5b4c7a2e"
+      },
+      {
+        "id": "R14-test-matrix",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "locator": "## 3. Phase 2 必检场景",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "comment:117:5045035361",
+          "repo:agents"
+        ],
+        "reason": "Normal-path matrix覆盖四 exits、两模式、stale/retry、redaction、ownership、eval 与真实安装互不替代。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "7ea27c7434345a32a9cbfbd4de74ef7d7791838bd3c656da9446f82dbe64e60a"
+      },
+      {
+        "id": "R15-review-gates",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "locator": "## 4. Review gates",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents",
+          "repo:skill-contract"
+        ],
+        "reason": "合同闭合、semantic boundary、distribution/upgrade、双验收与 Phase 2 check 均有明确 pass 条件。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "3ec78f29d693b0e6615130476c4dbebfa96dc4788a608702d2e32103cbb2c000"
+      },
+      {
+        "id": "R16-rollback",
+        "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "locator": "## 5. 回滚点",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "reason": "失败必须保持 task active，并以完整 activation unit 回滚，不能留下 registry/package/consumer 中间态。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null,
+        "statement_sha256": "31a50ed5a3099784279126e448c03e0a7f982cfd299ce590fd2b931dc955ec94"
+      }
+    ],
+    "coverage": {
+      "reviewer": "codex-main-session-issue-117-planning-approval",
+      "summary": "R1-R16 覆盖目标、scope、双输入、semantic loop、private/public I/O、remote install/update/ownership、retry/stale、redaction、兼容、排除项、全部 acceptance、三个必要实现选择、Docs SSOT、实施顺序、测试矩阵、review gates 与 rollback；无未覆盖的 load-bearing item。",
+      "reviewed_entry_ids": [
+        "R1-goal",
+        "R2-authority-scope",
+        "R3-input-modes",
+        "R4-semantic-loop",
+        "R5-private-public-boundary",
+        "R6-install-update",
+        "R7-retry-stale",
+        "R8-redaction",
+        "R9-compatibility",
+        "R10-exclusions",
+        "R11-acceptance",
+        "C1-runtime-owner",
+        "C2-output-shape",
+        "C3-verification-profile",
+        "R12-docs-ssot",
+        "R13-implementation-order",
+        "R14-test-matrix",
+        "R15-review-gates",
+        "R16-rollback"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "7e5dcb9978c219ee070b3d6887573053dfa366bba43de957befc6d318299bf93"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "codex-main-session-issue-117-planning-approval",
+    "summary": "已逐项审核六类 unusual scenario。Issue #117 与 AGENTS.md 的 normal-operation boundary 已明确排除恶意模型、竞态/TOCTOU、额外 fault/crash、跨 OS 原子性与未触发机制；secret redaction、auth/network unavailable 和正常 stale/freshness 仍作为显式普通路径实施。",
+    "candidates": [
+      {
+        "id": "US-01-security-threat",
+        "scenario_class": "security_or_threat",
+        "trigger_evidence": "Issue 要求 secret/credential redaction，但明确拒绝 authenticity、anti-tamper 和 hostile-input threat model。",
+        "scope": "只实现 secret redaction 与 credentials-safe URL，不新增 threat boundary。",
+        "cost": "引入威胁模型会扩大 acceptance、fixture 和 runtime defense scope。",
+        "alternatives": [
+          "保留 issue 明确的 redaction 正常路径。",
+          "未来通过独立 security requirement 定义 threat model。"
+        ],
+        "consequence": "理论攻击面不进入本 task finding；真实 secret 泄漏仍阻塞。",
+        "source_requirement_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "14e89824232c2f4c92aed13f48bcf8b78e764ec4946ce514e7dba11597fdd13e"
+      },
+      {
+        "id": "US-02-malicious-actor",
+        "scenario_class": "attack_or_malicious_actor",
+        "trigger_evidence": "Issue 与 AGENTS.md 明确采用 honest-but-fallible 正常协作前提。",
+        "scope": "不为故意伪造 artifact、digest、state 或 payload 增加防御。",
+        "cost": "需要新的 authenticity contract、恶意 fixture 与负例矩阵。",
+        "alternatives": [
+          "验证正常 recorder/checker 生成错误事实的 correctness。",
+          "未来独立 security issue。"
+        ],
+        "consequence": "只能靠人为伪造复现的案例保持 out_of_scope。",
+        "source_requirement_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "e2afb45911f759b8065602f2f3e385432637dc276230f27e38be82400407dd86"
+      },
+      {
+        "id": "US-03-toctou-race",
+        "scenario_class": "toctou_or_concurrency_race",
+        "trigger_evidence": "Current scope 只要求 remote/ref/HEAD freshness 与正常 retry，不要求并发 verifier 压力。",
+        "scope": "不新增锁、lease、TOCTOU protocol 或 race stress test。",
+        "cost": "会扩大状态机、恢复和非功能测试范围。",
+        "alternatives": [
+          "保留每次 invocation 的 current identity/freshness 复验。",
+          "未来独立 concurrency requirement。"
+        ],
+        "consequence": "普通 remote drift 继续 fail closed，并发加固不进入本 task。",
+        "source_requirement_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "disposition": "mechanism_removed",
+        "confirmation": null,
+        "proposal_sha256": "f42b7e46128358d20fed3d19c76198efec69544d9cc95fde1e47123087caff39"
+      },
+      {
+        "id": "US-04-fault-crash",
+        "scenario_class": "fault_injection_or_crash_consistency",
+        "trigger_evidence": "Issue 明确排除额外 fault injection 与偶发 crash consistency。",
+        "scope": "只覆盖正文要求的 early/partial failure 和 transient retry。",
+        "cost": "额外 crash protocol 会创建新的 transaction owner 与测试设施。",
+        "alternatives": [
+          "保留正常 early/partial failure matrix。",
+          "未来独立 reliability issue。"
+        ],
+        "consequence": "额外 crash/fault 场景不阻塞当前 acceptance。",
+        "source_requirement_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "9783d323870d9cb77e1e2f9dd548aaa51fe5ce9119ef9fc11a4ed91fdf6b39fb"
+      },
+      {
+        "id": "US-05-cross-os",
+        "scenario_class": "cross_os_atomicity",
+        "trigger_evidence": "Issue 要求平台 package equality，不要求跨 OS filesystem 原子协议。",
+        "scope": "不新增跨 OS atomic write 或 filesystem guarantee。",
+        "cost": "需要新的 OS/文件系统 failure matrix，超出 extension install contract。",
+        "alternatives": [
+          "验证现有受支持平台的 package与adapter合同。",
+          "未来独立 portability issue。"
+        ],
+        "consequence": "跨 OS atomicity 不进入 implementation 或 Phase 2 finding。",
+        "source_requirement_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "ebb5ee0dd9a4ad973d2cc1d32ce741097957172c26acfeef20ba6a69a49a1337"
+      },
+      {
+        "id": "US-06-other-nonstandard",
+        "scenario_class": "other_nonstandard",
+        "trigger_evidence": "Issue 明确排除通用 CI framework、任意软件安装平台和未获确认的新场景。",
+        "scope": "只实现 Guru Team extension 的 closed install/update/reapply profile。",
+        "cost": "泛化平台会扩大 API、plugin、runner 和长期维护边界。",
+        "alternatives": [
+          "保持 package-local closed capability catalog。",
+          "未来以独立产品 requirement 设计通用平台。"
+        ],
+        "consequence": "无 current authority 的泛化机制保持 out_of_scope。",
+        "source_requirement_refs": [
+          "issue:117",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "c90c148da6e946cf381d65778acd76179fb9b5c40549357a18768ddb712a44ae"
+      }
+    ],
+    "unresolved_count": 0,
+    "review_sha256": "889bd61b146ad3ac7ea1058954b6d5f40b2a3ce5b3602b5e0c6bb1508055b87c"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-issue-117-planning-approval",
+      "summary": "已完成 schema 2.0 complete re-entry：复验九项 entry preconditions，重新读取 current PRD、Design、Implement Plan、Docs SSOT Plan、GitHub Issue #117、accepted-current comment、scope ledger 与三份 implementation-induced repository authority diff。规划文件与 live GitHub authority 未变；skill/workflow/companion authority 更新均落在已批准 ssot_first 范围内，没有新增 finding、revision action、scope proposal 或 blocker。",
+      "reviewed_at": "2026-07-25T12:17:39Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-25T12:17:39Z",
+    "confirmed_at": "2026-07-25T12:17:40Z",
+    "evidence_summary": "source=explicit-post-planning-review；用户在重新看到三份 current planning links、fresh review 结论和 authority-stale 原因后，再次独立回复‘确认继续’。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "Current Issue/comment、scope ledger、wording、planning artifacts、updated repository authorities、provenance、unusual dispositions、Docs SSOT Plan 与 fresh post-planning confirmation 均 current；允许恢复已激活 task 的 Phase 2 实现。",
+  "supersedes_facts_sha256": "1ebb1e8aa64dcadae60dac2c859733be767c3e47a605e3775d4deb06a213027d",
+  "facts_sha256": "5b3b445f6988e80cd8108676b4f0df727f1b4e1646ae079233ed6c967b851657"
+}

@@ -231,9 +231,9 @@ Preset 同时安装冻结的 interface 1.2 与独立 interface 1.3 schema，并�
 Active registry row 以 exact `interface_schema_id` / `io_contract_state` 选择
 `1.2+legacy` 或 `1.3+minimal_handoff`；`stage0-minimal-handoff-v1` 中六个 Stage 0
 packages/24 exits 已全部使用 1.3；独立 `production-minimal-handoff-v1` 中
-planning/check/commit 三包/十 profiles/11 exits 也使用 1.3。当前 active closure 为 11/42，
+planning/check/commit 三包/十 profiles/11 exits 也使用 1.3。当前 active closure 为 12/46，
 `legacy_skill_ids=[]`，Stage 0 identity 保持 6/24。
-Preset 在一次 staging transaction 中安装两个 migration manifests/schemas、十一包 public
+Preset 在一次 staging transaction 中安装两个 migration manifests/schemas、十二包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Mixed 1.2/1.3 representative fixture、fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
@@ -262,6 +262,13 @@ workflow caller 先编写 task-local `pr-body.md` 与
 content，唯一 planned missing-Skill stop 为
 `ready -> guru-finalize-task`。Baseline SHA 与 overlay path 集合保持不变，reviewed
 current payload hashes 随本次 active route 更新。
+
+新增 additive active `guru-verify-extension-installation` package 安装两个
+structurally distinct inputs、四个 per-exit contracts、private
+`marketplace-verification.json` schema、seven-case production corpus 与 thin wrappers。
+它不修改 Stage 0 6/24 或 production 3/11 manifest，也不激活 planned
+`guru-finalize-task` 的 #118 producer edge。Source/installed validator 的 live closure
+为 12 Skills / 46 exits / 27 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -354,6 +361,10 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
 - `.trellis/guru-team/scripts/bash/record-task-publication-review.sh`
 - `.trellis/guru-team/scripts/bash/check-task-publication-review.sh`
+- `.trellis/guru-team/scripts/bash/execute-extension-verification.sh`
+- `.trellis/guru-team/scripts/bash/record-extension-verification.sh`
+- `.trellis/guru-team/scripts/bash/check-extension-verification.sh`
+- `.trellis/guru-team/scripts/bash/invoke-extension-verification.sh`
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
 - `.trellis/guru-team/scripts/bash/backfill-finish-summary.sh`
@@ -364,11 +375,12 @@ Production skill registry 同时保留 reserved `guru-create-work-commit`，以�
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request`、
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
-`guru-review-branch`、`guru-review-task-publication`。这十一个 active packages 共声明
-42 个 external exits。Planned `guru-finalize-task`
+`guru-review-branch`、`guru-review-task-publication`、
+`guru-verify-extension-installation`。这十二个 active packages 共声明
+46 个 external exits。Planned `guru-finalize-task`
 不安装 package，也不能拥有 invoke/exit marker。当前
 canonical extension version 是待发布的
-`0.6.5-guru.22`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`0.6.5-guru.23`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -381,6 +393,19 @@ Interface schema 1.2 中 `workflow` 表示 global mandatory routing，`standalon
 audited package inventory 与 discovery copies。Wrapper 只能经过该 dispatcher；旧 runtime、
 缺失 manifest/dispatcher、API/command mismatch 或 managed drift 会在 companion command
 之前 fail closed，并提示安装/升级完整 preset、处理 `.new` / `.bak`、重跑验证。
+
+`guru-verify-extension-installation` 的 standalone discovery 仍依赖完整 preset：
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh \
+  --root . --mode installed --skill guru-verify-extension-installation --json
+```
+
+Package wrapper 在 AI 完成 applicability/profile/adequacy/findings review 后才调用
+executor、recorder、checker 与 public invocation。Task-bearing 调用只写一个 task-local
+owner result；taskless standalone 不写 repo cache/index。Production eval 证明两个
+inputs、四 exits、retry/unavailable/stale route；真实 pushed-remote clean install 另行
+证明 init/preview/switch/update/reapply/ownership/sidecar/README/redaction。两者互不替代。
 
 `guru-discover-change-context` package 同时安装
 `guru-context-discovery-1.0` schema、example、contract、tests 与三个 executable thin

@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "repo_ref": "castbox/guru-trellis",
+  "remote": "origin",
+  "ref": "refs/heads/feature-117",
+  "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "remote_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "status": "passed",
+  "commands": [
+    {
+      "argv": ["git", "ls-remote", "origin", "refs/heads/feature-117"],
+      "exit_code": 0,
+      "stdout_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stderr_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stdout_size_bytes": 41,
+      "stderr_size_bytes": 0
+    }
+  ],
+  "capabilities": [
+    {"id": "marketplace_index", "status": "passed", "evidence_step": 0},
+    {"id": "redaction", "status": "passed", "evidence_step": 0}
+  ],
+  "asset_digests": [
+    {
+      "path": "trellis/index.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "ownership": {"frozen_transitional_legacy_count": 43, "new_legacy_entries": []},
+  "sidecars": []
+}
