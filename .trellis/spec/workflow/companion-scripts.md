@@ -1364,6 +1364,16 @@ schema, task/session persistence, repo/remote/ref/HEAD and plan bindings,
 machine/semantic/final digests, redaction, unique consumer, and current
 supersession. It does not revisit semantic conclusions.
 
+For workflow and task-bearing standalone invocations, execute, record, and
+check each rebuild the exact direct active-task identity before continuing.
+They load and validate `task-start-context.json`, require the current
+active-task pointer, reject archived/completed tasks, match public
+`task_ref`/`repo_ref` to the portable context, match the live branch to both
+`task.json` and the context, and run the shared workspace-boundary validator.
+Wrong-task and wrong-worktree invocations fail before command execution,
+artifact mutation, or DTO projection. Session-only standalone mode bypasses
+only the task-specific checks and remains repository-write-free.
+
 The public invocation reruns the checker, reads the actual exit only from the
 checked owner result, selects that exit's schema, and emits one minimal DTO.
 `expected_exit` is eval-only. Workflow `not_required` is rejected; when a
@@ -1377,6 +1387,11 @@ frozen baseline digest. Any new transitional legacy entry fails verification.
 Raw command output, credential URLs, tokens, and temporary repository locators
 are never retained; only safe locators and digest/size facts cross the runtime
 boundary.
+HTTP(S) URL scanning treats authority userinfo as sensitive across
+username-only, username/password, percent-encoded, empty, and multiple-`@`
+forms. Whitespace and `/` terminate the authority candidate. Recorder errors,
+public wrapper output, and eval traces expose only generic failure text or
+digests and never the rejected credential URL.
 
 ## Skill Eval Discovery And Runner
 

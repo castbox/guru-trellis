@@ -14481,6 +14481,81 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
         self.assertEqual(set(payload["assets"]), set(self.MARKETPLACE_SCHEMA["properties"]["assets"]["required"]))
         self.assertEqual(gtt.marketplace_verification_contract_errors(payload), [])
 
+    def stage_active_task(
+        self,
+        root: Path,
+        task_dir: Path,
+        repo: str = "owner/repo",
+    ) -> None:
+        task_dir.mkdir(parents=True, exist_ok=True)
+        (root / ".trellis/guru-team").mkdir(parents=True, exist_ok=True)
+        (root / ".trellis/guru-team/config.yml").write_text(
+            "workspace_mode: current\n",
+            encoding="utf-8",
+        )
+        scripts_dir = root / ".trellis/scripts"
+        scripts_dir.mkdir(parents=True, exist_ok=True)
+        task_ref = gtt.repo_relative(root, task_dir)
+        (scripts_dir / "task.py").write_text(
+            "#!/usr/bin/env python3\n"
+            f"print({task_ref!r})\n",
+            encoding="utf-8",
+        )
+        gtt.write_json(
+            task_dir / "task.json",
+            {
+                "id": task_dir.name,
+                "name": task_dir.name,
+                "title": "Marketplace verification",
+                "status": "in_progress",
+                "branch": "main",
+                "base_branch": "main",
+            },
+        )
+        gtt.write_json(
+            task_dir / "task-start-context.json",
+            {
+                "schema_version": "1.0",
+                "source_issue": {"number": 117},
+                "source_repo": {"repo": repo, "url": ""},
+                "task_slug": task_dir.name,
+                "task_title": "Marketplace verification",
+                "task_artifact_dir": task_ref,
+                "branch_name": "main",
+                "base_branch": "main",
+                "base_ref": "main",
+                "base_head_sha": "0" * 40,
+                "remote_head_sha": "0" * 40,
+                "workspace_slug": task_dir.name,
+                "task_workspace_id": task_dir.name,
+                "assignee": "extension-test",
+                "actor": {"login": "extension-test"},
+                "issue_scope_ledger_seed": {},
+                "intake_summary": {
+                    "duplicate_decision": {},
+                    "naming_quality": {},
+                    "confirmation": {},
+                },
+            },
+        )
+
+    def task_identity_run_result(
+        self,
+        command: list[str],
+        task_dir: Path,
+    ) -> mock.Mock | None:
+        if command == ["python3", "./.trellis/scripts/task.py", "current"]:
+            return mock.Mock(
+                returncode=0,
+                stdout=f"{gtt.repo_relative(task_dir.parents[2], task_dir)}\n",
+                stderr="",
+            )
+        if command[:3] == ["git", "rev-parse", "--abbrev-ref"]:
+            return mock.Mock(returncode=0, stdout="main\n", stderr="")
+        if command[:3] == ["git", "symbolic-ref", "--short"]:
+            return mock.Mock(returncode=0, stdout="main\n", stderr="")
+        return None
+
     def test_pending_remote_marketplace_evidence_blocks_final_publish(self) -> None:
         pending = {
             "type": gtt.REMOTE_MARKETPLACE_EVIDENCE_TYPE,
@@ -14507,7 +14582,7 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             task_dir = root / ".trellis/tasks/07-10-096-task-runtime-boundary"
-            task_dir.mkdir(parents=True)
+            self.stage_active_task(root, task_dir)
             apply_script = root / "trellis/presets/guru-team/scripts/bash/apply.sh"
             apply_script.parent.mkdir(parents=True)
             apply_script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
@@ -14521,6 +14596,9 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
                 check: bool = True,
                 env: dict[str, str] | None = None,
             ) -> mock.Mock:
+                task_identity = self.task_identity_run_result(command, task_dir)
+                if task_identity is not None:
+                    return task_identity
                 commands.append(command)
                 environments.append(env)
                 if command[:3] == ["git", "ls-remote", "origin"]:
@@ -14575,11 +14653,25 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             self.assert_public_schema_valid(payload)
             self.assertEqual(payload["remote_head"], expected)
             self.assertEqual([step["passed"] for step in payload["steps"]], [True] * 5)
-            self.assertEqual(commands[2][0:2], ["git", "clone"])
-            self.assertEqual(commands[3][0:2], ["git", "checkout"])
-            self.assertTrue(commands[4][0].endswith("verify-throwaway-install.sh"))
+            clone_index = next(
+                index
+                for index, command in enumerate(commands)
+                if command[:2] == ["git", "clone"]
+            )
+            checkout_index = next(
+                index
+                for index, command in enumerate(commands)
+                if command[:2] == ["git", "checkout"]
+            )
+            throwaway_index = next(
+                index
+                for index, command in enumerate(commands)
+                if command[0].endswith("verify-throwaway-install.sh")
+            )
+            self.assertLess(clone_index, checkout_index)
+            self.assertLess(checkout_index, throwaway_index)
             self.assertEqual(
-                environments[4]["TRELLIS_WORKFLOW_SOURCE"],
+                environments[throwaway_index]["TRELLIS_WORKFLOW_SOURCE"],
                 "gh:owner/repo/trellis#refs/heads/codex/096-task-runtime-boundary",
             )
             self.assertEqual(payload["steps"][-1]["command"][0], "<temp-source>/trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh")
@@ -14606,9 +14698,25 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             task_dir = root / ".trellis/tasks/task"
-            task_dir.mkdir(parents=True)
+            self.stage_active_task(root, task_dir)
+
+            def fake_run(
+                command: list[str],
+                cwd: Path,
+                check: bool = True,
+                env: dict[str, str] | None = None,
+            ) -> mock.Mock:
+                task_identity = self.task_identity_run_result(command, task_dir)
+                if task_identity is not None:
+                    return task_identity
+                return mock.Mock(
+                    returncode=2,
+                    stdout="",
+                    stderr="network failed",
+                )
+
             with (
-                mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=2, stdout="", stderr="network failed")),
+                mock.patch.object(gtt, "run", side_effect=fake_run),
                 self.assertRaises(gtt.WorkflowError),
             ):
                 gtt.execute_marketplace_verification(root, task_dir, "owner/repo", "origin", "codex/task", "a" * 40)
@@ -14622,9 +14730,18 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             task_dir = root / ".trellis/tasks/task"
-            task_dir.mkdir(parents=True)
+            self.stage_active_task(root, task_dir)
             expected = "a" * 40
-            def fake_run(command: list[str], cwd: Path, check: bool = True) -> mock.Mock:
+
+            def fake_run(
+                command: list[str],
+                cwd: Path,
+                check: bool = True,
+                env: dict[str, str] | None = None,
+            ) -> mock.Mock:
+                task_identity = self.task_identity_run_result(command, task_dir)
+                if task_identity is not None:
+                    return task_identity
                 if command[:3] == ["git", "ls-remote", "origin"]:
                     return mock.Mock(returncode=0, stdout=f"{expected}\trefs/heads/codex/task\n", stderr="")
                 if command[:4] == ["git", "remote", "get-url", "origin"]:
@@ -14728,6 +14845,17 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         )
         self.task_dir = self.root / ".trellis/tasks/current"
         self.task_dir.mkdir(parents=True)
+        scripts_dir = self.root / ".trellis/scripts"
+        scripts_dir.mkdir(parents=True)
+        (scripts_dir / "task.py").write_text(
+            "#!/usr/bin/env python3\n"
+            "import sys\n"
+            "if sys.argv[1:] == ['current']:\n"
+            "    print('.trellis/tasks/current')\n"
+            "    raise SystemExit(0)\n"
+            "raise SystemExit(2)\n",
+            encoding="utf-8",
+        )
         gtt.write_json(
             self.task_dir / "task.json",
             {
@@ -14737,6 +14865,35 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                 "status": "in_progress",
                 "branch": "main",
                 "base_branch": "main",
+            },
+        )
+        gtt.write_json(
+            self.task_dir / "task-start-context.json",
+            {
+                "schema_version": "1.0",
+                "source_issue": {"number": 117},
+                "source_repo": {
+                    "repo": "example/guru-extension",
+                    "url": "",
+                },
+                "task_slug": "current",
+                "task_title": "Extension verification",
+                "task_artifact_dir": ".trellis/tasks/current",
+                "branch_name": "main",
+                "base_branch": "main",
+                "base_ref": "main",
+                "base_head_sha": "0" * 40,
+                "remote_head_sha": "0" * 40,
+                "workspace_slug": "current",
+                "task_workspace_id": "current",
+                "assignee": "extension-eval",
+                "actor": {"login": "extension-eval"},
+                "issue_scope_ledger_seed": {},
+                "intake_summary": {
+                    "duplicate_decision": {},
+                    "naming_quality": {},
+                    "confirmation": {},
+                },
             },
         )
         (self.root / "README.md").write_text("fixture\n", encoding="utf-8")
@@ -15065,22 +15222,181 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             "applicability_conflict",
         )
 
-    def test_sensitive_command_fails_closed(self) -> None:
-        public_input = self.public_input("standalone", task=False)
+    def test_credential_userinfo_redaction_covers_normal_url_shapes(self) -> None:
+        credential_urls = [
+            "https://@example.invalid/repo.git",
+            "https://s@example.invalid/repo.git",
+            "https://user@example.invalid/repo.git",
+            "https://user:secret@example.invalid/repo.git",
+            "https://user@team@example.invalid/repo.git",
+            "https://user%40team:pa%3Ass@example.invalid/repo.git",
+            "prefix https://user:secret@example.invalid/repo.git suffix",
+            "before\nhttps://user:secret@example.invalid/repo.git\nafter",
+        ]
+        for value in credential_urls:
+            with self.subTest(value=value):
+                self.assertTrue(gtt.extension_verification_sensitive_text(value))
+        for value in [
+            "https://example.invalid/repo.git",
+            "https://user name@example.invalid/repo.git",
+            "https://example.invalid/path@segment",
+        ]:
+            with self.subTest(value=value):
+                self.assertFalse(gtt.extension_verification_sensitive_text(value))
+
+    def test_sensitive_command_fails_closed_without_artifact_or_public_error_leak(
+        self,
+    ) -> None:
+        public_input = self.public_input("standalone", task=True)
         selected = ["redaction"]
+        for credential_url in [
+            "https://s@example.invalid/repo.git",
+            "https://user:secret@example.invalid/repo.git",
+            "https://user@team@example.invalid/repo.git",
+        ]:
+            with self.subTest(credential_url=credential_url):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    self.record(
+                        public_input,
+                        self.execution(
+                            public_input,
+                            "passed",
+                            selected,
+                            sensitive_argv=credential_url,
+                        ),
+                        self.review("verified", selected),
+                    )
+                public_error = json.dumps(
+                    {
+                        "status": "error",
+                        "error": str(raised.exception),
+                        **raised.exception.payload,
+                    }
+                )
+                self.assertIn("unredacted sensitive material", public_error)
+                self.assertNotIn(credential_url, public_error)
+                self.assertFalse(
+                    (self.task_dir / "marketplace-verification.json").exists()
+                )
+                stdout = io.StringIO()
+                stderr = io.StringIO()
+                with (
+                    mock.patch.object(
+                        sys,
+                        "argv",
+                        [
+                            "guru_team_trellis.py",
+                            "record-extension-verification",
+                            "--root",
+                            str(self.root),
+                            "--input",
+                            ".trellis/.runtime/guru-team/tests/public-input.json",
+                            "--execution-input",
+                            ".trellis/.runtime/guru-team/tests/execution.json",
+                            "--review-input",
+                            ".trellis/.runtime/guru-team/tests/review.json",
+                            "--json",
+                        ],
+                    ),
+                    contextlib.redirect_stdout(stdout),
+                    contextlib.redirect_stderr(stderr),
+                ):
+                    return_code = gtt.main()
+                public_streams = stdout.getvalue() + stderr.getvalue()
+                self.assertEqual(return_code, 2)
+                self.assertNotIn(credential_url, public_streams)
+                self.assertIn("unredacted sensitive material", public_streams)
+
+    def test_record_rejects_wrong_active_task(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        public_input["task_ref"] = ".trellis/tasks/other"
+        other = self.root / ".trellis/tasks/other"
+        other.mkdir()
+        gtt.write_json(
+            other / "task.json",
+            {
+                "id": "other",
+                "name": "other",
+                "title": "Other",
+                "status": "in_progress",
+                "branch": "main",
+                "base_branch": "main",
+            },
+        )
+        context = gtt.read_json(self.task_dir / "task-start-context.json")
+        context["task_slug"] = "other"
+        context["task_artifact_dir"] = ".trellis/tasks/other"
+        context["workspace_slug"] = "other"
+        context["task_workspace_id"] = "other"
+        gtt.write_json(other / "task-start-context.json", context)
         with self.assertRaises(gtt.WorkflowError) as raised:
             self.record(
                 public_input,
-                self.execution(
-                    public_input,
-                    "passed",
-                    selected,
-                    sensitive_argv="https://token@example.invalid/repo.git",
-                ),
-                self.review("verified", selected),
+                self.execution(public_input, "passed", ["marketplace_index"]),
+                self.review("verified", ["marketplace_index"]),
             )
         self.assertIn(
-            "unredacted sensitive material",
+            "current active Trellis task",
+            json.dumps(raised.exception.payload),
+        )
+        self.assertFalse((other / "marketplace-verification.json").exists())
+
+    def test_check_rejects_archived_task(self) -> None:
+        public_input = self.public_input("standalone", task=True)
+        public_input["task_ref"] = ".trellis/tasks/archive/2026-07/archived"
+        archived = self.root / public_input["task_ref"]
+        archived.mkdir(parents=True)
+        gtt.write_json(
+            archived / "task.json",
+            {
+                "id": "archived",
+                "name": "archived",
+                "title": "Archived",
+                "status": "completed",
+                "branch": "main",
+                "base_branch": "main",
+            },
+        )
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.check_extension_verification_result(
+                self.root,
+                {},
+                f"{public_input['task_ref']}/marketplace-verification.json",
+                public_input,
+            )
+        self.assertIn(
+            "direct active task",
+            json.dumps(raised.exception.payload),
+        )
+
+    def test_execute_rejects_wrong_worktree_mapping(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        wrong_workspace = self.root.parent / f"{self.root.name}-other-worktree"
+        wrong_workspace.mkdir()
+        self.addCleanup(shutil.rmtree, wrong_workspace, True)
+        gtt.write_json(
+            gtt.runtime_workspace_path(
+                self.root,
+                gtt.load_config(self.root),
+                "current",
+            ),
+            {
+                "schema_version": "1.0",
+                "workspace_slug": "current",
+                "workspace_path": str(wrong_workspace),
+                "source_checkout": str(self.root),
+                "branch_name": "main",
+                "updated_at": gtt.now_iso(),
+            },
+        )
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                ["marketplace_index"],
+            )
+        self.assertIn(
+            "workspace boundary mismatch",
             json.dumps(raised.exception.payload),
         )
 
@@ -15126,16 +15442,24 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             cwd=self.root,
             check=True,
         )
-        with (
-            mock.patch.object(
-                gtt,
-                "run",
-                return_value=mock.Mock(
+        real_run = gtt.run
+
+        def local_drift_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> Any:
+            if command[:2] == ["git", "ls-remote"]:
+                return mock.Mock(
                     returncode=0,
                     stdout=f"{self.head}\trefs/heads/main\n",
                     stderr="",
-                ),
-            ),
+                )
+            return real_run(command, cwd=cwd, check=check, env=env)
+
+        with (
+            mock.patch.object(gtt, "run", side_effect=local_drift_run),
             self.assertRaises(gtt.WorkflowError) as local_drift,
         ):
             gtt.check_extension_verification_result(
@@ -15155,16 +15479,22 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.execution(standalone_input, "not_run", []),
             self.review("not_required", []),
         )
-        with (
-            mock.patch.object(
-                gtt,
-                "run",
-                return_value=mock.Mock(
+        def remote_drift_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> Any:
+            if command[:2] == ["git", "ls-remote"]:
+                return mock.Mock(
                     returncode=0,
                     stdout=f"{'b' * 40}\trefs/heads/main\n",
                     stderr="",
-                ),
-            ),
+                )
+            return real_run(command, cwd=cwd, check=check, env=env)
+
+        with (
+            mock.patch.object(gtt, "run", side_effect=remote_drift_run),
             self.assertRaises(gtt.WorkflowError) as remote_drift,
         ):
             gtt.check_extension_verification_result(
@@ -15197,16 +15527,24 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                 remote_head = (
                     self.head if mode == "workflow" else "a" * 40
                 )
-                with (
-                    mock.patch.object(
-                        gtt,
-                        "run",
-                        return_value=mock.Mock(
+                real_run = gtt.run
+
+                def drift_run(
+                    command: list[str],
+                    cwd: Path | None = None,
+                    check: bool = True,
+                    env: dict[str, str] | None = None,
+                ) -> Any:
+                    if command[:2] == ["git", "ls-remote"]:
+                        return mock.Mock(
                             returncode=0,
                             stdout=f"{remote_head}\trefs/heads/main\n",
                             stderr="",
-                        ),
-                    ),
+                        )
+                    return real_run(command, cwd=cwd, check=check, env=env)
+
+                with (
+                    mock.patch.object(gtt, "run", side_effect=drift_run),
                     self.assertRaises(gtt.WorkflowError) as drift,
                 ):
                     gtt.check_extension_verification_result(

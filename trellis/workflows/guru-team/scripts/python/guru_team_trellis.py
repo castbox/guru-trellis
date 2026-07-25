@@ -18015,6 +18015,7 @@ def extension_verification_execute_facts(
             "Extension verification capabilities must be a non-empty unique subset of the closed catalog.",
             exit_code=2,
         )
+    extension_verification_task_identity(root, public_input)
     repo_ref, remote, ref, reviewed_head = extension_verification_remote_identity(
         root,
         public_input,
@@ -18215,7 +18216,7 @@ def extension_verification_sensitive_text(value: Any) -> bool:
     return (
         bool(explicit_marker and explicit_marker in text)
         or any(marker in text for marker in forbidden)
-        or bool(re.search(r"https?://[^/\\s@]+@", text))
+        or bool(re.search(r"(?i)https?://[^/\s@]*@", text))
     )
 
 
@@ -25234,6 +25235,87 @@ def extension_verification_task_dir(
     return task_dir
 
 
+def extension_verification_task_identity(
+    root: Path,
+    public_input: dict[str, Any],
+) -> Path | None:
+    task_dir = extension_verification_task_dir(root, public_input)
+    if task_dir is None:
+        return None
+
+    task_ref = str(public_input["task_ref"])
+    errors: list[str] = []
+    if task_dir.parent.resolve() != tasks_root(root).resolve():
+        errors.append(
+            "task_ref must identify one direct active task under .trellis/tasks."
+        )
+
+    config = load_config(root)
+    task_context = load_task_start_context(task_dir, config)
+    if not task_context:
+        errors.append(
+            "task-bearing extension verification requires task-start-context.json."
+        )
+    else:
+        if task_context.get("task_artifact_dir") != task_ref:
+            errors.append(
+                "task_ref does not match task-start-context task_artifact_dir."
+            )
+        task = task_json(task_dir)
+        task_identity = str(task.get("id") or task.get("name") or "").strip()
+        if (
+            not task_identity
+            or str(task_context.get("task_slug") or "").strip() != task_identity
+        ):
+            errors.append(
+                "task-start-context task_slug does not match task.json identity."
+            )
+        if task.get("status") not in {"planning", "in_progress", "review"}:
+            errors.append(
+                "task-bearing extension verification requires an active task status."
+            )
+
+        context_branch = str(task_context.get("branch_name") or "").strip()
+        task_branch = str(task.get("branch") or "").strip()
+        live_branch = current_branch(root)
+        if (
+            not context_branch
+            or context_branch != task_branch
+            or context_branch != live_branch
+        ):
+            errors.append(
+                "current branch does not match task.json and task-start-context."
+            )
+
+        context_repo = normalize_github_repository(
+            (
+                task_context.get("source_repo", {}).get("repo")
+                if isinstance(task_context.get("source_repo"), dict)
+                else ""
+            )
+        )
+        public_repo = normalize_github_repository(public_input.get("repo_ref"))
+        if not context_repo or context_repo != public_repo:
+            errors.append(
+                "repo_ref does not match task-start-context source_repo.repo."
+            )
+
+    active_task = current_task_dir(root)
+    if active_task is None or active_task.resolve() != task_dir.resolve():
+        errors.append(
+            "task_ref does not match the current active Trellis task."
+        )
+
+    if errors:
+        raise WorkflowError(
+            "Extension verification task repository identity validation failed.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    assert_workspace_boundary(root, config, task_context, task_dir)
+    return task_dir
+
+
 def extension_verification_task_worktree_sha256(
     root: Path,
     task_dir: Path,
@@ -25270,6 +25352,7 @@ def extension_verification_task_worktree_sha256(
 def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input = extension_verification_public_input(root, args.input)
+    task_dir = extension_verification_task_identity(root, public_input)
     execution = extension_verification_execution_input(root, args.execution_input)
     reviewed = extension_verification_review_input(root, args.review_input)
     identity = extension_verification_remote_identity(root, public_input)
@@ -25295,7 +25378,6 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
             payload={"errors": semantic_errors},
         )
-    task_dir = extension_verification_task_dir(root, public_input)
     task_worktree_sha256 = (
         extension_verification_task_worktree_sha256(root, task_dir)
         if task_dir is not None
@@ -25428,7 +25510,7 @@ def check_extension_verification_result(
         if isinstance(payload.get("public_input"), dict)
         else {}
     )
-    task_dir = extension_verification_task_dir(root, owner_input)
+    task_dir = extension_verification_task_identity(root, owner_input)
     if task_dir is not None:
         expected = repo_relative(
             root,

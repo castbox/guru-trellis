@@ -2501,6 +2501,10 @@ def stage_extension_verification_owner_execution(
         )
     task = fixture / ".trellis/tasks/current"
     task.mkdir(parents=True, exist_ok=True)
+    (fixture / ".trellis/guru-team/config.yml").write_text(
+        "workspace_mode: current\n",
+        encoding="utf-8",
+    )
     runtime.write_json(task / "task.json", {
         "id": "current",
         "name": "current",
@@ -2509,9 +2513,50 @@ def stage_extension_verification_owner_execution(
         "branch": "main",
         "base_branch": "main",
     })
+    runtime.write_json(task / "task-start-context.json", {
+        "schema_version": "1.0",
+        "source_issue": {"number": 117},
+        "source_repo": {"repo": "example/guru-extension", "url": ""},
+        "task_slug": "current",
+        "task_title": "Extension verification eval",
+        "task_artifact_dir": ".trellis/tasks/current",
+        "branch_name": "main",
+        "base_branch": "main",
+        "base_ref": "main",
+        "base_head_sha": "0" * 40,
+        "remote_head_sha": "0" * 40,
+        "workspace_slug": "current",
+        "task_workspace_id": "current",
+        "assignee": "extension-eval",
+        "actor": {"login": "extension-eval"},
+        "issue_scope_ledger_seed": {},
+        "intake_summary": {
+            "duplicate_decision": {},
+            "naming_quality": {},
+            "confirmation": {},
+        },
+    })
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-q", "-m", "stage extension verification owner")
     head = run_git(fixture, "rev-parse", "HEAD")
+    os.environ["TRELLIS_CONTEXT_ID"] = (
+        f"extension-eval-{hashlib.sha256(str(fixture).encode()).hexdigest()[:16]}"
+    )
+    task_start = subprocess.run(
+        [
+            sys.executable,
+            str(fixture / ".trellis/scripts/task.py"),
+            "start",
+            ".trellis/tasks/current",
+        ],
+        cwd=fixture,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if task_start.returncode != 0:
+        raise ValueError("extension owner staging could not activate its task")
     public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
     if public_input["mode"] == "workflow":
         public_input["reviewed_head"] = head

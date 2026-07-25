@@ -14,6 +14,16 @@ branches. The caller does not select a command matrix, supply remote facts, or
 author adequacy. Workflow and standalone calls apply the same runtime,
 repository, remote/ref, ownership, redaction, and freshness preconditions.
 
+Every task-bearing execute, record, and check entry rebuilds repository
+identity from the exact direct active task. It loads and validates
+`task-start-context.json`, requires the public `task_ref` to equal the current
+active task, rejects archived or completed task locators, and proves the live
+branch, `task.json`, portable task context, source repository, and workspace
+boundary all describe the same repository worktree. A wrong task, stale
+active-task pointer, wrong branch/repository, or wrong worktree fails before
+execution, persistence, or route projection. Taskless standalone calls do not
+manufacture a task identity.
+
 ## Semantic loop
 
 The AI first reads the target, reviewed diff, public installation contracts,
@@ -64,6 +74,12 @@ The checker validates schema, task/session persistence, public-input identity,
 remote/ref/HEAD binding, plan and supersession freshness, redaction, route
 shape, consumer mapping, and evidence digests. It does not decide
 applicability, sufficiency, findings, or semantic pass.
+
+Credential URL scanning treats any HTTP(S) authority userinfo, including empty,
+username-only, username/password, percent-encoded, and multiple-`@` forms, as
+sensitive while whitespace and `/` terminate the authority candidate. Such
+content is rejected before artifact write; public wrapper errors and eval
+traces retain only generic errors or digests and never the credential URL.
 
 ## Exits and re-entry
 
