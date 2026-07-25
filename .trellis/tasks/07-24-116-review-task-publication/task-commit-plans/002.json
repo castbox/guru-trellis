@@ -498,7 +498,230 @@
     "plan_digest": "8918a6ac684104ec96e0a35f808f5e5c951eb699a0b99763db8f7843286b36e3"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-25T02:06:53Z",
+    "commit_sha": "1dd2ef8af1cf583eeaf302a11c4770a07922b0b2",
+    "parent": "aacb6e02e5386578bfe3d046511a0002a51cb581",
+    "message_sha256": "4b3cc80adb6ed4c60a633e2a1f281929ee6fb7fcf64b7f5901a0f7ca61a3e664",
+    "committed_paths": [
+      ".agents/skills/guru-review-task-publication/references/contract.md",
+      ".claude/skills/guru-review-task-publication/references/contract.md",
+      ".codex/skills/guru-review-task-publication/references/contract.md",
+      ".cursor/skills/guru-review-task-publication/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+      ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
+      ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+      ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+      ".trellis/tasks/07-24-116-review-task-publication/review.md",
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
+      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "3dc28ab29af7f5485d55e7837647d7ceb2a8af10",
+      "actual_tree": "3dc28ab29af7f5485d55e7837647d7ceb2a8af10",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-review-task-publication/references/contract.md",
+          "expected_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "expected_mode": "100644",
+          "actual_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-task-publication/references/contract.md",
+          "expected_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "expected_mode": "100644",
+          "actual_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-task-publication/references/contract.md",
+          "expected_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "expected_mode": "100644",
+          "actual_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-task-publication/references/contract.md",
+          "expected_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "expected_mode": "100644",
+          "actual_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "3a59f3256058eb6069ea26624a94354074af7e04",
+          "expected_mode": "100644",
+          "actual_blob": "3a59f3256058eb6069ea26624a94354074af7e04",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "a575d71ef87f18148da4ccc493e89f69b9d5d331",
+          "expected_mode": "100755",
+          "actual_blob": "a575d71ef87f18148da4ccc493e89f69b9d5d331",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+          "expected_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "expected_mode": "100644",
+          "actual_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "a2162531c12cc73cdad55121339bcb84c51cd823",
+          "expected_mode": "100644",
+          "actual_blob": "a2162531c12cc73cdad55121339bcb84c51cd823",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+          "expected_blob": "156340d88d1a24ac40e24bc05064c3e337a9b0a8",
+          "expected_mode": "100644",
+          "actual_blob": "156340d88d1a24ac40e24bc05064c3e337a9b0a8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+          "expected_blob": "7f4eef6ebbce1920120e09144e92eaee1309051d",
+          "expected_mode": "100644",
+          "actual_blob": "7f4eef6ebbce1920120e09144e92eaee1309051d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+          "expected_blob": "23ba9f241cb896464bf5a5eb86a9f02c9b77bbef",
+          "expected_mode": "100644",
+          "actual_blob": "23ba9f241cb896464bf5a5eb86a9f02c9b77bbef",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+          "expected_blob": "d89432bd6b09f6dcc1d3aa4d2ece81f22565a71c",
+          "expected_mode": "100644",
+          "actual_blob": "d89432bd6b09f6dcc1d3aa4d2ece81f22565a71c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
+          "expected_blob": "6cb2a4e55cd19fa7d9b9b4308d108cf7feae946a",
+          "expected_mode": "100644",
+          "actual_blob": "6cb2a4e55cd19fa7d9b9b4308d108cf7feae946a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+          "expected_blob": "19987cb08fe2d13ec5cbb9a825df3bc2dba1f3b9",
+          "expected_mode": "100644",
+          "actual_blob": "19987cb08fe2d13ec5cbb9a825df3bc2dba1f3b9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+          "expected_blob": "1747c1e7f8302b30523193738df420a7d09ceb77",
+          "expected_mode": "100644",
+          "actual_blob": "1747c1e7f8302b30523193738df420a7d09ceb77",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+          "expected_blob": "29d4d1231618e17d29c16161fbbd6bd90a31597f",
+          "expected_mode": "100644",
+          "actual_blob": "29d4d1231618e17d29c16161fbbd6bd90a31597f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+          "expected_blob": "5b4d8fc43042f466a1cd2ee8040e84c0a86d8d32",
+          "expected_mode": "100644",
+          "actual_blob": "5b4d8fc43042f466a1cd2ee8040e84c0a86d8d32",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+          "expected_blob": "cf9d72c50d0d0c7eab1de902e995d6693ae20f21",
+          "expected_mode": "100644",
+          "actual_blob": "cf9d72c50d0d0c7eab1de902e995d6693ae20f21",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
+          "expected_blob": "08baa23f647fd3de9945a3d6d355a14aee0db6b6",
+          "expected_mode": "100644",
+          "actual_blob": "08baa23f647fd3de9945a3d6d355a14aee0db6b6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+          "expected_blob": "2187a71a08895603c82c08bb621d3b30e3de3ff4",
+          "expected_mode": "100644",
+          "actual_blob": "2187a71a08895603c82c08bb621d3b30e3de3ff4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+          "expected_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "expected_mode": "100644",
+          "actual_blob": "7c1ef125ae9c95512e55461e449460df30766805",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "a575d71ef87f18148da4ccc493e89f69b9d5d331",
+          "expected_mode": "100755",
+          "actual_blob": "a575d71ef87f18148da4ccc493e89f69b9d5d331",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "c8bf98e2f2c6903b2ee21e1e85cc999fdb3de17e",
+          "expected_mode": "100644",
+          "actual_blob": "c8bf98e2f2c6903b2ee21e1e85cc999fdb3de17e",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

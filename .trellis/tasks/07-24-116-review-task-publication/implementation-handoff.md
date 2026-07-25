@@ -627,3 +627,162 @@ error；纠正为真实 test id 后，上述 5/5 组合通过。这是测试命�
 本实现代理不执行 `trellis-check`、不记录或更新 `phase2-check.json`，也不执行
 Branch Review Gate。需要独立 checker 对当前未提交 full diff 做 fresh semantic
 review，再由主会话决定后续 finding-fix commit 与 closure review。
+
+## 11. Branch Review Round 4 finding-fix：BR116-R04-P1-01
+
+### 11.1 修复结论、根因闭环与边界
+
+`BR116-R04-P1-01` 已在实现边界修复。publication package 的 recorder/checker
+此前只剥离 canonical source suffix；installed shared 与 `.agents`、`.codex`、
+`.cursor`、`.claude` package root 均被误当作 repo root，因而在 package 内错误
+拼接 `.trellis/guru-team/scripts/bash/run-skill-command.sh`。两个 wrapper 现在复用
+`invoke.sh` 与 Branch Review package 已有的六布局 exact resolver：
+
+- canonical `trellis/skills/guru-team/packages/`；
+- installed shared `.trellis/guru-team/skills/packages/`；
+- `.agents/skills/`、`.codex/skills/`、`.cursor/skills/`、`.claude/skills/`。
+
+未知布局保持 fail closed；新增 regression 把完整 package copy 到任意临时路径，
+在未设置 `GURU_TEAM_DISPATCHER` override 时验证两个命令均拒绝执行。
+
+resolver 修复后的直接正常路径又暴露出同一交付链的确定性遗漏：extension public
+API 已声明 `record-task-publication-review` 与
+`check-task-publication-review`，但 preset 的 `MANAGED_ASSET_PATHS` 和 executable
+清单未安装两条 workflow runtime wrapper。correct dispatcher 因而继续以
+`mapped Skill runtime command ... missing` fail closed。两条 exact runtime
+wrapper 已纳入 installer managed assets，并增加安装存在性与 executable mode
+断言；这是完成 finding 所要求的 fresh install/update/reapply runnable parity，
+没有新增 public API、semantic judgment 或 route。
+
+### 11.2 文件、同步与副作用
+
+本轮实现拥有并修改：
+
+- canonical package：
+  `trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh`、
+  `scripts/check-task-publication-review.sh`、`tests/test_contract.py`；
+- preset installer 与开箱即用验证：
+  `trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py`、
+  `test_apply_guru_team_trellis_preset.py`、`test_upstream_ownership.py`、
+  `trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`；
+- preset 生成的 installed shared 与四平台 package 同名副本；
+- preset 新安装的
+  `.trellis/guru-team/scripts/bash/record-task-publication-review.sh` 与
+  `check-task-publication-review.sh`；
+- preset 重算的 `.trellis/guru-team/extension.json`；
+- 本 task-local `implementation-handoff.md`。
+
+第一次 package 同步按 managed-file 规则为三个已安装 package 文件生成 15 个
+`.bak`；确认它们只对应本轮三文件的旧版本后逐个删除，再次 apply 为
+`status=ok`。最终 canonical、installed shared 与四平台三个 package 文件
+byte-identical、mode 一致；两条 canonical/installed runtime wrapper
+byte-identical且均为 executable。installed manifest 为 94 个 managed assets、
+2100 个 Skill files，0 sidecar、0 conflict、0 removal；ownership stable facts
+更新为 50 个 managed assets。
+
+未修改 planning docs、public schema、Interface 1.3、typed exits、consumer mapping、
+publication semantic dimensions、review artifact、review gate、assignment、commit
+plan 或 issue ledger。未执行 `trellis-check`、本 task 正式 publication
+recorder/checker gate、commit、push、PR/issue 更新、archive 或 finalization。
+任务目录中主会话拥有的并行 metadata 与 Round 3/4 raw report 保持原样。
+
+### 11.3 Docs SSOT Plan reconciliation
+
+策略继续使用批准的 `ssot_first`。Durable installer 与 Skill package contracts
+已明确要求 active package 的 runtime commands、installed shared 与平台 copies
+在 fresh install、`trellis update`、preset reapply 后均真实可运行；本轮以这些
+durable SSOT 为主实现输入，以 `BR116-R04-P1-01` 的普通安装复现作为 task delta。
+
+因此无需新的 durable docs/spec/overlay 文案：本轮只修复实现和 installer inventory
+对既有 runnable/OOTB SSOT 的偏差，没有改变 public I/O、schema、exit、consumer
+或 ownership。Task-history-only 内容是 Round 4 finding、resolver/runtime asset
+根因闭环、sidecar 处理、验证轨迹与本节；没有待合并的 durable docs delta。当前
+PR limitation 仍是分支未 push，无法验证 exact remote candidate-branch
+marketplace source；fresh throwaway 使用允许的 public marketplace sample 与
+local unpublished workflow sample。
+
+### 11.4 验证证据
+
+- canonical / installed publication package contract：各 18/18 passed；
+  canonical 运行 10.034s，installed 运行 10.507s。新增测试从 `interface.json`
+  读取 recorder/checker exact command，在未设置 dispatcher override 时执行六布局，
+  并覆盖任意未知布局拒绝。
+- direct validator wrapper：canonical recorder/checker 2/2 到达 dispatcher 后按
+  canonical 非 installed audited layout 合同返回 rc=2；installed shared 与四平台
+  recorder/checker 10/10 返回 rc=0 并显示各自 mapped runtime help。
+- full runtime：572/572 passed，13 skipped，167.485s。
+- full Skill package：174/174 passed，272.583s。
+- preset installer：45/45 passed，84.769s。
+- upstream ownership：9/9 passed，0.681s；validator `status=ok`，managed asset
+  count=50，facts digest=`738ffab55b80bfec2b5e482d6d25591d30e46d2d5264590b5be61ee56a43f801`。
+- source / installed package validator：均 passed，11 active Skills、42 exits、
+  25 targets；installed 为 2100 managed、0 sidecar/removal/conflict。
+- source / installed publication shared actual-wrapper eval：各 7/7 passed。
+- fresh
+  `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1
+  ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`：
+  最终 exit 0；fresh install、`trellis update --force`、preset reapply 三阶段
+  recorder/checker smoke 各为 10/10，随后完整通过 existing closeout/eval、
+  pre-upgrade/absence、ownership/drift 与 marketplace discovery，终态输出
+  `Verified public marketplace discovery plus local unpublished workflow sample`。
+- final `bash -n`、`python3 -m py_compile`、canonical/installed/platform byte 与
+  mode parity、planning approval、dogfood overlay drift、recursive
+  `.bak/.new/.orig` scan、`git diff --check`：均 passed。
+
+定向 package 回归首次运行在 resolver 已正确到达 dispatcher 后，真实暴露两条
+installed runtime wrappers 未被 preset 安装；补齐 managed assets 后通过。fresh
+throwaway 首次重跑只因 embedded manifest 仍固定断言 92 个 assets 而失败，按新增
+两条 exact assets 更新为 94 后从全新临时仓库完整重跑通过。这两次失败均被保留为
+安装链覆盖证据，没有用局部测试替代最终 clean throwaway。
+
+### 11.5 交给下一轮 `trellis-check`
+
+下一轮独立 Phase 2 应重点复核：
+
+1. recorder/checker 的六布局 resolver 与 `invoke.sh`、Branch Review package
+   既有模式一致，未知布局仍 fail closed；
+2. 测试实际执行 `interface.json` 声明的两个 validator commands，且没有隐藏
+   `GURU_TEAM_DISPATCHER` override；
+3. 两条 publication workflow runtime wrappers 是 preset managed/executable
+   assets，fresh install、update、reapply 后 installed shared 与四平台 10 条命令
+   均到达 shared dispatcher；
+4. public I/O、semantic/script boundary、typed exits、consumer mapping 与
+   publication semantic gate 没有变化；
+5. canonical/installed/platform parity、manifest 94 assets/2100 Skill files、
+   ownership 50 assets、zero-sidecar 与 full throwaway evidence 一致。
+
+本实现代理不执行 `trellis-check`、不记录或更新 `phase2-check.json`，也不执行
+Branch Review Gate。需要独立 checker 对当前未提交 full diff 做 fresh semantic
+review，再由主会话决定 finding-fix commit 与同 finding owner closure review。
+
+## 12. Phase 2 Round 8 finding-fix（PH2-116-R8-P2-01）
+
+Round 8 唯一 P2 finding 是 preset 测试仍以源码字符串断言 throwaway verifier
+包含 `assert len(assets) == 92`，而已经批准并通过前序验证的 verifier、installer
+manifest 与 runtime wrapper inventory 均为 94。本轮只把该测试期望同步为 94，
+未改变 runtime、installer、managed assets、public I/O、Docs、review/gate、
+assignment、commit plan 或 issue scope 行为。
+
+Docs SSOT Plan 继续执行 `ssot_first`：实现输入仍以现有 durable installer、
+Skill package、workflow/data/companion contracts 为准；本轮没有新的 durable
+docs/spec/overlay delta。仅本节作为 task-history-only finding-fix 记录。分支尚未
+push，exact remote candidate-branch marketplace source 的当前 PR limitation
+保持不变。
+
+本轮重新执行 Round 8 报告的精确失败 selector、完整 preset 45 项、canonical /
+installed shared / 四平台两条 direct wrapper、upstream ownership 9 项及 validator、
+source / installed package validator、dogfood overlay drift、sidecar scan、
+`git diff --check`、planning approval 与 workspace boundary。结果为：精确
+selector 1/1 passed（0.002s），完整 preset 45/45 passed（84.418s）；
+canonical 两条 direct wrapper 均按审计布局合同返回 rc=2，installed shared 与
+四平台共 10 条均返回 rc=0；ownership 9/9 passed（0.692s）且 validator
+`status=ok`、managed assets=50；source / installed package validator 均
+passed（11 active Skills、42 exits、25 targets），installed 仍为 2100 managed
+files、0 sidecar/removal/conflict；dogfood overlay 无漂移，递归 sidecar 与过期
+`assert len(assets) == 92` 均为 0，diff/planning/boundary 均通过，source checkout
+保持 clean。
+
+实现代理不重复完整 runtime、完整 Skill package 或 throwaway；Round 8 已记录终态证据：
+runtime 572/572 passed（13 skipped）、Skill package 174/174 passed、throwaway
+exit 0 且 fresh/update/reapply 三阶段各 10/10。fresh Phase 2 必须重新执行其完整
+语义检查矩阵，并重点确认测试源码不再含 92 的过期期望且本轮没有实现行为变化。

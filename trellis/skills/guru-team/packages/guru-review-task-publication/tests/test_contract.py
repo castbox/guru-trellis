@@ -3,11 +3,51 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import os
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
+PACKAGE_LAYOUTS = (
+    (
+        "canonical",
+        Path("trellis/skills/guru-team/packages/guru-review-task-publication"),
+    ),
+    (
+        "installed-shared",
+        Path(
+            ".trellis/guru-team/skills/packages/"
+            "guru-review-task-publication"
+        ),
+    ),
+    (
+        "agents",
+        Path(".agents/skills/guru-review-task-publication"),
+    ),
+    (
+        "codex",
+        Path(".codex/skills/guru-review-task-publication"),
+    ),
+    (
+        "cursor",
+        Path(".cursor/skills/guru-review-task-publication"),
+    ),
+    (
+        "claude",
+        Path(".claude/skills/guru-review-task-publication"),
+    ),
+)
+
+
+def package_repo_root() -> Path:
+    for candidate in PACKAGE.parents:
+        if any(candidate / relative == PACKAGE for _, relative in PACKAGE_LAYOUTS):
+            return candidate
+    raise RuntimeError(f"Unsupported publication package test layout: {PACKAGE}")
 
 
 def load_runtime():
@@ -400,6 +440,98 @@ class TaskPublicationContractTest(unittest.TestCase):
             self.interface["modes"]["standalone"]["entry_precondition_ids"],
             expected,
         )
+
+    def test_interface_validator_commands_resolve_dispatcher_in_all_supported_layouts(
+        self,
+    ) -> None:
+        repo_root = package_repo_root()
+        validator_ids = (
+            "publication_review_recorder",
+            "publication_review_checker",
+        )
+        validators = {
+            item["id"]: item
+            for item in self.interface["validators"]
+            if item["id"] in validator_ids
+        }
+        self.assertEqual(set(validators), set(validator_ids))
+        env = os.environ.copy()
+        env.pop("GURU_TEAM_DISPATCHER", None)
+
+        present_layouts = {
+            name
+            for name, relative in PACKAGE_LAYOUTS
+            if (repo_root / relative).is_dir()
+        }
+        if "canonical" in present_layouts:
+            self.assertEqual(
+                present_layouts,
+                {name for name, _ in PACKAGE_LAYOUTS},
+            )
+
+        for layout, relative in PACKAGE_LAYOUTS:
+            package_root = repo_root / relative
+            if not package_root.is_dir():
+                continue
+            for validator_id in validator_ids:
+                validator = validators[validator_id]
+                command = package_root / validator["command"]
+                with self.subTest(layout=layout, validator=validator_id):
+                    result = subprocess.run(
+                        [str(command), "--help"],
+                        cwd=repo_root,
+                        env=env,
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    if layout == "canonical":
+                        self.assertEqual(result.returncode, 2, result.stderr)
+                        self.assertIn(
+                            "not an audited installed or discovery layout",
+                            result.stderr,
+                        )
+                    else:
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        self.assertIn(
+                            "usage: guru_team_trellis.py "
+                            f"{validator['runtime_command']}",
+                            result.stdout,
+                        )
+
+    def test_interface_validator_commands_reject_unsupported_package_layout(
+        self,
+    ) -> None:
+        validators = {
+            item["id"]: item
+            for item in self.interface["validators"]
+            if item["id"] in {
+                "publication_review_recorder",
+                "publication_review_checker",
+            }
+        }
+        env = os.environ.copy()
+        env.pop("GURU_TEAM_DISPATCHER", None)
+        with tempfile.TemporaryDirectory() as temp:
+            unsupported = Path(temp) / "unsupported-publication-package"
+            shutil.copytree(PACKAGE, unsupported)
+            for validator_id, validator in validators.items():
+                with self.subTest(validator=validator_id):
+                    result = subprocess.run(
+                        [str(unsupported / validator["command"]), "--help"],
+                        env=env,
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(
+                        "unsupported Skill package root "
+                        "for guru-review-task-publication",
+                        result.stderr,
+                    )
 
 
 if __name__ == "__main__":

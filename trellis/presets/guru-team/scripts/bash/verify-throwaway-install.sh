@@ -115,6 +115,75 @@ verify_change_request_review_package() {
   python3 "$TARGET/.agents/skills/guru-review-change-request/tests/test_contract.py" -q
 }
 
+verify_task_publication_validator_wrappers() {
+  local label="$1"
+  printf 'Task publication validator wrapper smoke: %s\n' "$label"
+  python3 - "$TARGET" "$label" <<'PY'
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+label = sys.argv[2]
+skill_id = "guru-review-task-publication"
+layouts = {
+    "installed-shared": root / ".trellis/guru-team/skills/packages" / skill_id,
+    "agents": root / ".agents/skills" / skill_id,
+    "codex": root / ".codex/skills" / skill_id,
+    "cursor": root / ".cursor/skills" / skill_id,
+    "claude": root / ".claude/skills" / skill_id,
+}
+interface = json.loads(
+    (layouts["installed-shared"] / "interface.json").read_text(encoding="utf-8")
+)
+validator_ids = {
+    "publication_review_recorder",
+    "publication_review_checker",
+}
+validators = {
+    item["id"]: item
+    for item in interface["validators"]
+    if item["id"] in validator_ids
+}
+if set(validators) != validator_ids:
+    raise SystemExit(
+        f"{label}: publication validator command declarations drifted: "
+        f"{sorted(validators)}"
+    )
+
+env = os.environ.copy()
+env.pop("GURU_TEAM_DISPATCHER", None)
+for layout, package_root in layouts.items():
+    if not package_root.is_dir():
+        raise SystemExit(f"{label}: missing publication layout: {layout}")
+    for validator_id in sorted(validator_ids):
+        validator = validators[validator_id]
+        command = package_root / validator["command"]
+        result = subprocess.run(
+            [str(command), "--help"],
+            cwd=root,
+            env=env,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        expected_usage = (
+            "usage: guru_team_trellis.py "
+            f"{validator['runtime_command']}"
+        )
+        if result.returncode != 0 or expected_usage not in result.stdout:
+            raise SystemExit(
+                f"{label}: {layout}/{validator_id} did not reach the "
+                f"shared dispatcher help (rc={result.returncode}, "
+                f"stderr={result.stderr!r})"
+            )
+print(f"{label}: 10/10 publication validator wrappers reached shared help")
+PY
+}
+
 fail_if_python_cache() {
   local label="$1"
   local root="$2"
@@ -1430,7 +1499,7 @@ assert extension["extension_id"] == "guru-team"
 assert extension["version"] == "0.6.5-guru.22"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 92
+assert len(assets) == 94
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -1573,6 +1642,7 @@ test -x "$TARGET/.agents/skills/guru-review-task-publication/scripts/check-task-
 test -x "$TARGET/.claude/skills/guru-review-task-publication/scripts/invoke.sh"
 test -x "$TARGET/.codex/skills/guru-review-task-publication/scripts/invoke.sh"
 test -x "$TARGET/.cursor/skills/guru-review-task-publication/scripts/invoke.sh"
+verify_task_publication_validator_wrappers "fresh-install"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-check-task/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json"
 test -x "$TARGET/.agents/skills/guru-check-task/scripts/record-phase2-check.sh"
@@ -3122,6 +3192,7 @@ grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TA
   cd "$TARGET"
   trellis update --force
 )
+verify_task_publication_validator_wrappers "after-trellis-update"
 ownership_checkpoint "post-update-before-workflow-and-preset-reapply"
 (
   cd "$TARGET"
@@ -3134,6 +3205,7 @@ apply_local_workflow_sample
   --platform codex \
   --platform cursor
 ownership_checkpoint "post-preset-reapply-before-final-checks"
+verify_task_publication_validator_wrappers "after-preset-reapply"
 
 if [[ "$(workspace_tree_digest "$TARGET/.trellis/workspace")" != "$WORKSPACE_TREE_DIGEST_BEFORE" ]]; then
   echo "Update/reapply modified existing official workspace content" >&2
