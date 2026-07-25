@@ -1,0 +1,504 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "002",
+  "task": {
+    "id": "116-review-task-publication",
+    "path": ".trellis/tasks/07-24-116-review-task-publication",
+    "status": "in_progress",
+    "branch": "codex/116-review-task-publication"
+  },
+  "issue": {
+    "primary_issue": 116,
+    "ledger_sha256": "f7d6bd0734c2513e3be38283d4e9ebdfc1d31fa056e7f08b63960d5faae8eb9f"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "aacb6e02e5386578bfe3d046511a0002a51cb581"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+      "sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
+      "size": 38810
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      "sha256": "42aac13f3d71cdb87c4e103e6c09340daf5e8c9f1b9a47a984e372c51419e528",
+      "size": 101412
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
+      "sha256": "f7d6bd0734c2513e3be38283d4e9ebdfc1d31fa056e7f08b63960d5faae8eb9f",
+      "size": 3524
+    },
+    "task": {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task.json",
+      "sha256": "b9b2fb7e53a7e40d5c10d3a217d88c1719f2ca1b0a2a48ed93521676061a220c",
+      "size": 679
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-review-task-publication/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dcdfce2bba178d92534f1a6d51d9cdbc048189e6",
+        "worktree_sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-task-publication/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dcdfce2bba178d92534f1a6d51d9cdbc048189e6",
+        "worktree_sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-task-publication/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dcdfce2bba178d92534f1a6d51d9cdbc048189e6",
+        "worktree_sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-task-publication/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dcdfce2bba178d92534f1a6d51d9cdbc048189e6",
+        "worktree_sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bcfe37713beab8ca9d7e712c53ce8012e2e73f0d",
+        "worktree_sha256": "c7c6729be10b898cb5d8bf47d2ab5d2c30bcf38aba7549bae98b95e4a88848f0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4df82ff4265d3826594f26bcdcff5cd355e09eb5",
+        "worktree_sha256": "c0dc982cad9b4302cc3676512ac33059783d7cdc5ffce203059053b32f6d9192",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dcdfce2bba178d92534f1a6d51d9cdbc048189e6",
+        "worktree_sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3f09e800a07f3dc41acad7bff06ebcae997a8a19",
+        "worktree_sha256": "8ab9afe00819bd9b1c35d7b4973a8d85b4262592be1ab00504d5f9ae96e0a8dc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "74f037c7d2723bba929910cf265beb2c568ebc32",
+        "worktree_sha256": "82a812e9e22af1db83c2ada219522efbf8fc6c2b1907748c00ad57d17865acae",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e830ad5625ed1fe70c467e304288f2a35c4bd406",
+        "worktree_sha256": "7667190a2dfd375609f93d8480d5a66dc2a59e82d0aacfaccfb98ccdd924ab50",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8a98a8c3f62ea3f1feeddfd097f0e8f50a33a2b",
+        "worktree_sha256": "42aac13f3d71cdb87c4e103e6c09340daf5e8c9f1b9a47a984e372c51419e528",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "cad5eba7cba6cbaff0a082585a65c75637d349f1a997f919289182b9c7fcfe71",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a51c4524402fb034ff1a7d86def5d80cfd28832b",
+        "worktree_sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c6360cfcb1f893868b2728469fca7a92df1a5b5d46c1485e172f6afe56d63c20",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "76aec81fa3c9ac42d256e9f530d16b48ddf7cee0d8e9e691242e91195ded8a06",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "e1935435de055e1be8a452d6564c90ee8e9557dea2de444ab72d4beabe84a314",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "06b866a2021fae2abf96a771defd83e630fc9b242d59f064cc6d7b9e67de37c1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ea79099810dbec3f0b4d9307309294d4506a7abc",
+        "worktree_sha256": "9cb35cab45716a66a7f8d97d65dea9efcb5b84e1eb309fdf38eff88d6ec584f3",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dcdfce2bba178d92534f1a6d51d9cdbc048189e6",
+        "worktree_sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4df82ff4265d3826594f26bcdcff5cd355e09eb5",
+        "worktree_sha256": "c0dc982cad9b4302cc3676512ac33059783d7cdc5ffce203059053b32f6d9192",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d4ef159606cb27a9a80fe7461d6101170919b4f6",
+        "worktree_sha256": "466c78f9a19d2b1956c35a15ff9f28457e39a1574d441b33b61961a9b76a50ea",
+        "mode": "100644"
+      }
+    ],
+    "digest": "eac298f9ea61495077bc7f6f7641831865364155e66e5b949b568b9220e55d2d"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-review-task-publication/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-task-publication/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-task-publication/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-task-publication/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+      "coverage_source": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-review-task-publication/references/contract.md",
+    ".claude/skills/guru-review-task-publication/references/contract.md",
+    ".codex/skills/guru-review-task-publication/references/contract.md",
+    ".cursor/skills/guru-review-task-publication/references/contract.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
+    ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
+    ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
+    ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+    ".trellis/tasks/07-24-116-review-task-publication/review.md",
+    ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+    ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+    ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
+    ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
+    "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #116 收紧 publication 状态校验",
+    "body": "背景：\nBranch Review 与 fresh Phase 2 在正常路径发现 publication working-tree 分类和 Git 状态读取仍存在 fail-open 缺口。\n\n变更：\n复用 exact metadata/runtime allowlist，限定 dedicated finalization 的 closeout-plan 输入，并让 publication repository binding 在 git status 失败时完整 fail closed；同步 canonical/installed 合同、runtime、回归测试及 task evidence。\n\n边界：\nPublic I/O、三个 typed exits 与 semantic/script ownership 不变；guru-finalize-task 仍为 #118 planned consumer；未执行 push、PR、Issue close、archive、部署或 production write。\n\n验证：\nFresh Round7 通过 runtime 572/572、Skill 174/174、preset 45/45、ownership 9/9、source/installed contracts 与 eval、parity/drift/sidecar，以及 clean throwaway install/update/reapply。\n\nRefs #116",
+    "bytes": "fix(workflow): #116 收紧 publication 状态校验\n\n背景：\nBranch Review 与 fresh Phase 2 在正常路径发现 publication working-tree 分类和 Git 状态读取仍存在 fail-open 缺口。\n\n变更：\n复用 exact metadata/runtime allowlist，限定 dedicated finalization 的 closeout-plan 输入，并让 publication repository binding 在 git status 失败时完整 fail closed；同步 canonical/installed 合同、runtime、回归测试及 task evidence。\n\n边界：\nPublic I/O、三个 typed exits 与 semantic/script ownership 不变；guru-finalize-task 仍为 #118 planned consumer；未执行 push、PR、Issue close、archive、部署或 production write。\n\n验证：\nFresh Round7 通过 runtime 572/572、Skill 174/174、preset 45/45、ownership 9/9、source/installed contracts 与 eval、parity/drift/sidecar，以及 clean throwaway install/update/reapply。\n\nRefs #116\n",
+    "sha256": "4b3cc80adb6ed4c60a633e2a1f281929ee6fb7fcf64b7f5901a0f7ca61a3e664"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "主会话已复核 fresh planning approval、Phase2 facts 9fb16a8b…、Round7 complete diff、22个 current dirty paths、Issue #116 ledger、Chinese Conventional Commit message、Docs SSOT、upgrade/update、安全与部署边界；全部路径属于 task-reviewed current scope，无 unrelated/ambiguous/blocking path，index为空且无普通 Git operation 冲突。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户在 current #116 workflow 中再次明确回复“确认继续”；该授权绑定本次已展示的 sequence 002 本地 finding-fix commit、22个 reviewed paths与候选artifact，不包含 push、PR、Issue close、archive、finalization、history rewrite 或 force 操作。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-25T02:06:33Z",
+    "plan_digest": "8918a6ac684104ec96e0a35f808f5e5c951eb699a0b99763db8f7843286b36e3"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

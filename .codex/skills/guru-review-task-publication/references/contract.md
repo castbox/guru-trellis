@@ -37,6 +37,18 @@ After revision, reread/rescan and repeat all ten dimensions. Any source, test,
 durable docs, spec, workflow, schema, config, preset, CI/CD, deployment, or
 Branch Review drift returns to task work.
 
+The repository status binding uses one closed publication allowlist. It reuses
+Branch Review's exact `agent-assignment.json`, `review.md`, `review-gate.json`,
+assignment-referenced `reviews/*.md`, and sole current-HEAD completed
+`task-commit-plans/NNN.json` entries, then adds only
+`issue-scope-ledger.json`, `pr-body.md`, and `finish-summary-index.json`.
+`pr-readiness.json` is the recorder-owned artifact and is excluded from its own
+repository snapshot. A runtime path is allowed only when it is the current
+command's explicit regular-file input under `.trellis/.runtime/guru-team/`;
+the runtime prefix itself is never an allowlist. Any other task-local, runtime,
+or repository status path makes `review_range_and_working_tree` fail and
+prevents `ready`.
+
 ## Gate and exits
 
 After the AI Gate and required confirmation, record and check the one

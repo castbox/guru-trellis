@@ -14527,6 +14527,316 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
         self.assertFalse(gtt.marketplace_verification_required({"changed_files": ["docs/internal-note.md"]}))
 
 
+class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.task_dir = self.root / ".trellis/tasks/fixture"
+        self.task_dir.mkdir(parents=True)
+        subprocess.run(
+            ["git", "init", "-q", "-b", "main"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Test User"],
+            cwd=self.root,
+            check=True,
+        )
+        gtt.write_json(
+            self.task_dir / "task.json",
+            {
+                "id": "fixture",
+                "name": "fixture",
+                "status": "in_progress",
+                "branch": "main",
+                "base_branch": "main",
+            },
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "baseline"],
+            cwd=self.root,
+            check=True,
+        )
+        self.head = gtt.current_head(self.root)
+        subprocess.run(
+            ["git", "update-ref", "refs/remotes/origin/main", self.head],
+            cwd=self.root,
+            check=True,
+        )
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_publication_status_allowlist_rejects_debug_note_and_accepts_contract_metadata(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        review_report = f"{task_ref}/reviews/round-001-final.md"
+        approved_task_metadata = [
+            f"{task_ref}/agent-assignment.json",
+            f"{task_ref}/review.md",
+            f"{task_ref}/review-gate.json",
+            review_report,
+            f"{task_ref}/task-commit-plans/001.json",
+            f"{task_ref}/issue-scope-ledger.json",
+            f"{task_ref}/pr-body.md",
+            f"{task_ref}/finish-summary-index.json",
+        ]
+        gtt.write_json(
+            self.task_dir / "agent-assignment.json",
+            {"review_rounds": [{"review_report_path": review_report}]},
+        )
+        for relative in (
+            f"{task_ref}/review.md",
+            review_report,
+            f"{task_ref}/pr-body.md",
+        ):
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("reviewed metadata\n", encoding="utf-8")
+        for relative in (
+            f"{task_ref}/review-gate.json",
+            f"{task_ref}/issue-scope-ledger.json",
+            f"{task_ref}/finish-summary-index.json",
+        ):
+            gtt.write_json(self.root / relative, {"fixture": relative})
+        gtt.write_json(
+            self.task_dir / "task-commit-plans/001.json",
+            {
+                "result": {
+                    "status": "committed",
+                    "commit_sha": self.head,
+                }
+            },
+        )
+        runtime_input = (
+            ".trellis/.runtime/guru-team/task-publication-input.json"
+        )
+        gtt.write_json(self.root / runtime_input, {"fixture": "runtime-input"})
+        gtt.write_json(
+            self.task_dir / gtt.PR_READINESS_ARTIFACT,
+            {"fixture": "owner-artifact"},
+        )
+        debug_note = f"{task_ref}/debug-note.md"
+        (self.root / debug_note).write_text("ordinary debug note\n", encoding="utf-8")
+
+        repository = gtt.task_publication_repository_binding(
+            self.root,
+            self.task_dir,
+        )
+        self.assertNotIn(
+            f"{task_ref}/{gtt.PR_READINESS_ARTIFACT}",
+            repository["status_paths"],
+        )
+        self.assertEqual(
+            set(repository["status_paths"]),
+            {*approved_task_metadata, runtime_input, debug_note},
+        )
+        self.assertEqual(
+            gtt.task_publication_unexpected_status_paths(
+                self.root,
+                self.task_dir,
+                repository["status_paths"],
+                direct_runtime_inputs=[runtime_input],
+            ),
+            [debug_note],
+        )
+        invocation = {
+            "profile": "publication_review",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "review_intent": "initial_review",
+        }
+        rejected_bindings, rejected_errors, _review_gate, _repository = (
+            gtt.task_publication_entry_precondition_bindings(
+                self.root,
+                self.task_dir,
+                {**gtt.DEFAULTS, "workspace_mode": "same"},
+                invocation,
+                direct_runtime_inputs=[runtime_input],
+            )
+        )
+        self.assertEqual(
+            rejected_bindings["review_range_and_working_tree"]["status"],
+            "failed",
+        )
+        self.assertTrue(
+            any(
+                error.startswith("review_range_and_working_tree:")
+                and debug_note in error
+                for error in rejected_errors
+            )
+        )
+
+        (self.root / debug_note).unlink()
+        accepted_repository = gtt.task_publication_repository_binding(
+            self.root,
+            self.task_dir,
+        )
+        self.assertEqual(
+            gtt.task_publication_unexpected_status_paths(
+                self.root,
+                self.task_dir,
+                accepted_repository["status_paths"],
+                direct_runtime_inputs=[runtime_input],
+            ),
+            [],
+        )
+        accepted_bindings, accepted_errors, _review_gate, _repository = (
+            gtt.task_publication_entry_precondition_bindings(
+                self.root,
+                self.task_dir,
+                {**gtt.DEFAULTS, "workspace_mode": "same"},
+                invocation,
+                direct_runtime_inputs=[runtime_input],
+            )
+        )
+        self.assertEqual(
+            accepted_bindings["review_range_and_working_tree"]["status"],
+            "passed",
+        )
+        self.assertFalse(
+            any(
+                error.startswith("review_range_and_working_tree:")
+                for error in accepted_errors
+            )
+        )
+
+        plan_relative = f"{task_ref}/{gtt.CLOSEOUT_PLAN_ARTIFACT}"
+        gtt.write_json(
+            self.root / plan_relative,
+            {"plan_digest": "f" * 64},
+        )
+        finalization_repository = gtt.task_publication_repository_binding(
+            self.root,
+            self.task_dir,
+        )
+        self.assertEqual(
+            gtt.task_publication_unexpected_status_paths(
+                self.root,
+                self.task_dir,
+                finalization_repository["status_paths"],
+                direct_runtime_inputs=[runtime_input],
+            ),
+            [plan_relative],
+        )
+        self.assertEqual(
+            gtt.task_publication_unexpected_status_paths(
+                self.root,
+                self.task_dir,
+                finalization_repository["status_paths"],
+                direct_runtime_inputs=[runtime_input],
+                finalization_owned_paths=[plan_relative],
+            ),
+            [],
+        )
+        self.assertEqual(
+            gtt.task_publication_unexpected_status_paths(
+                self.root,
+                self.task_dir,
+                finalization_repository["status_paths"],
+                direct_runtime_inputs=[runtime_input],
+                finalization_owned_paths=[debug_note],
+            ),
+            [plan_relative],
+        )
+
+    def test_publication_status_read_failure_fails_closed_with_unexpected_path(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        debug_note = self.task_dir / "debug-note.md"
+        debug_note.write_text("must be inspected\n", encoding="utf-8")
+        real_run = subprocess.run
+
+        def fail_git_status(
+            argv: list[str],
+            *args: Any,
+            **kwargs: Any,
+        ) -> subprocess.CompletedProcess[Any]:
+            if list(argv[:2]) == ["git", "status"]:
+                text_mode = kwargs.get("text") or kwargs.get("universal_newlines")
+                empty = "" if text_mode else b""
+                return subprocess.CompletedProcess(argv, 128, empty, empty)
+            return real_run(argv, *args, **kwargs)
+
+        invocation = {
+            "profile": "publication_review",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "review_intent": "initial_review",
+        }
+        with mock.patch.object(
+            gtt.subprocess,
+            "run",
+            side_effect=fail_git_status,
+        ):
+            with self.assertRaisesRegex(
+                gtt.WorkflowError,
+                "Could not inspect Git status paths",
+            ):
+                gtt.task_publication_repository_binding(
+                    self.root,
+                    self.task_dir,
+                )
+
+            bindings, errors, _review_gate, repository = (
+                gtt.task_publication_entry_precondition_bindings(
+                    self.root,
+                    self.task_dir,
+                    {**gtt.DEFAULTS, "workspace_mode": "same"},
+                    invocation,
+                )
+            )
+            self.assertEqual(repository, {})
+            self.assertEqual(
+                bindings["review_range_and_working_tree"]["status"],
+                "failed",
+            )
+            self.assertIn(
+                "review_range_and_working_tree:"
+                "Could not inspect Git status paths.",
+                errors,
+            )
+
+            with mock.patch.object(
+                gtt,
+                "task_publication_schema",
+                return_value={"type": "object"},
+            ):
+                ready_payload = {"typed_exit": "ready"}
+                checker_errors = gtt.task_publication_check_errors(
+                    self.root,
+                    self.task_dir,
+                    ready_payload,
+                )
+                self.assertIn(
+                    "review_range_and_working_tree:"
+                    "Could not inspect Git status paths.",
+                    checker_errors,
+                )
+
+                with self.assertRaises(gtt.WorkflowError) as finalization_error:
+                    gtt.check_task_publication_for_finalization_augmentation(
+                        self.root,
+                        self.task_dir,
+                        ready_payload,
+                        expected_closeout_plan_digest=None,
+                    )
+                self.assertIn(
+                    "review_range_and_working_tree:"
+                    "Could not inspect Git status paths.",
+                    finalization_error.exception.payload["errors"],
+                )
+
+
 class CloseoutTransactionContractTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -15640,7 +15950,7 @@ shutil.move(str(active), str(archived))
                     "task publication repository binding is stale",
                     "task publication entry precondition bindings are stale",
                 ],
-            ),
+            ) as check_errors,
             mock.patch.object(
                 gtt,
                 "task_publication_repository_binding",
@@ -15650,7 +15960,7 @@ shutil.move(str(active), str(archived))
                 gtt,
                 "task_publication_entry_precondition_bindings",
                 return_value=(current_entries, [], {"head": self.head}, current_repository),
-            ),
+            ) as entry_bindings,
             mock.patch.object(
                 gtt,
                 "validate_closeout_plan",
@@ -15665,6 +15975,14 @@ shutil.move(str(active), str(archived))
             )
         self.assertEqual(checked["typed_exit"], "ready")
         self.assertEqual(checked["finalization_owned_delta"], [plan_relative])
+        self.assertEqual(
+            check_errors.call_args.kwargs["finalization_owned_paths"],
+            [plan_relative],
+        )
+        self.assertEqual(
+            entry_bindings.call_args.kwargs["finalization_owned_paths"],
+            [plan_relative],
+        )
 
     def test_publication_finalization_augmentation_rejects_other_metadata_delta(self) -> None:
         digest = "f" * 64

@@ -1460,6 +1460,18 @@ config, preset, CI/CD, deployment, or Branch Review drift exits to task work.
 Scripts preserve AI-authored conclusions and never decide sufficiency, issue
 closure, dimension status, finding route, or `ready`.
 
+The publication repository binding uses a closed task-metadata and direct
+runtime-input allowlist. It reuses Branch Review's exact
+`agent-assignment.json`, `review.md`, `review-gate.json`,
+assignment-referenced `reviews/*.md`, and sole current-HEAD completed
+`task-commit-plans/NNN.json` entries, then adds only
+`issue-scope-ledger.json`, `pr-body.md`, and `finish-summary-index.json`.
+The recorder-owned `pr-readiness.json` is excluded from its own snapshot.
+Runtime input is allowed only when the current command explicitly names that
+regular file under `.trellis/.runtime/guru-team/`; neither the whole task
+prefix nor the runtime prefix is allowed. Any other status path records a
+failed `review_range_and_working_tree` binding and prevents `ready`.
+
 Activation changes the live closure to eleven active Skills and 42 exits. It
 does not change either migration identity or the independent
 `production-minimal-handoff-v1` three-Skill/11-exit membership.

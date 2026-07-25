@@ -14040,6 +14040,11 @@ TASK_PUBLICATION_EVIDENCE_FILES = (
     "finish-summary-index.json",
     "implementation-handoff.md",
 )
+TASK_PUBLICATION_TASK_METADATA_FILES = {
+    "issue-scope-ledger.json",
+    "pr-body.md",
+    "finish-summary-index.json",
+}
 
 
 def task_publication_schema(root: Path) -> dict[str, Any]:
@@ -14110,9 +14115,72 @@ def task_publication_repository_binding(
             if line.strip()
         ),
         "status_paths": sorted(
-            path for path in git_status_paths(root) if path != readiness_relative
+            path
+            for path in git_status_paths(root, fail_closed=True)
+            if path != readiness_relative
         ),
     }
+
+
+def task_publication_task_metadata_allowlist(
+    root: Path,
+    task_dir: Path,
+) -> set[str]:
+    """Return the closed task-local metadata tail accepted at publication."""
+    task_ref = repo_relative(root, task_dir).rstrip("/")
+    return review_branch_task_metadata_allowlist(root, task_dir) | {
+        f"{task_ref}/{filename}"
+        for filename in TASK_PUBLICATION_TASK_METADATA_FILES
+    }
+
+
+def task_publication_runtime_input_allowlist(
+    root: Path,
+    input_values: list[str],
+) -> set[str]:
+    """Reuse the direct, repo-local runtime-input contract from Branch Review."""
+    return review_branch_runtime_input_allowlist(root, input_values)
+
+
+def task_publication_finalization_owned_status_allowlist(
+    root: Path,
+    task_dir: Path,
+    input_values: list[str],
+) -> set[str]:
+    """Accept only the explicitly named finalization-owned closeout plan."""
+    plan_path = closeout_plan_path(task_dir)
+    plan_relative = repo_relative(root, plan_path)
+    return (
+        {plan_relative}
+        if (
+            plan_relative in input_values
+            and plan_path.is_file()
+            and not plan_path.is_symlink()
+        )
+        else set()
+    )
+
+
+def task_publication_unexpected_status_paths(
+    root: Path,
+    task_dir: Path,
+    status_paths: list[str],
+    *,
+    direct_runtime_inputs: list[str] | None = None,
+    finalization_owned_paths: list[str] | None = None,
+) -> list[str]:
+    allowed_paths = task_publication_task_metadata_allowlist(
+        root,
+        task_dir,
+    ) | task_publication_runtime_input_allowlist(
+        root,
+        direct_runtime_inputs or [],
+    ) | task_publication_finalization_owned_status_allowlist(
+        root,
+        task_dir,
+        finalization_owned_paths or [],
+    )
+    return sorted(path for path in status_paths if path not in allowed_paths)
 
 
 def task_publication_binding(
@@ -14134,6 +14202,8 @@ def task_publication_entry_precondition_bindings(
     *,
     prior_payload: dict[str, Any] | None = None,
     require_prior_artifact: bool = False,
+    direct_runtime_inputs: list[str] | None = None,
+    finalization_owned_paths: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, str]], list[str], dict[str, Any], dict[str, Any]]:
     """Rebuild the twelve objective publication-entry preconditions.
 
@@ -14431,7 +14501,25 @@ def task_publication_entry_precondition_bindings(
         repository = {}
         errors.append(f"review_range_and_working_tree:{exc}")
     else:
-        bindings["review_range_and_working_tree"] = task_publication_binding(repository)
+        unexpected_status_paths = task_publication_unexpected_status_paths(
+            root,
+            task_dir,
+            repository["status_paths"],
+            direct_runtime_inputs=direct_runtime_inputs,
+            finalization_owned_paths=finalization_owned_paths,
+        )
+        if unexpected_status_paths:
+            errors.append(
+                "review_range_and_working_tree:working tree has paths outside "
+                "the exact publication task metadata and direct runtime-input "
+                "allowlist: "
+                + ", ".join(unexpected_status_paths[:20])
+                + "."
+            )
+        else:
+            bindings["review_range_and_working_tree"] = task_publication_binding(
+                repository
+            )
 
     invocation_errors: list[str] = []
     profile = invocation.get("profile")
@@ -14873,6 +14961,9 @@ def task_publication_check_errors(
     root: Path,
     task_dir: Path,
     payload: dict[str, Any],
+    *,
+    direct_runtime_inputs: list[str] | None = None,
+    finalization_owned_paths: list[str] | None = None,
 ) -> list[str]:
     errors = skill_json_schema_validation_errors(
         payload,
@@ -14910,6 +15001,8 @@ def task_publication_check_errors(
             task_dir,
             load_config(root),
             invocation,
+            direct_runtime_inputs=direct_runtime_inputs,
+            finalization_owned_paths=finalization_owned_paths,
         )
     )
     if payload.get("typed_exit") == "ready":
@@ -14943,17 +15036,6 @@ def task_publication_check_errors(
     if current_repository:
         if repository != current_repository:
             errors.append("task publication repository binding is stale")
-        task_prefix = repo_relative(root, task_dir).rstrip("/") + "/"
-        non_metadata_status = [
-            path
-            for path in current_repository["status_paths"]
-            if not path.startswith(task_prefix)
-            and not path.startswith(".trellis/.runtime/")
-        ]
-        if payload.get("typed_exit") == "ready" and non_metadata_status:
-            errors.append(
-                "ready task publication contains non-metadata working-tree drift"
-            )
     expected_publication_ref = (
         f"publication:{context_digest({'task': repo_relative(root, task_dir), 'invocation': invocation, 'head': (review_identity or {}).get('reviewed_head'), 'review_ref': (review_identity or {}).get('review_ref'), 'artifacts': artifacts, 'repository': repository, 'entry_preconditions': entry_bindings})}"
         if (
@@ -15021,6 +15103,7 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
             invocation,
             prior_payload=prior_payload,
             require_prior_artifact=True,
+            direct_runtime_inputs=[str(args.input)],
         )
     )
     review_path = task_dir / "review-gate.json"
@@ -15089,7 +15172,12 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         payload["reason_code"] = authored["reason_code"]
         payload["remediation"] = authored.get("remediation", "Resolve the recorded blocker and re-enter.")
     payload["facts_sha256"] = context_digest(task_publication_facts_payload(payload))
-    errors = task_publication_check_errors(root, task_dir, payload)
+    errors = task_publication_check_errors(
+        root,
+        task_dir,
+        payload,
+        direct_runtime_inputs=[str(args.input)],
+    )
     if errors:
         raise WorkflowError(
             "Task publication readiness materialization failed validation.",
@@ -15118,7 +15206,14 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
         )
     payload = read_json(path)
-    errors = task_publication_check_errors(root, task_dir, payload)
+    errors = task_publication_check_errors(
+        root,
+        task_dir,
+        payload,
+        direct_runtime_inputs=list(
+            getattr(args, "direct_runtime_inputs", None) or []
+        ),
+    )
     expected_exit = str(getattr(args, "expected_exit", "") or "")
     if expected_exit and payload.get("typed_exit") != expected_exit:
         errors.append("task publication expected exit mismatch")
@@ -15150,11 +15245,16 @@ def check_task_publication_for_finalization_augmentation(
     expected_closeout_plan_digest: str | None,
 ) -> dict[str, Any]:
     """Recheck a ready gate after the exact finalization-owned plan is added."""
-    errors = task_publication_check_errors(root, task_dir, payload)
     repository_stale = "task publication repository binding is stale"
     entries_stale = "task publication entry precondition bindings are stale"
     plan_path = closeout_plan_path(task_dir)
     plan_relative = repo_relative(root, plan_path)
+    errors = task_publication_check_errors(
+        root,
+        task_dir,
+        payload,
+        finalization_owned_paths=[plan_relative],
+    )
     bindings = payload.get("deterministic_bindings")
     stored_repository = (
         bindings.get("repository") if isinstance(bindings, dict) else None
@@ -15248,6 +15348,7 @@ def check_task_publication_for_finalization_augmentation(
                         task_dir,
                         load_config(root),
                         invocation,
+                        finalization_owned_paths=[plan_relative],
                     )
                 )
                 expected_entries = (
@@ -22547,6 +22648,9 @@ def production_owner_result(
                     root=str(root),
                     task=repo_relative(root, task_dir),
                     expected_exit=result.get("typed_exit"),
+                    direct_runtime_inputs=[
+                        str(getattr(args, "input", "") or ""),
+                    ],
                 )
             )
             result_task_ref = result.get("task_dir")

@@ -376,3 +376,254 @@ marketplace verification、真实平台 CLI、#118 finalization、commit/push/PR
 
 本实现代理不记录新的 `phase2-check.json`；现有 artifact 在本轮 docs/test/handoff
 变更后应视为历史 `implementation_required` evidence，必须由独立 check 重新完整复检。
+
+## 9. Branch Review finding-fix：BR116-R02-P2-01
+
+### 9.1 修复结论与实现范围
+
+Branch Review Round 2 的 `BR116-R02-P2-01` 已在实现边界修复。此前
+publication checker 把整个 current task prefix 与整个
+`.trellis/.runtime/` prefix 都视为 metadata，因此普通
+`.trellis/tasks/<task>/debug-note.md` 也能绕过
+`review_range_and_working_tree`。修复后：
+
+- publication task metadata 直接复用 Branch Review 的 exact allowlist：
+  `agent-assignment.json`、`review.md`、`review-gate.json`、assignment 引用的
+  `reviews/*.md`，以及唯一的 current-HEAD completed
+  `task-commit-plans/NNN.json`；
+- publication 只额外允许 `issue-scope-ledger.json`、`pr-body.md` 与
+  `finish-summary-index.json`；
+- `pr-readiness.json` 继续作为 recorder-owned artifact 从自身 repository
+  snapshot 排除；
+- runtime path 只在当前 public invocation 显式传入且为
+  `.trellis/.runtime/guru-team/` 下 regular file 时允许，runtime prefix 本身不再
+  构成 allowlist；
+- 任何其他 task-local、runtime 或 repository status path 都记录 failed
+  `review_range_and_working_tree`，从而阻止 `ready`；
+- finalization augmentation 仍只允许专用调用显式传入当前 task 的 regular
+  `closeout-plan.json`。任意其他 `finalization_owned_paths` 值不会扩大
+  allowlist；随后原有 exact repository delta、plan digest 和十二项 entry
+  binding 复核仍全部执行。
+
+实现没有修改 public input/output schema、Interface 1.3、typed exits、
+consumer mapping 或 `publication_ref` 语义。Semantic route、finding、充分性与
+issue closure 继续由 AI owner 判断；新增逻辑只校验客观 status path membership。
+
+### 9.2 文件与同步结果
+
+本轮实现拥有并修改：
+
+- canonical runtime 与测试：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `test_guru_team_trellis.py`；
+- installed runtime：
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`；
+- canonical package contract：
+  `trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md`；
+- preset 生成的 shared/Codex/Claude/Cursor package contract copies；
+- durable spec：
+  `.trellis/spec/workflow/skill-package-contract.md`；
+- preset 生成的 `.trellis/guru-team/extension.json`；
+- 本 task-local `implementation-handoff.md`。
+
+通过 `apply.sh --repo . --all-platforms --json` 同步后，canonical/installed
+runtime byte-identical；canonical contract 与
+`.trellis/guru-team/skills/packages/`、`.agents/`、`.codex/`、`.claude/`、
+`.cursor/` 五份 copy byte-identical。首次 contract/runtime 同步分别生成 6 个和
+1 个 managed `.bak`；每个 sidecar 都已逐一确认等于同步前版本且不同于新副本，
+随后仅删除这些 exact sidecar。最终 reapply 为 `status=ok`、无新 update/backup，
+installed manifest 为 2100 managed files，0 sidecar、0 removal、0 conflict。
+
+未修改 planning docs、issue ledger、Branch Review report/gate 或 assignment；
+这些 task metadata 的并行变更由主会话拥有。未 commit、push、创建/更新 PR、
+关闭 issue、archive 或 finalize。
+
+### 9.3 Docs SSOT Plan reconciliation
+
+策略继续使用批准的 `ssot_first`。本 finding 的 durable task delta 已合并到：
+
+- package step-local contract：定义 publication closed status allowlist；
+- `.trellis/spec/workflow/skill-package-contract.md`：定义相同的公共 durable
+  workflow contract。
+
+既有 durable contract 已定义 finalization 只能增补 exact validated
+`closeout-plan.json`，本轮 runtime 按该 SSOT 保留专用 finalization-owned
+projection，没有建立新的平行规则。Public I/O 未变化，因此不需要 schema/interface
+迁移。Task-history-only 内容只有本节的 finding、同步与验证轨迹；没有未合并的 durable
+docs delta。当前 PR limitation 仍是分支尚未 push，无法验证 exact remote branch
+marketplace source；本轮 fresh throwaway 使用 local unpublished workflow sample。
+
+Durable implementation inputs 是 package contract、workflow Skill I/O SSOT 与既有
+finalization augmentation contract；task delta input 是
+`BR116-R02-P2-01` 对 coarse task/runtime prefix allowlist 的正常路径复现。
+
+### 9.4 验证证据
+
+- 定向 runtime regression：4/4 passed；覆盖普通 `debug-note.md` 被拒绝、exact
+  publication metadata 与显式 runtime input 被接受、`pr-readiness.json`
+  self-exclusion、exact `closeout-plan.json` 专用增补、任意其他
+  finalization-owned 值不能扩张 allowlist、finalization exact positive/negative
+  delta 与 stale public wrapper。
+- canonical / installed publication package contract：各 16/16 passed。
+- 最终 full runtime：571/571 passed，13 skipped，173.603s。
+- 最终 full Skill package：174/174 passed，275.466s。
+- 最终 preset installer：45/45 passed，93.226s。
+- upstream ownership tests：9/9 passed；validator 为 43 active、0 removed、
+  13 managed claims。
+- source / installed package validator：均 passed，11 active Skills、42 exits、
+  25 targets；installed 为 2100 managed、0 sidecar/removal/conflict。
+- source / installed publication shared actual-wrapper eval：最终各 7/7 passed。
+- `python3 -m py_compile`：canonical runtime/test 与 installed runtime passed。
+- `check-dogfood-overlay-drift.sh`、canonical/installed/platform byte parity、
+  recursive `.bak/.new` scan、`git diff --check`：均 passed，sidecar=0。
+- fresh
+  `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1
+  ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`：
+  最终 exit 0，覆盖 clean init/install、initial closeout、`trellis update`、
+  workflow/preset reapply、after-update closeout、developer/no-developer、
+  pre-upgrade/absence、source/installed validator、ownership/drift 与 marketplace
+  discovery，终态输出
+  `Verified public marketplace discovery plus local unpublished workflow sample`。
+
+fresh throwaway 的第一次运行曾真实发现专用 finalization recheck 没有把
+`closeout-plan.json` 投影给新 allowlist，因而在 initial closeout fail closed。
+修复为仅显式接受 exact current-task plan 后，定向/full suites 和全新 throwaway
+全部重跑通过；没有把 `closeout-plan.json` 加入普通 publication metadata
+allowlist，也没有放宽其他 status path。
+
+### 9.5 交给下一轮 `trellis-check`
+
+下一轮独立 Phase 2 应重点复核：
+
+1. `debug-note.md` 等普通 task-local 文件、未显式 runtime 文件和任意 repo path
+   均使 ready fail closed；
+2. exact Branch Review metadata reuse、publication 三文件增量、runtime direct input
+   与 `pr-readiness.json` self-exclusion 没有重复或扩大；
+3. finalization 只有专用调用的 exact regular `closeout-plan.json` 被接受，且仍需
+   exact repository delta、digest 与十二项 entry binding 重算；
+4. public I/O、semantic/script boundary、typed-exit consumers 与 #118 planned
+   finalization ownership未变化；
+5. canonical、installed、三平台 copies、extension manifest、upgrade/update 和
+   zero-sidecar 状态与本 handoff 一致。
+
+本实现代理不执行 `trellis-check`、不记录 `phase2-check.json`、不执行 Branch
+Review Gate。需要独立 check 对当前未提交 diff 做 fresh full-scope semantic review；
+之后再由主会话决定 finding-fix commit 与新的 closure Branch Review。
+
+## 10. Phase 2 Round 6 finding-fix：PH2-116-R6-P2-01
+
+### 10.1 修复结论、根因与相邻审计
+
+`PH2-116-R6-P2-01` 已在实现边界修复。publication repository binding 此前调用
+`git_status_paths(root)`；当正常 `git status --porcelain=v1 -z` 命令失败时，该
+helper 默认返回空列表，导致真实存在的 unexpected dirty task-local file 被错误投影为
+clean repository state。修复后 `task_publication_repository_binding()` 使用既有
+`git_status_paths(root, fail_closed=True)`，status 读取失败会以
+`Could not inspect Git status paths` 阻断：
+
+- publication repository binding；
+- publication review entry 的 `review_range_and_working_tree`；
+- `ready` payload checker；
+- finalization augmentation recheck。
+
+新增 regression 使用真实临时 Git repository 和真实
+`.trellis/tasks/fixture/debug-note.md`，只把 `git status` 的 subprocess 返回模拟为
+exit 128；没有手工伪造 binding、artifact、digest 或 status path。修复前现场复现为
+`status_paths=[]` 且 `debug_note_exists=True`，修复后上述四层均 fail closed。
+
+相邻调用审计确认：publication runtime block 内只有
+`task_publication_repository_binding()` 直接读取 `git_status_paths`；
+recorder、checker 与 finalization 均复用该 binding/entry builder，不存在第二个同类
+漏点。相邻 Branch Review entry 已使用
+`git_status_paths(root, fail_closed=True)`。因此本 finding 只需当前一行 runtime
+语义修正与回归覆盖，不扩大到其他 helper 或流程。
+
+### 10.2 文件与同步结果
+
+本轮实现拥有并修改：
+
+- canonical runtime 与 regression：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`；
+- preset 生成的 installed runtime：
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`；
+- preset 重算的 `.trellis/guru-team/extension.json`；
+- 本 task-local `implementation-handoff.md`。
+
+installed runtime 通过
+`trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms --json`
+生成，没有手工修改。首次 apply 生成的唯一 runtime `.bak` 已逐字确认是同步前版本，
+且 diff 只有本 finding 的 `fail_closed=True` 变化后删除。最终 reapply 为
+`status=ok`、`updated_managed=[]`、`managed_backups=[]`、`new_copies=[]`；
+installed manifest 为 2100 managed files，0 sidecar、0 removal、0 conflict。
+canonical/installed runtime byte-identical，recursive `.bak/.new/.orig` scan 为零。
+
+未修改 public schema、Interface 1.3、typed exits、consumer mapping、publication
+allowlist、finalization-owned projection 或 finding/route semantic ownership。未执行
+recorder/checker、Branch Review Gate、commit、push、PR/issue 更新、archive 或
+finalization。工作树中其他 task metadata、durable contract 与平台 contract copy 的
+变更来自此前轮次或主会话，不属于本 finding-fix 的新增所有权。
+
+### 10.3 Docs SSOT Plan reconciliation
+
+策略继续使用批准的 `ssot_first`。Durable package/workflow contracts 已明确：
+publication 对完整 repository status paths 执行 closed allowlist 校验，无法读取或
+证明时必须 fail closed。本轮实现输入首先采用这些 durable SSOT，再用 Round 6
+finding 作为 task delta 验证 runtime 是否兑现合同。
+
+因此无需新的 durable docs/spec/overlay 文案：本轮只修复实现与既有 SSOT 的偏差，
+没有引入 public I/O、schema、exit、consumer 或 ownership 变化。Task-history-only
+内容是 Round 6 raw finding、修复复现、命令选择纠正与本节 handoff；没有待合并的
+durable docs delta。当前 PR limitation 仍是分支未 push，无法验证 exact remote
+branch marketplace source；fresh throwaway 使用允许的 public-marketplace sample
+与 local unpublished workflow sample。
+
+### 10.4 验证证据
+
+- 新增 fail-closed regression：1/1 passed，0.199s。
+- 最终定向 publication allow/reject/finalization/stale-wrapper 组合：5/5 passed，
+  0.561s。
+- full runtime：Ran 572 tests，OK（13 skipped），174.545s。
+- full Skill package：174/174 passed，275.961s。
+- preset installer：45/45 passed，93.260s。
+- upstream ownership：9/9 passed，0.739s。
+- canonical / installed publication package contract：各 16/16 passed。
+- source / installed package validator：均 passed，11 active Skills、42 exits、
+  25 targets；installed 为 2100 managed、0 sidecar/removal/conflict。
+- source / installed publication shared actual-wrapper eval：各 7/7 passed。
+- canonical runtime/test 与 installed runtime `py_compile`、source/installed byte
+  parity、dogfood overlay drift、recursive sidecar scan、`git diff --check`：均
+  passed。
+- fresh
+  `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1
+  ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`：
+  exit 0。覆盖 clean init/install、initial closeout、`trellis update`、
+  workflow/preset reapply、updated closeout、developer/no-developer、
+  pre-upgrade/absence、source/installed validator、ownership/drift 与 marketplace
+  discovery；updated closeout 在 issue #106 上 archive/local/remote/PR heads
+  一致且 PR ready。终态输出
+  `Verified public marketplace discovery plus local unpublished workflow sample`。
+
+定向测试编排曾两次使用不存在或错误 class 的 selector，分别产生 unittest loader
+error；纠正为真实 test id 后，上述 5/5 组合通过。这是测试命令选择错误，不是产品
+失败，也没有用错误 selector 的结果替代验证。
+
+### 10.5 交给下一轮 `trellis-check`
+
+下一轮独立 Phase 2 应重点复核：
+
+1. 正常 `git status` nonzero 时 publication binding、entry、ready checker 与
+   finalization augmentation 均 fail closed，且错误不是被投影为空 status；
+2. 成功读取 status 时既有 exact metadata allowlist、unexpected-path reject、
+   `pr-readiness.json` self-exclusion 和 exact `closeout-plan.json` augmentation
+   语义未回归；
+3. publication block 不存在相邻的默认-open `git_status_paths` 调用，Branch Review
+   已保持 fail-closed；
+4. canonical/installed runtime、extension manifest、2100 managed/zero sidecar、
+   update/reapply 与 fresh throwaway evidence 一致；
+5. Docs SSOT 无新增 delta，public contract、semantic/script boundary 与 #118
+   planned finalization ownership均未改变。
+
+本实现代理不执行 `trellis-check`、不记录或更新 `phase2-check.json`，也不执行
+Branch Review Gate。需要独立 checker 对当前未提交 full diff 做 fresh semantic
+review，再由主会话决定后续 finding-fix commit 与 closure review。

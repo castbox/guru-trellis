@@ -1,12 +1,12 @@
 {
   "mode": "workflow",
   "requirement_provenance": {
-    "summary": "Fresh approved planning、live Issue #116、官方Trellis扩展边界、implementation handoff与五轮raw Phase2 evidence均已复核；F-001至F-006关闭，current durable与executable合同一致。",
+    "summary": "Fresh planning approval facts 31e195…、live Issue #116/accepted-current comment、current scope ledger、prd/design/implement 与 durable authorities 已重新复核；F-001 至 F-006、BR116-R02-P2-01、PH2-116-R6-P2-01 均已关闭，未引入新 scope。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
-        "sha256": "eb8b4ab7b80ab1e3c2a06da234eb966a9c49a318477806984da1a753c8dd4d2b",
-        "size_bytes": 66937
+        "sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
+        "size_bytes": 38810
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
@@ -29,7 +29,7 @@
         "size_bytes": 3524
       }
     ],
-    "facts_sha256": "593fd6e2a468074c42754b564a47abcf1dc3a332c79c48e859cbd5c4418c4991"
+    "facts_sha256": "14cb5896e0e82db4ab571a4d1728ea704cf34579fe3dd63c746323f80a2b1cb9"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
@@ -41,8 +41,8 @@
       },
       {
         "path": ".trellis/spec/workflow/skill-package-contract.md",
-        "sha256": "ad0ce0d5d682825aff56139f5f39ddcf2dcfe8ec5f578f874f8c527e05589397",
-        "size_bytes": 88003
+        "sha256": "8ab9afe00819bd9b1c35d7b4973a8d85b4262592be1ab00504d5f9ae96e0a8dc",
+        "size_bytes": 88758
       },
       {
         "path": ".trellis/spec/workflow/workflow-contract.md",
@@ -115,7 +115,7 @@
         "size_bytes": 63909
       }
     ],
-    "sync_result": "16个durable paths已按ssot_first与active publication合同同步；F-006 current requirements wording已修复并由targeted scanner复核，durable docs、task artifacts、code与tests一致。",
+    "sync_result": "ssot_first durable paths 已与 active publication exact metadata/runtime allowlist、status-read fail-closed、dedicated finalization closeout-plan 边界及 current workflow route 对齐；Round7 确认 durable docs、task artifacts、runtime、tests 和安装副本一致。",
     "task_delta_merged": true,
     "task_history_only": [
       "agent-assignment.json",
@@ -125,19 +125,25 @@
       "phase2-worker-report-round3.md",
       "phase2-worker-report-round4.md",
       "phase2-worker-report-round5.md",
-      "phase2-worker-report.md"
+      "phase2-worker-report-round6.md",
+      "phase2-worker-report-round7.md",
+      "phase2-worker-report.md",
+      "review-gate.json",
+      "review.md",
+      "reviews/round-01-final-release.md",
+      "reviews/round-02-problem-discovery.md"
     ],
     "no_update_reason": null,
-    "followup_or_pr_limit": "Exact remote candidate-branch marketplace install只能在后续获得push授权并产生remote ref后验证；当前finalization仍在planned #118边界fail closed。",
-    "facts_sha256": "98cec961744f6b8077a6a960719840355a64c2c37b1ea5650f4a40cad0bfe49c"
+    "followup_or_pr_limit": "Exact remote candidate-branch marketplace install 只能在后续获得 push 授权并产生 remote ref 后验证；public marketplace discovery 与 local unpublished workflow sample 已由 fresh throwaway 验证，finalization 仍在 planned #118 边界 fail closed。",
+    "facts_sha256": "a8fc4a0826e5b15e62920c619c425821bdf3ed31f5bb63bdd6e602729092436b"
   },
   "implementation_handoff": {
-    "summary": "Current implementation handoff与五轮独立Phase2报告已完整读取；runtime/schema/routes/install/docs/throwaway闭环，Round5确认F-001至F-006全部关闭且无开放P0-P3。",
+    "summary": "Current implementation handoff 第9/10节、全部七轮 Phase2 raw reports 与 Branch Review history 已完整复核；Round7 对完整 committed+dirty candidate 执行独立 probes、全量 suites、source/installed eval、parity/drift 与 clean throwaway，两个最新 findings 均关闭。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
-        "sha256": "6091cb94e2227b9dde0b6d4eb814da8cca954db008ecb954f0cf89aa914e632b",
-        "size_bytes": 23374
+        "sha256": "7667190a2dfd375609f93d8480d5a66dc2a59e82d0aacfaccfb98ccdd924ab50",
+        "size_bytes": 37598
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report.md",
@@ -163,13 +169,40 @@
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round5.md",
         "sha256": "d85a747c562992685c07eeb0f26ad09e10b289430a4335d4f006b0e07938b0d8",
         "size_bytes": 21086
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+        "sha256": "cad5eba7cba6cbaff0a082585a65c75637d349f1a997f919289182b9c7fcfe71",
+        "size_bytes": 12595
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
+        "sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
+        "size_bytes": 15387
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+        "sha256": "76aec81fa3c9ac42d256e9f530d16b48ddf7cee0d8e9e691242e91195ded8a06",
+        "size_bytes": 3475
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+        "sha256": "e1935435de055e1be8a452d6564c90ee8e9557dea2de444ab72d4beabe84a314",
+        "size_bytes": 13286
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+        "sha256": "06b866a2021fae2abf96a771defd83e630fc9b242d59f064cc6d7b9e67de37c1",
+        "size_bytes": 7061
       }
     ],
-    "facts_sha256": "65b27ba94c503f9c93ff146275eb2a594dbe58d0f4039f2cd0e8653bbecaaabb"
+    "facts_sha256": "e2f8b22637d5825ebb6a26a4ccaf9a17d550c433f2b0a59cefc3af6865c67d98"
   },
   "agent_assignment": {
     "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
     "implementation_agent_ids": [
+      "/root/issue116_fix_branch_p2",
+      "/root/issue116_fix_phase2_r6",
       "/root/issue116_fix_round1",
       "/root/issue116_fix_round2",
       "/root/issue116_fix_round3",
@@ -181,348 +214,53 @@
       "/root/issue116_phase2_rerun",
       "/root/issue116_phase2_round3",
       "/root/issue116_phase2_round4",
-      "/root/issue116_phase2_round5"
+      "/root/issue116_phase2_round5",
+      "/root/issue116_phase2_round6",
+      "/root/issue116_phase2_round7"
     ],
     "recovery_complete": true,
-    "phase2_state_sha256": "cf8e78370866eefc82f9b4b7790eb67b67c0a2e766d911b7db36f89efe13b5ef",
-    "facts_sha256": "72dbdb10caf194c4ae0065dff6e22dcdb7e174e35fdc9f550e166285ae717069"
+    "phase2_state_sha256": "01f14e5f0928f6b11ce6074c2751d2b0d49261796478570bbc2feb4d56a9b44b",
+    "facts_sha256": "f2957c6912389615f18012032091e941dfb609f0705e1c10abac0d5c1d26ec07"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
-    "head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+    "head": "aacb6e02e5386578bfe3d046511a0002a51cb581",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
-      ".agents/skills/guru-review-branch/SKILL.md",
-      ".agents/skills/guru-review-branch/interface.json",
-      ".agents/skills/guru-review-branch/references/contract.md",
-      ".agents/skills/guru-review-branch/tests/test_contract.py",
-      ".agents/skills/guru-review-task-publication/SKILL.md",
-      ".agents/skills/guru-review-task-publication/evals/evals.json",
-      ".agents/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
-      ".agents/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
-      ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
-      ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
-      ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
-      ".agents/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
-      ".agents/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
-      ".agents/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
-      ".agents/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
-      ".agents/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
-      ".agents/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
-      ".agents/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
-      ".agents/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
-      ".agents/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
-      ".agents/skills/guru-review-task-publication/examples/pr-readiness.json",
-      ".agents/skills/guru-review-task-publication/examples/public-blocked-output.json",
-      ".agents/skills/guru-review-task-publication/examples/public-invocation-error.json",
-      ".agents/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
-      ".agents/skills/guru-review-task-publication/examples/public-publication-review-input.json",
-      ".agents/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
-      ".agents/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
-      ".agents/skills/guru-review-task-publication/examples/public-ready-output.json",
-      ".agents/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
-      ".agents/skills/guru-review-task-publication/interface.json",
       ".agents/skills/guru-review-task-publication/references/contract.md",
-      ".agents/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
-      ".agents/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
-      ".agents/skills/guru-review-task-publication/schemas/public-input.schema.json",
-      ".agents/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
-      ".agents/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
-      ".agents/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
-      ".agents/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
-      ".agents/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
-      ".agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
-      ".agents/skills/guru-review-task-publication/scripts/invoke.sh",
-      ".agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
-      ".agents/skills/guru-review-task-publication/tests/test_contract.py",
-      ".agents/skills/trellis-continue/SKILL.md",
-      ".claude/commands/trellis/continue.md",
-      ".claude/skills/guru-review-branch/SKILL.md",
-      ".claude/skills/guru-review-branch/interface.json",
-      ".claude/skills/guru-review-branch/references/contract.md",
-      ".claude/skills/guru-review-branch/tests/test_contract.py",
-      ".claude/skills/guru-review-task-publication/SKILL.md",
-      ".claude/skills/guru-review-task-publication/evals/evals.json",
-      ".claude/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
-      ".claude/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
-      ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
-      ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
-      ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
-      ".claude/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
-      ".claude/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
-      ".claude/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
-      ".claude/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
-      ".claude/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
-      ".claude/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
-      ".claude/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
-      ".claude/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
-      ".claude/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
-      ".claude/skills/guru-review-task-publication/examples/pr-readiness.json",
-      ".claude/skills/guru-review-task-publication/examples/public-blocked-output.json",
-      ".claude/skills/guru-review-task-publication/examples/public-invocation-error.json",
-      ".claude/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
-      ".claude/skills/guru-review-task-publication/examples/public-publication-review-input.json",
-      ".claude/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
-      ".claude/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
-      ".claude/skills/guru-review-task-publication/examples/public-ready-output.json",
-      ".claude/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
-      ".claude/skills/guru-review-task-publication/interface.json",
       ".claude/skills/guru-review-task-publication/references/contract.md",
-      ".claude/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
-      ".claude/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
-      ".claude/skills/guru-review-task-publication/schemas/public-input.schema.json",
-      ".claude/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
-      ".claude/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
-      ".claude/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
-      ".claude/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
-      ".claude/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
-      ".claude/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
-      ".claude/skills/guru-review-task-publication/scripts/invoke.sh",
-      ".claude/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
-      ".claude/skills/guru-review-task-publication/tests/test_contract.py",
-      ".codex/prompts/trellis-continue.md",
-      ".codex/skills/guru-review-branch/SKILL.md",
-      ".codex/skills/guru-review-branch/interface.json",
-      ".codex/skills/guru-review-branch/references/contract.md",
-      ".codex/skills/guru-review-branch/tests/test_contract.py",
-      ".codex/skills/guru-review-task-publication/SKILL.md",
-      ".codex/skills/guru-review-task-publication/evals/evals.json",
-      ".codex/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
-      ".codex/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
-      ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
-      ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
-      ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
-      ".codex/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
-      ".codex/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
-      ".codex/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
-      ".codex/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
-      ".codex/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
-      ".codex/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
-      ".codex/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
-      ".codex/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
-      ".codex/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
-      ".codex/skills/guru-review-task-publication/examples/pr-readiness.json",
-      ".codex/skills/guru-review-task-publication/examples/public-blocked-output.json",
-      ".codex/skills/guru-review-task-publication/examples/public-invocation-error.json",
-      ".codex/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
-      ".codex/skills/guru-review-task-publication/examples/public-publication-review-input.json",
-      ".codex/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
-      ".codex/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
-      ".codex/skills/guru-review-task-publication/examples/public-ready-output.json",
-      ".codex/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
-      ".codex/skills/guru-review-task-publication/interface.json",
       ".codex/skills/guru-review-task-publication/references/contract.md",
-      ".codex/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
-      ".codex/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
-      ".codex/skills/guru-review-task-publication/schemas/public-input.schema.json",
-      ".codex/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
-      ".codex/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
-      ".codex/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
-      ".codex/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
-      ".codex/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
-      ".codex/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
-      ".codex/skills/guru-review-task-publication/scripts/invoke.sh",
-      ".codex/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
-      ".codex/skills/guru-review-task-publication/tests/test_contract.py",
-      ".codex/skills/trellis-continue/SKILL.md",
-      ".cursor/commands/trellis-continue.md",
-      ".cursor/skills/guru-review-branch/SKILL.md",
-      ".cursor/skills/guru-review-branch/interface.json",
-      ".cursor/skills/guru-review-branch/references/contract.md",
-      ".cursor/skills/guru-review-branch/tests/test_contract.py",
-      ".cursor/skills/guru-review-task-publication/SKILL.md",
-      ".cursor/skills/guru-review-task-publication/evals/evals.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/blocked-external-facts.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/blocked-external-input.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/return-to-task-work-input.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
-      ".cursor/skills/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
-      ".cursor/skills/guru-review-task-publication/examples/pr-readiness.json",
-      ".cursor/skills/guru-review-task-publication/examples/public-blocked-output.json",
-      ".cursor/skills/guru-review-task-publication/examples/public-invocation-error.json",
-      ".cursor/skills/guru-review-task-publication/examples/public-publication-review-authoring.json",
-      ".cursor/skills/guru-review-task-publication/examples/public-publication-review-input.json",
-      ".cursor/skills/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
-      ".cursor/skills/guru-review-task-publication/examples/public-publication-review-stale-input.json",
-      ".cursor/skills/guru-review-task-publication/examples/public-ready-output.json",
-      ".cursor/skills/guru-review-task-publication/examples/public-return-to-task-work-output.json",
-      ".cursor/skills/guru-review-task-publication/interface.json",
       ".cursor/skills/guru-review-task-publication/references/contract.md",
-      ".cursor/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
-      ".cursor/skills/guru-review-task-publication/schemas/public-blocked-output.schema.json",
-      ".cursor/skills/guru-review-task-publication/schemas/public-input.schema.json",
-      ".cursor/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
-      ".cursor/skills/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
-      ".cursor/skills/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
-      ".cursor/skills/guru-review-task-publication/schemas/public-ready-output.schema.json",
-      ".cursor/skills/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
-      ".cursor/skills/guru-review-task-publication/scripts/check-task-publication-review.sh",
-      ".cursor/skills/guru-review-task-publication/scripts/invoke.sh",
-      ".cursor/skills/guru-review-task-publication/scripts/record-task-publication-review.sh",
-      ".cursor/skills/guru-review-task-publication/tests/test_contract.py",
       ".trellis/guru-team/extension.json",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
-      ".trellis/guru-team/skills/consumers/stop/production/review-task-publication-blocked.schema.json",
-      ".trellis/guru-team/skills/consumers/workflow/production/review-task-publication-return-to-task-work.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
-      ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
-      ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
-      ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/evals.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/blocked-external-facts.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/blocked-external-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/return-to-task-work-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/pr-readiness.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-blocked-output.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-invocation-error.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-publication-review-stale-input.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-ready-output.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/examples/public-return-to-task-work-output.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/interface.json",
       ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-blocked-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-ready-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/invoke.sh",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
-      ".trellis/guru-team/skills/registry.json",
-      ".trellis/spec/docs/public-docs.md",
-      ".trellis/spec/preset/installer.md",
-      ".trellis/spec/preset/overlay-guidelines.md",
-      ".trellis/spec/preset/upstream-ownership.md",
-      ".trellis/spec/workflow/companion-scripts.md",
-      ".trellis/spec/workflow/data-contracts.md",
-      ".trellis/spec/workflow/index.md",
-      ".trellis/spec/workflow/quality-guidelines.md",
       ".trellis/spec/workflow/skill-package-contract.md",
-      ".trellis/spec/workflow/workflow-contract.md",
       ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
-      ".trellis/tasks/07-24-116-review-task-publication/check.jsonl",
-      ".trellis/tasks/07-24-116-review-task-publication/context-discovery.json",
-      ".trellis/tasks/07-24-116-review-task-publication/contract-wording-review.json",
-      ".trellis/tasks/07-24-116-review-task-publication/design.md",
-      ".trellis/tasks/07-24-116-review-task-publication/implement.jsonl",
-      ".trellis/tasks/07-24-116-review-task-publication/implement.md",
       ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
-      ".trellis/tasks/07-24-116-review-task-publication/issue-review.json",
-      ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
-      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
-      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round3.md",
-      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round4.md",
-      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round5.md",
-      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
       ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
-      ".trellis/tasks/07-24-116-review-task-publication/prd.md",
-      ".trellis/tasks/07-24-116-review-task-publication/task-start-context.json",
-      ".trellis/tasks/07-24-116-review-task-publication/task.json",
-      ".trellis/workflow.md",
-      "README.md",
-      "docs/requirements/README.md",
-      "docs/requirements/guru-team-trellis-flow.md",
-      "docs/requirements/requirement-main.md",
-      "trellis/guru-team-extension.json",
-      "trellis/presets/guru-team/README.md",
-      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
-      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
-      "trellis/presets/guru-team/ownership/upstream-ownership.json",
-      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
-      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
-      "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
-      "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
-      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "trellis/skills/guru-team/consumers/stop/production/review-task-publication-blocked.schema.json",
-      "trellis/skills/guru-team/consumers/workflow/production/review-task-publication-return-to-task-work.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-      "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
-      "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-      "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/evals.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/blocked-external-facts.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/blocked-external-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-facts.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-durable-drift-return-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-facts.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/metadata-fix-fresh-ready-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/return-to-task-work-facts.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/return-to-task-work-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/stale-reentry-ready-facts.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/stale-reentry-ready-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/standalone-initial-ready-facts.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/standalone-initial-ready-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/workflow-initial-ready-facts.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/evals/files/workflow-initial-ready-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/pr-readiness.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-blocked-output.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-invocation-error.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-authoring.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-stale-authoring.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-publication-review-stale-input.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-ready-output.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/examples/public-return-to-task-work-output.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/interface.json",
+      ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+      ".trellis/tasks/07-24-116-review-task-publication/review.md",
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
       "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-blocked-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-publication-review-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-publication-review-stale-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-ready-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/check-task-publication-review.sh",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/invoke.sh",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/scripts/record-task-publication-review.sh",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
-      "trellis/skills/guru-team/registry.json",
-      "trellis/skills/guru-team/tests/test_skill_packages.py",
-      "trellis/workflows/guru-team/README.md",
-      "trellis/workflows/guru-team/scripts/bash/check-task-publication-review.sh",
-      "trellis/workflows/guru-team/scripts/bash/record-task-publication-review.sh",
       "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "trellis/workflows/guru-team/workflow.md"
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
     ],
     "reviewed_paths": [
+      {
+        "path": ".agents/skills/guru-review-branch/interface.json",
+        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
+        "size_bytes": 13606
+      },
+      {
+        "path": ".agents/skills/guru-review-branch/tests/test_contract.py",
+        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
+        "size_bytes": 6978
+      },
       {
         "path": ".agents/skills/guru-review-task-publication/SKILL.md",
         "sha256": "4c9336b19319f679495d54267d1a277376c3573d9f86e0e5b56dbd374fffbb6c",
@@ -655,8 +393,8 @@
       },
       {
         "path": ".agents/skills/guru-review-task-publication/references/contract.md",
-        "sha256": "86b55284c550d6467df01890a5c6c3ab702682b6867e0722aab3825031137660",
-        "size_bytes": 3682
+        "sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "size_bytes": 4441
       },
       {
         "path": ".agents/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
@@ -717,6 +455,16 @@
         "path": ".agents/skills/guru-review-task-publication/tests/test_contract.py",
         "sha256": "0c1a06d634ee7cd095d4f00e609d43caad1d45ce71b7ecff3317c30577f4df7a",
         "size_bytes": 16440
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/interface.json",
+        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
+        "size_bytes": 13606
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/tests/test_contract.py",
+        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
+        "size_bytes": 6978
       },
       {
         "path": ".claude/skills/guru-review-task-publication/SKILL.md",
@@ -850,8 +598,8 @@
       },
       {
         "path": ".claude/skills/guru-review-task-publication/references/contract.md",
-        "sha256": "86b55284c550d6467df01890a5c6c3ab702682b6867e0722aab3825031137660",
-        "size_bytes": 3682
+        "sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "size_bytes": 4441
       },
       {
         "path": ".claude/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
@@ -912,6 +660,16 @@
         "path": ".claude/skills/guru-review-task-publication/tests/test_contract.py",
         "sha256": "0c1a06d634ee7cd095d4f00e609d43caad1d45ce71b7ecff3317c30577f4df7a",
         "size_bytes": 16440
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/interface.json",
+        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
+        "size_bytes": 13606
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/tests/test_contract.py",
+        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
+        "size_bytes": 6978
       },
       {
         "path": ".codex/skills/guru-review-task-publication/SKILL.md",
@@ -1045,8 +803,8 @@
       },
       {
         "path": ".codex/skills/guru-review-task-publication/references/contract.md",
-        "sha256": "86b55284c550d6467df01890a5c6c3ab702682b6867e0722aab3825031137660",
-        "size_bytes": 3682
+        "sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "size_bytes": 4441
       },
       {
         "path": ".codex/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
@@ -1107,6 +865,16 @@
         "path": ".codex/skills/guru-review-task-publication/tests/test_contract.py",
         "sha256": "0c1a06d634ee7cd095d4f00e609d43caad1d45ce71b7ecff3317c30577f4df7a",
         "size_bytes": 16440
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/interface.json",
+        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
+        "size_bytes": 13606
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/tests/test_contract.py",
+        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
+        "size_bytes": 6978
       },
       {
         "path": ".cursor/skills/guru-review-task-publication/SKILL.md",
@@ -1240,8 +1008,8 @@
       },
       {
         "path": ".cursor/skills/guru-review-task-publication/references/contract.md",
-        "sha256": "86b55284c550d6467df01890a5c6c3ab702682b6867e0722aab3825031137660",
-        "size_bytes": 3682
+        "sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "size_bytes": 4441
       },
       {
         "path": ".cursor/skills/guru-review-task-publication/schemas/pr-readiness.schema.json",
@@ -1304,6 +1072,21 @@
         "size_bytes": 16440
       },
       {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "c7c6729be10b898cb5d8bf47d2ab5d2c30bcf38aba7549bae98b95e4a88848f0",
+        "size_bytes": 817299
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "c0dc982cad9b4302cc3676512ac33059783d7cdc5ffce203059053b32f6d9192",
+        "size_bytes": 1544936
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "sha256": "4738a59dbb35036d39e6bdb4cfb2d0acec93cfa7bff2a202229d4c70357b2ad6",
+        "size_bytes": 140609
+      },
+      {
         "path": ".trellis/guru-team/skills/consumers/stop/production/review-task-publication-blocked.schema.json",
         "sha256": "82eec6bf711f986060f709d17e4a1c135c2d9ba3fd940badce8da2e13a5eeccf",
         "size_bytes": 418
@@ -1312,6 +1095,16 @@
         "path": ".trellis/guru-team/skills/consumers/workflow/production/review-task-publication-return-to-task-work.schema.json",
         "sha256": "3678331d16065d760b8ac605fbdba46fb5cf1d3c8aa7282ed4f027b45a80f828",
         "size_bytes": 600
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
+        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
+        "size_bytes": 13606
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
+        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
+        "size_bytes": 6978
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md",
@@ -1445,8 +1238,8 @@
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
-        "sha256": "86b55284c550d6467df01890a5c6c3ab702682b6867e0722aab3825031137660",
-        "size_bytes": 3682
+        "sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "size_bytes": 4441
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
@@ -1509,9 +1302,64 @@
         "size_bytes": 16440
       },
       {
+        "path": ".trellis/guru-team/skills/registry.json",
+        "sha256": "1a95678e8b5322c04129746ecc7c7c36fbc9920fb961e923fd2e519b2f17e19e",
+        "size_bytes": 6715
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "8030597763f5b06a63a81a6c4c6856ee00b546f401d0a7d944d991e7d00c8807",
+        "size_bytes": 24170
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "566a19ad0814d46b9c2aa88cf88a980fcd4631887d3b998f4af1895b0ac52dd0",
+        "size_bytes": 31007
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "cd558dccc87e724952fb34c8de19facb25b872114ccda20001260745e6ad2ca2",
+        "size_bytes": 24300
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "a4ee7063738234e8a623df0ffdb87a81fe5ac4f7405ccb95259074d390ab3c1a",
+        "size_bytes": 15812
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "296c40261e637a923e41b3b690935c8018f8324b5a9f08be6b394bd0ecc22030",
+        "size_bytes": 95464
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "fd7db5aca2f532051ec786694a6de600964cb01a73ef464ba66c550627556dfe",
+        "size_bytes": 113222
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "sha256": "88d8b8db1d4be18e68ecf343f3f9ec284200e0270f0e6585b294bd7d3bfa48a4",
+        "size_bytes": 7036
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "7883c883c16e977f3fcf65f1d1c28f13b5b52130b3d8725cc0858684e393102d",
+        "size_bytes": 41711
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "8ab9afe00819bd9b1c35d7b4973a8d85b4262592be1ab00504d5f9ae96e0a8dc",
+        "size_bytes": 88758
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "sha256": "c796d7d53389915d0acec988c5d0534ab958cdb7d46804ef70439c7d78722368",
+        "size_bytes": 62890
+      },
+      {
         "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
-        "sha256": "da5263a8ba953c423b552bf07eb32e47bdef4e3a44ceef716f61f36c0619c315",
-        "size_bytes": 190606
+        "sha256": "82a812e9e22af1db83c2ada219522efbf8fc6c2b1907748c00ad57d17865acae",
+        "size_bytes": 270842
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/check.jsonl",
@@ -1545,8 +1393,8 @@
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
-        "sha256": "6091cb94e2227b9dde0b6d4eb814da8cca954db008ecb954f0cf89aa914e632b",
-        "size_bytes": 23374
+        "sha256": "7667190a2dfd375609f93d8480d5a66dc2a59e82d0aacfaccfb98ccdd924ab50",
+        "size_bytes": 37598
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/issue-review.json",
@@ -1569,19 +1417,49 @@
         "size_bytes": 16770
       },
       {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md",
+        "sha256": "cad5eba7cba6cbaff0a082585a65c75637d349f1a997f919289182b9c7fcfe71",
+        "size_bytes": 12595
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md",
+        "sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
+        "size_bytes": 15387
+      },
+      {
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report.md",
         "sha256": "54521c89fa12a583871f3c1434f659bc9cb8d43aae0a1233d844528cdb4ef522",
         "size_bytes": 13840
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
-        "sha256": "eb8b4ab7b80ab1e3c2a06da234eb966a9c49a318477806984da1a753c8dd4d2b",
-        "size_bytes": 66937
+        "sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
+        "size_bytes": 38810
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/prd.md",
         "sha256": "9814f640a7a624740b7f0cb06dc6e9b010e428ed523a5bd70345ba2b8ab7de01",
         "size_bytes": 18678
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+        "sha256": "c6360cfcb1f893868b2728469fca7a92df1a5b5d46c1485e172f6afe56d63c20",
+        "size_bytes": 101964
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
+        "sha256": "76aec81fa3c9ac42d256e9f530d16b48ddf7cee0d8e9e691242e91195ded8a06",
+        "size_bytes": 3475
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-01-final-release.md",
+        "sha256": "e1935435de055e1be8a452d6564c90ee8e9557dea2de444ab72d4beabe84a314",
+        "size_bytes": 13286
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-02-problem-discovery.md",
+        "sha256": "06b866a2021fae2abf96a771defd83e630fc9b242d59f064cc6d7b9e67de37c1",
+        "size_bytes": 7061
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/task-start-context.json",
@@ -1594,6 +1472,66 @@
         "size_bytes": 679
       },
       {
+        "path": ".trellis/workflow.md",
+        "sha256": "10345c4e04de6ff1bbaa5dda982a1c83c0a365203bd1b154feb8006ed1422c69",
+        "size_bytes": 113575
+      },
+      {
+        "path": "README.md",
+        "sha256": "5d1aa77af797258f25f49444057d83920c69d2df81c290190e61d4d85c9ed805",
+        "size_bytes": 77093
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "sha256": "ef8f42ed84ee78263921da6ae6ff4e6b4f08b0e73ec8d42d2d13f12dc629e8ec",
+        "size_bytes": 20378
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "f50e001c3f28ce3f807857f11f72d415f241fbfe4448454f9bfa45b1194f9d0c",
+        "size_bytes": 84978
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "32d031a2b848afd7b9648a159fb2df871019fa1c230a87402d57008c42a048fc",
+        "size_bytes": 69832
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "sha256": "6e7546ee9bcc8c0959b926ead3148698cfe7a0c681d01dd2ca3cc3630468787b",
+        "size_bytes": 12100
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "67e493715374cfa6ea05a89f948e39b0b582f94ef85f9c65a53911abd1a42704",
+        "size_bytes": 63909
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "a3027863567900394e3a90990c9f15bbb9b62c01ccfb0cb3250ac8f138847557",
+        "size_bytes": 185130
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "sha256": "ba284e333795cb41ad4358bfc2959dd40802e64f4be4110e7e4da1d56f496fd3",
+        "size_bytes": 98031
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "sha256": "777aba1392b2685556850b6b348b2be40e76cd088a037c2ccdd4a70ab86bca9e",
+        "size_bytes": 19152
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
+        "sha256": "0dd4981032e8ef7931144448c13a7ee609e9dbe55bd414e080847ec795b163e0",
+        "size_bytes": 29249
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "4738a59dbb35036d39e6bdb4cfb2d0acec93cfa7bff2a202229d4c70357b2ad6",
+        "size_bytes": 140609
+      },
+      {
         "path": "trellis/skills/guru-team/consumers/stop/production/review-task-publication-blocked.schema.json",
         "sha256": "82eec6bf711f986060f709d17e4a1c135c2d9ba3fd940badce8da2e13a5eeccf",
         "size_bytes": 418
@@ -1602,6 +1540,16 @@
         "path": "trellis/skills/guru-team/consumers/workflow/production/review-task-publication-return-to-task-work.schema.json",
         "sha256": "3678331d16065d760b8ac605fbdba46fb5cf1d3c8aa7282ed4f027b45a80f828",
         "size_bytes": 600
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
+        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
+        "size_bytes": 13606
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
+        "size_bytes": 6978
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
@@ -1735,8 +1683,8 @@
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
-        "sha256": "86b55284c550d6467df01890a5c6c3ab702682b6867e0722aab3825031137660",
-        "size_bytes": 3682
+        "sha256": "0f07c3a882433a9ecd7102f3304d949c3b85a307cb0b176233f7418e661a28fb",
+        "size_bytes": 4441
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/pr-readiness.schema.json",
@@ -1799,206 +1747,6 @@
         "size_bytes": 16440
       },
       {
-        "path": "trellis/workflows/guru-team/scripts/bash/check-task-publication-review.sh",
-        "sha256": "c2762acd60a1c0d6de9118e5072e7f59a5e222a4b9f75315a173f52f1fce4b03",
-        "size_bytes": 186
-      },
-      {
-        "path": "trellis/workflows/guru-team/scripts/bash/record-task-publication-review.sh",
-        "sha256": "37a0c591941de09288fac384a93ae5f61f24e26ebf96c57a5b8dcea7eb01f149",
-        "size_bytes": 187
-      },
-      {
-        "path": ".agents/skills/guru-review-branch/interface.json",
-        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
-        "size_bytes": 13606
-      },
-      {
-        "path": ".agents/skills/guru-review-branch/tests/test_contract.py",
-        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
-        "size_bytes": 6978
-      },
-      {
-        "path": ".claude/skills/guru-review-branch/interface.json",
-        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
-        "size_bytes": 13606
-      },
-      {
-        "path": ".claude/skills/guru-review-branch/tests/test_contract.py",
-        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
-        "size_bytes": 6978
-      },
-      {
-        "path": ".codex/skills/guru-review-branch/interface.json",
-        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
-        "size_bytes": 13606
-      },
-      {
-        "path": ".codex/skills/guru-review-branch/tests/test_contract.py",
-        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
-        "size_bytes": 6978
-      },
-      {
-        "path": ".cursor/skills/guru-review-branch/interface.json",
-        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
-        "size_bytes": 13606
-      },
-      {
-        "path": ".cursor/skills/guru-review-branch/tests/test_contract.py",
-        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
-        "size_bytes": 6978
-      },
-      {
-        "path": ".trellis/guru-team/extension.json",
-        "sha256": "250dcb37fc68cf004a0da9cd0df4bd7391dce4ff52883e7b50e53ba07750f782",
-        "size_bytes": 817299
-      },
-      {
-        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "ab835029f2024acd1bba014633a03b13a8a191979e586c7c49bca859869cf650",
-        "size_bytes": 1541849
-      },
-      {
-        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
-        "sha256": "4738a59dbb35036d39e6bdb4cfb2d0acec93cfa7bff2a202229d4c70357b2ad6",
-        "size_bytes": 140609
-      },
-      {
-        "path": ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
-        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
-        "size_bytes": 13606
-      },
-      {
-        "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
-        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
-        "size_bytes": 6978
-      },
-      {
-        "path": ".trellis/guru-team/skills/registry.json",
-        "sha256": "1a95678e8b5322c04129746ecc7c7c36fbc9920fb961e923fd2e519b2f17e19e",
-        "size_bytes": 6715
-      },
-      {
-        "path": ".trellis/spec/docs/public-docs.md",
-        "sha256": "8030597763f5b06a63a81a6c4c6856ee00b546f401d0a7d944d991e7d00c8807",
-        "size_bytes": 24170
-      },
-      {
-        "path": ".trellis/spec/preset/installer.md",
-        "sha256": "566a19ad0814d46b9c2aa88cf88a980fcd4631887d3b998f4af1895b0ac52dd0",
-        "size_bytes": 31007
-      },
-      {
-        "path": ".trellis/spec/preset/overlay-guidelines.md",
-        "sha256": "cd558dccc87e724952fb34c8de19facb25b872114ccda20001260745e6ad2ca2",
-        "size_bytes": 24300
-      },
-      {
-        "path": ".trellis/spec/preset/upstream-ownership.md",
-        "sha256": "a4ee7063738234e8a623df0ffdb87a81fe5ac4f7405ccb95259074d390ab3c1a",
-        "size_bytes": 15812
-      },
-      {
-        "path": ".trellis/spec/workflow/companion-scripts.md",
-        "sha256": "296c40261e637a923e41b3b690935c8018f8324b5a9f08be6b394bd0ecc22030",
-        "size_bytes": 95464
-      },
-      {
-        "path": ".trellis/spec/workflow/data-contracts.md",
-        "sha256": "fd7db5aca2f532051ec786694a6de600964cb01a73ef464ba66c550627556dfe",
-        "size_bytes": 113222
-      },
-      {
-        "path": ".trellis/spec/workflow/index.md",
-        "sha256": "88d8b8db1d4be18e68ecf343f3f9ec284200e0270f0e6585b294bd7d3bfa48a4",
-        "size_bytes": 7036
-      },
-      {
-        "path": ".trellis/spec/workflow/quality-guidelines.md",
-        "sha256": "7883c883c16e977f3fcf65f1d1c28f13b5b52130b3d8725cc0858684e393102d",
-        "size_bytes": 41711
-      },
-      {
-        "path": ".trellis/spec/workflow/skill-package-contract.md",
-        "sha256": "ad0ce0d5d682825aff56139f5f39ddcf2dcfe8ec5f578f874f8c527e05589397",
-        "size_bytes": 88003
-      },
-      {
-        "path": ".trellis/spec/workflow/workflow-contract.md",
-        "sha256": "c796d7d53389915d0acec988c5d0534ab958cdb7d46804ef70439c7d78722368",
-        "size_bytes": 62890
-      },
-      {
-        "path": ".trellis/workflow.md",
-        "sha256": "10345c4e04de6ff1bbaa5dda982a1c83c0a365203bd1b154feb8006ed1422c69",
-        "size_bytes": 113575
-      },
-      {
-        "path": "README.md",
-        "sha256": "5d1aa77af797258f25f49444057d83920c69d2df81c290190e61d4d85c9ed805",
-        "size_bytes": 77093
-      },
-      {
-        "path": "docs/requirements/README.md",
-        "sha256": "ef8f42ed84ee78263921da6ae6ff4e6b4f08b0e73ec8d42d2d13f12dc629e8ec",
-        "size_bytes": 20378
-      },
-      {
-        "path": "docs/requirements/guru-team-trellis-flow.md",
-        "sha256": "f50e001c3f28ce3f807857f11f72d415f241fbfe4448454f9bfa45b1194f9d0c",
-        "size_bytes": 84978
-      },
-      {
-        "path": "docs/requirements/requirement-main.md",
-        "sha256": "32d031a2b848afd7b9648a159fb2df871019fa1c230a87402d57008c42a048fc",
-        "size_bytes": 69832
-      },
-      {
-        "path": "trellis/guru-team-extension.json",
-        "sha256": "6e7546ee9bcc8c0959b926ead3148698cfe7a0c681d01dd2ca3cc3630468787b",
-        "size_bytes": 12100
-      },
-      {
-        "path": "trellis/presets/guru-team/README.md",
-        "sha256": "67e493715374cfa6ea05a89f948e39b0b582f94ef85f9c65a53911abd1a42704",
-        "size_bytes": 63909
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-        "sha256": "a3027863567900394e3a90990c9f15bbb9b62c01ccfb0cb3250ac8f138847557",
-        "size_bytes": 185130
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-        "sha256": "ba284e333795cb41ad4358bfc2959dd40802e64f4be4110e7e4da1d56f496fd3",
-        "size_bytes": 98031
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
-        "sha256": "777aba1392b2685556850b6b348b2be40e76cd088a037c2ccdd4a70ab86bca9e",
-        "size_bytes": 19152
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
-        "sha256": "0dd4981032e8ef7931144448c13a7ee609e9dbe55bd414e080847ec795b163e0",
-        "size_bytes": 29249
-      },
-      {
-        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "4738a59dbb35036d39e6bdb4cfb2d0acec93cfa7bff2a202229d4c70357b2ad6",
-        "size_bytes": 140609
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
-        "sha256": "a75e7d1a1d754716d8a8b74b7a007f19d2d1dbd37de458874c8d624c374665d1",
-        "size_bytes": 13606
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
-        "sha256": "1713a26a8c042038c2d067204b924ef3374b59353d792b9b4616fcd0de596dc3",
-        "size_bytes": 6978
-      },
-      {
         "path": "trellis/skills/guru-team/registry.json",
         "sha256": "1a95678e8b5322c04129746ecc7c7c36fbc9920fb961e923fd2e519b2f17e19e",
         "size_bytes": 6715
@@ -2014,14 +1762,24 @@
         "size_bytes": 67997
       },
       {
+        "path": "trellis/workflows/guru-team/scripts/bash/check-task-publication-review.sh",
+        "sha256": "c2762acd60a1c0d6de9118e5072e7f59a5e222a4b9f75315a173f52f1fce4b03",
+        "size_bytes": 186
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/bash/record-task-publication-review.sh",
+        "sha256": "37a0c591941de09288fac384a93ae5f61f24e26ebf96c57a5b8dcea7eb01f149",
+        "size_bytes": 187
+      },
+      {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "ab835029f2024acd1bba014633a03b13a8a191979e586c7c49bca859869cf650",
-        "size_bytes": 1541849
+        "sha256": "c0dc982cad9b4302cc3676512ac33059783d7cdc5ffce203059053b32f6d9192",
+        "size_bytes": 1544936
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-        "sha256": "5ca7ae55f6369838eb43a26e3a292d54f6b34885660a17fc82ff8c3f5e0458d9",
-        "size_bytes": 1154675
+        "sha256": "466c78f9a19d2b1956c35a15ff9f28457e39a1574d441b33b61961a9b76a50ea",
+        "size_bytes": 1165883
       },
       {
         "path": "trellis/workflows/guru-team/workflow.md",
@@ -2029,7 +1787,7 @@
         "size_bytes": 113575
       }
     ],
-    "snapshot_sha256": "9006acd1de7b9767218aaf0706b077e8e5741c100d57f6fd3266e4e9a97376cb"
+    "snapshot_sha256": "7e3ea9568b7572183c61bbd3227cb38c958e103355457af1d41c81f5667af1f8"
   },
   "check_execution": {
     "commands": [
@@ -2079,20 +1837,6 @@
         "summary": "Fresh round3覆盖完整diff、F-001至F-003 closure、active route/content ordering、全量套件、throwaway、Docs SSOT与安全部署，确认F-004/F-005为P1。"
       },
       {
-        "id": "diff-check",
-        "argv": [
-          "git",
-          "diff",
-          "--check"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "当前完整diff无whitespace错误。"
-      },
-      {
         "id": "worker-report-round4-bytes",
         "argv": [
           "sed",
@@ -2121,6 +1865,65 @@
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
         "summary": "Round5 fresh完整Phase2报告：F-001至F-006关闭、十维通过、最终全新clean throwaway exit0；首次empty-response失败及其非复现闭环如实保留。"
+      },
+      {
+        "id": "worker-report-round6-bytes",
+        "argv": [
+          "sed",
+          "-n",
+          "1,360p",
+          ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round6.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "cad5eba7cba6cbaff0a082585a65c75637d349f1a997f919289182b9c7fcfe71",
+        "stdout_size_bytes": 12595,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round6 full-scope check reproduced PH2-116-R6-P2-01 on an honest git-status failure and correctly returned implementation_required."
+      },
+      {
+        "id": "worker-report-round7-bytes",
+        "argv": [
+          "sed",
+          "-n",
+          "1,360p",
+          ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round7.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
+        "stdout_size_bytes": 15387,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round7 fresh full rerun covered the complete committed+dirty candidate, closed both latest findings, ran all applicable suites and fresh throwaway, and returned passed/no P0-P3."
+      },
+      {
+        "id": "committed-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check",
+          "origin/main...HEAD"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Committed origin/main...HEAD diff has no whitespace errors."
+      },
+      {
+        "id": "current-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Current dirty implementation diff has no whitespace errors."
       }
     ],
     "worker_evidence": [
@@ -2158,10 +1961,32 @@
         "summary": "第五轮fresh完整检查覆盖真实current diff、F-001至F-006 closure、Docs SSOT、全量/定向/source/installed/actual-wrapper/throwaway/update-reapply验证；结论passed且首轮非复现异常已透明记录。",
         "evidence_only": true,
         "facts_sha256": "d85a747c562992685c07eeb0f26ad09e10b289430a4335d4f006b0e07938b0d8"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue116_phase2_round6",
+        "summary": "Round6 independently reproduced the publication git-status fail-open and supplied implementation_required evidence; it is historical finding evidence, not the current pass.",
+        "evidence_only": true,
+        "facts_sha256": "cad5eba7cba6cbaff0a082585a65c75637d349f1a997f919289182b9c7fcfe71"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue116_phase2_round7",
+        "summary": "Round7 independently checked the complete current candidate, both latest finding closures, live authorities, ten adequacy dimensions, full suites, source/installed distribution and fresh throwaway; conclusion passed/no P0-P3.",
+        "evidence_only": true,
+        "facts_sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291"
       }
     ],
-    "unverified_items": [],
-    "execution_sha256": "68ebe45ad7bd8c7d6843f7e7f169175ce1f9f8373eda1a6a3d2fba7935d868ed"
+    "unverified_items": [
+      {
+        "id": "remote-candidate-branch-marketplace",
+        "command_or_area": "Exact remote candidate branch marketplace install",
+        "reason": "Current branch has not been pushed and this continue entry does not authorize push, so no remote candidate ref exists.",
+        "impact": "Does not block source/task commit readiness because public marketplace discovery plus local unpublished workflow sample, clean install, update and reapply all passed; remote exact-branch proof remains a publication-time limitation.",
+        "blocking": false
+      }
+    ],
+    "execution_sha256": "54f2426185e4ecf5c54e813589e9cb0147d43d5d9b7aa3bbfc67c07b7ea2eaf1"
   },
   "scope_qualification": {
     "candidates": [],
@@ -2172,159 +1997,160 @@
       {
         "id": "requirements",
         "status": "passed",
-        "summary": "Approved #116 AC1-AC19与live issue要求均由current runtime、packages、routes、docs和tests承接；F-001至F-006已关闭。",
+        "summary": "Approved #116 AC1-AC19 与 live authority 均由 current contracts/runtime/routes/docs/tests 承接；F-001 至 F-006、BR116-R02-P2-01、PH2-116-R6-P2-01 均关闭，无 scope expansion。",
         "evidence_refs": [
           "planning",
           "requirement_provenance",
           "check_execution"
         ],
-        "affected_sha256": "32d031a2b848afd7b9648a159fb2df871019fa1c230a87402d57008c42a048fc",
+        "affected_sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "design",
         "status": "passed",
-        "summary": "Semantic review profile、三typed exits、entry/freshness binding、owner/order及planned finalization边界完整承接批准设计。",
+        "summary": "Semantic publication profile、双入口、exact metadata/runtime binding、三 typed exits、unique consumers 与 planned #118 边界完整承接批准设计。",
         "evidence_refs": [
           "planning",
           "implementation_handoff"
         ],
-        "affected_sha256": "6091cb94e2227b9dde0b6d4eb814da8cca954db008ecb954f0cf89aa914e632b",
+        "affected_sha256": "b2a38854623d55558807732a72bd586cfa60e38aafe22a0fb1b80a1168d2a408",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "implementation",
         "status": "passed",
-        "summary": "Canonical、installed、四平台package、runtime、schema、workflow route与preset materialization实现一致。",
+        "summary": "Canonical/installed/platform runtime 与 package 已同步；publication status 读取 fail closed，ordinary/finalization allowlist 边界精确且无第二同类漏传。",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "6091cb94e2227b9dde0b6d4eb814da8cca954db008ecb954f0cf89aa914e632b",
+        "affected_sha256": "7667190a2dfd375609f93d8480d5a66dc2a59e82d0aacfaccfb98ccdd924ab50",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "tests",
         "status": "passed",
-        "summary": "Runtime570/13skip、Skill174、preset54、publication/Branch Review contracts、actual-wrapper eval与最终clean throwaway均通过。",
+        "summary": "Round7 独立 probes、runtime572/13skip、Skill174、preset45、ownership9、contracts16x2/8x2、eval7x2 与 fresh throwaway exit0 全部通过。",
         "evidence_refs": [
           "check_execution",
           "implementation_handoff"
         ],
-        "affected_sha256": "d85a747c562992685c07eeb0f26ad09e10b289430a4335d4f006b0e07938b0d8",
+        "affected_sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "ssot_first durable docs已合并current publication合同；F-006现时态矛盾修复并有targeted scanner。",
+        "summary": "ssot_first durable contract 已包含 exact publication allowlist；status-read fix 恢复既有 fail-closed 合同，无新增 durable delta，docs/code/tests一致。",
         "evidence_refs": [
           "docs_ssot_plan",
           "check_execution"
         ],
-        "affected_sha256": "32d031a2b848afd7b9648a159fb2df871019fa1c230a87402d57008c42a048fc",
+        "affected_sha256": "8ab9afe00819bd9b1c35d7b4973a8d85b4262592be1ab00504d5f9ae96e0a8dc",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "cross_layer",
         "status": "passed",
-        "summary": "Public I/O、private gate artifact、consumer projection、workflow owner/order、runtime recorder/checker和平台入口跨层一致。",
+        "summary": "Public I/O、private gate、workflow routes、runtime recorder/checker、platform copies、finalization-only closeout projection 跨层一致。",
         "evidence_refs": [
           "repository_snapshot",
           "docs_ssot_plan",
           "check_execution"
         ],
-        "affected_sha256": "32d031a2b848afd7b9648a159fb2df871019fa1c230a87402d57008c42a048fc",
+        "affected_sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "compatibility",
         "status": "passed",
-        "summary": "Legacy reader、Stage0与production现有skills、#131 frozen outputs及planned guru-finalize-task边界保持兼容。",
+        "summary": "Legacy reader、Stage0/production skills、#131 frozen outputs、installed update/reapply 与 planned guru-finalize-task identity 保持兼容。",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "d85a747c562992685c07eeb0f26ad09e10b289430a4335d4f006b0e07938b0d8",
+        "affected_sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "deployment_and_operations",
         "status": "passed",
-        "summary": "无CI/CD、容器、Kubernetes、DB migration、环境配置、Makefile或production deployment surface变更。",
+        "summary": "Round7 扫描确认无 CI/CD、container、K8s/Helm、DB migration、Makefile、dependency manifest、配置或 production deployment surface 影响。",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "d85a747c562992685c07eeb0f26ad09e10b289430a4335d4f006b0e07938b0d8",
+        "affected_sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "agent_recovery",
         "status": "passed",
-        "summary": "五轮实现与五轮独立Phase2代理均有完整assignment、liveness与completed证据，recovery chain闭环。",
+        "summary": "七个实现代理与七个 Phase2 检查代理的 assignment/liveness/completed evidence 精确闭环，无未完成 recovery link。",
         "evidence_refs": [
           "agent_assignment"
         ],
-        "affected_sha256": "da5263a8ba953c423b552bf07eb32e47bdef4e3a44ceef716f61f36c0619c315",
+        "affected_sha256": "82a812e9e22af1db83c2ada219522efbf8fc6c2b1907748c00ad57d17865acae",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "Fresh Round5完整复检覆盖current dirty diff、全部适用套件、installed/throwaway/update-reapply与Docs SSOT；首次非复现观察已如实闭环，remote candidate branch限制留待授权push后验证。",
+        "summary": "Round7 是修复后的全范围 fresh rerun，覆盖完整 committed+dirty diff、live authority、所有适用 suites、installed parity/drift/sidecar 与双仓库 throwaway；仅 remote candidate ref 因未授权 push 不存在，作为非阻塞发布限制保留。",
         "evidence_refs": [
           "check_execution",
           "requirement_provenance",
           "docs_ssot_plan",
           "agent_assignment"
         ],
-        "affected_sha256": "d85a747c562992685c07eeb0f26ad09e10b289430a4335d4f006b0e07938b0d8",
+        "affected_sha256": "d169c113f43e4eac09ba3ffcb8318ab5750c57a0486a00e899987be96b7c4291",
         "finding_ids": [],
-        "unverified_ids": []
+        "unverified_ids": [
+          "remote-candidate-branch-marketplace"
+        ]
       }
     ],
     "findings": [],
-    "adequacy_sha256": "8dae59285846531fecee95e572f295f606cc8b587da981825d1fa48a68a12d36",
+    "adequacy_sha256": "27ec309d4c8c525c19d0250188a9fc20694c093234fa73932b3072158e0529dd",
     "ai_review_gate": {
       "status": "passed",
-      "summary": "Round5 fresh全量语义审查确认F-001至F-006全部关闭，十维adequacy通过且无开放P0-P3。首次clean throwaway在pre-#146 installed Branch Review workflow-passed case读取已存在空response时解析失败，但同installed fixture精确重跑7/7、第二次全新clean throwaway exit0且未复现；该观察不构成current正常路径finding。Exact remote candidate branch尚未push，仅保留为后续授权发布验证限制。",
+      "summary": "Fresh Round7 完整语义审查覆盖 current planning facts、完整 origin/main...HEAD 与 dirty candidate、七轮 recovery chain、Docs SSOT、live Issue #116、public/installed/platform 分发和全部适用验证。BR116-R02-P2-01 与 PH2-116-R6-P2-01 均由独立 honest-normal-path probes 及 full matrix 关闭；十维 adequacy 通过，无开放 P0-P3、scope change 或 blocking unverified item。Exact remote candidate-branch install 因未授权 push 而无 ref，public discovery 与 local unpublished sample 已验证，不阻塞 local task commit。",
       "full_rerun": true,
-      "planning_facts_sha256": "28aff0ac40604eae5857fb4432550c654f7bf1261ec4c9f50840e058ffb13e09",
-      "snapshot_sha256": "9006acd1de7b9767218aaf0706b077e8e5741c100d57f6fd3266e4e9a97376cb",
+      "planning_facts_sha256": "31e195b4fa84b171fe6d9816ef5b87a6c8ccc02b8541a577be9144ba87daca74",
+      "snapshot_sha256": "7e3ea9568b7572183c61bbd3227cb38c958e103355457af1d41c81f5667af1f8",
       "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-      "adequacy_sha256": "8dae59285846531fecee95e572f295f606cc8b587da981825d1fa48a68a12d36",
+      "adequacy_sha256": "27ec309d4c8c525c19d0250188a9fc20694c093234fa73932b3072158e0529dd",
       "findings_count": 0,
-      "full_round_sha256": "61c05d77f4027f20ae7f010405efb0df4021afc821791ee9a3d6a6bf23d9f72c"
+      "full_round_sha256": "176b2c1eb7762fa168778a3a0c31aec3d65807402cbf162b94dbfe1fe24857a7"
     }
   },
   "human_confirmation": {
     "kind": "not-required",
     "status": "not_required",
-    "summary": "Round5没有scope_change_required候选或开放finding；按已批准#116 scope继续到task commit不需要额外human confirmation。",
+    "summary": "Round7 没有 scope_change_required、开放 finding 或 blocking unverified item；在已批准 #116 scope 内进入受控 task commit 不需要新的 human confirmation。",
     "confirmed_at": null
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "Round 5 fresh完整复检确认F-001至F-006全部关闭，十维adequacy通过；首次throwaway的empty-response解析失败在同fixture 7/7与第二个全新clean throwaway exit 0中均未复现，作为非阻塞观察保留。",
+  "reason": "Round7 fresh full rerun independently closed BR116-R02-P2-01 and PH2-116-R6-P2-01, passed all ten adequacy dimensions and all applicable validation with fresh throwaway exit0; no open P0-P3 or blocking unverified item remains.",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
-  "facts_sha256": "a330eb2baaacc5f1b18d6ee16e657ebcf7a44cf08095a647680681011a5d0f28",
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-24T23:34:57Z",
+  "generated_at": "2026-07-25T02:03:11Z",
   "task": {
     "task_dir": ".trellis/tasks/07-24-116-review-task-publication",
     "task_id": "116-review-task-publication",
@@ -2340,8 +2166,8 @@
     "typed_exit": "approved",
     "artifact": {
       "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
-      "sha256": "eb8b4ab7b80ab1e3c2a06da234eb966a9c49a318477806984da1a753c8dd4d2b",
-      "size_bytes": 66937
+      "sha256": "f3f0f06c36d13341a1cfa8730791c02af3c123fbc54d788d5a7bb67885fca80c",
+      "size_bytes": 38810
     },
     "reviewed_artifacts": [
       {
@@ -2360,6 +2186,7 @@
         "size_bytes": 16451
       }
     ],
-    "facts_sha256": "28aff0ac40604eae5857fb4432550c654f7bf1261ec4c9f50840e058ffb13e09"
-  }
+    "facts_sha256": "31e195b4fa84b171fe6d9816ef5b87a6c8ccc02b8541a577be9144ba87daca74"
+  },
+  "facts_sha256": "9fb16a8b91faece371b835ad5e1366288139793d92436978d5f58942cd5fec34"
 }
