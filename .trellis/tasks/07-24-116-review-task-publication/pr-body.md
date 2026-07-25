@@ -5,6 +5,7 @@
 - 新增 active semantic Skill `guru-review-task-publication`，统一 workflow 与 standalone 两种入口、十维 publication review、metadata-only 内部修订闭环和 `ready` / `return_to_task_work` / `blocked` 三个 typed exits。
 - 将 AI 语义判断与确定性 recorder/checker 分层：AI 负责 Issue 关闭范围、PR body、验证声明、Docs SSOT、安全/部署影响、finding route 与 readiness；脚本只重建并校验 task、HEAD、artifact、working-tree 和 freshness 事实。
 - 建立唯一 task-local `pr-readiness.json` gate、最小 `publication_ref` handoff、planned `guru-finalize-task` consumer，以及 stale re-entry 和 fail-closed public/private I/O 合同。
+- 修复合法更新 ledger publication metadata 后 Phase 2 requirement provenance 误判 stale 的问题：Phase 2 复用 task-local issue number-set projection，继续对真实 issue scope drift 失败关闭。
 - 同步 canonical workflow、dogfood workflow、preset installer、shared package 和 Codex/Claude/Cursor/Agents 四个平台副本，并补齐 fresh install、update、reapply 与六布局真实命令验证。
 
 ## 影响范围
@@ -13,7 +14,7 @@
 
 ## 验证结果
 
-- Runtime suite：572 tests passed，13 skipped。
+- Runtime suite：573 tests passed，13 skipped。
 - Full Skill package suite：174 tests passed。
 - Publication package contract：canonical 18/18、installed 18/18。
 - Actual-wrapper eval：source 7/7、installed 7/7。
@@ -24,11 +25,11 @@
 - `git diff --check`、planning approval、task validation、workspace boundary、dogfood overlay drift、credential-shaped added-line scan 与 deploy-sensitive path scan均通过。
 - 两项未修改的 Codex hook test 在 `origin/main` 同样失败，属于 baseline stale assertions，未由 #116 引入；completed compatibility 由 #119 处理。
 - 当前分支尚未 push，因此 exact remote candidate-branch marketplace ref 尚未验证；该验证保留给既有 publish gate，当前已验证 public marketplace discovery 与 local unpublished sample。
-- 当前 task 的首次 dogfood publication dry-run 在合法补齐 ledger publication metadata 后复现 `phase2_check_requirement_provenance_stale`；该 current-scope finding 已按 `return_to_task_work` 路由，必须修复并重新经过 Phase 2、commit、Branch Review 与 publication review 后才能发布。
+- 当前 task 的首次 dogfood publication dry-run 在合法补齐 ledger publication metadata 后复现 `phase2_check_requirement_provenance_stale`；该 finding 已按 `return_to_task_work` 路由，并由 sequence 004 的 task-local issue number-set projection 修复。Fresh Phase 2 Round 11、commit 与 Branch Review Round 07 已重新完成，publication stale re-entry 现绑定当前 reviewed HEAD。
 
 ## Review Gate
 
-Branch Review 覆盖 `origin/main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940...d7ab98f5c53f470f4d3f3742f8cfca24f8465edd` 的完整 345-file、3-commit 范围。Round 03 与 Round 05 分别由原 finding owner 关闭 P2/P1；Round 06 使用未参与实现、Phase 2、finding discovery 或 closure 的全新 reviewer 完成 fresh final review，P0/P1/P2/P3 均为 0。正式 `guru-review-branch` recorder、checker 与公共 wrapper 均返回 `passed`。
+Branch Review 覆盖 `origin/main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940...a1629fae4150bfbac9032aab8ca47497cba4e605` 的完整 353-file、4-commit 范围。Round 03 与 Round 05 分别由原 finding owner 关闭早期 P2/P1，Round 07 使用未参与实现、Phase 2、finding discovery 或 closure 的全新 reviewer 完成 fresh final review，P0/P1/P2/P3 均为 0。正式 `guru-review-branch` recorder、checker 与公共 wrapper 均返回 `passed`。
 
 ## Issue 关闭范围
 
@@ -47,5 +48,5 @@ Follow-up：#81、#117、#118、#119、#132，继续作为独立后续范围，�
 - strategy：`ssot_first`。
 - durable docs：已更新 workflow、Skill I/O、data contract、companion scripts、quality、preset installer、upstream ownership 与 public docs SSOT，以及 canonical/dogfood workflow 和 README。
 - merged delta：task 中批准的 semantic owner、双入口、三 exits、单 readiness gate、freshness、return/stale re-entry、registry closure 与 OOTB/update/reapply 规则均已合并到 durable authority。
-- task history：`prd.md`、`design.md`、`implement.md`、Phase 2 与六轮 review artifacts 仅保留本任务审计历史，不承担长期流程定义。
+- task history：`prd.md`、`design.md`、`implement.md`、Phase 2 Round 11 与七轮 review artifacts 仅保留本任务审计历史，不承担长期流程定义。
 - follow-up/limitation：#118 负责 `guru-finalize-task`，#119 负责 finish-family 集成与历史 closeout migration；exact remote candidate ref 验证须在获得 push/finalization 授权后执行。

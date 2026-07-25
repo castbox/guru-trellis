@@ -3,9 +3,9 @@
 ## 审查范围
 
 - Base：`origin/main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940`
-- Reviewed HEAD：`d7ab98f5c53f470f4d3f3742f8cfca24f8465edd`
-- 完整范围：`origin/main...d7ab98f5c53f470f4d3f3742f8cfca24f8465edd`
-- 规模：345 files、3 commits、49,069 insertions、594 deletions
+- Reviewed HEAD：`a1629fae4150bfbac9032aab8ca47497cba4e605`
+- 完整范围：`origin/main...a1629fae4150bfbac9032aab8ca47497cba4e605`
+- 规模：353 files、4 commits、53,367 insertions、596 deletions
 - Issue scope：close `[116]`；related `[115,131,144,146]`；follow-up `[81,117,118,119,132]`
 - Docs SSOT：`ssot_first`，规划与 durable authority 无未处理漂移
 
@@ -17,13 +17,15 @@
 - [Round 04：全新最终放行审查，发现 1 个 P1](reviews/round-04-final-release.md)
 - [Round 05：Round 04 finding owner 验证 P1 修复闭环](reviews/round-05-problem-closure.md)
 - [Round 06：全新身份完整最终放行审查](reviews/round-06-final-release.md)
+- [Round 07：sequence 004 后全新身份完整最终放行审查](reviews/round-07-final-release.md)
 
 Round 01/02 的 `BR116-R02-P2-01` 已由原技术 owner 在 Round 03 关闭。
 Round 04 的 `BR116-R04-P1-01` 经独立实现、fresh Phase 2 与 sequence 003 commit
-后，由原 finding owner 在 Round 05 关闭。Round 06 使用未参与 implementation、
-Phase 2、finding discovery 或 closure 的全新身份，对 current 345-file/3-commit
-完整范围重新审查，findings 为零，满足 closure-before-final 与 fresh final reviewer
-隔离要求。
+后，由原 finding owner 在 Round 05 关闭。Round 06 使用全新身份完成当时的最终
+放行。随后 publication `return_to_task_work` 经 implementation adoption、fresh
+Phase 2 与 sequence 004 commit 闭环；Round 07 再次使用未参与 implementation、
+Phase 2、finding discovery 或 closure 的全新身份，对 current 353-file/4-commit
+完整范围重新审查，findings 为零，满足 fresh final reviewer 隔离要求。
 
 ## Finding 闭环
 
@@ -38,20 +40,28 @@ Phase 2、finding discovery 或 closure 的全新身份，对 current 345-file/3
   rc 2，installed/platform 10 条命令全部到达正确 shared runtime 并返回 rc 0。
 - `PH2-116-R8-P2-01`：`closed`。Preset verifier、自测与 managed wrapper
   inventory 统一为 94 assets；full preset 与 fresh/update/reapply 均通过。
+- `PH2-116-R10-P2-01`：`closed`。Current implementation owner 已承接
+  publication `PUB116-TW1/TW2`，Section 13 handoff、五项正常路径回归与 fresh
+  Round 11 Phase 2 完整闭环。
 
 当前无开放 P0/P1/P2/P3 finding。
 
 ## 候选资格处置与限制
 
-- `[workflow-state:completed]` legacy fallback 与两个 Codex hook stale tests
-  在 `origin/main` 同样存在；live #119 明确拥有 global ordering、compatibility
-  entry、existing active/partially-finalized/archived migration/recovery，且 #116
-  R11 排除 finish-family integration，故作为非 #116 `rejected_candidate`，不得
-  扩入当前任务。
-- `publication_review` profile/intent 反向互斥没有 current requirement 依据，
-  未证明支持路径失效，作为 `rejected_candidate`。
-- 历史 transient empty response 在 current exact HEAD 的 source/installed eval
-  与 fresh throwaway 中未复现，保持 `rejected_candidate`。
+- Publication metadata-only ledger revision 曾使 Phase 2 requirement provenance
+  stale；sequence 004 已修复，acceptance metadata 不再 stale，而
+  primary/close/related/follow-up number-set 变化仍被检测，故当前为
+  `rejected_candidate`。
+- Scope-only helper 仅匹配 task-local ledger 的 `requirement_provenance`；
+  其它 label、非 task ledger 保持 full digest，非法 task ledger fail closed，
+  因此误放宽候选为 `rejected_candidate`。
+- 当前 `pr-body.md`、ledger acceptance 与 finish index 仍描述 prior d7 candidate，
+  但 prior readiness 仍为 `return_to_task_work`；按 global Phase 3.6 顺序，这些
+  内容必须在本轮 Branch Review passed 后由 publication owner fresh author/review，
+  不是 Branch Review finding。
+- Prior `review.md`/`review-gate.json` 在 recorder 前仍绑定 Round 06，是正常的
+  gate replacement ordering；Round 07 raw report 与 lifecycle 已先完成，当前
+  owner 正在唯一替换 gate，不复用旧 pass。
 - 分支尚未 push，exact remote candidate-branch marketplace ref 不存在；public
   marketplace discovery 与 local unpublished workflow sample 已验证。该项作为
   publication-time nonblocking limitation 保留。
@@ -60,9 +70,10 @@ Phase 2、finding discovery 或 closure 的全新身份，对 current 345-file/3
 
 ## Fresh 最终验证
 
-- Runtime：572/572，13 skipped
+- Runtime：573/573，13 skipped
 - Skill packages：174/174
 - Source/installed publication contracts：18/18 × 2
+- Source/installed Branch Review contracts：8/8 × 2
 - Source/installed actual-wrapper eval：7/7 × 2
 - Preset：45/45
 - Ownership：9/9
@@ -78,6 +89,12 @@ Phase 2、finding discovery 或 closure 的全新身份，对 current 345-file/3
 - `git diff --check` committed/working/cached：全部 exit 0
 - Planning approval、task validation、workspace boundary：全部通过；
   source checkout clean，suspicious artifacts 为空
+- Phase 2 task-local ledger projection targeted test：1/1；Round 07 独立 probe
+  确认四类 issue number-set 变化均 detected，acceptance metadata 保持 equal，
+  其它 label/非 task/非法 ledger 边界符合预期
+- Sequence 004 post-commit Phase 2 audit：`typed_exit=passed`、`errors=[]`；
+  19 个 committed paths 的 expected/actual tree、blob 与 mode 全部一致，
+  `hook_mutation=false`
 - Added-line credential-shaped scan 与 deploy-sensitive changed-path scan：0
 
 ## Docs SSOT、安全与部署
@@ -86,7 +103,8 @@ Docs strategy 为 `ssot_first`。Durable workflow、Skill package、data、compa
 script、quality、preset、ownership 与 public-doc contracts，canonical/dogfood
 workflow、README、requirements docs 和 current implementation 对 Interface 1.3
 semantic owner、双入口、三 exits、single readiness gate、freshness、return/stale
-re-entry、registry closure 与 OOTB/update/reapply 的描述一致；sequence 003
+re-entry、registry closure 与 OOTB/update/reapply 的描述一致；sequence 004
+复用既有 planning scope projection，只对齐 deterministic freshness runtime，
 没有未合并的 durable semantic delta。
 
 未发现 token、secret、private key、`.env`、database URL、signed URL、客户数据或
@@ -96,8 +114,8 @@ Makefile、依赖 manifest 或生产服务部署变化；workflow、preset、pac
 
 ## 结论
 
-Round 06 的 fresh final reviewer 已覆盖
-`origin/main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940...d7ab98f5c53f470f4d3f3742f8cfca24f8465edd`
+Round 07 的 fresh final reviewer 已覆盖
+`origin/main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940...a1629fae4150bfbac9032aab8ca47497cba4e605`
 完整范围，所有历史 findings 已关闭，当前 findings_count=`0`，无未确认 scope
 proposal 或 blocking evidence gap。Branch Review AI Gate 结论为 `passed`，唯一
 合法 consumer 是 `guru-review-task-publication` 的 Phase 3.6 authoring seed。

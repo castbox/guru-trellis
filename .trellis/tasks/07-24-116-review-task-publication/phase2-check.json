@@ -1,7 +1,7 @@
 {
   "mode": "workflow",
   "requirement_provenance": {
-    "summary": "Fresh Round11 re-read live #116 and its accepted additive authority, approved planning, the issue number-set, publication return evidence and durable requirements. The current implementation stays inside AC1-AC19 and the scope-only ledger projection preserves freshness.",
+    "summary": "Fresh Round12 re-read live #116 and its accepted additive authority, approved planning, the current issue number-set, publication return route and durable requirements. The current implementation stays inside AC1-AC19; PUB116-TW3 is a resolved evidence-authoring correction.",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/planning-approval.json",
@@ -29,7 +29,7 @@
         "size_bytes": 116
       }
     ],
-    "facts_sha256": "928dbd34ddfec6860d9ff28fd84f08d385e95e3c33c11b0b5fccece8b167b5ea"
+    "facts_sha256": "9f6feb574f8bdd72272e74cff71c6b9ed99f209dc460f4153d7a01f5bace052b"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
@@ -115,7 +115,7 @@
         "size_bytes": 63909
       }
     ],
-    "sync_result": "Round11 confirmed ssot_first durable authorities already define publication metadata-only revision, Phase2 scope freshness and the semantic/script boundary. The implementation and five-case regression align those contracts; no new durable semantic delta remains.",
+    "sync_result": "Round12 confirmed ssot_first durable authorities already define publication metadata-only revision, Phase2 scope freshness and the semantic/script boundary. Excluding replaceable pr-readiness bytes from implementation-handoff evidence changes no durable contract.",
     "task_delta_merged": true,
     "task_history_only": [
       "agent-assignment.json",
@@ -137,19 +137,25 @@
       "reviews/round-03-problem-closure.md",
       "reviews/round-04-final-release.md",
       "phase2-worker-report-round10.md",
-      "phase2-worker-report-round11.md"
+      "phase2-worker-report-round11.md",
+      "phase2-worker-report-round12.md"
     ],
     "no_update_reason": null,
     "followup_or_pr_limit": "Exact remote candidate-branch marketplace install 只能在后续获得 push 授权并产生 remote ref 后验证；public marketplace discovery 与 local unpublished workflow sample 已由 fresh throwaway 验证，finalization 仍在 planned #118 边界 fail closed。",
-    "facts_sha256": "bcf0ad2e26d4a61f011927df498380956bd31fe3442799f83cf40dcd166b3093"
+    "facts_sha256": "3b07151c0a6d1679122044ede34519199ea08fd4603647e03aaeb869eed6877b"
   },
   "implementation_handoff": {
-    "summary": "Current Section 13 is owned by the assigned implementation agent and adopts PUB116-TW1/TW2 plus PH2-116-R10-P2-01. It records the root cause, exact runtime/test/install boundaries, five normal-path regressions, Docs SSOT result, security/deployment no-impact, remote limitation and the absence of publication side effects. Round11 independently verified it.",
+    "summary": "The stable implementation handoff and Phase2 Round1-Round12 raw reports cover the complete implementation, prior finding lifecycle, PUB116-TW1/TW2 code closure and PUB116-TW3 evidence-authoring closure. Replaceable pr-readiness and other publication/review metadata are intentionally excluded from this exact implementation evidence binding.",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
         "sha256": "828d35472eac2e084a9d5f293e3ea411a824a497d1d172b7a73e539b76b49ec3",
         "size_bytes": 56036
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report.md",
+        "sha256": "54521c89fa12a583871f3c1434f659bc9cb8d43aae0a1233d844528cdb4ef522",
+        "size_bytes": 13840
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
@@ -192,27 +198,22 @@
         "size_bytes": 16101
       },
       {
-        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report.md",
-        "sha256": "54521c89fa12a583871f3c1434f659bc9cb8d43aae0a1233d844528cdb4ef522",
-        "size_bytes": 13840
-      },
-      {
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
         "sha256": "e3b363fd4ba96daa0209a02e590f28704703cfae25938ea31b0d5c953c30accd",
         "size_bytes": 25073
       },
       {
-        "path": ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
-        "sha256": "e42b267a3912de8e64d95977b8c2b567373b0478a7479a24d3c2bda715bd7af8",
-        "size_bytes": 48675
-      },
-      {
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
         "sha256": "f03ece534f392025fba1a7ba335c1bb9b3ccefcfa19411dac9d27494a1ecb096",
         "size_bytes": 21695
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
+        "sha256": "33bc1c2e2465445d213dc85b8cbd8eda7e725384f7ee6ba09be7982d332feaad",
+        "size_bytes": 23100
       }
     ],
-    "facts_sha256": "bb6cca3e843e9a797c2a148810eeeae1867f87de225471b74ff76dbb4bd75322"
+    "facts_sha256": "790d5ce97906763c20ee2c4227bb3f54f67c457053349e4c58e1f2a169773d06"
   },
   "agent_assignment": {
     "artifact_path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
@@ -232,6 +233,7 @@
       "/root/issue116_phase2_rerun",
       "/root/issue116_phase2_round10",
       "/root/issue116_phase2_round11",
+      "/root/issue116_phase2_round12",
       "/root/issue116_phase2_round3",
       "/root/issue116_phase2_round4",
       "/root/issue116_phase2_round5",
@@ -241,32 +243,25 @@
       "/root/issue116_phase2_round9"
     ],
     "recovery_complete": true,
-    "phase2_state_sha256": "4578612cdd0043fa3bf13bd244ed09d35e6e039f74092bf5fc58dd6dff152af4",
-    "facts_sha256": "d6591345116e5093ee3ffb89ddb6fd1d6a9056eb27fcc36d57497647b10e6173"
+    "phase2_state_sha256": "d65b66db2c3df4ed49a5641c79be38735982937db073346718c6cc039cffd469",
+    "facts_sha256": "7ef376094eab747e5f2815ce8c7e437de4ffb3c7d54d4152406145d6fc58932f"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
-    "head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+    "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
-      ".trellis/guru-team/extension.json",
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
       ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
       ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
-      ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
       ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
-      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
-      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
       ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
       ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
       ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
       ".trellis/tasks/07-24-116-review-task-publication/review.md",
-      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
-      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
-      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
-      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
+      ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json"
     ],
     "reviewed_paths": [
       {
@@ -1406,8 +1401,8 @@
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/issue-scope-ledger.json",
-        "sha256": "034f7601ec87a2ad382d5bf61a8ca7c3d9be45e2952ba482e6f8dfdd79264080",
-        "size_bytes": 6494
+        "sha256": "11d34ed69f2f2c16da26ed458dcdab7bc3a0c98f9862528d94263d32b878df70",
+        "size_bytes": 6662
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
@@ -1781,13 +1776,13 @@
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
-        "sha256": "5f832ff61a2c3ca5b020d681d9ccf7dc4364862e8b6a6e7d89e5c4e2e6ebc3d7",
-        "size_bytes": 373268
+        "sha256": "e5b9ba5b70b64f27dc6873a58020e5754f66fd1931aa6c0ba7c304e19fc4e0ba",
+        "size_bytes": 383169
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/finish-summary-index.json",
-        "sha256": "a886ae5e33dccd5c7c69ba8d074ea46ee0a7f80ec2ffa9f49f7fa1ac58789d02",
-        "size_bytes": 8536
+        "sha256": "3980f8818b173004d126be13036193801c6b58a565aa28897aa4af8fd21bd28b",
+        "size_bytes": 9267
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
@@ -1796,23 +1791,23 @@
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
-        "sha256": "691d7dc048ed51b0d679e602f008ee48660975ef2a4c4c92e418c799bbf47eee",
-        "size_bytes": 5228
+        "sha256": "5ac949cf3e0f3448b98e81baf42563c81415010a67b160bb2d58c023f5252fd1",
+        "size_bytes": 5550
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
-        "sha256": "e42b267a3912de8e64d95977b8c2b567373b0478a7479a24d3c2bda715bd7af8",
-        "size_bytes": 48675
+        "sha256": "aba1a6e84e9ddd32769da410170c1631fb8296102169fd881a9461515e5bbd60",
+        "size_bytes": 53875
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
-        "sha256": "a3687bee0cbbe47f8438f2a2200ddb61e32a68ba61e5cb560ed17b6b3faf3303",
-        "size_bytes": 112337
+        "sha256": "ce4f270d22a2b715ff91bd7ca2c40e37215171673bfbbabb19efb2029570ff41",
+        "size_bytes": 117010
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
-        "sha256": "18c61ef5c39d51b49d323dce957a6e502970b985e7d5e25184bb3eb0bf385369",
-        "size_bytes": 6100
+        "sha256": "b2298bc226c49d039b35a7d974e1c96af98a9a1648e374e56a245d2e9b9c01d8",
+        "size_bytes": 7461
       },
       {
         "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
@@ -1833,9 +1828,24 @@
         "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
         "sha256": "f03ece534f392025fba1a7ba335c1bb9b3ccefcfa19411dac9d27494a1ecb096",
         "size_bytes": 21695
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
+        "sha256": "33bc1c2e2465445d213dc85b8cbd8eda7e725384f7ee6ba09be7982d332feaad",
+        "size_bytes": 23100
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
+        "sha256": "2f6b5c8c426edea4b73c59e31403510aec1aff7be8c6ec8bd260c287d6c7f64a",
+        "size_bytes": 19803
+      },
+      {
+        "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+        "sha256": "012735c93df7dc67e39388009bbd414e523bfbb12564c191abac330df592d02e",
+        "size_bytes": 33759
       }
     ],
-    "snapshot_sha256": "bb6187d36cf1d4577657521731757145748ccfed8f9dc4885796824d680cf4e7"
+    "snapshot_sha256": "2fe2afcac47a8368a7c69a184f57ddf3bedad31d3dabfb2ab2523eb7bbcb4de7"
   },
   "check_execution": {
     "commands": [
@@ -2032,6 +2042,21 @@
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
         "summary": "Round11 full raw evidence records V01-V23 green: runtime 573/13 skipped, Skill 174, preset 45, ownership 9, publication contracts 18x2, eval 7x2, targeted five-case matrix, six-copy/layout parity, zero sidecar/drift and complete throwaway exit 0."
+      },
+      {
+        "id": "worker-report-round12-bytes",
+        "argv": [
+          "sed",
+          "-n",
+          "1,360p",
+          ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "33bc1c2e2465445d213dc85b8cbd8eda7e725384f7ee6ba09be7982d332feaad",
+        "stdout_size_bytes": 23100,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Round12 full raw evidence records V01-V24 green: runtime 573/13 skipped, Skill 174, preset 45, ownership 9, publication 18x2, Branch Review 8x2, eval 7x2, targeted projection, 12 wrappers, six-copy parity, zero drift/sidecar and throwaway exit 0."
       }
     ],
     "worker_evidence": [
@@ -2111,6 +2136,13 @@
         "summary": "Fresh Round11 independently reviewed the complete current #116 scope, closed PH2-116-R10-P2-01, passed all ten adequacy dimensions and returned no open P0-P3.",
         "evidence_only": true,
         "facts_sha256": "f03ece534f392025fba1a7ba335c1bb9b3ccefcfa19411dac9d27494a1ecb096"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue116_phase2_round12",
+        "summary": "Fresh Round12 independently reviewed the complete current #116 scope, qualified PUB116-TW3 as a normal-path P2 evidence-authoring issue, resolved it through the stable handoff evidence contract, and returned no open P0-P3.",
+        "evidence_only": true,
+        "facts_sha256": "33bc1c2e2465445d213dc85b8cbd8eda7e725384f7ee6ba09be7982d332feaad"
       }
     ],
     "unverified_items": [
@@ -2122,24 +2154,25 @@
         "blocking": false
       }
     ],
-    "execution_sha256": "5b70e64cc0c05f6d23eca6b106d60b88a89ba2768c49de9e3d54f5953e7fe26f"
+    "execution_sha256": "04d99ec7fc5a0ff8ff3d662fb5af66928e3e2a78b91a836285bb7f5e34373e0f"
   },
   "scope_qualification": {
     "candidates": [
       {
-        "id": "candidate-current-implementation-adoption-handoff",
-        "summary": "The publication-return implementation adoption/handoff gap identified in Round10 is closed by the current implementation event chain, Section 13 and fresh full rerun.",
+        "id": "candidate-publication-gate-evidence-authoring",
+        "summary": "Round11 implementation_handoff evidence precisely bound replaceable pr-readiness bytes, so normal publication stale re-entry made the upstream Phase2 gate stale; Round12 resolves the evidence-authoring lifecycle mismatch without product changes.",
         "trigger_refs": [
           "docs/requirements/requirement-main.md:Phase 2 implement/check contract",
           "docs/requirements/README.md:sub-agent evidence contract",
-          ".trellis/tasks/07-24-116-review-task-publication/implement.md:Step 12",
+          ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json:PUB116-TW3",
+          ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md:stable implementation_handoff evidence",
           "guru-check-task:finding-fix full-rerun contract"
         ],
-        "normal_path_reproduction": "Inspect the normal agent-assignment chain and implementation-handoff Section 13: evt-0366 assigned the implementation owner, evt-0367 completed adoption, and Round11 fresh V01-V23 verification independently confirms the closure.",
+        "normal_path_reproduction": "Run normal publication stale re-entry: replacing the sole pr-readiness gate changes its bytes, and a Phase2 implementation_handoff that binds those bytes returns phase2_check_implementation_handoff_stale without tampering, concurrency or faults.",
         "disposition": "current_scope",
-        "route_basis": "The candidate belongs to approved #116 Phase 2 scope and retains its resolved P2 finding lifecycle; it no longer blocks the passed exit.",
+        "route_basis": "The candidate belongs to approved #116 Phase2/publication re-entry scope. The current full round resolves it by binding only stable implementation handoff/raw reports; the replaceable publication gate remains in its own owner lifecycle.",
         "severity": "P2",
-        "finding_id": "PH2-116-R10-P2-01"
+        "finding_id": "PH2-116-R12-P2-01"
       },
       {
         "id": "candidate-remote-candidate-marketplace",
@@ -2152,137 +2185,137 @@
         "finding_id": null
       }
     ],
-    "scope_sha256": "3c8191dae9e6517bf6bc77f79c7ba207ad75c32f0de890975bc941e7e031e35d"
+    "scope_sha256": "be1f4bb42b70c93ec741ffb44b23fbd1be668a71b7c3f3c8570c494debe73712"
   },
   "semantic_review": {
     "adequacy_dimensions": [
       {
         "id": "requirements",
         "status": "passed",
-        "summary": "Round11 re-read live #116 authority, approved planning, current ledger number-set and durable requirements; the candidate remains within AC1-AC19 without scope expansion.",
+        "summary": "Round12 re-read live #116 authority, approved planning, current ledger number-set and durable requirements; PUB116-TW3 remains within AC1-AC19 without scope expansion.",
         "evidence_refs": [
           "planning",
           "requirement_provenance",
           "check_execution"
         ],
-        "affected_sha256": "a722b971582d5303e7fee5e6115c03edebf8df78fd784624c6d7713766085c14",
+        "affected_sha256": "b18c8df418ce5da9aacc8b921e8f13887b7828df5b2bbbadb0231b276a47558d",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "design",
         "status": "passed",
-        "summary": "The fix reuses the planning scope-ledger projection only for task-local requirement provenance and preserves semantic/script, public I/O, typed exit and consumer boundaries.",
+        "summary": "The stable evidence set respects the designed mutable pr-readiness owner lifecycle and preserves semantic/script, public I/O, typed exit and consumer boundaries.",
         "evidence_refs": [
           "planning",
           "implementation_handoff"
         ],
-        "affected_sha256": "1ab29a486abf4fec84f540f4747e8cd2eda01351fd06be2044d5f46fd905ee02",
+        "affected_sha256": "4c44fb353f9b13ee55895ded1eb41cb034949a6a7750683e0eb492c67a46d986",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "implementation",
         "status": "passed",
-        "summary": "The assigned implementation owner adopted the patch, completed the five-case regression and Section 13 handoff, and Round11 independently closed PH2-116-R10-P2-01.",
+        "summary": "No product implementation change is required: Round12 verified current source and distribution, and closes the P2 evidence-authoring mismatch with a stable formal input.",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "cfce3c9f9068c05ddb7822b083799fb66fed5869cc4927ed40d978e2e9123b23",
+        "affected_sha256": "5f2213eb2fe04cb80b5fe41ddcbdd21e8a1d5fc2c56415c550209a58838e9792",
         "finding_ids": [
-          "PH2-116-R10-P2-01"
+          "PH2-116-R12-P2-01"
         ],
         "unverified_ids": []
       },
       {
         "id": "tests",
         "status": "passed",
-        "summary": "Round11 passed runtime 573/13 skipped, Skill 174, preset 45, ownership 9, publication contracts 18x2, eval 7x2, targeted matrix and complete throwaway verification.",
+        "summary": "Round12 passed runtime 573/13 skipped, Skill 174, preset 45, ownership 9, publication 18x2, Branch Review 8x2, eval 7x2, targeted projection and complete throwaway.",
         "evidence_refs": [
           "check_execution",
           "implementation_handoff"
         ],
-        "affected_sha256": "b9f8fcb878bc5a85da3d57321a00fd140108d72b28d8f124b9b9c8cec25ca3d4",
+        "affected_sha256": "4a1ac72702f521c54cf5156cddd112b69528f81b6afc178e223458dc8d147ebc",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "The existing ssot_first durable contract already defines metadata-only ledger revision and fail-closed scope freshness; this alignment adds no new durable semantic delta.",
+        "summary": "The existing ssot_first durable contract already defines metadata-only ledger revision and mutable readiness ownership; this evidence-authoring correction adds no durable delta.",
         "evidence_refs": [
           "docs_ssot_plan",
           "check_execution"
         ],
-        "affected_sha256": "48fc242ca40539d02bfb0aa372bd19a5c3c566e87147f610fde68a30e2ae8c71",
+        "affected_sha256": "9226a08807d3e4c4527f678a6a8dcc7a33bf27a00d61d637dc042b56b0199977",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "cross_layer",
         "status": "passed",
-        "summary": "Planning scope identity, Phase2 provenance, publication metadata revision, installed runtime, commit/review routing and publication stale re-entry were checked end to end.",
+        "summary": "Planning scope identity, Phase2 stable evidence, publication replacement, installed runtime, commit/review routing and stale re-entry were checked end to end.",
         "evidence_refs": [
           "repository_snapshot",
           "docs_ssot_plan",
           "check_execution"
         ],
-        "affected_sha256": "424baecc4c40b04c52bf7ed865a7a84e5d396cc9457f5f4cc80ef31871fd40b7",
+        "affected_sha256": "99ddc059d931643de8d7f9e20a42f385e26abb52355f230b977b9bac968d0a59",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "compatibility",
         "status": "passed",
-        "summary": "Canonical, installed shared and four platform copies, registry 11/42/25, 94 managed assets, 2100 unchanged files, update/reapply and zero drift/sidecar remain compatible.",
+        "summary": "Canonical, installed shared and four platform copies, registry 11/42/25, 94 managed assets, 2100 files, 12 wrappers, update/reselect/reapply and zero drift remain compatible.",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "e6d0b8d2b79ca03b3174858081e1a97a44468a129434dad2dd57e7cb5821edc8",
+        "affected_sha256": "8ec99ace8215803b7ad4ff8f28fb1015369b0d1db2f90a1728b547a80c913529",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "deployment_and_operations",
         "status": "passed",
-        "summary": "Round11 found no CI/CD, container, K8s/Helm, database migration, Makefile, dependency, configuration, deployment or production data impact.",
+        "summary": "Round12 found no CI/CD, container, K8s/Helm, database migration, Makefile, dependency, configuration, deployment or production data impact.",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "3b5a61cc85efd26ef6a88bf4b8fe5a532b1391a04cd61f91035db454ca2aea65",
+        "affected_sha256": "d512fb5b2c45d6ce77dc0db3aa1c77c469b2d4464f5526c3e71efc5e739da52f",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "agent_recovery",
         "status": "passed",
-        "summary": "The current implementation assigned/completed chain, Section 13 handoff and Round11 checker assigned/completed chain are valid; assignment validation reports no open recovery.",
+        "summary": "The current implementation/check assignment chains, including Round12 assigned/completed events, are valid; assignment validation reports no open recovery.",
         "evidence_refs": [
           "agent_assignment"
         ],
-        "affected_sha256": "8c20a6908f7ffde35b72897ebe409cc6a8a1f28a46b4a8df251757b676a0b405",
+        "affected_sha256": "393de86b46058832e64d0009247cbe870048db7716fd0d9926f02be83fd82332",
         "finding_ids": [
-          "PH2-116-R10-P2-01"
+          "PH2-116-R12-P2-01"
         ],
         "unverified_ids": []
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "Every current-scope repository check was rerun fresh through V01-V23; the only remote exact-ref limitation is explicitly out of scope and nonblocking before push.",
+        "summary": "Every current-scope repository check was rerun fresh through V01-V24; the only remote exact-ref limitation is explicitly out of scope and nonblocking before push.",
         "evidence_refs": [
           "check_execution",
           "requirement_provenance",
           "docs_ssot_plan",
           "agent_assignment"
         ],
-        "affected_sha256": "b47755d67f5248a0cff2a4554ad668851725e20327668241f5c57929c322ceb2",
+        "affected_sha256": "11a9190a31ba159703e0e488f112fd44b7921a6d1b8a1346bc1095779ec58f65",
         "finding_ids": [
-          "PH2-116-R10-P2-01"
+          "PH2-116-R12-P2-01"
         ],
         "unverified_ids": [
           "remote-candidate-branch-marketplace"
@@ -2291,26 +2324,26 @@
     ],
     "findings": [
       {
-        "id": "PH2-116-R10-P2-01",
-        "candidate_id": "candidate-current-implementation-adoption-handoff",
+        "id": "PH2-116-R12-P2-01",
+        "candidate_id": "candidate-publication-gate-evidence-authoring",
         "severity": "P2",
-        "summary": "The required implementation-agent adoption/completed chain, current Section 13 handoff and fresh full Phase 2 rerun are now complete.",
-        "path": ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
+        "summary": "The new formal Phase2 input uses only stable implementation handoff and Round1-Round12 raw evidence, excluding replaceable pr-readiness and other downstream mutable metadata.",
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
         "blocking": true,
         "status": "resolved"
       }
     ],
-    "adequacy_sha256": "8d8fe7c33c0c4f66a0403865c8afac5055aa5f9a32d5d0df3a496a1e8e6006b8",
+    "adequacy_sha256": "3a91ef7c396c5629a3a3aa7cd427190edb27258e1a49ba29897b6713bd24a1a3",
     "ai_review_gate": {
       "status": "passed",
-      "summary": "Fresh Round11 covered the complete current #116 scope and V01-V23. PH2-116-R10-P2-01 is resolved, all ten adequacy dimensions pass, no open P0-P3 finding remains, and the exact remote-ref limitation is out of scope and nonblocking.",
+      "summary": "Fresh Round12 covered the complete current #116 scope and V01-V24. PUB116-TW3/PH2-116-R12-P2-01 is resolved by stable evidence authoring, all ten adequacy dimensions pass, no open P0-P3 remains, and remote exact-ref is nonblocking out of scope.",
       "full_rerun": true,
       "planning_facts_sha256": "31e195b4fa84b171fe6d9816ef5b87a6c8ccc02b8541a577be9144ba87daca74",
-      "snapshot_sha256": "bb6187d36cf1d4577657521731757145748ccfed8f9dc4885796824d680cf4e7",
-      "scope_sha256": "3c8191dae9e6517bf6bc77f79c7ba207ad75c32f0de890975bc941e7e031e35d",
-      "adequacy_sha256": "8d8fe7c33c0c4f66a0403865c8afac5055aa5f9a32d5d0df3a496a1e8e6006b8",
+      "snapshot_sha256": "2fe2afcac47a8368a7c69a184f57ddf3bedad31d3dabfb2ab2523eb7bbcb4de7",
+      "scope_sha256": "be1f4bb42b70c93ec741ffb44b23fbd1be668a71b7c3f3c8570c494debe73712",
+      "adequacy_sha256": "3a91ef7c396c5629a3a3aa7cd427190edb27258e1a49ba29897b6713bd24a1a3",
       "findings_count": 1,
-      "full_round_sha256": "b80c123b5b91344ea70c2f4d7743860bfa7c93a282569da83acd0117e1f65136"
+      "full_round_sha256": "74f5bf6259313321c52d91ec10d87e999e800645ce22e6375d2c5a1d8d5399df"
     }
   },
   "human_confirmation": {
@@ -2321,14 +2354,14 @@
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "Fresh Round11 closed PH2-116-R10-P2-01, passed all ten adequacy dimensions and every applicable current-scope repository validation, with no open P0-P3 finding.",
+  "reason": "Fresh Round12 closed PH2-116-R12-P2-01, passed all ten adequacy dimensions and every applicable current-scope repository validation, with no open P0-P3 finding.",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-25T06:53:29Z",
+  "generated_at": "2026-07-25T08:02:12Z",
   "task": {
     "task_dir": ".trellis/tasks/07-24-116-review-task-publication",
     "task_id": "116-review-task-publication",
@@ -2366,5 +2399,5 @@
     ],
     "facts_sha256": "31e195b4fa84b171fe6d9816ef5b87a6c8ccc02b8541a577be9144ba87daca74"
   },
-  "facts_sha256": "d7694947e71244db7db423912aad6bb736122926412e563c1a9d464950d88ff6"
+  "facts_sha256": "375fc35b1943ecbaab23c6a00356a852d481a2cb254b26ae69179d1a076408a7"
 }

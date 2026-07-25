@@ -9,6 +9,7 @@
       "AI 负责 Issue scope、PR body、验证、Docs、安全部署、finding route 与 ready 判断。",
       "Recorder 和 checker 仅记录或验证 task、HEAD、artifact、working tree 与 opaque identity。",
       "PR body、finish summary index 与 ledger publication metadata 可在 Skill 内修订后完整重审。",
+      "合法更新 ledger publication metadata 后，Phase 2 requirement provenance 复用 task-local issue number-set projection；真实 primary、close、related 或 follow-up issue 集合漂移仍然失败关闭。",
       "代码、测试、durable docs、workflow、schema、preset 或 deployment drift 必须返回 task work。",
       "唯一 pr-readiness.json 分离 semantic review、deterministic bindings 与 finalization augmentation。",
       "ready 只输出 task、reviewed HEAD 与 publication_ref，并路由到 planned guru-finalize-task。",
@@ -101,6 +102,12 @@
         "source_artifact": "design.md"
       },
       {
+        "contract": "Phase 2 requirement provenance",
+        "before": "Phase 2 绑定 ledger 全文件 digest，合法补齐 publication acceptance evidence 会被误判为 requirement scope drift。",
+        "after": "Phase 2 复用 task-local issue number-set projection绑定 requirement scope，允许 publication-owned metadata 更新，同时继续拒绝真实 issue number-set 漂移。",
+        "source_artifact": "phase2-check.json"
+      },
+      {
         "contract": "Publication finding routes",
         "before": "PR metadata 修订、实现返工和外部阻塞缺少明确且不可混用的 route。",
         "after": "metadata_revision 留在 Skill 内闭环，task_work 返回 Phase 2，external_blocker 进入显式 stop。",
@@ -143,6 +150,7 @@
       "symbols": [
         "TASK_PUBLICATION_DIMENSIONS",
         "task_publication_entry_precondition_bindings",
+        "phase2_requirement_artifact_digest",
         "task_publication_semantic_errors",
         "task_publication_check_errors"
       ],

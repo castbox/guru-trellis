@@ -1,9 +1,9 @@
 {
   "schema_version": "1.2",
   "generated_at": "2026-07-24T16:13:18Z",
-  "updated_at": "2026-07-25T06:50:54Z",
+  "updated_at": "2026-07-25T08:00:13Z",
   "task": ".trellis/tasks/07-24-116-review-task-publication",
-  "head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+  "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
   "agents": [
     {
       "logical_role": "实现代理",
@@ -211,6 +211,24 @@
       "assigned_head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
       "reason": "Fresh independent Phase2 Round11 after PH2-116-R10-P2-01 implementation adoption. New identity owns only phase2-worker-report-round11.md and must recheck the complete current scope, implementation completed chain, Section13, five-case projection matrix, full suites, all-platform install/update/reapply, zero sidecar and source boundary.",
       "event_id": "evt-0368-e7f1b450ea"
+    },
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "/root/issue116_branch_round7",
+      "platform_nickname": "",
+      "assigned_at": "2026-07-25T06:58:17Z",
+      "assigned_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "reason": "sequence004 commit a1629fa 后的 fresh final review：使用从未参与本 task finding、implementation、Phase2 或 closure 的新身份，完整复审 origin/main...a1629fa；唯一写入 round-07-final-release.md，不执行实现、gate、commit 或发布副作用。",
+      "event_id": "evt-0370-f14e6c72b9"
+    },
+    {
+      "logical_role": "阶段二检查代理",
+      "agent_id": "/root/issue116_phase2_round12",
+      "platform_nickname": "",
+      "assigned_at": "2026-07-25T07:27:21Z",
+      "assigned_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "reason": "Fresh independent Phase2 Round12 after publication checker exposed PUB116-TW3. The agent owns only phase2-worker-report-round12.md, must rerun the complete scope and validations, and must recommend a stable implementation-handoff evidence set that excludes replaceable pr-readiness.json bytes. No recorder, commit, push, PR, issue mutation, finalization or deployment.",
+      "event_id": "evt-0373-884718cc74"
     }
   ],
   "liveness": {
@@ -673,6 +691,46 @@
       "pending_status_request_at": null,
       "last_checked_at": "",
       "last_decision": ""
+    },
+    "/root/issue116_branch_round7": {
+      "progress_anchor_at": "2026-07-25T06:58:17Z",
+      "last_scan_snapshot": {
+        "captured_at": "2026-07-25T06:58:17Z",
+        "task_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+        "task_content_status_digest": "b7aed52e5a598f5c2a31cfd5efd27ec6ed82c4b28e4b08bbae95b4cf7d5e7a73",
+        "task_content_diff_stat_digest": "a9ef7571ca77b25f16a70c64800a6ca2bc23a9d77a49322af032cc98b854e49a",
+        "task_content_max_mtime": "2026-07-25T06:57:06Z",
+        "source_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+        "source_status_digest": "b7aed52e5a598f5c2a31cfd5efd27ec6ed82c4b28e4b08bbae95b4cf7d5e7a73",
+        "source_diff_stat_digest": "a9ef7571ca77b25f16a70c64800a6ca2bc23a9d77a49322af032cc98b854e49a",
+        "source_max_mtime": "2026-07-25T06:57:06Z",
+        "progress_events_count": 0,
+        "progress_events_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "progress_events_newest_event_id": ""
+      },
+      "pending_status_request_at": null,
+      "last_checked_at": "",
+      "last_decision": ""
+    },
+    "/root/issue116_phase2_round12": {
+      "progress_anchor_at": "2026-07-25T07:27:21Z",
+      "last_scan_snapshot": {
+        "captured_at": "2026-07-25T07:27:21Z",
+        "task_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+        "task_content_status_digest": "bdeefc0a5c098f967a2d3479726f4c10f40f174d987c0781839464201e087549",
+        "task_content_diff_stat_digest": "e77449f8e2ae5f2ee759c8931ee60236770a0909f057e781836f7f76278e6e14",
+        "task_content_max_mtime": "2026-07-25T07:24:36Z",
+        "source_head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+        "source_status_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_diff_stat_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_max_mtime": "2026-07-24T15:46:10Z",
+        "progress_events_count": 0,
+        "progress_events_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "progress_events_newest_event_id": ""
+      },
+      "pending_status_request_at": null,
+      "last_checked_at": "",
+      "last_decision": ""
     }
   },
   "review_rounds": [
@@ -765,6 +823,21 @@
       "review_report_sha256": "6a36d69e7208b282df5a09d37451cf891b3596d43f116e4720ed9899b39d60ca",
       "review_report_size_bytes": 18549,
       "review_report_modified_at": "2026-07-25T05:21:18.242659+00:00"
+    },
+    {
+      "round": 7,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "/root/issue116_branch_round7",
+      "platform_nickname": "",
+      "reviewed_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "findings_count": 0,
+      "reuse_policy": "本轮使用从未参与 finding、implementation、Phase2 或 closure 的全新身份，对 sequence004 后完整 final range 执行 fresh final review；findings 为零，只允许作为最终放行证据。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-25T07:06:23Z",
+      "review_report_path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
+      "review_report_sha256": "2f6b5c8c426edea4b73c59e31403510aec1aff7be8c6ec8bd260c287d6c7f64a",
+      "review_report_size_bytes": 19803,
+      "review_report_modified_at": "2026-07-25T07:06:08.791391+00:00"
     }
   ],
   "reuse_decisions": [
@@ -7445,6 +7518,96 @@
       "head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
       "source": "main-session",
       "evidence": "Round11 raw report received at phase2-worker-report-round11.md sha256 f03ece534f392025fba1a7ba335c1bb9b3ccefcfa19411dac9d27494a1ecb096 size21695 lines389; semantic passed with P0/P1/P2/P3 0/0/0/0, three candidates and zero open current-scope candidates; PH2-116-R10-P2-01 closed. V01-V23 green including runtime573/13skip, Skill174, preset45, ownership9, contracts18x2, eval7x2 and full throwaway rc0. Source checkout clean; exact remote ref unverified out_of_scope nonblocking; no commit/push/publication side effect.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0370-f14e6c72b9",
+      "event": "assigned",
+      "agent_id": "/root/issue116_branch_round7",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-25T06:58:17Z",
+      "recorded_at": "2026-07-25T06:58:17Z",
+      "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "source": "main-session",
+      "evidence": "sequence004 commit a1629fa 后的 fresh final review：使用从未参与本 task finding、implementation、Phase2 或 closure 的新身份，完整复审 origin/main...a1629fa；唯一写入 round-07-final-release.md，不执行实现、gate、commit 或发布副作用。",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0371-39737146f9",
+      "event": "completed",
+      "agent_id": "/root/issue116_branch_round7",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-25T07:06:18Z",
+      "recorded_at": "2026-07-25T07:06:18Z",
+      "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "source": "main-session",
+      "evidence": "Fresh Round07 final reviewer completed exact origin/main@bdc8f50...a1629fa range: 4 commits, 353 files, 53367 insertions, 596 deletions. Raw report reviews/round-07-final-release.md sha256 0b9f5d1b10a53d8c676ed19f8735e50ae053f966c7e2537c166e531d047429cb size19816 lines372; semantic passed with P0/P1/P2/P3 0/0/0/0, five candidates, zero qualified findings, four rejected candidates and one out_of_scope accepted limitation. Source checkout clean; no gate/commit/publication side effect.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0372-c6033774e6",
+      "event": "completed",
+      "agent_id": "/root/issue116_branch_round7",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-25T07:07:14Z",
+      "recorded_at": "2026-07-25T07:07:14Z",
+      "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "source": "main-session",
+      "evidence": "Final Round07 report received after reviewer self-check at reviews/round-07-final-release.md sha256 2f6b5c8c426edea4b73c59e31403510aec1aff7be8c6ec8bd260c287d6c7f64a size19803 lines372. Exact origin/main@bdc8f50...a1629fa range covers 4 commits and353 files; semantic passed with P0/P1/P2/P3 0/0/0/0, five candidates, zero qualified findings, four rejected candidates and one out_of_scope accepted limitation. This later terminal evidence supersedes the earlier preliminary report identity while preserving its historical event; conclusion is unchanged. Source checkout clean; no gate/commit/publication side effect.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0373-884718cc74",
+      "event": "assigned",
+      "agent_id": "/root/issue116_phase2_round12",
+      "logical_role": "阶段二检查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-25T07:27:21Z",
+      "recorded_at": "2026-07-25T07:27:21Z",
+      "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "source": "main-session",
+      "evidence": "Fresh independent Phase2 Round12 after publication checker exposed PUB116-TW3. The agent owns only phase2-worker-report-round12.md, must rerun the complete scope and validations, and must recommend a stable implementation-handoff evidence set that excludes replaceable pr-readiness.json bytes. No recorder, commit, push, PR, issue mutation, finalization or deployment.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0374-1f0737fdb3",
+      "event": "completed",
+      "agent_id": "/root/issue116_phase2_round12",
+      "logical_role": "阶段二检查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-25T08:00:13Z",
+      "recorded_at": "2026-07-25T08:00:13Z",
+      "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "source": "main-session",
+      "evidence": "Round12 raw report received at phase2-worker-report-round12.md sha256 33bc1c2e2465445d213dc85b8cbd8eda7e725384f7ee6ba09be7982d332feaad size23100 lines312. Semantic recommendation passed with PUB116-TW3 qualified current_scope P2 and resolved as evidence-authoring correction; open P0/P1/P2/P3 zero. Fresh V01-V24 green: runtime573/13skip, Skill174, preset45, ownership9, publication18x2, Branch Review8x2, targeted1, exact 12 wrappers, parity/drift and full throwaway rc0. Formal implementation_handoff artifacts must exclude replaceable pr-readiness.json bytes. Boundary/planning/assignment/diff/source checkout clean; no recorder/commit/push/publication side effect.",
       "predecessor_agent_id": "",
       "predecessor_event_id": "",
       "termination_reason": "",
