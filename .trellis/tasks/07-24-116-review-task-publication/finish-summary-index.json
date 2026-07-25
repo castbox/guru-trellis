@@ -5,15 +5,13 @@
     "outcome": "新增 active guru-review-task-publication Skill，以十维 AI Gate、metadata-only 内部修订、唯一 pr-readiness.json、十二项 fresh entry binding 和三个 typed exits 收敛 Phase 3.6，并在 #118 finalization consumer 缺失时失败关闭。",
     "changed_behavior": [
       "Branch Review passed 后先生成 publication content，再强制调用 guru-review-task-publication。",
-      "Workflow 与 standalone 入口执行相同的十二项前置条件、十维语义审查和 freshness 合同。",
-      "AI 负责 Issue scope、PR body、验证、Docs、安全部署、finding route 与 ready 判断。",
-      "Recorder 和 checker 仅记录或验证 task、HEAD、artifact、working tree 与 opaque identity。",
-      "PR body、finish summary index 与 ledger publication metadata 可在 Skill 内修订后完整重审。",
-      "合法更新 ledger publication metadata 后，Phase 2 requirement provenance 复用 task-local issue number-set projection；真实 primary、close、related 或 follow-up issue 集合漂移仍然失败关闭。",
-      "代码、测试、durable docs、workflow、schema、preset 或 deployment drift 必须返回 task work。",
-      "唯一 pr-readiness.json 分离 semantic review、deterministic bindings 与 finalization augmentation。",
+      "Workflow 与 standalone 共用十二项前置和十维语义审查；AI 独占 scope、PR、验证、Docs、安全及 route 判断。",
+      "Recorder/checker 只校验 task、HEAD、artifact、working tree 与 opaque identity。",
+      "Skill 允许修订 publication metadata 后完整重审；实现或 durable contract 漂移必须返回 task work。",
+      "Phase 2 用 issue number-set 绑定真实 scope，并只绑定稳定 implementation handoff 与 raw reports。",
+      "唯一 pr-readiness.json 分层保存 semantic review、deterministic bindings 与 future finalization augmentation。",
       "ready 只输出 task、reviewed HEAD 与 publication_ref，并路由到 planned guru-finalize-task。",
-      "Canonical、installed shared 与四平台 package 保持 byte parity，并覆盖 fresh install/update/reapply。"
+      "Canonical、installed shared 与四平台 package 保持一致，并覆盖 fresh install/update/reapply。"
     ],
     "affected_surfaces": [
       {
@@ -91,45 +89,51 @@
     "contract_changes": [
       {
         "contract": "Publication semantic ownership",
-        "before": "Branch Review 后的 PR readiness 容易由 finish helper、scanner 或 ready snapshot 代替 AI 判断。",
-        "after": "guru-review-task-publication 独占十维 AI Gate；脚本只能在判断完成后记录与验证确定性事实。",
+        "before": "PR readiness 可能由 helper 或旧 snapshot 代替 AI 判断。",
+        "after": "guru-review-task-publication 独占十维 AI Gate；脚本只记录和校验事实。",
         "source_artifact": "design.md"
       },
       {
         "contract": "Publication entry and re-entry",
-        "before": "收尾入口没有统一绑定 planning、Phase 2、Branch Review、ledger、Docs、content 与 metadata tail。",
-        "after": "Workflow 与 standalone 共用十二项前置条件；stale handback 必须绑定 prior publication identity 并完整重审。",
+        "before": "收尾入口未统一绑定 planning、Phase 2、Branch Review、ledger、Docs 与 metadata tail。",
+        "after": "双入口共用十二项前置；stale handback 绑定 prior publication identity 后完整重审。",
         "source_artifact": "design.md"
       },
       {
         "contract": "Phase 2 requirement provenance",
-        "before": "Phase 2 绑定 ledger 全文件 digest，合法补齐 publication acceptance evidence 会被误判为 requirement scope drift。",
-        "after": "Phase 2 复用 task-local issue number-set projection绑定 requirement scope，允许 publication-owned metadata 更新，同时继续拒绝真实 issue number-set 漂移。",
+        "before": "Phase 2 绑定 ledger 全文件 digest，合法 publication metadata 更新会被误判为 scope drift。",
+        "after": "Phase 2 用 task-local issue number-set 绑定 scope，允许 metadata 更新并拒绝真实 issue 集合漂移。",
+        "source_artifact": "phase2-check.json"
+      },
+      {
+        "contract": "Phase 2 implementation evidence lifecycle",
+        "before": "Implementation handoff 曾绑定可被 stale re-entry 替换的 readiness bytes，使新 gate 自失效。",
+        "after": "Implementation handoff 只绑定稳定 handoff 与 raw reports；downstream metadata 保持各自 owner 生命周期。",
         "source_artifact": "phase2-check.json"
       },
       {
         "contract": "Publication finding routes",
-        "before": "PR metadata 修订、实现返工和外部阻塞缺少明确且不可混用的 route。",
-        "after": "metadata_revision 留在 Skill 内闭环，task_work 返回 Phase 2，external_blocker 进入显式 stop。",
+        "before": "Metadata 修订、实现返工和外部阻塞缺少互斥 route。",
+        "after": "metadata_revision 内部闭环，task_work 返回 Phase 2，external_blocker 停止。",
         "source_artifact": "prd.md"
       },
       {
         "contract": "Publication public output",
-        "before": "下游可能需要理解完整 readiness artifact、hash bundle 或 recorder 私有状态。",
-        "after": "ready 只输出 task_ref、reviewed_head 与 opaque publication_ref，并唯一投影到 planned guru-finalize-task。",
-        "source_artifact": ".trellis/spec/workflow/skill-package-contract.md"
+        "before": "下游可能需要理解完整 readiness artifact 或 recorder 私有状态。",
+        "after": "ready 只输出 task_ref、reviewed_head 与 publication_ref，唯一投影到 guru-finalize-task。",
+        "source_artifact": "design.md"
       },
       {
         "contract": "Publication artifact ownership",
         "before": "PR body、finish summary、gate evidence 与 publish inputs 的 owner 边界未收敛。",
-        "after": "pr-readiness.json 是唯一 gate；AI semantic、runtime bindings 与 future finalization augmentation 分层保存。",
-        "source_artifact": ".trellis/spec/workflow/data-contracts.md"
+        "after": "pr-readiness.json 是唯一 gate，并分层保存 semantic、runtime 与 finalization 数据。",
+        "source_artifact": "design.md"
       },
       {
         "contract": "Publication distribution",
-        "before": "新增 Skill 可能只在 dogfood 或单一平台可用，升级后产生漂移。",
-        "after": "Canonical、installed shared 与四平台 package 同步，preset 和 throwaway verifier 覆盖 fresh/update/reapply。",
-        "source_artifact": ".trellis/spec/preset/installer.md"
+        "before": "新增 Skill 可能只在 dogfood 或单一平台可用。",
+        "after": "Canonical、installed 与四平台同步，throwaway 覆盖 fresh/update/reapply。",
+        "source_artifact": "design.md"
       }
     ],
     "search_terms": {
@@ -151,6 +155,7 @@
         "TASK_PUBLICATION_DIMENSIONS",
         "task_publication_entry_precondition_bindings",
         "phase2_requirement_artifact_digest",
+        "phase2_evidence_projection",
         "task_publication_semantic_errors",
         "task_publication_check_errors"
       ],

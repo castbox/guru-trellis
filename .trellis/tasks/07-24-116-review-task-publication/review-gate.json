@@ -1,11 +1,11 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-07-25T07:13:16Z",
+  "generated_at": "2026-07-25T08:36:24Z",
   "task_dir": ".trellis/tasks/07-24-116-review-task-publication",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/116-review-task-publication",
-  "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+  "head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/guru-review-branch/SKILL.md",
@@ -260,6 +260,7 @@
     ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
     ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
     ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+    ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
     ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
     ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round3.md",
     ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round4.md",
@@ -281,10 +282,12 @@
     ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
     ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
     ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+    ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
     ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
     ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
     ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
     ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+    ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json",
     ".trellis/tasks/07-24-116-review-task-publication/task-start-context.json",
     ".trellis/tasks/07-24-116-review-task-publication/task.json",
     ".trellis/workflow.md",
@@ -382,24 +385,23 @@
     "review-branch",
     "--root",
     ".",
-    "--json",
     "--task",
     ".trellis/tasks/07-24-116-review-task-publication",
     "--base-branch",
     "main",
     "--pass",
     "--summary",
-    "Round 07 使用全新最终放行身份完整审查 origin/main...a1629fa；四个 commits、353 个 changed files、sequence004 freshness 修复与全部历史 finding closure 均被当前 evidence 覆盖，P0-P3 为零。",
+    "Round 08 使用全新最终放行身份完整审查 origin/main...26c6b01；五个 commits、356 个 changed files、PUB116-TW3/PH2-116-R12 evidence closure 与全部历史 finding 均被当前 evidence 覆盖，P0-P3 为零。",
     "--evidence",
-    "Round07 raw report sha256 2f6b5c8c426edea4b73c59e31403510aec1aff7be8c6ec8bd260c287d6c7f64a，19803 bytes，记录 4 commits/353 files、五项 candidate qualification 与 zero qualified findings。",
+    "Round08 raw report sha256 dedfdb3028aefae802971801fe9ec8eb385c7f6dd68c16d568513d1a5f57a593，21120 bytes，记录 5 commits/356 files、六项 candidate qualification 与 zero qualified findings。",
     "--evidence",
-    "Fresh post-commit probes确认 acceptance metadata projection equal，primary/close/related/follow-up number-set变化均 detected，其它 label 与非 task ledger保持 full digest，非法 task ledger fail closed。",
+    "Fresh validations通过 runtime573/13skip、Skill174、preset45、ownership9、publication18x2、Branch Review8x2、eval7x2、targeted5、source/installed graph、六副本 parity、12 wrappers、syntax/diff/task/planning/workspace/assignment/security scans。",
     "--evidence",
-    "Fresh source/installed publication 18x2、Branch Review 8x2、package validator 11/42/25、ownership/drift/parity与 post-commit Phase2 audit errors=[] 全部通过；source checkout clean。",
+    "Sequence005 12/12 paths均为 task-local evidence/metadata，tree/blob/mode完全匹配、unrelated_preserved=true、hook_mutation=false；post-commit Phase2 ancestor audit typed_exit=passed/errors=[]，publication entry 的 phase2_check precondition passed。",
     "--evidence",
-    "部署影响：变更仅涉及 Guru Team Markdown workflow/Skill package、deterministic runtime、schema/tests/preset 与 task evidence；changed-path scan确认无 CI/CD、Docker/Compose、K8s/Kustomize/Helm、DB/data migration、Makefile、dependency/config 或 production deployment asset，故无需同步调整或部署/回滚。",
+    "部署影响：完整 changed-path 与 Round08 scan确认无 CI/CD、Docker/Compose、Kubernetes/Kustomize/Helm、DB/data migration、Makefile、dependency manifest、runtime config、production deployment 或 production data asset，因此无需同步部署配置、迁移或回滚。",
     "--reviewer",
-    "/root/issue116_branch_round7",
+    "/root/issue116_branch_round8",
     "--review-source",
     "independent-agent",
     "--review-report",
@@ -411,11 +413,12 @@
     "--semantic-review-file",
     ".trellis/.runtime/guru-team/issue116-branch-review-semantic.json",
     "--typed-exit",
-    "passed"
+    "passed",
+    "--json"
   ],
   "conclusion": {
     "passed": true,
-    "summary": "Round 07 使用全新最终放行身份完整审查 origin/main...a1629fa；四个 commits、353 个 changed files、sequence004 freshness 修复与全部历史 finding closure 均被当前 evidence 覆盖，P0-P3 为零。",
+    "summary": "Round 08 使用全新最终放行身份完整审查 origin/main...26c6b01；五个 commits、356 个 changed files、PUB116-TW3/PH2-116-R12 evidence closure 与全部历史 finding 均被当前 evidence 覆盖，P0-P3 为零。",
     "block_priorities": [
       "P0",
       "P1",
@@ -438,12 +441,12 @@
       "scenario_class": "out_of_scope",
       "affected_behavior": "The exact remote candidate-branch marketplace ref has not been verified.",
       "evidence_refs": [
-        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md"
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md"
       ],
       "requirement_refs": [
         "Issue #116 publication-time verification boundary"
       ],
-      "scope_basis": "The branch is not pushed and #116 does not authorize remote verifier or publication side effects; complete local throwaway and public marketplace discovery cover the current executable scope.",
+      "scope_basis": "The branch is not pushed and #116 does not authorize remote verifier or publication side effects; local throwaway and public marketplace discovery cover the current executable scope.",
       "qualification_reason": "This is a publication-time external-state limitation, not an implementation finding. The later publish/finalization gate retains ownership once an exact remote ref exists."
     }
   ],
@@ -458,18 +461,18 @@
         "reason": "本 task 完整承诺并由后续 review gate 验收的 issue。",
         "acceptance_evidence": [
           "guru-review-task-publication 已作为 Interface 1.3 active semantic Skill 实现：workflow/standalone 双入口、十二项 entry preconditions、十维 AI Gate、metadata-only revision loop、唯一 pr-readiness.json 与 ready/return_to_task_work/blocked 三个 typed exits 均已闭合。",
-          "Fresh Phase 2 typed exit 为 passed：runtime 572 tests passed/13 skipped、Skill packages 174/174、publication contracts 18/18 x2、actual-wrapper eval 7/7 x2、preset 45/45、ownership 9/9、registry 11 active Skills/42 exits/25 targets。",
-          "三个 task work commits 精确绑定最终 reviewed content HEAD d7ab98f5c53f470f4d3f3742f8cfca24f8465edd；六布局 12 条真实命令、package parity、dogfood drift与 fresh install/update/reapply 均通过。",
-          "Branch Review Gate 绑定 origin/main...d7ab98f5c53f470f4d3f3742f8cfca24f8465edd；历史 P2/P1 findings 均由合法 closure round 关闭，Round 06 fresh final reviewer 覆盖完整 345-file/3-commit 范围且 P0/P1/P2/P3 均为 0，typed exit 为 passed。",
+          "Fresh Phase 2 typed exit 为 passed：runtime 573 tests passed/13 skipped、Skill packages 174/174、publication contracts 18/18 x2、actual-wrapper eval 7/7 x2、preset 45/45、ownership 9/9、registry 11 active Skills/42 exits/25 targets。",
+          "四个 task work commits 精确绑定最终 reviewed content HEAD a1629fae4150bfbac9032aab8ca47497cba4e605；sequence 004 修复合法 publication metadata revision 后的 Phase 2 freshness，六布局 12 条真实命令、package parity、dogfood drift 与 fresh install/update/reapply 均通过。",
+          "Branch Review Gate 绑定 origin/main...a1629fae4150bfbac9032aab8ca47497cba4e605；历史 P2/P1 findings 均由合法 closure round 关闭，Round 07 fresh final reviewer 覆盖完整 353-file/4-commit 范围且 P0/P1/P2/P3 均为 0，typed exit 为 passed。",
           {
             "type": "remote_marketplace_verification",
             "status": "pending",
             "required": true,
             "artifact_path": "marketplace-verification.json",
             "artifact_sha256": "",
-            "verified_content_head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+            "verified_content_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
             "remote_head": "",
-            "publish_head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+            "publish_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
             "commands_passed": false
           }
         ]
@@ -544,23 +547,23 @@
     ]
   },
   "verification_evidence": {
-    "base_head": "origin/main...a1629fae4150bfbac9032aab8ca47497cba4e605",
-    "changed_file_count": 353,
-    "reviewer": "/root/issue116_branch_round7",
+    "base_head": "origin/main...26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+    "changed_file_count": 356,
+    "reviewer": "/root/issue116_branch_round8",
     "review_source": "independent-agent",
     "review_report": {
       "path": ".trellis/tasks/07-24-116-review-task-publication/review.md",
-      "sha256": "b2298bc226c49d039b35a7d974e1c96af98a9a1648e374e56a245d2e9b9c01d8",
-      "size_bytes": 7461,
-      "modified_at": "2026-07-25T07:11:01.408913+00:00"
+      "sha256": "d408a7c7ebd011cdd5532a9caac9761089c1ffd8dcf7ab22a0067822d7cbf270",
+      "size_bytes": 8776,
+      "modified_at": "2026-07-25T08:34:01.722082+00:00"
     },
     "agent_assignment": {
       "path": ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json",
-      "sha256": "a5982a35ed2435399458eef30a0e16393b7d4675bf95ebf2dbb217983cf96f5f",
-      "size_bytes": 379100,
-      "modified_at": "2026-07-25T07:07:18.982683+00:00",
+      "sha256": "bac5c3fe929a07621f0062da241e9731ce842cb27ea5363b110aaf7ff13ea764",
+      "size_bytes": 388314,
+      "modified_at": "2026-07-25T08:33:09.369581+00:00",
       "schema_version": "1.2",
-      "artifact_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "artifact_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
       "roles": [
         "实现代理",
         "最终放行审查代理",
@@ -568,11 +571,11 @@
         "问题闭环审查代理",
         "阶段二检查代理"
       ],
-      "agents_count": 24,
-      "review_rounds_count": 7,
+      "agents_count": 26,
+      "review_rounds_count": 8,
       "reuse_decisions_count": 4,
-      "status_events_count": 372,
-      "effective_status_events_count": 372,
+      "status_events_count": 376,
+      "effective_status_events_count": 376,
       "event_corrections_count": 0,
       "recovery_links_count": 0,
       "task": ".trellis/tasks/07-24-116-review-task-publication",
@@ -655,13 +658,24 @@
         "sha256": "2f6b5c8c426edea4b73c59e31403510aec1aff7be8c6ec8bd260c287d6c7f64a",
         "size_bytes": 19803,
         "modified_at": "2026-07-25T07:06:08.791391+00:00"
+      },
+      {
+        "round": 8,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/issue116_branch_round8",
+        "reviewed_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md",
+        "sha256": "dedfdb3028aefae802971801fe9ec8eb385c7f6dd68c16d568513d1a5f57a593",
+        "size_bytes": 21120,
+        "modified_at": "2026-07-25T08:32:20.847087+00:00"
       }
     ],
     "evidence": [
-      "Round07 raw report sha256 2f6b5c8c426edea4b73c59e31403510aec1aff7be8c6ec8bd260c287d6c7f64a，19803 bytes，记录 4 commits/353 files、五项 candidate qualification 与 zero qualified findings。",
-      "Fresh post-commit probes确认 acceptance metadata projection equal，primary/close/related/follow-up number-set变化均 detected，其它 label 与非 task ledger保持 full digest，非法 task ledger fail closed。",
-      "Fresh source/installed publication 18x2、Branch Review 8x2、package validator 11/42/25、ownership/drift/parity与 post-commit Phase2 audit errors=[] 全部通过；source checkout clean。",
-      "部署影响：变更仅涉及 Guru Team Markdown workflow/Skill package、deterministic runtime、schema/tests/preset 与 task evidence；changed-path scan确认无 CI/CD、Docker/Compose、K8s/Kustomize/Helm、DB/data migration、Makefile、dependency/config 或 production deployment asset，故无需同步调整或部署/回滚。"
+      "Round08 raw report sha256 dedfdb3028aefae802971801fe9ec8eb385c7f6dd68c16d568513d1a5f57a593，21120 bytes，记录 5 commits/356 files、六项 candidate qualification 与 zero qualified findings。",
+      "Fresh validations通过 runtime573/13skip、Skill174、preset45、ownership9、publication18x2、Branch Review8x2、eval7x2、targeted5、source/installed graph、六副本 parity、12 wrappers、syntax/diff/task/planning/workspace/assignment/security scans。",
+      "Sequence005 12/12 paths均为 task-local evidence/metadata，tree/blob/mode完全匹配、unrelated_preserved=true、hook_mutation=false；post-commit Phase2 ancestor audit typed_exit=passed/errors=[]，publication entry 的 phase2_check precondition passed。",
+      "部署影响：完整 changed-path 与 Round08 scan确认无 CI/CD、Docker/Compose、Kubernetes/Kustomize/Helm、DB/data migration、Makefile、dependency manifest、runtime config、production deployment 或 production data asset，因此无需同步部署配置、迁移或回滚。"
     ],
     "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
   },
@@ -708,6 +722,7 @@
         ".trellis/tasks/07-24-116-review-task-publication/implementation-handoff.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round3.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round4.md",
@@ -726,6 +741,7 @@
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
         ".trellis/workflow.md",
         "README.md",
         "docs/requirements/README.md",
@@ -838,6 +854,7 @@
         ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round3.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round4.md",
@@ -859,10 +876,12 @@
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-start-context.json",
         ".trellis/tasks/07-24-116-review-task-publication/task.json",
         ".trellis/workflow.md",
@@ -1125,6 +1144,7 @@
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-start-context.json",
         ".trellis/tasks/07-24-116-review-task-publication/task.json",
         "trellis/guru-team-extension.json",
@@ -1331,6 +1351,7 @@
       ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-return-to-task-work-output.schema.json",
       ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
       ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+      ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
       ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
       ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round3.md",
       ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round4.md",
@@ -1372,89 +1393,108 @@
         "affected_behavior": "The exact remote candidate-branch marketplace ref has not been verified.",
         "path": "",
         "evidence_refs": [
-          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md"
+          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md"
         ],
         "requirement_refs": [
           "Issue #116 publication-time verification boundary"
         ],
-        "scope_basis": "The branch is not pushed and #116 does not authorize remote verifier or publication side effects; complete local throwaway and public marketplace discovery cover the current executable scope.",
+        "scope_basis": "The branch is not pushed and #116 does not authorize remote verifier or publication side effects; local throwaway and public marketplace discovery cover the current executable scope.",
         "qualification_reason": "This is a publication-time external-state limitation, not an implementation finding. The later publish/finalization gate retains ownership once an exact remote ref exists."
       }
     ],
     "followup_candidates": [],
     "rejected_candidates": [
       {
-        "candidate_ref": "candidate-publication-metadata-phase2-freshness",
+        "candidate_ref": "candidate-readiness-replacement-phase2-self-invalidation",
         "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "Publication metadata-only ledger revision previously made Phase 2 requirement provenance stale.",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "affected_behavior": "A normal publication stale re-entry could again invalidate Phase 2 if implementation_handoff retained replaceable pr-readiness bytes.",
+        "path": ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
         "evidence_refs": [
-          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
-          ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md"
+          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md",
+          ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
+          ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json"
         ],
         "requirement_refs": [
-          "Issue #116 metadata-only publication revision loop",
-          "Approved design Phase 2 scope freshness"
+          "Issue #116 publication stale re-entry",
+          "guru-check-task stable implementation handoff evidence",
+          "guru-review-task-publication mutable readiness ownership"
         ],
-        "scope_basis": "The behavior is inside the approved #116 normal route and must preserve issue scope while allowing legal publication metadata updates.",
-        "qualification_reason": "Sequence 004 fixes the normal path: acceptance metadata preserves the projection while primary, close, related and follow-up number-set changes still stale. Targeted and full tests pass, so no current violation remains."
+        "scope_basis": "Publication must be able to replace its sole readiness gate without invalidating upstream stable implementation evidence, while real implementation or scope drift remains fail closed.",
+        "qualification_reason": "The formal Round12 handoff contains exactly implementation-handoff.md plus Round1-Round12 raw reports and excludes readiness and all downstream mutable publication/review metadata. Fresh ancestor-HEAD validation returns Phase2 passed/errors=[], and the publication entry phase2_check binding passes at 26c6b01; the suspected self-invalidation no longer reproduces."
       },
       {
-        "candidate_ref": "candidate-scope-projection-boundary",
+        "candidate_ref": "candidate-sequence005-product-drift",
         "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "The scope-only helper could have been applied to other labels, non-task ledgers or invalid task-local ledgers.",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "affected_behavior": "The evidence correction commit could have smuggled unreviewed source, test, durable contract, workflow, schema or preset changes.",
+        "path": ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json",
         "evidence_refs": [
-          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
-          ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md"
+          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md",
+          ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json"
         ],
         "requirement_refs": [
-          "Issue #116 fail-closed freshness",
-          "AGENTS.md semantic/script and normal-operation boundary"
+          "guru-create-task-commit exact staging contract",
+          "Issue #116 reviewed scope"
         ],
-        "scope_basis": "Other evidence labels and non-task artifacts must retain full identity, and invalid task-local ledgers must fail closed.",
-        "qualification_reason": "Actual runtime probes and the five-case regression show exact label/path matching, full digest outside the task-local requirement-provenance case, and WorkflowError for invalid ledgers. The suspected widening is not reproducible."
+        "scope_basis": "A finding-fix evidence commit must contain only Phase2-covered task paths and preserve all unrelated/product state.",
+        "qualification_reason": "Sequence005 contains 12/12 paths under the current task directory, with exact tree/blob/mode matches, unrelated_preserved=true and hook_mutation=false. Diff classification proves zero product source/test/docs/spec/workflow/schema/preset/deployment drift."
       },
       {
-        "candidate_ref": "candidate-publication-authoring-pending",
+        "candidate_ref": "candidate-historical-contract-regression",
         "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "The task-local PR body, ledger acceptance text and finish index still describe the prior d7ab98f publication candidate.",
+        "affected_behavior": "Prior exact allowlist, git-status fail-closed, six-layout, 94-asset inventory, and ledger scope-projection fixes could have regressed.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md",
+          ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md"
+        ],
+        "requirement_refs": [
+          "Issue #116 AC1-AC19",
+          "Historical Branch Review and Phase2 finding closure"
+        ],
+        "scope_basis": "All previously closed current-scope correctness and compatibility findings must remain closed across the complete final range.",
+        "qualification_reason": "Fresh targeted tests 5/5, runtime573, Skill174, preset45, ownership9, publication18x2, Branch Review8x2, eval7x2, package graphs, parity/drift and 12 wrappers all pass; no prior behavior regression is reproducible."
+      },
+      {
+        "candidate_ref": "candidate-publication-content-current-head-refresh",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Committed ledger acceptance/pending heads, PR body, prior readiness and review gate still describe the a162/Round07 publication candidate before current owner replacement.",
         "path": ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
         "evidence_refs": [
-          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
-          ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json"
+          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md",
+          ".trellis/tasks/07-24-116-review-task-publication/pr-readiness.json",
+          ".trellis/tasks/07-24-116-review-task-publication/review-gate.json"
         ],
         "requirement_refs": [
           "Global workflow Phase 3.5 to Phase 3.6 ordering",
           "guru-review-task-publication stale re-entry contract"
         ],
-        "scope_basis": "Current publication content authoring is downstream of a fresh Branch Review pass and is owned by the publication caller/Skill, not the Branch Review implementation range.",
-        "qualification_reason": "The prior readiness artifact remains return_to_task_work and does not claim the stale body is ready. Fresh authoring after this gate is the required supported route, so this is not a Branch Review finding."
+        "scope_basis": "Current publication content must be authored only after the current Branch Review gate passes; prior truthful return evidence must not claim the new head early.",
+        "qualification_reason": "The committed readiness remains return_to_task_work and does not claim 26c-ready state. Round08 raw report and lifecycle precede the formal gate, after which the publication owner is required to refresh only its allowed metadata. This is correct ordering, not a Branch Review finding."
       },
       {
-        "candidate_ref": "candidate-current-gate-replacement-pending",
+        "candidate_ref": "candidate-parallel-native-response-empty",
         "disposition": "rejected_candidate",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "The current review.md and review-gate.json still bind the prior d7ab98f Round 06 result before the Round 07 recorder runs.",
-        "path": ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "Artificially running several heavyweight suites concurrently produced a transient empty native response file.",
+        "path": "",
         "evidence_refs": [
-          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
-          ".trellis/tasks/07-24-116-review-task-publication/agent-assignment.json"
+          ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md"
         ],
         "requirement_refs": [
-          "guru-review-branch recorder-after-review ordering"
+          "AGENTS.md normal-operation and nonstandard stress boundary"
         ],
-        "scope_basis": "The raw final report and completed Round 07 lifecycle must exist before the single current gate is deterministically replaced.",
-        "qualification_reason": "Round 07 is the fresh final evidence for a1629fa and the owner recorder/checker is now replacing the stale gate. The prior gate was not reused as the current pass."
+        "scope_basis": "Issue #116 does not require concurrent stress, TOCTOU, locking or fault-injection hardening; the supported isolated sequence is the acceptance path.",
+        "qualification_reason": "The event occurred only under reviewer-created parallel heavyweight load and did not reproduce in isolated source/installed eval 7/7 or the complete isolated Skill suite 174/174. It is out of scope and nonblocking."
       }
     ],
     "ai_review_gate": {
       "status": "passed",
-      "summary": "Round 07 used a fresh identity and reviewed the complete origin/main...a1629fa four-commit, 353-file range. Sequence 004 correctly fixes publication metadata freshness without widening other labels, non-task paths or invalid ledgers; all prior findings remain closed, P0-P3 are zero, no scope proposal exists, and the exact remote-ref limitation is out of scope and nonblocking."
+      "summary": "Round 08 used a fresh final-release identity and reviewed the complete origin/main...26c6b01 five-commit, 356-file range. The Round12 stable handoff and sequence005 close PUB116-TW3 without product drift; post-commit Phase2/publication preconditions, all historical closures, full and targeted suites, distribution, safety and deployment boundaries pass. P0-P3 are zero, no scope proposal exists, and remote exact-ref remains a nonblocking out-of-scope limitation."
     }
   },
-  "facts_sha256": "7ee6164cbf9a94a684984b45a2115a79592dbb3a3e7e8038f136fa40400111b9"
+  "facts_sha256": "cb09c4c2566f7901f6eccc820e4b3713046f9a950a163a3485da86ecfee018ef"
 }

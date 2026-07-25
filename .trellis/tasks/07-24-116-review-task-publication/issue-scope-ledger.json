@@ -7,19 +7,19 @@
     "reason": "当前唯一 primary independently deliverable change request。",
     "acceptance_evidence": [
       "guru-review-task-publication 已作为 Interface 1.3 active semantic Skill 实现：workflow/standalone 双入口、十二项 entry preconditions、十维 AI Gate、metadata-only revision loop、唯一 pr-readiness.json 与 ready/return_to_task_work/blocked 三个 typed exits 均已闭合。",
-      "Fresh Phase 2 typed exit 为 passed：runtime 573 tests passed/13 skipped、Skill packages 174/174、publication contracts 18/18 x2、actual-wrapper eval 7/7 x2、preset 45/45、ownership 9/9、registry 11 active Skills/42 exits/25 targets。",
-      "四个 task work commits 精确绑定最终 reviewed content HEAD a1629fae4150bfbac9032aab8ca47497cba4e605；sequence 004 修复合法 publication metadata revision 后的 Phase 2 freshness，六布局 12 条真实命令、package parity、dogfood drift 与 fresh install/update/reapply 均通过。",
-      "Branch Review Gate 绑定 origin/main...a1629fae4150bfbac9032aab8ca47497cba4e605；历史 P2/P1 findings 均由合法 closure round 关闭，Round 07 fresh final reviewer 覆盖完整 353-file/4-commit 范围且 P0/P1/P2/P3 均为 0，typed exit 为 passed。",
+      "Fresh Phase 2 Round 12 typed exit 为 passed：runtime 573 tests passed/13 skipped、Skill packages 174/174、publication contracts 18/18 x2、actual-wrapper eval 7/7 x2、preset 45/45、ownership 9/9、registry 11 active Skills/42 exits/25 targets。",
+      "五个 task work commits 精确绑定最终 reviewed content HEAD 26c6b01c7a0128eecdb9978793aa48d4115dcf89；sequence 004 修复合法 publication metadata revision 后的 scope freshness，sequence 005 收敛 stable Phase 2 handoff evidence 并排除可替换 readiness bytes；六布局、parity、drift 与 fresh install/update/reselect/reapply 均通过。",
+      "Branch Review Gate 绑定 origin/main...26c6b01c7a0128eecdb9978793aa48d4115dcf89；历史 findings 均由合法 Phase 2/closure round 关闭，Round 08 fresh final reviewer 覆盖完整 356-file/5-commit 范围且 P0/P1/P2/P3 均为 0，typed exit 为 passed。",
       {
         "type": "remote_marketplace_verification",
-        "status": "pending",
+        "status": "passed",
         "required": true,
         "artifact_path": "marketplace-verification.json",
-        "artifact_sha256": "",
-        "verified_content_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
-        "remote_head": "",
-        "publish_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
-        "commands_passed": false
+        "artifact_sha256": "602cd455cc3fc6b699e73fa578aeaa6bbea9a3e3b4251ca380f069bf46a3cfb9",
+        "verified_content_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+        "remote_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+        "publish_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+        "commands_passed": true
       }
     ]
   },
@@ -31,19 +31,19 @@
       "reason": "本 task 完整承诺并由后续 review gate 验收的 issue。",
       "acceptance_evidence": [
         "guru-review-task-publication 已作为 Interface 1.3 active semantic Skill 实现：workflow/standalone 双入口、十二项 entry preconditions、十维 AI Gate、metadata-only revision loop、唯一 pr-readiness.json 与 ready/return_to_task_work/blocked 三个 typed exits 均已闭合。",
-        "Fresh Phase 2 typed exit 为 passed：runtime 573 tests passed/13 skipped、Skill packages 174/174、publication contracts 18/18 x2、actual-wrapper eval 7/7 x2、preset 45/45、ownership 9/9、registry 11 active Skills/42 exits/25 targets。",
-        "四个 task work commits 精确绑定最终 reviewed content HEAD a1629fae4150bfbac9032aab8ca47497cba4e605；sequence 004 修复合法 publication metadata revision 后的 Phase 2 freshness，六布局 12 条真实命令、package parity、dogfood drift 与 fresh install/update/reapply 均通过。",
-        "Branch Review Gate 绑定 origin/main...a1629fae4150bfbac9032aab8ca47497cba4e605；历史 P2/P1 findings 均由合法 closure round 关闭，Round 07 fresh final reviewer 覆盖完整 353-file/4-commit 范围且 P0/P1/P2/P3 均为 0，typed exit 为 passed。",
+        "Fresh Phase 2 Round 12 typed exit 为 passed：runtime 573 tests passed/13 skipped、Skill packages 174/174、publication contracts 18/18 x2、actual-wrapper eval 7/7 x2、preset 45/45、ownership 9/9、registry 11 active Skills/42 exits/25 targets。",
+        "五个 task work commits 精确绑定最终 reviewed content HEAD 26c6b01c7a0128eecdb9978793aa48d4115dcf89；sequence 004 修复合法 publication metadata revision 后的 scope freshness，sequence 005 收敛 stable Phase 2 handoff evidence 并排除可替换 readiness bytes；六布局、parity、drift 与 fresh install/update/reselect/reapply 均通过。",
+        "Branch Review Gate 绑定 origin/main...26c6b01c7a0128eecdb9978793aa48d4115dcf89；历史 findings 均由合法 Phase 2/closure round 关闭，Round 08 fresh final reviewer 覆盖完整 356-file/5-commit 范围且 P0/P1/P2/P3 均为 0，typed exit 为 passed。",
         {
           "type": "remote_marketplace_verification",
-          "status": "pending",
+          "status": "passed",
           "required": true,
           "artifact_path": "marketplace-verification.json",
-          "artifact_sha256": "",
-          "verified_content_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
-          "remote_head": "",
-          "publish_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
-          "commands_passed": false
+          "artifact_sha256": "602cd455cc3fc6b699e73fa578aeaa6bbea9a3e3b4251ca380f069bf46a3cfb9",
+          "verified_content_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+          "remote_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+          "publish_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+          "commands_passed": true
         }
       ]
     }

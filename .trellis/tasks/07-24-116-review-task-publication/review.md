@@ -3,9 +3,9 @@
 ## 审查范围
 
 - Base：`origin/main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940`
-- Reviewed HEAD：`a1629fae4150bfbac9032aab8ca47497cba4e605`
-- 完整范围：`origin/main...a1629fae4150bfbac9032aab8ca47497cba4e605`
-- 规模：353 files、4 commits、53,367 insertions、596 deletions
+- Reviewed HEAD：`26c6b01c7a0128eecdb9978793aa48d4115dcf89`
+- 完整范围：`origin/main...26c6b01c7a0128eecdb9978793aa48d4115dcf89`
+- 规模：356 files、5 commits、54,871 insertions、596 deletions
 - Issue scope：close `[116]`；related `[115,131,144,146]`；follow-up `[81,117,118,119,132]`
 - Docs SSOT：`ssot_first`，规划与 durable authority 无未处理漂移
 
@@ -18,14 +18,18 @@
 - [Round 05：Round 04 finding owner 验证 P1 修复闭环](reviews/round-05-problem-closure.md)
 - [Round 06：全新身份完整最终放行审查](reviews/round-06-final-release.md)
 - [Round 07：sequence 004 后全新身份完整最终放行审查](reviews/round-07-final-release.md)
+- [Round 08：sequence 005 后全新身份完整最终放行审查](reviews/round-08-final-release.md)
 
 Round 01/02 的 `BR116-R02-P2-01` 已由原技术 owner 在 Round 03 关闭。
 Round 04 的 `BR116-R04-P1-01` 经独立实现、fresh Phase 2 与 sequence 003 commit
 后，由原 finding owner 在 Round 05 关闭。Round 06 使用全新身份完成当时的最终
 放行。随后 publication `return_to_task_work` 经 implementation adoption、fresh
-Phase 2 与 sequence 004 commit 闭环；Round 07 再次使用未参与 implementation、
-Phase 2、finding discovery 或 closure 的全新身份，对 current 353-file/4-commit
-完整范围重新审查，findings 为零，满足 fresh final reviewer 隔离要求。
+Phase 2 与 sequence 004 commit 闭环，Round 07 对 353-file/4-commit 范围完成
+fresh final review。Publication stale re-entry 的 post-write checker 随后发现
+`PUB116-TW3`：Round 11 Phase 2 handoff 绑定了可替换的旧 readiness bytes。
+Round 12 以稳定 handoff evidence 完整重跑，sequence 005 提交 evidence/metadata
+闭环；Round 08 使用另一全新身份对 356-file/5-commit 最终范围完整复审，findings
+为零，满足 fresh final reviewer 隔离要求。
 
 ## Finding 闭环
 
@@ -43,6 +47,11 @@ Phase 2、finding discovery 或 closure 的全新身份，对 current 353-file/4
 - `PH2-116-R10-P2-01`：`closed`。Current implementation owner 已承接
   publication `PUB116-TW1/TW2`，Section 13 handoff、五项正常路径回归与 fresh
   Round 11 Phase 2 完整闭环。
+- `PUB116-TW3` / `PH2-116-R12-P2-01`：`closed`。Formal Phase 2
+  `implementation_handoff.artifacts` 仅绑定稳定 implementation handoff 与
+  Round 1–12 raw reports，精确排除会被 stale re-entry 正常替换的
+  `pr-readiness.json` 及其它 downstream publication/review mutable metadata；
+  post-commit ancestor-HEAD consumer audit 通过。
 
 当前无开放 P0/P1/P2/P3 finding。
 
@@ -55,12 +64,19 @@ Phase 2、finding discovery 或 closure 的全新身份，对 current 353-file/4
 - Scope-only helper 仅匹配 task-local ledger 的 `requirement_provenance`；
   其它 label、非 task ledger 保持 full digest，非法 task ledger fail closed，
   因此误放宽候选为 `rejected_candidate`。
-- 当前 `pr-body.md`、ledger acceptance 与 finish index 仍描述 prior d7 candidate，
-  但 prior readiness 仍为 `return_to_task_work`；按 global Phase 3.6 顺序，这些
-  内容必须在本轮 Branch Review passed 后由 publication owner fresh author/review，
-  不是 Branch Review finding。
-- Prior `review.md`/`review-gate.json` 在 recorder 前仍绑定 Round 06，是正常的
-  gate replacement ordering；Round 07 raw report 与 lifecycle 已先完成，当前
+- Round 11 handoff 精确绑定旧 readiness bytes 的候选已由 Round 12 stable
+  evidence set、sequence 005 与 post-commit consumer probe 关闭，当前为
+  `rejected_candidate`；不需要 source/runtime/schema 修改。
+- Sequence 005 的完整 12-path commit 仅含 task-local evidence/metadata，
+  `origin/main...26c6b01` 相对 sequence 004 的产品 source/test/durable docs/
+  workflow/schema/preset drift 为零，因此 product drift 候选为
+  `rejected_candidate`。
+- 当前 `pr-body.md`、ledger acceptance/pending head 与 finish index 绑定
+  sequence 004 reviewed outcome；prior readiness 诚实保持 `return_to_task_work`。
+  按 global Phase 3.6 顺序，这些内容必须在 Round 08 passed 后由 publication
+  owner 更新到 current head，不是 Branch Review finding。
+- Prior `review.md`/`review-gate.json` 在 recorder 前绑定 Round 07，是正常的
+  gate replacement ordering；Round 08 raw report 与 lifecycle 已先完成，当前
   owner 正在唯一替换 gate，不复用旧 pass。
 - 分支尚未 push，exact remote candidate-branch marketplace ref 不存在；public
   marketplace discovery 与 local unpublished workflow sample 已验证。该项作为
@@ -89,11 +105,11 @@ Phase 2、finding discovery 或 closure 的全新身份，对 current 353-file/4
 - `git diff --check` committed/working/cached：全部 exit 0
 - Planning approval、task validation、workspace boundary：全部通过；
   source checkout clean，suspicious artifacts 为空
-- Phase 2 task-local ledger projection targeted test：1/1；Round 07 独立 probe
+- Targeted projection/allowlist/status/finalization regressions：5/5；Round 08 probe
   确认四类 issue number-set 变化均 detected，acceptance metadata 保持 equal，
   其它 label/非 task/非法 ledger 边界符合预期
-- Sequence 004 post-commit Phase 2 audit：`typed_exit=passed`、`errors=[]`；
-  19 个 committed paths 的 expected/actual tree、blob 与 mode 全部一致，
+- Sequence 005 post-commit Phase 2 audit：`typed_exit=passed`、`errors=[]`；
+  12 个 committed paths 的 expected/actual tree、blob 与 mode 全部一致，
   `hook_mutation=false`
 - Added-line credential-shaped scan 与 deploy-sensitive changed-path scan：0
 
@@ -105,7 +121,8 @@ workflow、README、requirements docs 和 current implementation 对 Interface 1
 semantic owner、双入口、三 exits、single readiness gate、freshness、return/stale
 re-entry、registry closure 与 OOTB/update/reapply 的描述一致；sequence 004
 复用既有 planning scope projection，只对齐 deterministic freshness runtime，
-没有未合并的 durable semantic delta。
+没有未合并的 durable semantic delta。Sequence 005 只收敛 task-local evidence
+authoring 与 publication/review metadata，不修改任何 durable authority。
 
 未发现 token、secret、private key、`.env`、database URL、signed URL、客户数据或
 敏感原始记录进入候选。无 CI/CD、容器、Kubernetes/Kustomize/Helm、DB migration、
@@ -114,8 +131,8 @@ Makefile、依赖 manifest 或生产服务部署变化；workflow、preset、pac
 
 ## 结论
 
-Round 07 的 fresh final reviewer 已覆盖
-`origin/main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940...a1629fae4150bfbac9032aab8ca47497cba4e605`
+Round 08 的 fresh final reviewer 已覆盖
+`origin/main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940...26c6b01c7a0128eecdb9978793aa48d4115dcf89`
 完整范围，所有历史 findings 已关闭，当前 findings_count=`0`，无未确认 scope
 proposal 或 blocking evidence gap。Branch Review AI Gate 结论为 `passed`，唯一
 合法 consumer 是 `guru-review-task-publication` 的 Phase 3.6 authoring seed。

@@ -1,21 +1,21 @@
 {
   "schema_version": "1.0",
   "skill_id": "guru-review-task-publication",
-  "generated_at": "2026-07-25T07:24:20Z",
+  "generated_at": "2026-07-25T09:54:31Z",
   "task_dir": ".trellis/tasks/07-24-116-review-task-publication",
   "profile": "publication_review_stale",
   "mode": "workflow",
   "review_intent": "stale_reentry_review",
   "review_identity": {
-    "reviewed_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
-    "review_ref": "review-gate:ce4f270d22a2b715ff91bd7ca2c40e37215171673bfbbabb19efb2029570ff41"
+    "reviewed_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+    "review_ref": "review-gate:10ae9604c45b599e86700f32e64d13d6335041dbc317b3cca268ae3d16f48281"
   },
   "semantic_review": {
     "dimensions": [
       {
         "id": "diff_outcome_consistency",
         "status": "passed",
-        "summary": "完整四提交结果已兑现 #116 的 publication semantic owner、双入口、十二前置、十维 Gate、metadata-only revision、单 readiness artifact 与三 typed exits；sequence 004 进一步关闭了首次 dogfood 暴露的合法 ledger metadata freshness 缺口。",
+        "summary": "完整五提交结果已兑现 #116 的 publication semantic owner、双入口、十二前置、十维 Gate、metadata-only revision、单 readiness artifact 与三 typed exits；sequence 004 关闭 scope freshness 缺口，sequence 005 关闭 mutable readiness 被 Phase 2 handoff 绑定的 evidence lifecycle 缺口。",
         "evidence_refs": [
           "prd.md",
           "design.md",
@@ -39,43 +39,43 @@
       {
         "id": "pr_body_quality",
         "status": "passed",
-        "summary": "PR body 使用中文且具体、自包含，准确说明最终行为、影响、573 项 runtime 验证、baseline 限制、freshness 返工闭环、Round 07、Issue 语义、安全部署和 Docs SSOT，没有占位或陈旧的必须返工声明。",
+        "summary": "PR body 使用中文且具体、自包含，准确说明最终行为、影响、573 项 runtime 验证、两次 freshness 回流闭环、Round 08、Issue 语义、安全部署和 Docs SSOT，没有占位或陈旧的必须返工声明。",
         "evidence_refs": [
           "pr-body.md",
           "phase2-check.json",
-          "phase2-worker-report-round11.md",
+          "phase2-worker-report-round12.md",
           "review.md",
-          "reviews/round-07-final-release.md"
+          "reviews/round-08-final-release.md"
         ]
       },
       {
         "id": "validation_claims",
         "status": "passed",
-        "summary": "验证声明与 fresh evidence 一致：runtime 573/13 skipped、Skill 174、publication contracts 18x2、actual-wrapper eval 7x2、preset 45、ownership 9、registry 11/42/25、六布局、drift/parity 与完整 throwaway install/update/reapply 均通过；exact remote candidate ref 限制被明确保留。",
+        "summary": "验证声明与 fresh evidence 一致：runtime 573/13 skipped、Skill 174、publication 18x2、Branch Review 8x2、actual-wrapper eval 7x2、preset 45、ownership 9、registry 11/42/25、targeted 5、六布局、drift/parity 与完整 throwaway install/update/reselect/reapply 均通过；exact remote candidate ref 限制被明确保留。",
         "evidence_refs": [
           "phase2-check.json",
-          "phase2-worker-report-round11.md",
+          "phase2-worker-report-round12.md",
           "review.md",
-          "reviews/round-07-final-release.md",
+          "reviews/round-08-final-release.md",
           "pr-body.md"
         ]
       },
       {
         "id": "branch_review_summary",
         "status": "passed",
-        "summary": "PR body 准确记录 origin/main@bdc8f50...a1629fa 的完整 353-file/4-commit 范围、早期 closure lifecycle、Round 07 fresh reviewer 与零 P0-P3 finding，并与当前正式 passed gate 一致。",
+        "summary": "PR body 准确记录 origin/main@bdc8f50...26c6b01 的完整 356-file/5-commit 范围、完整 closure lifecycle、Round 08 fresh reviewer 与零 P0-P3 finding，并与当前正式 passed gate 一致。",
         "evidence_refs": [
           "review.md",
           "review-gate.json",
           "agent-assignment.json",
-          "reviews/round-07-final-release.md",
+          "reviews/round-08-final-release.md",
           "pr-body.md"
         ]
       },
       {
         "id": "docs_ssot_reconciliation",
         "status": "passed",
-        "summary": "ssot_first 计划已把 approved publication contract 合并到 durable workflow、spec、Skill、preset 与 public docs；sequence 004 是对既有 metadata revision/freshness 合同的实现对齐，不产生新的 durable semantic delta，task artifacts 仅保留审计历史。",
+        "summary": "ssot_first 计划已把 approved publication contract 合并到 durable workflow、spec、Skill、preset 与 public docs；sequence 004 对齐 scope freshness，sequence 005 只收敛 task evidence authoring，均不产生新的 durable semantic delta，task artifacts 仅保留审计历史。",
         "evidence_refs": [
           "planning-approval.json",
           "phase2-check.json",
@@ -91,14 +91,14 @@
         "evidence_refs": [
           "review.md",
           "review-gate.json",
-          "reviews/round-07-final-release.md",
+          "reviews/round-08-final-release.md",
           "pr-body.md"
         ]
       },
       {
         "id": "finish_summary_semantics",
         "status": "passed",
-        "summary": "Finish summary index 以 problem、outcome、十项 changed behavior、七类 affected surfaces、七项 contract changes 和可检索术语记录最终语义；新增内容说明 scope projection 边界，不携带 HEAD、runtime 数量、digest、绝对路径或外部状态快照。",
+        "summary": "Finish summary index 以 problem、outcome、八项 changed behavior、七类 affected surfaces、八项 contract changes 和可检索术语记录最终语义；contract-change source artifacts 均投影到最终 summary 可携带证据，派生 retrieval text 为 2872/3000 字符，且不携带 HEAD、runtime 数量、digest、绝对路径或外部状态快照。",
         "evidence_refs": [
           "finish-summary-index.json",
           "prd.md",
@@ -109,13 +109,13 @@
       {
         "id": "metadata_tail_integrity",
         "status": "passed",
-        "summary": "当前 working tree 仅包含 contract-listed Branch Review evidence、Round 07 raw report、sole current-HEAD completed commit plan，以及 publication-owned ledger、PR body、finish summary index；pr-readiness 自排除，没有 source、test、durable docs、workflow、schema、preset 或 deployment drift。",
+        "summary": "当前 working tree 仅包含 contract-listed Branch Review evidence、Round 08 raw report、sole current-HEAD completed commit plan，以及 publication-owned ledger、PR body、finish summary index；pr-readiness 自排除，没有 source、test、durable docs、workflow、schema、preset 或 deployment drift。",
         "evidence_refs": [
           "agent-assignment.json",
-          "task-commit-plans/004.json",
+          "task-commit-plans/005.json",
           "review.md",
           "review-gate.json",
-          "reviews/round-07-final-release.md",
+          "reviews/round-08-final-release.md",
           "issue-scope-ledger.json",
           "pr-body.md",
           "finish-summary-index.json"
@@ -123,11 +123,11 @@
       },
       {
         "id": "artifact_binding_freshness",
-        "status": "finding",
-        "summary": "Recorder 写入 attempted-ready pr-readiness.json 后，独立 checker 重新计算 Phase 2 时发现 implementation_handoff 仍绑定被替换的旧 pr-readiness bytes，产生 phase2_check_implementation_handoff_stale；ready artifact 因自身替换动作而失效。",
+        "status": "passed",
+        "summary": "Fresh Phase 2 Round 12、completed sequence 005、Branch Review Round 08、stable implementation handoff、ledger number-set projection 与 publication content 均绑定 current workflow state；stale profile 精确 supersede prior return ref，post-commit consumer audit 与十二项 deterministic preconditions 可重新建立为 passed。",
         "evidence_refs": [
           "phase2-check.json",
-          "task-commit-plans/004.json",
+          "task-commit-plans/005.json",
           "review-gate.json",
           "issue-scope-ledger.json",
           "pr-body.md",
@@ -217,9 +217,11 @@
           "phase2-check.json"
         ],
         "route_class": "task_work",
-        "status": "open",
+        "status": "closed",
         "closure_evidence": [
-          "Required route: perform a fresh full Phase 2 review whose implementation_handoff evidence excludes the replaceable pr-readiness.json bytes, then rerun Branch Review and publication stale re-entry."
+          "Fresh Phase 2 Round 12 binds only implementation-handoff.md and Round1-Round12 raw reports as implementation evidence, excluding pr-readiness and all downstream mutable publication/review metadata.",
+          "Sequence 005 committed the stable evidence artifact set at 26c6b01c7a0128eecdb9978793aa48d4115dcf89 with 12/12 tree/blob/mode matches and hook_mutation=false.",
+          "Branch Review Round 08 independently passed the complete 356-file/5-commit range and verified post-commit Phase2/publication entry freshness with zero P0-P3 findings."
         ]
       }
     ],
@@ -248,9 +250,9 @@
         "status": "passed",
         "summary": "不存在未披露 secret、生产数据、配置、migration 或部署资产影响；extension 安装、upgrade/update、reapply 与多平台分发均有 fresh evidence，当前 publication review 本身不执行外部副作用。",
         "evidence_refs": [
-          "phase2-worker-report-round11.md",
+          "phase2-worker-report-round12.md",
           "review.md",
-          "reviews/round-07-final-release.md",
+          "reviews/round-08-final-release.md",
           "pr-body.md"
         ]
       }
@@ -287,19 +289,43 @@
           "pr-readiness.json",
           "implementation-handoff.md"
         ]
+      },
+      {
+        "revision_ref": "PUB116-R4-final-current-head-publication-content",
+        "kind": "stale_reentry",
+        "summary": "在 Fresh Phase 2 Round 12、sequence 005 与 Branch Review Round 08 关闭 PUB116-TW3 后，将 ledger acceptance/pending head、PR body 与 finish summary index 更新到 26c6b01 最终 reviewed outcome，并重新执行全部十个 publication dimensions。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "finish-summary-index.json",
+          "phase2-check.json",
+          "task-commit-plans/005.json",
+          "review-gate.json"
+        ]
+      },
+      {
+        "revision_ref": "PUB116-R5-finish-summary-contract-projection",
+        "kind": "metadata_revision",
+        "summary": "根据 finalization dry-run 的机器合同，将 changed behavior 去重收敛为八项、缩短重复 contract wording，并把四个不可进入 final summary 的 source_artifact 投影到 design.md 或 phase2-check.json；不改变实现、验收、Issue scope、PR body 或 Branch Review 结论。",
+        "evidence_refs": [
+          "finish-summary-index.json",
+          "design.md",
+          "phase2-check.json",
+          "review-gate.json"
+        ]
       }
     ],
     "reviewer_process": {
       "reviewer": "Codex /root publication semantic owner",
-      "summary": "按 guru-review-task-publication stale profile 重新读取当前 #116 task、批准规划、Phase 2 Round 11、sequence 004、七轮 raw review、current Branch Review gate、ledger、完整 PR body 与 finish summary index，逐项完成十维判断；recorder 后继续运行独立 checker，发现 attempted-ready gate 的 post-write Phase 2 自失效并据此新增 PUB116-TW3，未以 recorder 成功或旧 snapshot 代替最终判断。",
+      "summary": "按 guru-review-task-publication stale profile 重新读取当前 #116 task、批准规划、Phase 2 Round 12、sequence 005、八轮 raw Branch Review、current gate、ledger、完整 PR body 与修订后的 finish summary index，逐项重做十维判断；确认 R5 仅为 contract-listed metadata revision，retrieval text 与 source artifact projection 满足 finalization 合同，未以 dry-run、recorder、checker、空 findings 或旧 snapshot 代替语义判断。",
       "evidence_refs": [
         "prd.md",
         "design.md",
         "phase2-check.json",
-        "task-commit-plans/004.json",
+        "task-commit-plans/005.json",
         "review.md",
         "review-gate.json",
-        "reviews/round-07-final-release.md",
+        "reviews/round-08-final-release.md",
         "issue-scope-ledger.json",
         "pr-body.md",
         "finish-summary-index.json"
@@ -312,8 +338,8 @@
       "confirmed_at": null
     },
     "ai_review_gate": {
-      "status": "return_to_task_work",
-      "summary": "PUB116-M1、PUB116-TW1、PUB116-TW2 已关闭，scope、content、Branch Review 与 metadata tail 均通过；但 attempted-ready artifact 写入后独立 checker 复现 PUB116-TW3：Phase 2 implementation_handoff 精确绑定了可被 stale re-entry 替换的旧 pr-readiness bytes。必须重新执行不绑定该可变下游 gate 的完整 Phase 2、Branch Review 与 publication review。"
+      "status": "passed",
+      "summary": "十个 publication dimensions与三项 scope/Docs/safety conclusions在 R5 metadata-only revision 后均重新审查通过；PUB116-M1、PUB116-TW1、PUB116-TW2、PUB116-TW3 保持关闭，metadata tail 仅含 allowlisted artifacts。recorder 后必须重建并由 checker 验证十二项 current entry preconditions；通过后 stale re-entry 可返回 ready，唯一 consumer 为 guru-finalize-task。"
     }
   },
   "deterministic_bindings": {
@@ -335,32 +361,32 @@
         "size": 38810
       },
       "phase2-check.json": {
-        "sha256": "f041601cbae0d7f2cba7d5ecaa10994144cc00fe0510f12a821d5c5cf843eec2",
-        "size": 110073
+        "sha256": "68ae193ccfaaf8984524bd938d7d52cbfdae977ecefb1585ead6808b062e9c2d",
+        "size": 111942
       },
       "issue-scope-ledger.json": {
-        "sha256": "11d34ed69f2f2c16da26ed458dcdab7bc3a0c98f9862528d94263d32b878df70",
-        "size": 6662
+        "sha256": "145390719d2a0dbc2380d8962074a1397227ef91ae0a9bdd71640c34adb6e337",
+        "size": 6806
       },
       "agent-assignment.json": {
-        "sha256": "a5982a35ed2435399458eef30a0e16393b7d4675bf95ebf2dbb217983cf96f5f",
-        "size": 379100
+        "sha256": "bac5c3fe929a07621f0062da241e9731ce842cb27ea5363b110aaf7ff13ea764",
+        "size": 388314
       },
       "review.md": {
-        "sha256": "b2298bc226c49d039b35a7d974e1c96af98a9a1648e374e56a245d2e9b9c01d8",
-        "size": 7461
+        "sha256": "d408a7c7ebd011cdd5532a9caac9761089c1ffd8dcf7ab22a0067822d7cbf270",
+        "size": 8776
       },
       "review-gate.json": {
-        "sha256": "ce4f270d22a2b715ff91bd7ca2c40e37215171673bfbbabb19efb2029570ff41",
-        "size": 117010
+        "sha256": "10ae9604c45b599e86700f32e64d13d6335041dbc317b3cca268ae3d16f48281",
+        "size": 120447
       },
       "pr-body.md": {
-        "sha256": "5ac949cf3e0f3448b98e81baf42563c81415010a67b160bb2d58c023f5252fd1",
-        "size": 5550
+        "sha256": "0c052c42a111cbc41a7abf4c3f5f5713d770d7d18c26932ca753f3d09407a0a6",
+        "size": 5982
       },
       "finish-summary-index.json": {
-        "sha256": "3980f8818b173004d126be13036193801c6b58a565aa28897aa4af8fd21bd28b",
-        "size": 9267
+        "sha256": "a7d3b08021d77dae0bd2a577bf14d1091ef25fe49fdbc873c298662a49d0a2cb",
+        "size": 8962
       },
       "implementation-handoff.md": {
         "sha256": "828d35472eac2e084a9d5f293e3ea411a824a497d1d172b7a73e539b76b49ec3",
@@ -368,7 +394,7 @@
       }
     },
     "repository": {
-      "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+      "head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
       "branch": "codex/116-review-task-publication",
       "base_ref": "origin/main",
       "diff_paths": [
@@ -624,6 +650,7 @@
         ".trellis/tasks/07-24-116-review-task-publication/phase2-check.json",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round10.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round11.md",
+        ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round12.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round2.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round3.md",
         ".trellis/tasks/07-24-116-review-task-publication/phase2-worker-report-round4.md",
@@ -645,10 +672,12 @@
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-04-final-release.md",
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-05-problem-closure.md",
         ".trellis/tasks/07-24-116-review-task-publication/reviews/round-06-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/001.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/002.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/003.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json",
         ".trellis/tasks/07-24-116-review-task-publication/task-start-context.json",
         ".trellis/tasks/07-24-116-review-task-publication/task.json",
         ".trellis/workflow.md",
@@ -733,8 +762,8 @@
         ".trellis/tasks/07-24-116-review-task-publication/pr-body.md",
         ".trellis/tasks/07-24-116-review-task-publication/review-gate.json",
         ".trellis/tasks/07-24-116-review-task-publication/review.md",
-        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-07-final-release.md",
-        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/004.json"
+        ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md",
+        ".trellis/tasks/07-24-116-review-task-publication/task-commit-plans/005.json"
       ]
     },
     "entry_preconditions": {
@@ -752,50 +781,62 @@
       },
       "branch_review_handoff": {
         "status": "passed",
-        "facts_sha256": "069166c2cd24cfd6ce2d7639ec2c0d805c48bbc212d722461e7bf2fdb28ec721"
+        "facts_sha256": "2351e56f556b88d2ddbb82e31289aa928a4546fef9a34ef666d98e36310090bb"
       },
       "planning_approval": {
         "status": "passed",
         "facts_sha256": "e1861ebe717a28f8bea8462a4b0c59276d516eda1e0dd17e81020961462d3920"
       },
+      "phase2_check": {
+        "status": "passed",
+        "facts_sha256": "8732437feb31120d18eda63c28625c264a4145cbee0921d6394efc765efbc347"
+      },
       "issue_scope_ledger": {
         "status": "passed",
-        "facts_sha256": "bc12942ee106c47ecab72512ffeafec5639225324cad943b4b293c35180f2a0d"
+        "facts_sha256": "e4603c70dee2d4c9b2e28d8a64681a3ad065dd41933fbec68f60e05d24b5a959"
       },
       "docs_ssot_reconciliation": {
         "status": "passed",
-        "facts_sha256": "2341503647a477aa85b32c53184eb6a93bf13f77e66aefb21738dd42a7e7de79"
+        "facts_sha256": "56f59ade8cc6421f09e46ab60b75f078432e1c2b418a28a4921c111e3ed2d535"
       },
       "branch_review_evidence": {
         "status": "passed",
-        "facts_sha256": "9f2aa982c39fb90f4fbb7c982ad2bc17a64345281123631371488c19179c020e"
+        "facts_sha256": "ec3873765a8cdcaec5cf3f43852aeb773ff3c9e21b87560a53fe389e111db094"
       },
       "publication_content": {
         "status": "passed",
-        "facts_sha256": "8076b3d733c1ccbde09b7b04b31088bab71a574702b0ef7513752245e7ba6b26"
+        "facts_sha256": "9f3f587c388e2a9c11cefc5b4a6bcfeb6b054567d5b5d2e72f911cc748dc7209"
       },
       "review_range_and_working_tree": {
         "status": "passed",
-        "facts_sha256": "2549b73e91bfcfd30ead17cd1993568af05d52ac3ce622b80aee0538b1ace2a2"
+        "facts_sha256": "d79e74382dc17afb32687563500d19169f475f3cb8172ab046ad5d2b828deb4a"
       },
       "invocation_freshness": {
         "status": "passed",
-        "facts_sha256": "cb2b33bfbc8093330c7976008f82e3dddd94fb5ce69e4baee37a548effc1ac4e"
-      },
-      "phase2_check": {
-        "status": "failed",
-        "facts_sha256": "15f67bf65a186b8ba147ab464a98139c126a38212fbbb832968e155d35edd97e"
+        "facts_sha256": "6598975bf6437a8e506a508a9fe1e8058782647336d828d3d38deacdc746759d"
       }
     },
-    "publication_ref": "publication:0ade9a21ed5654ddda6f98e330203d7511f894483134aae002fdb9b35ebf3058"
+    "publication_ref": "publication:4125905d59bb4b5a72012828b2b461ee52d37918ca63661742271dff16df28e8"
   },
-  "typed_exit": "return_to_task_work",
+  "typed_exit": "ready",
   "consumer": {
-    "kind": "workflow",
-    "id": "guru-task-publication-work-router"
+    "kind": "skill",
+    "id": "guru-finalize-task"
   },
-  "supersedes_publication_ref": "publication:72ecf55c043e067fe83dcfd71c8e134075fe9a561cd04995410b17d74d7a45b2",
-  "stale_reason": "The newly materialized ready gate invalidated a mutable prior pr-readiness.json binding inside the Phase 2 implementation-handoff evidence.",
-  "reentry_context": "Record the post-write freshness finding against the exact attempted-ready publication identity and return to task work for a fresh Phase 2 artifact that does not bind the replaceable publication gate as implementation evidence.",
-  "facts_sha256": "9624a4731fbec976041c805e1fd0ade7e09d359626ba46b19f9d08de0ed811a0"
+  "supersedes_publication_ref": "publication:4e5f682d0c11f28a65aab110911011d53bce6a36564961cc1a7adbb8834f9c67",
+  "stale_reason": "The prior ready publication identity predates the contract-valid metadata-only revision of finish-summary-index.json required by the finalization dry-run.",
+  "reentry_context": "Rebuild all twelve entry preconditions and all ten semantic dimensions against 26c6b01c7a0128eecdb9978793aa48d4115dcf89 after the finish summary index was shortened and its contract-change source artifacts were projected to valid final-summary evidence.",
+  "facts_sha256": "ef6f2eb81a1491c369a2b946c6354c06348683ca87a64830f57dda8245c9405e",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "codex/116-review-task-publication",
+    "reviewed_head_sha": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+    "title": "完成：#116 实现 guru-review-task-publication 闭环 Skill",
+    "body_source": "pr-body.md",
+    "body_sha256": "0c052c42a111cbc41a7abf4c3f5f5713d770d7d18c26932ca753f3d09407a0a6",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "3a111ed9272810953cc868065d3ae2f536684e14376ce53c4fa4a13b362c0257"
+  }
 }

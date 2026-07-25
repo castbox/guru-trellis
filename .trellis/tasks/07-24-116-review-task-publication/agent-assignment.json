@@ -1,9 +1,9 @@
 {
   "schema_version": "1.2",
   "generated_at": "2026-07-24T16:13:18Z",
-  "updated_at": "2026-07-25T08:00:13Z",
+  "updated_at": "2026-07-25T08:33:04Z",
   "task": ".trellis/tasks/07-24-116-review-task-publication",
-  "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
+  "head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
   "agents": [
     {
       "logical_role": "实现代理",
@@ -229,6 +229,15 @@
       "assigned_head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
       "reason": "Fresh independent Phase2 Round12 after publication checker exposed PUB116-TW3. The agent owns only phase2-worker-report-round12.md, must rerun the complete scope and validations, and must recommend a stable implementation-handoff evidence set that excludes replaceable pr-readiness.json bytes. No recorder, commit, push, PR, issue mutation, finalization or deployment.",
       "event_id": "evt-0373-884718cc74"
+    },
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "/root/issue116_branch_round8",
+      "platform_nickname": "",
+      "assigned_at": "2026-07-25T08:06:41Z",
+      "assigned_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+      "reason": "Fresh Branch Review Round08 for origin/main...26c6b01 five-commit full range after sequence005 evidence commit. New identity never implemented, checked Phase2, discovered/closed findings or reviewed prior rounds; owns only reviews/round-08-final-release.md and must verify PUB116-TW3 closure, stable Phase2 handoff evidence, post-commit consumer freshness, full candidate qualification and deployment/security boundaries. No recorder, commit, push, PR, issue mutation, finalization or deployment.",
+      "event_id": "evt-0375-99aef30d7e"
     }
   ],
   "liveness": {
@@ -731,6 +740,26 @@
       "pending_status_request_at": null,
       "last_checked_at": "",
       "last_decision": ""
+    },
+    "/root/issue116_branch_round8": {
+      "progress_anchor_at": "2026-07-25T08:06:41Z",
+      "last_scan_snapshot": {
+        "captured_at": "2026-07-25T08:06:41Z",
+        "task_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+        "task_content_status_digest": "748512cda6352eae804561db15728ab037c97ca730f7348db397b2f91e09d3c0",
+        "task_content_diff_stat_digest": "bfadd6fcff904eba98c6d8b9a78058eff7946a39242337c59e80eb37a1c1b71c",
+        "task_content_max_mtime": "2026-07-25T08:05:13Z",
+        "source_head": "bdc8f50bcd1e325aed331d4b01107b83ed8ee940",
+        "source_status_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_diff_stat_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_max_mtime": "2026-07-24T15:46:10Z",
+        "progress_events_count": 0,
+        "progress_events_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "progress_events_newest_event_id": ""
+      },
+      "pending_status_request_at": null,
+      "last_checked_at": "",
+      "last_decision": ""
     }
   },
   "review_rounds": [
@@ -838,6 +867,21 @@
       "review_report_sha256": "2f6b5c8c426edea4b73c59e31403510aec1aff7be8c6ec8bd260c287d6c7f64a",
       "review_report_size_bytes": 19803,
       "review_report_modified_at": "2026-07-25T07:06:08.791391+00:00"
+    },
+    {
+      "round": 8,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "/root/issue116_branch_round8",
+      "platform_nickname": "",
+      "reviewed_head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+      "findings_count": 0,
+      "reuse_policy": "Fresh final release reviewer must not have implemented, checked Phase2, discovered or closed findings, or participated in prior Branch Review rounds.",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-25T08:33:04Z",
+      "review_report_path": ".trellis/tasks/07-24-116-review-task-publication/reviews/round-08-final-release.md",
+      "review_report_sha256": "dedfdb3028aefae802971801fe9ec8eb385c7f6dd68c16d568513d1a5f57a593",
+      "review_report_size_bytes": 21120,
+      "review_report_modified_at": "2026-07-25T08:32:20.847087+00:00"
     }
   ],
   "reuse_decisions": [
@@ -7608,6 +7652,42 @@
       "head": "a1629fae4150bfbac9032aab8ca47497cba4e605",
       "source": "main-session",
       "evidence": "Round12 raw report received at phase2-worker-report-round12.md sha256 33bc1c2e2465445d213dc85b8cbd8eda7e725384f7ee6ba09be7982d332feaad size23100 lines312. Semantic recommendation passed with PUB116-TW3 qualified current_scope P2 and resolved as evidence-authoring correction; open P0/P1/P2/P3 zero. Fresh V01-V24 green: runtime573/13skip, Skill174, preset45, ownership9, publication18x2, Branch Review8x2, targeted1, exact 12 wrappers, parity/drift and full throwaway rc0. Formal implementation_handoff artifacts must exclude replaceable pr-readiness.json bytes. Boundary/planning/assignment/diff/source checkout clean; no recorder/commit/push/publication side effect.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0375-99aef30d7e",
+      "event": "assigned",
+      "agent_id": "/root/issue116_branch_round8",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-25T08:06:41Z",
+      "recorded_at": "2026-07-25T08:06:41Z",
+      "head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+      "source": "main-session",
+      "evidence": "Fresh Branch Review Round08 for origin/main...26c6b01 five-commit full range after sequence005 evidence commit. New identity never implemented, checked Phase2, discovered/closed findings or reviewed prior rounds; owns only reviews/round-08-final-release.md and must verify PUB116-TW3 closure, stable Phase2 handoff evidence, post-commit consumer freshness, full candidate qualification and deployment/security boundaries. No recorder, commit, push, PR, issue mutation, finalization or deployment.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0376-e99f33f556",
+      "event": "completed",
+      "agent_id": "/root/issue116_branch_round8",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-25T08:32:59Z",
+      "recorded_at": "2026-07-25T08:32:59Z",
+      "head": "26c6b01c7a0128eecdb9978793aa48d4115dcf89",
+      "source": "main-session",
+      "evidence": "Round08 final raw report received at reviews/round-08-final-release.md sha256 dedfdb3028aefae802971801fe9ec8eb385c7f6dd68c16d568513d1a5f57a593 size21120 lines482. Fresh independent reviewer covered origin/main...26c6b01 five commits/356 files; P0/P1/P2/P3 zero, typed recommendation passed. Full runtime573, Skill174, preset45, ownership9, contracts publication18x2/Branch8x2, eval7x2, targeted5, 12 wrappers, parity/syntax/diff/task/planning/workspace/assignment/security/deploy/plan005 all pass. PUB116-TW3 stable handoff and post-commit Phase2/publication precondition verified; source checkout clean; no recorder/commit/push/PR/issue mutation.",
       "predecessor_agent_id": "",
       "predecessor_event_id": "",
       "termination_reason": "",
