@@ -9767,6 +9767,30 @@ def phase2_path_digest(root: Path, path: Path) -> dict[str, Any]:
     }
 
 
+def phase2_requirement_artifact_digest(
+    root: Path,
+    path: Path,
+) -> dict[str, Any]:
+    relative = Path(repo_relative(root, path))
+    if (
+        relative.name == "issue-scope-ledger.json"
+        and relative.parts[:2] == (".trellis", "tasks")
+    ):
+        scope = planning_scope_ledger_projection(read_json(path))
+        canonical = json.dumps(
+            scope,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        return {
+            "path": relative.as_posix(),
+            "sha256": context_digest(scope),
+            "size_bytes": len(canonical),
+        }
+    return phase2_path_digest(root, path)
+
+
 def phase2_evidence_projection(
     root: Path,
     value: Any,
@@ -9794,7 +9818,11 @@ def phase2_evidence_projection(
                 "size_bytes": item.get("size_bytes"),
             })
         else:
-            current.append(phase2_path_digest(root, path))
+            current.append(
+                phase2_requirement_artifact_digest(root, path)
+                if label == "requirement_provenance"
+                else phase2_path_digest(root, path)
+            )
     projection = {"summary": str(value["summary"]).strip(), "artifacts": current}
     projection["facts_sha256"] = context_digest(projection)
     return projection

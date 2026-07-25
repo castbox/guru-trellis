@@ -5,7 +5,23 @@
     "url": "https://github.com/castbox/guru-trellis/issues/116",
     "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
     "reason": "当前唯一 primary independently deliverable change request。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "guru-review-task-publication 已作为 Interface 1.3 active semantic Skill 实现：workflow/standalone 双入口、十二项 entry preconditions、十维 AI Gate、metadata-only revision loop、唯一 pr-readiness.json 与 ready/return_to_task_work/blocked 三个 typed exits 均已闭合。",
+      "Fresh Phase 2 typed exit 为 passed：runtime 572 tests passed/13 skipped、Skill packages 174/174、publication contracts 18/18 x2、actual-wrapper eval 7/7 x2、preset 45/45、ownership 9/9、registry 11 active Skills/42 exits/25 targets。",
+      "三个 task work commits 精确绑定最终 reviewed content HEAD d7ab98f5c53f470f4d3f3742f8cfca24f8465edd；六布局 12 条真实命令、package parity、dogfood drift与 fresh install/update/reapply 均通过。",
+      "Branch Review Gate 绑定 origin/main...d7ab98f5c53f470f4d3f3742f8cfca24f8465edd；历史 P2/P1 findings 均由合法 closure round 关闭，Round 06 fresh final reviewer 覆盖完整 345-file/3-commit 范围且 P0/P1/P2/P3 均为 0，typed exit 为 passed。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "pending",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "",
+        "verified_content_head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+        "remote_head": "",
+        "publish_head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+        "commands_passed": false
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,7 +29,23 @@
       "url": "https://github.com/castbox/guru-trellis/issues/116",
       "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
       "reason": "本 task 完整承诺并由后续 review gate 验收的 issue。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "guru-review-task-publication 已作为 Interface 1.3 active semantic Skill 实现：workflow/standalone 双入口、十二项 entry preconditions、十维 AI Gate、metadata-only revision loop、唯一 pr-readiness.json 与 ready/return_to_task_work/blocked 三个 typed exits 均已闭合。",
+        "Fresh Phase 2 typed exit 为 passed：runtime 572 tests passed/13 skipped、Skill packages 174/174、publication contracts 18/18 x2、actual-wrapper eval 7/7 x2、preset 45/45、ownership 9/9、registry 11 active Skills/42 exits/25 targets。",
+        "三个 task work commits 精确绑定最终 reviewed content HEAD d7ab98f5c53f470f4d3f3742f8cfca24f8465edd；六布局 12 条真实命令、package parity、dogfood drift与 fresh install/update/reapply 均通过。",
+        "Branch Review Gate 绑定 origin/main...d7ab98f5c53f470f4d3f3742f8cfca24f8465edd；历史 P2/P1 findings 均由合法 closure round 关闭，Round 06 fresh final reviewer 覆盖完整 345-file/3-commit 范围且 P0/P1/P2/P3 均为 0，typed exit 为 passed。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "pending",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "",
+          "verified_content_head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+          "remote_head": "",
+          "publish_head": "d7ab98f5c53f470f4d3f3742f8cfca24f8465edd",
+          "commands_passed": false
+        }
+      ]
     }
   ],
   "related_issues": [

@@ -7646,6 +7646,111 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             for patcher in reversed(patches):
                 patcher.stop()
 
+    def test_phase2_requirement_provenance_uses_scope_only_ledger_projection(self) -> None:
+        ledger_path = self.task_dir / "issue-scope-ledger.json"
+        source = {
+            "summary": "Phase 2 reviewed the current issue scope.",
+            "artifacts": [{
+                "path": ".trellis/tasks/07-04-gates/issue-scope-ledger.json",
+            }],
+        }
+        recorded = gtt.phase2_evidence_projection(
+            self.root,
+            source,
+            "requirement_provenance",
+        )
+
+        ledger = gtt.read_json(ledger_path)
+        other_label_recorded = gtt.phase2_evidence_projection(
+            self.root,
+            source,
+            "implementation_handoff",
+        )
+        non_task_ledger_path = self.root / "issue-scope-ledger.json"
+        gtt.write_json(non_task_ledger_path, ledger)
+        non_task_source = {
+            "summary": "Phase 2 reviewed a non-task-local ledger.",
+            "artifacts": [{"path": "issue-scope-ledger.json"}],
+        }
+        non_task_recorded = gtt.phase2_evidence_projection(
+            self.root,
+            non_task_source,
+            "requirement_provenance",
+        )
+
+        ledger["primary_issue"]["acceptance_evidence"] = [
+            "Publication acceptance evidence was added after Branch Review.",
+        ]
+        ledger["close_issues"][0]["acceptance_evidence"] = [
+            {
+                "type": "remote_marketplace_verification",
+                "status": "pending",
+            },
+        ]
+        gtt.write_json(ledger_path, ledger)
+        metadata_only = gtt.phase2_evidence_projection(
+            self.root,
+            recorded,
+            "requirement_provenance",
+        )
+        self.assertEqual(metadata_only, recorded)
+
+        other_label_changed = gtt.phase2_evidence_projection(
+            self.root,
+            other_label_recorded,
+            "implementation_handoff",
+        )
+        self.assertNotEqual(
+            other_label_changed["artifacts"][0],
+            other_label_recorded["artifacts"][0],
+        )
+
+        gtt.write_json(non_task_ledger_path, ledger)
+        non_task_changed = gtt.phase2_evidence_projection(
+            self.root,
+            non_task_recorded,
+            "requirement_provenance",
+        )
+        self.assertNotEqual(
+            non_task_changed["artifacts"][0],
+            non_task_recorded["artifacts"][0],
+        )
+
+        ledger["related_issues"] = [{"number": 99}]
+        gtt.write_json(ledger_path, ledger)
+        scope_changed = gtt.phase2_evidence_projection(
+            self.root,
+            recorded,
+            "requirement_provenance",
+        )
+        self.assertNotEqual(
+            scope_changed["artifacts"][0],
+            recorded["artifacts"][0],
+        )
+
+        invalid_task_dir = self.root / ".trellis/tasks/invalid-ledger"
+        invalid_task_dir.mkdir(parents=True)
+        invalid_ledger_path = invalid_task_dir / "issue-scope-ledger.json"
+        invalid_ledger = copy.deepcopy(ledger)
+        invalid_ledger["primary_issue"]["number"] = 0
+        gtt.write_json(invalid_ledger_path, invalid_ledger)
+        with self.assertRaises(gtt.WorkflowError) as invalid_error:
+            gtt.phase2_evidence_projection(
+                self.root,
+                {
+                    "summary": "Phase 2 must reject an invalid task-local ledger.",
+                    "artifacts": [{
+                        "path": ".trellis/tasks/invalid-ledger/issue-scope-ledger.json",
+                    }],
+                },
+                "requirement_provenance",
+            )
+        self.assertEqual(invalid_error.exception.exit_code, 2)
+        self.assertIn(
+            "positive primary issue number",
+            str(invalid_error.exception),
+        )
+
     def test_validate_planning_approval_accepts_archived_task_with_active_artifact_paths(self) -> None:
         patches = self.patch_common()
         for patcher in patches:

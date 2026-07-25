@@ -786,3 +786,152 @@ files、0 sidecar/removal/conflict；dogfood overlay 无漂移，递归 sidecar 
 runtime 572/572 passed（13 skipped）、Skill package 174/174 passed、throwaway
 exit 0 且 fresh/update/reapply 三阶段各 10/10。fresh Phase 2 必须重新执行其完整
 语义检查矩阵，并重点确认测试源码不再含 92 的过期期望且本轮没有实现行为变化。
+
+## 13. Publication return adoption 与 Phase 2 Round 10 finding-fix
+
+### 13.1 Finding 承接、根因与实现结论
+
+本轮 implementation role 已正式承接 publication `return_to_task_work` 的
+`PUB116-TW1`、`PUB116-TW2`，以及 formal Phase 2 Round 10 唯一 finding
+`PH2-116-R10-P2-01`。Round 10 对代码、installed copy、全量 suites、分发和
+throwaway 的结论是技术修复成立；该 finding 的剩余缺口是 publication return 后
+没有 current implementer adoption/completed evidence，也没有 current
+implementation handoff。本节补齐 owner handoff，并对现有实现做 fresh 独立核验。
+
+根因是 Phase 3.6 publication review 按合同补齐
+`issue-scope-ledger.json.acceptance_evidence` 与固定 pending
+`remote_marketplace_verification` 后，旧 Phase 2
+`requirement_provenance` 仍绑定 ledger 全文件 digest。Planning 已按
+primary/close/related/follow-up issue number-set 建立 scope identity，因此合法的
+publication metadata revision 被错误判为 requirement scope stale，阻断了
+metadata-only revision loop。
+
+现有 `phase2_requirement_artifact_digest()` 修复已被本 implementation role
+adopt，运行时代码无需再次修改。它只在下列两个条件同时成立时复用
+`planning_scope_ledger_projection()`：
+
+1. `phase2_evidence_projection()` 的 label 精确为
+   `requirement_provenance`；
+2. artifact basename 为 `issue-scope-ledger.json`，且 repo-relative path
+   位于 `.trellis/tasks/**`。
+
+其它 evidence label、非 task-local 同名 ledger 继续使用
+`phase2_path_digest()` 的 full digest；task-local ledger 缺少合法 primary 或完整
+issue number-set 时，`planning_scope_ledger_projection()` 以
+`WorkflowError(exit_code=2)` fail closed。Helper 只计算确定性 identity/freshness，
+不判断 issue scope、finding、adequacy、revision action 或 route。Public Skill
+input/output、schema id、typed exits、consumer mapping、publication semantic
+dimensions 与 workflow route 均未改变。
+
+### 13.2 文件 adoption、修改与生成边界
+
+本轮授权文件的状态如下：
+
+- adopted、运行时代码未再修改：
+  `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`、
+  `.trellis/guru-team/scripts/python/guru_team_trellis.py`。两者 SHA-256 均为
+  `f7a043e184776c868014050806fc8b9a39e358fc816c9bd7cf38ce4c406498c9`，
+  各 `1545787` bytes，mode 均为 `755`，byte-identical；
+- modified：
+  `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`。
+  保留已有 positive/negative regression，并在同一个 test 内补齐其它 label、
+  非 task-local ledger 与非法 ledger 三项边界；SHA-256
+  `3339b699598a17b725bd1606d61b641f49802064a1079c42bfcdeaaf17768f70`，
+  `1169659` bytes；
+- deterministic refresh：
+  `.trellis/guru-team/extension.json` 仅由 final preset apply 重算；
+  `installed_at=2026-07-25T06:12:13Z`，source 仍绑定
+  `codex/116-review-task-publication@d7ab98f5c53f470f4d3f3742f8cfca24f8465edd`
+  与 dirty tree；SHA-256
+  `50b7ee6c0353173d001553f73ad707f8695b1c05c0a0954667a6d93572f4cf5b`，
+  `817448` bytes；
+- modified task-history-only：
+  本 `implementation-handoff.md` 新增 Section 13。
+
+未修改 planning、issue ledger、Phase 2 raw report/gate、publication
+gate/body/index、Branch Review artifact、agent assignment、commit plan 或其它
+文件。工作树中这些既有并行变更均被保留；source checkout
+`/Users/wumengye/Documents/GoProjects/guru-trellis` 仍为
+`main@bdc8f50bcd1e325aed331d4b01107b83ed8ee940` 且 clean。
+
+### 13.3 Projection normal-path matrix 与验证
+
+同一 targeted regression 现在固定以下矩阵：
+
+| Case | 预期与结果 |
+| --- | --- |
+| task-local requirement provenance 增加 acceptance 文本和 pending remote object | projection 完全相等，不 stale |
+| task-local requirement provenance 修改 related issue number-set | artifact projection 改变，scope drift fail closed |
+| 同一 task-local ledger 使用 `implementation_handoff` label | metadata 变化导致 full digest 改变 |
+| repo root 同名 ledger 使用 `requirement_provenance` label | metadata 变化导致 full digest 改变 |
+| task-local ledger 的 primary issue number 非法 | `WorkflowError(exit_code=2)`，不降级为 full digest 或空 projection |
+
+本 implementation role 独立执行：
+
+- `python3
+  trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py
+  PlanningAndPhase2GateTest.test_phase2_requirement_provenance_uses_scope_only_ledger_projection`：
+  1/1 passed，0.023s；
+- canonical runtime、扩展 regression 与 installed runtime 的
+  `python3 -m py_compile`：passed；
+- canonical/installed runtime SHA、byte、mode parity：passed；
+- 授权五文件 `git diff --check`：passed；
+- `trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh`：
+  `status=ok`，zero drift；
+- recursive `.bak/.new/.orig` scan：0；
+- source checkout boundary：clean，未被本代理触碰。
+
+Round 10 的 fresh full evidence 可继续作为 adoption 的 broad baseline：
+runtime 573 tests（13 skipped）、Skill package 174、preset 45、ownership 9、
+publication contract 18x2、eval 7x2 与完整 throwaway 均通过。本轮扩展了既有
+single regression 的断言但没有增加 test case count；没有用 Round 10 的旧 full
+结果冒充修改后的 full rerun。下一轮独立 Phase 2 必须重新执行完整 suite，预期仍
+为 runtime 573 tests，并把 fresh 输出写入新的 raw report。
+
+### 13.4 Final all-platform apply、Docs SSOT 与影响
+
+最终执行
+`trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms --json`
+得到 exit 0、`status=ok`、`all_platforms=true`，selected platforms 为
+Claude/Codex/Cursor。Manifest 当前为 94 managed assets、2100 managed Skill
+files；2100 项 action 全为 `unchanged`，`installed=[]`、
+`updated_managed=[]`、`new_copies=[]`、`managed_backups=[]`，Skill package
+removal/conflict/sidecar 均为 0。Public `.agents` copy 与 installed shared copy
+继续由同一 all-platform install 收敛。
+
+Docs SSOT Plan 继续使用已批准的 `ssot_first`。Durable workflow、data、
+companion-script、quality 与 Skill package contracts 已经定义 metadata-only
+publication revision、Phase 2 freshness、scope drift fail-closed 与
+semantic/script boundary；本轮只让 deterministic runtime 和 regression 兑现现有
+合同，没有新的 durable docs/spec/overlay delta。官方 Trellis 当前合同仍把
+`.trellis/workflow.md` 作为 workflow behavior SSOT，并要求 marketplace 内容可复用
+及通过 throwaway 验证；本修复没有修改 upstream Trellis、全局 npm 或
+`node_modules`。
+
+新增代码不读取 secret、客户数据、`.env`、签名 URL 或远端 payload；无 CI/CD、
+container、K8s、DB migration、Makefile、dependency、配置或生产部署影响。Exact
+remote candidate-branch marketplace ref 仍无法验证，因为分支未 push；这是
+`UV-R10-01` 的 non-blocking/out-of-scope limitation，由后续 publish/finalization
+gate 拥有，不能以 public marketplace sample 冒充 exact remote evidence。
+
+### 13.5 未执行副作用与下一轮 fresh Phase 2 交接
+
+本 implementation role 未调用 Phase 2 recorder/checker，未改
+`phase2-check.json`，未执行 task commit、Branch Review Gate、publication
+stale re-entry、push、PR/Issue mutation、remote verifier、archive、finish、
+finalization、deploy 或 production write。
+
+下一轮必须使用新的独立 checker identity 对完整
+`origin/main...HEAD`、当前未提交 diff、Section 13 与 assignment completed evidence
+做 fresh full Phase 2，重点确认：
+
+1. `PUB116-TW1` / `PUB116-TW2` 的 scope-only projection 在五项 matrix 中成立，
+   `PH2-116-R10-P2-01` 已由 current implementer adoption/handoff 关闭；
+2. modified regression 的完整 runtime suite fresh 通过，且 canonical/installed
+   runtime、94 assets、2100 Skill files、zero drift/sidecar 保持一致；
+3. planning authority、issue number-set 与 Docs SSOT 没有 drift，public I/O 和
+   semantic/script boundary 未变化；
+4. remote exact-ref limitation 被如实保留，不授权任何发布副作用。
+
+只有 fresh full Phase 2 记录 `passed` 后，主会话才能进入 finding-fix commit，
+随后重新执行完整 Branch Review lifecycle 和 publication stale re-entry。
