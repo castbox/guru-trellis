@@ -17958,6 +17958,38 @@ def extension_verification_workflow_source(repo_ref: str, ref: str) -> str:
     )
 
 
+def extension_verification_remote_ref_command(
+    remote: str,
+    ref: str,
+) -> list[str]:
+    return ["git", "ls-remote", remote, ref, f"{ref}^{{}}"]
+
+
+def extension_verification_resolved_remote_head(
+    remote_proc: subprocess.CompletedProcess[str],
+    ref: str,
+) -> str | None:
+    if remote_proc.returncode != 0:
+        return None
+    direct_ref = ref
+    peeled_ref = f"{ref}^{{}}"
+    rows: dict[str, str] = {}
+    for line in remote_proc.stdout.splitlines():
+        fields = line.split()
+        if (
+            len(fields) != 2
+            or fields[1] not in {direct_ref, peeled_ref}
+            or fields[1] in rows
+            or re.fullmatch(r"[0-9a-f]{40}", fields[0]) is None
+        ):
+            return None
+        rows[fields[1]] = fields[0]
+    direct_head = rows.get(direct_ref)
+    if direct_head is None:
+        return None
+    return rows.get(peeled_ref, direct_head)
+
+
 def extension_verification_ownership_facts(path: Path) -> dict[str, Any]:
     facts: dict[str, Any] = {
         "frozen_transitional_legacy_count": 0,
@@ -18022,25 +18054,15 @@ def extension_verification_execute_facts(
     )
     required_head = expected_head or reviewed_head
     commands: list[dict[str, Any]] = []
-    remote_proc = run(["git", "ls-remote", remote, ref], cwd=root, check=False)
+    remote_command = extension_verification_remote_ref_command(remote, ref)
+    remote_proc = run(remote_command, cwd=root, check=False)
     commands.append(
         extension_verification_command_evidence(
-            ["git", "ls-remote", remote, ref],
+            remote_command,
             remote_proc,
         )
     )
-    remote_lines = [
-        line.split()
-        for line in remote_proc.stdout.splitlines()
-        if line.strip()
-    ]
-    remote_head = (
-        remote_lines[0][0]
-        if len(remote_lines) == 1
-        and len(remote_lines[0]) >= 2
-        and remote_lines[0][1] == ref
-        else ""
-    )
+    remote_head = extension_verification_resolved_remote_head(remote_proc, ref)
     status = "blocked"
     asset_digests: dict[str, str] = {}
     ownership: dict[str, Any] = {
@@ -18050,8 +18072,7 @@ def extension_verification_execute_facts(
     sidecars: list[str] = []
     remote_url = ""
     if (
-        remote_proc.returncode == 0
-        and re.fullmatch(r"[0-9a-f]{40}", remote_head)
+        remote_head is not None
         and (required_head is None or remote_head == required_head)
     ):
         remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
@@ -18096,6 +18117,12 @@ def extension_verification_execute_facts(
                 )
             )
             checkout_proc = subprocess.CompletedProcess([], 1, "", "clone failed")
+            checkout_head_proc = subprocess.CompletedProcess(
+                [],
+                1,
+                "",
+                "checkout failed",
+            )
             if clone_proc.returncode == 0:
                 checkout_proc = run(
                     ["git", "checkout", "--detach", remote_head],
@@ -18108,12 +18135,36 @@ def extension_verification_execute_facts(
                         checkout_proc,
                     )
                 )
+            if checkout_proc.returncode == 0:
+                checkout_head_command = [
+                    "git",
+                    "rev-parse",
+                    "--verify",
+                    "HEAD^{commit}",
+                ]
+                checkout_head_proc = run(
+                    checkout_head_command,
+                    cwd=source_checkout,
+                    check=False,
+                )
+                commands.append(
+                    extension_verification_command_evidence(
+                        checkout_head_command,
+                        checkout_head_proc,
+                    )
+                )
+            checkout_head = checkout_head_proc.stdout.strip()
+            checkout_head_matches = (
+                checkout_head_proc.returncode == 0
+                and re.fullmatch(r"[0-9a-f]{40}", checkout_head) is not None
+                and checkout_head == remote_head
+            )
             throwaway_proc = subprocess.CompletedProcess([], 1, "", "checkout failed")
             throwaway = (
                 source_checkout
                 / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
             )
-            if checkout_proc.returncode == 0 and throwaway.is_file():
+            if checkout_head_matches and throwaway.is_file():
                 throwaway_proc = run(
                     [str(throwaway)],
                     cwd=source_checkout,
@@ -18167,6 +18218,7 @@ def extension_verification_execute_facts(
                 "passed"
                 if clone_proc.returncode == 0
                 and checkout_proc.returncode == 0
+                and checkout_head_matches
                 and throwaway_proc.returncode == 0
                 and len(asset_digests) == len(tracked_assets)
                 and ownership["frozen_transitional_legacy_count"] == 43
@@ -18182,7 +18234,7 @@ def extension_verification_execute_facts(
         "remote": remote,
         "ref": ref,
         "reviewed_head": required_head,
-        "remote_head": remote_head or None,
+        "remote_head": remote_head,
         "status": status,
         "commands": commands,
         "capabilities": [
@@ -25688,28 +25740,16 @@ def check_extension_verification_result(
         else {}
     )
     if os.environ.get("GURU_TEAM_EVAL_STAGING") != "1":
+        remote = str(repository.get("remote") or "")
+        ref = str(repository.get("ref") or "")
         remote_proc = run(
-            [
-                "git",
-                "ls-remote",
-                str(repository.get("remote") or ""),
-                str(repository.get("ref") or ""),
-            ],
+            extension_verification_remote_ref_command(remote, ref),
             cwd=root,
             check=False,
         )
-        lines = [
-            line.split()
-            for line in remote_proc.stdout.splitlines()
-            if line.strip()
-        ]
-        live_head = (
-            lines[0][0]
-            if remote_proc.returncode == 0
-            and len(lines) == 1
-            and len(lines[0]) >= 2
-            and lines[0][1] == repository.get("ref")
-            else None
+        live_head = extension_verification_resolved_remote_head(
+            remote_proc,
+            ref,
         )
         if live_head != repository.get("remote_head"):
             errors.append("remote ref HEAD no longer matches private evidence.")

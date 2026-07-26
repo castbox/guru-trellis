@@ -1,153 +1,166 @@
-# #117 BR-117-F8 实现交接
+# #117 BR-117-F9 Implementation Complete
 
-## 1. 实现结论
+## Files Modified
 
-本轮实现边界已完成 `BR-117-F8` 的 working-tree candidate：
+- `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`
+  - 新增 requested ref direct/peeled 解析；
+  - executor 冻结 resolved commit，checkout 后验证
+    `git rev-parse --verify HEAD^{commit}`；
+  - checker 使用相同解析规则复核 remote freshness。
+- `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`
+  - 新增 branch、lightweight tag、annotated tag、checkout mismatch、
+    workflow reviewed commit binding、checker/public projection 测试；
+  - 更新 marketplace compatibility fixture 以承接 checkout commit evidence。
+- `trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json`
+  - 明确 remote identity 与 executor 绑定 resolved checkout commit。
+- `trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md`
+  - 明确 annotated tag peel、checkout commit 验证、fail-closed mismatch 及
+    `remote_head`/`resolved_head` 字段语义。
+- `.trellis/guru-team/scripts/python/guru_team_trellis.py`
+  - 由 canonical workflow runtime 同步的 dogfood 运行副本。
+- `.trellis/guru-team/skills/packages/guru-verify-extension-installation/`
+  - 同步 canonical package 的 `interface.json` 与 `references/contract.md`。
+- `.agents/skills/`、`.codex/skills/`、`.claude/skills/`、
+  `.cursor/skills/` 下的 `guru-verify-extension-installation`
+  - 同步相同的 package contract。
+- `.trellis/guru-team/extension.json`
+  - 更新 package/provenance digest，并稳定为全平台 `status=ok`。
+- `.trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md`
+  - 本轮 F9 实现、Docs SSOT、验证与 check 交接。
 
-- 只删除
-  `.trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md`
-  的一个 EOF 多余空行；
-- 不改写 Round 3 的语义结论、验证声明或 closure recommendation；
-- 更新 task-local `review.md`，真实记录 F1/F2/F7 已关闭，F8 为
-  `resolved_pending_closure`；
-- 未修改 canonical runtime、public Skill package、schema、workflow、preset、
-  overlay、README 或 durable requirements。
+未修改既有 `agent-assignment.json`、`review-gate.json`、`review.md`、
+`task-commit-plans/004.json` 或 `reviews/005-f8-closure.md` /
+`reviews/006-final.md`；这些并行生命周期产物保持原样。
 
-实现代理未修改 `agent-assignment.json`、`review-gate.json` 或
-`task-commit-plans/003.json`，未运行 `trellis-check`，未记录 Phase 2 或 Branch
-Review Gate，未 commit、push、创建 PR、关闭 Issue 或调用 finish-work。
+## Implementation Summary
 
-## 2. Changed paths
+1. `git ls-remote` 现在一次请求 exact `<ref>` 与 `<ref>^{}`。共享 parser
+   只接受无重复、合法 lowercase 40-hex 的 exact rows：
+   - branch：direct commit；
+   - lightweight tag：direct commit；
+   - annotated tag：peeled commit，direct tag-object 不作为 resolved HEAD。
+2. Executor 在 clone 前冻结 resolved commit，并用它执行
+   `git checkout --detach <resolved-commit>`。
+3. Checkout 成功后必须运行并记录 sanitized
+   `git rev-parse --verify HEAD^{commit}` evidence。只有实际 checkout commit
+   与冻结 resolved commit 完全一致，才允许运行 throwaway installer；不一致时
+   `status=failed` 并 fail closed。
+4. Workflow 的 `reviewed_head` 与 compatibility API 的 `expected_head` 都和
+   resolved commit 比较，不再和 annotated tag direct object 比较。
+5. Checker freshness 复用相同 direct/peeled parser；private `remote_head`
+   与 standalone public `resolved_head` 均继续使用既有字段，但统一表示
+   verified checkout commit。没有向 public DTO 增加 tag-object identity。
+6. Branch、lightweight tag 和既有 marketplace source/ref 行为保持兼容；
+   schema version、public output shape、typed exits、consumer mapping均未改变。
 
-- `reviews/002-closure.md`：删除唯一 EOF 多余空行。
-- `review.md`：补入 Round 5、F7 closure、F8 finding 与 working-tree candidate
-  状态。
-- `implementation-handoff.md`：新增本轮实现、验证、Docs SSOT 与 freshness 交接。
+## Requirement And Design Carryover
 
-## 3. Requirement 与 design 承接
+- 完成 `BR-117-F9`：区分 requested ref direct object 与 resolved checkout
+  commit，冻结后验证实际 checkout，并在 mismatch 时阻止 throwaway/success。
+- 保留已审核的 public/private 边界：tag-object identity 不进入 public DTO；
+  `remote_head`/`resolved_head` 是 resolved commit。
+- 保留 workflow reviewed-commit binding、standalone session-only、blocked
+  unresolved ref、semantic Gate 与 recorder/validator 分层。
+- 未扩展恶意篡改、并发竞态、TOCTOU、锁、原子写入或其它已排除非功能场景。
+- 未修改 workflow route、schema、preset installer 行为、overlay surface、
+  ownership inventory、README command 或 release/deployment contract。
 
-F8 直接承接：
+## Docs SSOT Handoff
 
-- `implement.md:171` 对完整范围 `git diff --check` 的要求；
-- `.trellis/spec/workflow/quality-guidelines.md` 的 required validation；
-- Branch Review raw report 保持中文、可审计且不改写历史语义的合同。
+- Strategy: `ssot_first`
+- Durable docs updated or checked:
+  - 已更新 canonical Skill `interface.json` 与 `references/contract.md`，使
+    ref peel、checkout verification 和字段语义成为 package durable contract；
+  - 实现前已核对 `.trellis/spec/workflow/workflow-contract.md`、
+    `companion-scripts.md`、`skill-package-contract.md`、
+    `quality-guidelines.md`、`.trellis/spec/preset/installer.md`、
+    `upstream-ownership.md`、`overlay-guidelines.md` 与
+    `.trellis/spec/docs/public-docs.md`；
+  - 上述 spec 已要求 cloned checkout commit verification、canonical-first
+    distribution、known-managed backup recovery 和 zero-sidecar 终态，因此没有
+    为 F9 重复新增更高层规则。
+- Task artifact delta merged back to durable docs:
+  - annotated tag direct object 与 peeled commit 的区分；
+  - checkout 后 `HEAD^{commit}` exact comparison；
+  - private `remote_head` / public `resolved_head` 均表示 resolved commit；
+  - direct tag-object 不进入 public DTO。
+- Task-history-only content:
+  - F9 review finding provenance、复现用 direct/peeled OID、实现过程状态、
+    初次 installer recovery 过程和本 handoff 的命令证据。
+- No-update reason or follow-up / current PR limitation:
+  - `.trellis/spec/`、workflow、schema、overlay、README 和
+    `data-contracts.md` 无更新；现有 durable owners 已覆盖行为边界，F9
+    未新增 API 字段、route、安装命令或平台能力；
+  - exact pushed feature-ref clean install 仍受当前 PR 尚未 push 的限制。
+- Implementation inputs from durable docs:
+  - companion script executor/validator 边界；
+  - Skill minimal public I/O/private state；
+  - canonical/runtime/package/platform 镜像和 installer recovery 合同；
+  - normal-path correctness scope 与 required validation。
+- Implementation inputs from confirmed task delta:
+  - `BR-117-F9` 对 annotated tag object/commit 分离、post-checkout evidence、
+    mismatch fail-closed、branch/lightweight compatibility 与 workflow reviewed
+    commit binding 的精确要求。
 
-本轮没有新增产品行为、public I/O、runtime route、安装或升级合同。F8 的
-implementation candidate 只修正 task-local Markdown 格式；正式 finding 状态仍由后续
-独立 closure reviewer 拥有，当前 reviewer-owned gate 继续为
-`implementation_required`。
+## Verification Results
 
-## 4. Docs SSOT Plan
+- Focused runtime:
+  - `ExtensionVerificationRuntimeTest`: 23 passed；
+  - `MarketplaceVerificationContractTest`: 7 passed。
+- Package contract:
+  - `guru-verify-extension-installation/tests/test_contract.py`: 8 passed。
+- Full runtime:
+  - `test_guru_team_trellis.py`: Ran 596，OK，13 skipped。
+- Real Git ref probe:
+  - branch 与 lightweight tag 只返回 direct commit；
+  - annotated tag 返回 direct tag-object 与 `<ref>^{}` peeled commit；
+  - peeled OID 与实际 checkout commit一致。
+- Preset distribution:
+  - 初次默认 apply 按合同生成 9 个 known-managed `.bak` 并因平台选择缩小
+    暂时移除 Claude；
+  - 9 个 backup 均逐一验证为 HEAD 旧托管版本后删除；
+  - `apply.sh --repo . --all-platforms` 重放并再次验证幂等；
+  - 最终 shared/Codex/Claude/Cursor 全同步，2322 managed files 全
+    `unchanged`，0 conflict、0 sidecar、0 removal。
+- Static/install checks:
+  - `check-dogfood-overlay-drift.sh`: passed；
+  - `check-upstream-ownership.sh --json`: `status=ok`；
+  - `check-skill-packages.sh --mode source`: passed；
+  - `check-skill-packages.sh --mode installed`: passed；
+  - canonical/installed runtime `cmp`: passed；
+  - canonical/installed runtime `py_compile`: passed；
+  - package wrapper `bash -n`: passed；
+  - recursive `.new`/`.bak` scan: zero；
+  - `.trellis/guru-team/extension.json`: package `status=ok`，全平台，
+    zero conflict/sidecar；
+  - `git diff --check`: passed。
+- Lint: pass，`git diff --check`、Python compile 与 shell syntax均通过。
+- TypeCheck: skipped；仓库对该单文件 runtime 没有独立静态 typecheck 命令，
+  由 full unittest、schema/package validators 与 Python compile 承接。
 
-策略：`ssot_first`。
+## Handoff For Check
 
-### Durable docs 输入
-
-实现以已批准的 `design.md` Docs SSOT Plan、`implement.md` validation contract 和
-`.trellis/spec/workflow/quality-guidelines.md` 为主输入。前序 #117 实现已将
-applicability、profile、adequacy、public I/O、private evidence、retry/stale、
-redaction、remote clean install 与 update/reapply 的 task delta 合并到 canonical
-package、workflow/spec、requirements 和 README owners。
-
-### 本轮同步结果
-
-- Durable docs update：无。
-- No-update reason：F8 只删除 task-local raw report 的 EOF 空行，不产生新的稳定行为、
-  API、schema、workflow、installer、ownership、部署或安全语义。
-- Task delta merged to durable docs：本轮没有新的 durable delta；格式修复直接落在其
-  task-local owner。
-- Task-history-only：Round 3 原始 closure 内容、Round 5 对 F8 的发现、本轮候选验证、
-  assignment digest stale 事实和本实现交接。
-- `bootstrap_or_repair_docs`：不适用。
-- Follow-up / current PR limit：exact pushed feature-ref clean install 仍必须在后续
-  授权 push 后独立完成；当前 local-source throwaway 不替代该 publication gate。
-
-### Durable docs 与 task delta 的实现输入
-
-稳定质量标准来自 durable `quality-guidelines.md`；F8 的 affected path、qualification、
-severity 与 required closure 来自已登记的 Round 5 raw report。Task delta 只限定本次
-修复目标，不被提升为新的 durable contract。
-
-## 5. Assignment digest freshness
-
-Round 3 当前登记值：
-
-- SHA-256：`d590a48a50686c067b0eb7466c8b9572bc8b11145a659e08fe2a6aa1ad612b26`
-- Size：`10157`
-
-删除一个 EOF newline 后的候选值：
-
-- SHA-256：`67ea4c3edefd5ea9195ea19ca4f4f625cb14aaaa857101b573701dc06b9a204d`
-- Size：`10156`
-
-现有 deterministic `record-agent-assignment` 只支持：
-
-- 追加 assignment；
-- 追加唯一递增的 review round；
-- 追加 reuse decision；
-- liveness provenance correction 或 failed-to-termination recovery link。
-
-它没有刷新、替换或 supersede 既有 `review_rounds[]` report digest 的模式。
-Correction 只允许 `progress` / `status-request` liveness event，不能修订 review round；
-重新追加 Round 3 又违反 round 唯一递增合同。因此本实现代理没有手改
-`agent-assignment.json`。
-
-当前 `check-agent-assignment.sh` 按预期返回 exit 2：
-
-- `review_rounds[2]` raw report SHA-256 stale；
-- `review_rounds[2]` raw report size stale。
-
-这是进入 fresh Phase 2 前的确定性 blocker。主会话必须通过受支持的 assignment
-artifact freshness 合同处理；在没有专用 recorder 的情况下，不应手工改写 ledger 或
-用新的 review round 掩盖旧 round 的 stale digest。
-
-## 6. 已运行验证
-
-- `git diff --check origin/main`：exit 0，证明包含 working-tree candidate 的完整
-  base-to-worktree diff 无 whitespace error。
-- `git diff --check`：exit 0，证明当前未提交差异自身无 whitespace error。
-- `git diff --check origin/main...HEAD`：exit 2，仍读取修复前
-  `3bfbd100...`，唯一命中旧 committed report 的 EOF 空行；下一次 task work commit
-  后必须重跑并通过。
-- `python3 ./.trellis/scripts/task.py validate
-  .trellis/tasks/07-25-117-verify-extension-installation`：通过。
-- `check-agent-assignment.sh --json`：exit 2，精确命中上述 Round 3 SHA/size stale，
-  没有其它 reported error。
-- `check-review-gate.sh --json`：exit 2，按预期确认旧 gate 不是 pass，并检测到：
-  - 旧 Phase 2 `implementation_handoff` 与 `agent_assignment` stale；
-  - 新 `implementation-handoff.md` 尚未进入旧 Phase 2 的 exact allowlist；
-  - `review.md`、gate 绑定的 assignment 与 Round 3 report SHA/size stale；
-  - gate 仍有一个 open finding。
-- `check-workspace-boundary.sh`：通过，expected workspace 与 actual repo root 均为
-  当前 Issue #117 worktree。
-- `check-planning-approval.sh`：编辑前通过；本轮未改 `prd.md`、`design.md`、
-  `implement.md` 或 planning authority。
-
-本次只修改 Markdown task evidence，没有 Python、shell、JSON、schema、runtime、
-package、preset 或平台分发变化，因此不重复运行 repository-wide runtime、Skill、
-preset、ownership、eval 或 throwaway suites；这些完整验证必须由后续 fresh
-`trellis-check` 按 finding-fix full rerun 合同重新执行。
-
-## 7. 交给 trellis-check 的输入与重点
-
-Fresh Phase 2 只能在 assignment freshness blocker 消除且 assignment checker 通过后
-开始。后续独立 `trellis-check` 应：
-
-1. 将 `reviews/002-closure.md` 的新 digest/size 纳入 current implementation
-   handoff，并验证其内容只少一个 EOF newline。
-2. 对 base-to-working-tree candidate 运行 `git diff --check origin/main`，对下一次
-   commit 后的最终范围运行 `git diff --check origin/main...HEAD`。
-3. 完整重跑 #117 current-scope Phase 2，不能用本轮 targeted lint 替代 runtime、
-   package、preset、ownership、production eval 与 full throwaway evidence。
-4. 复核 `ssot_first` reconciliation：F8 没有 durable docs delta，前序 task delta
-   已在 durable owners，新增内容仅为 task history。
-5. 保持 exact pushed feature-ref clean install 为授权 push 后的独立 publication
-   gate，不用 local-source throwaway 冒充。
-
-## 8. 剩余风险与状态
-
-- F8 的代码/文档候选已实现，但 reviewer-owned finding 仍是
-  `open / resolved_pending_closure`，未正式关闭。
-- Round 3 report digest stale 是当前唯一已知确定性 blocker。
-- 当前 HEAD 尚未包含 F8 修复；提交前 `origin/main...HEAD` 仍会复现旧 lint finding。
-- 未发现新的 runtime、public contract、Docs SSOT、部署或安全风险。
+- Focus areas:
+  - 用真实/fixture annotated tag 复核 direct object 与 peeled commit 不同，
+    executor checkout 与 public projection只使用 peeled commit；
+  - 确认 `HEAD^{commit}` command evidence 在 throwaway 之前，mismatch 时
+    throwaway 未执行且结果 fail closed；
+  - 复核 workflow `reviewed_head`、compatibility `expected_head`、
+    private `remote_head`、public `resolved_head` 的 commit identity 一致；
+  - 复核 branch/lightweight behavior、blocked unresolved ref、checker
+    freshness 与 semantic route 无回归；
+  - 检查 canonical/runtime/shared/Codex/Claude/Cursor bytes 和 extension
+    manifest digest；
+  - 执行完整 Docs SSOT reconciliation，确认无遗漏 schema/README/spec owner。
+- Validation intentionally deferred to `trellis-check`:
+  - Phase 2 semantic review 与 `phase2-check.json` recorder/validator；
+  - full throwaway install/update/reapply matrix；
+  - production native eval；
+  - exact pushed feature-ref real remote clean installation；
+  - Branch Review Gate、commit、push、PR readiness 与 issue closure。
+- Remaining risks:
+  - 当前验证使用 local working-tree candidate；尚未绑定新的 task work commit；
+  - exact pushed ref 与真实外部网络/CLI 安装 surface 尚未验证；
+  - 首次 default apply 的 recoverable backup/platform-shrink 路径已恢复并通过
+    all-platform idempotence，但 check 应把最终 clean manifest 作为验收输入，
+    不引用中间 conflict 状态。

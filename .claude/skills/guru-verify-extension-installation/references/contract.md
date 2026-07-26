@@ -44,10 +44,13 @@ profile and maps every affected surface to at least one of:
 - `readme_commands`
 - `redaction`
 
-The deterministic executor runs the selected closed profile against a frozen
-remote HEAD. It records only credentials-safe locators, sanitized argv,
-exit codes, output digests and sizes, asset digests, ownership facts, and
-sidecar facts. It never infers applicability or route.
+The deterministic executor resolves the requested ref once, using the peeled
+commit for an annotated tag and the direct commit for a branch or lightweight
+tag. It freezes that commit, checks it out by object ID, and verifies the clone
+with `git rev-parse --verify HEAD^{commit}` before any throwaway installation.
+A checkout mismatch fails closed. The executor records only credentials-safe
+locators, sanitized argv, exit codes, output digests and sizes, asset digests,
+ownership facts, and sidecar facts. It never infers applicability or route.
 
 After execution, the AI reviews applicability, capability coverage, remote
 identity, installation and update/reapply results, ownership, sidecars,
@@ -74,6 +77,11 @@ The checker validates schema, task/session persistence, public-input identity,
 remote/ref/HEAD binding, plan and supersession freshness, redaction, route
 shape, consumer mapping, and evidence digests. It does not decide
 applicability, sufficiency, findings, or semantic pass.
+
+Private `remote_head` and standalone public `resolved_head` both denote the
+resolved checkout commit. An annotated tag's direct tag-object ID is not
+published in a public DTO. Freshness checks re-resolve the requested ref with
+the same direct-versus-peeled rule before comparing the current commit.
 
 Credential URL scanning treats any HTTP(S) authority userinfo, including empty,
 username-only, username/password, percent-encoded, and multiple-`@` forms, as

@@ -1,0 +1,561 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "005",
+  "task": {
+    "id": "117-verify-extension-installation",
+    "path": ".trellis/tasks/07-25-117-verify-extension-installation",
+    "status": "in_progress",
+    "branch": "feat/117-verify-extension-installation"
+  },
+  "issue": {
+    "primary_issue": 117,
+    "ledger_sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "3281db77b8f829e850064a33190838eb17ca4c31"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
+      "sha256": "89c98cfb502448329c9c5f7e8b35561f0536401a75680b5905d25b2ae9411b92",
+      "size": 34324
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      "sha256": "6094b4026284646c14fcaee57fd6233c859d6a097cac4b8a21067d83082231d3",
+      "size": 79653
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+      "sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c",
+      "size": 3640
+    },
+    "task": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
+      "sha256": "e5d7beeeff3608d7aeccda610bb467e0a6b40fc4a61d67e07f52fc1bab988912",
+      "size": 716
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48cb535621cccfd993bb4495cfd94dd50b593a39",
+        "worktree_sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e33c9737029b579da23b3c6e6553c7a5d46f0a42",
+        "worktree_sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48cb535621cccfd993bb4495cfd94dd50b593a39",
+        "worktree_sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e33c9737029b579da23b3c6e6553c7a5d46f0a42",
+        "worktree_sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48cb535621cccfd993bb4495cfd94dd50b593a39",
+        "worktree_sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e33c9737029b579da23b3c6e6553c7a5d46f0a42",
+        "worktree_sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48cb535621cccfd993bb4495cfd94dd50b593a39",
+        "worktree_sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e33c9737029b579da23b3c6e6553c7a5d46f0a42",
+        "worktree_sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f3f53a140879c1ec69bc0d4e2dd280caa781bbfc",
+        "worktree_sha256": "70ba987dbf2e517d5ad9993a6fb1d0ebb4de35af545517dd127038a11a5ca52e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+        "worktree_sha256": "f4cd40cb87617599267af29501dbab3ce6aab1ef42926c29158e8751afd7737a",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48cb535621cccfd993bb4495cfd94dd50b593a39",
+        "worktree_sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e33c9737029b579da23b3c6e6553c7a5d46f0a42",
+        "worktree_sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "448d08561a4c924ede641545f17d5d87a0195f2c",
+        "worktree_sha256": "07c6b295d2c8bbe2a389c4ef0c65297fcfdf5dcc448f2f3c3fcee608c6d88d28",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6084ade5b1e940296914cede28ef08e53a890c51",
+        "worktree_sha256": "54b0674091ac5b704ccaba59610f276ead6499e4e2402e1910a51169a28fb9cb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a25081bc862dec94d86d07ff33ccd5279f80d783",
+        "worktree_sha256": "6094b4026284646c14fcaee57fd6233c859d6a097cac4b8a21067d83082231d3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7893a37806dceda76b4b09ff0d62ea8b0c8dc018f5d90d63538f00af3223490b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1ca8ccf036e88837934e5ec86e95ae4a0e9dc845",
+        "worktree_sha256": "4c762e40c6ab9ca1c7a34505a3f337ec88cc1a88213753a2b3dd7a9523a08eb2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "75af33979b8f6213fcd0f9efd5e2bd0f3f78f206",
+        "worktree_sha256": "61bc8b2eede546a119bbc6b3dfb2185b354d6fed8e429a7a7ef4ae2355b9b7a3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0c5e199289de6c8a1948e8b2710ee2b97dddd7339c346ec8b99fd18bb4ceacc9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "bacbd394e5b52e495813d5ae468189acd24b903a088863640f28a3bf68f85b60",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "39e5037797fac4d012c051dcb238f858a6c5f475",
+        "worktree_sha256": "9d1c721a017ce4818c0778e5ad5534b6b009f629ff63801f93338c2fb539395c",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48cb535621cccfd993bb4495cfd94dd50b593a39",
+        "worktree_sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e33c9737029b579da23b3c6e6553c7a5d46f0a42",
+        "worktree_sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+        "worktree_sha256": "f4cd40cb87617599267af29501dbab3ce6aab1ef42926c29158e8751afd7737a",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ebaadbd0cadf604c8406eaa8def08a3b7411864a",
+        "worktree_sha256": "929045894057c9ed27daa10991e1a97f30dc921bbe715373fee6dde0260e9caa",
+        "mode": "100644"
+      }
+    ],
+    "digest": "661117490b60ada0eb8591feae3424c971920ae052e1f6e60d9394c0e69fa1a3"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-verify-extension-installation/interface.json",
+    ".agents/skills/guru-verify-extension-installation/references/contract.md",
+    ".claude/skills/guru-verify-extension-installation/interface.json",
+    ".claude/skills/guru-verify-extension-installation/references/contract.md",
+    ".codex/skills/guru-verify-extension-installation/interface.json",
+    ".codex/skills/guru-verify-extension-installation/references/contract.md",
+    ".cursor/skills/guru-verify-extension-installation/interface.json",
+    ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #117 校验 annotated tag checkout 提交身份",
+    "body": "背景：\nFresh Branch Review 的 BR-117-F9 发现 annotated stable tag 的 direct tag object 与实际 checkout commit 不同，旧 executor 未在 clone 后复验 HEAD，却把 direct object 作为 remote_head/resolved_head 传播。\n\n变更：\n分离 direct ref object 与 peeled commit：branch/lightweight tag 继续使用 direct commit，annotated tag 使用 peeled commit；executor 按 resolved commit checkout，并以 git rev-parse --verify HEAD^{commit} 精确复验实际 HEAD。同步 canonical、installed 与 Agents/Codex/Claude/Cursor contract、manifest 和回归测试，同时提交 F9 实现、Phase 2 与审查生命周期证据。\n\n边界：\nremote_head 与 resolved_head 保持既有 public API，但统一表示实际 checkout commit。本提交不 push、不创建 PR、不关闭 Issue、不执行 publication；exact pushed feature-ref clean install 仍是授权 push 后的门禁。\n\n验证：\nFresh Phase 2 覆盖当前完整 committed+dirty scope，BR-117-F9 修复后无 open finding；runtime 596 passed、13 skipped，F9 focused 30 passed，Skill/Preset/Ownership 175/45/9，canonical/installed contract 各 8，shared/Codex/Claude source+installed 均 7/7，Cursor 按合同 unsupported，full local-source throwaway 通过，112 captures 的 credential 高风险命中为 0。\n\nRefs #117",
+    "bytes": "fix(trellis): #117 校验 annotated tag checkout 提交身份\n\n背景：\nFresh Branch Review 的 BR-117-F9 发现 annotated stable tag 的 direct tag object 与实际 checkout commit 不同，旧 executor 未在 clone 后复验 HEAD，却把 direct object 作为 remote_head/resolved_head 传播。\n\n变更：\n分离 direct ref object 与 peeled commit：branch/lightweight tag 继续使用 direct commit，annotated tag 使用 peeled commit；executor 按 resolved commit checkout，并以 git rev-parse --verify HEAD^{commit} 精确复验实际 HEAD。同步 canonical、installed 与 Agents/Codex/Claude/Cursor contract、manifest 和回归测试，同时提交 F9 实现、Phase 2 与审查生命周期证据。\n\n边界：\nremote_head 与 resolved_head 保持既有 public API，但统一表示实际 checkout commit。本提交不 push、不创建 PR、不关闭 Issue、不执行 publication；exact pushed feature-ref clean install 仍是授权 push 后的门禁。\n\n验证：\nFresh Phase 2 覆盖当前完整 committed+dirty scope，BR-117-F9 修复后无 open finding；runtime 596 passed、13 skipped，F9 focused 30 passed，Skill/Preset/Ownership 175/45/9，canonical/installed contract 各 8，shared/Codex/Claude source+installed 均 7/7，Cursor 按合同 unsupported，full local-source throwaway 通过，112 captures 的 credential 高风险命中为 0。\n\nRefs #117\n",
+    "sha256": "85b60ee9d13cf18f21449b55ed8d42172fe7caf7ce9868ab3b4320345857049b"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "AI 已复核 exact 25-path stage scope及 candidate self、BR-117-F9 的 annotated tag direct/peeled identity 修复、runtime/contract/test/manifest 同步、F8 closure/F9 implementation/fresh Phase 2 lifecycle evidence、中文 Conventional Commit message、仅 Refs #117、无 task 外 dirty/staged path，以及不 push/PR/Issue closure/publication 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户在收到 F9 Phase 2 后续步骤和禁止 push、PR、Issue closure、publication 的边界后再次明确回复“确认继续”，授权当前 Issue #117 finding-fix task commit 及后续本地 Branch Review。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-26T03:53:36Z",
+    "plan_digest": "75a460a7560df8f47b27dcebda2fe3ae2f46b6ffe4ed05349c8f6eca99610c60"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

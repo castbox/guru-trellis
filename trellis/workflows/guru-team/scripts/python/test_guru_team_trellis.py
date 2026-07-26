@@ -14644,6 +14644,12 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
                         },
                     )
                     return mock.Mock(returncode=0, stdout="", stderr="")
+                if command[:3] == ["git", "rev-parse", "--verify"]:
+                    return mock.Mock(
+                        returncode=0,
+                        stdout=f"{expected}\n",
+                        stderr="",
+                    )
                 return mock.Mock(returncode=0, stdout="ok", stderr="")
 
             with mock.patch.object(gtt, "run", side_effect=fake_run):
@@ -14652,7 +14658,7 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             self.assertEqual(payload["status"], "passed")
             self.assert_public_schema_valid(payload)
             self.assertEqual(payload["remote_head"], expected)
-            self.assertEqual([step["passed"] for step in payload["steps"]], [True] * 5)
+            self.assertEqual([step["passed"] for step in payload["steps"]], [True] * 6)
             clone_index = next(
                 index
                 for index, command in enumerate(commands)
@@ -14663,13 +14669,19 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
                 for index, command in enumerate(commands)
                 if command[:2] == ["git", "checkout"]
             )
+            checkout_head_index = next(
+                index
+                for index, command in enumerate(commands)
+                if command[:3] == ["git", "rev-parse", "--verify"]
+            )
             throwaway_index = next(
                 index
                 for index, command in enumerate(commands)
                 if command[0].endswith("verify-throwaway-install.sh")
             )
             self.assertLess(clone_index, checkout_index)
-            self.assertLess(checkout_index, throwaway_index)
+            self.assertLess(checkout_index, checkout_head_index)
+            self.assertLess(checkout_head_index, throwaway_index)
             self.assertEqual(
                 environments[throwaway_index]["TRELLIS_WORKFLOW_SOURCE"],
                 "gh:owner/repo/trellis#refs/heads/codex/096-task-runtime-boundary",
@@ -15339,6 +15351,58 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             )
         self.assertEqual(checked["typed_exit"], "not_required")
 
+    def test_checker_and_public_projection_use_annotated_tag_commit(
+        self,
+    ) -> None:
+        public_input = self.public_input("standalone", task=False)
+        public_input["ref"] = "refs/tags/v0.6.5-annotated"
+        direct_tag_object = "b" * 40
+        resolved_commit = "a" * 40
+        owner = self.record(
+            public_input,
+            self.execution(public_input, "not_run", []),
+            self.review("not_required", []),
+        )
+        self.assertEqual(
+            owner["repository"]["remote_head"],
+            resolved_commit,
+        )
+
+        remote_result = mock.Mock(
+            returncode=0,
+            stdout=(
+                f"{direct_tag_object}\t{public_input['ref']}\n"
+                f"{resolved_commit}\t{public_input['ref']}^{{}}\n"
+            ),
+            stderr="",
+        )
+        with mock.patch.object(gtt, "run", return_value=remote_result):
+            checked = gtt.check_extension_verification_result(
+                self.root,
+                owner,
+                "<stdin>",
+                public_input,
+            )
+            with mock.patch.object(
+                sys,
+                "stdin",
+                io.StringIO(json.dumps(owner)),
+            ):
+                output = gtt.cmd_invoke_extension_verification(
+                    argparse.Namespace(
+                        root=str(self.root),
+                        input=(
+                            ".trellis/.runtime/guru-team/tests/"
+                            "public-input.json"
+                        ),
+                        owner_result="-",
+                    )
+                )
+
+        self.assertEqual(checked["typed_exit"], "not_required")
+        self.assertEqual(output["resolved_head"], resolved_commit)
+        self.assertNotIn(direct_tag_object, json.dumps(output))
+
     def test_taskless_remote_unavailable_emits_blocked_without_fake_head(self) -> None:
         public_input = self.public_input("standalone", task=False)
         public_input["remote"] = "missing-remote"
@@ -15802,6 +15866,218 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         self.assertEqual(drift["frozen_transitional_legacy_count"], 44)
         self.assertTrue(drift["new_legacy_entries"])
 
+    def test_executor_resolves_branch_lightweight_and_annotated_refs_to_commits(
+        self,
+    ) -> None:
+        cases = (
+            (
+                "branch",
+                "refs/heads/feature/117",
+                "b" * 40,
+                None,
+            ),
+            (
+                "lightweight_tag",
+                "refs/tags/v0.6.5-lightweight",
+                "c" * 40,
+                None,
+            ),
+            (
+                "annotated_tag",
+                "refs/tags/v0.6.5-annotated",
+                "d" * 40,
+                "e" * 40,
+            ),
+        )
+        for label, ref, direct_head, peeled_head in cases:
+            with self.subTest(label=label):
+                public_input = self.public_input("standalone", task=False)
+                public_input["ref"] = ref
+                resolved_head = peeled_head or direct_head
+                observed_commands: list[list[str]] = []
+                observed_env: list[dict[str, str] | None] = []
+
+                def fake_run(
+                    command: list[str],
+                    cwd: Path | None = None,
+                    check: bool = True,
+                    env: dict[str, str] | None = None,
+                ) -> mock.Mock:
+                    observed_commands.append(command)
+                    if command[:2] == ["git", "ls-remote"]:
+                        rows = [f"{direct_head}\t{ref}"]
+                        if peeled_head is not None:
+                            rows.append(f"{peeled_head}\t{ref}^{{}}")
+                        return mock.Mock(
+                            returncode=0,
+                            stdout="\n".join(rows) + "\n",
+                            stderr="",
+                        )
+                    if command[:3] == ["git", "remote", "get-url"]:
+                        return mock.Mock(
+                            returncode=0,
+                            stdout=(
+                                "https://github.com/example/"
+                                "guru-extension.git\n"
+                            ),
+                            stderr="",
+                        )
+                    if command[:2] == ["git", "clone"]:
+                        source = Path(command[-1])
+                        throwaway = (
+                            source
+                            / "trellis/presets/guru-team/scripts/bash/"
+                            "verify-throwaway-install.sh"
+                        )
+                        throwaway.parent.mkdir(parents=True)
+                        throwaway.write_text(
+                            "#!/usr/bin/env bash\n",
+                            encoding="utf-8",
+                        )
+                        return mock.Mock(returncode=0, stdout="", stderr="")
+                    if command[:3] == ["git", "checkout", "--detach"]:
+                        return mock.Mock(returncode=0, stdout="", stderr="")
+                    if command[:3] == ["git", "rev-parse", "--verify"]:
+                        return mock.Mock(
+                            returncode=0,
+                            stdout=f"{resolved_head}\n",
+                            stderr="",
+                        )
+                    observed_env.append(env)
+                    return mock.Mock(returncode=0, stdout="", stderr="")
+
+                with mock.patch.object(gtt, "run", side_effect=fake_run):
+                    facts = gtt.extension_verification_execute_facts(
+                        self.root,
+                        public_input,
+                        ["marketplace_index"],
+                        expected_head=resolved_head,
+                    )
+
+                self.assertEqual(facts["remote_head"], resolved_head)
+                self.assertIn(
+                    ["git", "ls-remote", "origin", ref, f"{ref}^{{}}"],
+                    observed_commands,
+                )
+                self.assertIn(
+                    ["git", "checkout", "--detach", resolved_head],
+                    observed_commands,
+                )
+                self.assertIn(
+                    ["git", "rev-parse", "--verify", "HEAD^{commit}"],
+                    observed_commands,
+                )
+                self.assertEqual(
+                    observed_env,
+                    [{
+                        "TRELLIS_WORKFLOW_SOURCE": (
+                            f"gh:example/guru-extension/trellis#{ref}"
+                        )
+                    }],
+                )
+
+    def test_executor_fails_before_throwaway_when_checkout_commit_mismatches(
+        self,
+    ) -> None:
+        public_input = self.public_input("standalone", task=False)
+        requested_head = "b" * 40
+        checkout_head = "c" * 40
+        throwaway_called = False
+
+        def fake_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> mock.Mock:
+            nonlocal throwaway_called
+            if command[:2] == ["git", "ls-remote"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{requested_head}\trefs/heads/main\n",
+                    stderr="",
+                )
+            if command[:3] == ["git", "remote", "get-url"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout="https://github.com/example/guru-extension.git\n",
+                    stderr="",
+                )
+            if command[:2] == ["git", "clone"]:
+                source = Path(command[-1])
+                throwaway = (
+                    source
+                    / "trellis/presets/guru-team/scripts/bash/"
+                    "verify-throwaway-install.sh"
+                )
+                throwaway.parent.mkdir(parents=True)
+                throwaway.write_text(
+                    "#!/usr/bin/env bash\n",
+                    encoding="utf-8",
+                )
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "checkout", "--detach"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "rev-parse", "--verify"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{checkout_head}\n",
+                    stderr="",
+                )
+            throwaway_called = True
+            return mock.Mock(returncode=0, stdout="", stderr="")
+
+        with mock.patch.object(gtt, "run", side_effect=fake_run):
+            facts = gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                ["marketplace_index"],
+                expected_head=requested_head,
+            )
+
+        self.assertEqual(facts["status"], "failed")
+        self.assertEqual(facts["remote_head"], requested_head)
+        self.assertFalse(throwaway_called)
+        self.assertEqual(
+            facts["commands"][-1]["argv"],
+            ["git", "rev-parse", "--verify", "HEAD^{commit}"],
+        )
+
+    def test_workflow_executor_binds_remote_commit_to_reviewed_head(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        different_head = "b" * 40
+        commands: list[list[str]] = []
+        real_run = gtt.run
+
+        def fake_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> mock.Mock:
+            commands.append(command)
+            if command[:2] == ["git", "ls-remote"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{different_head}\trefs/heads/main\n",
+                    stderr="",
+                )
+            return real_run(command, cwd=cwd, check=check, env=env)
+
+        with mock.patch.object(gtt, "run", side_effect=fake_run):
+            facts = gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                ["marketplace_index"],
+            )
+
+        self.assertEqual(facts["status"], "blocked")
+        self.assertEqual(facts["reviewed_head"], self.head)
+        self.assertEqual(facts["remote_head"], different_head)
+        self.assertFalse(
+            any(command[:3] == ["git", "remote", "get-url"] for command in commands)
+        )
+
     def test_executor_pins_throwaway_marketplace_to_requested_remote_ref(self) -> None:
         self.assertEqual(
             gtt.extension_verification_workflow_source(
@@ -15845,6 +16121,12 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                 return mock.Mock(returncode=0, stdout="", stderr="")
             if command[:3] == ["git", "checkout", "--detach"]:
                 return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "rev-parse", "--verify"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{remote_head}\n",
+                    stderr="",
+                )
             observed_env.append(env)
             return mock.Mock(returncode=0, stdout="", stderr="")
 

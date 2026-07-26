@@ -251,7 +251,113 @@
     "plan_digest": "1e31446d8fd965413d7ba13ade3478f5a72108be67c7bd2434760091bac1fe23"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-26T01:46:29Z",
+    "commit_sha": "3281db77b8f829e850064a33190838eb17ca4c31",
+    "parent": "3bfbd100c8d75a619da19627e7da276a3f2e367b",
+    "message_sha256": "0862a6236a793253fead34507c28d2abcb1199359b426418bf5e77de364a0a9a",
+    "committed_paths": [
+      ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "8a5831ece7c295354dd40120ece93294c237459a",
+      "actual_tree": "8a5831ece7c295354dd40120ece93294c237459a",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+          "expected_blob": "448d08561a4c924ede641545f17d5d87a0195f2c",
+          "expected_mode": "100644",
+          "actual_blob": "448d08561a4c924ede641545f17d5d87a0195f2c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+          "expected_blob": "6084ade5b1e940296914cede28ef08e53a890c51",
+          "expected_mode": "100644",
+          "actual_blob": "6084ade5b1e940296914cede28ef08e53a890c51",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+          "expected_blob": "a25081bc862dec94d86d07ff33ccd5279f80d783",
+          "expected_mode": "100644",
+          "actual_blob": "a25081bc862dec94d86d07ff33ccd5279f80d783",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
+          "expected_blob": "48e6c3d52a336036adb68acc96d0f0933b3a365f",
+          "expected_mode": "100644",
+          "actual_blob": "48e6c3d52a336036adb68acc96d0f0933b3a365f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+          "expected_blob": "1ca8ccf036e88837934e5ec86e95ae4a0e9dc845",
+          "expected_mode": "100644",
+          "actual_blob": "1ca8ccf036e88837934e5ec86e95ae4a0e9dc845",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+          "expected_blob": "75af33979b8f6213fcd0f9efd5e2bd0f3f78f206",
+          "expected_mode": "100644",
+          "actual_blob": "75af33979b8f6213fcd0f9efd5e2bd0f3f78f206",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+          "expected_blob": "b5abce516e998964b96213ec6c69c658f712d621",
+          "expected_mode": "100644",
+          "actual_blob": "b5abce516e998964b96213ec6c69c658f712d621",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
+          "expected_blob": "5b2f5dd2c30c865b676444451524abb1d22d7819",
+          "expected_mode": "100644",
+          "actual_blob": "5b2f5dd2c30c865b676444451524abb1d22d7819",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+          "expected_blob": "70bfd0eb5e014bf1af2d618d8ff1ac61ad9eac36",
+          "expected_mode": "100644",
+          "actual_blob": "70bfd0eb5e014bf1af2d618d8ff1ac61ad9eac36",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
+          "expected_blob": "39e5037797fac4d012c051dcb238f858a6c5f475",
+          "expected_mode": "100644",
+          "actual_blob": "39e5037797fac4d012c051dcb238f858a6c5f475",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }
