@@ -2,37 +2,43 @@
 
 ## 审查身份与范围
 
-- 当前 reviewed HEAD：`a47e1fbd7bedb001649814969096076bb70157db`
-- 完整 committed 范围：`origin/main...a47e1fbd7bedb001649814969096076bb70157db`
+- 当前 reviewed HEAD：`a28b38e5a8894e3d60b9e9694a92ed610f763f25`
+- 完整 committed 范围：`origin/main...a28b38e5a8894e3d60b9e9694a92ed610f763f25`
 - Merge base：`0cd2498f821b38ce91bd82fa9e232b1528241e5d`
-- Round 1/2 原始报告：[初始 finding 报告](reviews/001-final.md)
-- Round 3 原始报告：[F1/F2 closure 报告](reviews/002-closure.md)
-- Round 4 原始报告：[F7 finding 报告](reviews/003-final.md)
-- Round 5 原始报告：[F7 closure 与 F8 finding 报告](reviews/004-f7-closure.md)
-- Round 6 原始报告：[F8 closure 报告](reviews/005-f8-closure.md)
-- Round 7 原始报告：[fresh final-intent 与 F9 finding 报告](reviews/006-final.md)
-- Round 8 原始报告：[F9 closure 报告](reviews/007-f9-closure.md)
-- Round 9 原始报告：[fresh final-intent 与 F10 finding 报告](reviews/008-final.md)
+- 最终结论：`passed`
 
-Round 8 由未参与 F9 发现与实现的 fresh 闭环 reviewer 覆盖完整范围并关闭
-`BR-117-F9`，没有发现新的 qualified finding。Round 9 由未参与任何 earlier
-closure 的 fresh reviewer 重新覆盖完整最终范围，但资格化新的 `BR-117-F10`；
-因此该轮必须透明登记为问题发现审查，不能冒充 zero-finding final pass。
+本轮汇总消费 Round 1-11 的完整 finding、closure、fresh final lineage。Round 10
+由未参与 F10 发现与实现的独立 closure reviewer 关闭 `BR-117-F10`；Round 11
+再由不同身份、且未参与任何 earlier finding 或 closure 的 fresh final reviewer
+覆盖完整最终范围。Round 11 没有新的 qualified finding、scope proposal 或 blocker。
 
-## 已关闭 finding
+## 原始报告
+
+- Round 1/2：[初始 finding 报告](reviews/001-final.md)
+- Round 3：[F1/F2 closure 报告](reviews/002-closure.md)
+- Round 4：[F7 finding 报告](reviews/003-final.md)
+- Round 5：[F7 closure 与 F8 finding 报告](reviews/004-f7-closure.md)
+- Round 6：[F8 closure 报告](reviews/005-f8-closure.md)
+- Round 7：[fresh final-intent 与 F9 finding 报告](reviews/006-final.md)
+- Round 8：[F9 closure 报告](reviews/007-f9-closure.md)
+- Round 9：[fresh final-intent 与 F10 finding 报告](reviews/008-final.md)
+- Round 10：[F10 closure 报告](reviews/009-f10-closure.md)
+- Round 11：[fresh final 放行报告](reviews/010-final.md)
+
+## Finding 闭环
 
 ### `BR-117-F1` P1：credential URL 脱敏漏检
 
 状态：`closed`
 
-Round 3 已复核 authority-userinfo 检测、artifact write 前 fail-closed、generic public
+Round 3 复核 authority-userinfo 检测、artifact write 前 fail-closed、generic public
 error、独立 probes、production eval、secret scan 与 canonical/installed bytes。
 
 ### `BR-117-F2` P1：task-bearing 调用未验证 task/worktree identity
 
 状态：`closed`
 
-Round 3 已复核 active task、task-start-context、repo、branch、active pointer 与
+Round 3 复核 active task、task-start-context、repo、branch、active pointer 与
 workspace boundary 统一 gate，以及 wrong task、archived task、wrong repo、
 wrong branch、wrong worktree 与 taskless standalone。
 
@@ -40,88 +46,107 @@ wrong branch、wrong worktree 与 taskless standalone。
 
 状态：`closed`
 
-Round 5 已复核 schema-before-access、受控 `WorkflowError`、no-prior/wrong-prior
-拒绝、exact-prior supersession、changed-plan re-entry、runtime/package tests 与六处分发
-一致性。关闭证据绑定 [F7 closure 与 F8 finding 报告](reviews/004-f7-closure.md)。
+Round 5 复核 schema-before-access、受控 `WorkflowError`、no-prior/wrong-prior
+拒绝、exact-prior supersession、changed-plan re-entry、runtime/package tests 与
+六处分发一致性。
 
 ### `BR-117-F8` P3：closure raw report 的 EOF 多余空行
 
 状态：`closed`
 
-Task commit 004 仅删除 `reviews/002-closure.md` 的一个 EOF 多余空行。Round 6 在
-`3281db77...` 对 exact blob、commit tree、完整 range 与 dirty whitespace gate
-完成独立复核，关闭证据绑定 [F8 closure 报告](reviews/005-f8-closure.md)。
+Task commit 004 删除 `reviews/002-closure.md` 的一个 EOF 多余空行。Round 6 对
+exact blob、commit tree、完整 range 与 dirty whitespace gate 完成独立复核。
 
 ### `BR-117-F9` P2：annotated stable tag 未绑定实际 checkout commit identity
 
 状态：`closed`
 
-Task commit 005 分离 direct ref object 与 peeled commit，按 resolved commit checkout，
-并在 throwaway 前执行 `git rev-parse --verify HEAD^{commit}` 后精确比较。Round 8
-重新验证 branch、lightweight tag、annotated tag、mismatch fail-closed、checker
-freshness、public projection、contract、tests、commit tree 与六处分发，关闭证据绑定
-[F9 closure 报告](reviews/007-f9-closure.md)。
-
-## 当前 finding
+Task commit 005 分离 direct ref object 与 peeled commit，按 resolved commit
+checkout，并在 throwaway 前执行 `git rev-parse --verify HEAD^{commit}` 后精确比较。
+Round 8 复核 branch、lightweight tag、annotated tag、mismatch fail-closed、
+checker freshness、public projection、contract、tests、commit tree 与六处分发。
 
 ### `BR-117-F10` P2：成功 executor 未保留 installed asset digests
 
-状态：`open`
+状态：`closed`
 
-Round 9 复核成功路径后确认：
+Task commit 006 增加 retained installed inventory，按
+workflow/preset/schema/skill/platform 五类保存 closed expected surface、digest、
+source relation 与逐 capability coverage；recorder、checker、schema、example、
+tests、canonical/installed runtime 和六处分发同步承接。Round 10 对完整
+`origin/main...a28b38e5` 复核 source 与 installed validator、throwaway、
+inventory mismatch/missing/duplicate/unexpected/relation fail-closed，以及
+owner-private/public projection 边界，确认 `BR-117-F10` 已关闭且没有新 finding。
 
-- `asset_digests` 仅包含 remote source checkout 的 9 个 `trellis/**` source path；
-- facts 未记录 clean throwaway target 中 installed
-  workflow/preset/schema/skill/platform assets 的 digest 或 category completeness；
-- 所有 selected capabilities 共用最后一个 throwaway command 的总体 status 与
-  `evidence_step`，没有逐 capability installed asset evidence；
-- schema、example 与 normal-path tests 均未要求 missing/mismatch installed digest
-  在 `verified` 前 fail closed。
+## Qualification-first 结论
 
-Live Issue #117、approved PRD 与 design 明确要求 Recorder 在 owner-private evidence
-中保留 installed workflow/preset/schema/skill/platform digests，并让 AI Gate 审查
-命令事实与安装资产。该缺口存在于任何正常 pushed-ref success path，不依赖恶意输入、
-伪造、竞态、TOCTOU 或其它已排除场景，属于
-`normal_required_behavior`。完整 qualification 与 required closure 见
-[Round 9 原始报告](reviews/008-final.md)。
+### `RC-F10-INVENTORY-COLLECTOR`
 
-## 验证、文档与影响
+- 场景：`normal_required_behavior`
+- 处置：`rejected_candidate`
+- 候选：retained collector 单层不枚举任意额外文件，可能遗漏安装目录中的 arbitrary
+  extra。
+- 反证：Issue #117 当前 acceptance 是 closed expected install surface；完整
+  throwaway 还同时执行 installed package、manifest、platform、managed inventory
+  与 sidecar validators。正常受支持路径中的 package/platform/managed extra 会使
+  executor 非零退出，不能进入 `passed`。
+- 边界：不夸称 collector 单层能够扫描任意项目目录；也不把 hostile/tamper、
+  race/TOCTOU/locking、fault injection、crash consistency 或 cross-OS atomicity
+  重新引入当前范围。
 
-Round 9 fresh 验证通过：
+### `OBS-F10-POST-PUSH`
 
-- runtime 596 tests passed、13 skipped；
-- Skill package 175、preset + ownership 54；
-- canonical/installed contract 各 8/8；
-- source/installed validators 各 12 active Skills、46 exits、12 invokes、27 targets；
-- installed manifest 2,322 managed files，0 sidecar/removal/conflict；
-- dogfood drift、ownership、六处分发、runtime/package equality、JSON/Bash/Python
-  syntax、三类 `git diff --check` 与 non-fixture sidecar scan。
+- 场景：`out_of_scope` for local closure
+- 处置：`observation`
+- Exact pushed feature-ref clean installation 尚未执行。
+- 当前没有 push/publication 授权，本地 unpublished source throwaway 不能证明
+  remote ref identity。
+- 该证据保留给 mandatory post-push publication gate，不构成 current
+  implementation finding，也不阻塞本地 Branch Review。
 
-这些通过证明当前安装与分发测试没有失败，但不会补写 owner-private artifact 中缺失的
-installed asset digests，因而不反证 F10。
+## 验证证据
 
-Docs SSOT strategy 继续为 `ssot_first`。Durable Issue/PRD/design 已要求 installed
-asset digest inventory、逐 capability asset evidence 与 AI adequacy review；F10 是
-runtime/schema/example/tests 未完整承接既有 approved SSOT，不能通过弱化文档关闭。
-修复应同步必要 runtime、schema、example、contract、tests 与 canonical/installed/
-Agents/Codex/Claude/Cursor 分发副本，并重新验证 install/update/reapply 与
-upgrade/update 抗漂移。
+- Runtime：600 passed、13 skipped
+- Skill integration：175 passed
+- Preset 与 ownership：54 passed
+- 12 个 package contracts：114 passed
+- Canonical/installed verifier contracts：各 9 passed
+- Source Skill validator：12 Skills、46 exits、27 targets、0 legacy
+- Installed validator：2,322 managed files，0 sidecar/removal/conflict
+- Static、distribution、runtime/adapter equality：全部通过
+- Shared source/installed：各 7/7 passed
+- Codex source/installed：各 7/7 passed
+- Claude clean-auth source/installed：各 7/7 passed
+- Cursor source/installed：各 7/7 expected unsupported
+- Full throwaway：exit 0
+- Retained inventory：expected/observed/matched=`231/231/231`，
+  `complete=true`；missing/duplicate/unexpected/mismatched/relation errors 全空
+- Final workspace boundary：passed；source checkout clean，suspicious paths 为 0
+- `git diff --check origin/main...HEAD` 与 working-tree diff check：passed
 
-当前完整范围没有 CI/CD、容器、Compose、K8s/Kustomize、数据库 migration、Makefile、
-dependency manifest 或生产数据面变化。F10 是 extension verification evidence
-correctness 问题，不新增 hostile-input/security scope；installed digest evidence
-仍只能保留去敏 path/digest/category facts，不能持久化 credential URL、secret、
-raw command output、临时绝对路径或 native transcript body。
+Claude evaluation 由 outer runner 清除 `ANTHROPIC_AUTH_TOKEN` 与
+`ANTHROPIC_BASE_URL` 后执行。没有把 Claude auth source 或本地 credential 写入
+task artifact。
 
-Claude clean-auth source/installed 当前首轮均 7/7；Cursor 按合同返回
-`unsupported`。Exact pushed feature-ref clean installation 仍是授权 push 后的
-publication gate，当前 local-source throwaway 不冒充该证据，也不替代 F10 修复。
+## Docs SSOT 与影响
 
-## 当前路由
+Docs SSOT strategy 为 `ssot_first`。Issue #117、PRD、design、implementation、
+公共 Skill package、schema、example、tests、marketplace/preset README 与
+canonical/installed/Agents/Codex/Claude/Cursor 分发已经同步；task-local report
+只保留审查与验证历史。
 
-当前 Branch Review typed exit 必须为 `implementation_required`，唯一 open finding 是
-`BR-117-F10`。Implementation owner 修复后，必须重新完成 `guru-check-task`、fresh
-task commit、独立 F10 closure 与独立 fresh final review。
+当前完整范围没有 CI/CD、容器、Compose、K8s/Kustomize、数据库 migration、
+Makefile、dependency manifest 或生产数据面变化。变更只影响 Guru Team extension
+verification 的 workflow、Skill、runtime、schema、examples、tests、distribution
+与文档合同；所有 artifact 只保存去敏 path/digest/category/relation facts。
 
-本汇总和 raw reports 不授权 publication、push、PR、Issue #117 closure 或
-`finish-work`。
+## 最终路由
+
+所有 current-scope qualified findings 均已闭环。Round 11 fresh final reviewer
+覆盖完整最终范围并返回 0 finding、0 scope proposal、0 blocker；唯一 current
+candidate 已按证据记为 `rejected_candidate`。Branch Review typed exit 为
+`passed`。
+
+本汇总与 gate 不授权 push、PR、Issue #117 closure、publication 或
+`finish-work`。Exact pushed feature-ref clean installation 必须由后续
+publication gate 使用真实 remote feature ref 完成。

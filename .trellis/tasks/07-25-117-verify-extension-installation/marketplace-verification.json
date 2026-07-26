@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-26T09:57:50Z",
+  "status": "passed",
+  "repo": "castbox/guru-trellis",
+  "remote": "origin",
+  "branch": "feat/117-verify-extension-installation",
+  "marketplace_source": "gh:castbox/guru-trellis/trellis#feat/117-verify-extension-installation",
+  "verified_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+  "remote_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+  "task_dir": ".trellis/tasks/07-25-117-verify-extension-installation",
+  "steps": [
+    {
+      "command": [
+        "git",
+        "ls-remote",
+        "origin",
+        "refs/heads/feat/117-verify-extension-installation",
+        "refs/heads/feat/117-verify-extension-installation^{}"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "b64be05c9be9ccb5c326982b543049411e645b299247091128c5b2859f835766",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_size_bytes": 90,
+      "stderr_size_bytes": 0,
+      "passed": true,
+      "remote_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+      "expected_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25"
+    },
+    {
+      "command": [
+        "git",
+        "remote",
+        "get-url",
+        "origin"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e28e4e51e40ffc4d418229ccab0818a4b8e16f1b22a919b1b4691cf7775ab8fa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_size_bytes": 43,
+      "stderr_size_bytes": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "--no-checkout",
+        "<remote-url>",
+        "<temp-source>"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2441fa813b8fad3acac734b241fd74e2525219de3209797a47937bc160a15429",
+      "stdout_size_bytes": 0,
+      "stderr_size_bytes": 110,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "checkout",
+        "--detach",
+        "a28b38e5a8894e3d60b9e9694a92ed610f763f25"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2526ff15ade308e715ad4eddb55bb8e46d35eb36a24b687b8ef0593e452a6142",
+      "stdout_size_bytes": 0,
+      "stderr_size_bytes": 74,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "--verify",
+        "HEAD^{commit}"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "f40b782865f236d1e59ac15af3369492d95085a69d27d049b3da9d8124223ea8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_size_bytes": 40,
+      "stderr_size_bytes": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "<temp-source>/trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "<temp-install-work>"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "d5a0c52036cd944681798d295240fe5a50f674edfc7ece9739b8930b64bc61ef",
+      "stderr_sha256": "6f018fcfc6d7152fd1a61179a47e7f1973fe5ddd762a9a9b589db00aa9c81612",
+      "stdout_size_bytes": 3647049,
+      "stderr_size_bytes": 929,
+      "passed": true
+    }
+  ],
+  "assets": {
+    "workflow_sha256": "fc063fa5fe9928fee90e383b979cd54ef64afb5e1b99fce70cd5da722b166b02",
+    "preview_sha256": "fc063fa5fe9928fee90e383b979cd54ef64afb5e1b99fce70cd5da722b166b02",
+    "task_start_context_schema_sha256": "38c0baa21215a8d97178a56826606d23547fffae1c76db83b88902d0586ab617",
+    "finish_summary_schema_sha256": "da7b1f4e7ae2bf08996ce52d141483fdd185a8875b366b009697886653c5ff89",
+    "closeout_plan_schema_sha256": "78ea2893f61eaa81333948342b7bb206f9c0bf91b8b7d37b366b9d7e3b9efc35",
+    "runtime_gitignore_present": true,
+    "workspace_gitignore_present": true,
+    "session_auto_commit_false": true,
+    "legacy_handoff_absent": true,
+    "legacy_intake_schema_absent": true
+  }
+}

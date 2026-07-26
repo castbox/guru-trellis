@@ -5,7 +5,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/117",
     "title": "拆分 #115：实现 guru-verify-extension-installation 闭环 Skill",
     "reason": "当前唯一 primary independently deliverable change request。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Phase 2 typed exit=passed：完整核对 Issue #117 requirements、design、implementation、tests、Docs SSOT 与跨层 contract，runtime 600/13 skipped、Skill 175、preset/ownership 54、12 package contracts 114 均通过。",
+      "Branch Review 覆盖 origin/main...a28b38e5a8894e3d60b9e9694a92ed610f763f25；F1/F2/F7/F8/F9/F10 均有 closure evidence，fresh final round 为 0 qualified finding、0 scope proposal、0 blocker，typed exit=passed。",
+      "Full local-source throwaway exit 0，retained installed inventory expected/observed/matched=231/231/231；该本地证据不替代 pushed feature-ref 验证，后者继续由 post-push finalization gate 强制执行。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "0238e391ff39f84fa1607346d358362910f389a8ed786f3be022dfff1b34f3f7",
+        "verified_content_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+        "remote_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+        "publish_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,7 +28,22 @@
       "url": "https://github.com/castbox/guru-trellis/issues/117",
       "title": "拆分 #115：实现 guru-verify-extension-installation 闭环 Skill",
       "reason": "本 task 完整承诺并由后续 review gate 验收的 Issue。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Phase 2 typed exit=passed：完整核对 Issue #117 requirements、design、implementation、tests、Docs SSOT 与跨层 contract，runtime 600/13 skipped、Skill 175、preset/ownership 54、12 package contracts 114 均通过。",
+        "Branch Review 覆盖 origin/main...a28b38e5a8894e3d60b9e9694a92ed610f763f25；F1/F2/F7/F8/F9/F10 均有 closure evidence，fresh final round 为 0 qualified finding、0 scope proposal、0 blocker，typed exit=passed。",
+        "Full local-source throwaway exit 0，retained installed inventory expected/observed/matched=231/231/231；该本地证据不替代 pushed feature-ref 验证，后者继续由 post-push finalization gate 强制执行。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "0238e391ff39f84fa1607346d358362910f389a8ed786f3be022dfff1b34f3f7",
+          "verified_content_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+          "remote_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+          "publish_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

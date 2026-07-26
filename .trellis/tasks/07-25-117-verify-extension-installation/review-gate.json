@@ -1,11 +1,11 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-07-26T04:45:36Z",
+  "generated_at": "2026-07-26T08:51:47Z",
   "task_dir": ".trellis/tasks/07-25-117-verify-extension-installation",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "feat/117-verify-extension-installation",
-  "head": "a47e1fbd7bedb001649814969096076bb70157db",
+  "head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/guru-verify-extension-installation/SKILL.md",
@@ -256,6 +256,7 @@
     ".trellis/tasks/07-25-117-verify-extension-installation/issue-review.json",
     ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
     ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
     ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
     ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
     ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
@@ -268,11 +269,14 @@
     ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
     ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
     ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
     ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/001.json",
     ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
     ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
     ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
     ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json",
     ".trellis/tasks/07-25-117-verify-extension-installation/task-start-context.json",
     ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
     ".trellis/workflow.md",
@@ -368,18 +372,23 @@
     ".trellis/tasks/07-25-117-verify-extension-installation",
     "--base-branch",
     "main",
+    "--pass",
     "--summary",
-    "Round 8 已独立关闭 BR-117-F9；Round 9 fresh full-range review 资格化 normal_required_behavior P2 BR-117-F10。成功 executor 缺少 installed workflow/preset/schema/skill/platform digest inventory 与逐 capability asset evidence；全部 tests 和 validators 通过不反证该 owner-private evidence 合同缺口，当前必须返回 implementation_required。",
+    "Issue #117 已完成完整 Branch Review lifecycle：F1/F2/F7/F8/F9/F10 均有独立闭环证据，Round 11 fresh final review 覆盖 origin/main...a28b38e5，0 finding、0 scope proposal、0 blocker；唯一 current candidate 被证据反证，typed route 为 passed。",
     "--evidence",
-    "完整复核 origin/main...a47e1fbd7bedb001649814969096076bb70157db、Round 1-9 raw reports、planning/Docs SSOT、Phase 2、Plan 005 tree 与 task lifecycle。",
+    "Round 10 独立 closure report reviews/009-f10-closure.md 已关闭 BR-117-F10；Round 11 fresh final report reviews/010-final.md digest 18fd92f1... 覆盖完整最终 range，并由不同 agent 返回 zero finding。",
     "--evidence",
-    "Round 8 reviews/007-f9-closure.md 关闭 BR-117-F9；Round 9 reviews/008-final.md 记录 BR-117-F10 P2 open，scope proposal 为 0。",
+    "Fresh validation 通过：runtime 600 passed/13 skipped、Skill 175、preset/ownership 54、package 114、canonical/installed verifier 各 9、Shared/Codex/Claude source+installed 各 7/7、Cursor expected unsupported、full throwaway exit 0、retained inventory 231/231/231 complete。",
     "--evidence",
-    "Fresh runtime 596/13 skipped、Skill 175、preset+ownership 54、canonical/installed contract 各 8、source/installed validators、dogfood drift、ownership、六处分发、syntax、whitespace 与 sidecar 检查通过。",
+    "已审查完整 diff 对 CI/CD、容器、Docker/Compose、K8s/Kustomize、数据库 migration、Makefile、dependency manifest 与生产数据面部署影响；这些 surface 均无变更，当前改动仅限 extension workflow/Skill/runtime/schema/example/test/distribution/docs。",
     "--evidence",
-    "Docs SSOT 为 ssot_first；F10 是 runtime/schema/example/tests 未承接既有 installed asset digest contract，不涉及 deployment data-plane 或 hostile-input scope。Exact pushed feature-ref clean install 仍是授权 push 后 publication gate。",
+    "Docs SSOT strategy 为 ssot_first；Issue、planning、公共 Skill 合同、schema、examples、tests、README 与 canonical/installed/Agents/Codex/Claude/Cursor 分发一致。",
+    "--evidence",
+    "安全边界已审查：artifact 仅保存去敏 path/digest/category/relation facts；Claude eval 由 outer runner unset ANTHROPIC_AUTH_TOKEN 与 ANTHROPIC_BASE_URL；没有 token、credential URL、原始 transcript 或临时绝对路径写入 task evidence。",
+    "--evidence",
+    "Exact pushed feature-ref clean install 明确保留给 post-push publication gate，本地 unpublished source throwaway 未冒充 remote ref evidence；本轮不授权 push、PR、Issue closure、publication 或 finish-work。",
     "--reviewer",
-    "/root/issue117_final_after_f9",
+    "/root/issue117_f10_final",
     "--review-source",
     "independent-agent",
     "--review-report",
@@ -387,93 +396,47 @@
     "--agent-assignment",
     ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
     "--skill-input",
-    ".trellis/.runtime/guru-team/branch-review-f9-final-public-input.json",
+    ".trellis/.runtime/guru-team/branch-review-f10-final-public-input.json",
     "--semantic-review-file",
-    ".trellis/.runtime/guru-team/branch-review-f10-semantic.json",
+    ".trellis/.runtime/guru-team/branch-review-f10-final-semantic.json",
     "--typed-exit",
-    "implementation_required"
+    "passed"
   ],
   "conclusion": {
-    "passed": false,
-    "summary": "Round 8 已独立关闭 BR-117-F9；Round 9 fresh full-range review 资格化 normal_required_behavior P2 BR-117-F10。成功 executor 缺少 installed workflow/preset/schema/skill/platform digest inventory 与逐 capability asset evidence；全部 tests 和 validators 通过不反证该 owner-private evidence 合同缺口，当前必须返回 implementation_required。",
+    "passed": true,
+    "summary": "Issue #117 已完成完整 Branch Review lifecycle：F1/F2/F7/F8/F9/F10 均有独立闭环证据，Round 11 fresh final review 覆盖 origin/main...a28b38e5，0 finding、0 scope proposal、0 blocker；唯一 current candidate 被证据反证，typed route 为 passed。",
     "block_priorities": [
       "P0",
       "P1",
       "P2",
       "P3"
     ],
-    "blocking_findings_count": 1,
-    "findings_count": 1,
-    "observations_count": 2,
+    "blocking_findings_count": 0,
+    "findings_count": 0,
+    "observations_count": 1,
     "followup_candidates_count": 0
   },
-  "findings": [
-    {
-      "priority": "P2",
-      "message": "成功 executor 的 asset_digests 只覆盖 9 个 remote source checkout 文件，并把最后一个 throwaway command 的总体状态映射到全部 selected capabilities；owner facts 未保留 Issue/PRD/design 明确要求的 installed workflow/preset/schema/skill/platform asset digests，AI Gate 无法从 private evidence 审查这些安装资产及逐 capability coverage。",
-      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py:18188",
-      "candidate_ref": "C10",
-      "disposition": "qualified_finding",
-      "scenario_class": "normal_required_behavior",
-      "affected_behavior": "成功 executor 的 asset_digests 只覆盖 9 个 remote source checkout 文件，并把最后一个 throwaway command 的总体状态映射到全部 selected capabilities；owner facts 未保留 Issue/PRD/design 明确要求的 installed workflow/preset/schema/skill/platform asset digests，AI Gate 无法从 private evidence 审查这些安装资产及逐 capability coverage。",
-      "evidence_refs": [
-        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
-        "successful_throwaway digests exactly nine source_checkout/trellis paths",
-        "execution-facts schema only requires path and sha256 without installed category/completeness",
-        "all selected capabilities reuse one final throwaway status and evidence_step",
-        "normal-path tests do not assert installed digest inventory, missing assets, mismatch, or per-capability evidence"
-      ],
-      "requirement_refs": [
-        "Live Issue #117 positive behavior item 5 and Artifact contract",
-        ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:47",
-        ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:61",
-        ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:73",
-        ".trellis/tasks/07-25-117-verify-extension-installation/design.md:231",
-        ".trellis/tasks/07-25-117-verify-extension-installation/design.md:261"
-      ],
-      "scope_basis": "Issue #117 与已批准 planning 明确要求 pushed-ref clean install 成功路径保留 installed workflow/preset/schema/skill/platform digests 和逐 capability asset evidence；任何正常 executor success 都进入当前代码段，不依赖恶意 actor、手工伪造 artifact/hash/state、hostile input、并发竞态、TOCTOU、锁或 fault injection。",
-      "qualification_reason": "Fresh Round 9 在完整 committed range 上证明当前成功 facts/schema/tests 只绑定 source digests 和总体 command success，未提供 approved artifact contract 要求的 installed digest inventory；full throwaway、production eval 与全部 tests/validators 通过不能补写缺失的 owner-private machine facts，也不能让 executor exit code 替代 AI adequacy evidence。",
-      "finding_ref": "BR-117-F10",
-      "severity": "P2",
-      "owner_round": 9,
-      "reviewed_head": "a47e1fbd7bedb001649814969096076bb70157db",
-      "status": "open",
-      "closure_evidence": []
-    }
-  ],
+  "findings": [],
   "observations": [
     {
       "kind": "observation",
-      "message": "Exact pushed feature-ref clean installation 尚未执行，current local-source throwaway 不能证明 remote feature-ref publication identity。",
-      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+      "message": "Exact pushed feature-ref clean installation 尚未执行；当前 local-source throwaway 不能证明 remote feature-ref publication identity。",
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/010-final.md",
       "candidate_ref": "OBS-F10-POST-PUSH",
       "disposition": "observation",
       "scenario_class": "out_of_scope",
-      "affected_behavior": "Exact pushed feature-ref clean installation 尚未执行，current local-source throwaway 不能证明 remote feature-ref publication identity。",
+      "affected_behavior": "Exact pushed feature-ref clean installation 尚未执行；当前 local-source throwaway 不能证明 remote feature-ref publication identity。",
       "evidence_refs": [
-        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
-        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
-        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md"
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/009-f10-closure.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/010-final.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md"
       ],
-      "requirement_refs": [],
-      "scope_basis": "真实 remote feature ref 当前不存在且未获 push 授权，该 gate 属于后续 publication workflow。",
-      "qualification_reason": "未验证项被明确保留且未被 local sample 冒充；它不替代 BR-117-F10，也不构成本地 implementation finding。"
-    },
-    {
-      "kind": "observation",
-      "message": "Cursor source/installed native eval 按当前 package contract 返回 unsupported，没有进入交互会话。",
-      "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "candidate_ref": "OBS-F10-CURSOR",
-      "disposition": "observation",
-      "scenario_class": "out_of_scope",
-      "affected_behavior": "Cursor source/installed native eval 按当前 package contract 返回 unsupported，没有进入交互会话。",
-      "evidence_refs": [
-        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
-        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md"
+      "requirement_refs": [
+        ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:73",
+        ".trellis/tasks/07-25-117-verify-extension-installation/design.md:261"
       ],
-      "requirement_refs": [],
-      "scope_basis": "Issue #117 当前合同允许 Cursor adapter 明确返回 unsupported，并禁止把未执行会话伪装为 pass。",
-      "qualification_reason": "Source/installed Cursor 均以声明的 unsupported 状态完成 corpus，未违反当前范围，仅保留观察。"
+      "scope_basis": "真实 remote feature ref 当前不存在且本轮没有 push 或 publication 授权；该验证由后续 mandatory post-push publication gate 执行。",
+      "qualification_reason": "本地 unpublished source throwaway 已明确标记为 local sample，没有冒充 remote feature-ref evidence。未验证项被保留给其唯一后续 gate，因此不构成本地 implementation finding 或 Branch Review blocker。"
     }
   ],
   "followup_candidates": [],
@@ -557,23 +520,23 @@
     ]
   },
   "verification_evidence": {
-    "base_head": "origin/main...a47e1fbd7bedb001649814969096076bb70157db",
-    "changed_file_count": 336,
-    "reviewer": "/root/issue117_final_after_f9",
+    "base_head": "origin/main...a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+    "changed_file_count": 340,
+    "reviewer": "/root/issue117_f10_final",
     "review_source": "independent-agent",
     "review_report": {
       "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
-      "sha256": "601974f36721f0994289479ce0b4c003e040d77bd6941898ecefc46c1ead6fb9",
-      "size_bytes": 6507,
-      "modified_at": "2026-07-26T04:43:33.945893+00:00"
+      "sha256": "8357b949f37d9a5c3d9e827de490656af07d4c8068948a7598b13fc3e4420e0d",
+      "size_bytes": 7105,
+      "modified_at": "2026-07-26T08:46:50.010226+00:00"
     },
     "agent_assignment": {
       "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
-      "sha256": "09cc2126206874b58204946dab4d0787520e921e340cd3fb15cc3438af1d1116",
-      "size_bytes": 364941,
-      "modified_at": "2026-07-26T04:41:29.783199+00:00",
+      "sha256": "0b6f4d406e1bc2f3cbaf3333c7c7a860e6e88553539521f7f22d0fa65bccc2e3",
+      "size_bytes": 445337,
+      "modified_at": "2026-07-26T08:49:26.345596+00:00",
       "schema_version": "1.2",
-      "artifact_head": "a47e1fbd7bedb001649814969096076bb70157db",
+      "artifact_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
       "roles": [
         "实现代理",
         "最终放行审查代理",
@@ -581,11 +544,11 @@
         "问题闭环审查代理",
         "阶段二检查代理"
       ],
-      "agents_count": 24,
-      "review_rounds_count": 9,
-      "reuse_decisions_count": 4,
-      "status_events_count": 297,
-      "effective_status_events_count": 296,
+      "agents_count": 28,
+      "review_rounds_count": 11,
+      "reuse_decisions_count": 6,
+      "status_events_count": 361,
+      "effective_status_events_count": 360,
       "event_corrections_count": 1,
       "recovery_links_count": 0,
       "task": ".trellis/tasks/07-25-117-verify-extension-installation",
@@ -690,13 +653,37 @@
         "sha256": "f6ca3402a5829d110a52184ee4d9ca419c3cc781efb5ccabfba87fc534878581",
         "size_bytes": 16939,
         "modified_at": "2026-07-26T04:38:51.253899+00:00"
+      },
+      {
+        "round": 10,
+        "logical_role": "问题闭环审查代理",
+        "agent_id": "/root/issue117_f10_closure",
+        "reviewed_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/009-f10-closure.md",
+        "sha256": "d0de2d228d94d4c9bb7d6f8dedd89ce2d08c887ea7eceae340897deff5a02ec1",
+        "size_bytes": 17681,
+        "modified_at": "2026-07-26T08:01:42.322582+00:00"
+      },
+      {
+        "round": 11,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/issue117_f10_final",
+        "reviewed_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/010-final.md",
+        "sha256": "18fd92f103f397f3d3ef9e71fa65bacc2d4e777aba4ca6c88c1bcb6b8f514c3e",
+        "size_bytes": 14967,
+        "modified_at": "2026-07-26T08:40:15.159146+00:00"
       }
     ],
     "evidence": [
-      "完整复核 origin/main...a47e1fbd7bedb001649814969096076bb70157db、Round 1-9 raw reports、planning/Docs SSOT、Phase 2、Plan 005 tree 与 task lifecycle。",
-      "Round 8 reviews/007-f9-closure.md 关闭 BR-117-F9；Round 9 reviews/008-final.md 记录 BR-117-F10 P2 open，scope proposal 为 0。",
-      "Fresh runtime 596/13 skipped、Skill 175、preset+ownership 54、canonical/installed contract 各 8、source/installed validators、dogfood drift、ownership、六处分发、syntax、whitespace 与 sidecar 检查通过。",
-      "Docs SSOT 为 ssot_first；F10 是 runtime/schema/example/tests 未承接既有 installed asset digest contract，不涉及 deployment data-plane 或 hostile-input scope。Exact pushed feature-ref clean install 仍是授权 push 后 publication gate。"
+      "Round 10 独立 closure report reviews/009-f10-closure.md 已关闭 BR-117-F10；Round 11 fresh final report reviews/010-final.md digest 18fd92f1... 覆盖完整最终 range，并由不同 agent 返回 zero finding。",
+      "Fresh validation 通过：runtime 600 passed/13 skipped、Skill 175、preset/ownership 54、package 114、canonical/installed verifier 各 9、Shared/Codex/Claude source+installed 各 7/7、Cursor expected unsupported、full throwaway exit 0、retained inventory 231/231/231 complete。",
+      "已审查完整 diff 对 CI/CD、容器、Docker/Compose、K8s/Kustomize、数据库 migration、Makefile、dependency manifest 与生产数据面部署影响；这些 surface 均无变更，当前改动仅限 extension workflow/Skill/runtime/schema/example/test/distribution/docs。",
+      "Docs SSOT strategy 为 ssot_first；Issue、planning、公共 Skill 合同、schema、examples、tests、README 与 canonical/installed/Agents/Codex/Claude/Cursor 分发一致。",
+      "安全边界已审查：artifact 仅保存去敏 path/digest/category/relation facts；Claude eval 由 outer runner unset ANTHROPIC_AUTH_TOKEN 与 ANTHROPIC_BASE_URL；没有 token、credential URL、原始 transcript 或临时绝对路径写入 task evidence。",
+      "Exact pushed feature-ref clean install 明确保留给 post-push publication gate，本地 unpublished source throwaway 未冒充 remote ref evidence；本轮不授权 push、PR、Issue closure、publication 或 finish-work。"
     ],
     "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
   },
@@ -723,6 +710,7 @@
         ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
@@ -733,6 +721,8 @@
         ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
         ".trellis/workflow.md",
         "README.md",
         "docs/requirements/README.md",
@@ -830,6 +820,7 @@
         ".trellis/tasks/07-25-117-verify-extension-installation/issue-review.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
@@ -842,11 +833,14 @@
         ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/001.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-start-context.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
         ".trellis/workflow.md",
@@ -1118,6 +1112,7 @@
         ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task-start-context.json",
         ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
         "trellis/guru-team-extension.json",
@@ -1354,6 +1349,7 @@
       ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
       ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
       ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
       ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
       ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
       "trellis/skills/guru-team/consumers/stop/production/verify-extension-installation-blocked.schema.json",
@@ -1376,78 +1372,59 @@
   "skill_id": "guru-review-branch",
   "mode": "workflow",
   "review_intent": "fresh_final_review",
-  "typed_exit": "implementation_required",
+  "typed_exit": "passed",
   "semantic_review": {
-    "qualified_findings": [
-      {
-        "candidate_ref": "C10",
-        "disposition": "qualified_finding",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "成功 executor 的 asset_digests 只覆盖 9 个 remote source checkout 文件，并把最后一个 throwaway command 的总体状态映射到全部 selected capabilities；owner facts 未保留 Issue/PRD/design 明确要求的 installed workflow/preset/schema/skill/platform asset digests，AI Gate 无法从 private evidence 审查这些安装资产及逐 capability coverage。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py:18188",
-        "evidence_refs": [
-          ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
-          "successful_throwaway digests exactly nine source_checkout/trellis paths",
-          "execution-facts schema only requires path and sha256 without installed category/completeness",
-          "all selected capabilities reuse one final throwaway status and evidence_step",
-          "normal-path tests do not assert installed digest inventory, missing assets, mismatch, or per-capability evidence"
-        ],
-        "requirement_refs": [
-          "Live Issue #117 positive behavior item 5 and Artifact contract",
-          ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:47",
-          ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:61",
-          ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:73",
-          ".trellis/tasks/07-25-117-verify-extension-installation/design.md:231",
-          ".trellis/tasks/07-25-117-verify-extension-installation/design.md:261"
-        ],
-        "scope_basis": "Issue #117 与已批准 planning 明确要求 pushed-ref clean install 成功路径保留 installed workflow/preset/schema/skill/platform digests 和逐 capability asset evidence；任何正常 executor success 都进入当前代码段，不依赖恶意 actor、手工伪造 artifact/hash/state、hostile input、并发竞态、TOCTOU、锁或 fault injection。",
-        "qualification_reason": "Fresh Round 9 在完整 committed range 上证明当前成功 facts/schema/tests 只绑定 source digests 和总体 command success，未提供 approved artifact contract 要求的 installed digest inventory；full throwaway、production eval 与全部 tests/validators 通过不能补写缺失的 owner-private machine facts，也不能让 executor exit code 替代 AI adequacy evidence。",
-        "finding_ref": "BR-117-F10",
-        "severity": "P2",
-        "owner_round": 9,
-        "reviewed_head": "a47e1fbd7bedb001649814969096076bb70157db",
-        "status": "open",
-        "closure_evidence": []
-      }
-    ],
+    "qualified_findings": [],
     "scope_proposals": [],
     "observations": [
       {
         "candidate_ref": "OBS-F10-POST-PUSH",
         "disposition": "observation",
         "scenario_class": "out_of_scope",
-        "affected_behavior": "Exact pushed feature-ref clean installation 尚未执行，current local-source throwaway 不能证明 remote feature-ref publication identity。",
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+        "affected_behavior": "Exact pushed feature-ref clean installation 尚未执行；当前 local-source throwaway 不能证明 remote feature-ref publication identity。",
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/010-final.md",
         "evidence_refs": [
-          ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
-          ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
-          ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md"
+          ".trellis/tasks/07-25-117-verify-extension-installation/reviews/009-f10-closure.md",
+          ".trellis/tasks/07-25-117-verify-extension-installation/reviews/010-final.md",
+          ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md"
         ],
-        "requirement_refs": [],
-        "scope_basis": "真实 remote feature ref 当前不存在且未获 push 授权，该 gate 属于后续 publication workflow。",
-        "qualification_reason": "未验证项被明确保留且未被 local sample 冒充；它不替代 BR-117-F10，也不构成本地 implementation finding。"
-      },
-      {
-        "candidate_ref": "OBS-F10-CURSOR",
-        "disposition": "observation",
-        "scenario_class": "out_of_scope",
-        "affected_behavior": "Cursor source/installed native eval 按当前 package contract 返回 unsupported，没有进入交互会话。",
-        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "evidence_refs": [
-          ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
-          ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md"
+        "requirement_refs": [
+          ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:73",
+          ".trellis/tasks/07-25-117-verify-extension-installation/design.md:261"
         ],
-        "requirement_refs": [],
-        "scope_basis": "Issue #117 当前合同允许 Cursor adapter 明确返回 unsupported，并禁止把未执行会话伪装为 pass。",
-        "qualification_reason": "Source/installed Cursor 均以声明的 unsupported 状态完成 corpus，未违反当前范围，仅保留观察。"
+        "scope_basis": "真实 remote feature ref 当前不存在且本轮没有 push 或 publication 授权；该验证由后续 mandatory post-push publication gate 执行。",
+        "qualification_reason": "本地 unpublished source throwaway 已明确标记为 local sample，没有冒充 remote feature-ref evidence。未验证项被保留给其唯一后续 gate，因此不构成本地 implementation finding 或 Branch Review blocker。"
       }
     ],
     "followup_candidates": [],
-    "rejected_candidates": [],
+    "rejected_candidates": [
+      {
+        "candidate_ref": "RC-F10-INVENTORY-COLLECTOR",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Retained inventory collector 单层不枚举任意额外文件，可能遗漏安装目录中的 arbitrary extra。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          ".trellis/tasks/07-25-117-verify-extension-installation/reviews/009-f10-closure.md",
+          ".trellis/tasks/07-25-117-verify-extension-installation/reviews/010-final.md",
+          "full throwaway terminal exit 0",
+          "retained inventory expected/observed/matched=231/231/231 with empty error arrays",
+          "installed manifest/package/platform/managed inventory and sidecar validators passed"
+        ],
+        "requirement_refs": [
+          "Live Issue #117 positive behavior item 5 and Artifact contract",
+          ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:47",
+          ".trellis/tasks/07-25-117-verify-extension-installation/prd.md:61",
+          ".trellis/tasks/07-25-117-verify-extension-installation/design.md:231"
+        ],
+        "scope_basis": "Issue #117 当前 acceptance 是 closed expected workflow/preset/schema/skill/platform install surface，并要求完整正常路径 fail closed；不要求 collector 单层扫描任意项目目录。",
+        "qualification_reason": "完整 throwaway 在 retained collector 之外同时执行 installed package、manifest、platform、managed inventory 与 sidecar validators。正常受支持路径中的 package/platform/managed extra 会使完整 executor 非零退出，不能进入 passed；因此候选未违反当前合同，按 rejected_candidate 保留且不赋 severity 或 finding_ref。"
+      }
+    ],
     "ai_review_gate": {
-      "status": "implementation_required",
-      "summary": "Round 8 独立 closure 已关闭 BR-117-F9；Round 9 fresh reviewer 覆盖完整 origin/main...a47e1fbd7bedb001649814969096076bb70157db 后资格化新的 current-scope normal_required_behavior P2 BR-117-F10：成功 executor 未在 owner-private facts 中保留 installed workflow/preset/schema/skill/platform digest inventory 与逐 capability asset evidence，而以 9 个 source digest 和总体 throwaway success 代替。当前必须返回实现，重新完成 Phase 2、task commit、F10 closure 与 fresh final review。"
+      "status": "passed",
+      "summary": "Round 10 独立 closure reviewer 在 commit 006 后覆盖完整 origin/main...a28b38e5 并关闭 BR-117-F10；Round 11 使用不同的 fresh final reviewer 再次覆盖完整范围，确认 0 qualified finding、0 scope proposal、0 blocker。Runtime 600/13 skipped、Skill 175、preset/ownership 54、package 114、canonical/installed verifier 各 9、六个平台 source/installed eval、full throwaway exit 0 与 retained inventory 231/231/231 均通过。Collector 单层 arbitrary-extra 候选被完整分层验证证据反证并记为 rejected_candidate；exact pushed feature-ref 验证明确延后到 post-push publication gate。Docs SSOT ssot_first、部署与安全边界一致，当前 Branch Review route 为 passed。"
     }
   },
-  "facts_sha256": "4aa387bfb754e95d6e1d81532c6f6f0f9a8fc54f3df63507b00647312b35518a"
+  "facts_sha256": "7f6df6b6439cf1e7a862fff6ff153bee2f33c7f0a7d12b82a3c4e5238b85ce20"
 }
