@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-25T10:47:53Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-25-117-verify-extension-installation",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "size_bytes": 10446,
+        "content_sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        "size_bytes": 21341,
+        "content_sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        "size_bytes": 11831,
+        "content_sha256": "7922efb0ec9d5995370f2868ea69a1eef46aef56d53007d6b39325b43cab9102"
+      }
+    ],
+    "scope_sha256": "cd871353e3e3e3194a991263cf52c0417102a6c1f8b86ec239e91e876d569da2"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex main session",
+      "summary": "已逐份审核修订后的 prd.md、design.md、implement.md 完整固定范围。扫描无受控词命中；workflow 与 standalone output 已收敛为每个 exit 的 closed oneOf 单一路径，需求 authority、条件触发、deterministic gate、可观察验收与非合同引用边界均明确，未弱化 Issue #117。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本轮只创建用户已授权的 task-local planning artifacts，没有修改 GitHub authority 或改变已确认的产品语义。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "5d01439b65fe64abf576d438f764e4ca36959f0e7ac65502b658753406c066dc"
+}

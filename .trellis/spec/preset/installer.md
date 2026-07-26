@@ -547,7 +547,8 @@ Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
-The activation produces eleven active Skills and 42 exits. The existing
+The activation contributes to the current twelve active Skills and 46 exits.
+The existing
 `production-minimal-handoff-v1` remains exactly three Skills and 11 exits with
 its original activation identity; #116 is derived as an additional complete
 active Interface 1.3 row. The #131 `passed` DTO bytes remain unchanged while
@@ -566,3 +567,36 @@ source/installed validation, workflow marker and consumer uniqueness checks,
 real wrapper/eval smoke, selected-platform byte identity, upstream ownership,
 dogfood drift, and recursive zero `.new`/`.bak` checks. Remote branch
 marketplace verification remains a later finish-work gate.
+
+## Extension Installation Verification Package Activation
+
+`guru-verify-extension-installation` is installed as an additive active
+Interface 1.3 package with its two input profiles, four per-exit contracts,
+workflow/stop consumers, private gate schema, seven-case corpus, thin wrappers,
+registry row, workflow markers, and extension inventories. It increases the
+live closure to twelve Skills and 46 exits without changing the Stage 0
+six-Skill/24-exit identity or the production three-Skill/11-exit membership.
+`guru-finalize-task` remains planned; the installer must reject any premature
+`#118` producer edge.
+
+Managed executable companion assets include
+`execute-extension-verification.sh`,
+`record-extension-verification.sh`,
+`check-extension-verification.sh`, and
+`invoke-extension-verification.sh`. They are installed before the package is
+usable and published in the extension runtime command inventory.
+`verify-marketplace.sh` remains a compatibility wrapper into the same executor,
+not a second implementation.
+
+Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
+installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
+wrapper executable modes, 12/46 workflow closure, 27 target markers, and the
+frozen 43-entry ownership inventory. The executor reads `legacy_entries` and
+its frozen digest; a new legacy owner fails. Unknown edits retain `.new`,
+known upgrades retain `.bak`, and completion requires their explicit
+resolution plus a recursive zero-sidecar scan.
+
+The installed production eval smoke is distinct from pushed-remote clean
+installation. Throwaway local/update coverage may validate the former and the
+deterministic matrix, but release evidence must separately name the exact
+remote ref/HEAD or report that verification as deferred.

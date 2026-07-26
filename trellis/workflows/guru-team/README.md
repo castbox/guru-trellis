@@ -30,7 +30,7 @@ spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`�
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 对应。当前已发布
-stable 是 `.2`；本分支 canonical `.22` 在 merge/tag/远端验证完成前不是 stable source。
+stable 是 `.2`；本分支 canonical `.23` 在 merge/tag/远端验证完成前不是 stable source。
 
 已有 Trellis 项目切换 active workflow：
 
@@ -55,10 +55,10 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 `guru-review-contract-wording`、`guru-review-change-request` 与
 `guru-create-task-workspace`、`guru-approve-task-plan`、`guru-check-task`、
 `guru-create-task-commit`、`guru-review-branch`、
-`guru-review-task-publication`。这十一个 active packages 共声明
-42 个 external exits。Workflow 不得为
+`guru-review-task-publication`、`guru-verify-extension-installation`。这十二个
+active packages 共声明 46 个 external exits。Workflow 不得为
 reserved/planned id 伪造 invocation route。当前 canonical
-extension version 是待发布的 `0.6.5-guru.22`，已发布 stable source 仍是
+extension version 是待发布的 `0.6.5-guru.23`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
 
 Interface 1.2 保持冻结的 legacy 语义；独立 interface 1.3 是新建或实质修改 public
@@ -66,7 +66,7 @@ I/O 的 minimal handoff target。Registry 1.1 的 active row exact 声明
 `interface_schema_id` 与 `io_contract_state`，合法组合只有 `1.2+legacy` 和
 `1.3+minimal_handoff`。`stage0-minimal-handoff-v1` 已原子迁移六个 Stage 0 packages
 与 24 exits；独立 `production-minimal-handoff-v1` 已原子迁移 planning/check/commit
-三包、十个 profiles 与 11 exits。当前 active closure 为 11/42 且 `legacy_skill_ids=[]`；
+三包、十个 profiles 与 11 exits。当前 active closure 为 12/46 且 `legacy_skill_ids=[]`；
 Stage 0 manifest identity 保持 6/24。两版均保留 `workflow` / `standalone` mode id 和必填
 `judgment_mode`，并以
 `routing=global_workflow|direct_discovery` 区分 mandatory route 与平台直接发现。
@@ -81,6 +81,15 @@ closure、十维结论、finding route 或 ready。Active publication Skill 仍�
 semantic owner，缺失或结构错误先失败关闭。Phase 3.7 只消费 `ready` 已绑定的
 content bytes，不得首次创建或修改；只有
 `ready -> guru-finalize-task` 仍停在 planned missing-Skill boundary。
+
+Active `guru-verify-extension-installation` 独立拥有 future
+`verification_required` target bootstrap 与 standalone
+`standalone_verification` input。#117 只发布 target schema/example/eval 和四出口
+contract；本 workflow 不激活 #118 producer edge，因此 publication `ready` 仍不能到达
+该 invocation。其 `verified` / `not_required` 指向 planned finalizer，
+`return_to_task_work` 回 Phase 2，`blocked` 停止。Skill 内部 AI 独占
+applicability、closed capability profile、adequacy、finding 和 route；workflow 只拥有
+marker、consumer 和 fail-closed transition。
 
 五条 semantic package handoff 使用 additive target-owned
 `skill_input_authoring_seed`：planning revision self-reentry、Phase 2 passed 到 initial
@@ -936,7 +945,19 @@ history-discovery capability; it does not replace normal finish-work.
 
 ## Push 后远端 Marketplace 门禁
 
-修改 marketplace/preset/overlay/schema/public API 时，recorder 在 reviewed content push 后从 immutable closeout plan 生成 pending machine evidence；verifier 成功后只替换为 passed。plan、readiness、artifact 与 ledger 形成 exact pre-draft metadata commit，push 并校验 remote HEAD 后才允许绑定 draft PR。缺失、重复、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；human reason 不参与 machine identity，该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
+`guru-verify-extension-installation` 是 extension installation 唯一 semantic owner。
+Workflow 或 task-bearing standalone 只持久化 task-local
+`marketplace-verification.json`；taskless standalone 为 session-only。Runtime command
+固定为 `execute-extension-verification`、`record-extension-verification`、
+`check-extension-verification`、`invoke-extension-verification`，只执行、记录、
+校验和按 actual exit 序列化，不判断语义通过。旧 `verify-marketplace` 仅是同一
+executor 的 compatibility projection，不保留第二套安装实现。
+
+Remote matrix 必须绑定 pushed ref/HEAD，覆盖 new init、preview/switch、preset
+apply/reapply、`trellis update`、ownership/sidecar、contract discovery、platform
+equality、README command 与 redaction。Workflow-required applicability conflict 会
+`blocked`，不能 silently `not_required`。Production real-wrapper eval 与 pushed-remote
+clean install 分别记录，任一不能替代另一份验收。
 
 ## Skill 行为评测
 
@@ -946,7 +967,7 @@ package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十一个 packages 已维护 canonical corpora 并覆盖全部 42 exits/profile；Stage 0 的
+中的十二个 packages 已维护 canonical corpora 并覆盖全部 46 exits/profile；Stage 0 的
 24-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

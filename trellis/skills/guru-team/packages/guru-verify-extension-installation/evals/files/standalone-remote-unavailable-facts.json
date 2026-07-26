@@ -1,0 +1,1 @@
+{"scenario":"The remote ref is temporarily unavailable and the taskless invocation remains session-only.","owner_staging":{"recipe":"extension-standalone-unavailable"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

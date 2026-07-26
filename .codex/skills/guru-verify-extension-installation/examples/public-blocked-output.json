@@ -1,0 +1,6 @@
+{
+  "exit_id": "blocked",
+  "mode": "workflow",
+  "reason_code": "remote_unavailable",
+  "remediation": "Restore remote access and rerun the complete verification."
+}

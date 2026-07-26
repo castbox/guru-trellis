@@ -1,0 +1,587 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "117-verify-extension-installation",
+    "path": ".trellis/tasks/07-25-117-verify-extension-installation",
+    "status": "in_progress",
+    "branch": "feat/117-verify-extension-installation"
+  },
+  "issue": {
+    "primary_issue": 117,
+    "ledger_sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "538def79408d417107c3adae61c4466116395d96"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
+      "sha256": "89c98cfb502448329c9c5f7e8b35561f0536401a75680b5905d25b2ae9411b92",
+      "size": 34324
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      "sha256": "75fd1fd8eaa54c3dc8ae1a0ffb12af5206f2c7a5592374013b40d7b8e17ca966",
+      "size": 50437
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+      "sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c",
+      "size": 3640
+    },
+    "task": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
+      "sha256": "e5d7beeeff3608d7aeccda610bb467e0a6b40fc4a61d67e07f52fc1bab988912",
+      "size": 716
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "02cc4f25762476f2f19a6a79e78f14b68c60f595",
+        "worktree_sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "02cc4f25762476f2f19a6a79e78f14b68c60f595",
+        "worktree_sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "02cc4f25762476f2f19a6a79e78f14b68c60f595",
+        "worktree_sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "02cc4f25762476f2f19a6a79e78f14b68c60f595",
+        "worktree_sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "82239c4b59f99120499b7e25cdae81a2cae06a9e",
+        "worktree_sha256": "016a157618a72a09c547ad0702677afbb10523eb56443c883a8685b9d50d584f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "366241aeda92d444263603c0a4e2a8b50ad141a4",
+        "worktree_sha256": "e7d9dc1db835ffb5ac53512ff6662703cd2d0225dbf297b56bdd775486ad0cdf",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "02cc4f25762476f2f19a6a79e78f14b68c60f595",
+        "worktree_sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "62253bdcbb0919a559a4de25cc405f91c983c7a4",
+        "worktree_sha256": "e683fbc9f69c52d5479cb527462f9c7ed0318b0f312e3cbfeaf6090e588042da",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f56ffe5f727118dfef27d78e4824f8f02bb4d4b3",
+        "worktree_sha256": "75fd1fd8eaa54c3dc8ae1a0ffb12af5206f2c7a5592374013b40d7b8e17ca966",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3831e8ac4d0b7808b062e3278756a83c5c57c718",
+        "worktree_sha256": "4b6a48f4574494e665ea85fbee0aaccea6c13d417df0fdc3fd50f4314edb3ab3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "af039f3c005c711f3d24ff3555055771d0c8a5f0",
+        "worktree_sha256": "a95a7ed68e3b82b1f9e0ade4857c0c3771a74a66f4d5c30ca98812eb701bf006",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d590a48a50686c067b0eb7466c8b9572bc8b11145a659e08fe2a6aa1ad612b26",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "3801a80f5dcb528291ca70f95aa8443bdb77a627a9fe7dcce583af38a1f687cd",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5fdc1e1f7030c668b645fbca4a463c92adc82037",
+        "worktree_sha256": "1af33ea53fa113b06ee22d32026d48700423b0882e3b0e79979635c2d134ad19",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "02cc4f25762476f2f19a6a79e78f14b68c60f595",
+        "worktree_sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "366241aeda92d444263603c0a4e2a8b50ad141a4",
+        "worktree_sha256": "e7d9dc1db835ffb5ac53512ff6662703cd2d0225dbf297b56bdd775486ad0cdf",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "26c0cd5c6fe20bde3a192669e15a3e3b1362ace0",
+        "worktree_sha256": "185347dde85068241b5b7422a45e45caa88b6389570a78a34357a537770d3121",
+        "mode": "100644"
+      }
+    ],
+    "digest": "5f0bb08dc0343f9071b3a3db030d42a4a48410ba73172d9026945c26175ee08c"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+    ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #117 校验扩展验证输入与重入链路",
+    "body": "背景：\nBranch Review 发现扩展验证 recorder 未执行已发布输入 schema，普通嵌套类型错误会以非合同异常中断；首次调用还可接受不存在的 supersession lineage。\n\n变更：\n在访问 semantic/execution 嵌套字段和写 artifact 前执行已发布 schema，并统一转换为受控 WorkflowError；prior owner 按自身 schema、digest 与 identity 校验，no-prior 和 wrong-prior 均拒绝，只有 exact prior ref 允许 supersession；同步 canonical、installed、Agents、Codex、Claude、Cursor 测试副本并补完整回归。\n\n边界：\n不改变公开 typed route，不扩大 #117 scope，不激活 #118/#119；真实 pushed feature-ref clean install 仍由 push 后 publication gate 完成。\n\n验证：\nFresh Phase 2 十个 adequacy dimensions 全部通过；runtime 592 passed、13 skipped，Skill 175、preset 45、ownership 9，target runtime 19/19，canonical/installed contract 各 8/8，source/installed validators 为 12 Skills/46 exits/27 targets，平台 production eval 与 full throwaway 均通过。\n\nRefs #117",
+    "bytes": "fix(trellis): #117 校验扩展验证输入与重入链路\n\n背景：\nBranch Review 发现扩展验证 recorder 未执行已发布输入 schema，普通嵌套类型错误会以非合同异常中断；首次调用还可接受不存在的 supersession lineage。\n\n变更：\n在访问 semantic/execution 嵌套字段和写 artifact 前执行已发布 schema，并统一转换为受控 WorkflowError；prior owner 按自身 schema、digest 与 identity 校验，no-prior 和 wrong-prior 均拒绝，只有 exact prior ref 允许 supersession；同步 canonical、installed、Agents、Codex、Claude、Cursor 测试副本并补完整回归。\n\n边界：\n不改变公开 typed route，不扩大 #117 scope，不激活 #118/#119；真实 pushed feature-ref clean install 仍由 push 后 publication gate 完成。\n\n验证：\nFresh Phase 2 十个 adequacy dimensions 全部通过；runtime 592 passed、13 skipped，Skill 175、preset 45、ownership 9，target runtime 19/19，canonical/installed contract 各 8/8，source/installed validators 为 12 Skills/46 exits/27 targets，平台 production eval 与 full throwaway 均通过。\n\nRefs #117\n",
+    "sha256": "68999941116e271293f03b390d805bc47d54a20db20edcee63958e0adb7a8123"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "已逐项复核当前完整 dirty snapshot：10 个 runtime、测试、manifest 与平台分发路径，以及 7 个 task-local Phase 2/Branch Review lifecycle 证据路径均属于 #117 F7 finding-fix 范围并被 fresh Phase 2 完整覆盖；提交消息准确描述 schema-before-access、exact-prior supersession、验证证据和 push 后 remote gate 边界，主仓库 checkout 与所有范围外内容保持不变。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户再次明确“确认继续”；本授权仅适用于 feat/117-verify-extension-installation worktree、当前 exact path set、即将创建的 task-commit-plans/003.json 和此条 F7 finding-fix 提交消息，不包含 amend、rebase、reset、force、push、PR 或 Issue close。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-26T00:28:02Z",
+    "plan_digest": "7082e1cdd0b3b62a928e88c70fbcbd6419bf33c666e5fafebb5e3c47e37b87dd"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-26T00:28:22Z",
+    "commit_sha": "3bfbd100c8d75a619da19627e7da276a3f2e367b",
+    "parent": "538def79408d417107c3adae61c4466116395d96",
+    "message_sha256": "68999941116e271293f03b390d805bc47d54a20db20edcee63958e0adb7a8123",
+    "committed_paths": [
+      ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "6c5e5a2076b7e221371815447fe41458681b467b",
+      "actual_tree": "6c5e5a2076b7e221371815447fe41458681b467b",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "f3f53a140879c1ec69bc0d4e2dd280caa781bbfc",
+          "expected_mode": "100644",
+          "actual_blob": "f3f53a140879c1ec69bc0d4e2dd280caa781bbfc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+          "expected_mode": "100755",
+          "actual_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+          "expected_blob": "11ab6a889c74dc1e4bba0e74a7376d69e48317cd",
+          "expected_mode": "100644",
+          "actual_blob": "11ab6a889c74dc1e4bba0e74a7376d69e48317cd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+          "expected_blob": "7b6a6682d6e8fd66469a9505828a31abf8828bce",
+          "expected_mode": "100644",
+          "actual_blob": "7b6a6682d6e8fd66469a9505828a31abf8828bce",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+          "expected_blob": "623b3e4ca30c66f03d72393bab5f41874d069d86",
+          "expected_mode": "100644",
+          "actual_blob": "623b3e4ca30c66f03d72393bab5f41874d069d86",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+          "expected_blob": "ba58196f851d9d02797884a36d5c91d01857dbd7",
+          "expected_mode": "100644",
+          "actual_blob": "ba58196f851d9d02797884a36d5c91d01857dbd7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+          "expected_blob": "ce79f3e36eab6df4445a17f367a20f219de9687d",
+          "expected_mode": "100644",
+          "actual_blob": "ce79f3e36eab6df4445a17f367a20f219de9687d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
+          "expected_blob": "e294cab0e45520f706e95c255a396072f3c47cc7",
+          "expected_mode": "100644",
+          "actual_blob": "e294cab0e45520f706e95c255a396072f3c47cc7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
+          "expected_blob": "40a115802303b1cd9b22fdd9d834592ff428d3c4",
+          "expected_mode": "100644",
+          "actual_blob": "40a115802303b1cd9b22fdd9d834592ff428d3c4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+          "expected_blob": "dee2b454f2da8e75085964ec284fcc64cb307ff8",
+          "expected_mode": "100644",
+          "actual_blob": "dee2b454f2da8e75085964ec284fcc64cb307ff8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+          "expected_mode": "100755",
+          "actual_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "ebaadbd0cadf604c8406eaa8def08a3b7411864a",
+          "expected_mode": "100644",
+          "actual_blob": "ebaadbd0cadf604c8406eaa8def08a3b7411864a",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}

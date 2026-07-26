@@ -74,7 +74,7 @@ Interface 1.3；planning/check/commit 三包、十个 profiles 与 11 exits 由�
 consumer/projection、private artifact 和 eval case 绑定到同一 activation version，validator 对
 registry、workflow markers、extension、source/installed 与四平台 copies 做双向集合比较。
 Preset staging transaction、pre-activation upgrade、`trellis update` 与 reapply 都必须保持完整
-11 Skills/42 exits graph；Stage 0 identity 仍为 6/24，mixed graph、缺失 case、平台字节漂移或
+12 Skills/46 exits graph；Stage 0 identity 仍为 6/24，mixed graph、缺失 case、平台字节漂移或
 `.new`/`.bak` 均失败关闭。
 
 Planning/check wrappers 调用既有 recorder/checker 并仅投影 checker-passed actual exit；commit
@@ -764,7 +764,7 @@ PR readiness 要求：
 | `finish-summary.json` | draft PR 后、archive 前 | archived task-local 完成摘要 | #98 历史检索；一次生成 canonical PR URL/ref，deterministic bytes/digest 随 archive move 进入终态，并由 exact archive commit blob 为 fresh recovery 恢复原 PR identity。final/incomplete/exact 共用 strict PR URL parser：repo identity 大小写不敏感，canonical output 保留 remote 合法 casing；错误 repo/transport/number/path/query/fragment 拒绝。 |
 | `pr-body.md` | Branch Review `passed` 后、Phase 3.6 mandatory invocation 前 | workflow caller 编写的 current reviewer-facing candidate；publication Skill AI-reviewed PR body | caller 不判断充分性或 Issue closure；原始 UTF-8 文本是 immutable body identity；空白与 Markdown-sensitive spaces 不做 trim/normalize；包含 Docs SSOT / 文档同步结果。`ready` 后 Phase 3.7 不得首次创建或修改。 |
 | `pr-readiness.json` | Branch Review 后、finalization 前 | `guru-review-task-publication` 唯一 semantic gate | Schema `guru-task-publication-readiness-1.0` 分层保存 AI review/finding closure、deterministic current bindings 与 optional finalization-owned `publish_inputs`；compatibility helper 只能 augment checker-passed `ready` gate。 |
-| `marketplace-verification.json` | reviewed content push 后、draft PR create 前 | deterministic remote verifier evidence | required marketplace/preset/overlay/schema/public API 发布门禁；pending/passed machine identity 由 recorder 管理。 |
+| `marketplace-verification.json` | exact pushed remote ref 可用后的 extension verification | `guru-verify-extension-installation` 唯一 task-local private evidence | 保存 AI-authored applicability/profile/adequacy/findings/route 与 sanitized machine facts；public wrapper 只投影 minimal typed DTO。Taskless standalone 不写该 artifact。 |
 
 ## 10. 演示时的讲解主线
 
@@ -818,7 +818,11 @@ PR readiness 要求：
 
 ## Push 后远端 Marketplace 门禁
 
-修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。
+Active `guru-verify-extension-installation` 独占该门禁的 semantic applicability、
+capability profile、adequacy、finding 与 route；runtime 从 exact pushed remote ref 执行
+`init`、preview、switch、preset apply/reapply、`trellis update`、ownership/sidecar/
+platform/redaction 检查并记录 task-local `marketplace-verification.json`。#117 只提供
+planned finalizer 的 target bootstrap，不激活 #118 producer edge。
 
 ## Skill Eval 横向流程
 
@@ -854,7 +858,9 @@ wrapper 源文本或依赖提示词代替执行边界。
 普通 Skill 调用不经过此支路。#147 交付基础设施与 representative fixture；随后 #145
 已迁移六个 Stage 0 production corpora 并完成 24 exits coverage，且其 Stage 0 identity
 保持 6 Skills/24 exits；#146 已完成 planning/check/commit 三个 production Skills、
-10 个 profiles、11 exits coverage；#131 达到 10/39，#116 激活后达到 11/42。
+10 个 profiles、11 exits coverage；#131 达到 10/39，#116 激活时达到 11/42。
+当前 #117 再加入两个 input profiles、四 exits 与七个 real-wrapper cases，使 live closure
+达到 12 Skills/46 exits；Stage 0 6/24 与 production 3/11 manifest 不变。
 
 ## Phase 3.5：`guru-review-branch`
 
@@ -897,3 +903,30 @@ PR body 充分性、Issue closure、十维结论、finding route 或 ready。Wor
 metadata-only revision、`pr-readiness.json` recorder/checker、freshness 与 typed
 conclusion。Phase 3.7 只消费 `ready` 已绑定的两份 content，不得首次创建或让其漂移。
 #116 不执行 finalization 或发布副作用。
+
+## Extension installation：`guru-verify-extension-installation`
+
+```text
+verification_required 或 standalone_verification
+  -> AI applicability + closed capability selection
+  -> deterministic remote-ref clean-install executor
+  -> AI adequacy/findings/redaction review
+  -> recorder/checker
+     verified            -> planned guru-finalize-task
+     not_required        -> planned guru-finalize-task
+     return_to_task_work -> Phase 2
+     blocked             -> stop
+```
+
+Workflow input 的业务 seed 固定为
+`task_ref/plan_ref/repo_ref/reviewed_head/verification_target`；standalone 只带
+repo/remote/ref/caller intent 与 closed task/session identity。AI-owned profile、
+adequacy、commands、digests、asset/ownership inventory 和 findings 均为 private state。
+Task-bearing 调用只写唯一 `marketplace-verification.json`，taskless standalone 不创建
+repo cache/index/latest pointer。
+
+Production eval 使用 checker-passed owner result 经过真实 public wrapper，验证两个 input
+profiles、四 exits、applicability conflict、retry/stale 与 unavailable。真实 remote-ref
+clean installation 另行验证 new install、preview/switch、preset apply/reapply、
+`trellis update`、ownership、sidecar、四平台 byte identity、README command 与 redaction；
+两条链路不能互相替代。#117 不激活 #118 producer edge，也不实现 #119 全局 route。

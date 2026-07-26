@@ -262,7 +262,7 @@ Public Skill interface 采用独立版本共存：1.2 是冻结的 legacy contra
 `interface_schema_id` 与 `io_contract_state=legacy|minimal_handoff`，validator 按该 exact
 pair 选 schema，不从文件或 optional 字段猜版本。#144 的 Interface 1.2 结论只描述冻结
 历史 snapshot，不是当前 active
-状态。当前十一个 active Skills / 42 exits 全部使用 Interface 1.3；
+状态。当前十二个 active Skills / 46 exits 全部使用 Interface 1.3；
 `stage0-minimal-handoff-v1` 已把 `guru-sync-base`、
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request` 与
@@ -273,9 +273,23 @@ pair 选 schema，不从文件或 optional 字段猜版本。#144 的 Interface 
 1.3。`guru-review-branch` 之后的 `guru-review-task-publication` 以两个 closed
 profiles、三个 minimal exits 和唯一 task-local `pr-readiness.json` 负责 Phase 3.6
 publication semantic gate；`ready` 只向 planned `guru-finalize-task` 投影
-`task_ref/reviewed_head/publication_ref`。当前 active closure 为 11 Skills / 42 exits，
+`task_ref/reviewed_head/publication_ref`。新增 active
+`guru-verify-extension-installation` 以两个独立 input profiles、四个 minimal exits
+和唯一 task-local-or-session private owner result 负责 extension installation
+semantic gate。当前 active closure 为 12 Skills / 46 exits，
 `legacy_skill_ids=[]`，Stage 0 manifest
 仍保持 6 Skills / 24 exits。
+
+`guru-verify-extension-installation` 的 workflow input
+`verification_required` 只携带 `task_ref/plan_ref/repo_ref/reviewed_head/
+verification_target` 与固定 discriminator；#117 先发布这个 future finalizer target
+bootstrap，但不激活 #118 producer edge。Standalone direct discovery 使用结构不同的
+`standalone_verification`，只携带 repo、remote、ref、caller intent 与可选 task。
+Skill 的 AI owner 判断 applicability、closed capability profile、adequacy、finding
+与 route；changed paths、command exit 0、checker pass 或 production eval 都不能产生
+`verified`。Task-bearing 调用只写
+`marketplace-verification.json`，taskless standalone 只返回 session report，不写
+cache/index/latest pointer，也不能返回 task-work route。
 
 Branch Review `passed` 后，global workflow caller 先从 current reviewed evidence
 编写 task-local `pr-body.md` 与 `finish-summary-index.json` 初始候选，再 mandatory
@@ -518,7 +532,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.22`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.23`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -940,7 +954,34 @@ sidecar 都不构成 ownership 或迁移授权。
 
 ## Push 后远端 Marketplace 门禁
 
-修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。
+修改 marketplace/preset/overlay/installer/schema/public extension contract 时，由
+active semantic `guru-verify-extension-installation` 独占 applicability、capability
+profile、adequacy、finding 与 route。Deterministic runtime 只对已推送 remote ref
+冻结 HEAD，并执行 clean new-repo init、existing preview/switch、preset
+apply/reapply、`trellis update` 后再次选择/apply、ownership/sidecar、Skill contract、
+四平台 bytes、README command 与 redaction 检查；它不会把 exit 0 翻译为语义通过。
+
+稳定 runtime command 是 `execute-extension-verification`、
+`record-extension-verification`、`check-extension-verification` 和
+`invoke-extension-verification`。Package wrapper 仍只经 `run-skill-command` 调用。
+可先发现 installed contract：
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh \
+  --root . --mode installed --skill guru-verify-extension-installation --json
+```
+
+Standalone 调用由所选平台发现 Skill 后完整执行 AI review、executor、recorder、
+checker 和 public wrapper；不要把 package example 或 caller-selected
+`expected_exit` 当作 owner result。`verified` / `not_required` 只桥接 planned
+`guru-finalize-task`，`return_to_task_work` 回到 Phase 2，`blocked` 停止。
+Workflow-required target 若 AI 判断 `not_required` 会以 applicability conflict
+失败关闭，不能静默跳过。
+
+Package-local seven-case real-wrapper production eval 与真实 pushed-remote clean
+installation 是两份独立验收。只有 exact remote ref/HEAD 的后者完成后才能声明远端门禁
+通过；local/dogfood 或 public stable sampling 不能替代。该 gate 不创建 tag，也不表示
+#118、#119 或 #132 已完成。
 
 ### Skill 行为评测（#147）
 
@@ -968,7 +1009,7 @@ runtime locator。Native CLI 通过 trace helper 读取 projected `SKILL.md`、�
 wrapper stdout 与返回 DTO 一致时才产生 trace invariant；合法 DTO 无 receipt 为
 `execution_error`。Schema id 为 `guru-team-skill-eval-native-trace-1.0`，transcript 记录
 native argv、stdout/stderr、context 与 receipt locator；四平台 projection 内 eval/private
-runtime raw read 必须真实失败。十一个 active packages 维护唯一 canonical
-corpora 并覆盖全部 42 exits/input profiles；Stage 0 的独立 24-exit corpus closure 保持不变。
+runtime raw read 必须真实失败。十二个 active packages 维护唯一 canonical
+corpora 并覆盖全部 46 exits/input profiles；Stage 0 的独立 24-exit corpus closure 保持不变。
 执行 `trellis update` 后需重新应用
 workflow/preset，运行 source/installed/platform checks 并清理所有 `.new`/`.bak`。

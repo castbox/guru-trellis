@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-extension-verify-installation-execution-facts-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repo_ref", "remote", "ref", "reviewed_head", "remote_head", "status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
+    "ref": {"type": "string", "minLength": 1},
+    "reviewed_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "remote_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "status": {"enum": ["not_run", "passed", "failed", "blocked"]},
+    "commands": {"type": "array", "items": {"$ref": "marketplace-verification.schema.json#/$defs/command"}},
+    "capabilities": {"type": "array", "items": {"$ref": "marketplace-verification.schema.json#/$defs/capabilityFact"}},
+    "asset_expectations": {"type": "array", "uniqueItems": true, "items": {"$ref": "marketplace-verification.schema.json#/$defs/assetExpectation"}},
+    "asset_digests": {"type": "array", "uniqueItems": true, "items": {"$ref": "marketplace-verification.schema.json#/$defs/assetDigest"}},
+    "asset_inventory": {"$ref": "marketplace-verification.schema.json#/$defs/assetInventory"},
+    "ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frozen_transitional_legacy_count", "new_legacy_entries"],
+      "properties": {
+        "frozen_transitional_legacy_count": {"type": "integer", "minimum": 0},
+        "new_legacy_entries": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "sidecars": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  }
+}

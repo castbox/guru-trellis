@@ -481,6 +481,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 "codex",
                 "claude",
                 "cursor",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
             ],
         )
 
@@ -751,7 +755,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 94)
+        self.assertEqual(len(managed_assets), 98)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -1048,7 +1052,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 94", verifier)
+        self.assertIn("assert len(assets) == 98", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
             self.assertIn(
@@ -1600,7 +1604,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.22")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.23")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -1626,6 +1630,10 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-planning-approval", public_api["companion_scripts"])
         self.assertIn("record-task-publication-review", public_api["companion_scripts"])
         self.assertIn("check-task-publication-review", public_api["companion_scripts"])
+        self.assertIn("execute-extension-verification", public_api["companion_scripts"])
+        self.assertIn("record-extension-verification", public_api["companion_scripts"])
+        self.assertIn("check-extension-verification", public_api["companion_scripts"])
+        self.assertIn("invoke-extension-verification", public_api["companion_scripts"])
         self.assertIn(
             "guru-planning-approval-2.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
@@ -1641,9 +1649,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
         for field, expected_count in (
-            ("public_input_schema_ids", 28),
-            ("typed_output_schema_ids", 42),
-            ("private_artifact_schema_ids", 12),
+            ("public_input_schema_ids", 30),
+            ("typed_output_schema_ids", 46),
+            ("private_artifact_schema_ids", 13),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -1698,6 +1706,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-review-contract-wording",
                 "guru-review-task-publication",
                 "guru-sync-base",
+                "guru-verify-extension-installation",
             ],
         )
         self.assertEqual(

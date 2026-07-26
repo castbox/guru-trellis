@@ -341,8 +341,8 @@ machine-local hidden state.
 
 All three public README files describe `production-minimal-handoff-v1` as a
 separate atomic unit containing planning, check, and commit with ten profiles
-and 11 exits. They state that all eleven active packages now use Interface 1.3
-`minimal_handoff`, the combined current closure is 11-by-42, and the Stage 0
+and 11 exits. They state that all twelve active packages now use Interface 1.3
+`minimal_handoff`, the combined current closure is 12-by-46, and the Stage 0
 manifest remains frozen at 6-by-24. They publish discovery, invocation, eval,
 pre-#146 upgrade, update/reapply, and drift-validation commands.
 
@@ -369,7 +369,7 @@ that the existing target must be regular and trackable, a successful
 different-byte replacement records `superseded_snapshot_sha256`, failed
 pre-write validation preserves prior bytes, and same-byte retry is idempotent.
 
-After #116, public READMEs describe eleven active Skills and 42 exits, identify
+Public READMEs describe twelve active Skills and 46 exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -402,10 +402,41 @@ deterministic current bindings, and optional finalization-owned
 cannot pass. They do not expose artifact bodies or duplicate the package's
 ten-dimension review and metadata revision procedure.
 
-README closure numbers are eleven active Skills and 42 exits. The separate
+README closure numbers are twelve active Skills and 46 exits. The separate
 `production-minimal-handoff-v1` remains three Skills/11 exits; the Stage 0
 manifest remains six Skills/24 exits. The #131 `passed` bytes remain unchanged
 while its target-owned authoring partition is documented.
+
+## Extension Installation Verification Documentation
+
+All three public README files name active Interface 1.3 semantic
+`guru-verify-extension-installation`, its `verification_required` and
+`standalone_verification` inputs, runtime commands
+`execute-extension-verification`, `record-extension-verification`,
+`check-extension-verification`, and `invoke-extension-verification`, and four
+minimal exits. They state that `verified` / `not_required` target planned
+`guru-finalize-task`, `return_to_task_work` repeats Phase 2 and downstream
+review, and `blocked` stops.
+
+Docs explain that the package owns applicability, capability profile, adequacy,
+findings, and route. Changed paths, successful commands, checker pass, and
+production eval are facts only. A workflow-required target cannot silently
+return `not_required`; an applicability conflict blocks. #117 publishes the
+future target bootstrap but does not activate the #118 producer edge.
+
+The READMEs distinguish task-bearing
+`marketplace-verification.json` from taskless session-only owner state, name the
+one-artifact/no-cache boundary, and keep private profile/reason/commands/digests/
+assets/ownership/findings out of public DTOs. They document full-preset runtime
+requirements, source/installed discovery, canonical/installed/shared/Codex/
+Cursor/Claude byte identity, update/reapply, ownership freeze, sidecar cleanup,
+and redaction.
+
+Public validation text treats package-local real-wrapper production eval and
+real pushed-remote clean installation as independent acceptance surfaces. It
+must not claim the remote-ref gate passed when only local or public stable
+marketplace sampling ran, and must not imply that #118, #119, or #132 was
+implemented.
 
 Install/update text requires canonical/installed/shared/Codex/Cursor/Claude
 byte identity, source and installed validation, real-wrapper eval, workflow

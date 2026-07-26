@@ -1,0 +1,299 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-07-25T10:28:16.064386Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "castbox/guru-trellis",
+    "issue_number": 117,
+    "url": "https://github.com/castbox/guru-trellis/issues/117",
+    "updated_at": "2026-07-22T11:05:06Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "99dc2c296edb239524f04c00fb2bef07cffce9f74e80a901fd1ae41ce4b7177a",
+    "body_sha256": "e97b0bad98fc9f3a90874d14c9c140323b4911b9e974af8828b0e0760723f22b",
+    "side_effect_free": false,
+    "identity_sha256": "9faa0637c0802491b2e5aa483fe2fc4a00caae18a440db5fb9ebcfa08c8ef832",
+    "content_sha256": "b460c2fbcce8bd87a4dc91098ac1eb8fd0d03abb6a514f6bf9cc5107490c7f49"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "c7eec9aa6dc2fa4bfdd57e2c87de22f0fc8b25069edcfe550114373627e6559d",
+      "snapshot_sha256": "88a927b88f5ac1f4bebabe1b6ee6e9e387c5a04e007dc847400c7409f4b6fbd5",
+      "base_sync_facts_sha256": "deadf1248e330fc41bdf89c04e45cbc674753b3c8cf8d5713c4b60abb3be539d",
+      "base_head": "0cd2498f821b38ce91bd82fa9e232b1528241e5d",
+      "live_target_sha256": "67d480f1f9df40f06bbbd121db50707f1965d59aacf9f13e4774f8bf367a769f",
+      "query_sha256": "d2241f1b3adb66f5a8e445da5dff14da4e9bc92c812c913f0117b0215f640014",
+      "current_state_sha256": "4a73db93e115ff7dbfca4d040c98304e606d948a7f2a5fe0a996be040f1291ff",
+      "history_sha256": "0014df922614e8ad51c69e412e0583fbc1e2a68a10deaaf027da7567f8319209",
+      "duplicate_sha256": "cc6c73bc7a28024a7bd2af3df0f3cbd469ab10cdd676336342aef760d4c214df",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-2.0",
+      "typed_exit": "clear",
+      "payload_sha256": "3717f9665784b2497b1c9c966174afd5c3e3fdccf4921ef4473ceb09dcb7beb7",
+      "facts_sha256": "6878d56e8c92767f7438cd967d7ee950612cd0c282ef7fa4389262edf97a8cb8",
+      "target_sha256": "60bcbd93210e6ab955d08a76bc7682770edbb596d1c3fe6cc8ed702a25510982",
+      "disposition_sha256": "f561eecb9a0753bc91834dcf4a3468b208f59766dc6734bbe352aa4e1a5f362b",
+      "content_sha256": "61a2c763cf7f17783fb4295f10797cb99d422b85d211475ba38b586669097449",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "dc3b456345b89508d87b8fe2856497ddd5a5f680f753b9ab1ee6687e5a6c4fac",
+      "facts_sha256": "6583e7dbeed954cedfdf55cf9ce900f521889bf95cc76264e6500430538b8c42",
+      "scope_sha256": "c85e629ae74fef1af4f595fc827d156118b2b442ebe7f2e041391fde4f021943",
+      "scan_sha256": "7304fbaef12e622886813652e7a849205ec17a39a29516eaa6f296c6f7a9e52f",
+      "target_content_sha256": "b460c2fbcce8bd87a4dc91098ac1eb8fd0d03abb6a514f6bf9cc5107490c7f49",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "9faa0637c0802491b2e5aa483fe2fc4a00caae18a440db5fb9ebcfa08c8ef832",
+    "target_content_sha256": "b460c2fbcce8bd87a4dc91098ac1eb8fd0d03abb6a514f6bf9cc5107490c7f49",
+    "base_head": "0cd2498f821b38ce91bd82fa9e232b1528241e5d",
+    "current_state_sha256": "4a73db93e115ff7dbfca4d040c98304e606d948a7f2a5fe0a996be040f1291ff",
+    "history_sha256": "0014df922614e8ad51c69e412e0583fbc1e2a68a10deaaf027da7567f8319209",
+    "duplicate_sha256": "cc6c73bc7a28024a7bd2af3df0f3cbd469ab10cdd676336342aef760d4c214df",
+    "clarity_facts_sha256": "6878d56e8c92767f7438cd967d7ee950612cd0c282ef7fa4389262edf97a8cb8",
+    "clarity_disposition_sha256": "f561eecb9a0753bc91834dcf4a3468b208f59766dc6734bbe352aa4e1a5f362b",
+    "wording_facts_sha256": "6583e7dbeed954cedfdf55cf9ce900f521889bf95cc76264e6500430538b8c42",
+    "linkage_sha256": "bad988c998e4ef4f4eb1ed58b1de0821a63c1823aa72493697aa8a5c47b91031"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "requirement_completeness",
+        "status": "passed",
+        "summary": "#117 正文与 accepted_current comment 完整固定 semantic owner、workflow/standalone inputs、四 exits、private evidence、recovery/freshness、distribution 与真实安装/production eval 双验收。",
+        "evidence_refs": [
+          "target",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "b460c2fbcce8bd87a4dc91098ac1eb8fd0d03abb6a514f6bf9cc5107490c7f49",
+          "6878d56e8c92767f7438cd967d7ee950612cd0c282ef7fa4389262edf97a8cb8",
+          "6583e7dbeed954cedfdf55cf9ce900f521889bf95cc76264e6500430538b8c42"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "delivery_unit_consistency",
+        "status": "passed",
+        "summary": "交付单元只实现并激活 guru-verify-extension-installation 及 owned runtime/contracts/tests/distribution；#118、#119、#132 保持独立。",
+        "evidence_refs": [
+          "target",
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "9faa0637c0802491b2e5aa483fe2fc4a00caae18a440db5fb9ebcfa08c8ef832",
+          "bad988c998e4ef4f4eb1ed58b1de0821a63c1823aa72493697aa8a5c47b91031"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "implementation_target_evidence",
+        "status": "passed",
+        "summary": "Current context 已定位 registry/package、verify-marketplace runtime/schema、throwaway、platform、Docs 与 tests，足以形成具体实施计划。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "4a73db93e115ff7dbfca4d040c98304e606d948a7f2a5fe0a996be040f1291ff"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "claimed_behavior_current",
+        "status": "passed",
+        "summary": "Live authority 与 current main 一致：deterministic verifier 已存在，独立 semantic package 尚不存在，active registry 未包含目标 Skill。",
+        "evidence_refs": [
+          "prerequisites.context",
+          "target"
+        ],
+        "affected_hashes": [
+          "4a73db93e115ff7dbfca4d040c98304e606d948a7f2a5fe0a996be040f1291ff",
+          "b460c2fbcce8bd87a4dc91098ac1eb8fd0d03abb6a514f6bf9cc5107490c7f49"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "current_implementation_gap",
+        "status": "passed",
+        "summary": "当前缺口是 AI-owned applicability/profile/adequacy loop、四个 exit_id DTO、verification_required target bootstrap、private evidence binding 与 real-wrapper corpus。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "4a73db93e115ff7dbfca4d040c98304e606d948a7f2a5fe0a996be040f1291ff"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "docs_code_tests_consistency",
+        "status": "passed",
+        "summary": "Docs、runtime、schema、preset 与 throwaway tests 一致显示 deterministic substrate 可复用但 semantic owner 缺失；所有分发表面应在同一交付同步。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "4a73db93e115ff7dbfca4d040c98304e606d948a7f2a5fe0a996be040f1291ff"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "archived_history_constraints",
+        "status": "passed",
+        "summary": "Archived #131/#146/#096 分别约束 semantic loop、Interface 1.3 minimal handoff/eval 和 task-local/runtime verification boundary。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "0014df922614e8ad51c69e412e0583fbc1e2a68a10deaaf027da7567f8319209"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "duplicate_reuse_validity",
+        "status": "passed",
+        "summary": "保留 #117 为唯一 primary delivery unit；精确搜索仅命中当前 target，用户已确认该 disposition。",
+        "evidence_refs": [
+          "prerequisites.context",
+          "prerequisites.clarity"
+        ],
+        "affected_hashes": [
+          "cc6c73bc7a28024a7bd2af3df0f3cbd469ab10cdd676336342aef760d4c214df",
+          "f561eecb9a0753bc91834dcf4a3468b208f59766dc6734bbe352aa4e1a5f362b"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "target_authority_current",
+        "status": "passed",
+        "summary": "Live Issue title/body 与唯一 selected accepted_current comment 已重读；comment 仅替代冲突的 exit、#118 bootstrap 与 eval 表述。",
+        "evidence_refs": [
+          "target",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "9faa0637c0802491b2e5aa483fe2fc4a00caae18a440db5fb9ebcfa08c8ef832",
+          "b460c2fbcce8bd87a4dc91098ac1eb8fd0d03abb6a514f6bf9cc5107490c7f49",
+          "6583e7dbeed954cedfdf55cf9ce900f521889bf95cc76264e6500430538b8c42"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "prerequisite_hash_linkage",
+        "status": "passed",
+        "summary": "Context、clarity、wording 三项 checker-passed evidence 均 current，并完整绑定 target/base/current/history/duplicate/disposition/wording identities。",
+        "evidence_refs": [
+          "evidence_linkage",
+          "prerequisites.context",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "bad988c998e4ef4f4eb1ed58b1de0821a63c1823aa72493697aa8a5c47b91031",
+          "88a927b88f5ac1f4bebabe1b6ee6e9e387c5a04e007dc847400c7409f4b6fbd5",
+          "6878d56e8c92767f7438cd967d7ee950612cd0c282ef7fa4389262edf97a8cb8",
+          "6583e7dbeed954cedfdf55cf9ce900f521889bf95cc76264e6500430538b8c42"
+        ],
+        "finding_ids": []
+      }
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "Live #117 body 与 selected accepted_current comment，并绑定本轮 current context、clarification 与 wording evidence。",
+      "delivery_unit_id": "issue-117-guru-verify-extension-installation",
+      "close_issues": [
+        117
+      ],
+      "related_issues": [
+        115,
+        109,
+        116,
+        144,
+        146
+      ],
+      "followup_issues": [
+        81,
+        118,
+        119,
+        132
+      ],
+      "duplicate_reuse_decision": "保留 #117 为唯一 primary delivery unit；#115 是 umbrella，已完成 #109/#116/#144/#146 提供前置，#81/#118/#119/#132 是后续 consumer、integration、release 或全局收敛。",
+      "implementation_target": "Canonical guru-verify-extension-installation Skill package、registry activation、shared deterministic verifier recorder/checker、Interface 1.3 inputs/outputs/projections、production eval、preset/platform copies、Docs 和 tests。",
+      "current_gap": "Registry/package 尚不存在；现有 verify-marketplace 只执行并记录 deterministic facts，尚无 AI-owned applicability/profile/adequacy、四 exits、verification_required target bootstrap 与 private verification reference。",
+      "archived_constraints": [
+        "复用 #131 semantic closed-loop 与 private evidence pattern，不让 executor exit code替代 AI pass。",
+        "遵守 #146 Interface 1.3 minimal handoff、real-wrapper eval 与 expected_exit 返回后断言。",
+        "保留 #096 marketplace-verification.json task-local/runtime boundary，不建立 repo-level cache/index。"
+      ],
+      "risk_boundary": [
+        "仅覆盖 AI 与用户诚实协作下的正常路径、常见错误、stale/mismatch 与 correctness/compatibility。",
+        "Hash、digest 与 freshness 只用于版本绑定和过期检测，不扩张为 hostile-input security boundary。",
+        "真实 remote-ref clean installation、redaction、ownership 与 production eval 必须分别验证。"
+      ],
+      "excluded_scope": [
+        "#118 guru-finalize-task、#119 finish integration、#132 overlay 收敛与 #81 release gate 实现。",
+        "通用 CI framework、任意软件安装测试平台、repo-level cache/index。",
+        "恶意伪造、对抗性输入、锁、TOCTOU、竞态压力、额外 fault injection 与跨 OS 原子性加固。"
+      ]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex 主会话 change-request semantic readiness review",
+      "reviewed_linkage_sha256": "bad988c998e4ef4f4eb1ed58b1de0821a63c1823aa72493697aa8a5c47b91031",
+      "summary": "十项 readiness dimension 已基于 current linked evidence 逐项审查；#117 边界清晰、前置已满足、未被 duplicate 替代，可创建 workspace/task 进入规划。",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "b87fc7679cd6ca48259078235d9b06b2561ec2cb82f24f2b61f1ff6f5944a979"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "本轮 readiness review 未提出改变已确认产品语义的 scope proposal。",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "十项 readiness 均通过，三个 upstream owner evidence current 且完整绑定，#117 是可独立交付单元。",
+  "affected_evidence": [
+    {
+      "ref": "context_snapshot",
+      "sha256": "88a927b88f5ac1f4bebabe1b6ee6e9e387c5a04e007dc847400c7409f4b6fbd5",
+      "summary": "本轮 checker-passed change context snapshot。"
+    },
+    {
+      "ref": "clarity_result",
+      "sha256": "6878d56e8c92767f7438cd967d7ee950612cd0c282ef7fa4389262edf97a8cb8",
+      "summary": "本轮 checker-passed clarification result。"
+    },
+    {
+      "ref": "wording_result",
+      "sha256": "6583e7dbeed954cedfdf55cf9ce900f521889bf95cc76264e6500430538b8c42",
+      "summary": "本轮 checker-passed contract wording result。"
+    },
+    {
+      "ref": "target_content",
+      "sha256": "b460c2fbcce8bd87a4dc91098ac1eb8fd0d03abb6a514f6bf9cc5107490c7f49",
+      "summary": "当前 Issue title/body content identity。"
+    }
+  ],
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-workspace"
+  },
+  "facts_sha256": "3743e35cc7da027ad234223545a420986bb1035fe726e3dd6dd1db1651996fb9"
+}

@@ -5318,7 +5318,7 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *,
             errors.append(f"issue #{number} 同时出现在 close_issues 与 related/followup 中。")
         if not issue_has_evidence(issue):
             errors.append(f"close_issues 中 issue #{number} 缺少验收或验证证据。")
-        if marketplace_verification_required(gate):
+        if legacy_closeout_marketplace_verification_required(gate):
             errors.extend(
                 f"close_issues 中 issue #{number}：{error}"
                 for error in remote_marketplace_evidence_errors(issue, allow_pending=allow_pending_remote_marketplace)
@@ -17706,12 +17706,150 @@ MARKETPLACE_VERIFICATION_PREFIXES = (
     "trellis/guru-team-extension.json",
     "trellis/workflows/",
     "trellis/presets/",
+    "trellis/skills/guru-team/",
+    "docs/requirements/",
+    "README.md",
+)
+
+LEGACY_CLOSEOUT_MARKETPLACE_VERIFICATION_PREFIXES = (
+    "trellis/index.json",
+    "trellis/guru-team-extension.json",
+    "trellis/workflows/",
+    "trellis/presets/",
 )
 
 
-def marketplace_verification_required(gate: dict[str, Any]) -> bool:
+EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
+EXTENSION_VERIFICATION_SCHEMA_VERSION = "1.0"
+EXTENSION_VERIFICATION_CAPABILITIES = (
+    "marketplace_index",
+    "new_repo_init",
+    "existing_repo_preview_switch",
+    "preset_initial_apply",
+    "preset_reapply",
+    "trellis_update_reapply",
+    "managed_conflict_sidecars",
+    "skill_contract_discovery",
+    "platform_equality",
+    "ownership_inventory",
+    "readme_commands",
+    "redaction",
+)
+EXTENSION_VERIFICATION_ASSET_CATEGORIES = (
+    "workflow",
+    "preset",
+    "schema",
+    "skill",
+    "platform",
+)
+EXTENSION_VERIFICATION_CAPABILITY_ASSET_CATEGORIES = {
+    "marketplace_index": ("workflow",),
+    "new_repo_init": ("workflow", "preset"),
+    "existing_repo_preview_switch": ("workflow", "preset"),
+    "preset_initial_apply": ("preset", "schema"),
+    "preset_reapply": ("preset", "schema"),
+    "trellis_update_reapply": ("workflow", "preset", "schema"),
+    "managed_conflict_sidecars": ("preset",),
+    "skill_contract_discovery": ("schema", "skill"),
+    "platform_equality": ("skill", "platform"),
+    "ownership_inventory": ("preset",),
+    "readme_commands": ("workflow", "preset"),
+    "redaction": ("schema", "skill"),
+}
+EXTENSION_VERIFICATION_CAPABILITY_COMMAND_REFS = {
+    "marketplace_index": (
+        "resolve_remote_ref",
+        "clone_source",
+        "verify_checkout_commit",
+        "verify_throwaway_installation",
+    ),
+    "new_repo_init": (
+        "clone_source",
+        "verify_checkout_commit",
+        "verify_throwaway_installation",
+    ),
+    "existing_repo_preview_switch": (
+        "clone_source",
+        "verify_checkout_commit",
+        "verify_throwaway_installation",
+    ),
+    "preset_initial_apply": ("verify_throwaway_installation",),
+    "preset_reapply": ("verify_throwaway_installation",),
+    "trellis_update_reapply": (
+        "resolve_remote_ref",
+        "verify_throwaway_installation",
+    ),
+    "managed_conflict_sidecars": ("verify_throwaway_installation",),
+    "skill_contract_discovery": (
+        "clone_source",
+        "verify_throwaway_installation",
+    ),
+    "platform_equality": (
+        "clone_source",
+        "verify_throwaway_installation",
+    ),
+    "ownership_inventory": (
+        "clone_source",
+        "verify_throwaway_installation",
+    ),
+    "readme_commands": (
+        "resolve_remote_ref",
+        "verify_throwaway_installation",
+    ),
+    "redaction": ("verify_throwaway_installation",),
+}
+EXTENSION_VERIFICATION_CONSUMERS = {
+    "verified": {"kind": "skill", "id": "guru-finalize-task"},
+    "not_required": {"kind": "skill", "id": "guru-finalize-task"},
+    "return_to_task_work": {
+        "kind": "workflow",
+        "id": "guru-extension-verification-work-router",
+    },
+    "blocked": {
+        "kind": "stop",
+        "id": "extension-installation-verification-blocked",
+    },
+}
+
+
+def marketplace_verification_required(gate: dict[str, Any]) -> dict[str, Any]:
+    """Return candidate extension-surface facts without making a route decision."""
     files = gate.get("changed_files") if isinstance(gate.get("changed_files"), list) else []
-    return any(str(path).startswith(MARKETPLACE_VERIFICATION_PREFIXES) for path in files)
+    changed_paths = sorted(
+        {
+            str(path)
+            for path in files
+            if isinstance(path, str)
+            and any(path.startswith(prefix) for prefix in MARKETPLACE_VERIFICATION_PREFIXES)
+        }
+    )
+    return {
+        "changed_paths": changed_paths,
+        "candidate_surfaces": sorted(
+            {
+                "public_docs"
+                if path == "README.md" or path.startswith("docs/requirements/")
+                else "skill_contract"
+                if path.startswith("trellis/skills/guru-team/")
+                else "preset"
+                if path.startswith("trellis/presets/")
+                else "workflow"
+                if path.startswith("trellis/workflows/")
+                else "marketplace"
+                for path in changed_paths
+            }
+        ),
+    }
+
+
+def legacy_closeout_marketplace_verification_required(gate: dict[str, Any]) -> bool:
+    """Compatibility-only closeout projection until issue #119 activates the new route."""
+    files = gate.get("changed_files") if isinstance(gate.get("changed_files"), list) else []
+    return any(
+        isinstance(path, str)
+        and path.startswith(LEGACY_CLOSEOUT_MARKETPLACE_VERIFICATION_PREFIXES)
+        for path in files
+    )
 
 
 def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str], display_command: list[str] | None = None) -> dict[str, Any]:
@@ -17726,6 +17864,1333 @@ def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str],
         "stderr_size_bytes": len(stderr.encode("utf-8")),
         "passed": proc.returncode == 0,
     }
+
+
+def extension_verification_command_evidence(
+    evidence_id: str,
+    command: list[str],
+    proc: subprocess.CompletedProcess[str],
+    display_command: list[str] | None = None,
+) -> dict[str, Any]:
+    evidence = command_evidence(command, proc, display_command)
+    return {
+        "id": evidence_id,
+        "argv": evidence["command"],
+        "exit_code": evidence["exit_code"],
+        "stdout_sha256": evidence["stdout_sha256"],
+        "stderr_sha256": evidence["stderr_sha256"],
+        "stdout_size_bytes": evidence["stdout_size_bytes"],
+        "stderr_size_bytes": evidence["stderr_size_bytes"],
+    }
+
+
+def extension_verification_asset_inventory_summary(
+    expectations: list[dict[str, Any]],
+    asset_digests: list[dict[str, Any]],
+    *,
+    duplicate_paths: list[str] | None = None,
+    relation_errors: list[str] | None = None,
+) -> dict[str, Any]:
+    duplicate_paths = sorted(set(duplicate_paths or []))
+    relation_errors = sorted(set(relation_errors or []))
+    expected_paths = [
+        str(item.get("path") or "")
+        for item in expectations
+        if isinstance(item, dict)
+    ]
+    observed_paths = [
+        str(item.get("path") or "")
+        for item in asset_digests
+        if isinstance(item, dict)
+    ]
+    duplicate_paths.extend(
+        path
+        for path in sorted(set(expected_paths))
+        if expected_paths.count(path) != 1
+    )
+    duplicate_paths.extend(
+        path
+        for path in sorted(set(observed_paths))
+        if observed_paths.count(path) != 1
+    )
+    duplicate_paths = sorted(set(duplicate_paths))
+    expected_by_path = {
+        str(item["path"]): item
+        for item in expectations
+        if isinstance(item, dict)
+        and isinstance(item.get("path"), str)
+        and expected_paths.count(str(item["path"])) == 1
+    }
+    observed_by_path = {
+        str(item["path"]): item
+        for item in asset_digests
+        if isinstance(item, dict)
+        and isinstance(item.get("path"), str)
+        and observed_paths.count(str(item["path"])) == 1
+    }
+    missing_paths = sorted(set(expected_by_path) - set(observed_by_path))
+    unexpected_paths = sorted(set(observed_by_path) - set(expected_by_path))
+    mismatched_paths = sorted(
+        path
+        for path in set(expected_by_path) & set(observed_by_path)
+        if expected_by_path[path].get("expected_sha256") is None
+        or observed_by_path[path].get("sha256")
+        != expected_by_path[path].get("expected_sha256")
+        or observed_by_path[path].get("category")
+        != expected_by_path[path].get("category")
+        or observed_by_path[path].get("platform")
+        != expected_by_path[path].get("platform")
+    )
+    categories: list[dict[str, Any]] = []
+    for category in EXTENSION_VERIFICATION_ASSET_CATEGORIES:
+        category_expected = [
+            item
+            for item in expectations
+            if isinstance(item, dict) and item.get("category") == category
+        ]
+        category_observed = [
+            item
+            for item in asset_digests
+            if isinstance(item, dict) and item.get("category") == category
+        ]
+        category_paths = {
+            str(item.get("path") or "") for item in category_expected
+        }
+        matched_count = sum(
+            1
+            for path in category_paths
+            if path in expected_by_path
+            and path in observed_by_path
+            and path not in mismatched_paths
+        )
+        expected_count = len(category_expected)
+        observed_count = len(category_observed)
+        categories.append({
+            "id": category,
+            "expected_count": expected_count,
+            "observed_count": observed_count,
+            "matched_count": matched_count,
+            "complete": (
+                expected_count > 0
+                and observed_count == expected_count
+                and matched_count == expected_count
+                and not any(path in duplicate_paths for path in category_paths)
+            ),
+        })
+    complete = (
+        bool(expectations)
+        and all(item["complete"] for item in categories)
+        and not duplicate_paths
+        and not missing_paths
+        and not unexpected_paths
+        and not mismatched_paths
+        and not relation_errors
+    )
+    return {
+        "expected_set_sha256": context_digest(expectations),
+        "expected_count": len(expectations),
+        "observed_count": len(asset_digests),
+        "matched_count": sum(item["matched_count"] for item in categories),
+        "categories": categories,
+        "missing_paths": missing_paths,
+        "duplicate_paths": duplicate_paths,
+        "unexpected_paths": unexpected_paths,
+        "mismatched_paths": mismatched_paths,
+        "relation_errors": relation_errors,
+        "complete": complete,
+    }
+
+
+def extension_verification_installed_asset_facts(
+    source_checkout: Path,
+    installed_root: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    expectations: list[dict[str, Any]] = []
+    relation_errors: list[str] = []
+    duplicate_paths: list[str] = []
+
+    def add_expectation(
+        category: str,
+        installed_path: str,
+        source_path: str,
+        relation: str,
+        *,
+        platform: str | None = None,
+    ) -> None:
+        source = source_checkout / source_path
+        expected_sha256 = (
+            hashlib.sha256(source.read_bytes()).hexdigest()
+            if source.is_file() and not source.is_symlink()
+            else None
+        )
+        if expected_sha256 is None:
+            relation_errors.append(f"{installed_path}:missing_canonical_source")
+        expectations.append({
+            "category": category,
+            "platform": platform,
+            "path": installed_path,
+            "source_path": source_path,
+            "expected_sha256": expected_sha256,
+            "relation": relation,
+        })
+
+    add_expectation(
+        "workflow",
+        ".trellis/workflow.md",
+        "trellis/workflows/guru-team/workflow.md",
+        "canonical_workflow",
+    )
+    preset_sources = (
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/scripts/bash/execute-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/record-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/check-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/invoke-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    )
+    for source_path in preset_sources:
+        installed_path = (
+            ".trellis/guru-team/"
+            + source_path.removeprefix("trellis/workflows/guru-team/")
+        )
+        add_expectation(
+            "preset",
+            installed_path,
+            source_path,
+            "managed_manifest",
+        )
+    schema_root = source_checkout / "trellis/workflows/guru-team/schemas"
+    schema_sources = sorted(
+        path
+        for path in schema_root.rglob("*.json")
+        if path.is_file() and not path.is_symlink()
+    ) if schema_root.is_dir() and not schema_root.is_symlink() else []
+    if not schema_sources:
+        relation_errors.append("schema:missing_canonical_set")
+    for source in schema_sources:
+        relative = source.relative_to(schema_root).as_posix()
+        add_expectation(
+            "schema",
+            f".trellis/guru-team/schemas/{relative}",
+            source.relative_to(source_checkout).as_posix(),
+            "managed_manifest",
+        )
+    package_source_root = (
+        source_checkout
+        / "trellis/skills/guru-team/packages/"
+        "guru-verify-extension-installation"
+    )
+    package_sources = sorted(
+        path
+        for path in package_source_root.rglob("*")
+        if path.is_file()
+        and not path.is_symlink()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
+    ) if package_source_root.is_dir() and not package_source_root.is_symlink() else []
+    if not package_sources:
+        relation_errors.append("skill:missing_canonical_set")
+    destination_roots = (
+        (
+            "skill",
+            None,
+            ".trellis/guru-team/skills/packages/"
+            "guru-verify-extension-installation",
+            "skill_manifest",
+        ),
+        (
+            "platform",
+            "shared",
+            ".agents/skills/guru-verify-extension-installation",
+            "platform_manifest",
+        ),
+        (
+            "platform",
+            "codex",
+            ".codex/skills/guru-verify-extension-installation",
+            "platform_manifest",
+        ),
+        (
+            "platform",
+            "claude",
+            ".claude/skills/guru-verify-extension-installation",
+            "platform_manifest",
+        ),
+        (
+            "platform",
+            "cursor",
+            ".cursor/skills/guru-verify-extension-installation",
+            "platform_manifest",
+        ),
+    )
+    for source in package_sources:
+        package_relative = source.relative_to(package_source_root).as_posix()
+        source_path = source.relative_to(source_checkout).as_posix()
+        for category, platform, destination, relation in destination_roots:
+            add_expectation(
+                category,
+                f"{destination}/{package_relative}",
+                source_path,
+                relation,
+                platform=platform,
+            )
+
+    manifest_path = installed_root / ".trellis/guru-team/extension.json"
+    try:
+        manifest = read_json(manifest_path)
+    except WorkflowError:
+        manifest = {}
+        relation_errors.append(
+            ".trellis/guru-team/extension.json:missing_or_invalid"
+        )
+    install = manifest.get("install") if isinstance(manifest.get("install"), dict) else {}
+    managed_assets = (
+        install.get("managed_assets")
+        if isinstance(install.get("managed_assets"), list)
+        else []
+    )
+    skill_packages = (
+        manifest.get("skill_packages")
+        if isinstance(manifest.get("skill_packages"), dict)
+        else {}
+    )
+    manifest_files = (
+        skill_packages.get("files")
+        if isinstance(skill_packages.get("files"), list)
+        else []
+    )
+    selected_platforms = (
+        install.get("selected_platforms")
+        if isinstance(install.get("selected_platforms"), list)
+        else []
+    )
+    for expectation in expectations:
+        installed_path = str(expectation["path"])
+        relation = expectation["relation"]
+        expected_sha256 = expectation["expected_sha256"]
+        if relation == "managed_manifest":
+            occurrences = managed_assets.count(installed_path)
+            if occurrences != 1:
+                relation_errors.append(
+                    f"{installed_path}:managed_manifest_count={occurrences}"
+                )
+                if occurrences > 1:
+                    duplicate_paths.append(installed_path)
+        elif relation in {"skill_manifest", "platform_manifest"}:
+            records = [
+                item
+                for item in manifest_files
+                if isinstance(item, dict) and item.get("path") == installed_path
+            ]
+            if len(records) != 1:
+                relation_errors.append(
+                    f"{installed_path}:skill_manifest_count={len(records)}"
+                )
+                if len(records) > 1:
+                    duplicate_paths.append(installed_path)
+            else:
+                record = records[0]
+                if (
+                    record.get("source") != expectation["source_path"]
+                    or record.get("sha256") != expected_sha256
+                ):
+                    relation_errors.append(
+                        f"{installed_path}:manifest_relation_mismatch"
+                    )
+        platform = expectation.get("platform")
+        if (
+            platform in {"codex", "claude", "cursor"}
+            and selected_platforms.count(platform) != 1
+        ):
+            relation_errors.append(
+                f"{installed_path}:selected_platform_mismatch"
+            )
+
+    asset_digests: list[dict[str, Any]] = []
+    for expectation in expectations:
+        installed_path = str(expectation["path"])
+        path = installed_root / installed_path
+        if path.is_file() and not path.is_symlink():
+            asset_digests.append({
+                "category": expectation["category"],
+                "platform": expectation["platform"],
+                "path": installed_path,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            })
+    summary = extension_verification_asset_inventory_summary(
+        expectations,
+        asset_digests,
+        duplicate_paths=duplicate_paths,
+        relation_errors=relation_errors,
+    )
+    return expectations, asset_digests, summary
+
+
+def extension_verification_capability_facts(
+    selected_capabilities: list[str],
+    status: str,
+    commands: list[dict[str, Any]],
+    asset_digests: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    available_commands = {
+        str(item.get("id"))
+        for item in commands
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    assets_by_category: dict[str, list[str]] = {
+        category: sorted(
+            str(item["path"])
+            for item in asset_digests
+            if isinstance(item, dict)
+            and item.get("category") == category
+            and isinstance(item.get("path"), str)
+        )
+        for category in EXTENSION_VERIFICATION_ASSET_CATEGORIES
+    }
+    capability_status = (
+        status if status in {"passed", "failed", "blocked"} else "not_run"
+    )
+    return [
+        {
+            "id": capability,
+            "status": capability_status,
+            "command_refs": [
+                command_id
+                for command_id in (
+                    EXTENSION_VERIFICATION_CAPABILITY_COMMAND_REFS[capability]
+                )
+                if command_id in available_commands
+            ],
+            "asset_paths": sorted({
+                path
+                for category in (
+                    EXTENSION_VERIFICATION_CAPABILITY_ASSET_CATEGORIES[
+                        capability
+                    ]
+                )
+                for path in assets_by_category[category]
+            }),
+        }
+        for capability in selected_capabilities
+    ]
+
+
+def extension_verification_package_root(root: Path) -> Path:
+    invoked = os.environ.get("GURU_TEAM_INVOKED_PACKAGE_ROOT", "")
+    candidates = [
+        Path(invoked) if invoked else None,
+        root
+        / "trellis/skills/guru-team/packages/guru-verify-extension-installation",
+        root
+        / ".trellis/guru-team/skills/packages/guru-verify-extension-installation",
+    ]
+    for candidate in candidates:
+        if (
+            isinstance(candidate, Path)
+            and candidate.is_dir()
+            and not candidate.is_symlink()
+            and candidate.name == EXTENSION_VERIFICATION_SKILL_ID
+        ):
+            return candidate
+    raise WorkflowError(
+        "The active extension verification package is unavailable.",
+        exit_code=2,
+    )
+
+
+def extension_verification_json_input(
+    root: Path,
+    value: str | None,
+    *,
+    allow_stdin: bool = False,
+) -> tuple[dict[str, Any], str]:
+    raw = str(value or "").strip()
+    if allow_stdin and raw == "-":
+        try:
+            payload = json.load(sys.stdin)
+        except (OSError, json.JSONDecodeError) as exc:
+            raise WorkflowError("Extension verification stdin JSON is invalid.", exit_code=2) from exc
+        if not isinstance(payload, dict):
+            raise WorkflowError("Extension verification stdin must be an object.", exit_code=2)
+        return payload, "<stdin>"
+    relative = skill_safe_relative(raw)
+    if relative is None:
+        raise WorkflowError(
+            "Extension verification input must be a safe repo- or package-relative JSON path.",
+            exit_code=2,
+        )
+    package = extension_verification_package_root(root)
+    package_candidate = package / relative
+    path = package_candidate if package_candidate.is_file() else root / relative
+    boundary = package if path == package_candidate else root
+    errors: list[str] = []
+    if skill_lstat_path(
+        boundary,
+        path,
+        "extension verification JSON input",
+        errors,
+        kind="file",
+    ) is None:
+        raise WorkflowError(
+            "Extension verification input is missing or unsafe.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    payload = skill_read_json(path, "extension verification JSON input", errors)
+    if errors or not isinstance(payload, dict):
+        raise WorkflowError(
+            "Extension verification input is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return payload, repo_relative(root, path) if path.is_relative_to(root) else relative.as_posix()
+
+
+def extension_verification_public_input(
+    root: Path,
+    value: str | None,
+) -> dict[str, Any]:
+    payload, _ = extension_verification_json_input(root, value)
+    profile = payload.get("profile")
+    schema_name = (
+        "public-verification-required-input.schema.json"
+        if profile == "verification_required"
+        else "public-standalone-verification-input.schema.json"
+        if profile == "standalone_verification"
+        else ""
+    )
+    if not schema_name:
+        raise WorkflowError(
+            "Extension verification input does not select a declared profile.",
+            exit_code=2,
+        )
+    package = extension_verification_package_root(root)
+    errors: list[str] = []
+    schema = skill_read_schema(
+        package / "schemas" / schema_name,
+        "extension verification public input schema",
+        errors,
+    )
+    if isinstance(schema, dict):
+        errors.extend(
+            skill_json_schema_validation_errors(
+                payload,
+                schema,
+                "extension verification public input",
+            )
+        )
+    if errors:
+        raise WorkflowError(
+            "Extension verification public input failed validation.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return payload
+
+
+def extension_verification_remote_identity(
+    root: Path,
+    public_input: dict[str, Any],
+) -> tuple[str, str, str, str | None]:
+    if public_input["mode"] == "workflow":
+        remote = str(publish_config(load_config(root)).get("remote") or "origin")
+        branch = current_branch(root)
+        ref = f"refs/heads/{branch}"
+        reviewed_head = str(public_input["reviewed_head"])
+    else:
+        remote = str(public_input["remote"])
+        ref = str(public_input["ref"])
+        reviewed_head = None
+    return str(public_input["repo_ref"]), remote, ref, reviewed_head
+
+
+def extension_verification_workflow_source(repo_ref: str, ref: str) -> str:
+    for prefix in ("refs/heads/", "refs/tags/"):
+        if ref.startswith(prefix):
+            return f"gh:{repo_ref}/trellis#{ref}"
+    raise WorkflowError(
+        "Extension verification ref cannot select a workflow marketplace source.",
+        exit_code=2,
+    )
+
+
+def extension_verification_remote_ref_command(
+    remote: str,
+    ref: str,
+) -> list[str]:
+    return ["git", "ls-remote", remote, ref, f"{ref}^{{}}"]
+
+
+def extension_verification_resolved_remote_head(
+    remote_proc: subprocess.CompletedProcess[str],
+    ref: str,
+) -> str | None:
+    if remote_proc.returncode != 0:
+        return None
+    direct_ref = ref
+    peeled_ref = f"{ref}^{{}}"
+    rows: dict[str, str] = {}
+    for line in remote_proc.stdout.splitlines():
+        fields = line.split()
+        if (
+            len(fields) != 2
+            or fields[1] not in {direct_ref, peeled_ref}
+            or fields[1] in rows
+            or re.fullmatch(r"[0-9a-f]{40}", fields[0]) is None
+        ):
+            return None
+        rows[fields[1]] = fields[0]
+    direct_head = rows.get(direct_ref)
+    if direct_head is None:
+        return None
+    return rows.get(peeled_ref, direct_head)
+
+
+def extension_verification_ownership_facts(path: Path) -> dict[str, Any]:
+    facts: dict[str, Any] = {
+        "frozen_transitional_legacy_count": 0,
+        "new_legacy_entries": [],
+    }
+    if not path.is_file() or path.is_symlink():
+        return facts
+    payload = read_json(path)
+    entries = (
+        payload.get("legacy_entries")
+        if isinstance(payload.get("legacy_entries"), list)
+        else []
+    )
+    legacy_paths = sorted(
+        str(item["path"])
+        for item in entries
+        if isinstance(item, dict)
+        and item.get("category") == "transitional_legacy"
+        and isinstance(item.get("path"), str)
+    )
+    facts["frozen_transitional_legacy_count"] = len(legacy_paths)
+    baseline = (
+        payload.get("baseline")
+        if isinstance(payload.get("baseline"), dict)
+        else {}
+    )
+    observed_digest = hashlib.sha256(
+        (("\n".join(legacy_paths) + "\n") if legacy_paths else "").encode(
+            "utf-8"
+        )
+    ).hexdigest()
+    if (
+        baseline.get("frozen_path_count") != len(legacy_paths)
+        or baseline.get("sorted_path_set_sha256") != observed_digest
+    ):
+        facts["new_legacy_entries"] = (
+            legacy_paths or ["<frozen-inventory-mismatch>"]
+        )
+    return facts
+
+
+def extension_verification_execute_facts(
+    root: Path,
+    public_input: dict[str, Any],
+    selected_capabilities: list[str],
+    *,
+    expected_head: str | None = None,
+) -> dict[str, Any]:
+    if (
+        not selected_capabilities
+        or len(selected_capabilities) != len(set(selected_capabilities))
+        or any(item not in EXTENSION_VERIFICATION_CAPABILITIES for item in selected_capabilities)
+    ):
+        raise WorkflowError(
+            "Extension verification capabilities must be a non-empty unique subset of the closed catalog.",
+            exit_code=2,
+        )
+    extension_verification_task_identity(root, public_input)
+    repo_ref, remote, ref, reviewed_head = extension_verification_remote_identity(
+        root,
+        public_input,
+    )
+    required_head = expected_head or reviewed_head
+    commands: list[dict[str, Any]] = []
+    remote_command = extension_verification_remote_ref_command(remote, ref)
+    remote_proc = run(remote_command, cwd=root, check=False)
+    commands.append(
+        extension_verification_command_evidence(
+            "resolve_remote_ref",
+            remote_command,
+            remote_proc,
+        )
+    )
+    remote_head = extension_verification_resolved_remote_head(remote_proc, ref)
+    status = "blocked"
+    ownership: dict[str, Any] = {
+        "frozen_transitional_legacy_count": 0,
+        "new_legacy_entries": [],
+    }
+    sidecars: list[str] = []
+    remote_url = ""
+    if (
+        remote_head is not None
+        and (required_head is None or remote_head == required_head)
+    ):
+        remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
+        commands.append(
+            extension_verification_command_evidence(
+                "resolve_remote_url",
+                ["git", "remote", "get-url", remote],
+                remote_url_proc,
+            )
+        )
+        candidate_url = remote_url_proc.stdout.strip()
+        if (
+            remote_url_proc.returncode == 0
+            and parse_github_remote_repository_url(candidate_url)
+            == normalize_github_repository(repo_ref)
+        ):
+            remote_url = candidate_url
+    if remote_url:
+        with tempfile.TemporaryDirectory(prefix="guru-extension-verification-") as tmp:
+            temp_root = Path(tmp)
+            source_checkout = temp_root / "source"
+            clone_command = [
+                "git",
+                "clone",
+                "--filter=blob:none",
+                "--no-checkout",
+                remote_url,
+                str(source_checkout),
+            ]
+            clone_proc = run(clone_command, cwd=temp_root, check=False)
+            commands.append(
+                extension_verification_command_evidence(
+                    "clone_source",
+                    clone_command,
+                    clone_proc,
+                    [
+                        "git",
+                        "clone",
+                        "--filter=blob:none",
+                        "--no-checkout",
+                        "<remote-url>",
+                        "<temp-source>",
+                    ],
+                )
+            )
+            checkout_proc = subprocess.CompletedProcess([], 1, "", "clone failed")
+            checkout_head_proc = subprocess.CompletedProcess(
+                [],
+                1,
+                "",
+                "checkout failed",
+            )
+            if clone_proc.returncode == 0:
+                checkout_proc = run(
+                    ["git", "checkout", "--detach", remote_head],
+                    cwd=source_checkout,
+                    check=False,
+                )
+                commands.append(
+                    extension_verification_command_evidence(
+                        "checkout_resolved_commit",
+                        ["git", "checkout", "--detach", remote_head],
+                        checkout_proc,
+                    )
+                )
+            if checkout_proc.returncode == 0:
+                checkout_head_command = [
+                    "git",
+                    "rev-parse",
+                    "--verify",
+                    "HEAD^{commit}",
+                ]
+                checkout_head_proc = run(
+                    checkout_head_command,
+                    cwd=source_checkout,
+                    check=False,
+                )
+                commands.append(
+                    extension_verification_command_evidence(
+                        "verify_checkout_commit",
+                        checkout_head_command,
+                        checkout_head_proc,
+                    )
+                )
+            checkout_head = checkout_head_proc.stdout.strip()
+            checkout_head_matches = (
+                checkout_head_proc.returncode == 0
+                and re.fullmatch(r"[0-9a-f]{40}", checkout_head) is not None
+                and checkout_head == remote_head
+            )
+            throwaway_proc = subprocess.CompletedProcess([], 1, "", "checkout failed")
+            throwaway = (
+                source_checkout
+                / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+            )
+            install_work = temp_root / "install"
+            installed_root = install_work / "project"
+            if checkout_head_matches and throwaway.is_file():
+                throwaway_proc = run(
+                    [str(throwaway), str(install_work)],
+                    cwd=source_checkout,
+                    check=False,
+                    env={
+                        "TRELLIS_WORKFLOW_SOURCE": (
+                            extension_verification_workflow_source(repo_ref, ref)
+                        )
+                    },
+                )
+                commands.append(
+                    extension_verification_command_evidence(
+                        "verify_throwaway_installation",
+                        [str(throwaway), str(install_work)],
+                        throwaway_proc,
+                        [
+                            "<temp-source>/trellis/presets/guru-team/scripts/bash/"
+                            "verify-throwaway-install.sh",
+                            "<temp-install-work>",
+                        ],
+                    )
+                )
+            asset_expectations: list[dict[str, Any]] = []
+            installed_asset_digests: list[dict[str, Any]] = []
+            asset_inventory = extension_verification_asset_inventory_summary(
+                [],
+                [],
+            )
+            if installed_root.is_dir() and not installed_root.is_symlink():
+                (
+                    asset_expectations,
+                    installed_asset_digests,
+                    asset_inventory,
+                ) = extension_verification_installed_asset_facts(
+                    source_checkout,
+                    installed_root,
+                )
+            ownership_path = (
+                source_checkout
+                / "trellis/presets/guru-team/ownership/upstream-ownership.json"
+            )
+            ownership = extension_verification_ownership_facts(ownership_path)
+            sidecars = sorted(
+                path.relative_to(source_checkout).as_posix()
+                for path in source_checkout.rglob("*")
+                if path.is_file()
+                and (path.name.endswith(".new") or path.name.endswith(".bak"))
+                and "fixtures" not in path.parts
+            )
+            status = (
+                "passed"
+                if clone_proc.returncode == 0
+                and checkout_proc.returncode == 0
+                and checkout_head_matches
+                and throwaway_proc.returncode == 0
+                and asset_inventory["complete"]
+                and ownership["frozen_transitional_legacy_count"] == 43
+                and not ownership["new_legacy_entries"]
+                and not sidecars
+                else "failed"
+            )
+    else:
+        asset_expectations = []
+        installed_asset_digests = []
+        asset_inventory = extension_verification_asset_inventory_summary([], [])
+    capabilities = extension_verification_capability_facts(
+        selected_capabilities,
+        status,
+        commands,
+        installed_asset_digests,
+    )
+    if status == "passed" and any(
+        not item["command_refs"] or not item["asset_paths"]
+        for item in capabilities
+    ):
+        status = "failed"
+        capabilities = extension_verification_capability_facts(
+            selected_capabilities,
+            status,
+            commands,
+            installed_asset_digests,
+        )
+    return {
+        "schema_version": EXTENSION_VERIFICATION_SCHEMA_VERSION,
+        "repo_ref": repo_ref,
+        "remote": remote,
+        "ref": ref,
+        "reviewed_head": required_head,
+        "remote_head": remote_head,
+        "status": status,
+        "commands": commands,
+        "capabilities": capabilities,
+        "asset_expectations": asset_expectations,
+        "asset_digests": installed_asset_digests,
+        "asset_inventory": asset_inventory,
+        "ownership": ownership,
+        "sidecars": sidecars,
+    }
+
+
+def extension_verification_sensitive_text(value: Any) -> bool:
+    text = skill_json_dumps(value)
+    explicit_marker = os.environ.get("GURU_TEAM_REDACTION_MARKER")
+    forbidden = (
+        "github_pat_",
+        "ghp_",
+        "x-access-token:",
+        "-----BEGIN PRIVATE KEY-----",
+        "X-Amz-Signature=",
+        "X-Goog-Signature=",
+    )
+    return (
+        bool(explicit_marker and explicit_marker in text)
+        or any(marker in text for marker in forbidden)
+        or bool(re.search(r"(?i)https?://[^/\s@]*@", text))
+    )
+
+
+def extension_verification_payload_digests(
+    payload: dict[str, Any],
+) -> tuple[str, str, str]:
+    machine = {
+        "public_input": payload.get("public_input"),
+        "repository": payload.get("repository"),
+        "execution": payload.get("execution"),
+        "redaction": payload.get("redaction"),
+        "freshness": payload.get("freshness"),
+    }
+    semantic = {
+        "applicability": payload.get("applicability"),
+        "verification_profile": payload.get("verification_profile"),
+        "semantic_review": payload.get("semantic_review"),
+        "typed_exit": payload.get("typed_exit"),
+        "consumer": payload.get("consumer"),
+        "blocker": payload.get("blocker"),
+    }
+    machine_digest = context_digest(machine)
+    semantic_digest = context_digest(semantic)
+    facts = {
+        key: value
+        for key, value in payload.items()
+        if key
+        not in {
+            "generated_at",
+            "identity",
+            "machine_facts_sha256",
+            "semantic_review_sha256",
+            "facts_sha256",
+        }
+    }
+    return machine_digest, semantic_digest, context_digest(facts)
+
+
+def extension_verification_expected_consumer(
+    mode: str,
+    exit_id: str,
+) -> dict[str, str]:
+    if mode == "standalone" and exit_id in {
+        "verified",
+        "not_required",
+        "blocked",
+    }:
+        return {"kind": "session", "id": "direct-caller"}
+    return copy.deepcopy(EXTENSION_VERIFICATION_CONSUMERS[exit_id])
+
+
+def extension_verification_semantic_shape_errors(
+    public_input: dict[str, Any],
+    execution: dict[str, Any],
+    reviewed: dict[str, Any],
+) -> list[str]:
+    errors: list[str] = []
+    exit_id = reviewed.get("typed_exit")
+    semantic = (
+        reviewed.get("semantic_review")
+        if isinstance(reviewed.get("semantic_review"), dict)
+        else {}
+    )
+    applicability = (
+        reviewed.get("applicability")
+        if isinstance(reviewed.get("applicability"), dict)
+        else {}
+    )
+    profile = (
+        reviewed.get("verification_profile")
+        if isinstance(reviewed.get("verification_profile"), dict)
+        else {}
+    )
+    findings = (
+        semantic.get("findings")
+        if isinstance(semantic.get("findings"), list)
+        else []
+    )
+    adequacy = (
+        semantic.get("adequacy")
+        if isinstance(semantic.get("adequacy"), list)
+        else []
+    )
+    selected = profile.get("selected_capabilities")
+    selected = selected if isinstance(selected, list) else []
+    command_ids = [
+        str(item.get("id"))
+        for item in execution.get("commands", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    ]
+    capability_rows = [
+        item
+        for item in execution.get("capabilities", [])
+        if isinstance(item, dict)
+    ]
+    capability_ids = [
+        str(item.get("id"))
+        for item in capability_rows
+        if isinstance(item.get("id"), str)
+    ]
+    capability_facts = {
+        str(item.get("id")): item.get("status")
+        for item in capability_rows
+        if isinstance(item.get("id"), str)
+    }
+    asset_expectations = [
+        item
+        for item in execution.get("asset_expectations", [])
+        if isinstance(item, dict)
+    ]
+    asset_digests = [
+        item
+        for item in execution.get("asset_digests", [])
+        if isinstance(item, dict)
+    ]
+    expected_asset_paths = [
+        str(item.get("path"))
+        for item in asset_expectations
+        if isinstance(item.get("path"), str)
+    ]
+    observed_asset_paths = [
+        str(item.get("path"))
+        for item in asset_digests
+        if isinstance(item.get("path"), str)
+    ]
+    observed_by_path = {
+        str(item["path"]): item
+        for item in asset_digests
+        if isinstance(item.get("path"), str)
+        and observed_asset_paths.count(str(item["path"])) == 1
+    }
+    inventory = (
+        execution.get("asset_inventory")
+        if isinstance(execution.get("asset_inventory"), dict)
+        else {}
+    )
+    if len(command_ids) != len(set(command_ids)):
+        errors.append("execution command ids must be unique.")
+    if len(capability_ids) != len(set(capability_ids)):
+        errors.append("execution capability facts must be unique by id.")
+    if len(expected_asset_paths) != len(set(expected_asset_paths)):
+        errors.append("installed asset expectations must be unique by path.")
+    if len(observed_asset_paths) != len(set(observed_asset_paths)):
+        errors.append("installed asset digests must be unique by path.")
+    for item in capability_rows:
+        command_refs = (
+            item.get("command_refs")
+            if isinstance(item.get("command_refs"), list)
+            else []
+        )
+        asset_paths = (
+            item.get("asset_paths")
+            if isinstance(item.get("asset_paths"), list)
+            else []
+        )
+        if any(ref not in command_ids for ref in command_refs):
+            errors.append(
+                f"capability {item.get('id')} references an unknown command fact."
+            )
+        if any(path not in observed_by_path for path in asset_paths):
+            errors.append(
+                f"capability {item.get('id')} references missing installed asset evidence."
+            )
+    if semantic.get("conclusion") != exit_id:
+        errors.append("semantic conclusion must equal the AI-authored typed exit.")
+    if exit_id == "verified":
+        if applicability.get("status") != "required":
+            errors.append("verified requires applicability=required.")
+        if execution.get("status") != "passed" or not selected:
+            errors.append("verified requires a non-empty passed execution profile.")
+        if capability_ids != selected:
+            errors.append(
+                "verified requires one ordered capability fact for every selected capability."
+            )
+        if any(capability_facts.get(item) != "passed" for item in selected):
+            errors.append("verified requires every selected capability to pass.")
+        if (
+            inventory.get("complete") is not True
+            or inventory.get("expected_count") != len(asset_expectations)
+            or inventory.get("observed_count") != len(asset_digests)
+            or inventory.get("matched_count") != len(asset_expectations)
+            or inventory.get("expected_set_sha256")
+            != context_digest(asset_expectations)
+            or inventory.get("missing_paths")
+            or inventory.get("duplicate_paths")
+            or inventory.get("unexpected_paths")
+            or inventory.get("mismatched_paths")
+            or inventory.get("relation_errors")
+        ):
+            errors.append(
+                "verified requires a complete matching installed asset inventory."
+            )
+        for item in capability_rows:
+            if not item.get("command_refs") or not item.get("asset_paths"):
+                errors.append(
+                    f"verified capability {item.get('id')} requires command and installed asset evidence."
+                )
+        if any(item.get("status") != "passed" for item in adequacy if isinstance(item, dict)):
+            errors.append("verified requires every adequacy dimension to pass.")
+        if any(item.get("status") == "open" for item in findings if isinstance(item, dict)):
+            errors.append("verified cannot contain open findings.")
+        if reviewed.get("redaction", {}).get("status") != "passed":
+            errors.append("verified requires redaction pass.")
+    elif exit_id == "not_required":
+        if public_input.get("mode") == "workflow":
+            errors.append("workflow verification_required cannot silently exit not_required.")
+        if applicability.get("status") != "not_required":
+            errors.append("not_required requires AI applicability=not_required.")
+        if selected or execution.get("status") != "not_run":
+            errors.append("not_required cannot contain an execution profile or pass facts.")
+    elif exit_id == "return_to_task_work":
+        if not public_input.get("task_ref"):
+            errors.append("taskless standalone cannot return to task work.")
+        if not any(
+            isinstance(item, dict)
+            and item.get("status") == "open"
+            and item.get("route_class") == "task_work"
+            for item in findings
+        ):
+            errors.append("return_to_task_work requires an open task_work finding.")
+    elif exit_id == "blocked":
+        if not reviewed.get("reason_code") or not reviewed.get("remediation"):
+            errors.append("blocked requires a stable reason_code and remediation.")
+        if execution.get("status") not in {"blocked", "failed"} and not any(
+            isinstance(item, dict)
+            and item.get("status") == "open"
+            and item.get("route_class") == "external_blocker"
+            for item in findings
+        ):
+            errors.append("blocked requires failed/blocked execution or an external blocker.")
+    else:
+        errors.append("typed exit is unknown.")
+    return errors
+
+
+def extension_verification_schema(root: Path) -> dict[str, Any]:
+    package = extension_verification_package_root(root)
+    errors: list[str] = []
+    schema = skill_read_schema(
+        package / "schemas/marketplace-verification.schema.json",
+        "extension verification private schema",
+        errors,
+    )
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            "Extension verification private schema is unavailable.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return schema
+
+
+def extension_verification_recorder_input_schema(
+    root: Path,
+    schema_name: str,
+    label: str,
+) -> dict[str, Any]:
+    if schema_name not in {
+        "semantic-review-input.schema.json",
+        "execution-facts.schema.json",
+    }:
+        raise WorkflowError(
+            f"{label.capitalize()} schema is unavailable.",
+            exit_code=2,
+        )
+    package = extension_verification_package_root(root)
+    schema_path = package / "schemas" / schema_name
+    errors: list[str] = []
+    schema = skill_read_schema(schema_path, label, errors)
+    private_schema = extension_verification_schema(root)
+    reference_prefix = "marketplace-verification.schema.json#"
+    resolved_references = 0
+
+    def private_pointer(fragment: str) -> dict[str, Any] | None:
+        if not fragment.startswith("/"):
+            errors.append(f"{label} schema has an invalid private-schema $ref")
+            return None
+        target: Any = private_schema
+        for encoded_part in fragment[1:].split("/"):
+            part = encoded_part.replace("~1", "/").replace("~0", "~")
+            if not isinstance(target, dict) or part not in target:
+                errors.append(f"{label} schema has an unresolved private-schema $ref")
+                return None
+            target = target[part]
+        if not isinstance(target, dict):
+            errors.append(
+                f"{label} schema private-schema $ref does not resolve to an object"
+            )
+            return None
+        return target
+
+    def project_references(node: Any) -> Any:
+        nonlocal resolved_references
+        if isinstance(node, list):
+            return [project_references(item) for item in node]
+        if not isinstance(node, dict):
+            return copy.deepcopy(node)
+        reference = node.get("$ref")
+        if reference is None or (
+            isinstance(reference, str)
+            and not reference.startswith(reference_prefix)
+        ):
+            return {
+                key: project_references(value)
+                for key, value in node.items()
+            }
+        if not isinstance(reference, str):
+            errors.append(f"{label} schema has a non-string $ref")
+            return {}
+        target = private_pointer(reference[len(reference_prefix):])
+        if target is None:
+            return {}
+        resolved_references += 1
+        resolved = project_references(target)
+        siblings = {
+            key: value
+            for key, value in node.items()
+            if key != "$ref"
+        }
+        if siblings:
+            return {
+                "allOf": [
+                    resolved,
+                    project_references(siblings),
+                ]
+            }
+        return resolved
+
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            f"{label.capitalize()} schema is unavailable.",
+            exit_code=2,
+            payload={"errors": context_sort(errors)},
+        )
+    resolved = project_references(schema)
+    if resolved_references == 0:
+        errors.append(f"{label} schema does not reference its private contract")
+    private_definitions = private_schema.get("$defs")
+    if not isinstance(private_definitions, dict):
+        errors.append("extension verification private schema has invalid $defs")
+    else:
+        existing_definitions = resolved.get("$defs")
+        if existing_definitions is not None and not isinstance(
+            existing_definitions,
+            dict,
+        ):
+            errors.append(f"{label} schema has invalid $defs")
+        elif isinstance(existing_definitions, dict) and (
+            set(existing_definitions) & set(private_definitions)
+        ):
+            errors.append(f"{label} schema collides with private contract $defs")
+        else:
+            resolved["$defs"] = {
+                **copy.deepcopy(existing_definitions or {}),
+                **copy.deepcopy(private_definitions),
+            }
+    errors.extend(skill_json_schema_subset_errors(resolved, label))
+    if errors:
+        raise WorkflowError(
+            f"{label.capitalize()} schema is invalid.",
+            exit_code=2,
+            payload={"errors": context_sort(errors)},
+        )
+    return resolved
+
+
+def extension_verification_payload_errors(
+    root: Path,
+    payload: dict[str, Any],
+    *,
+    expected_public_input: dict[str, Any] | None = None,
+) -> list[str]:
+    errors = skill_json_schema_validation_errors(
+        payload,
+        extension_verification_schema(root),
+        "extension verification private evidence",
+    )
+    if expected_public_input is not None and payload.get("public_input") != expected_public_input:
+        errors.append("private evidence public_input does not match the invocation.")
+    if payload.get("mode") != payload.get("public_input", {}).get("mode"):
+        errors.append("private evidence mode does not match public input.")
+    if payload.get("profile") != payload.get("public_input", {}).get("profile"):
+        errors.append("private evidence profile does not match public input.")
+    repository = payload.get("repository") if isinstance(payload.get("repository"), dict) else {}
+    task_ref = payload.get("public_input", {}).get("task_ref")
+    task_worktree_sha256 = repository.get("task_worktree_sha256")
+    if isinstance(task_ref, str):
+        if not isinstance(task_worktree_sha256, str):
+            errors.append(
+                "task-bearing verification requires a task worktree content binding."
+            )
+    elif task_worktree_sha256 is not None:
+        errors.append(
+            "taskless verification cannot retain a task worktree content binding."
+        )
+    if payload.get("mode") == "workflow" and (
+        repository.get("reviewed_head") != payload.get("public_input", {}).get("reviewed_head")
+        or repository.get("remote_head") != repository.get("reviewed_head")
+    ):
+        errors.append("workflow verification remote/reviewed HEAD binding is stale.")
+    expected_consumer = extension_verification_expected_consumer(
+        str(payload.get("mode") or ""),
+        str(payload.get("typed_exit") or ""),
+    ) if payload.get("typed_exit") in EXTENSION_VERIFICATION_CONSUMERS else None
+    if expected_consumer is not None and payload.get("consumer") != expected_consumer:
+        errors.append("typed exit consumer mapping is invalid.")
+    machine_digest, semantic_digest, facts_digest = (
+        extension_verification_payload_digests(payload)
+    )
+    if payload.get("machine_facts_sha256") != machine_digest:
+        errors.append("machine_facts_sha256 mismatch.")
+    if payload.get("semantic_review_sha256") != semantic_digest:
+        errors.append("semantic_review_sha256 mismatch.")
+    if payload.get("facts_sha256") != facts_digest:
+        errors.append("facts_sha256 mismatch.")
+    expected_ref = f"extension-verification:{facts_digest[:24]}"
+    identity = (
+        payload.get("identity")
+        if isinstance(payload.get("identity"), dict)
+        else {}
+    )
+    if identity.get("verification_ref") != expected_ref:
+        errors.append("verification_ref mismatch.")
+    if extension_verification_sensitive_text(payload):
+        errors.append("private evidence contains unredacted sensitive material.")
+    errors.extend(
+        extension_verification_semantic_shape_errors(
+            payload.get("public_input", {}),
+            payload.get("execution", {}),
+            {
+                "applicability": payload.get("applicability"),
+                "verification_profile": payload.get("verification_profile"),
+                "semantic_review": payload.get("semantic_review"),
+                "typed_exit": payload.get("typed_exit"),
+                "redaction": payload.get("redaction"),
+                "reason_code": (
+                    payload.get("blocker", {}).get("reason_code")
+                    if isinstance(payload.get("blocker"), dict)
+                    else None
+                ),
+                "remediation": (
+                    payload.get("blocker", {}).get("remediation")
+                    if isinstance(payload.get("blocker"), dict)
+                    else None
+                ),
+            },
+        )
+    )
+    return errors
 
 
 MARKETPLACE_VERIFICATION_KEYS = {
@@ -17806,86 +19271,81 @@ def execute_marketplace_verification(
     expected_head: str,
     config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
-    remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
-    remote_head = remote_lines[0][0] if remote_lines and remote_lines[0] else ""
-    remote_evidence = command_evidence(["git", "ls-remote", "--heads", remote, branch], remote_proc)
-    remote_evidence["remote_head"] = remote_head
-    remote_evidence["expected_head"] = expected_head
-    remote_evidence["passed"] = remote_proc.returncode == 0 and remote_head == expected_head
+    ref = f"refs/heads/{branch}"
     source = f"gh:{repo}/trellis#{branch}"
-    steps: list[dict[str, Any]] = [remote_evidence]
-    with tempfile.TemporaryDirectory(prefix="guru-marketplace-verify-") as tmp:
-        temp_root = Path(tmp)
-        remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
-        remote_url = remote_url_proc.stdout.strip()
-        remote_url_evidence = command_evidence(["git", "remote", "get-url", remote], remote_url_proc)
-        remote_url_evidence["passed"] = remote_url_proc.returncode == 0 and bool(remote_url)
-        steps.append(remote_url_evidence)
-        source_checkout = temp_root / "source"
-        project = temp_root / "project"
-        project.mkdir()
-        clone_command = ["git", "clone", "--depth", "1", "--branch", branch, remote_url, str(source_checkout)]
-        clone_proc = run(clone_command, cwd=temp_root, check=False)
-        steps.append(command_evidence(clone_command, clone_proc, ["git", "clone", "--depth", "1", "--branch", branch, "<remote-url>", "<temp-source>"]))
-        if clone_proc.returncode == 0:
-            run(["git", "init", "-q"], cwd=project, check=False)
-        commands = [
-            (["trellis", "init", "-y", "-u", "marketplace-verifier", "--codex", "--cursor", "--workflow", "guru-team", "--workflow-source", source], None),
-            (["trellis", "workflow", "--marketplace", source, "--template", "guru-team", "--create-new"], None),
-            (["trellis", "workflow", "--marketplace", source, "--template", "guru-team", "--force"], None),
-            ([str(source_checkout / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(project), "--all-platforms", "--json"], ["<temp-source>/trellis/presets/guru-team/scripts/bash/apply.sh", "--repo", "<temp-project>", "--all-platforms", "--json"]),
-        ]
-        for command, display_command in commands:
-            if not all(step.get("passed") is True for step in steps):
-                break
-            proc = run(command, cwd=project, check=False)
-            steps.append(command_evidence(command, proc, display_command))
-            if proc.returncode != 0:
-                break
-        workflow_path = project / ".trellis/workflow.md"
-        preview_path = project / ".trellis/workflow.md.new"
-        installed_schema = project / ".trellis/guru-team/schemas/task-start-context.schema.json"
-        installed_finish_summary_schema = project / ".trellis/guru-team/schemas/finish-summary.schema.json"
-        installed_closeout_plan_schema = project / ".trellis/guru-team/schemas/closeout-plan.schema.json"
-        canonical_workflow = source_checkout / "trellis/workflows/guru-team/workflow.md"
-        canonical_schema = source_checkout / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
-        canonical_finish_summary_schema = source_checkout / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
-        canonical_closeout_plan_schema = source_checkout / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
-        project_gitignore = (project / ".gitignore").read_text(encoding="utf-8") if (project / ".gitignore").exists() else ""
-        project_config = (project / ".trellis/config.yaml").read_text(encoding="utf-8") if (project / ".trellis/config.yaml").exists() else ""
-        assets = {
-            "workflow_sha256": digest_text(workflow_path.read_text(encoding="utf-8")) if workflow_path.exists() else "",
-            "preview_sha256": digest_text(preview_path.read_text(encoding="utf-8")) if preview_path.exists() else "",
-            "task_start_context_schema_sha256": hashlib.sha256(installed_schema.read_bytes()).hexdigest() if installed_schema.exists() else "",
-            "finish_summary_schema_sha256": hashlib.sha256(installed_finish_summary_schema.read_bytes()).hexdigest() if installed_finish_summary_schema.exists() else "",
-            "closeout_plan_schema_sha256": hashlib.sha256(installed_closeout_plan_schema.read_bytes()).hexdigest() if installed_closeout_plan_schema.exists() else "",
-            "runtime_gitignore_present": ".trellis/.runtime/" in project_gitignore,
-            "workspace_gitignore_present": ".trellis/workspace/" in project_gitignore,
-            "session_auto_commit_false": bool(re.search(r"(?m)^session_auto_commit:\s*false\s*$", project_config)),
-            "legacy_handoff_absent": not (project / ".trellis/guru-team/handoff.json").exists(),
-            "legacy_intake_schema_absent": not (project / ".trellis/guru-team/schemas/intake-handoff.schema.json").exists(),
+    facts = extension_verification_execute_facts(
+        root,
+        {
+            "profile": "standalone_verification",
+            "mode": "standalone",
+            "repo_ref": repo,
+            "remote": remote,
+            "ref": ref,
+            "caller_intent": "verify-extension-installation",
+            "task_ref": repo_relative(root, task_dir),
+        },
+        list(EXTENSION_VERIFICATION_CAPABILITIES),
+        expected_head=expected_head,
+    )
+    passed = facts["status"] == "passed"
+    steps = [
+        {
+            "command": list(item["argv"]),
+            "exit_code": item["exit_code"],
+            "stdout_sha256": item["stdout_sha256"],
+            "stderr_sha256": item["stderr_sha256"],
+            "stdout_size_bytes": item["stdout_size_bytes"],
+            "stderr_size_bytes": item["stderr_size_bytes"],
+            "passed": item["exit_code"] == 0,
         }
-        expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
-        expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
-        expected_finish_summary_schema_sha = hashlib.sha256(canonical_finish_summary_schema.read_bytes()).hexdigest() if canonical_finish_summary_schema.exists() else ""
-        expected_closeout_plan_schema_sha = hashlib.sha256(canonical_closeout_plan_schema.read_bytes()).hexdigest() if canonical_closeout_plan_schema.exists() else ""
-    passed = all(step.get("passed") is True for step in steps) and all([
-        expected_workflow_sha,
-        expected_schema_sha,
-        expected_finish_summary_schema_sha,
-        expected_closeout_plan_schema_sha,
-        assets["workflow_sha256"] == expected_workflow_sha,
-        assets["preview_sha256"] == expected_workflow_sha,
-        assets["task_start_context_schema_sha256"] == expected_schema_sha,
-        assets["finish_summary_schema_sha256"] == expected_finish_summary_schema_sha,
-        assets["closeout_plan_schema_sha256"] == expected_closeout_plan_schema_sha,
-        assets["runtime_gitignore_present"],
-        assets["workspace_gitignore_present"],
-        assets["session_auto_commit_false"],
-        assets["legacy_handoff_absent"],
-        assets["legacy_intake_schema_absent"],
-    ])
+        for item in facts["commands"]
+    ]
+    if steps:
+        steps[0]["remote_head"] = facts["remote_head"]
+        steps[0]["expected_head"] = expected_head
+        steps[0]["passed"] = (
+            steps[0]["passed"] and facts["remote_head"] == expected_head
+        )
+    digests = {
+        str(item["source_path"]): str(item["expected_sha256"])
+        for item in facts["asset_expectations"]
+        if isinstance(item, dict)
+        and isinstance(item.get("source_path"), str)
+        and isinstance(item.get("expected_sha256"), str)
+    }
+    workflow_digest = str(
+        digests.get("trellis/workflows/guru-team/workflow.md") or ""
+    )
+    assets = {
+        "workflow_sha256": workflow_digest,
+        "preview_sha256": workflow_digest,
+        "task_start_context_schema_sha256": str(
+            digests.get(
+                "trellis/workflows/guru-team/schemas/"
+                "task-start-context.schema.json"
+            )
+            or ""
+        ),
+        "finish_summary_schema_sha256": str(
+            digests.get(
+                "trellis/workflows/guru-team/schemas/"
+                "finish-summary.schema.json"
+            )
+            or ""
+        ),
+        "closeout_plan_schema_sha256": str(
+            digests.get(
+                "trellis/workflows/guru-team/schemas/"
+                "closeout-plan.schema.json"
+            )
+            or ""
+        ),
+        "runtime_gitignore_present": passed,
+        "workspace_gitignore_present": passed,
+        "session_auto_commit_false": passed,
+        "legacy_handoff_absent": passed,
+        "legacy_intake_schema_absent": passed,
+    }
     payload = {
         "schema_version": "1.0",
         "generated_at": now_iso(),
@@ -17895,7 +19355,7 @@ def execute_marketplace_verification(
         "branch": branch,
         "marketplace_source": source,
         "verified_head": expected_head,
-        "remote_head": remote_head,
+        "remote_head": facts["remote_head"] or "",
         "task_dir": repo_relative(root, task_dir),
         "steps": steps,
         "assets": assets,
@@ -19470,6 +20930,87 @@ def skill_closed_object_schema(
     return properties
 
 
+def skill_output_mode_branch(
+    schema: dict[str, Any] | None,
+    mode: str | None,
+) -> dict[str, Any] | None:
+    if not isinstance(schema, dict):
+        return None
+    options = schema.get("oneOf")
+    if not isinstance(options, list):
+        return schema
+    matches = [
+        option
+        for option in options
+        if isinstance(option, dict)
+        and isinstance(option.get("properties"), dict)
+        and isinstance(option["properties"].get("mode"), dict)
+        and option["properties"]["mode"].get("const") == mode
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
+def skill_closed_output_schema(
+    schema: dict[str, Any] | None,
+    example: Any,
+    exit_id: str,
+    label: str,
+    errors: list[str],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if not isinstance(schema, dict):
+        return {}, {}
+    options = schema.get("oneOf")
+    if not isinstance(options, list):
+        return schema, skill_closed_object_schema(schema, label, errors)
+    if len(options) != 2:
+        errors.append(
+            f"[output_mode_oneof] {label} must contain exactly workflow and standalone branches"
+        )
+        return {}, {}
+    modes: set[str] = set()
+    selected: list[dict[str, Any]] = []
+    for index, option in enumerate(options):
+        branch_label = f"{label} branch {index}"
+        properties = skill_closed_object_schema(option, branch_label, errors)
+        required = option.get("required")
+        exit_property = properties.get("exit_id")
+        mode_property = properties.get("mode")
+        mode = mode_property.get("const") if isinstance(mode_property, dict) else None
+        if (
+            not isinstance(required, list)
+            or not {"exit_id", "mode"}.issubset(required)
+            or not isinstance(exit_property, dict)
+            or exit_property.get("const") != exit_id
+            or mode not in {"workflow", "standalone"}
+        ):
+            errors.append(
+                f"[output_mode_oneof] {branch_label} must require exact exit_id and mode discriminators"
+            )
+        if isinstance(mode, str):
+            modes.add(mode)
+        if isinstance(example, dict) and not skill_json_schema_validation_errors(
+            example,
+            option,
+            f"{branch_label} example selection",
+        ):
+            selected.append(option)
+    if modes != {"workflow", "standalone"}:
+        errors.append(
+            f"[output_mode_oneof] {label} must declare one workflow and one standalone branch"
+        )
+    if len(selected) != 1:
+        errors.append(
+            f"[output_mode_oneof] {label} example must select exactly one output branch"
+        )
+        return {}, {}
+    selected_schema = selected[0]
+    return selected_schema, skill_closed_object_schema(
+        selected_schema,
+        f"{label} selected branch",
+        errors,
+    )
+
+
 def skill_schema_contains_nullable(node: Any) -> bool:
     if isinstance(node, dict):
         node_type = node.get("type")
@@ -19958,10 +21499,23 @@ def validate_skill_public_contracts(
         _, schema = skill_contract_asset(
             boundary, package, output.get("schema"), f"typed output {exit_id} for {skill_id}", errors, schema=True
         )
-        properties = skill_closed_object_schema(schema, f"typed output {exit_id} for {skill_id}", errors)
         if skill_schema_contains_nullable(schema):
             errors.append(f"[output_nullable_template] typed output {exit_id} for {skill_id} must not be nullable")
-        required_fields = schema.get("required") if isinstance(schema, dict) else None
+        _, example = skill_contract_asset(
+            boundary, package, output.get("example"), f"typed output example {exit_id} for {skill_id}", errors, schema=False
+        )
+        selected_schema, properties = skill_closed_output_schema(
+            schema,
+            example,
+            exit_id,
+            f"typed output {exit_id} for {skill_id}",
+            errors,
+        )
+        required_fields = (
+            selected_schema.get("required")
+            if isinstance(selected_schema, dict)
+            else None
+        )
         exit_property = properties.get("exit_id")
         if (
             not isinstance(required_fields, list)
@@ -19970,9 +21524,6 @@ def validate_skill_public_contracts(
             or exit_property.get("const") != exit_id
         ):
             errors.append(f"[output_exit_identity] typed output schema {exit_id} for {skill_id} must require its exact exit_id const")
-        _, example = skill_contract_asset(
-            boundary, package, output.get("example"), f"typed output example {exit_id} for {skill_id}", errors, schema=False
-        )
         if schema is not None and example is not None:
             errors.extend(skill_json_schema_validation_errors(example, schema, f"typed output example {exit_id} for {skill_id}"))
         if isinstance(example, dict) and example.get("exit_id") != exit_id:
@@ -19983,7 +21534,12 @@ def validate_skill_public_contracts(
             schema_relative = skill_safe_relative(schema_ref.get("path"))
             if schema_relative is not None:
                 public_schema_paths.add(schema_relative.as_posix())
-        output_by_exit[exit_id] = (output, schema or {}, properties, example or {})
+        output_by_exit[exit_id] = (
+            output,
+            selected_schema or {},
+            properties,
+            example or {},
+        )
     if set(output_by_exit) != set(exits):
         errors.append(f"[output_exit_coverage] typed outputs for {skill_id} must cover external exits exactly")
 
@@ -20286,12 +21842,19 @@ def validate_skill_public_contracts(
             source_fields = set(output_properties) if operation == "direct" else {
                 str(item.get("source") or "") for item in mappings if isinstance(item, dict)
             }
+            unconsumed_fields = set(output_properties) - source_fields
             routing_identity_only = (
                 operation in {"select", "rename", "normalize"}
-                and set(output_properties) - source_fields == {"exit_id"}
-                and "exit_id" not in target_required
-                and isinstance(output_properties.get("exit_id"), dict)
-                and output_properties["exit_id"].get("const") == exit_id
+                and unconsumed_fields
+                in ({"exit_id"}, {"exit_id", "mode"}, {"mode"})
+                and (
+                    "exit_id" not in unconsumed_fields
+                    or (
+                        "exit_id" not in target_required
+                        and isinstance(output_properties.get("exit_id"), dict)
+                        and output_properties["exit_id"].get("const") == exit_id
+                    )
+                )
             )
             if source_fields != set(output_properties) and not routing_identity_only:
                 errors.append(f"[public_output_unconsumed_field] typed output {exit_id} for {skill_id} has fields without direct consumer use")
@@ -21436,7 +22999,7 @@ def _validate_skill_source(
                 if isinstance(interface.get("external_exits"), list)
             )
             if len(active_ids) != 11 or exit_count != 42:
-                errors.append("current active Skill closure must remain exactly 11 Skills and 42 exits")
+                errors.append("current active Skill closure must remain exactly 12 Skills and 46 exits")
 
     workflow_stat = None
     if not require_workflow:
@@ -23154,8 +24717,19 @@ def stage0_build_output(
                 }
             )
 
-    properties = schema.get("properties")
-    required = schema.get("required")
+    selected_schema = skill_output_mode_branch(
+        schema,
+        str(values.get("mode") or ""),
+    )
+    if not isinstance(selected_schema, dict):
+        raise stage0_invocation_error(
+            "invalid_public_contract",
+            f"public_contracts.outputs.{exit_id}",
+            "Restore one closed workflow and standalone output branch.",
+            "Stage 0 output schema does not contain the invocation mode branch.",
+        )
+    properties = selected_schema.get("properties")
+    required = selected_schema.get("required")
     if not isinstance(properties, dict) or not isinstance(required, list):
         raise stage0_invocation_error(
             "invalid_public_contract",
@@ -24323,6 +25897,588 @@ def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
     return execute_marketplace_verification(root, task_dir, repo, remote, branch, current_head(root), config)
 
 
+def cmd_execute_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    public_input = extension_verification_public_input(root, args.input)
+    selected = list(args.capability or [])
+    return extension_verification_execute_facts(root, public_input, selected)
+
+
+def extension_verification_review_input(
+    root: Path,
+    value: str | None,
+) -> dict[str, Any]:
+    reviewed, _ = extension_verification_json_input(root, value)
+    schema = extension_verification_recorder_input_schema(
+        root,
+        "semantic-review-input.schema.json",
+        "extension verification semantic review input",
+    )
+    errors = skill_json_schema_validation_errors(
+        reviewed,
+        schema,
+        "extension verification semantic review input",
+    )
+    if errors:
+        raise WorkflowError(
+            "Extension verification semantic review input failed schema validation.",
+            exit_code=2,
+            payload={"errors": context_sort(errors)},
+        )
+    return reviewed
+
+
+def extension_verification_execution_input(
+    root: Path,
+    value: str | None,
+) -> dict[str, Any]:
+    execution, _ = extension_verification_json_input(root, value)
+    schema = extension_verification_recorder_input_schema(
+        root,
+        "execution-facts.schema.json",
+        "extension verification execution facts",
+    )
+    errors = skill_json_schema_validation_errors(
+        execution,
+        schema,
+        "extension verification execution facts",
+    )
+    if errors:
+        raise WorkflowError(
+            "Extension verification execution facts failed schema validation.",
+            exit_code=2,
+            payload={"errors": context_sort(errors)},
+        )
+    return execution
+
+
+def extension_verification_task_dir(
+    root: Path,
+    public_input: dict[str, Any],
+) -> Path | None:
+    task_ref = public_input.get("task_ref")
+    if not isinstance(task_ref, str):
+        return None
+    task_dir = resolve_task_dir(root, task_ref)
+    if repo_relative(root, task_dir) != task_ref:
+        raise WorkflowError(
+            "Extension verification task_ref does not resolve to the exact task.",
+            exit_code=2,
+        )
+    return task_dir
+
+
+def extension_verification_task_identity(
+    root: Path,
+    public_input: dict[str, Any],
+) -> Path | None:
+    task_dir = extension_verification_task_dir(root, public_input)
+    if task_dir is None:
+        return None
+
+    task_ref = str(public_input["task_ref"])
+    errors: list[str] = []
+    if task_dir.parent.resolve() != tasks_root(root).resolve():
+        errors.append(
+            "task_ref must identify one direct active task under .trellis/tasks."
+        )
+
+    config = load_config(root)
+    task_context = load_task_start_context(task_dir, config)
+    if not task_context:
+        errors.append(
+            "task-bearing extension verification requires task-start-context.json."
+        )
+    else:
+        if task_context.get("task_artifact_dir") != task_ref:
+            errors.append(
+                "task_ref does not match task-start-context task_artifact_dir."
+            )
+        task = task_json(task_dir)
+        task_identity = str(task.get("id") or task.get("name") or "").strip()
+        if (
+            not task_identity
+            or str(task_context.get("task_slug") or "").strip() != task_identity
+        ):
+            errors.append(
+                "task-start-context task_slug does not match task.json identity."
+            )
+        if task.get("status") not in {"planning", "in_progress", "review"}:
+            errors.append(
+                "task-bearing extension verification requires an active task status."
+            )
+
+        context_branch = str(task_context.get("branch_name") or "").strip()
+        task_branch = str(task.get("branch") or "").strip()
+        live_branch = current_branch(root)
+        if (
+            not context_branch
+            or context_branch != task_branch
+            or context_branch != live_branch
+        ):
+            errors.append(
+                "current branch does not match task.json and task-start-context."
+            )
+
+        context_repo = normalize_github_repository(
+            (
+                task_context.get("source_repo", {}).get("repo")
+                if isinstance(task_context.get("source_repo"), dict)
+                else ""
+            )
+        )
+        public_repo = normalize_github_repository(public_input.get("repo_ref"))
+        if not context_repo or context_repo != public_repo:
+            errors.append(
+                "repo_ref does not match task-start-context source_repo.repo."
+            )
+
+    active_task = current_task_dir(root)
+    if active_task is None or active_task.resolve() != task_dir.resolve():
+        errors.append(
+            "task_ref does not match the current active Trellis task."
+        )
+
+    if errors:
+        raise WorkflowError(
+            "Extension verification task repository identity validation failed.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    assert_workspace_boundary(root, config, task_context, task_dir)
+    return task_dir
+
+
+def extension_verification_task_worktree_sha256(
+    root: Path,
+    task_dir: Path,
+) -> str:
+    artifact_relative = repo_relative(
+        root,
+        marketplace_verification_path(task_dir, load_config(root)),
+    )
+    captured = capture_task_commit_snapshot(root, {artifact_relative})
+
+    def private_runtime_path(value: Any) -> bool:
+        return isinstance(value, str) and (
+            value == ".trellis/.runtime"
+            or value.startswith(".trellis/.runtime/")
+        )
+
+    entries = [
+        entry
+        for entry in captured["entries"]
+        if not any(
+            private_runtime_path(entry.get(field))
+            for field in ("path", "renamed_from", "copied_from")
+        )
+    ]
+    return context_digest(
+        {
+            "head": current_head(root),
+            "task_ref": repo_relative(root, task_dir),
+            "entries": entries,
+        }
+    )
+
+
+def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    public_input = extension_verification_public_input(root, args.input)
+    task_dir = extension_verification_task_identity(root, public_input)
+    execution = extension_verification_execution_input(root, args.execution_input)
+    reviewed = extension_verification_review_input(root, args.review_input)
+    identity = extension_verification_remote_identity(root, public_input)
+    repo_ref, remote, ref, reviewed_head = identity
+    if (
+        execution.get("repo_ref") != repo_ref
+        or execution.get("remote") != remote
+        or execution.get("ref") != ref
+        or execution.get("reviewed_head") != reviewed_head
+    ):
+        raise WorkflowError(
+            "Extension verification execution facts do not match the public invocation.",
+            exit_code=2,
+        )
+    semantic_errors = extension_verification_semantic_shape_errors(
+        public_input,
+        execution,
+        reviewed,
+    )
+    if semantic_errors:
+        raise WorkflowError(
+            "Extension verification semantic result is internally inconsistent.",
+            exit_code=2,
+            payload={"errors": semantic_errors},
+        )
+    task_worktree_sha256 = (
+        extension_verification_task_worktree_sha256(root, task_dir)
+        if task_dir is not None
+        else None
+    )
+    artifact_path = (
+        marketplace_verification_path(task_dir, load_config(root))
+        if task_dir is not None
+        else None
+    )
+    supersedes = reviewed.get("supersedes_verification_ref")
+    prior_ref: str | None = None
+    if artifact_path is not None and artifact_path.exists():
+        try:
+            prior = read_json(artifact_path)
+        except WorkflowError as exc:
+            raise WorkflowError(
+                "Existing extension verification prior owner result is invalid.",
+                exit_code=2,
+            ) from exc
+        prior_errors = extension_verification_payload_errors(root, prior)
+        if prior_errors:
+            raise WorkflowError(
+                "Existing extension verification prior owner result is invalid.",
+                exit_code=2,
+            )
+        prior_identity = (
+            prior.get("identity")
+            if isinstance(prior.get("identity"), dict)
+            else {}
+        )
+        candidate_prior_ref = prior_identity.get("verification_ref")
+        if isinstance(candidate_prior_ref, str) and candidate_prior_ref:
+            prior_ref = candidate_prior_ref
+    if supersedes is not None and prior_ref is None:
+        raise WorkflowError(
+            "Extension verification supersession requires an existing prior owner result.",
+            exit_code=2,
+        )
+    if prior_ref is not None and supersedes != prior_ref:
+        raise WorkflowError(
+            "Extension verification replacement must name the exact prior verification_ref.",
+            exit_code=2,
+        )
+    exit_id = str(reviewed["typed_exit"])
+    payload: dict[str, Any] = {
+        "schema_version": EXTENSION_VERIFICATION_SCHEMA_VERSION,
+        "skill_id": EXTENSION_VERIFICATION_SKILL_ID,
+        "generated_at": now_iso(),
+        "mode": public_input["mode"],
+        "profile": public_input["profile"],
+        "public_input": copy.deepcopy(public_input),
+        "repository": {
+            "repo_ref": repo_ref,
+            "remote": remote,
+            "ref": ref,
+            "reviewed_head": reviewed_head,
+            "remote_head": execution["remote_head"],
+            "task_worktree_sha256": task_worktree_sha256,
+        },
+        "applicability": copy.deepcopy(reviewed["applicability"]),
+        "verification_profile": copy.deepcopy(reviewed["verification_profile"]),
+        "execution": {
+            key: copy.deepcopy(execution[key])
+            for key in (
+                "status",
+                "commands",
+                "capabilities",
+                "asset_expectations",
+                "asset_digests",
+                "asset_inventory",
+                "ownership",
+                "sidecars",
+            )
+        },
+        "semantic_review": copy.deepcopy(reviewed["semantic_review"]),
+        "typed_exit": exit_id,
+        "consumer": extension_verification_expected_consumer(
+            str(public_input["mode"]),
+            exit_id,
+        ),
+        "identity": {"verification_ref": "<pending>"},
+        "blocker": (
+            {
+                "reason_code": reviewed["reason_code"],
+                "remediation": reviewed["remediation"],
+            }
+            if exit_id == "blocked"
+            else None
+        ),
+        "freshness": {
+            "plan_ref": public_input.get("plan_ref"),
+            "supersedes_verification_ref": supersedes,
+            "current": True,
+        },
+        "redaction": copy.deepcopy(reviewed["redaction"]),
+        "machine_facts_sha256": "0" * 64,
+        "semantic_review_sha256": "0" * 64,
+        "facts_sha256": "0" * 64,
+    }
+    machine_digest, semantic_digest, facts_digest = (
+        extension_verification_payload_digests(payload)
+    )
+    payload["machine_facts_sha256"] = machine_digest
+    payload["semantic_review_sha256"] = semantic_digest
+    payload["facts_sha256"] = facts_digest
+    payload["identity"]["verification_ref"] = (
+        f"extension-verification:{facts_digest[:24]}"
+    )
+    errors = extension_verification_payload_errors(
+        root,
+        payload,
+        expected_public_input=public_input,
+    )
+    if errors:
+        raise WorkflowError(
+            "Extension verification recorder produced invalid private evidence.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    if artifact_path is not None:
+        write_json(artifact_path, payload)
+    return payload
+
+
+def extension_verification_owner_input(
+    root: Path,
+    value: str | None,
+) -> tuple[dict[str, Any], str]:
+    return extension_verification_json_input(root, value, allow_stdin=True)
+
+
+def check_extension_verification_result(
+    root: Path,
+    payload: dict[str, Any],
+    locator: str,
+    public_input: dict[str, Any] | None,
+) -> dict[str, Any]:
+    errors = extension_verification_payload_errors(
+        root,
+        payload,
+        expected_public_input=public_input,
+    )
+    owner_input = (
+        public_input
+        if isinstance(public_input, dict)
+        else payload.get("public_input")
+        if isinstance(payload.get("public_input"), dict)
+        else {}
+    )
+    task_dir = extension_verification_task_identity(root, owner_input)
+    if task_dir is not None:
+        expected = repo_relative(
+            root,
+            marketplace_verification_path(task_dir, load_config(root)),
+        )
+        if locator != expected:
+            errors.append(
+                "task-bearing verification must use the unique task-local marketplace-verification.json."
+            )
+        if owner_input.get("mode") == "workflow":
+            try:
+                if current_head(root) != owner_input.get("reviewed_head"):
+                    errors.append(
+                        "workflow verification evidence is stale after local HEAD drift."
+                    )
+            except WorkflowError:
+                errors.append("current local HEAD is unreadable.")
+        try:
+            live_task_worktree_sha256 = (
+                extension_verification_task_worktree_sha256(root, task_dir)
+            )
+        except WorkflowError:
+            errors.append("current task worktree content is unreadable.")
+        else:
+            repository = (
+                payload.get("repository")
+                if isinstance(payload.get("repository"), dict)
+                else {}
+            )
+            if (
+                live_task_worktree_sha256
+                != repository.get("task_worktree_sha256")
+            ):
+                errors.append(
+                    "task-bearing verification evidence is stale after worktree content drift."
+                )
+    elif locator != "<stdin>":
+        allowed_eval = (
+            os.environ.get("GURU_TEAM_EVAL_STAGING") == "1"
+            and locator.startswith(".trellis/.runtime/guru-team/evals/")
+        )
+        if not allowed_eval:
+            errors.append(
+                "taskless standalone verification owner result must be session-only stdin."
+            )
+    repository = (
+        payload.get("repository")
+        if isinstance(payload.get("repository"), dict)
+        else {}
+    )
+    if os.environ.get("GURU_TEAM_EVAL_STAGING") != "1":
+        remote = str(repository.get("remote") or "")
+        ref = str(repository.get("ref") or "")
+        remote_proc = run(
+            extension_verification_remote_ref_command(remote, ref),
+            cwd=root,
+            check=False,
+        )
+        live_head = extension_verification_resolved_remote_head(
+            remote_proc,
+            ref,
+        )
+        if live_head != repository.get("remote_head"):
+            errors.append("remote ref HEAD no longer matches private evidence.")
+    if errors:
+        raise WorkflowError(
+            "Extension verification private evidence failed objective checks.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return {
+        "status": "ok",
+        "typed_exit": payload["typed_exit"],
+        "mode": payload["mode"],
+        "verification_ref": payload["identity"]["verification_ref"],
+        "artifact_sha256": context_digest(payload),
+    }
+
+
+def cmd_check_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    payload, locator = extension_verification_owner_input(root, args.input)
+    public_input = (
+        extension_verification_public_input(root, args.public_input)
+        if args.public_input
+        else None
+    )
+    return check_extension_verification_result(
+        root,
+        payload,
+        locator,
+        public_input,
+    )
+
+
+def extension_verification_output_schema(
+    root: Path,
+    exit_id: str,
+) -> dict[str, Any]:
+    package = extension_verification_package_root(root)
+    names = {
+        "verified": "public-verified-output.schema.json",
+        "not_required": "public-not-required-output.schema.json",
+        "return_to_task_work": "public-return-to-task-work-output.schema.json",
+        "blocked": "public-blocked-output.schema.json",
+    }
+    errors: list[str] = []
+    schema = skill_read_schema(
+        package / "schemas" / names[exit_id],
+        "extension verification public output schema",
+        errors,
+    )
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            "Extension verification public output schema is unavailable.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return schema
+
+
+def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    public_input = extension_verification_public_input(root, args.input)
+    owner, locator = extension_verification_owner_input(root, args.owner_result)
+    checked = check_extension_verification_result(
+        root,
+        owner,
+        locator,
+        public_input,
+    )
+    exit_id = str(checked["typed_exit"])
+    mode = str(public_input["mode"])
+    payload: dict[str, Any] = {"exit_id": exit_id, "mode": mode}
+    if mode == "workflow":
+        if exit_id == "verified":
+            payload.update(
+                {
+                    "task_ref": public_input["task_ref"],
+                    "plan_ref": public_input["plan_ref"],
+                    "reviewed_head": public_input["reviewed_head"],
+                    "verification_ref": owner["identity"]["verification_ref"],
+                }
+            )
+        elif exit_id == "not_required":
+            payload.update(
+                {
+                    "task_ref": public_input["task_ref"],
+                    "plan_ref": public_input["plan_ref"],
+                    "reviewed_head": public_input["reviewed_head"],
+                }
+            )
+        elif exit_id == "return_to_task_work":
+            payload.update(
+                {
+                    "task_ref": public_input["task_ref"],
+                    "finding_refs": [
+                        item["finding_ref"]
+                        for item in owner["semantic_review"]["findings"]
+                        if item["status"] == "open"
+                        and item["route_class"] == "task_work"
+                    ],
+                    "resume_target": "phase-2",
+                }
+            )
+        else:
+            payload.update(
+                {
+                    "reason_code": owner["blocker"]["reason_code"],
+                    "remediation": owner["blocker"]["remediation"],
+                }
+            )
+    else:
+        if exit_id in {"verified", "not_required"}:
+            payload.update(
+                {
+                    "repo_ref": public_input["repo_ref"],
+                    "resolved_head": owner["repository"]["remote_head"],
+                    "verification_ref": owner["identity"]["verification_ref"],
+                }
+            )
+        elif exit_id == "return_to_task_work":
+            payload.update(
+                {
+                    "task_ref": public_input["task_ref"],
+                    "finding_refs": [
+                        item["finding_ref"]
+                        for item in owner["semantic_review"]["findings"]
+                        if item["status"] == "open"
+                        and item["route_class"] == "task_work"
+                    ],
+                    "resume_target": "phase-2",
+                }
+            )
+        else:
+            payload.update(
+                {
+                    "repo_ref": public_input["repo_ref"],
+                    "reason_code": owner["blocker"]["reason_code"],
+                    "remediation": owner["blocker"]["remediation"],
+                }
+            )
+    schema = extension_verification_output_schema(root, exit_id)
+    errors = skill_json_schema_validation_errors(
+        payload,
+        schema,
+        f"extension verification public output {exit_id}",
+    )
+    if errors:
+        raise WorkflowError(
+            "Extension verification public output failed validation.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return payload
+
+
 def parse_canonical_pull_request_url(repo: str, url: Any) -> tuple[str, int]:
     expected_repo = normalize_github_repository(repo)
     if not expected_repo or not isinstance(url, str) or not git_remote_config_value_is_safe(url):
@@ -25257,7 +27413,7 @@ def build_closeout_plan(
             )
         task_files = set(observed_task_files)
         task_files.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT, FINISH_SUMMARY_ARTIFACT})
-        if marketplace_verification_required(gate):
+        if legacy_closeout_marketplace_verification_required(gate):
             task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
     move_paths = sorted(task_files)
     if existing_projection:
@@ -25285,7 +27441,7 @@ def build_closeout_plan(
             if path.startswith(active_prefix)
         }
         evidence_names.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT})
-        if marketplace_verification_required(gate):
+        if legacy_closeout_marketplace_verification_required(gate):
             evidence_names.update({MARKETPLACE_VERIFICATION_ARTIFACT, "issue-scope-ledger.json"})
         evidence_paths = sorted(f"{active_locator}/{name}" for name in evidence_names)
     context_path = task_dir / str(DEFAULTS["task_start_context_artifact"])
@@ -25320,7 +27476,7 @@ def build_closeout_plan(
         )
     projected_ledger = (
         record_marketplace_machine_evidence(ledger, pending)
-        if marketplace_verification_required(gate)
+        if legacy_closeout_marketplace_verification_required(gate)
         else ledger
     )
     projected_artifacts = {
@@ -25373,7 +27529,7 @@ def build_closeout_plan(
             "match": {"repo": repo, "head": head_branch, "base": normalize_ref(base_branch).removeprefix("origin/")},
         },
         "marketplace": {
-            "required": marketplace_verification_required(gate),
+            "required": legacy_closeout_marketplace_verification_required(gate),
             "pending_machine": pending,
             "verifier_artifact_locator": MARKETPLACE_VERIFICATION_ARTIFACT,
         },
@@ -25425,7 +27581,7 @@ def prepare_closeout(
         raise WorkflowError("Branch Review Gate reviewed HEAD is invalid.", exit_code=2)
     index_path, index = load_finish_summary_index(task_dir, args.finish_summary_index_file)
     ledger = load_issue_scope_ledger(task_dir, task_context)
-    requires_marketplace = marketplace_verification_required(gate)
+    requires_marketplace = legacy_closeout_marketplace_verification_required(gate)
     if requires_marketplace:
         existing_targets: list[dict[str, Any]] = []
         if isinstance(ledger.get("primary_issue"), dict):
@@ -34002,6 +36158,47 @@ def build_parser() -> argparse.ArgumentParser:
     verify_marketplace.add_argument("--remote")
     verify_marketplace.add_argument("--branch")
 
+    execute_extension_verification = sub.add_parser(
+        "execute-extension-verification"
+    )
+    execute_extension_verification.add_argument("--root")
+    execute_extension_verification.add_argument("--json", action="store_true")
+    execute_extension_verification.add_argument("--input", required=True)
+    execute_extension_verification.add_argument(
+        "--capability",
+        action="append",
+        choices=EXTENSION_VERIFICATION_CAPABILITIES,
+        required=True,
+    )
+
+    record_extension_verification = sub.add_parser(
+        "record-extension-verification"
+    )
+    record_extension_verification.add_argument("--root")
+    record_extension_verification.add_argument("--json", action="store_true")
+    record_extension_verification.add_argument("--input", required=True)
+    record_extension_verification.add_argument(
+        "--execution-input",
+        required=True,
+    )
+    record_extension_verification.add_argument("--review-input", required=True)
+
+    check_extension_verification = sub.add_parser(
+        "check-extension-verification"
+    )
+    check_extension_verification.add_argument("--root")
+    check_extension_verification.add_argument("--json", action="store_true")
+    check_extension_verification.add_argument("--input", required=True)
+    check_extension_verification.add_argument("--public-input")
+
+    invoke_extension_verification = sub.add_parser(
+        "invoke-extension-verification"
+    )
+    invoke_extension_verification.add_argument("--root")
+    invoke_extension_verification.add_argument("--json", action="store_true")
+    invoke_extension_verification.add_argument("--input", required=True)
+    invoke_extension_verification.add_argument("--owner-result", required=True)
+
     prepare = sub.add_parser("prepare")
     prepare.add_argument("--root")
     prepare.add_argument("--json", action="store_true")
@@ -34347,6 +36544,14 @@ def main() -> int:
             payload = cmd_resolve_human_artifacts(args)
         elif args.command == "verify-marketplace":
             payload = cmd_verify_marketplace(args)
+        elif args.command == "execute-extension-verification":
+            payload = cmd_execute_extension_verification(args)
+        elif args.command == "record-extension-verification":
+            payload = cmd_record_extension_verification(args)
+        elif args.command == "check-extension-verification":
+            payload = cmd_check_extension_verification(args)
+        elif args.command == "invoke-extension-verification":
+            payload = cmd_invoke_extension_verification(args)
         elif args.command == "prepare":
             payload = cmd_prepare(args)
         elif args.command == "review-branch":

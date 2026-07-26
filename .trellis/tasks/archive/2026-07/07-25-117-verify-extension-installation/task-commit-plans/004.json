@@ -1,0 +1,363 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "004",
+  "task": {
+    "id": "117-verify-extension-installation",
+    "path": ".trellis/tasks/07-25-117-verify-extension-installation",
+    "status": "in_progress",
+    "branch": "feat/117-verify-extension-installation"
+  },
+  "issue": {
+    "primary_issue": 117,
+    "ledger_sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "3bfbd100c8d75a619da19627e7da276a3f2e367b"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
+      "sha256": "89c98cfb502448329c9c5f7e8b35561f0536401a75680b5905d25b2ae9411b92",
+      "size": 34324
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      "sha256": "4300cbfdb94e29b2bb333e6ce880f94b184cbde6a7f1b67d16c02772a7767fc0",
+      "size": 73280
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+      "sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c",
+      "size": 3640
+    },
+    "task": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
+      "sha256": "e5d7beeeff3608d7aeccda610bb467e0a6b40fc4a61d67e07f52fc1bab988912",
+      "size": 716
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "11ab6a889c74dc1e4bba0e74a7376d69e48317cd",
+        "worktree_sha256": "e1e0bd7c0dddcbc3141518a067b451bc8f2d6959c1cfd511354c99a86cea46ac",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "e7a0556cf8e9a2956ab0cf8ba156b27fb54ce845209b68f6199e045c77f32cd9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7b6a6682d6e8fd66469a9505828a31abf8828bce",
+        "worktree_sha256": "4300cbfdb94e29b2bb333e6ce880f94b184cbde6a7f1b67d16c02772a7767fc0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "142cb2995543f2f9d9f61e36da27939f3a3cfa252eb04d49197ffb67a314df4f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "623b3e4ca30c66f03d72393bab5f41874d069d86",
+        "worktree_sha256": "863b8f108ca1935e120e411d3a8378bf9144cb8e0b27a543e89110c26bcaffc1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ba58196f851d9d02797884a36d5c91d01857dbd7",
+        "worktree_sha256": "d032e2e2d6f5113cd175ce093918286899a2e7592e396add58f414aa9f0dc06c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ce79f3e36eab6df4445a17f367a20f219de9687d",
+        "worktree_sha256": "67ea4c3edefd5ea9195ea19ca4f4f625cb14aaaa857101b573701dc06b9a204d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ccc17e911cbd7cf327863dd31b54c959cf35783736f7b436f8bc031f376c5c20",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dee2b454f2da8e75085964ec284fcc64cb307ff8",
+        "worktree_sha256": "04f8be33edcad18081507269364bcffc5a19e9669b3678099d919aff1682bb03",
+        "mode": "100644"
+      }
+    ],
+    "digest": "a86a44e192e9528b32b784f330a66c50bdfc7df047f5145ad5b6e33ce0c2cf14"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json"
+  ],
+  "message": {
+    "subject": "fix(trellis): #117 修复分支审查报告尾部空行",
+    "body": "背景：\nBranch Review 的 BR-117-F8 发现 historical raw closure report 在 EOF 保留一个多余空行，使完整 committed range 的 whitespace gate 失败。\n\n变更：\n仅删除 reviews/002-closure.md 的一个 EOF 多余空行，并提交 F7 closure、F8 implementation handoff、fresh Phase 2、agent assignment、review lifecycle 与上一 commit plan result 等 task-local evidence。\n\n边界：\n本提交不改变 runtime、public API、schema、durable docs 或部署配置；提交后仍需独立关闭 BR-117-F8、fresh final Branch Review，并在授权 push 后执行 exact feature-ref clean install。\n\n验证：\nFresh Phase 2 覆盖 #117 完整 committed+dirty scope，F1-F8 全部 resolved；runtime 592 passed、13 skipped，Skill 175、preset 45、ownership 9，source/installed validators、六处分发、平台 eval 与 full local-source throwaway 通过。Claude installed 前两轮 6/7 瞬态和第三轮 clean-auth 7/7 均透明保留。\n\nRefs #117",
+    "bytes": "fix(trellis): #117 修复分支审查报告尾部空行\n\n背景：\nBranch Review 的 BR-117-F8 发现 historical raw closure report 在 EOF 保留一个多余空行，使完整 committed range 的 whitespace gate 失败。\n\n变更：\n仅删除 reviews/002-closure.md 的一个 EOF 多余空行，并提交 F7 closure、F8 implementation handoff、fresh Phase 2、agent assignment、review lifecycle 与上一 commit plan result 等 task-local evidence。\n\n边界：\n本提交不改变 runtime、public API、schema、durable docs 或部署配置；提交后仍需独立关闭 BR-117-F8、fresh final Branch Review，并在授权 push 后执行 exact feature-ref clean install。\n\n验证：\nFresh Phase 2 覆盖 #117 完整 committed+dirty scope，F1-F8 全部 resolved；runtime 592 passed、13 skipped，Skill 175、preset 45、ownership 9，source/installed validators、六处分发、平台 eval 与 full local-source throwaway 通过。Claude installed 前两轮 6/7 瞬态和第三轮 clean-auth 7/7 均透明保留。\n\nRefs #117\n",
+    "sha256": "0862a6236a793253fead34507c28d2abcb1199359b426418bf5e77de364a0a9a"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "AI 已复核 exact 9-path stage scope、F8 单行修复、F7/F8/Phase 2 lifecycle evidence、中文 Conventional Commit message、Refs #117、无 task 外 dirty/staged path、无代码/durable docs/部署变化，以及 post-commit closure/final review 与 post-push exact-ref gate 边界；candidate 可安全提交。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户在收到 F8 Phase 2 后续步骤与禁止 push/PR/Issue closure 边界后明确回复“确认继续”，授权当前 Issue #117 finding-fix task commit 及后续本地 review gate。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-26T01:46:09Z",
+    "plan_digest": "1e31446d8fd965413d7ba13ade3478f5a72108be67c7bd2434760091bac1fe23"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-26T01:46:29Z",
+    "commit_sha": "3281db77b8f829e850064a33190838eb17ca4c31",
+    "parent": "3bfbd100c8d75a619da19627e7da276a3f2e367b",
+    "message_sha256": "0862a6236a793253fead34507c28d2abcb1199359b426418bf5e77de364a0a9a",
+    "committed_paths": [
+      ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "8a5831ece7c295354dd40120ece93294c237459a",
+      "actual_tree": "8a5831ece7c295354dd40120ece93294c237459a",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+          "expected_blob": "448d08561a4c924ede641545f17d5d87a0195f2c",
+          "expected_mode": "100644",
+          "actual_blob": "448d08561a4c924ede641545f17d5d87a0195f2c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+          "expected_blob": "6084ade5b1e940296914cede28ef08e53a890c51",
+          "expected_mode": "100644",
+          "actual_blob": "6084ade5b1e940296914cede28ef08e53a890c51",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+          "expected_blob": "a25081bc862dec94d86d07ff33ccd5279f80d783",
+          "expected_mode": "100644",
+          "actual_blob": "a25081bc862dec94d86d07ff33ccd5279f80d783",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
+          "expected_blob": "48e6c3d52a336036adb68acc96d0f0933b3a365f",
+          "expected_mode": "100644",
+          "actual_blob": "48e6c3d52a336036adb68acc96d0f0933b3a365f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+          "expected_blob": "1ca8ccf036e88837934e5ec86e95ae4a0e9dc845",
+          "expected_mode": "100644",
+          "actual_blob": "1ca8ccf036e88837934e5ec86e95ae4a0e9dc845",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+          "expected_blob": "75af33979b8f6213fcd0f9efd5e2bd0f3f78f206",
+          "expected_mode": "100644",
+          "actual_blob": "75af33979b8f6213fcd0f9efd5e2bd0f3f78f206",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+          "expected_blob": "b5abce516e998964b96213ec6c69c658f712d621",
+          "expected_mode": "100644",
+          "actual_blob": "b5abce516e998964b96213ec6c69c658f712d621",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
+          "expected_blob": "5b2f5dd2c30c865b676444451524abb1d22d7819",
+          "expected_mode": "100644",
+          "actual_blob": "5b2f5dd2c30c865b676444451524abb1d22d7819",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+          "expected_blob": "70bfd0eb5e014bf1af2d618d8ff1ac61ad9eac36",
+          "expected_mode": "100644",
+          "actual_blob": "70bfd0eb5e014bf1af2d618d8ff1ac61ad9eac36",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
+          "expected_blob": "39e5037797fac4d012c051dcb238f858a6c5f475",
+          "expected_mode": "100644",
+          "actual_blob": "39e5037797fac4d012c051dcb238f858a6c5f475",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}

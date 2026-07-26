@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.6.5-guru.22",
+  "version": "0.6.5-guru.23",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
   "target_trellis_cli": "0.6.5",
@@ -68,6 +68,8 @@
       "current_interface_schema_id": "guru-team-skill-interface-1.3",
       "legacy_skill_ids": [],
       "public_input_schema_ids": [
+        "guru-extension-verify-installation-input-standalone-verification-1.0",
+        "guru-extension-verify-installation-input-verification-required-1.0",
         "guru-production-approve-task-plan-input-clarification-reentry-1.0",
         "guru-production-approve-task-plan-input-initial-review-1.0",
         "guru-production-approve-task-plan-input-revision-reentry-1.0",
@@ -98,6 +100,10 @@
         "guru-stage0-review-contract-wording-input-planning-artifacts-1.0"
       ],
       "typed_output_schema_ids": [
+        "guru-extension-verify-installation-output-blocked-1.0",
+        "guru-extension-verify-installation-output-not-required-1.0",
+        "guru-extension-verify-installation-output-return-to-task-work-1.0",
+        "guru-extension-verify-installation-output-verified-1.0",
         "guru-production-approve-task-plan-output-approved-1.0",
         "guru-production-approve-task-plan-output-blocked-1.0",
         "guru-production-approve-task-plan-output-clarify-scope-1.0",
@@ -146,6 +152,7 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
@@ -160,6 +167,7 @@
         "guru-change-request-review-1.0",
         "guru-context-discovery-1.0",
         "guru-contract-wording-review-1.0",
+        "guru-extension-installation-verification-1.0",
         "guru-phase2-check-2.0",
         "guru-planning-approval-2.0",
         "guru-requirements-clarification-2.0",
@@ -180,7 +188,8 @@
         "guru-review-change-request",
         "guru-review-contract-wording",
         "guru-review-task-publication",
-        "guru-sync-base"
+        "guru-sync-base",
+        "guru-verify-extension-installation"
       ],
       "planned_skill_ids": [
         "guru-finalize-task"
@@ -276,6 +285,10 @@
       "check-review-gate",
       "record-task-publication-review",
       "check-task-publication-review",
+      "execute-extension-verification",
+      "record-extension-verification",
+      "check-extension-verification",
+      "invoke-extension-verification",
       "verify-marketplace",
       "finish-work",
       "backfill-finish-summary",

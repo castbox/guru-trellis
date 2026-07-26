@@ -1,0 +1,1 @@
+{"scenario":"A same-plan transient blocker is superseded by one complete successful retry.","owner_staging":{"recipe":"extension-workflow-retry-verified"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/tasks/current/marketplace-verification.json"]}}

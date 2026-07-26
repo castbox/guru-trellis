@@ -1,0 +1,7 @@
+{
+  "exit_id": "not_required",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/07-25-117-verify-extension-installation",
+  "plan_ref": "closeout-plan:0123456789abcdef",
+  "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

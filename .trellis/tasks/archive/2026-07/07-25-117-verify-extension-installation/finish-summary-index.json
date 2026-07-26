@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team 缺少独立的 remote ref clean install/update/reapply 验证闭环，原收尾流程混合了 applicability、执行事实和发布判断。",
+    "outcome": "新增 guru-verify-extension-installation semantic Skill，提供双 profile、四个 typed exits、deterministic runtime、clean throwaway 和 inventory 证据，并同步 marketplace、preset、平台分发与文档。",
+    "changed_behavior": [
+      "AI 判断 applicability、profile 与 adequacy；script 只执行和校验事实。",
+      "Workflow 消费 plan-bound reviewed HEAD；standalone 验证指定 remote ref。",
+      "四个 exit_id DTO 仅交付 consumer 所需字段，private facts 不进入 handoff。",
+      "Clean throwaway 覆盖 initial install、workflow switch、preset reapply、update、ownership 与平台一致性。",
+      "成功路径保留 231 项 asset inventory，并对缺失、重复、意外、错配和 relation error fail closed。",
+      "Credential URL、错误 task/worktree、stale ref、annotated tag 与旧 supersession lineage 均被阻断。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "Extension 安装验证公共 Skill package",
+        "paths": [],
+        "change": "新增 semantic loop、双 profile 输入、四 typed outputs 和 owner-private artifact 合同。"
+      },
+      {
+        "kind": "script",
+        "name": "Verification executor、recorder、checker 与 wrapper",
+        "paths": [],
+        "change": "新增 remote identity、throwaway、inventory、freshness、redaction 和 route validation。"
+      },
+      {
+        "kind": "schema",
+        "name": "Public I/O 与 private verification schemas",
+        "paths": [],
+        "change": "定义 distinct inputs、per-exit DTO、execution facts、asset inventory 和 semantic review。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team preset 与 extension registry",
+        "paths": [],
+        "change": "把 Skill、runtime、schemas、examples、tests 和 commands 纳入 manifest、installer 与 ownership。"
+      },
+      {
+        "kind": "skill",
+        "name": "Shared、Codex、Claude 与 Cursor 分发",
+        "paths": [],
+        "change": "同步 byte-identical packages，并验证 Codex、Claude 与 Cursor 平台行为。"
+      },
+      {
+        "kind": "test",
+        "name": "Runtime、package、production eval 与 throwaway 验收",
+        "paths": [],
+        "change": "覆盖四 exits、applicability、retry、安装更新、tag identity、redaction 和 231 项 inventory。"
+      },
+      {
+        "kind": "docs",
+        "name": "Marketplace、preset、workflow 与 requirements Docs SSOT",
+        "paths": [],
+        "change": "回写安装命令、Skill-first、minimal handoff、ownership 和 remote/local 证据边界。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Extension verification ownership",
+        "before": "安装验证混在 finish-work 中，没有独立 applicability、adequacy 和 route owner。",
+        "after": "guru-verify-extension-installation 独占 semantic loop；finalizer 只消费最小 DTO。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Public input profiles",
+        "before": "Workflow 与 standalone 未形成 distinct schema。",
+        "after": "Workflow 消费 plan-bound seed；standalone 声明 repository、remote、ref 和 intent。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Per-exit public outputs",
+        "before": "跨 Skill handoff 可能携带完整 checkpoint 或不统一字段。",
+        "after": "四个 exit_id 分别使用独立最小 schema。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Deterministic runtime boundary",
+        "before": "Script success 可能被误作 applicability、adequacy 或 readiness。",
+        "after": "Script 只处理 identity、命令、machine facts 和 freshness；AI 判断 scope 与充分性。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Installed asset evidence",
+        "before": "Source digests 和 command status 不能证明 installed surface 完整性。",
+        "after": "Private facts 保留 231 项 inventory 及逐 capability command_refs/asset_paths。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Remote ref identity",
+        "before": "Annotated tag object OID 可能被误作 checkout commit。",
+        "after": "Runtime 分离 object 与 peeled commit，并在 clone 后比较 actual HEAD。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Repository and task isolation",
+        "before": "错误 task_ref 或 worktree mapping 可能写错 task artifact。",
+        "after": "Execute/record/check 统一重建 task、repo、branch 和 worktree boundary。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Security redaction",
+        "before": "Credential URL 的 userinfo shape 可能漏检。",
+        "after": "Credential URL 和敏感文本在持久化前 fail closed，错误不反射输入。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Install/update/reapply acceptance",
+        "before": "Production eval、local throwaway 与 pushed ref 证据边界易混淆。",
+        "after": "三类证据分开记录；local pass 不替代 remote gate，失败不得创建 PR 或归档。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "execute-extension-verification",
+        "record-extension-verification",
+        "check-extension-verification",
+        "invoke-extension-verification",
+        "check-skill-packages"
+      ],
+      "config_keys": [
+        "verification_target",
+        "remote_marketplace_verification"
+      ],
+      "schema_fields": [
+        "exit_id",
+        "verification_ref",
+        "plan_ref",
+        "reviewed_head",
+        "remote_head",
+        "resolved_head",
+        "asset_expectations",
+        "asset_digests",
+        "asset_inventory",
+        "command_refs",
+        "asset_paths"
+      ],
+      "symbols": [
+        "guru-verify-extension-installation",
+        "extension_verification_task_dir",
+        "extension_verification_asset_expectations",
+        "collect_extension_verification_asset_inventory"
+      ],
+      "phrases": [
+        "extension 安装验证缺少 AI adequacy gate",
+        "完成 guru-verify-extension-installation 闭环",
+        "新增 remote ref clean install 验证",
+        "保留 installed asset inventory 证据",
+        "修复 annotated tag checkout identity",
+        "支持 workflow 与 standalone typed exits"
+      ]
+    }
+  }
+}

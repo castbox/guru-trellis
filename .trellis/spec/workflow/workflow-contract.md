@@ -936,11 +936,57 @@ intake provenance only.
   approval.
 - Recording project-private business rules in the reusable marketplace workflow.
 
-### Remote Marketplace Verification Gate
+### Extension Installation Verification Owner
 
-For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
+`guru-verify-extension-installation` is the only semantic owner of whether an
+extension change requires remote installation verification, which closed
+capability profile covers it, whether the resulting evidence is adequate, what
+findings remain, and which of four exits is correct. Changed-path surface facts,
+command exit zero, empty findings, production eval, and checker success cannot
+create `verified`.
 
-`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to task-relative `marketplace-verification.json`, and explicitly does not satisfy final publish. Formal closeout pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts, then commits and pushes the exact immutable plan/readiness/verifier/ledger evidence allowlist. Only after remote equality may it bind the unique draft PR, build the final summary once, and perform the archive transaction. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. The AI remains responsible for close scope and evidence sufficiency; scripts execute and validate deterministic facts. No release tag is created by this gate.
+The workflow profile `verification_required` contains the fixed business seed
+`task_ref`, `plan_ref`, `repo_ref`, `reviewed_head`, and
+`verification_target`; `profile` and `mode` are fixed discriminators. The
+package owns this future target bootstrap, but the workflow does not activate a
+producer edge from planned `guru-finalize-task`. Until #118 implements that
+producer, its mandatory marker and consumers are contract/discovery
+declarations rather than a reachable transition from publication `ready`.
+Standalone direct discovery uses the structurally distinct
+`standalone_verification` profile and supplies only repository, remote, ref,
+caller intent, and optional task identity.
+
+The Skill's unique consumers are:
+
+- `verified` and `not_required` -> planned `guru-finalize-task`;
+- `return_to_task_work` -> `guru-extension-verification-work-router`, which
+  resumes Phase 2 and the complete downstream review sequence;
+- `blocked` -> `extension-installation-verification-blocked`.
+
+Workflow or task-bearing standalone calls persist only task-local
+`marketplace-verification.json`; taskless standalone calls are session-only,
+create no cache/index/latest pointer, and cannot return to task work. The
+private evidence retains applicability reason, selected capability profile,
+sanitized command facts, asset and ownership inventory, sidecars, adequacy,
+findings, retry/supersession, remote/ref/HEAD binding, redaction, and actual
+exit. Public outputs contain only the declared consumer DTO.
+
+For a required target, the deterministic executor reads the pushed remote ref,
+freezes and rechecks its HEAD, and runs clean new/existing repository
+installation, marketplace index, preview/switch, preset apply/reapply,
+`trellis update`, ownership, sidecar, contract discovery, platform equality,
+README command, and redaction capabilities selected by the AI. Recorder and
+checker validate objective schema, identity, freshness, persistence, consumer,
+and redaction facts only. A workflow-required target whose AI applicability is
+`not_required` is a conflict and must block; it cannot silently use
+`not_required`.
+
+Production real-wrapper eval and real pushed-remote clean installation are
+independent acceptance surfaces. Same plan/ref/HEAD transient failures rerun
+the complete Skill. A changed plan, reviewed content, local HEAD, remote ref, or
+remote HEAD makes prior evidence stale and requires publication review,
+closeout preparation, push, and verification re-entry. No release tag is
+created by this gate.
 
 ## Phase 3.5 Branch Review Routing
 

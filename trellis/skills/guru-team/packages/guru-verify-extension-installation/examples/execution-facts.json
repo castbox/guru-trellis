@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0",
+  "repo_ref": "castbox/guru-trellis",
+  "remote": "origin",
+  "ref": "refs/heads/feature-117",
+  "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "remote_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "status": "passed",
+  "commands": [
+    {
+      "id": "resolve_remote_ref",
+      "argv": ["git", "ls-remote", "origin", "refs/heads/feature-117"],
+      "exit_code": 0,
+      "stdout_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stderr_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stdout_size_bytes": 41,
+      "stderr_size_bytes": 0
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "marketplace_index",
+      "status": "passed",
+      "command_refs": ["resolve_remote_ref"],
+      "asset_paths": [".trellis/workflow.md"]
+    },
+    {
+      "id": "redaction",
+      "status": "passed",
+      "command_refs": ["resolve_remote_ref"],
+      "asset_paths": [
+        ".trellis/guru-team/schemas/marketplace-verification.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json"
+      ]
+    }
+  ],
+  "asset_expectations": [
+    {
+      "category": "workflow",
+      "platform": null,
+      "path": ".trellis/workflow.md",
+      "source_path": "trellis/workflows/guru-team/workflow.md",
+      "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "relation": "canonical_workflow"
+    },
+    {
+      "category": "preset",
+      "platform": null,
+      "path": ".trellis/guru-team/config-template.yml",
+      "source_path": "trellis/workflows/guru-team/config-template.yml",
+      "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "relation": "managed_manifest"
+    },
+    {
+      "category": "schema",
+      "platform": null,
+      "path": ".trellis/guru-team/schemas/marketplace-verification.schema.json",
+      "source_path": "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json",
+      "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "relation": "managed_manifest"
+    },
+    {
+      "category": "skill",
+      "platform": null,
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+      "source_path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "relation": "skill_manifest"
+    },
+    {
+      "category": "platform",
+      "platform": "shared",
+      "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+      "source_path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "relation": "platform_manifest"
+    }
+  ],
+  "asset_digests": [
+    {
+      "category": "workflow",
+      "platform": null,
+      "path": ".trellis/workflow.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "category": "preset",
+      "platform": null,
+      "path": ".trellis/guru-team/config-template.yml",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "category": "schema",
+      "platform": null,
+      "path": ".trellis/guru-team/schemas/marketplace-verification.schema.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "category": "skill",
+      "platform": null,
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "category": "platform",
+      "platform": "shared",
+      "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "asset_inventory": {
+    "expected_set_sha256": "5ae0fb9360aaa0db3192edb3980a5fece12edbc467b9c0c79dd4dfc06073c3bb",
+    "expected_count": 5,
+    "observed_count": 5,
+    "matched_count": 5,
+    "categories": [
+      {"id": "workflow", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true},
+      {"id": "preset", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true},
+      {"id": "schema", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true},
+      {"id": "skill", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true},
+      {"id": "platform", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true}
+    ],
+    "missing_paths": [],
+    "duplicate_paths": [],
+    "unexpected_paths": [],
+    "mismatched_paths": [],
+    "relation_errors": [],
+    "complete": true
+  },
+  "ownership": {"frozen_transitional_legacy_count": 43, "new_legacy_entries": []},
+  "sidecars": []
+}

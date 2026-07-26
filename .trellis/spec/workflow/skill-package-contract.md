@@ -120,7 +120,7 @@ guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes both supported ids, names 1.3 as current for
 new work, uses compatibility scalar `interface_schema_id=1.3`, and publishes
 exact public-input, typed-output, and private-artifact schema inventories for
-all eleven active packages and their 42 external exits. The independent
+all twelve active packages and their 46 external exits. The independent
 `production-minimal-handoff-v1` manifest remains exactly three packages and 11
 exits; activating `guru-review-branch` does not rewrite that membership.
 
@@ -610,7 +610,7 @@ Active closure is derived from the live registry plus the frozen Stage 0
 manifest, the production manifest, and any future complete active Interface
 1.3 rows absent from both manifests. Every active profile and exit must have a
 current canonical case binding and byte-identical selected-platform corpus.
-The current cardinality assertion is eleven active Skills and 42 exits; missing,
+The current cardinality assertion is twelve active Skills and 46 exits; missing,
 extra, duplicate, renamed, legacy, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1472,6 +1472,71 @@ regular file under `.trellis/.runtime/guru-team/`; neither the whole task
 prefix nor the runtime prefix is allowed. Any other status path records a
 failed `review_range_and_working_tree` binding and prevents `ready`.
 
-Activation changes the live closure to eleven active Skills and 42 exits. It
+Activation contributes to the live closure of twelve active Skills and 46
+exits. It
 does not change either migration identity or the independent
 `production-minimal-handoff-v1` three-Skill/11-exit membership.
+
+## Extension Installation Verification Owner
+
+`guru-verify-extension-installation` is an additive active Interface 1.3
+semantic package. It is not added to either frozen migration manifest. Its
+workflow and standalone modes share runtime, repository/ref, extension-surface,
+ownership, persistence, and freshness preconditions, then execute the exact
+five-stage semantic profile.
+
+The two structured inputs are deliberately distinct:
+
+- `verification_required` fixes workflow mode and carries
+  `task_ref/plan_ref/repo_ref/reviewed_head/verification_target`;
+- `standalone_verification` fixes standalone mode and carries
+  `repo_ref/remote/ref/caller_intent` plus a closed task-bearing or session-only
+  branch.
+
+The workflow profile is a target bootstrap owned by this package until
+`guru-finalize-task` is implemented. It publishes schema, example, fixture, and
+real-wrapper eval but no #118 producer output, authoring seed, or active edge.
+Caller input never contains applicability, capability list, remote facts,
+adequacy, expected exit, or command matrix.
+
+The independent outputs are:
+
+- `verified`: workflow passes only
+  `task_ref/plan_ref/reviewed_head/verification_ref`; standalone returns the
+  safe repo/head/session verification identity;
+- `not_required`: workflow-shaped identity is published for the future
+  consumer, but a workflow invocation may not actually select this exit;
+  standalone returns only repo/head identity;
+- `return_to_task_work`: task identity, open finding refs, and fixed
+  `resume_target=phase-2`;
+- `blocked`: stable reason code and remediation, with safe repo/head identity
+  in standalone mode.
+
+`verified` and `not_required` target planned `guru-finalize-task`;
+`return_to_task_work` targets the workflow router; `blocked` targets the stop.
+The Interface publishes one schema/example/projection per exit. Verification
+profile, applicability reason, adequacy, command facts, digests, asset and
+ownership inventories, sidecars, findings history, retry state, and private
+artifact body never enter the public DTO.
+
+Task-bearing calls own one tracked private
+`marketplace-verification.json`; taskless standalone calls are session-only and
+cannot create repository cache/index/latest state or emit
+`return_to_task_work`. The checker-passed opaque `verification_ref` is the only
+private-owner freshness token exposed to the future finalizer.
+
+The Skill owns applicability, closed capability selection, adequacy, findings,
+conditional standalone confirmation, and route. Deterministic runtime only
+executes the selected remote clean-install matrix, records reviewed facts,
+checks identity/schema/freshness/redaction/consumer bindings, and serializes the
+actual exit. Changed paths, exit code zero, empty findings, checker pass, or
+production eval do not create semantic success. A workflow-required target with
+AI `applicability=not_required` returns a conflict-shaped `blocked`, never a
+silent `not_required`.
+
+Same plan/ref/HEAD transient failure allows complete re-entry with exact
+supersession. Task work, plan, local HEAD, ref, or remote HEAD drift makes old
+evidence stale. The package-local seven-case corpus covers both inputs, all four
+exits, retry, unavailable, and stale re-entry through the real wrapper.
+Production eval remains independent from a real pushed-remote clean
+installation.

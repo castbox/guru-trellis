@@ -1,0 +1,726 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-task-publication",
+  "generated_at": "2026-07-26T09:39:53Z",
+  "task_dir": ".trellis/tasks/07-25-117-verify-extension-installation",
+  "profile": "publication_review_stale",
+  "mode": "workflow",
+  "review_intent": "stale_reentry_review",
+  "review_identity": {
+    "reviewed_head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+    "review_ref": "review-gate:b425c5c31f92e00b51feefc87a8f0fda607fe193b84d7e4b116a62ac557d2017"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "diff_outcome_consistency",
+        "status": "passed",
+        "summary": "PR outcome matches the complete origin/main...a28b38e5 committed diff: the branch adds the guru-verify-extension-installation semantic Skill, its deterministic execution/evidence boundary, minimal exit_id DTOs, installed asset inventory, distribution copies, tests, and durable contracts without claiming #118/#119 integration.",
+        "evidence_refs": [
+          "pr-body.md",
+          "review-gate.json",
+          "reviews/010-final.md"
+        ]
+      },
+      {
+        "id": "issue_scope_closure",
+        "status": "passed",
+        "summary": "Issue #117 is the sole close issue and has current Phase 2, Branch Review, local throwaway, and mandatory post-push verification evidence. #115/#109/#116/#144/#146 remain related and #81/#118/#119/#132 remain follow-ups. The pending machine object records the required remote gate without representing it as passed.",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "review-gate.json",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "pr_body_quality",
+        "status": "passed",
+        "summary": "The Chinese PR body contains concrete change summary, affected surfaces, exact validation results, Branch Review outcome, close/ref/follow-up semantics, security and deployment impact, and Docs SSOT reconciliation. It explicitly distinguishes local unpublished throwaway evidence from the future pushed-ref gate.",
+        "evidence_refs": [
+          "pr-body.md",
+          "phase2-check.json",
+          "reviews/010-final.md"
+        ]
+      },
+      {
+        "id": "validation_claims",
+        "status": "passed",
+        "summary": "The claimed runtime 600/13 skipped, Skill 175, preset/ownership 54, package 114, canonical/installed verifier 9 each, platform eval, full throwaway exit 0, and 231/231/231 inventory results match Phase 2 and fresh Branch Review evidence. Remote feature-ref verification remains explicitly unclaimed.",
+        "evidence_refs": [
+          "phase2-check.json",
+          "implementation-handoff.md",
+          "reviews/010-final.md",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "branch_review_summary",
+        "status": "passed",
+        "summary": "The PR summary accurately reports complete origin/main...a28b38e5 coverage, closure of BR-117-F1/F2/F7/F8/F9/F10, and Round 11 results of zero qualified findings, zero scope proposals, and zero blockers. The current Branch Review typed exit is passed.",
+        "evidence_refs": [
+          "review.md",
+          "review-gate.json",
+          "reviews/009-f10-closure.md",
+          "reviews/010-final.md"
+        ]
+      },
+      {
+        "id": "docs_ssot_reconciliation",
+        "status": "passed",
+        "summary": "The approved ssot_first strategy is complete: public and private package contracts, schemas, examples, runtime, tests, manifest, preset/ownership specifications, requirements, and README owners contain the task delta. F10 private-evidence refinements did not require duplicating unchanged public route or installation wording.",
+        "evidence_refs": [
+          "planning-approval.json",
+          "phase2-check.json",
+          "implementation-handoff.md",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "safety_deployment_impact",
+        "status": "passed",
+        "summary": "The publication accurately states credential and output redaction, task/worktree isolation, and the clean Claude environment used for eval. The diff has no CI/CD, container, Kubernetes, database migration, dependency manifest, Makefile, production deployment, replay, restart, or data-write impact.",
+        "evidence_refs": [
+          "pr-body.md",
+          "phase2-check.json",
+          "reviews/010-final.md"
+        ]
+      },
+      {
+        "id": "finish_summary_semantics",
+        "status": "passed",
+        "summary": "finish-summary-index.json contains only allowed semantic fields, nine contract changes, and non-factual search terms. Repeated wording was compressed after finish prepare exposed a 3280-character derived retrieval text; deterministic recomputation is now 2477 characters while retaining all key behavior, surface, contract, and remote-gate semantics.",
+        "evidence_refs": [
+          "finish-summary-index.json",
+          "pr-body.md",
+          "issue-scope-ledger.json"
+        ]
+      },
+      {
+        "id": "metadata_tail_integrity",
+        "status": "passed",
+        "summary": "Post-review working-tree changes remain restricted to the Branch Review evidence tail plus contract-listed publication metadata. The ledger evidence revision and finish-index wording compression do not alter implementation, Issue classification, durable docs, tests, workflow, schema, config, preset, PR claims, or reviewed HEAD.",
+        "evidence_refs": [
+          "review-gate.json",
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "finish-summary-index.json"
+        ]
+      },
+      {
+        "id": "artifact_binding_freshness",
+        "status": "passed",
+        "summary": "All publication evidence was reread after the finish-index revision and remains bound to reviewed HEAD a28b38e5 and review-gate SHA-256 b425c5c3. The revised index is valid JSON with a 2477-character derived retrieval text; ledger, PR body, planning, Phase 2, and Branch Review evidence are unchanged and ready for fresh binding.",
+        "evidence_refs": [
+          "planning-approval.json",
+          "phase2-check.json",
+          "issue-scope-ledger.json",
+          "review-gate.json",
+          "pr-body.md",
+          "finish-summary-index.json"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "finding_ref": "PUB-117-SCOPE-EVIDENCE",
+        "dimension": "issue_scope_closure",
+        "summary": "The initial Issue Scope Ledger classified #117 correctly but left both acceptance_evidence arrays empty and omitted the required pending remote marketplace machine object.",
+        "scope_basis": "The publication contract requires evidence for every close issue and requires the primary and close issue to preserve the post-push remote marketplace gate. These fields are contract-listed publication metadata, so this is an in-Skill metadata revision rather than task work or scope change.",
+        "evidence_refs": [
+          "issue-scope-ledger.json before publication metadata revision",
+          "review-gate.json",
+          "guru-review-task-publication entry preconditions"
+        ],
+        "affected_artifacts": [
+          "issue-scope-ledger.json"
+        ],
+        "route_class": "metadata_revision",
+        "status": "closed",
+        "closure_evidence": [
+          "Both primary_issue and close_issues[0] now contain the same three current human-readable acceptance statements.",
+          "Both entries now contain exactly one fixed pending remote_marketplace_verification object bound to reviewed HEAD a28b38e5a8894e3d60b9e9694a92ed610f763f25.",
+          "The ledger still has #117 as the sole close issue and preserves every related and follow-up classification."
+        ]
+      },
+      {
+        "finding_ref": "PUB-117-FINISH-INDEX-LENGTH",
+        "dimension": "finish_summary_semantics",
+        "summary": "The first side-effect-free finish prepare derived a 3280-character retrieval_text from the reviewed finish summary, exceeding the final schema maximum of 3000.",
+        "scope_basis": "finish-summary-index.json is contract-listed publication metadata. The failure occurred before closeout-plan creation or any external side effect and requires only semantic wording compression, not task implementation or scope changes.",
+        "evidence_refs": [
+          "finish-work.sh --dry-run error",
+          "finish-summary-index.json",
+          "finish-summary.schema.json"
+        ],
+        "affected_artifacts": [
+          "finish-summary-index.json"
+        ],
+        "route_class": "metadata_revision",
+        "status": "closed",
+        "closure_evidence": [
+          "Compressed repeated descriptions while retaining all six changed behaviors, seven affected surfaces, nine contract changes, search terms, and the local-versus-remote evidence boundary.",
+          "Deterministic reconstruction from the task title and revised semantic fields is 2477 characters, below the 3000-character final schema maximum.",
+          "The revised input still contains no issue, PR, branch, path, commit, timestamp, or manually authored retrieval facts."
+        ]
+      }
+    ],
+    "conclusions": {
+      "issue_scope": {
+        "status": "passed",
+        "summary": "The current publication fully closes only #117, preserves all related/follow-up boundaries, and carries sufficient current acceptance evidence plus an honest pending post-push remote verification gate.",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "review-gate.json",
+          "pr-body.md"
+        ]
+      },
+      "docs_ssot": {
+        "status": "passed",
+        "summary": "The ssot_first plan is reconciled and the durable package, runtime, schema, distribution, requirements, and public documentation owners contain the approved task delta.",
+        "evidence_refs": [
+          "planning-approval.json",
+          "phase2-check.json",
+          "implementation-handoff.md"
+        ]
+      },
+      "safety_deployment": {
+        "status": "passed",
+        "summary": "Security, credential-redaction, remote-verification, and deployment impacts are disclosed accurately; no production deployment or data migration is part of this publication.",
+        "evidence_refs": [
+          "pr-body.md",
+          "phase2-check.json",
+          "reviews/010-final.md"
+        ]
+      }
+    },
+    "revision_history": [
+      {
+        "revision_ref": "REV-PUB-117-SCOPE-EVIDENCE",
+        "kind": "metadata_revision",
+        "summary": "Added current acceptance evidence and the fixed pending remote marketplace machine object to primary/close #117 without changing issue classification, implementation scope, reviewed content, or publication claims.",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "review-gate.json",
+          "phase2-check.json",
+          "reviews/010-final.md"
+        ]
+      },
+      {
+        "revision_ref": "REV-PUB-117-FINISH-INDEX-LENGTH",
+        "kind": "metadata_revision",
+        "summary": "Compressed duplicate finish-summary wording from a 3280-character derived retrieval text to 2477 characters without changing task semantics, Issue scope, implementation, PR claims, or the pending remote verification gate.",
+        "evidence_refs": [
+          "finish-summary-index.json",
+          "finish-work.sh --dry-run error",
+          "finish-summary.schema.json"
+        ]
+      }
+    ],
+    "reviewer_process": {
+      "reviewer": "codex-main-session-issue-117-publication-review",
+      "summary": "Reread live Issue #117 state, current planning and Phase 2 evidence, complete Branch Review gate/final report, PR body, ledger, revised finish-summary index, repository diff/status, and publication/final-summary contracts. Closed the derived-length metadata finding and repeated all ten dimensions after the revision.",
+      "evidence_refs": [
+        "https://github.com/castbox/guru-trellis/issues/117",
+        "planning-approval.json",
+        "phase2-check.json",
+        "review-gate.json",
+        "reviews/010-final.md",
+        "pr-body.md",
+        "finish-summary-index.json",
+        "issue-scope-ledger.json"
+      ]
+    },
+    "human_confirmation": {
+      "status": "not_required",
+      "summary": "The wording-only metadata revision preserves the already approved sole close issue and pending remote gate; it introduces no new scope, Issue classification, unusual proposal, publication side effect, or implementation change.",
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "After the bounded finish-index metadata revision, all ten dimensions and all three conclusions pass, both metadata findings are closed, and the only valid typed exit is ready."
+    }
+  },
+  "deterministic_bindings": {
+    "artifacts": {
+      "prd.md": {
+        "sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
+        "size": 10446
+      },
+      "design.md": {
+        "sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d",
+        "size": 21341
+      },
+      "implement.md": {
+        "sha256": "7922efb0ec9d5995370f2868ea69a1eef46aef56d53007d6b39325b43cab9102",
+        "size": 11831
+      },
+      "planning-approval.json": {
+        "sha256": "89c98cfb502448329c9c5f7e8b35561f0536401a75680b5905d25b2ae9411b92",
+        "size": 34324
+      },
+      "phase2-check.json": {
+        "sha256": "927da77cf8087dd866b368163476a2571384af6d3f2d42319076d94fe6675b22",
+        "size": 59190
+      },
+      "issue-scope-ledger.json": {
+        "sha256": "2008ebef35123ea2147c3a6dd98bbbca59766e7e9067f98a13af6d22d6b2f93c",
+        "size": 5900
+      },
+      "agent-assignment.json": {
+        "sha256": "0b6f4d406e1bc2f3cbaf3333c7c7a860e6e88553539521f7f22d0fa65bccc2e3",
+        "size": 445337
+      },
+      "review.md": {
+        "sha256": "8357b949f37d9a5c3d9e827de490656af07d4c8068948a7598b13fc3e4420e0d",
+        "size": 7105
+      },
+      "review-gate.json": {
+        "sha256": "b425c5c31f92e00b51feefc87a8f0fda607fe193b84d7e4b116a62ac557d2017",
+        "size": 125538
+      },
+      "pr-body.md": {
+        "sha256": "1ae6944eba89a6512e7d710d695934c6a827d775479d3cb60a2101b24855a84e",
+        "size": 6160
+      },
+      "finish-summary-index.json": {
+        "sha256": "b4fde83c961d71b7151be4ac5376ed4e08ce014cb66d669fe46f7e515052a7ad",
+        "size": 6793
+      },
+      "implementation-handoff.md": {
+        "sha256": "c1bb11930bc712cf3231b6618786b38085eb673282d195d65274046edd60201d",
+        "size": 12779
+      }
+    },
+    "repository": {
+      "head": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+      "branch": "feat/117-verify-extension-installation",
+      "base_ref": "origin/main",
+      "diff_paths": [
+        ".agents/skills/guru-verify-extension-installation/SKILL.md",
+        ".agents/skills/guru-verify-extension-installation/evals/evals.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+        ".agents/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+        ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".agents/skills/guru-verify-extension-installation/examples/public-blocked-output.json",
+        ".agents/skills/guru-verify-extension-installation/examples/public-invocation-error.json",
+        ".agents/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+        ".agents/skills/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+        ".agents/skills/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+        ".agents/skills/guru-verify-extension-installation/examples/public-verification-required-input.json",
+        ".agents/skills/guru-verify-extension-installation/examples/public-verified-output.json",
+        ".agents/skills/guru-verify-extension-installation/examples/semantic-review-input.json",
+        ".agents/skills/guru-verify-extension-installation/interface.json",
+        ".agents/skills/guru-verify-extension-installation/references/contract.md",
+        ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/public-input.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+        ".agents/skills/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+        ".agents/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+        ".agents/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+        ".agents/skills/guru-verify-extension-installation/scripts/invoke.sh",
+        ".agents/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+        ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+        ".claude/skills/guru-verify-extension-installation/SKILL.md",
+        ".claude/skills/guru-verify-extension-installation/evals/evals.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+        ".claude/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+        ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".claude/skills/guru-verify-extension-installation/examples/public-blocked-output.json",
+        ".claude/skills/guru-verify-extension-installation/examples/public-invocation-error.json",
+        ".claude/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+        ".claude/skills/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+        ".claude/skills/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+        ".claude/skills/guru-verify-extension-installation/examples/public-verification-required-input.json",
+        ".claude/skills/guru-verify-extension-installation/examples/public-verified-output.json",
+        ".claude/skills/guru-verify-extension-installation/examples/semantic-review-input.json",
+        ".claude/skills/guru-verify-extension-installation/interface.json",
+        ".claude/skills/guru-verify-extension-installation/references/contract.md",
+        ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/public-input.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+        ".claude/skills/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+        ".claude/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+        ".claude/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+        ".claude/skills/guru-verify-extension-installation/scripts/invoke.sh",
+        ".claude/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+        ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+        ".codex/skills/guru-verify-extension-installation/SKILL.md",
+        ".codex/skills/guru-verify-extension-installation/evals/evals.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+        ".codex/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+        ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".codex/skills/guru-verify-extension-installation/examples/public-blocked-output.json",
+        ".codex/skills/guru-verify-extension-installation/examples/public-invocation-error.json",
+        ".codex/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+        ".codex/skills/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+        ".codex/skills/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+        ".codex/skills/guru-verify-extension-installation/examples/public-verification-required-input.json",
+        ".codex/skills/guru-verify-extension-installation/examples/public-verified-output.json",
+        ".codex/skills/guru-verify-extension-installation/examples/semantic-review-input.json",
+        ".codex/skills/guru-verify-extension-installation/interface.json",
+        ".codex/skills/guru-verify-extension-installation/references/contract.md",
+        ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/public-input.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+        ".codex/skills/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+        ".codex/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+        ".codex/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+        ".codex/skills/guru-verify-extension-installation/scripts/invoke.sh",
+        ".codex/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+        ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+        ".cursor/skills/guru-verify-extension-installation/SKILL.md",
+        ".cursor/skills/guru-verify-extension-installation/evals/evals.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+        ".cursor/skills/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/public-blocked-output.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/public-invocation-error.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/public-verification-required-input.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/public-verified-output.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/semantic-review-input.json",
+        ".cursor/skills/guru-verify-extension-installation/interface.json",
+        ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+        ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/public-input.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+        ".cursor/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+        ".cursor/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+        ".cursor/skills/guru-verify-extension-installation/scripts/invoke.sh",
+        ".cursor/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+        ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/bash/check-extension-verification.sh",
+        ".trellis/guru-team/scripts/bash/execute-extension-verification.sh",
+        ".trellis/guru-team/scripts/bash/invoke-extension-verification.sh",
+        ".trellis/guru-team/scripts/bash/record-extension-verification.sh",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/consumers/stop/production/verify-extension-installation-blocked.schema.json",
+        ".trellis/guru-team/skills/consumers/workflow/production/verify-extension-installation-return-to-task-work.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/evals.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-blocked-output.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-invocation-error.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-verification-required-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-verified-output.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/semantic-review-input.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-input.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/scripts/invoke.sh",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        ".trellis/guru-team/skills/registry.json",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/index.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/skill-package-contract.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/check.jsonl",
+        ".trellis/tasks/07-25-117-verify-extension-installation/context-discovery.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/contract-wording-review.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/implement.jsonl",
+        ".trellis/tasks/07-25-117-verify-extension-installation/implement.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/issue-review.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/001-final.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/001.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-start-context.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/consumers/stop/production/verify-extension-installation-blocked.schema.json",
+        "trellis/skills/guru-team/consumers/workflow/production/verify-extension-installation-return-to-task-work.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/evals.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-not-required-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-not-required-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/standalone-remote-unavailable-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/task-install-finding-return-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-applicability-conflict-blocked-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-required-verified-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-stale-plan-reentry-verified-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/evals/files/workflow-transient-retry-verified-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-blocked-output.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-invocation-error.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-return-to-task-work-output.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-standalone-verification-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-verification-required-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-verified-output.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/semantic-review-input.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-input.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-invocation-error.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-not-required-output.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-return-to-task-work-output.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-standalone-verification-input.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-verification-required-input.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-verified-output.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/semantic-review-input.schema.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/check-extension-verification.sh",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/execute-extension-verification.sh",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/invoke.sh",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/record-extension-verification.sh",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "trellis/skills/guru-team/registry.json",
+        "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/bash/check-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/execute-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/invoke-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/record-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "status_paths": [
+        ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/finish-summary-index.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/pr-body.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+        ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/009-f10-closure.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/reviews/010-final.md",
+        ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json"
+      ]
+    },
+    "entry_preconditions": {
+      "runtime_dependency": {
+        "status": "passed",
+        "facts_sha256": "1a2635297b61ceb2d90c8ba9cbc11e31d2d29b8d6607e128806719b533b7d7e0"
+      },
+      "task_workspace": {
+        "status": "passed",
+        "facts_sha256": "a7fae754c5792d594d91cb443ea24b2354cd0079f984aca9c9c22a6388a185e7"
+      },
+      "task_identity": {
+        "status": "passed",
+        "facts_sha256": "dab8d690a7b7fc3804b210d43bbec801ee922c1f544c579c4642ddbe420deb4a"
+      },
+      "branch_review_handoff": {
+        "status": "passed",
+        "facts_sha256": "cdbddbdc65372240e33d7af41cd3cee41fbb97cd7002d927341081a3c9009981"
+      },
+      "planning_approval": {
+        "status": "passed",
+        "facts_sha256": "7b5e9b921fffedd578406d31357bb6aee2749a4305ff3b632eb6d6f43a504ebf"
+      },
+      "phase2_check": {
+        "status": "passed",
+        "facts_sha256": "042a6084f0d0e41dcedd35d6b8bee99b8e7b8ebbd20c6c18620bb1720da4564a"
+      },
+      "issue_scope_ledger": {
+        "status": "passed",
+        "facts_sha256": "bc22902ce3d0bd85451ebedaedd4ea0efcb0aaf05c46078d972a8eebc0dea264"
+      },
+      "docs_ssot_reconciliation": {
+        "status": "passed",
+        "facts_sha256": "9933ba6c91f7e52767a211ce8480ba881d8912cf4fe60e3edab33121134ea1cd"
+      },
+      "branch_review_evidence": {
+        "status": "passed",
+        "facts_sha256": "e6146f4c3e522551d4bdc45cd0f003e80a09c46ba4ec1923617eaffb3b8c7cce"
+      },
+      "publication_content": {
+        "status": "passed",
+        "facts_sha256": "9e0bd1923a7eed561c5142af918f61db42ba4eeb29cbff1579f721eec11006b5"
+      },
+      "review_range_and_working_tree": {
+        "status": "passed",
+        "facts_sha256": "ea528f168cc0988dcbc51e487e58af40373eb8214ca834743fe3f38ffc8122ae"
+      },
+      "invocation_freshness": {
+        "status": "passed",
+        "facts_sha256": "7fff1059464f9e353483a751ceb9be12fdabb4ff11574af6dd7e961709303bb8"
+      }
+    },
+    "publication_ref": "publication:55af40d563ad4d3f7280cc634a76176f821e87cb52f99f8540f43d7ca4878347"
+  },
+  "typed_exit": "ready",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-finalize-task"
+  },
+  "supersedes_publication_ref": "publication:071b4b66490d4d065fbeb4e04fbb1dfed63f7861b353f03a5954522097c29ba4",
+  "stale_reason": "finish-summary-derived-retrieval-length",
+  "reentry_context": "The side-effect-free finish prepare rejected the reviewed semantic index because its deterministic retrieval_text was 3280 characters. Compress repeated wording, preserve all task semantics, and rebuild all publication bindings.",
+  "facts_sha256": "960c6cff79a923aefd321614d653c4f1d9bc3763db5f67c26326c2f1a440bc57",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/117-verify-extension-installation",
+    "reviewed_head_sha": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+    "title": "完成：#117 拆分 #115：实现 guru-verify-extension-installation 闭环 Skill",
+    "body_source": "pr-body.md",
+    "body_sha256": "1ae6944eba89a6512e7d710d695934c6a827d775479d3cb60a2101b24855a84e",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "52cf5bd055817208c5f6f4c6ef4b5720f55bff3b138d0c34e669a5f8518ea2d2"
+  }
+}

@@ -1,0 +1,1707 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "006",
+  "task": {
+    "id": "117-verify-extension-installation",
+    "path": ".trellis/tasks/07-25-117-verify-extension-installation",
+    "status": "in_progress",
+    "branch": "feat/117-verify-extension-installation"
+  },
+  "issue": {
+    "primary_issue": 117,
+    "ledger_sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "a47e1fbd7bedb001649814969096076bb70157db"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
+      "sha256": "89c98cfb502448329c9c5f7e8b35561f0536401a75680b5905d25b2ae9411b92",
+      "size": 34324
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      "sha256": "927da77cf8087dd866b368163476a2571384af6d3f2d42319076d94fe6675b22",
+      "size": 59190
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+      "sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c",
+      "size": 3640
+    },
+    "task": {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task.json",
+      "sha256": "e5d7beeeff3608d7aeccda610bb467e0a6b40fc4a61d67e07f52fc1bab988912",
+      "size": 716
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d48c9b8c1b39901159615c5d8cd3727a2c43c743",
+        "worktree_sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f936b350ad09f2cd72b49c7558f73c5334ebbcd",
+        "worktree_sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9568d8436d3690ad4e8d5eba5aad56a8d8633eba",
+        "worktree_sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5751c13ee8bc940ee640aed520a073a364466aa",
+        "worktree_sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5e9ac85d4bb320f0812d97a2c5249d7feeba9a",
+        "worktree_sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "932555f1b340917e33441b28970970b0116ad6e1",
+        "worktree_sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+        "worktree_sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d48c9b8c1b39901159615c5d8cd3727a2c43c743",
+        "worktree_sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f936b350ad09f2cd72b49c7558f73c5334ebbcd",
+        "worktree_sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9568d8436d3690ad4e8d5eba5aad56a8d8633eba",
+        "worktree_sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5751c13ee8bc940ee640aed520a073a364466aa",
+        "worktree_sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5e9ac85d4bb320f0812d97a2c5249d7feeba9a",
+        "worktree_sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "932555f1b340917e33441b28970970b0116ad6e1",
+        "worktree_sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+        "worktree_sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d48c9b8c1b39901159615c5d8cd3727a2c43c743",
+        "worktree_sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f936b350ad09f2cd72b49c7558f73c5334ebbcd",
+        "worktree_sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9568d8436d3690ad4e8d5eba5aad56a8d8633eba",
+        "worktree_sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5751c13ee8bc940ee640aed520a073a364466aa",
+        "worktree_sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5e9ac85d4bb320f0812d97a2c5249d7feeba9a",
+        "worktree_sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "932555f1b340917e33441b28970970b0116ad6e1",
+        "worktree_sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+        "worktree_sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d48c9b8c1b39901159615c5d8cd3727a2c43c743",
+        "worktree_sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f936b350ad09f2cd72b49c7558f73c5334ebbcd",
+        "worktree_sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9568d8436d3690ad4e8d5eba5aad56a8d8633eba",
+        "worktree_sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5751c13ee8bc940ee640aed520a073a364466aa",
+        "worktree_sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5e9ac85d4bb320f0812d97a2c5249d7feeba9a",
+        "worktree_sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "932555f1b340917e33441b28970970b0116ad6e1",
+        "worktree_sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+        "worktree_sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "adcc130c27ef871be0257c96649804e929dc2a7b",
+        "worktree_sha256": "b415b145d487e7760e1c97bb13b74d99d089baf1b3356e14fe041cc4cfb2636d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9a2e84ceebaac1a6155255a06276a5e00af05953",
+        "worktree_sha256": "e256e2d536d0d9bd30e41d4c189fd91b5f30a9d85b1b522396bf3e9e3800923f",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1e0b07040d2407bac01280536a62c42eb2254ae6",
+        "worktree_sha256": "07bb49b566dbb4ce318d7e2c41bea0c0748c1395d359d51ba03a321360a8562b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d48c9b8c1b39901159615c5d8cd3727a2c43c743",
+        "worktree_sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f936b350ad09f2cd72b49c7558f73c5334ebbcd",
+        "worktree_sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9568d8436d3690ad4e8d5eba5aad56a8d8633eba",
+        "worktree_sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5751c13ee8bc940ee640aed520a073a364466aa",
+        "worktree_sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5e9ac85d4bb320f0812d97a2c5249d7feeba9a",
+        "worktree_sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "932555f1b340917e33441b28970970b0116ad6e1",
+        "worktree_sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+        "worktree_sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0fedd3aa58cd1e918770d1bfe84a7dcbeb58f926",
+        "worktree_sha256": "7a7b14c867899abab66923dfc33492c948755577da4b52492c4a4f5e6799f8aa",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5ad52c17cd00f415c32d097e640023809ce5bc91",
+        "worktree_sha256": "c1bb11930bc712cf3231b6618786b38085eb673282d195d65274046edd60201d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5f763672a91f354db26b2183219e45046c1582be",
+        "worktree_sha256": "927da77cf8087dd866b368163476a2571384af6d3f2d42319076d94fe6675b22",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0b8f0720807f8c782aa27a9c5b48ce62714af85a26eec2fa1d88047f862ee5c1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "aaa38dfc8afd4728308674ebe2d829f949664ef6",
+        "worktree_sha256": "9b37977153704684a647b3b6d435971b78ad9392714c1ab913d6457c1727a145",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "11d549aa25a93c7c803d5fc0d41c04154fc60bce",
+        "worktree_sha256": "601974f36721f0994289479ce0b4c003e040d77bd6941898ecefc46c1ead6fb9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c7e09f0b2f0a854b5975ea7801d3f190dcac36e747ceab060934ff537cd16343",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f6ca3402a5829d110a52184ee4d9ca419c3cc781efb5ccabfba87fc534878581",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6c0ffc83a5969a130691f4ed041770fa007292c5",
+        "worktree_sha256": "2f5d2e782776111fee272165ed99cd7d1b7ead5880a245c3b7138dda41ea90f8",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1e0b07040d2407bac01280536a62c42eb2254ae6",
+        "worktree_sha256": "07bb49b566dbb4ce318d7e2c41bea0c0748c1395d359d51ba03a321360a8562b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d48c9b8c1b39901159615c5d8cd3727a2c43c743",
+        "worktree_sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2f936b350ad09f2cd72b49c7558f73c5334ebbcd",
+        "worktree_sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9568d8436d3690ad4e8d5eba5aad56a8d8633eba",
+        "worktree_sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5751c13ee8bc940ee640aed520a073a364466aa",
+        "worktree_sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5e9ac85d4bb320f0812d97a2c5249d7feeba9a",
+        "worktree_sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "932555f1b340917e33441b28970970b0116ad6e1",
+        "worktree_sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+        "worktree_sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9a2e84ceebaac1a6155255a06276a5e00af05953",
+        "worktree_sha256": "e256e2d536d0d9bd30e41d4c189fd91b5f30a9d85b1b522396bf3e9e3800923f",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f3aef62fca2905cdb62d196301270d36c51cc22a",
+        "worktree_sha256": "b53402ee7a5ae5fd7f33e9845954584d5780640127075c62ea90145958770f55",
+        "mode": "100644"
+      }
+    ],
+    "digest": "9ee4969a096dd0bdbe839171a97ea492b31247c4bc9caff3849fc43842dc0e59"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+      "coverage_source": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+    ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+    ".agents/skills/guru-verify-extension-installation/interface.json",
+    ".agents/skills/guru-verify-extension-installation/references/contract.md",
+    ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+    ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+    ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+    ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+    ".claude/skills/guru-verify-extension-installation/interface.json",
+    ".claude/skills/guru-verify-extension-installation/references/contract.md",
+    ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+    ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+    ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+    ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+    ".codex/skills/guru-verify-extension-installation/interface.json",
+    ".codex/skills/guru-verify-extension-installation/references/contract.md",
+    ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+    ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+    ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+    ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+    ".cursor/skills/guru-verify-extension-installation/interface.json",
+    ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+    ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+    ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+    ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+    ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+    ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json",
+    "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "feat(workflow): #117 完善安装资产证据闭环",
+    "body": "背景：\nBR-117-F10 要求成功验证不仅证明命令退出，还必须证明真实安装目标中的扩展资产完整且与 canonical expectation 一致。\n\n变更：\n将 throwaway work root 显式传入 executor，只从真实 <work>/project 读取 installed bytes；建立 workflow、preset、schema、Skill 与 platform 共 231 项 inventory，校验 digest、manifest relation、category/platform completeness，并让每个 capability 同时绑定 stable command_refs 与 asset_paths。同步 canonical、installed、Agents、Codex、Claude、Cursor contract、schema、examples、runtime、adapter 与测试。\n\n边界：\n不改变 public DTO、typed exits 或 consumer route，不激活 #118/#119/#132，不 push、不创建 PR、不关闭 Issue、不执行 publication。Exact pushed feature-ref clean install 保留为授权 push 后的 publication gate，本地 source throwaway 不替代该证据。\n\n验证：\nFresh Phase 2 十个 adequacy dimensions 全部通过；runtime 600 passed、13 skipped，Skill integration 175、preset/ownership 54、12 个 package contracts 114，source/installed validators 通过，Shared/Codex/clean-env Claude source+installed 各 7/7，Cursor 按合同 unsupported，full local-source throwaway exit 0，installed inventory 231/231/231 complete，六处分发 equality、compile、task validate、diff check 与 sidecar scan 全部通过。\n\nRefs #117",
+    "bytes": "feat(workflow): #117 完善安装资产证据闭环\n\n背景：\nBR-117-F10 要求成功验证不仅证明命令退出，还必须证明真实安装目标中的扩展资产完整且与 canonical expectation 一致。\n\n变更：\n将 throwaway work root 显式传入 executor，只从真实 <work>/project 读取 installed bytes；建立 workflow、preset、schema、Skill 与 platform 共 231 项 inventory，校验 digest、manifest relation、category/platform completeness，并让每个 capability 同时绑定 stable command_refs 与 asset_paths。同步 canonical、installed、Agents、Codex、Claude、Cursor contract、schema、examples、runtime、adapter 与测试。\n\n边界：\n不改变 public DTO、typed exits 或 consumer route，不激活 #118/#119/#132，不 push、不创建 PR、不关闭 Issue、不执行 publication。Exact pushed feature-ref clean install 保留为授权 push 后的 publication gate，本地 source throwaway 不替代该证据。\n\n验证：\nFresh Phase 2 十个 adequacy dimensions 全部通过；runtime 600 passed、13 skipped，Skill integration 175、preset/ownership 54、12 个 package contracts 114，source/installed validators 通过，Shared/Codex/clean-env Claude source+installed 各 7/7，Cursor 按合同 unsupported，full local-source throwaway exit 0，installed inventory 231/231/231 complete，六处分发 equality、compile、task validate、diff check 与 sidecar scan 全部通过。\n\nRefs #117\n",
+    "sha256": "106846a2ea0729feb0627f2481b420058802640b4464a3bb1b1b69bcce5359fd"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "AI 已复核 Plan 006 的 exact stage scope：57 个当前 dirty paths 均属于 Phase 2 已覆盖的 Issue #117 F10 implementation、六处分发合同与测试、runtime/adapter、Phase 2 与 lifecycle evidence，另由 Skill 自动加入 candidate self，共 58 个 exact stage paths；没有 unrelated、unreviewed 或 ambiguous path。提交消息准确说明 installed completeness、public API 与 publication 边界，subject 绑定 #117、body 仅使用 Refs #117 且没有关闭关键词；不 push、不建 PR、不关闭 Issue、不执行 publication。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户在收到 Issue #117 续接状态与下一步 task commit/closure/final review 路由后明确回复“确认继续”；授权仅适用于本 Plan 006 的上述 exact paths 与 exact message，不授权 push、PR、Issue closure、publication 或 finish-work。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-26T07:33:42Z",
+    "plan_digest": "3625aa3776b513e165264abc4665e803093b06be0dd7a64b65ff7c3693150d51"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-26T07:34:12Z",
+    "commit_sha": "a28b38e5a8894e3d60b9e9694a92ed610f763f25",
+    "parent": "a47e1fbd7bedb001649814969096076bb70157db",
+    "message_sha256": "106846a2ea0729feb0627f2481b420058802640b4464a3bb1b1b69bcce5359fd",
+    "committed_paths": [
+      ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".agents/skills/guru-verify-extension-installation/interface.json",
+      ".agents/skills/guru-verify-extension-installation/references/contract.md",
+      ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".claude/skills/guru-verify-extension-installation/interface.json",
+      ".claude/skills/guru-verify-extension-installation/references/contract.md",
+      ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".codex/skills/guru-verify-extension-installation/interface.json",
+      ".codex/skills/guru-verify-extension-installation/references/contract.md",
+      ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".cursor/skills/guru-verify-extension-installation/interface.json",
+      ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+      ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "86ab962b02448776e8ac91cfa6b6d45a62f6df4a",
+      "actual_tree": "86ab962b02448776e8ac91cfa6b6d45a62f6df4a",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+          "expected_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "expected_mode": "100644",
+          "actual_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          "expected_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "expected_mode": "100644",
+          "actual_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+          "expected_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "expected_mode": "100644",
+          "actual_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
+          "expected_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "expected_mode": "100644",
+          "actual_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+          "expected_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "expected_mode": "100644",
+          "actual_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+          "expected_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "expected_mode": "100644",
+          "actual_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "expected_mode": "100644",
+          "actual_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+          "expected_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "expected_mode": "100644",
+          "actual_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          "expected_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "expected_mode": "100644",
+          "actual_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/interface.json",
+          "expected_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "expected_mode": "100644",
+          "actual_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
+          "expected_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "expected_mode": "100644",
+          "actual_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+          "expected_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "expected_mode": "100644",
+          "actual_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+          "expected_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "expected_mode": "100644",
+          "actual_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "expected_mode": "100644",
+          "actual_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+          "expected_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "expected_mode": "100644",
+          "actual_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          "expected_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "expected_mode": "100644",
+          "actual_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/interface.json",
+          "expected_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "expected_mode": "100644",
+          "actual_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
+          "expected_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "expected_mode": "100644",
+          "actual_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+          "expected_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "expected_mode": "100644",
+          "actual_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+          "expected_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "expected_mode": "100644",
+          "actual_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "expected_mode": "100644",
+          "actual_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+          "expected_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "expected_mode": "100644",
+          "actual_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          "expected_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "expected_mode": "100644",
+          "actual_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
+          "expected_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "expected_mode": "100644",
+          "actual_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+          "expected_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "expected_mode": "100644",
+          "actual_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+          "expected_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "expected_mode": "100644",
+          "actual_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+          "expected_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "expected_mode": "100644",
+          "actual_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "expected_mode": "100644",
+          "actual_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "756580550f509310b68e8fd681239b796978890a",
+          "expected_mode": "100644",
+          "actual_blob": "756580550f509310b68e8fd681239b796978890a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "65c963a161f68d62985b99c454893ffc4bf08ec2",
+          "expected_mode": "100755",
+          "actual_blob": "65c963a161f68d62985b99c454893ffc4bf08ec2",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "expected_blob": "d1a68e349e4494c425225ba8cdd6ef0b287b68be",
+          "expected_mode": "100644",
+          "actual_blob": "d1a68e349e4494c425225ba8cdd6ef0b287b68be",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+          "expected_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "expected_mode": "100644",
+          "actual_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+          "expected_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "expected_mode": "100644",
+          "actual_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+          "expected_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "expected_mode": "100644",
+          "actual_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+          "expected_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "expected_mode": "100644",
+          "actual_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+          "expected_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "expected_mode": "100644",
+          "actual_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+          "expected_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "expected_mode": "100644",
+          "actual_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "expected_mode": "100644",
+          "actual_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+          "expected_blob": "dd00674f95ee5328f25a4a137b4124bbe801427c",
+          "expected_mode": "100644",
+          "actual_blob": "dd00674f95ee5328f25a4a137b4124bbe801427c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+          "expected_blob": "13468ed9c4936244791a4370f058e180f2debe8c",
+          "expected_mode": "100644",
+          "actual_blob": "13468ed9c4936244791a4370f058e180f2debe8c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+          "expected_blob": "6d9ef37f28f8d5d05645b47669001bcee13ba70a",
+          "expected_mode": "100644",
+          "actual_blob": "6d9ef37f28f8d5d05645b47669001bcee13ba70a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
+          "expected_blob": "2071f182fd12572f20d1798f08292d788c75c641",
+          "expected_mode": "100644",
+          "actual_blob": "2071f182fd12572f20d1798f08292d788c75c641",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+          "expected_blob": "f0b08ca089c7330cce6004bd991e1620452cd1c2",
+          "expected_mode": "100644",
+          "actual_blob": "f0b08ca089c7330cce6004bd991e1620452cd1c2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+          "expected_blob": "01b4c97286e3ff0e92f1a0b78d80195e3fc14b0a",
+          "expected_mode": "100644",
+          "actual_blob": "01b4c97286e3ff0e92f1a0b78d80195e3fc14b0a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+          "expected_blob": "058f9d17f5cbcc95ec9bda9da65804c02206f92c",
+          "expected_mode": "100644",
+          "actual_blob": "058f9d17f5cbcc95ec9bda9da65804c02206f92c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+          "expected_blob": "fca3760173f00b9812c51e43cf00988a0a912370",
+          "expected_mode": "100644",
+          "actual_blob": "fca3760173f00b9812c51e43cf00988a0a912370",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+          "expected_blob": "bfb239b6947e04eac545c50c119bc39215eafb14",
+          "expected_mode": "100644",
+          "actual_blob": "bfb239b6947e04eac545c50c119bc39215eafb14",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/006.json",
+          "expected_blob": "279a27f0830a8e050cc22c0c19cc852a9caa1118",
+          "expected_mode": "100644",
+          "actual_blob": "279a27f0830a8e050cc22c0c19cc852a9caa1118",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "expected_blob": "d1a68e349e4494c425225ba8cdd6ef0b287b68be",
+          "expected_mode": "100644",
+          "actual_blob": "d1a68e349e4494c425225ba8cdd6ef0b287b68be",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+          "expected_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "expected_mode": "100644",
+          "actual_blob": "04319becb1011e57f7c2da3c2bb5280e06719be3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+          "expected_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "expected_mode": "100644",
+          "actual_blob": "871322cfb3895fb8073fc9e1c4ccc2d1110cc3d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+          "expected_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "expected_mode": "100644",
+          "actual_blob": "9ae0dd066992cb62b2ea44b1537289903773f6db",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+          "expected_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "expected_mode": "100644",
+          "actual_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+          "expected_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "expected_mode": "100644",
+          "actual_blob": "1d156c11046022aaceae4215db47ff50ed96eb58",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+          "expected_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "expected_mode": "100644",
+          "actual_blob": "15ad1cf160ca7b785da11528f88d0c079e0c7139",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "expected_mode": "100644",
+          "actual_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "65c963a161f68d62985b99c454893ffc4bf08ec2",
+          "expected_mode": "100755",
+          "actual_blob": "65c963a161f68d62985b99c454893ffc4bf08ec2",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "370ed74501c04141896026a2f05b40884b541104",
+          "expected_mode": "100644",
+          "actual_blob": "370ed74501c04141896026a2f05b40884b541104",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}
