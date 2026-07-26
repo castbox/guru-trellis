@@ -2,15 +2,18 @@
 
 ## 审查身份与范围
 
-- 当前问题发现 reviewer：`/root/issue117_branch_review_final_afterfix`
-- 审查 HEAD：`538def79408d417107c3adae61c4466116395d96`
-- 完整范围：`origin/main...538def79408d417107c3adae61c4466116395d96`
+- 当前实现前 reviewed HEAD：`3bfbd100c8d75a619da19627e7da276a3f2e367b`
+- 完整 committed 范围：`origin/main...3bfbd100c8d75a619da19627e7da276a3f2e367b`
 - Merge base：`0cd2498f821b38ce91bd82fa9e232b1528241e5d`
 - Round 1/2 原始报告：[初始 finding 报告](reviews/001-final.md)
 - Round 3 原始报告：[F1/F2 closure 报告](reviews/002-closure.md)
-- Round 4 原始报告：[新 finding 报告](reviews/003-final.md)
+- Round 4 原始报告：[F7 finding 报告](reviews/003-final.md)
+- Round 5 原始报告：[F7 closure 与 F8 finding 报告](reviews/004-f7-closure.md)
 
-Round 3 独立复核确认 `BR-117-F1` 与 `BR-117-F2` 已关闭。Round 4 原本按 fresh final review 分派，但完整审查当前 committed range 后发现新的 current-scope finding，因此已透明登记为问题发现审查轮，不能作为 zero-finding 最终放行。
+Round 3 独立复核关闭 `BR-117-F1` 与 `BR-117-F2`。Round 4 发现
+`BR-117-F7`；Round 5 独立复核关闭 F7，同时发现 `BR-117-F8`。本文件记录当前
+implementation candidate，不替代下一轮 fresh Phase 2、task commit、finding closure
+或 zero-finding final review。
 
 ## 已关闭 finding
 
@@ -18,52 +21,58 @@ Round 3 独立复核确认 `BR-117-F1` 与 `BR-117-F2` 已关闭。Round 4 原�
 
 状态：`closed`
 
-Round 3 复核了 authority-userinfo 检测、artifact write 前 fail-closed、generic public error、5 类独立 probe、Shared production eval、secret scan 与 canonical/installed bytes。关闭证据绑定 [F1/F2 closure 报告](reviews/002-closure.md)。
+Round 3 已复核 authority-userinfo 检测、artifact write 前 fail-closed、generic public
+error、独立 probes、production eval、secret scan 与 canonical/installed bytes。
 
 ### `BR-117-F2` P1：task-bearing 调用未验证 task/worktree identity
 
 状态：`closed`
 
-Round 3 复核了 active task、task-start-context、repo、branch、active pointer 与 workspace boundary 统一 gate，并覆盖 wrong task、archived task、wrong repo、wrong branch、wrong worktree 与 taskless standalone。关闭证据绑定 [F1/F2 closure 报告](reviews/002-closure.md)。
-
-## 当前 open finding
+Round 3 已复核 active task、task-start-context、repo、branch、active pointer 与
+workspace boundary 统一 gate，以及 wrong task、archived task、wrong repo、
+wrong branch、wrong worktree 与 taskless standalone。
 
 ### `BR-117-F7` P2：recorder 未执行输入 schema，并接受不存在的 supersession lineage
 
-场景属于 `normal_required_behavior`。Package 已发布 `semantic-review-input.schema.json` 与 `execution-facts.schema.json`，但 recorder 只检查顶层 keys；普通嵌套类型错误会在字段访问时抛出未捕获 `AttributeError` 或 `TypeError`，而不是稳定的 `WorkflowError`。没有 prior `marketplace-verification.json` 时，任意 `supersedes_verification_ref` 也会被持久化并产生 checker-valid 的错误 lineage。
+状态：`closed`
 
-该问题违反 PRD 3.3、Design 5.2/5.3 以及 package `Private evidence`、`Exits and re-entry` 合同。输入结构错误和首次调用误带 stale re-entry ref 都是 honest-but-fallible 的正常路径，不依赖恶意篡改、伪造或非常规并发。
+Round 5 已复核 schema-before-access、受控 `WorkflowError`、no-prior/wrong-prior
+拒绝、exact-prior supersession、changed-plan re-entry、runtime/package tests 与六处分发
+一致性。关闭证据绑定 [F7 closure 与 F8 finding 报告](reviews/004-f7-closure.md)。
 
-状态：`open`
+## 当前 finding
 
-修复必须在访问嵌套字段或写 artifact 前执行已发布 schema 校验并统一转换为受控 `WorkflowError`；`supersedes_verification_ref` 只能在 exact prior owner artifact 存在且匹配时出现。需要补 malformed nested type、missing/invalid enum 与 no-prior/nonmatching/exact-prior supersession 回归。
+### `BR-117-F8` P3：closure raw report 的 EOF 多余空行
 
-## 验证证据
+Reviewer-owned gate 状态：`open`
 
-- Runtime：588 passed，13 skipped
-- Skill packages：175 passed
-- Preset：45 passed
-- Ownership 与 extension contract：16 passed
-- Source/installed validators：12 Skills、46 exits、27 targets
-- Installed state：2322 managed files，0 sidecar/removal/conflict
-- Shared、Codex source/installed production eval：各 7/7
-- Full local-source throwaway：exit 0
-- `git diff --check origin/main...HEAD` 与相关 `compileall`：通过
+Implementation candidate 状态：`resolved_pending_closure`
 
-既有自动化通过，但未覆盖 F7 的 malformed recorder input 和 no-prior supersession 正常负例，不能反证该 finding。
+Round 5 对未篡改 committed range 执行 `git diff --check`，命中
+`reviews/002-closure.md:189` 的 EOF 多余空行。本轮实现只删除该一个空行，不改写
+Round 3 的语义结论、验证声明或 closure recommendation。
+
+由于当前 HEAD 仍是修复前的 `3bfbd100...`，`origin/main...HEAD` 只有在下一次 task
+work commit 纳入本候选后才能反映 F8 修复。正式关闭仍要求 fresh Phase 2、task commit、
+独立 finding closure；随后由未参与 closure 的 fresh final reviewer 覆盖最终完整范围。
 
 ## 文档、范围与影响
 
-Docs SSOT strategy 为 `ssot_first`。Canonical package contract、workflow specs、durable requirements、README、registry/manifest、installer 与平台分发副本总体同步；但 runtime 尚未完整承接已声明的 schema 与 supersession freshness 合同，因此实现和 Docs SSOT 仍不一致。
+Docs SSOT strategy 继续为 `ssot_first`。F8 只修正 task-local raw review report 的格式，
+不新增公共 Skill、workflow、runtime、schema、installer、overlay、README 或 durable
+requirements 语义，因此没有新的 durable docs delta。既有 #117 task delta 已由前序实现
+合并到 durable owners；本轮 `reviews/002-closure.md`、本汇总与实现交接仅保留 task
+history 和 gate evidence。
 
-Issue Scope Ledger 仍只关闭 #117。Exact pushed feature-ref clean install 保留为授权 push 后、创建 PR 前的 publication gate，当前 local-source throwaway 不冒充该证据。
+Issue Scope Ledger 仍只关闭 #117。Exact pushed feature-ref clean install 继续作为授权
+push 后、创建 PR 前的 publication gate；当前 local-source throwaway 不冒充该证据。
 
-完整 diff 未修改 CI/CD、容器、Compose、K8s/Kustomize、数据库 migration、Makefile、dependency manifest 或生产数据面。F7 影响 recorder correctness 与 gate lineage，不扩大生产或数据副作用。
+本轮没有修改 CI/CD、容器、Compose、K8s/Kustomize、数据库 migration、Makefile、
+dependency manifest 或生产数据面，也没有新增部署或安全影响。
 
-## AI Review Gate
+## 当前路由
 
-主会话复核 raw reports、已批准 PRD/Design/package contract、当前代码路径与独立复现后，确认 `BR-117-F7` 是 current-scope `qualified_finding`，严重度 P2，状态 `open`。
-
-最终 typed exit：`implementation_required`
-
-当前 committed branch 不得进入 publication。修复 F7 后必须重新完成完整 Phase 2、fresh task commit、finding closure 与独立 fresh final Branch Review。
+现有 reviewer-owned `review-gate.json` 的语义仍为
+`implementation_required`，实现代理不改写该 gate。下一步必须先完成 assignment
+report digest 的受支持 freshness 处理，再由独立 `trellis-check` 对当前候选执行完整
+Phase 2；不得直接进入 publication、push、PR 或 Issue closure。

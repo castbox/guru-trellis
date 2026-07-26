@@ -186,4 +186,3 @@ current Phase 2 已记录这些 fresh 全量结果。本轮通过独立代码审
   本轮 closure 的 fresh final reviewer，重新覆盖完整
   `origin/main...538def79408d417107c3adae61c4466116395d96`。本报告不等于 final
   Branch Review pass，也不能单独支持 `review.md`/`review-gate.json` 的 `passed`。
-

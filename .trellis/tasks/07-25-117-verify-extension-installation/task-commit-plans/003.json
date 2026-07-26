@@ -403,7 +403,185 @@
     "plan_digest": "7082e1cdd0b3b62a928e88c70fbcbd6419bf33c666e5fafebb5e3c47e37b87dd"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-26T00:28:22Z",
+    "commit_sha": "3bfbd100c8d75a619da19627e7da276a3f2e367b",
+    "parent": "538def79408d417107c3adae61c4466116395d96",
+    "message_sha256": "68999941116e271293f03b390d805bc47d54a20db20edcee63958e0adb7a8123",
+    "committed_paths": [
+      ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "6c5e5a2076b7e221371815447fe41458681b467b",
+      "actual_tree": "6c5e5a2076b7e221371815447fe41458681b467b",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "f3f53a140879c1ec69bc0d4e2dd280caa781bbfc",
+          "expected_mode": "100644",
+          "actual_blob": "f3f53a140879c1ec69bc0d4e2dd280caa781bbfc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+          "expected_mode": "100755",
+          "actual_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+          "expected_blob": "11ab6a889c74dc1e4bba0e74a7376d69e48317cd",
+          "expected_mode": "100644",
+          "actual_blob": "11ab6a889c74dc1e4bba0e74a7376d69e48317cd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-check.json",
+          "expected_blob": "7b6a6682d6e8fd66469a9505828a31abf8828bce",
+          "expected_mode": "100644",
+          "actual_blob": "7b6a6682d6e8fd66469a9505828a31abf8828bce",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+          "expected_blob": "623b3e4ca30c66f03d72393bab5f41874d069d86",
+          "expected_mode": "100644",
+          "actual_blob": "623b3e4ca30c66f03d72393bab5f41874d069d86",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
+          "expected_blob": "ba58196f851d9d02797884a36d5c91d01857dbd7",
+          "expected_mode": "100644",
+          "actual_blob": "ba58196f851d9d02797884a36d5c91d01857dbd7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
+          "expected_blob": "ce79f3e36eab6df4445a17f367a20f219de9687d",
+          "expected_mode": "100644",
+          "actual_blob": "ce79f3e36eab6df4445a17f367a20f219de9687d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
+          "expected_blob": "e294cab0e45520f706e95c255a396072f3c47cc7",
+          "expected_mode": "100644",
+          "actual_blob": "e294cab0e45520f706e95c255a396072f3c47cc7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
+          "expected_blob": "40a115802303b1cd9b22fdd9d834592ff428d3c4",
+          "expected_mode": "100644",
+          "actual_blob": "40a115802303b1cd9b22fdd9d834592ff428d3c4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
+          "expected_blob": "dee2b454f2da8e75085964ec284fcc64cb307ff8",
+          "expected_mode": "100644",
+          "actual_blob": "dee2b454f2da8e75085964ec284fcc64cb307ff8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "expected_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "expected_mode": "100644",
+          "actual_blob": "43437ce51ecdcec41eca60d230784d90d4d57026",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+          "expected_mode": "100755",
+          "actual_blob": "76b5b1f8047dc0d83505a205e3e0ebe594fdc143",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "ebaadbd0cadf604c8406eaa8def08a3b7411864a",
+          "expected_mode": "100644",
+          "actual_blob": "ebaadbd0cadf604c8406eaa8def08a3b7411864a",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }
