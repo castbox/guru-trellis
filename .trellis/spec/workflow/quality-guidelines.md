@@ -101,8 +101,9 @@ from an example or unchecked executor result, and output examples are not read
 as production serializer input.
 
 Repeat the same matrix for `production-minimal-handoff-v1`: exactly three
-packages, ten profiles, and 11 exits. Then validate the combined live-active
-closure at twelve Skills and 46 exits. Negative tests cover missing, extra,
+packages, ten profiles, and 11 exits. Then validate the current package closure
+at thirteen active Skills and 52 external exits, while the deferred global
+workflow projection remains 12 invokes, 46 exits, and 27 targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or legacy entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Stage 0/production
@@ -118,9 +119,9 @@ closed loop. Existing
 commit transaction tests remain mandatory because the new candidate builder is
 not authorization to replace or weaken the executor.
 
-The five `skill_input_authoring_seed` edges have positive partition/projection
+The twelve `skill_input_authoring_seed` edges have positive partition/projection
 probes and negative overlap, overwrite, missing, extra, unknown, private-lookup,
-runtime-semantic-reconstruction, and fifth-operation fixtures. Each positive
+runtime-semantic-reconstruction, and unsupported fifth-operation fixtures. Each positive
 probe independently validates seed and authoring example keys, proves disjoint
 union equals the complete target required set, performs a no-overwrite merge,
 and validates the merged target input before invoking the real consumer wrapper.
@@ -591,9 +592,10 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  11-Skill/42-exit active closure while the production activation unit remains
-  three Skills/11 exits. Update and preset reapply must reproduce that closure
-  with zero unresolved `.new` or `.bak`.
+  thirteen-Skill/52-exit current package closure while the production activation
+  unit remains three Skills/11 exits and global markers remain deferred at
+  12 invokes, 46 exits, and 27 targets. Update and preset reapply must reproduce
+  that closure with zero unresolved `.new` or `.bak`.
 
 ## Task Publication Review Quality
 
@@ -636,14 +638,16 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert twelve active Skills and 46
-exits while `production-minimal-handoff-v1` remains three Skills/11 exits.
+Source/installed/platform/throwaway checks assert thirteen active Skills and 52
+external exits while `production-minimal-handoff-v1` remains three Skills/11
+exits and global workflow markers remain 12 invokes, 46 exits, and 27 targets
+until #119 activates the Finish family.
 
 ## Extension Installation Verification Quality
 
 `guru-verify-extension-installation` tests cover both structurally distinct
-inputs, four independent outputs/consumers/projections, workflow target
-bootstrap without a #118 producer edge, task-local and session-only
+inputs, four independent outputs/consumers/projections, the active finalizer
+producer/consumer edges without #119 global routing, task-local and session-only
 persistence, and public/private field exclusion.
 
 Runtime coverage includes changed-surface facts without route ownership,
@@ -668,3 +672,41 @@ inventory, platform equality, ownership freeze, managed sidecars, README
 commands, redaction, and final zero unresolved `.new`/`.bak`. Production eval
 and this remote-ref run are recorded independently and neither substitutes for
 the other.
+
+## Task Finalization Quality
+
+`guru-finalize-task` quality coverage exercises all six distinct public input
+profiles, all six `exit_id` outputs, the seven finalization-family target-owned
+authoring handoffs, semantic Gate/confirmation ordering, and the owner-private
+recovery loop. Together with the five prior handoffs, the active package graph
+contains twelve target-owned `skill_input_authoring_seed` handoffs.
+
+The package-private `closeout-plan.schema.json` and the workflow runtime owner
+schema share one identity and must carry identical `inputs` semantics:
+`minProperties=6`, with every value a closed object requiring exactly `path`
+and `sha256`. Source and installed regressions must prove empty, undersized,
+missing-field, and extra-field inputs are rejected consistently; discovery may
+not publish a weaker private contract than runtime validation.
+
+Package-local production eval executes the real public wrapper, selects the
+per-exit schema from the actual returned `exit_id`, and only then compares
+`expected_exit`. Transaction regressions preserve the complete #105
+prepare/push/verification/draft/projection/archive/HEAD/ready failure and
+recovery matrix without adding hostile-input, concurrency, locking, TOCTOU,
+crash-consistency, or cross-OS mechanisms.
+
+Finalizer regressions also prove that the generic #117 checker remains strict
+while the finalizer-only immutable-plan augmentation accepts only the declared
+metadata tail, validated evidence commit, committed archived plan/evidence, and
+exact archive transaction. Tests reject extra paths, wrong repository identity,
+locator drift, and non-exact archive commits. They require a private published
+marker before terminal completion, forbid early or persisted public DTOs,
+materialize the terminal DTO only through the public wrapper with the archive
+locator, prove the wrapper performs no transition, and cover every legal and
+illegal same-plan resume state including rejection of `prepared` and `ready`.
+
+Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
+script modes must match after fresh install, update, and preset reapply. The
+package closure is thirteen active Skills and 52 external exits; global markers
+remain 12 invokes, 46 exits, and 27 targets until #119. Upstream Finish assets
+remain unchanged, with physical overlay cleanup owned by #132.

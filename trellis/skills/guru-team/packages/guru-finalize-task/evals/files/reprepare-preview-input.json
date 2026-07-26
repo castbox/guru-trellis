@@ -1,0 +1,1 @@
+{"profile":"reprepare_preview","mode":"workflow","task_ref":".trellis/tasks/current","reason_code":"archive_month_changed","reprepare_intent":"Prepare and review a new immutable plan for the current archive month.","reprepare_context":"The task remains active and the prior plan archive month is no longer current."}

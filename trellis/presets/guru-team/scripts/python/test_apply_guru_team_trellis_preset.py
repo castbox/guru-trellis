@@ -418,6 +418,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         fresh_paths = [record["path"] for record in json.loads(outputs[0][0])]
         reapplied_paths = [record["path"] for record in json.loads(outputs[0][1])]
         self.assertEqual(fresh_paths, reapplied_paths)
+        registry = json.loads(
+            (
+                guru_root
+                / "trellis/skills/guru-team/registry.json"
+            ).read_text(encoding="utf-8")
+        )
+        active_package_count = sum(
+            entry.get("state") == "active"
+            for entry in registry["skills"]
+        )
         group_order: list[str] = []
         for path in fresh_paths:
             group = next(
@@ -437,54 +447,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             group_order,
             [
                 "installed",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
+                *(
+                    ["shared", "codex", "claude", "cursor"]
+                    * active_package_count
+                ),
             ],
         )
 
@@ -498,6 +464,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/discover-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-command.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/preview-finalization.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-finalization-gate.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-finalization-gate.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/execute-finalization-transition.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/sync-base.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-base-sync.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/preview-change-context-history.sh"), preset.MANAGED_ASSET_PATHS)
@@ -537,6 +507,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh", os.X_OK))
+        for name in (
+            "preview-finalization.sh",
+            "record-finalization-gate.sh",
+            "check-finalization-gate.sh",
+            "execute-finalization-transition.sh",
+        ):
+            self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash" / name).is_file())
+            self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash" / name, os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/sync-base.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-base-sync.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/preview-change-context-history.sh", os.X_OK))
@@ -755,7 +733,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 98)
+        self.assertEqual(len(managed_assets), 102)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -1021,7 +999,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('verify_contract_wording_standalone_profiles "after-update"', verifier)
         self.assertIn('verify_change_request_review_package "initial"', verifier)
         self.assertIn('verify_change_request_review_package "after-update"', verifier)
-        self.assertIn('"planned_skill_ids"] == ["guru-finalize-task"]', verifier)
+        self.assertIn('"planned_skill_ids"] == []', verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"', verifier)
         self.assertIn('test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"', verifier)
         self.assertIn('test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
@@ -1052,7 +1030,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 98", verifier)
+        self.assertIn("assert len(assets) == 102", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
             self.assertIn(
@@ -1649,9 +1627,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
         for field, expected_count in (
-            ("public_input_schema_ids", 30),
-            ("typed_output_schema_ids", 46),
-            ("private_artifact_schema_ids", 13),
+            ("public_input_schema_ids", 36),
+            ("typed_output_schema_ids", 52),
+            ("private_artifact_schema_ids", 15),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -1701,6 +1679,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-create-task-commit",
                 "guru-create-task-workspace",
                 "guru-discover-change-context",
+                "guru-finalize-task",
                 "guru-review-branch",
                 "guru-review-change-request",
                 "guru-review-contract-wording",
@@ -1711,7 +1690,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(
             public_api["skill_contracts"]["planned_skill_ids"],
-            ["guru-finalize-task"],
+            [],
         )
         self.assertIn(
             "guru-base-sync-result-1.0",

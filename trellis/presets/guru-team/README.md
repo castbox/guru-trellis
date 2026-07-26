@@ -231,9 +231,9 @@ Preset 同时安装冻结的 interface 1.2 与独立 interface 1.3 schema，并�
 Active registry row 以 exact `interface_schema_id` / `io_contract_state` 选择
 `1.2+legacy` 或 `1.3+minimal_handoff`；`stage0-minimal-handoff-v1` 中六个 Stage 0
 packages/24 exits 已全部使用 1.3；独立 `production-minimal-handoff-v1` 中
-planning/check/commit 三包/十 profiles/11 exits 也使用 1.3。当前 active closure 为 12/46，
+planning/check/commit 三包/十 profiles/11 exits 也使用 1.3。当前 active closure 为 13/52，
 `legacy_skill_ids=[]`，Stage 0 identity 保持 6/24。
-Preset 在一次 staging transaction 中安装两个 migration manifests/schemas、十二包 public
+Preset 在一次 staging transaction 中安装两个 migration manifests/schemas、十三包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Mixed 1.2/1.3 representative fixture、fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
@@ -241,8 +241,8 @@ production registry、extension inventory、installed files 或 selected-platfor
 planning/check/commit 三包与 11 exits；第十包 `guru-review-branch` 不改写该 manifest。
 同一 transaction 还安装 Interface 1.3 additive
 `skill_input_authoring_seed` shape、planning self-reentry、check passed 到 initial commit、
-commit self-reentry、commit-to-Branch-Review 与 Branch-Review-to-publication
-五条声明 edge 的 target-owned
+commit self-reentry、commit-to-Branch-Review、Branch-Review-to-publication 与
+finalization family 共十二条声明 edge 的 target-owned
 authoring examples 与 partition/no-overwrite/full-target-schema probes。该 kind 不增加第五种
 projection operation；部分 edge、缺失 authoring example 或 canonical/installed/platform
 字节不一致均视为 mixed production graph。
@@ -259,16 +259,19 @@ workflow caller 先编写 task-local `pr-body.md` 与
 `finish-summary-index.json` 初始候选，再 mandatory invoke active
 `guru-review-task-publication`。Caller preparation 不判断 publication semantic
 结论；缺失或结构错误先失败关闭。Phase 3.7 不得在 `ready` 后首次创建或修改两份
-content，唯一 planned missing-Skill stop 为
-`ready -> guru-finalize-task`。Baseline SHA 与 overlay path 集合保持不变，reviewed
+content。Active `guru-finalize-task` package 与 public edge 由 preset additive
+distribution 安装，但 global `ready -> guru-finalize-task` invocation/order 仍由 #119
+持有并 fail closed。Baseline SHA 与 overlay path 集合保持不变，reviewed
 current payload hashes 随本次 active route 更新。
 
 新增 additive active `guru-verify-extension-installation` package 安装两个
 structurally distinct inputs、四个 per-exit contracts、private
 `marketplace-verification.json` schema、seven-case production corpus 与 thin wrappers。
-它不修改 Stage 0 6/24 或 production 3/11 manifest，也不激活 planned
-`guru-finalize-task` 的 #118 producer edge。Source/installed validator 的 live closure
-为 12 Skills / 46 exits / 27 targets。
+它不修改 Stage 0 6/24 或 production 3/11 manifest。Active
+`guru-finalize-task` 另行安装六个 distinct profiles、六个 `exit_id` outputs、
+private gate、八条 production eval cases 与四个 finalization runtime wrappers，并
+具体绑定 #116/#117 producer edges。Source/installed package closure 为 13 Skills /
+52 exits；global workflow marker closure 仍为 12 invokes / 46 exits / 27 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -365,6 +368,10 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/record-extension-verification.sh`
 - `.trellis/guru-team/scripts/bash/check-extension-verification.sh`
 - `.trellis/guru-team/scripts/bash/invoke-extension-verification.sh`
+- `.trellis/guru-team/scripts/bash/preview-finalization.sh`
+- `.trellis/guru-team/scripts/bash/record-finalization-gate.sh`
+- `.trellis/guru-team/scripts/bash/check-finalization-gate.sh`
+- `.trellis/guru-team/scripts/bash/execute-finalization-transition.sh`
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
 - `.trellis/guru-team/scripts/bash/backfill-finish-summary.sh`
@@ -375,10 +382,11 @@ Production skill registry 同时保留 reserved `guru-create-work-commit`，以�
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request`、
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
-`guru-review-branch`、`guru-review-task-publication`、
-`guru-verify-extension-installation`。这十二个 active packages 共声明
-46 个 external exits。Planned `guru-finalize-task`
-不安装 package，也不能拥有 invoke/exit marker。当前
+`guru-finalize-task`、`guru-review-branch`、`guru-review-task-publication`、
+`guru-verify-extension-installation`。这十三个 active packages 共声明
+52 个 external exits。`guru-finalize-task` 的
+`workflow_integration_state=deferred`，因此 package 可直接发现但不拥有 global
+invoke/exit marker；#119 负责激活。当前
 canonical extension version 是待发布的
 `0.6.5-guru.23`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
@@ -693,8 +701,8 @@ Its `passed` exit proceeds through the same entries to active
 `guru-review-task-publication`: the caller first authors the two current
 task-local publication content candidates, then invokes the active owner with
 only its declared target-owned fields. The caller does not decide publication
-sufficiency or readiness, and the route stops only at the later planned
-`guru-finalize-task` consumer.
+sufficiency or readiness. The later `guru-finalize-task` consumer is active and
+installed; only its global Finish-family invocation remains deferred to #119.
 
 `review-branch.sh` and `check-review-gate.sh` are package-owned deterministic
 recorder/validator implementation details. They run only after the AI Review

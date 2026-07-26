@@ -67,12 +67,13 @@ Before any public skill read/write/remove, validate lexical repo containment
 and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
 
-The atomic production package inventory includes the Interface 1.3 additive
-`skill_input_authoring_seed` schema shape, five target-owned authoring
-examples, the production manifest bindings, and their validator/probe tests.
-Canonical, installed, shared, Codex, Cursor, and Claude copies must carry
-byte-identical contracts; a graph that has only part of those four edge
-bindings is a mixed production activation and must fail before target mutation.
+The atomic current package inventory includes the Interface 1.3 additive
+`skill_input_authoring_seed` schema shape, twelve target-owned authoring
+examples, the production manifest bindings, the seven finalization-family
+bindings, and their validator/probe tests. Canonical, installed, shared, Codex,
+Cursor, and Claude copies must carry byte-identical contracts; a graph that has
+only part of those twelve handoffs is a mixed package activation and must fail
+before target mutation.
 
 Installed package validation parses the installed workflow target declarations
 as well as invoke/exit markers. Every `skill` consumer must resolve to an active
@@ -532,22 +533,25 @@ That manifest changes only its committed consumer/projection binding and
 authoring-seed edge inventory from three to four.
 
 The historical pre-#116 state installed
-`guru-review-task-publication` as a planned identity only. The current
-installation must not preserve that obsolete boundary: it installs the active
-package and routes Branch Review `passed` through the five continue entries to
-the active owner. Only `guru-finalize-task` remains planned and unavailable.
+`guru-review-task-publication` as a planned identity only, and #116 initially
+left `guru-finalize-task` planned. The current installation must preserve
+neither obsolete boundary: it installs both active packages and routes Branch
+Review `passed` through the five continue entries to the active publication
+owner. The finalizer package is directly discoverable while its global
+Finish-family invocation/order remains deferred to #119.
 
 ## Task Publication Package Activation
 
 `guru-review-task-publication` is installed as an additive active Interface 1.3
-package together with its registry row, planned `guru-finalize-task` identity,
-consumer schemas, runtime commands, extension inventories, canonical workflow
-markers, installed shared package, and selected Codex/Cursor/Claude copies.
+package together with its registry row, active `guru-finalize-task` consumer
+identity, consumer schemas, runtime commands, extension inventories, canonical
+workflow markers, installed shared package, and selected Codex/Cursor/Claude copies.
 Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
-The activation contributes to the current twelve active Skills and 46 exits.
+The activation contributes to the current package closure of thirteen active
+Skills and 52 external exits.
 The existing
 `production-minimal-handoff-v1` remains exactly three Skills and 11 exits with
 its original activation identity; #116 is derived as an additional complete
@@ -559,8 +563,8 @@ The same preset transaction updates the five existing continue overlay payloads
 without expanding the frozen 43-path inventory. Those entries require
 caller-owned initial `pr-body.md` / `finish-summary-index.json` authoring before
 the active publication invocation, preserve the active Skill as sole semantic
-owner, and stop only at `ready -> guru-finalize-task` while #118 remains
-unimplemented.
+owner, and stop at the deferred global `ready -> guru-finalize-task` route until
+#119 activates the Finish-family invocation/order.
 
 Clean throwaway install and post-`trellis update` preset reapply both run
 source/installed validation, workflow marker and consumer uniqueness checks,
@@ -573,11 +577,11 @@ marketplace verification remains a later finish-work gate.
 `guru-verify-extension-installation` is installed as an additive active
 Interface 1.3 package with its two input profiles, four per-exit contracts,
 workflow/stop consumers, private gate schema, seven-case corpus, thin wrappers,
-registry row, workflow markers, and extension inventories. It increases the
-live closure to twelve Skills and 46 exits without changing the Stage 0
+registry row, workflow markers, and extension inventories. It participates in
+the current thirteen-Skill/52-exit package graph without changing the Stage 0
 six-Skill/24-exit identity or the production three-Skill/11-exit membership.
-`guru-finalize-task` remains planned; the installer must reject any premature
-`#118` producer edge.
+Its `verified` and `not_required` producer edges now target active
+`guru-finalize-task`; global Finish routing remains deferred to #119.
 
 Managed executable companion assets include
 `execute-extension-verification.sh`,
@@ -590,8 +594,9 @@ not a second implementation.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
-wrapper executable modes, 12/46 workflow closure, 27 target markers, and the
-frozen 43-entry ownership inventory. The executor reads `legacy_entries` and
+wrapper executable modes, the thirteen-Skill/52-exit package closure, the
+deferred global closure of 12 invokes, 46 exits, and 27 targets, and the frozen
+43-entry ownership inventory. The executor reads `legacy_entries` and
 its frozen digest; a new legacy owner fails. Unknown edits retain `.new`,
 known upgrades retain `.bak`, and completion requires their explicit
 resolution plus a recursive zero-sidecar scan.
@@ -600,3 +605,20 @@ The installed production eval smoke is distinct from pushed-remote clean
 installation. Throwaway local/update coverage may validate the former and the
 deterministic matrix, but release evidence must separately name the exact
 remote ref/HEAD or report that verification as deferred.
+
+## Task Finalization Package Activation
+
+`guru-finalize-task` is installed as an additive active Interface 1.3 package
+with six distinct public input profiles, six `exit_id` output contracts,
+twelve target-owned `skill_input_authoring_seed` handoffs across the
+complete package graph, one owner-private finalization gate, the closeout-plan
+schema, real-wrapper eval corpus, and the deterministic runtime wrappers. Its
+canonical, installed shared, Codex, Cursor, and Claude package/corpus bytes must
+remain identical and every wrapper must retain executable mode.
+
+The current source/installed package graph contains thirteen active Skills and
+52 external exits. The global workflow projection deliberately remains 12
+invokes, 46 exits, and 27 targets because #119 owns Finish-family invocation,
+ordering, combined acceptance, and #115 closure. The preset must not modify
+upstream `trellis-finish-work` Skill/Command/Prompt overlays; #132 remains the
+owner of their physical cleanup.

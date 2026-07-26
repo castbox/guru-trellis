@@ -346,10 +346,10 @@ class SourceValidationTests(unittest.TestCase):
         )
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
-        self.assertEqual(result["facts"]["planned_ids"], ["guru-finalize-task"])
+        self.assertEqual(result["facts"]["planned_ids"], [])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"],
+            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"],
         )
         self.assertEqual(result["facts"]["invoke_markers"], 12)
         self.assertEqual(result["facts"]["exit_markers"], 46)
@@ -701,7 +701,7 @@ class SourceValidationTests(unittest.TestCase):
                 path,
             )
 
-    def test_public_docs_report_current_branch_review_package_state(self) -> None:
+    def test_public_docs_report_current_finalization_package_state(self) -> None:
         readmes = [
             REPO / "README.md",
             REPO / "trellis/workflows/guru-team/README.md",
@@ -719,7 +719,14 @@ class SourceValidationTests(unittest.TestCase):
         for path in readmes:
             text = path.read_text(encoding="utf-8")
             self.assertIn("guru-review-branch", text, path)
-            self.assertRegex(text, r"(?:12 Skills / 46 exits|12/46|十二个 active packages 共声明\s*46)")
+            self.assertRegex(
+                text,
+                r"(?:13 Skills\s*/\s*52 exits|13/52|十三个 active packages 共声明\s*52)",
+            )
+            self.assertRegex(
+                text,
+                r"(?:12/46/27|12 invokes?\s*/\s*46 exits?\s*/\s*27 targets?)",
+            )
             self.assertRegex(text, r"(?:唯一的|sole) Phase 3\.5 semantic owner")
             self.assertIn("deterministic", text, path)
             self.assertIn("11 exits", text, path)
@@ -732,8 +739,8 @@ class SourceValidationTests(unittest.TestCase):
         ]
         for path in durable_docs:
             text = path.read_text(encoding="utf-8")
-            self.assertIn("twelve active", text, path)
-            self.assertRegex(text, r"46\s+external\s+exits")
+            self.assertIn("thirteen active", text, path)
+            self.assertRegex(text, r"52\s+external\s+exits")
             self.assertIn("guru-review-branch", text, path)
             self.assertRegex(text, r"11\s+exits")
             for phrase in stale_phrases:
@@ -742,6 +749,114 @@ class SourceValidationTests(unittest.TestCase):
             durable_docs[0].read_text(encoding="utf-8"),
             r"three packages and 11\s+exits",
         )
+
+    def test_finalizer_durable_docs_distinguish_package_and_global_closure(self) -> None:
+        durable_docs = [
+            REPO / ".trellis/spec/preset/upstream-ownership.md",
+            REPO / ".trellis/spec/preset/installer.md",
+            REPO / ".trellis/spec/docs/public-docs.md",
+            REPO / ".trellis/spec/workflow/quality-guidelines.md",
+            REPO / ".trellis/spec/workflow/index.md",
+        ]
+        stale_current_claims = (
+            "`guru-finalize-task` remains a planned registry identity only",
+            "Only `guru-finalize-task` remains planned and unavailable",
+            "`guru-finalize-task` remains planned; the installer must reject",
+            "publication `ready` points to planned `guru-finalize-task`",
+            "`ready` targets planned `guru-finalize-task`",
+            "future target bootstrap but does not activate the #118 producer edge",
+            "closure at twelve Skills and 46 exits",
+            "checks assert twelve active Skills and 46 exits",
+            "real-wrapper eval, 12/46 closure",
+        )
+        for path in durable_docs:
+            with self.subTest(path=path):
+                text = path.read_text(encoding="utf-8")
+                normalized = " ".join(text.split())
+                self.assertIn("thirteen active Skills and 52 external exits", normalized)
+                self.assertIn(
+                    "twelve target-owned `skill_input_authoring_seed` handoffs",
+                    normalized,
+                )
+                self.assertIn("12 invokes, 46 exits, and 27 targets", normalized)
+                self.assertIn("guru-finalize-task", text)
+                self.assertIn("#119", text)
+                self.assertIn("#132", text)
+                for claim in stale_current_claims:
+                    self.assertNotIn(claim, normalized, path)
+
+    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
+    def test_finalizer_closeout_schema_matches_runtime_and_installed(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        source_path = (
+            SKILLS_ROOT
+            / "packages/guru-finalize-task/schemas/closeout-plan.schema.json"
+        )
+        runtime_path = (
+            REPO / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+        )
+        installed_paths = [
+            REPO
+            / ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+            REPO / ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            REPO / ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            REPO / ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            REPO / ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+        ]
+        source_bytes = source_path.read_bytes()
+        source_schema = json.loads(source_bytes)
+        runtime_schema = json.loads(runtime_path.read_text(encoding="utf-8"))
+        self.assertEqual(source_schema, runtime_schema)
+        for path in installed_paths:
+            self.assertEqual(path.read_bytes(), source_bytes, path)
+
+        valid_inputs = {
+            f"input_{index}": {
+                "path": f".trellis/tasks/07-26-finalize/artifact-{index}.json",
+                "sha256": f"{index:x}" * 64,
+            }
+            for index in range(1, 7)
+        }
+        malformed_missing = json.loads(json.dumps(valid_inputs))
+        malformed_missing["input_1"].pop("sha256")
+        malformed_extra = json.loads(json.dumps(valid_inputs))
+        malformed_extra["input_1"]["size"] = 1
+        invalid_inputs = [
+            {},
+            dict(list(valid_inputs.items())[:5]),
+            malformed_missing,
+            malformed_extra,
+        ]
+
+        for path in [source_path, runtime_path, *installed_paths]:
+            with self.subTest(path=path):
+                schema = json.loads(path.read_text(encoding="utf-8"))
+                inputs_schema = {
+                    "$schema": schema["$schema"],
+                    "$defs": schema["$defs"],
+                    **schema["properties"]["inputs"],
+                }
+                validator = Draft202012Validator(inputs_schema)
+                self.assertTrue(validator.is_valid(valid_inputs))
+                self.assertEqual(
+                    runtime.skill_json_schema_validation_errors(
+                        valid_inputs,
+                        inputs_schema,
+                        "finalizer closeout inputs",
+                    ),
+                    [],
+                )
+                for invalid in invalid_inputs:
+                    self.assertFalse(validator.is_valid(invalid), (path, invalid))
+                    self.assertTrue(
+                        runtime.skill_json_schema_validation_errors(
+                            invalid,
+                            inputs_schema,
+                            "finalizer closeout inputs",
+                        ),
+                        (path, invalid),
+                    )
 
     def test_public_readmes_share_standalone_runtime_semantics(self) -> None:
         readmes = [
@@ -1250,7 +1365,7 @@ class SourceValidationTests(unittest.TestCase):
                 "patternProperties": {"^result$": {"const": "not the example"}},
             }),
             "nested-unsupported": lambda schema: schema["properties"]["result"].update({
-                "minProperties": 1,
+                "maxProperties": 1,
             }),
             "keyword-type": lambda schema: schema["properties"]["result"].update({
                 "minLength": "1",
@@ -3811,7 +3926,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -3935,20 +4050,20 @@ class Stage0MigrationManifestTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["stage0_activation_unit"], "stage0-minimal-handoff-v1")
-        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 12)
+        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 13)
         self.assertEqual(len(result["facts"]["legacy_ids"]), 0)
         self.assertEqual(
             result["facts"]["production_activation_unit"],
             "production-minimal-handoff-v1",
         )
 
-    def test_durable_docs_match_five_authoring_edges_and_three_skill_migration(self) -> None:
+    def test_durable_docs_match_current_authoring_edges_and_three_skill_migration(self) -> None:
         expected_docs = {
-            "README.md": "五条 semantic edge",
+            "README.md": "共十二条 semantic edge",
             "trellis/workflows/guru-team/README.md": (
-                "五条 semantic package handoff"
+                "十二条 semantic package handoff"
             ),
-            "trellis/presets/guru-team/README.md": "五条声明 edge",
+            "trellis/presets/guru-team/README.md": "共十二条声明 edge",
             "docs/requirements/README.md": "五条 edge 使用 target-owned",
             "docs/requirements/requirement-main.md": (
                 "active Task Publication Review 五条 edge"
@@ -3963,13 +4078,13 @@ class Stage0MigrationManifestTests(unittest.TestCase):
                 "For the five approved production semantic edges"
             ),
             ".trellis/spec/workflow/quality-guidelines.md": (
-                "The five `skill_input_authoring_seed` edges"
+                "The twelve `skill_input_authoring_seed` edges"
             ),
             ".trellis/spec/preset/installer.md": (
-                "five target-owned authoring"
+                "twelve target-owned authoring"
             ),
             ".trellis/spec/preset/upstream-ownership.md": (
-                "the five target-owned"
+                "the twelve target-owned"
             ),
         }
         for relative, expected in expected_docs.items():
@@ -4161,11 +4276,132 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             native_trace["events"][-1]["argv"],
         )
 
+    def test_finalizer_public_wrapper_projects_live_missing_publication_as_stale(
+        self,
+    ) -> None:
+        task_ref = ".trellis/tasks/07-26-finalizer-stale"
+        task_dir = self.repo / task_ref
+        task_dir.mkdir(parents=True)
+        (task_dir / "task.json").write_text(
+            json.dumps(
+                {
+                    "id": "07-26-finalizer-stale",
+                    "name": "07-26-finalizer-stale",
+                    "title": "Finalizer stale publication regression",
+                    "status": "in_progress",
+                    "branch": "main",
+                    "base_branch": "main",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        runtime_dir = self.repo / ".trellis/.runtime/guru-team"
+        runtime_dir.mkdir(parents=True, exist_ok=True)
+        input_relative = ".trellis/.runtime/guru-team/finalizer-stale-input.json"
+        review_relative = ".trellis/.runtime/guru-team/finalizer-stale-review.json"
+        (self.repo / input_relative).write_text(
+            json.dumps(
+                {
+                    "profile": "publication_ready",
+                    "mode": "workflow",
+                    "task_ref": task_ref,
+                    "reviewed_head": "a" * 40,
+                    "publication_ref": "publication:missing-current-owner",
+                    "finalization_intent": (
+                        "Route stale publication evidence through the declared owner."
+                    ),
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (self.repo / review_relative).write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "skill_id": "guru-finalize-task",
+                    "review": {
+                        "status": "reroute",
+                        "summary": (
+                            "The publication owner artifact is missing, so no closeout "
+                            "plan or side effect is authorized."
+                        ),
+                        "evidence_refs": ["publication-owner-check:missing"],
+                    },
+                    "confirmation": {
+                        "status": "not_required",
+                        "confirmed_plan_digest": None,
+                        "summary": "No immutable plan exists and no side effect is authorized.",
+                    },
+                    "route": {
+                        "typed_exit": "publication_review_stale",
+                        "consumer": {
+                            "kind": "skill",
+                            "id": "guru-review-task-publication",
+                        },
+                        "output": {
+                            "exit_id": "publication_review_stale",
+                            "task_ref": task_ref,
+                            "stale_reason": "publication_review_missing",
+                        },
+                    },
+                    "supersedes_gate_ref": None,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        recorder = (
+            self.repo
+            / ".agents/skills/guru-finalize-task/scripts/record-finalization-gate.sh"
+        )
+        recorded = subprocess.run(
+            [
+                str(recorder),
+                "--input",
+                input_relative,
+                "--review-input",
+                review_relative,
+            ],
+            cwd=self.repo,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(recorded.returncode, 0, recorded.stderr)
+        record_payload = json.loads(recorded.stdout)
+        self.assertEqual(record_payload["typed_exit"], "publication_review_stale")
+        self.assertIsNone(record_payload["plan_ref"])
+        self.assertIsNone(record_payload["plan_digest"])
+
+        gate_relative = f"{task_ref}/task-finalization-gate.json"
+        output = self.invoke(
+            "guru-finalize-task",
+            [
+                "--input",
+                input_relative,
+                "--owner-result",
+                gate_relative,
+            ],
+        )
+        self.assertEqual(
+            output,
+            {
+                "exit_id": "publication_review_stale",
+                "task_ref": task_ref,
+                "stale_reason": "publication_review_missing",
+            },
+        )
+        self.assertFalse((task_dir / "closeout-plan.json").exists())
+
     def test_production_shared_adapter_stages_exact_allowlist_and_real_wrappers(self) -> None:
         self.assertEqual(native_adapter.PRODUCTION_SKILLS, {
             "guru-approve-task-plan",
             "guru-check-task",
             "guru-create-task-commit",
+            "guru-finalize-task",
             "guru-review-branch",
             "guru-review-task-publication",
             "guru-verify-extension-installation",
@@ -4174,6 +4410,11 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             ("guru-approve-task-plan", "approved-initial", "approved"),
             ("guru-check-task", "passed-initial", "passed"),
             ("guru-create-task-commit", "revision-required", "revision-required"),
+            (
+                "guru-finalize-task",
+                "publication-verification-required",
+                "verification_required",
+            ),
             ("guru-review-branch", "workflow-passed", "passed"),
             ("guru-review-task-publication", "workflow-initial-ready", "ready"),
             (

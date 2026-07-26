@@ -1,0 +1,871 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-26T12:30:18Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "task_identity_sha256": "620307f74c85abb75277a080a760f12c65573f647b83db1a3019d06a99989fac",
+    "scope_ledger_sha256": "68a4b480701c2781a716c9d4780c0dd39c715c22840123edf93a6ec85ebe9a3d",
+    "status": "in_progress",
+    "branch": "feat/118-guru-finalize-task",
+    "issue_numbers": [
+      118
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "dirty_paths": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/check.jsonl",
+      ".trellis/tasks/07-26-118-guru-finalize-task/context-discovery.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/contract-wording-review.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implement.jsonl",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
+      "trellis/guru-team-extension.json",
+      "trellis/skills/guru-team/consumers/stop/production/finalize-task-blocked.schema.json",
+      "trellis/skills/guru-team/consumers/workflow/production/finalize-task-published.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-blocked-output.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-invocation-error.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-publication-ready-authoring.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-publication-ready-input.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-publication-review-stale-authoring.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-publication-review-stale-output.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-published-output.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-reprepare-preview-authoring.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-reprepare-preview-input.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-reprepare-required-output.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-resume-finalization-output.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-same-plan-resume-authoring.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-same-plan-resume-input.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-finalization-input.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-not-required-authoring.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-not-required-input.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-required-authoring.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-required-output.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-verified-authoring.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-verified-input.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/semantic-review-input.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/examples/task-finalization-gate.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-blocked-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-invocation-error.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-publication-ready-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-publication-review-stale-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-published-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-reprepare-preview-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-reprepare-required-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-resume-finalization-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-same-plan-resume-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-standalone-finalization-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-verification-not-required-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-verification-required-output.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-verification-verified-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/semantic-review-input.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/check-finalization-gate.sh",
+      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/execute-finalization-transition.sh",
+      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/invoke.sh",
+      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/preview-finalization.sh",
+      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/record-finalization-gate.sh",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/interface.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-verification-required-authoring.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "captured_at": "2026-07-26T12:30:18Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:118",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/118",
+      "sha256": "b0d5f45074ff98a68bba09edff09bc05ec9dc3a187b139400649e96d291cdb31",
+      "updated_at": "2026-07-22T11:05:15Z"
+    },
+    {
+      "id": "comment:118:5045036678",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/118#issuecomment-5045036678",
+      "sha256": "1b3db619ecd40fd52cf9076a725272973ce752b3f0d19cc0a6a62d48636626e6",
+      "updated_at": null
+    },
+    {
+      "id": "repo:AGENTS",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    },
+    {
+      "id": "issue:116",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/116",
+      "sha256": "6bb5d9662d17637a1919e751efdad1f07405ab9438281d4c17a41bf859f4c88a",
+      "updated_at": "2026-07-25T09:59:25Z"
+    },
+    {
+      "id": "issue:117",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/117",
+      "sha256": "545ca8ec5895b94a2cb5e05e6111ca01982a027823b4b741e8fb6eb2821423f1",
+      "updated_at": "2026-07-26T10:08:20Z"
+    },
+    {
+      "id": "issue:119",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/119",
+      "sha256": "f44d394244e873c4400fb93ef968ee0278a63e35414a54772b81b174290a21bf",
+      "updated_at": "2026-07-22T11:09:31Z"
+    },
+    {
+      "id": "issue:132",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/132",
+      "sha256": "99e34179b64e185c72ea1b329fefc024be9506448e7031e76539ed0c8b845c92",
+      "updated_at": "2026-07-22T11:09:42Z"
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+      "sha256": "770e27527c6b65496d6a68380d42addcc5dc39d3ad5b5161d0172a15aac19bd9",
+      "size_bytes": 11160,
+      "modified_at": "2026-07-26T11:17:33.130527+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+      "sha256": "a9d8777afeaa5a880b8bcdba016bd7981be0286fe130d577c4ef6f8a9b39d4b5",
+      "size_bytes": 20792,
+      "modified_at": "2026-07-26T11:17:33.130701+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
+      "sha256": "d26bb6137afa4ae8a5b8b1e3859d74ecb312b03975043f09013712e3261e09a8",
+      "size_bytes": 6695,
+      "modified_at": "2026-07-26T11:17:33.130847+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+      "sha256": "770e27527c6b65496d6a68380d42addcc5dc39d3ad5b5161d0172a15aac19bd9",
+      "size_bytes": 11160,
+      "modified_at": "2026-07-26T11:17:33.130527+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+      "sha256": "a9d8777afeaa5a880b8bcdba016bd7981be0286fe130d577c4ef6f8a9b39d4b5",
+      "size_bytes": 20792,
+      "modified_at": "2026-07-26T11:17:33.130701+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
+      "sha256": "d26bb6137afa4ae8a5b8b1e3859d74ecb312b03975043f09013712e3261e09a8",
+      "size_bytes": 6695,
+      "modified_at": "2026-07-26T11:17:33.130847+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+    "locator": "9. Docs SSOT Plan",
+    "statement_sha256": "fe8264d13cdacdafa2d93bf361df8ad051ac0ea5168e4f0ba8b764a841642c80",
+    "durable_paths": [
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "fdddbad3651104c7439da3622a33ffd5739f812a5ab4407ab7be35995ee291e1",
+    "facts_sha256": "b7bbef9c8136a08c94aef1c7b815bdca8b3fe907954ca7d17101e98a27962eac",
+    "scope_sha256": "4ffa7c02b7510fb383ef31742e4c0888097e3a4578e6918305224817c0fb9ee2",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "Codex primary agent /root",
+    "summary": "已逐份审查固定 planning scope。三份文档完整承接 live Issue #118 与 accepted-current authority，条件路径均给出触发与结果，事务实现只有一个 owner/engine，确定性 gate 与 acceptance 均给出机器可观察结果，零词汇命中未替代需求语义复核。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "P01",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R1. 公共 Skill 与 ownership",
+        "statement_sha256": "81f7fb6ac37cc9977531676d2c73ad0fd306746a91de35c894097259137c3a63",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118",
+          "repo:AGENTS"
+        ],
+        "reason": "Live Issue 与仓库合同共同要求 semantic closed loop。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P02",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R2. 单一事务引擎",
+        "statement_sha256": "9254f006c423333b481386326427cbbbe9c8071878ab700381251dbbdf32f6ee",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118"
+        ],
+        "reason": "Live Issue 明确要求继承 #105 transaction 且保持语义。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P03",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R3. Script 边界",
+        "statement_sha256": "4e83def2d5254fcba3e5b15b8f60e15cd855d7771995c51f56d89d0f0e9f2a06",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118",
+          "repo:AGENTS"
+        ],
+        "reason": "AI judgment 与 deterministic runtime ownership 已由 authority 固定。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P04",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R4. 精确 preview 与确认",
+        "statement_sha256": "a49d158755a244b48ae3e388b0ff8a910153a5deed14cace07e02acc13a145b2",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118"
+        ],
+        "reason": "Preview、exact plan digest 与第一次副作用确认来自 Issue 正文。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P05",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R5. Distinct public input profiles",
+        "statement_sha256": "cfd5b3051a41790353048466bf4579f31c2f6f9e6f65c76539c808fa02e9ba90",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:118:5045036678"
+        ],
+        "reason": "Accepted-current authority 固定 Interface 1.3 distinct profiles。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P06",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R6. Upstream DTO consumption",
+        "statement_sha256": "7ec05056607cd2b340969c27fc308e952b330692c0d54a6e489841e02e923209",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:118:5045036678",
+          "issue:116",
+          "issue:117"
+        ],
+        "reason": "#116 与 #117 current DTO 共同固定最小 producer seed。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P07",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R7. 六个 public exits",
+        "statement_sha256": "387dfdce4c702d9d8cfbb48f6823f3b62046ab387e3edf2593af763fb9d16abd",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:118:5045036678"
+        ],
+        "reason": "Accepted-current authority 固定六个 `exit_id`。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P08",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R8. Reprepare authoring seed",
+        "statement_sha256": "f710f012aa743160058f2bf69c1b3b41ae077fa558ff3e17a33dc4e30b9adc9a",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:118:5045036678"
+        ],
+        "reason": "Reprepare seed 与 authoring partition 已由 accepted-current authority 固定。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P09",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R9. Private state",
+        "statement_sha256": "10a01a6828db688ab9f2ba0fbc2d0d2bb0a7aa6dd64340830a5d28f8348a6ee3",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118",
+          "comment:118:5045036678"
+        ],
+        "reason": "Issue 与 accepted-current authority 都禁止 private transaction state 进入 DTO。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P10",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R10. Verification boundary",
+        "statement_sha256": "674bd584ed8e8002659241192474f6b4c9ecbc1cb907375838bc6bce31b08a9b",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118",
+          "issue:117"
+        ],
+        "reason": "Verification owner 与 transaction ordering 已固定。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P11",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R11. PR、archive 与 recovery",
+        "statement_sha256": "9a5fef5f155306d7e797d2e340e9589312da1506d121e06c3607c0bb1ab28553",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118"
+        ],
+        "reason": "PR/archive/recovery 不变量直接继承 live Issue 与 current #105 engine。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P12",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R12. Production eval",
+        "statement_sha256": "7ba16c68bfe5e7dfb19c4052ed26691cb7fbbc620b16fa0b01df4d5faa301127",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:118:5045036678"
+        ],
+        "reason": "Real wrapper 与 actual-exit schema ordering 已固定。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P13",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R13. 四平台一致",
+        "statement_sha256": "4d47c4a2c3189553fc5734acb40d4d77993436d486a0dbe493761490e61f5d13",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:118:5045036678"
+        ],
+        "reason": "Accepted-current authority 固定四平台 byte identity 与专属协议覆盖。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P14",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R14. Canonical、dogfood 与安装",
+        "statement_sha256": "820bfbf0896c484c9e33f3b43d098a078298d47c64ccc1d5dcfa172201f0e409",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118",
+          "repo:AGENTS"
+        ],
+        "reason": "安装、update、dogfood 与 drift gate 由 Issue 和仓库规则共同固定。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P15",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R15. Issue 与集成边界",
+        "statement_sha256": "44aa0c84ba9079790de63976f5142cd1ecc6fb80bbea33d8ea3650e16544cf6e",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118",
+          "issue:119",
+          "issue:132",
+          "repo:AGENTS"
+        ],
+        "reason": "#118、#119、#132 与 AGENTS 共同固定 close 与 integration boundary。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P16",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "locator": "R16. 正常运行边界",
+        "statement_sha256": "8978db08d9269b210a9c58d4ca143ab53d9df514e0b05334e15d271a29d10a3b",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:118",
+          "repo:AGENTS"
+        ],
+        "reason": "正常运行范围与排除项已明确。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P17",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "3.1 Input profiles",
+        "statement_sha256": "a90673c1647064b146b81079e5d0f53ee0e78b296e22b73f121be14ccfeaa80d",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "comment:118:5045036678"
+        ],
+        "reason": "结构差异必须由 closed profiles 表达。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "distinct_profiles",
+              "tradeoff": "字段精确且 projection 可静态证明。"
+            },
+            {
+              "id": "optional_total_object",
+              "tradeoff": "会把互斥入口折叠为 nullable 总对象并违反 current contract。"
+            }
+          ],
+          "selected_id": "distinct_profiles",
+          "selection_reason": "Interface 1.3 要求 structurally distinct contracts。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P18",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "4.1 `task-finalization-gate.json`",
+        "statement_sha256": "5d3299e0ea9a65b4bcfb8b3913118053cfccb64028c2810da0672e8f75dfe18c",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:118",
+          "repo:AGENTS"
+        ],
+        "reason": "Semantic Gate 与 exact confirmation 必须留下 task-local 审计证据。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "task_local_private_gate",
+              "tradeoff": "随 task archive 保存并能绑定 plan/recovery freshness。"
+            },
+            {
+              "id": "ignored_runtime_only",
+              "tradeoff": "无法为后续 review、recovery 与 archive 提供 durable semantic evidence。"
+            }
+          ],
+          "selected_id": "task_local_private_gate",
+          "selection_reason": "满足 gate audit 与 owner-private persistence。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P19",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "5. Single transaction engine",
+        "statement_sha256": "df882080f636d9267b229c4c59608ca9900f63fd12da4be0d52976c866d476fa",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:118"
+        ],
+        "reason": "新旧入口必须共享一个 deterministic substrate。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "shared_closeout_engine",
+              "tradeoff": "保持 #105 行为并只新增 semantic ownership boundary。"
+            },
+            {
+              "id": "parallel_finalizer_engine",
+              "tradeoff": "产生双重事务 owner 与 recovery drift。"
+            }
+          ],
+          "selected_id": "shared_closeout_engine",
+          "selection_reason": "Issue 明确禁止改变 #105 semantics 或拆出第二套路径。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P20",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "7. Production eval 与测试设计",
+        "statement_sha256": "0775f96baa89c3c60d490efc5ee6b90ca68bcf671e6408f595ecfd402a32de11",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "comment:118:5045036678"
+        ],
+        "reason": "Current production adapter 是 Interface 1.3 real-wrapper eval SSOT。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "extend_native_adapter",
+              "tradeoff": "复用 current actual-exit schema selection 与平台协议。"
+            },
+            {
+              "id": "mock_only_harness",
+              "tradeoff": "不执行真实 wrapper，无法满足 accepted-current。"
+            }
+          ],
+          "selected_id": "extend_native_adapter",
+          "selection_reason": "避免第二套 eval routing 并覆盖真实 public boundary。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P21",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "8. Distribution 与 compatibility",
+        "statement_sha256": "14b9d2cfa633c2e5ade96e147915f5e53d46f60bbfab260130281e407fde7b56",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:118",
+          "repo:AGENTS"
+        ],
+        "reason": "Public package 必须使用 Guru-namespaced additive distribution。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "additive_guru_distribution",
+              "tradeoff": "保持 upstream ownership 并同步 canonical/dogfood copies。"
+            },
+            {
+              "id": "upstream_finish_overlay",
+              "tradeoff": "跨越 #119/#132 boundary 并违反 #127/#128。"
+            }
+          ],
+          "selected_id": "additive_guru_distribution",
+          "selection_reason": "仓库规则与 Issue 均要求 additive Guru assets。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P22",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "9. Docs SSOT Plan",
+        "statement_sha256": "fe8264d13cdacdafa2d93bf361df8ad051ac0ea5168e4f0ba8b764a841642c80",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "repo:AGENTS"
+        ],
+        "reason": "既有 durable SSOT 必须承接 package ownership，README 只保留导航。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "existing_ssot_layering",
+              "tradeoff": "行为、架构与导航分别归入既有 owner。"
+            },
+            {
+              "id": "duplicate_readme_contract",
+              "tradeoff": "形成第二份 step-local behavior SSOT。"
+            }
+          ],
+          "selected_id": "existing_ssot_layering",
+          "selection_reason": "符合 workflow/skill/docs 分层合同。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P23",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "11. Unusual-scenario review",
+        "statement_sha256": "34f8ba149927698dff8df14b0fb568216c31bfcc59d4f96b5970f4c31232de1d",
+        "classification": "out_of_scope_proposal",
+        "authority_refs": [
+          "issue:118",
+          "repo:AGENTS"
+        ],
+        "reason": "恶意、并发、新 fault 与跨 OS 机制被 current authority 排除。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": {
+          "proposal_sha256": "34f8ba149927698dff8df14b0fb568216c31bfcc59d4f96b5970f4c31232de1d",
+          "disposition": "out_of_scope",
+          "route": "none-current-task"
+        }
+      },
+      {
+        "id": "P24",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "- `trellis/workflows/guru-team/workflow.md` 与 `.trellis/workflow.md` 的 Finish global",
+        "statement_sha256": "83aef682c32d1f1743e179ef5c8410a5943d013fd76913deb1fc57cbee70db1e",
+        "classification": "out_of_scope_proposal",
+        "authority_refs": [
+          "issue:119"
+        ],
+        "reason": "Finish family global entry/order 由 #119 持有。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": {
+          "proposal_sha256": "83aef682c32d1f1743e179ef5c8410a5943d013fd76913deb1fc57cbee70db1e",
+          "disposition": "followup",
+          "route": "issue:#119"
+        }
+      },
+      {
+        "id": "P25",
+        "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "locator": "- `.agents/skills/trellis-finish-work/**`",
+        "statement_sha256": "39b21ef4da16852a4fc543536c78410fe0a8898c1c8193204a14ccd42f8e649e",
+        "classification": "out_of_scope_proposal",
+        "authority_refs": [
+          "issue:132"
+        ],
+        "reason": "Upstream Finish overlay cleanup 由 #132 持有。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": {
+          "proposal_sha256": "39b21ef4da16852a4fc543536c78410fe0a8898c1c8193204a14ccd42f8e649e",
+          "disposition": "followup",
+          "route": "issue:#132"
+        }
+      }
+    ],
+    "coverage": {
+      "reviewer": "Codex primary agent /root",
+      "summary": "已覆盖 16 项 explicit requirements、6 项 necessary implementation choices 与 3 项 out-of-scope dispositions；每项均绑定当前 planning locator 与 authority。",
+      "reviewed_entry_ids": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18",
+        "P19",
+        "P20",
+        "P21",
+        "P22",
+        "P23",
+        "P24",
+        "P25"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "0e3a399a94c82fe9b497684a13c8d1275bb4b91a081d6a41acfb4ce00c37cb69"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "Codex primary agent /root",
+    "summary": "四类候选均被 current authority 排除或移除，没有 scope expansion 与未决 proposal。",
+    "candidates": [
+      {
+        "id": "U01-malicious-artifact",
+        "scenario_class": "attack_or_malicious_actor",
+        "trigger_evidence": "仅在调用方故意伪造 artifact/hash/state 时成立。",
+        "scope": "增加 authenticity、anti-tamper 或 hostile-input defense。",
+        "cost": "引入本 Issue 未授权的 threat model 与防御机制。",
+        "alternatives": [
+          "维持 honest-but-fallible normal boundary",
+          "未来由新 authority 建立独立 security issue"
+        ],
+        "consequence": "当前 task 不实现且不测试该机制。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "eb605a0a2b2683154d98416653f31add3ecd58edd7c6435dcf2771663e38c072",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      },
+      {
+        "id": "U02-concurrent-finalizer",
+        "scenario_class": "toctou_or_concurrency_race",
+        "trigger_evidence": "Issue 正文没有并发 finalizer trigger。",
+        "scope": "增加锁、TOCTOU 或并发调度协议。",
+        "cost": "扩大 transaction 与 failure matrix。",
+        "alternatives": [
+          "删除并发机制",
+          "未来由新 authority 建立独立 concurrency issue"
+        ],
+        "consequence": "设计保留单一 AI-controlled finalizer normal path。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "4dd75422535d5d111763589558e3057ef0f2b4d6f6d04d7333570e93cf4f0df7",
+        "disposition": "mechanism_removed",
+        "confirmation": null
+      },
+      {
+        "id": "U03-extra-crash-fault",
+        "scenario_class": "fault_injection_or_crash_consistency",
+        "trigger_evidence": "Issue 已给出封闭 #105 matrix，未列出新 crash branch。",
+        "scope": "增加新 fault injection 与偶发 crash consistency。",
+        "cost": "扩张 recovery state machine 与 acceptance。",
+        "alternatives": [
+          "只继承正文 matrix",
+          "未来由新 authority 建立独立 resilience issue"
+        ],
+        "consequence": "新 fault mechanism 从实现与测试计划删除。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "dd3806ecfae44aaa7d3472375b48279afb643e48e2f67563bb906198466d8996",
+        "disposition": "mechanism_removed",
+        "confirmation": null
+      },
+      {
+        "id": "U04-cross-os-atomicity",
+        "scenario_class": "cross_os_atomicity",
+        "trigger_evidence": "Current authority 明确排除跨 OS 原子性。",
+        "scope": "增加跨平台 atomic write/rename contract。",
+        "cost": "扩张非功能与平台测试范围。",
+        "alternatives": [
+          "维持 current supported normal environment",
+          "未来由新 authority 建立独立 portability issue"
+        ],
+        "consequence": "当前 task 不实现且不测试该机制。",
+        "source_requirement_refs": [],
+        "proposal_sha256": "242a5264af031434a00d321ae328d6c0803e2cd0f87233a675f3a62084c3888e",
+        "disposition": "out_of_scope",
+        "confirmation": null
+      }
+    ],
+    "unresolved_count": 0,
+    "review_sha256": "e88d3c65e9d4e216e3ca67a4699ac31f0d759d9ffec10e7a1f33e392681ea72c"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex primary agent /root",
+      "summary": "九项 entry preconditions 已按 fresh live #118/comment/#116/#117/#119/#132 与 AGENTS authority 重新审查；三份 planning bytes、scope、I/O、transaction、recovery、tests、Docs SSOT、compatibility、rollback 与安装验证均未变化，且未跨越 #119/#132 boundary。原 approval 将预期修改目标误列为 authority 的建模错误已移除。",
+      "reviewed_at": "2026-07-26T12:28:48Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-26T12:28:48Z",
+    "confirmed_at": "2026-07-26T12:28:48Z",
+    "evidence_summary": "用户在重新查看三份 planning links、三个未变 digests、bundle digest faa241f9b335f2aebf74124d23beeda593f54fdbf037ca879ad78b32748fc9c1、authority evidence correction、限定写入范围与无 GitHub/commit/push/PR 副作用后回复“确认继续”。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "未变 planning bundle 已针对稳定 live requirement authorities 重新通过 semantic review、wording review 与 fresh explicit post-planning confirmation。",
+  "supersedes_facts_sha256": "663981f51c10d74b98a813f67a732812dbb481325d460d5ca7826695908556d8",
+  "facts_sha256": "9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70"
+}

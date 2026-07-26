@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-26T11:20:06Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-26-118-guru-finalize-task",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+        "size_bytes": 11160,
+        "content_sha256": "770e27527c6b65496d6a68380d42addcc5dc39d3ad5b5161d0172a15aac19bd9"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        "size_bytes": 20792,
+        "content_sha256": "a9d8777afeaa5a880b8bcdba016bd7981be0286fe130d577c4ef6f8a9b39d4b5"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-26-118-guru-finalize-task/implement.md",
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
+        "size_bytes": 6695,
+        "content_sha256": "d26bb6137afa4ae8a5b8b1e3859d74ecb312b03975043f09013712e3261e09a8"
+      }
+    ],
+    "scope_sha256": "4ffa7c02b7510fb383ef31742e4c0888097e3a4578e6918305224817c0fb9ee2"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex primary agent /root",
+      "summary": "已逐份审查固定 planning scope。三份文档完整承接 live Issue #118 与 accepted-current authority，条件路径均给出触发与结果，事务实现只有一个 owner/engine，确定性 gate 与 acceptance 均给出机器可观察结果，零词汇命中未替代需求语义复核。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本轮未改写 live authority，三份 task-local planning artifacts 的措辞未改变已确认产品语义。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "b7bbef9c8136a08c94aef1c7b815bdca8b3fe907954ca7d17101e98a27962eac"
+}

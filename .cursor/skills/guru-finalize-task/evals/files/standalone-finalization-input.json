@@ -1,0 +1,1 @@
+{"profile":"standalone_finalization","mode":"standalone","task_ref":".trellis/tasks/current","finalization_intent":"Inspect and finalize the selected task without bypassing publication review.","finalization_context":"The caller selected an active or partially finalized task for complete owner validation."}

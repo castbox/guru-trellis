@@ -120,9 +120,10 @@ guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes both supported ids, names 1.3 as current for
 new work, uses compatibility scalar `interface_schema_id=1.3`, and publishes
 exact public-input, typed-output, and private-artifact schema inventories for
-all twelve active packages and their 46 external exits. The independent
+all thirteen active packages and their 52 external exits. The independent
 `production-minimal-handoff-v1` manifest remains exactly three packages and 11
-exits; activating `guru-review-branch` does not rewrite that membership.
+exits; additive activation of later packages, including `guru-finalize-task`,
+does not rewrite that membership.
 
 ### 1. Scope And Trigger
 
@@ -367,8 +368,9 @@ accepted grammar is recursive and contains only `$schema`, root-only `$id`, `$de
 local `$ref`, annotations, `type`,
 `const`, `enum`, `allOf|anyOf|oneOf|not|if|then|else`, string length/pattern and
 supported format constraints, numeric minimum/maximum, array
-length/uniqueness/items/contains, and object properties/required/boolean
-`additionalProperties`. Nested `$id` resource boundaries, boolean schema nodes,
+length/uniqueness/items/contains, and object properties/required/non-negative
+`minProperties`/boolean-or-object-schema `additionalProperties`. Nested `$id`
+resource boundaries, boolean schema nodes,
 unresolved/remote/unsafe/recursive refs,
 unknown keywords such as `patternProperties`, malformed keyword values,
 unsupported formats, and invalid patterns fail source and installed validation.
@@ -590,17 +592,24 @@ calls the existing candidate validator and transaction executor unchanged.
 Caller-selected `expected_exit`, artifact bodies, digests, file metadata,
 absolute paths, and runtime snapshots are not public input.
 
-Exactly five semantic handoffs use target-owned authoring seeds:
+Exactly twelve semantic handoffs use target-owned authoring seeds. The first
+five are
 `guru-approve-task-plan:revision_required -> revision_reentry`,
 `guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
 `guru-create-task-commit:revision-required -> revision_reentry`, and
 `guru-create-task-commit:committed -> guru-review-branch:branch_review`, and
 `guru-review-branch:passed -> guru-review-task-publication:publication_review`.
-Their
-projected seed fields are respectively `source_exit/task_ref`,
+The finalization family adds
+`guru-review-task-publication:ready -> guru-finalize-task:publication_ready`,
+both `guru-verify-extension-installation:verified|not_required` re-entry
+profiles, and the finalizer's `verification_required`,
+`publication_review_stale`, `same_plan_resume`, and `reprepare_preview`
+targets. Their projected seed fields are respectively `source_exit/task_ref`,
 `source_exit/task_ref/checked_head/check_ref`, and
 `source_exit/task_ref`, `task_ref/base_ref/committed_head`, and
-`task_ref/reviewed_head/review_ref`. Target package
+`task_ref/reviewed_head/review_ref`; every finalization-family seed is the
+minimal field set declared by its target profile, with reprepare fixed to
+`task_ref/reason_code`. Target package
 authoring examples supply every remaining
 required fresh semantic field. The validator proves disjoint partition,
 required-set equality, no-overwrite merge, and full target-schema validity;
@@ -610,7 +619,10 @@ Active closure is derived from the live registry plus the frozen Stage 0
 manifest, the production manifest, and any future complete active Interface
 1.3 rows absent from both manifests. Every active profile and exit must have a
 current canonical case binding and byte-identical selected-platform corpus.
-The current cardinality assertion is twelve active Skills and 46 exits; missing,
+The current package cardinality assertion is thirteen active Skills and 52
+exits. The intentionally deferred global workflow projection remains 12 invoke
+markers, 46 exit markers, and 27 target markers until #119 activates the Finish
+family route. Missing,
 extra, duplicate, renamed, legacy, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1419,7 +1431,7 @@ entry precondition validates the current prepared bytes. Phase 3.7 may consume
 the `ready`-bound bytes but may not first create or mutate them.
 
 The independent minimal outputs are `ready(exit_id,task_ref,reviewed_head,
-publication_ref)` to planned `guru-finalize-task`,
+publication_ref)` to active `guru-finalize-task`,
 `return_to_task_work(exit_id,task_ref,finding_refs,resume_target=phase-2)` to
 the task-work workflow router, and `blocked(exit_id,reason_code,remediation)` to
 an explicit stop. `publication_ref` is opaque; review narrative, findings,
@@ -1472,8 +1484,8 @@ regular file under `.trellis/.runtime/guru-team/`; neither the whole task
 prefix nor the runtime prefix is allowed. Any other status path records a
 failed `review_range_and_working_tree` binding and prevents `ready`.
 
-Activation contributes to the live closure of twelve active Skills and 46
-exits. It
+The current additive activation set contributes to the live closure of thirteen
+active Skills and 52 exits. It
 does not change either migration identity or the independent
 `production-minimal-handoff-v1` three-Skill/11-exit membership.
 
@@ -1493,9 +1505,10 @@ The two structured inputs are deliberately distinct:
   `repo_ref/remote/ref/caller_intent` plus a closed task-bearing or session-only
   branch.
 
-The workflow profile is a target bootstrap owned by this package until
-`guru-finalize-task` is implemented. It publishes schema, example, fixture, and
-real-wrapper eval but no #118 producer output, authoring seed, or active edge.
+The workflow profile is owned by this package and is consumed by active
+`guru-finalize-task:verification_required`. It publishes the target schema,
+example, fixture, real-wrapper eval, and concrete target-owned authoring seed.
+Global Finish routing remains deferred to #119.
 Caller input never contains applicability, capability list, remote facts,
 adequacy, expected exit, or command matrix.
 
@@ -1504,15 +1517,15 @@ The independent outputs are:
 - `verified`: workflow passes only
   `task_ref/plan_ref/reviewed_head/verification_ref`; standalone returns the
   safe repo/head/session verification identity;
-- `not_required`: workflow-shaped identity is published for the future
-  consumer, but a workflow invocation may not actually select this exit;
+- `not_required`: workflow-shaped identity is published for the active
+  finalizer consumer, but a workflow invocation may not actually select this exit;
   standalone returns only repo/head identity;
 - `return_to_task_work`: task identity, open finding refs, and fixed
   `resume_target=phase-2`;
 - `blocked`: stable reason code and remediation, with safe repo/head identity
   in standalone mode.
 
-`verified` and `not_required` target planned `guru-finalize-task`;
+`verified` and `not_required` target active `guru-finalize-task`;
 `return_to_task_work` targets the workflow router; `blocked` targets the stop.
 The Interface publishes one schema/example/projection per exit. Verification
 profile, applicability reason, adequacy, command facts, digests, asset and
@@ -1523,7 +1536,7 @@ Task-bearing calls own one tracked private
 `marketplace-verification.json`; taskless standalone calls are session-only and
 cannot create repository cache/index/latest state or emit
 `return_to_task_work`. The checker-passed opaque `verification_ref` is the only
-private-owner freshness token exposed to the future finalizer.
+private-owner freshness token exposed to the finalizer.
 
 The Skill owns applicability, closed capability selection, adequacy, findings,
 conditional standalone confirmation, and route. Deterministic runtime only
@@ -1540,3 +1553,60 @@ evidence stale. The package-local seven-case corpus covers both inputs, all four
 exits, retry, unavailable, and stale re-entry through the real wrapper.
 Production eval remains independent from a real pushed-remote clean
 installation.
+
+## Task Finalization Owner
+
+`guru-finalize-task` is the active Interface 1.3 semantic owner of the complete
+task closeout loop. Its six distinct public profiles cover publication entry,
+verified and not-required verification re-entry, same-plan resume,
+cross-month reprepare, and standalone finalization. It consumes only the
+minimal #116/#117 DTO seeds plus target-owned AI intent/context; runtime never
+authors or reconstructs those semantic fields.
+
+The package owns six independent `exit_id` outputs:
+`verification_required`, `publication_review_stale`, `resume_finalization`,
+`reprepare_required`, `published`, and `blocked`. Reprepare projects exactly
+`task_ref/reason_code`; fresh intent/context comes only from the target-owned
+authoring seed. Internal transaction states, closeout plan, publication and
+verification bodies, PR/archive facts, recovery history, HEAD facts, and
+digests remain owner-private.
+
+The `verification_required.repo_ref` is bound to the immutable plan repository,
+and `published.task_ref` is the exact plan archive locator. The tracked
+`published` route retains a private executor marker through archive; only a
+strict public-wrapper reread after the exact archive transaction and ready PR
+may materialize the public DTO in memory. The wrapper never executes the
+transition and never persists that DTO back into the gate.
+
+The five-stage semantic profile is preview/current-state discovery, AI review,
+conditional exact plan-digest confirmation, task-local gate recorder/checker,
+and one typed exit. The existing #105 closeout engine is the sole deterministic
+executor for content push, verification boundary, unique draft identity, final
+projection, official `task.py archive --no-commit`, exact archive metadata
+transaction, three-way HEAD equality, and draft-to-ready. Legacy finish-work
+keeps its prior `git add -A -- <task-root>` evidence transaction; only the
+explicit finalizer mode permits a plan-declared untracked private gate and
+stages the exact evidence allowlist.
+
+The generic #117 owner checker remains unchanged and strict. Finalizer-only
+compatibility may accept its normal post-review metadata tail only when task,
+plan, reviewed HEAD, repository, remote ref, evidence allowlist, validated
+evidence commit, committed plan/evidence blobs, and exact archive transaction
+all match the immutable plan. Any additional drift fails closed. Same-plan
+resume is restricted to the declared post-content recovery states and excludes
+`prepared`, reprepare/stale state, and terminal `ready`.
+
+Missing or stale publication owner evidence is retained as an objective owner
+fact rather than collapsed into a generic invocation error. The AI selects the
+stale route; recorder/checker validate a no-plan, no-side-effect private gate
+and project only `task_ref/stale_reason`. Invalid private state, plan, path,
+HEAD, or draft identity remains blocked or fail closed according to the
+package contract.
+
+Package-local production eval executes the real public wrapper. The runtime
+selects and validates the actual exit schema before the grader compares
+`expected_exit`, which never enters adapter/native input. Canonical, installed,
+shared, Codex, Claude, and Cursor corpus bytes are identical. Package
+activation is additive only: `workflow_integration_state=deferred` keeps the
+global Finish route unchanged until #119, and upstream Finish overlays remain
+owned by #119/#132.

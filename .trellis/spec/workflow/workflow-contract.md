@@ -948,17 +948,18 @@ create `verified`.
 The workflow profile `verification_required` contains the fixed business seed
 `task_ref`, `plan_ref`, `repo_ref`, `reviewed_head`, and
 `verification_target`; `profile` and `mode` are fixed discriminators. The
-package owns this future target bootstrap, but the workflow does not activate a
-producer edge from planned `guru-finalize-task`. Until #118 implements that
-producer, its mandatory marker and consumers are contract/discovery
-declarations rather than a reachable transition from publication `ready`.
+package owns this target profile and active `guru-finalize-task` declares the
+concrete producer edge. The global workflow intentionally does not activate the
+Finish-family invocation/order yet; #119 owns that integration. Until then, the
+package/interface graph is complete while publication `ready` stops at the
+deferred global route.
 Standalone direct discovery uses the structurally distinct
 `standalone_verification` profile and supplies only repository, remote, ref,
 caller intent, and optional task identity.
 
 The Skill's unique consumers are:
 
-- `verified` and `not_required` -> planned `guru-finalize-task`;
+- `verified` and `not_required` -> active `guru-finalize-task`;
 - `return_to_task_work` -> `guru-extension-verification-work-router`, which
   resumes Phase 2 and the complete downstream review sequence;
 - `blocked` -> `extension-installation-verification-blocked`.
@@ -1023,18 +1024,52 @@ After the candidates exist, the global workflow mandatory invokes active
 `guru-review-task-publication` with the target-owned `publication_review`
 authoring seed. It owns only these transitions:
 
-- `ready` -> planned Skill `guru-finalize-task`, with a fail-closed missing
-  package stop until that Skill is activated;
+- `ready` -> active Skill `guru-finalize-task`; the global invocation/order
+  remains fail-closed and deferred until #119 activates the Finish family;
 - `return_to_task_work` -> `guru-task-publication-work-router`, which resumes
   implementation and requires fresh Phase 2 check, task commit, Branch Review,
   and publication review;
 - `blocked` -> stop `task-publication-review-blocked`.
 
-Future finalization stale handback uses the target-owned
+Finalization stale handback uses the target-owned
 `publication_review_stale` profile and the same complete semantic review.
 Workflow prose never copies the dimensions, findings, metadata revision loop,
 artifact fields, or recorder/checker procedure. Unknown, missing, multiple,
-unmapped, consumer-mismatched, stale, or planned-target invocation fails
+unmapped, consumer-mismatched, stale, or deferred-target invocation fails
 closed. Phase 3.7 consumes the already reviewed bytes and must not first create,
 regenerate, or revise either content file after `ready`; a metadata-only change
 re-enters publication review and non-metadata drift returns to task work.
+
+## Phase 3.7 Task Finalization Ownership
+
+Active `guru-finalize-task` owns the semantic closeout plan, scope/readiness and
+recovery judgments, exact digest confirmation, owner-private gate, six typed
+exits, and the complete normal-path recovery loop. The deterministic runtime
+reuses the existing #105 transaction engine for content push, verification
+boundary, unique draft PR identity, one final projection, official archive
+move, one archive metadata transaction, local/remote/PR HEAD equality, and
+draft-to-ready.
+
+The public profiles are publication entry, verified/not-required verification
+re-entry, same-plan resume, cross-month reprepare, and standalone finalization.
+The exits are exactly `verification_required`, `publication_review_stale`,
+`resume_finalization`, `reprepare_required`, `published`, and `blocked`, all
+using `exit_id`. Closeout plan, readiness, verification, PR/archive/recovery
+facts, internal transition labels, and digests remain finalizer-private.
+Missing/stale publication evidence stays an owner-checker fact that the AI may
+route through `publication_review_stale`; it is not collapsed into a generic
+invocation error or decided by the script.
+
+Verification re-entry keeps the generic #117 checker strict; only the finalizer
+may validate a normal immutable-plan-bound metadata tail and exact archive
+transaction. `verification_required` carries the plan repository, same-plan
+resume starts only from declared post-content recovery states, and `published`
+uses the plan archive locator. The persisted published route remains a private
+marker until exact archive plus ready PR completion; the public wrapper only
+materializes the DTO in memory and does not run the transition.
+
+This ownership contract is active and directly discoverable, but the current
+global workflow file deliberately contains no finalizer invoke/exit markers.
+#119 owns Finish-family activation and combined acceptance; #132 owns upstream
+overlay cleanup. This task does not modify upstream `trellis-finish-work`
+Skill/Command/Prompt assets or official `task.py`.

@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-finalize-task",
+  "review": {
+    "status": "passed",
+    "summary": "The exact current plan is sufficient and the verification boundary is the next route.",
+    "evidence_refs": ["closeout-plan:current", "publication:current"]
+  },
+  "confirmation": {
+    "status": "confirmed",
+    "confirmed_plan_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "summary": "The exact plan digest was confirmed before the first side effect."
+  },
+  "route": {
+    "typed_exit": "verification_required",
+    "consumer": {"kind": "skill", "id": "guru-verify-extension-installation"},
+    "output": {
+      "exit_id": "verification_required",
+      "task_ref": ".trellis/tasks/07-26-example",
+      "plan_ref": "closeout-plan:current",
+      "repo_ref": "castbox/guru-trellis",
+      "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "verification_target": "extension-installation"
+    }
+  },
+  "supersedes_gate_ref": null
+}

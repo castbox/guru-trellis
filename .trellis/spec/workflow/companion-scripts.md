@@ -1533,3 +1533,26 @@ path, the augmentation revalidates all twelve entries and accepts only the
 corresponding repository binding plus derived
 `review_range_and_working_tree` digest change; all other entries remain exact
 and passed.
+
+## Task Finalization Recorder, Checker, Executor, And Invocation
+
+Stable commands are `preview-finalization`, `record-finalization-gate`,
+`check-finalization-gate`, `execute-finalization-transition`, and the package
+`scripts/invoke.sh`. The recorder and executor may validate a pending transition
+route; public invocation always reruns strict route validation and never calls
+the transition executor implicitly.
+
+The generic extension-verification checker stays unchanged. A separate
+finalizer-owned compatibility checker may consume #117 evidence after a normal
+metadata tail only when the owner task/plan/reviewed-HEAD/repository seed, remote
+ref, immutable evidence allowlist, validated evidence commit, committed archived
+plan/evidence blobs, and exact archive transaction all match. It rejects every
+additional dirty path or identity/commit drift.
+
+`verification_required.repo_ref` must equal the immutable plan repository.
+`resume_finalization` accepts only declared same-plan post-content recovery
+states; `prepared`, reprepare/stale state, and terminal `ready` are invalid. A
+tracked `published` gate stores only the private executor marker. After the
+archive transaction and ready PR are objectively complete, public invocation
+materializes the DTO in memory with the exact archive locator and canonical PR
+identity; it never rewrites the gate with that public DTO.

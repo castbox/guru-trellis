@@ -115,7 +115,18 @@
         "id": "finalization_seed_input",
         "consumer": {"kind": "skill", "id": "guru-finalize-task"},
         "payload_kind": "structured_json",
-        "contract": {"kind": "planned_skill_input_seed", "seed_fields": ["task_ref", "reviewed_head", "publication_ref"]}
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-finalize-task/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "publication_ready",
+          "seed_fields": ["task_ref", "reviewed_head", "publication_ref"],
+          "authoring_fields": ["profile", "mode", "finalization_intent"],
+          "authoring_example": {
+            "id": "finalization_publication_ready_authoring",
+            "path": "examples/public-publication-ready-authoring.json"
+          }
+        }
       },
       {
         "id": "return_to_task_work_input",

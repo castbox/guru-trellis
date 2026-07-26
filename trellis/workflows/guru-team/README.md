@@ -54,9 +54,10 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request` 与
 `guru-create-task-workspace`、`guru-approve-task-plan`、`guru-check-task`、
-`guru-create-task-commit`、`guru-review-branch`、
-`guru-review-task-publication`、`guru-verify-extension-installation`。这十二个
-active packages 共声明 46 个 external exits。Workflow 不得为
+`guru-create-task-commit`、`guru-finalize-task`、`guru-review-branch`、
+`guru-review-task-publication`、`guru-verify-extension-installation`。这十三个
+active packages 共声明 52 个 external exits；finalizer 的 global integration
+metadata 仍为 deferred。Workflow 不得为
 reserved/planned id 伪造 invocation route。当前 canonical
 extension version 是待发布的 `0.6.5-guru.23`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
@@ -66,7 +67,8 @@ I/O 的 minimal handoff target。Registry 1.1 的 active row exact 声明
 `interface_schema_id` 与 `io_contract_state`，合法组合只有 `1.2+legacy` 和
 `1.3+minimal_handoff`。`stage0-minimal-handoff-v1` 已原子迁移六个 Stage 0 packages
 与 24 exits；独立 `production-minimal-handoff-v1` 已原子迁移 planning/check/commit
-三包、十个 profiles 与 11 exits。当前 active closure 为 12/46 且 `legacy_skill_ids=[]`；
+三包、十个 profiles 与 11 exits。当前 package closure 为 13/52 且
+`legacy_skill_ids=[]`；global workflow marker closure 刻意保持 12/46/27，
 Stage 0 manifest identity 保持 6/24。两版均保留 `workflow` / `standalone` mode id 和必填
 `judgment_mode`，并以
 `routing=global_workflow|direct_discovery` 区分 mandatory route 与平台直接发现。
@@ -79,19 +81,30 @@ global workflow caller 只负责从 current reviewed evidence 编写 task-local
 `pr-body.md` 与 `finish-summary-index.json` 初始候选；它不判断充分性、Issue
 closure、十维结论、finding route 或 ready。Active publication Skill 仍是唯一
 semantic owner，缺失或结构错误先失败关闭。Phase 3.7 只消费 `ready` 已绑定的
-content bytes，不得首次创建或修改；只有
-`ready -> guru-finalize-task` 仍停在 planned missing-Skill boundary。
+content bytes，不得首次创建或修改。`guru-finalize-task` package 与 public edge 已
+active；`ready -> guru-finalize-task` 的 global invocation/order 仍由 #119 持有并
+fail closed。
 
-Active `guru-verify-extension-installation` 独立拥有 future
+Active `guru-verify-extension-installation` 独立拥有
 `verification_required` target bootstrap 与 standalone
 `standalone_verification` input。#117 只发布 target schema/example/eval 和四出口
-contract；本 workflow 不激活 #118 producer edge，因此 publication `ready` 仍不能到达
-该 invocation。其 `verified` / `not_required` 指向 planned finalizer，
+contract；active finalizer 已拥有 producer edge，但本 workflow 不在 #119 前激活
+Finish-family invocation。其 `verified` / `not_required` 指向 active finalizer，
 `return_to_task_work` 回 Phase 2，`blocked` 停止。Skill 内部 AI 独占
 applicability、closed capability profile、adequacy、finding 和 route；workflow 只拥有
 marker、consumer 和 fail-closed transition。
 
-五条 semantic package handoff 使用 additive target-owned
+Active `guru-finalize-task` 是完整 closeout 的 step-local semantic owner。六个
+distinct profiles 承接 publication、verified/not-required verification、same-plan
+resume、cross-month reprepare 与 standalone；六个 outputs 统一使用 `exit_id`。
+Immutable plan、exact confirmation、PR/archive/recovery facts 与内部 transaction
+states 全部 private。Deterministic runtime 只复用 #105 engine 执行 content push、
+verification boundary、唯一 Draft PR、final projection、official archive transaction、
+三方 HEAD equality 与 draft-to-ready。Missing/stale publication evidence由 #116 owner
+checker 形成客观 fact，再由 AI 选择 `publication_review_stale`；runtime 不代替 route
+judgment。#119 只需激活 global Finish ordering，不得重新实现本 Skill。
+
+十二条 semantic package handoff 使用 additive target-owned
 `skill_input_authoring_seed`：planning revision self-reentry、Phase 2 passed 到 initial
 commit、commit revision self-reentry、commit `committed` 到 active Branch Review，
 以及 Branch Review `passed` 到 active Task Publication Review。
@@ -967,7 +980,7 @@ package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十二个 packages 已维护 canonical corpora 并覆盖全部 46 exits/profile；Stage 0 的
+中的十三个 packages 已维护 canonical corpora 并覆盖全部 52 exits/profile；Stage 0 的
 24-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-output-blocked-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "reason_code", "remediation"],
+  "properties": {
+    "exit_id": {"const": "blocked"},
+    "reason_code": {"enum": ["prerequisite_incomplete", "invalid_private_state", "unexpected_path", "head_mismatch", "draft_identity_ambiguous", "draft_identity_missing_or_replaced", "external_dependency_blocked"]},
+    "remediation": {"type": "string", "minLength": 1}
+  }
+}

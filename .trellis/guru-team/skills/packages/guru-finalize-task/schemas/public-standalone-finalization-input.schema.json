@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-input-standalone-finalization-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "mode", "task_ref", "finalization_intent", "finalization_context"],
+  "properties": {
+    "profile": {"const": "standalone_finalization"},
+    "mode": {"const": "standalone"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "finalization_intent": {"type": "string", "minLength": 1},
+    "finalization_context": {"type": "string", "minLength": 1}
+  }
+}

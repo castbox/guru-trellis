@@ -38,8 +38,9 @@ Before editing workflow behavior:
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Interface 1.2 remains the frozen legacy contract. Registry 1.1 selects exact
   `interface_schema_id` plus `io_contract_state`; interface 1.3 is
-  production-active for all twelve active workflow packages and 46 external
-  exits. The frozen
+  production-active for all thirteen active workflow packages and 52 external
+  exits. Global workflow markers intentionally remain at 12 invokes, 46 exits,
+  and 27 targets until #119 activates the Finish family. The frozen
   `stage0-minimal-handoff-v1` manifest owns its original six packages and 24
   exits, while `production-minimal-handoff-v1` independently owns planning,
   check, and commit with 11 exits. The mixed fixture remains test-only.
@@ -73,10 +74,14 @@ Before editing workflow behavior:
   and `ready` / `return_to_task_work` / `blocked`; workflow owns only routes.
 - `guru-verify-extension-installation` is the sole semantic owner of extension
   installation applicability, closed capability selection, adequacy, findings,
-  and the four verification exits. It owns the future
-  `verification_required` target bootstrap without activating the planned
-  `guru-finalize-task` producer edge; standalone calls use the distinct
+  and the four verification exits. It owns the active
+  `verification_required` target profile; standalone calls use the distinct
   `standalone_verification` profile.
+- `guru-finalize-task` is the active semantic owner of immutable closeout-plan
+  review, exact digest confirmation, six distinct input profiles, six public
+  exits, and the owner-private recovery loop. It reuses the existing #105
+  deterministic transaction engine. Package discovery is active while global
+  Finish-family invocation/order remains deferred to #119.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 
 ## Required Validation
@@ -124,8 +129,9 @@ The durable contracts for `guru-review-task-publication` are split across
 `skill-package-contract.md`, `workflow-contract.md`, `data-contracts.md`,
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.3 profiles, minimal exits, layered private gate, semantic/runtime
-boundary, thin routing, real-wrapper eval, 12/46 closure, and install/update
-checks.
+boundary, thin routing, real-wrapper eval, participation in the current
+thirteen-Skill/52-exit package closure, and install/update checks. The global
+workflow projection remains 12 invokes, 46 exits, and 27 targets until #119.
 
 ## Extension Installation Verification Closed-Loop Owner
 
@@ -136,3 +142,18 @@ across `skill-package-contract.md`, `workflow-contract.md`,
 four minimal exits, one task-local-or-session private owner result, remote
 clean-install executor, retry/stale/redaction rules, real-wrapper production
 eval, and canonical/installed/platform/update/reapply verification.
+
+## Task Finalization Closed-Loop Owner
+
+The durable contracts for active `guru-finalize-task` are split across
+`skill-package-contract.md`, `workflow-contract.md`, `companion-scripts.md`,
+`quality-guidelines.md`, `preset/installer.md`, `preset/upstream-ownership.md`,
+and `docs/public-docs.md`. Together they own its six profiles, six external
+exits, immutable closeout plan, exact digest confirmation, owner-private
+recovery facts, real-wrapper eval, and additive distribution.
+
+The current package graph contains thirteen active Skills and 52 external exits
+with twelve target-owned `skill_input_authoring_seed` handoffs. Global workflow
+markers deliberately remain 12 invokes, 46 exits, and 27 targets: #119 owns
+Finish-family activation and combined acceptance, while #132 owns physical
+upstream overlay cleanup.

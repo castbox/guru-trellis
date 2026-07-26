@@ -273,13 +273,15 @@ manifest or the immutable issue #128 path/baseline identity. Registry,
 extension, installed provenance, and platform copies may change only as the
 atomic production activation projection of those canonical assets. Issue #131
 separately binds current bytes for only the five active continue entries.
-The Interface 1.3 `skill_input_authoring_seed` shape, the five target-owned
+The Interface 1.3 `skill_input_authoring_seed` shape, the twelve target-owned
 authoring examples, and their deterministic partition/merge probes are part of
-that same Guru-owned additive package graph. They do not expand the frozen
-overlay set or claim an upstream-managed platform entry.
+the Guru-owned additive package graph. The production/review chain supplied the
+first five handoffs and active `guru-finalize-task` supplies the seven
+finalization-family handoffs. They do not expand the frozen overlay set or claim
+an upstream-managed platform entry.
 
 The `guru-review-branch` package, its public contracts/evals, shared consumers,
-runtime integration, registry and planned publication identity are likewise
+runtime integration, registry and publication consumer identity are likewise
 Guru-owned additive assets. Independent review must dispatch the unchanged
 upstream check/review agent. The package owns the prompt and qualification
 contract; it never overlays or patches upstream `trellis-check` files. The
@@ -296,10 +298,15 @@ five continue paths so they prepare task-local publication content and invoke
 the active owner; it does not add an overlay path or change any immutable
 baseline digest.
 
-`guru-finalize-task` remains a planned registry identity only. Issue #116 does
-not implement #118 finalization and does not modify or overlay upstream
-`trellis-finish-work` family assets. Their later integration/removal ownership
-remains with #119/#132. Ownership validation must therefore preserve the
-frozen overlay inventory and exact current payload hashes.
-Those current hashes bind the #116 active route; only the later
-`ready -> guru-finalize-task` edge remains a planned missing-Skill boundary.
+`guru-finalize-task` is an active Guru-owned additive package and the semantic
+owner of its six-profile, six-exit closeout loop. The current package graph is
+thirteen active Skills and 52 external exits, with twelve target-owned
+`skill_input_authoring_seed` handoffs. Global workflow markers deliberately
+remain 12 invokes, 46 exits, and 27 targets until #119 activates the Finish
+family invocation/order and combined acceptance.
+
+The active package and its producer/consumer edges do not modify or overlay
+upstream `trellis-finish-work` family assets. Ownership validation must preserve
+the frozen overlay inventory and exact current payload hashes; #132 remains the
+sole owner of physical upstream overlay cleanup. Package activation therefore
+does not authorize either #119 integration or #132 removal.

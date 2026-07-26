@@ -25,6 +25,7 @@ PRODUCTION_SKILLS = {
     "guru-approve-task-plan",
     "guru-check-task",
     "guru-create-task-commit",
+    "guru-finalize-task",
     "guru-review-branch",
     "guru-review-task-publication",
     "guru-verify-extension-installation",
@@ -2689,6 +2690,244 @@ def stage_extension_verification_owner_execution(
     return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
 
 
+def stage_finalization_owner_execution(
+    runtime: Any,
+    fixture: Path,
+    fixture_runtime_target: Path,
+    request_package: Path,
+    recipe: str,
+    public_input_path: Path,
+) -> tuple[Path, Path, dict[str, str]]:
+    routes = {
+        "finalization-publication-verification-required": (
+            "verification_required",
+            "content_pushed",
+            True,
+        ),
+        "finalization-publication-stale": (
+            "publication_review_stale",
+            "prepared",
+            True,
+        ),
+        "finalization-same-plan-resume": (
+            "resume_finalization",
+            "draft_bound",
+            True,
+        ),
+        "finalization-cross-month-reprepare": (
+            "reprepare_required",
+            "reprepare_required",
+            True,
+        ),
+        "finalization-published-recovery": (
+            "published",
+            "ready",
+            False,
+        ),
+        "finalization-blocked": (
+            "blocked",
+            "prepared",
+            False,
+        ),
+        "finalization-verified-published": (
+            "published",
+            "ready",
+            True,
+        ),
+        "finalization-not-required-published": (
+            "published",
+            "ready",
+            False,
+        ),
+    }
+    selected = routes.get(recipe)
+    if selected is None:
+        raise ValueError(
+            f"unsupported finalization owner staging recipe: {recipe}"
+        )
+    exit_id, transaction_state, marketplace_required = selected
+    package = (
+        fixture
+        / ".trellis/guru-team/skills/packages/guru-finalize-task"
+    )
+    if (
+        hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
+        or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
+    ):
+        raise ValueError(
+            "finalization owner staging package does not match the evaluated contract"
+        )
+
+    task = fixture / ".trellis/tasks/current"
+    task.mkdir(parents=True, exist_ok=True)
+    runtime.write_json(task / "task.json", {
+        "id": "current",
+        "name": "current",
+        "title": "Finalization eval",
+        "status": "in_progress",
+        "branch": "main",
+        "base_branch": "main",
+    })
+    run_git(fixture, "add", ".")
+    run_git(fixture, "commit", "-q", "-m", "stage finalization owner")
+    head = run_git(fixture, "rev-parse", "HEAD")
+
+    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+    public_input["task_ref"] = ".trellis/tasks/current"
+    plan_digest = "b" * 64
+    plan_ref = f"closeout-plan:{plan_digest}"
+    if "plan_ref" in public_input:
+        public_input["plan_ref"] = plan_ref
+    if "reviewed_head" in public_input:
+        public_input["reviewed_head"] = head
+    if "publication_ref" in public_input:
+        public_input["publication_ref"] = "publication:eval-current"
+    if "verification_ref" in public_input:
+        public_input["verification_ref"] = "verification:eval-current"
+    runtime_input = fixture / OWNER_INPUT
+    runtime.write_json(runtime_input, public_input)
+
+    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    context_path = runtime_dir / "finalization-context.json"
+    archive_locator = ".trellis/tasks/archive/2026-07/current"
+    if transaction_state == "ready":
+        (fixture / archive_locator).mkdir(parents=True, exist_ok=True)
+    context_payload = {
+        "schema_version": "1.0",
+        "task_ref": public_input["task_ref"],
+        "public_input_sha256": runtime.context_digest(public_input),
+        "plan_ref": plan_ref,
+        "plan_digest": plan_digest,
+        "reviewed_head": head,
+        "archive_locator": archive_locator,
+        "repo_ref": "example/guru-extension",
+        "publication_ref": "publication:eval-current",
+        "verification_ref": (
+            "extension-verification:eval-current"
+            if public_input.get("profile")
+            in {"verification_verified", "verification_not_required"}
+            else None
+        ),
+        "publication_status": (
+            "stale"
+            if exit_id == "publication_review_stale"
+            else "current"
+        ),
+        "publication_stale_reason": (
+            "publication_review_stale"
+            if exit_id == "publication_review_stale"
+            else None
+        ),
+        "marketplace_required": marketplace_required,
+        "transaction_state": transaction_state,
+    }
+    runtime.write_json(context_path, context_payload)
+    previous_eval = os.environ.get("GURU_TEAM_EVAL_STAGING")
+    os.environ["GURU_TEAM_EVAL_STAGING"] = "1"
+    try:
+        context = runtime.finalization_eval_preview_context(
+            fixture,
+            public_input,
+        )
+        if context is None:
+            raise ValueError("finalization eval context was not accepted")
+        outputs = {
+            "verification_required": {
+                "exit_id": "verification_required",
+                "task_ref": public_input["task_ref"],
+                "plan_ref": plan_ref,
+                "repo_ref": "example/guru-extension",
+                "reviewed_head": head,
+                "verification_target": "extension-installation",
+            },
+            "publication_review_stale": {
+                "exit_id": "publication_review_stale",
+                "task_ref": public_input["task_ref"],
+                "stale_reason": "publication_review_stale",
+            },
+            "resume_finalization": {
+                "exit_id": "resume_finalization",
+                "task_ref": public_input["task_ref"],
+                "plan_ref": plan_ref,
+            },
+            "reprepare_required": {
+                "exit_id": "reprepare_required",
+                "task_ref": public_input["task_ref"],
+                "reason_code": "archive_month_changed",
+            },
+            "published": {
+                "materialization": "executor",
+            },
+            "blocked": {
+                "exit_id": "blocked",
+                "reason_code": "invalid_private_state",
+                "remediation": "Repair the staged objective state and rerun finalization.",
+            },
+        }
+        gate = {
+            "schema_version": "1.0",
+            "skill_id": "guru-finalize-task",
+            "generated_at": "2026-07-26T00:00:00Z",
+            "invocation": {
+                "profile": public_input["profile"],
+                "mode": public_input["mode"],
+                "task_ref": public_input["task_ref"],
+                "input_identity_sha256": runtime.context_digest(public_input),
+            },
+            "plan": {
+                "available": True,
+                "plan_ref": plan_ref,
+                "plan_digest": plan_digest,
+                "reviewed_head": head,
+            },
+            "review": {
+                "status": "blocked" if exit_id == "blocked" else "passed",
+                "summary": "The finalization eval owner reviewed the exact staged objective facts.",
+                "evidence_refs": [plan_ref, "finalization-eval:objective-facts"],
+            },
+            "confirmation": {
+                "status": (
+                    "confirmed"
+                    if transaction_state in {"prepared", "reprepare_required"}
+                    else "not_required"
+                ),
+                "confirmed_plan_digest": (
+                    plan_digest
+                    if transaction_state in {"prepared", "reprepare_required"}
+                    else None
+                ),
+                "summary": "The staged semantic round records the required confirmation state.",
+            },
+            "route": {
+                "typed_exit": exit_id,
+                "consumer": runtime.FINALIZATION_CONSUMERS[exit_id],
+                "output": outputs[exit_id],
+            },
+            "freshness": {
+                "current_facts_sha256": context["current_facts_sha256"],
+                "supersedes_gate_ref": None,
+            },
+        }
+        gate_path = task / "task-finalization-gate.json"
+        runtime.write_json(gate_path, gate)
+        runtime.check_finalization_gate_result(
+            fixture,
+            argparse.Namespace(),
+            public_input,
+            gate,
+            gate_path,
+        )
+    finally:
+        if previous_eval is None:
+            os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
+        else:
+            os.environ["GURU_TEAM_EVAL_STAGING"] = previous_eval
+    return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
+
+
 def stage_production_owner_execution(
     request: dict[str, Any],
     fixture: Path,
@@ -2702,6 +2941,15 @@ def stage_production_owner_execution(
     if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
         raise ValueError("fixture public invocation runtime is unavailable")
     runtime = load_owner_runtime(fixture_runtime_target)
+    if skill_id == "guru-finalize-task":
+        return stage_finalization_owner_execution(
+            runtime,
+            fixture,
+            fixture_runtime_target,
+            request_package,
+            recipe,
+            public_input_path,
+        )
     if skill_id == "guru-verify-extension-installation":
         return stage_extension_verification_owner_execution(
             runtime,
@@ -2725,6 +2973,7 @@ def stage_production_owner_execution(
         "guru-approve-task-plan": "planning-",
         "guru-check-task": "check-",
         "guru-create-task-commit": "commit-",
+        "guru-finalize-task": "finalization-",
         "guru-review-branch": "review-",
         "guru-review-task-publication": "publication-",
         "guru-verify-extension-installation": "extension-",

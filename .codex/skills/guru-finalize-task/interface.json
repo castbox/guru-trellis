@@ -1,0 +1,153 @@
+{
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
+  "id": "guru-finalize-task",
+  "name": "guru-finalize-task",
+  "description": "Finalize a reviewed Trellis task through one semantic closeout loop, one deterministic transaction engine, and six typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": ["runtime_dependency", "task_workspace", "task_identity", "publication_review", "transaction_inputs", "verification_evidence", "archive_contract", "invocation_freshness"]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": ["runtime_dependency", "task_workspace", "task_identity", "publication_review", "transaction_inputs", "verification_evidence", "archive_contract", "invocation_freshness"]
+    }
+  },
+  "entry_preconditions": [
+    {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and finalization commands", "binding": "complete compatible Guru Team preset", "freshness": "validated before each command"},
+    {"id": "task_workspace", "evidence": "portable task worktree or archived locator identity", "binding": "actual repository and task locator", "freshness": "rebuilt before preview, record and check"},
+    {"id": "task_identity", "evidence": "active, partially finalized or archived task identity", "binding": "task, branch, base, repository and reviewed HEAD", "freshness": "current task and Git facts reread"},
+    {"id": "publication_review", "evidence": "guru-review-task-publication ready owner result", "binding": "task, reviewed HEAD and opaque publication ref", "freshness": "owner checker rerun"},
+    {"id": "transaction_inputs", "evidence": "plan, body, summary index, ledger, planning, Phase 2 and Branch Review facts", "binding": "one immutable closeout plan", "freshness": "existing closeout engine prevalidation"},
+    {"id": "verification_evidence", "evidence": "guru-verify-extension-installation verified or not-required owner result when applicable", "binding": "same task, plan and reviewed HEAD", "freshness": "owner checker rerun before continuation"},
+    {"id": "archive_contract", "evidence": "official task.py archive contract, live archive month and hook preflight", "binding": "exact task metadata transaction", "freshness": "checked before official move"},
+    {"id": "invocation_freshness", "evidence": "public profile, private gate, plan digest, exact confirmation, actual exit and consumer", "binding": "one current semantic finalization round", "freshness": "checker rejects drift or ambiguity"}
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "gate_example", "path": "examples/task-finalization-gate.json"},
+    {"id": "semantic_review_input", "path": "examples/semantic-review-input.json"},
+    {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"},
+    {"id": "publication_ready_authoring", "path": "examples/public-publication-ready-authoring.json"},
+    {"id": "verification_verified_input", "path": "examples/public-verification-verified-input.json"},
+    {"id": "verification_verified_authoring", "path": "examples/public-verification-verified-authoring.json"},
+    {"id": "verification_not_required_input", "path": "examples/public-verification-not-required-input.json"},
+    {"id": "verification_not_required_authoring", "path": "examples/public-verification-not-required-authoring.json"},
+    {"id": "same_plan_resume_input", "path": "examples/public-same-plan-resume-input.json"},
+    {"id": "same_plan_resume_authoring", "path": "examples/public-same-plan-resume-authoring.json"},
+    {"id": "reprepare_preview_input", "path": "examples/public-reprepare-preview-input.json"},
+    {"id": "reprepare_preview_authoring", "path": "examples/public-reprepare-preview-authoring.json"},
+    {"id": "standalone_finalization_input", "path": "examples/public-standalone-finalization-input.json"},
+    {"id": "verification_required_authoring", "path": "examples/public-verification-required-authoring.json"},
+    {"id": "publication_review_stale_authoring", "path": "examples/public-publication-review-stale-authoring.json"},
+    {"id": "verification_required_output", "path": "examples/public-verification-required-output.json"},
+    {"id": "publication_review_stale_output", "path": "examples/public-publication-review-stale-output.json"},
+    {"id": "resume_finalization_output", "path": "examples/public-resume-finalization-output.json"},
+    {"id": "reprepare_required_output", "path": "examples/public-reprepare-required-output.json"},
+    {"id": "published_output", "path": "examples/public-published-output.json"},
+    {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
+    {"id": "invocation_error", "path": "examples/public-invocation-error.json"}
+  ],
+  "schemas": [
+    {"id": "gate_schema", "path": "schemas/task-finalization-gate.schema.json"},
+    {"id": "semantic_review_input", "path": "schemas/semantic-review-input.schema.json"},
+    {"id": "publication_ready_input", "path": "schemas/public-publication-ready-input.schema.json"},
+    {"id": "verification_verified_input", "path": "schemas/public-verification-verified-input.schema.json"},
+    {"id": "verification_not_required_input", "path": "schemas/public-verification-not-required-input.schema.json"},
+    {"id": "same_plan_resume_input", "path": "schemas/public-same-plan-resume-input.schema.json"},
+    {"id": "reprepare_preview_input", "path": "schemas/public-reprepare-preview-input.schema.json"},
+    {"id": "standalone_finalization_input", "path": "schemas/public-standalone-finalization-input.schema.json"},
+    {"id": "aggregate_input", "path": "schemas/public-input.schema.json"},
+    {"id": "verification_required_output", "path": "schemas/public-verification-required-output.schema.json"},
+    {"id": "publication_review_stale_output", "path": "schemas/public-publication-review-stale-output.schema.json"},
+    {"id": "resume_finalization_output", "path": "schemas/public-resume-finalization-output.schema.json"},
+    {"id": "reprepare_required_output", "path": "schemas/public-reprepare-required-output.schema.json"},
+    {"id": "published_output", "path": "schemas/public-published-output.schema.json"},
+    {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"},
+    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"}
+  ],
+  "validators": [
+    {"id": "finalization_previewer", "command": "scripts/preview-finalization.sh", "runtime_command": "preview-finalization", "objective_scope": "Build or rediscover the immutable closeout plan with the existing deterministic engine and no side effect"},
+    {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record an already completed AI plan review, exact confirmation when required, selected exit and current objective facts"},
+    {"id": "finalization_gate_checker", "command": "scripts/check-finalization-gate.sh", "runtime_command": "check-finalization-gate", "objective_scope": "Validate gate schema, owner checker bindings, plan digest, confirmation, HEAD, continuity, actual exit, consumer and freshness"},
+    {"id": "finalization_transition_executor", "command": "scripts/execute-finalization-transition.sh", "runtime_command": "execute-finalization-transition", "objective_scope": "Execute one checked deterministic transition through the existing closeout engine without choosing the external route"},
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate public input, rerun the finalization gate checker, select the actual exit schema and emit one minimal DTO"}
+  ],
+  "external_exits": [
+    {"id": "verification_required", "evidence": "reviewed content is pushed and the immutable plan requires extension installation verification before PR or archive", "consumer": {"kind": "skill", "id": "guru-verify-extension-installation"}},
+    {"id": "publication_review_stale", "evidence": "publication evidence is missing, stale or bound to a different reviewed HEAD", "consumer": {"kind": "skill", "id": "guru-review-task-publication"}},
+    {"id": "resume_finalization", "evidence": "the same plan and unique draft or archive transaction can continue after a normal transient interruption", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
+    {"id": "reprepare_required", "evidence": "the live archive month changed while the task remains active and a new plan review and confirmation are required", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
+    {"id": "published", "evidence": "the unique PR is ready after exact archive transaction and three-way HEAD equality", "consumer": {"kind": "workflow", "id": "guru-finalization-finish-response"}},
+    {"id": "blocked", "evidence": "a prerequisite, private state, path, HEAD, draft identity or external dependency prevents a unique safe continuation", "consumer": {"kind": "stop", "id": "task-finalization-blocked"}}
+  ],
+  "reentry": {
+    "identity": "profile, mode, task, reviewed HEAD, opaque owner refs, immutable plan, semantic gate, exact confirmation, current transaction facts and actual exit",
+    "freshness": "owner checkers and the existing closeout validator rerun before every transition; changed plan requires fresh review and exact confirmation",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {"schema_id": "guru-finalize-task-input-aggregate-1.0", "path": "schemas/public-input.schema.json"},
+      "profiles": [
+        {"id": "publication_ready", "schema": {"schema_id": "guru-finalize-task-input-publication-ready-1.0", "path": "schemas/public-publication-ready-input.schema.json"}, "example": {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"}, "discriminator": {"field": "profile", "value": "publication_ready"}},
+        {"id": "verification_verified", "schema": {"schema_id": "guru-finalize-task-input-verification-verified-1.0", "path": "schemas/public-verification-verified-input.schema.json"}, "example": {"id": "verification_verified_input", "path": "examples/public-verification-verified-input.json"}, "discriminator": {"field": "profile", "value": "verification_verified"}},
+        {"id": "verification_not_required", "schema": {"schema_id": "guru-finalize-task-input-verification-not-required-1.0", "path": "schemas/public-verification-not-required-input.schema.json"}, "example": {"id": "verification_not_required_input", "path": "examples/public-verification-not-required-input.json"}, "discriminator": {"field": "profile", "value": "verification_not_required"}},
+        {"id": "same_plan_resume", "schema": {"schema_id": "guru-finalize-task-input-same-plan-resume-1.0", "path": "schemas/public-same-plan-resume-input.schema.json"}, "example": {"id": "same_plan_resume_input", "path": "examples/public-same-plan-resume-input.json"}, "discriminator": {"field": "profile", "value": "same_plan_resume"}},
+        {"id": "reprepare_preview", "schema": {"schema_id": "guru-finalize-task-input-reprepare-preview-1.0", "path": "schemas/public-reprepare-preview-input.schema.json"}, "example": {"id": "reprepare_preview_input", "path": "examples/public-reprepare-preview-input.json"}, "discriminator": {"field": "profile", "value": "reprepare_preview"}},
+        {"id": "standalone_finalization", "schema": {"schema_id": "guru-finalize-task-input-standalone-finalization-1.0", "path": "schemas/public-standalone-finalization-input.schema.json"}, "example": {"id": "standalone_finalization_input", "path": "examples/public-standalone-finalization-input.json"}, "discriminator": {"field": "profile", "value": "standalone_finalization"}}
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {"kind": "structured_json", "profile_id": "publication_ready"},
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {"schema_id": "guru-finalize-task-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
+      "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
+      "example_argv": ["--input", "examples/public-publication-ready-input.json", "--owner-result", "examples/task-finalization-gate.json"]
+    },
+    "outputs": [
+      {"exit_id": "verification_required", "schema": {"schema_id": "guru-finalize-task-output-verification-required-1.0", "path": "schemas/public-verification-required-output.schema.json"}, "example": {"id": "verification_required_output", "path": "examples/public-verification-required-output.json"}, "consumer_use_ids": ["project_verification_required"]},
+      {"exit_id": "publication_review_stale", "schema": {"schema_id": "guru-finalize-task-output-publication-review-stale-1.0", "path": "schemas/public-publication-review-stale-output.schema.json"}, "example": {"id": "publication_review_stale_output", "path": "examples/public-publication-review-stale-output.json"}, "consumer_use_ids": ["project_publication_review_stale"]},
+      {"exit_id": "resume_finalization", "schema": {"schema_id": "guru-finalize-task-output-resume-finalization-1.0", "path": "schemas/public-resume-finalization-output.schema.json"}, "example": {"id": "resume_finalization_output", "path": "examples/public-resume-finalization-output.json"}, "consumer_use_ids": ["project_resume_finalization"]},
+      {"exit_id": "reprepare_required", "schema": {"schema_id": "guru-finalize-task-output-reprepare-required-1.0", "path": "schemas/public-reprepare-required-output.schema.json"}, "example": {"id": "reprepare_required_output", "path": "examples/public-reprepare-required-output.json"}, "consumer_use_ids": ["project_reprepare_required"]},
+      {"exit_id": "published", "schema": {"schema_id": "guru-finalize-task-output-published-1.0", "path": "schemas/public-published-output.schema.json"}, "example": {"id": "published_output", "path": "examples/public-published-output.json"}, "consumer_use_ids": ["project_published"]},
+      {"exit_id": "blocked", "schema": {"schema_id": "guru-finalize-task-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
+    ],
+    "consumer_inputs": [
+      {"id": "verification_required_input", "consumer": {"kind": "skill", "id": "guru-verify-extension-installation"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-verify-extension-installation/interface.json", "input_kind": "structured_json", "profile_id": "verification_required", "seed_fields": ["task_ref", "plan_ref", "repo_ref", "reviewed_head", "verification_target"], "authoring_fields": ["profile", "mode"], "authoring_example": {"id": "verification_required_authoring", "path": "examples/public-verification-required-authoring.json"}}},
+      {"id": "publication_review_stale_input", "consumer": {"kind": "skill", "id": "guru-review-task-publication"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-review-task-publication/interface.json", "input_kind": "structured_json", "profile_id": "publication_review_stale", "seed_fields": ["task_ref", "stale_reason"], "authoring_fields": ["profile", "mode", "review_intent", "reentry_context"], "authoring_example": {"id": "publication_review_stale_authoring", "path": "examples/public-publication-review-stale-authoring.json"}}},
+      {"id": "same_plan_resume_input", "consumer": {"kind": "skill", "id": "guru-finalize-task"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-finalize-task/interface.json", "input_kind": "structured_json", "profile_id": "same_plan_resume", "seed_fields": ["task_ref", "plan_ref"], "authoring_fields": ["profile", "mode", "recovery_intent", "recovery_context"], "authoring_example": {"id": "same_plan_resume_authoring", "path": "examples/public-same-plan-resume-authoring.json"}}},
+      {"id": "reprepare_preview_input", "consumer": {"kind": "skill", "id": "guru-finalize-task"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-finalize-task/interface.json", "input_kind": "structured_json", "profile_id": "reprepare_preview", "seed_fields": ["task_ref", "reason_code"], "authoring_fields": ["profile", "mode", "reprepare_intent", "reprepare_context"], "authoring_example": {"id": "reprepare_preview_authoring", "path": "examples/public-reprepare-preview-authoring.json"}}},
+      {"id": "published_workflow_input", "consumer": {"kind": "workflow", "id": "guru-finalization-finish-response"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-finalize-task-workflow-published-input-1.0", "path": "consumers/workflow/production/finalize-task-published.schema.json"}},
+      {"id": "blocked_stop_input", "consumer": {"kind": "stop", "id": "task-finalization-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-finalize-task-stop-blocked-input-1.0", "path": "consumers/stop/production/finalize-task-blocked.schema.json"}}
+    ],
+    "projections": [
+      {"id": "project_verification_required", "exit_id": "verification_required", "consumer_input_id": "verification_required_input", "operation": "select", "mappings": [{"source": "task_ref", "target": "task_ref"}, {"source": "plan_ref", "target": "plan_ref"}, {"source": "repo_ref", "target": "repo_ref"}, {"source": "reviewed_head", "target": "reviewed_head"}, {"source": "verification_target", "target": "verification_target"}]},
+      {"id": "project_publication_review_stale", "exit_id": "publication_review_stale", "consumer_input_id": "publication_review_stale_input", "operation": "select", "mappings": [{"source": "task_ref", "target": "task_ref"}, {"source": "stale_reason", "target": "stale_reason"}]},
+      {"id": "project_resume_finalization", "exit_id": "resume_finalization", "consumer_input_id": "same_plan_resume_input", "operation": "select", "mappings": [{"source": "task_ref", "target": "task_ref"}, {"source": "plan_ref", "target": "plan_ref"}]},
+      {"id": "project_reprepare_required", "exit_id": "reprepare_required", "consumer_input_id": "reprepare_preview_input", "operation": "select", "mappings": [{"source": "task_ref", "target": "task_ref"}, {"source": "reason_code", "target": "reason_code"}]},
+      {"id": "project_published", "exit_id": "published", "consumer_input_id": "published_workflow_input", "operation": "direct"},
+      {"id": "project_blocked", "exit_id": "blocked", "consumer_input_id": "blocked_stop_input", "operation": "direct"}
+    ],
+    "private_artifacts": [
+      {"id": "finalization_gate", "kind": "gate_evidence", "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-1.0.json", "path": "schemas/task-finalization-gate.schema.json"}, "persistence": "task_local_tracked"},
+      {"id": "closeout_plan", "kind": "runtime_checkpoint", "schema": {"schema_id": "https://github.com/castbox/guru-trellis/trellis/workflows/guru-team/schemas/closeout-plan.schema.json", "path": "schemas/closeout-plan.schema.json"}, "persistence": "task_local_tracked"}
+    ]
+  }
+}
