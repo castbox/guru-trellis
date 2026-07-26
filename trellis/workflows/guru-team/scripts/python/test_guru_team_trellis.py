@@ -15107,6 +15107,211 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             review_input=review_path.relative_to(self.root).as_posix(),
         ))
 
+    def test_record_validates_published_nested_input_schemas_before_use(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        selected = ["marketplace_index"]
+        malformed_marker = "synthetic-sensitive-nested-value"
+
+        malformed_review = self.review("verified", selected)
+        malformed_review["redaction"] = malformed_marker
+        with self.assertRaises(gtt.WorkflowError) as review_error:
+            self.record(
+                public_input,
+                self.execution(public_input, "passed", selected),
+                malformed_review,
+            )
+        review_public_error = json.dumps(
+            {
+                "status": "error",
+                "error": str(review_error.exception),
+                **review_error.exception.payload,
+            }
+        )
+        self.assertIn("semantic review input failed schema validation", review_public_error)
+        self.assertNotIn(malformed_marker, review_public_error)
+        self.assertFalse(
+            (self.task_dir / "marketplace-verification.json").exists()
+        )
+
+        malformed_execution = self.execution(
+            public_input,
+            "passed",
+            selected,
+        )
+        malformed_execution["capabilities"] = None
+        with self.assertRaises(gtt.WorkflowError) as execution_error:
+            self.record(
+                public_input,
+                malformed_execution,
+                self.review("verified", selected),
+            )
+        self.assertIn(
+            "execution facts failed schema validation",
+            str(execution_error.exception),
+        )
+        self.assertFalse(
+            (self.task_dir / "marketplace-verification.json").exists()
+        )
+
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                [
+                    "guru_team_trellis.py",
+                    "record-extension-verification",
+                    "--root",
+                    str(self.root),
+                    "--input",
+                    ".trellis/.runtime/guru-team/tests/public-input.json",
+                    "--execution-input",
+                    ".trellis/.runtime/guru-team/tests/execution.json",
+                    "--review-input",
+                    ".trellis/.runtime/guru-team/tests/review.json",
+                    "--json",
+                ],
+            ),
+            contextlib.redirect_stdout(stdout),
+            contextlib.redirect_stderr(stderr),
+        ):
+            return_code = gtt.main()
+        public_streams = stdout.getvalue() + stderr.getvalue()
+        self.assertEqual(return_code, 2)
+        self.assertNotIn("Traceback", public_streams)
+
+    def test_record_schema_validation_rejects_missing_and_invalid_enums(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        selected = ["marketplace_index"]
+
+        missing_exit = self.review("verified", selected)
+        del missing_exit["typed_exit"]
+        with self.assertRaises(gtt.WorkflowError) as missing_error:
+            self.record(
+                public_input,
+                self.execution(public_input, "passed", selected),
+                missing_exit,
+            )
+        self.assertIn(
+            "semantic review input failed schema validation",
+            str(missing_error.exception),
+        )
+
+        invalid_exit = self.review("verified", selected)
+        invalid_exit["typed_exit"] = "success"
+        with self.assertRaises(gtt.WorkflowError) as invalid_review_error:
+            self.record(
+                public_input,
+                self.execution(public_input, "passed", selected),
+                invalid_exit,
+            )
+        self.assertIn(
+            "semantic review input failed schema validation",
+            str(invalid_review_error.exception),
+        )
+
+        invalid_execution = self.execution(
+            public_input,
+            "passed",
+            selected,
+        )
+        invalid_execution["status"] = "success"
+        with self.assertRaises(gtt.WorkflowError) as invalid_execution_error:
+            self.record(
+                public_input,
+                invalid_execution,
+                self.review("verified", selected),
+            )
+        self.assertIn(
+            "execution facts failed schema validation",
+            str(invalid_execution_error.exception),
+        )
+        self.assertFalse(
+            (self.task_dir / "marketplace-verification.json").exists()
+        )
+
+    def test_supersession_requires_existing_exact_prior_owner(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        selected = ["marketplace_index"]
+
+        with self.assertRaises(gtt.WorkflowError) as no_prior:
+            self.record(
+                public_input,
+                self.execution(public_input, "blocked", selected),
+                self.review(
+                    "blocked",
+                    selected,
+                    supersedes="extension-verification:does-not-exist",
+                ),
+            )
+        self.assertIn("requires an existing prior owner result", str(no_prior.exception))
+        self.assertFalse(
+            (self.task_dir / "marketplace-verification.json").exists()
+        )
+
+        prior = self.record(
+            public_input,
+            self.execution(public_input, "blocked", selected),
+            self.review("blocked", selected),
+        )
+        prior_ref = prior["identity"]["verification_ref"]
+        with self.assertRaises(gtt.WorkflowError) as wrong_prior:
+            self.record(
+                public_input,
+                self.execution(public_input, "passed", selected),
+                self.review(
+                    "verified",
+                    selected,
+                    supersedes="extension-verification:not-the-prior",
+                ),
+            )
+        self.assertIn("exact prior verification_ref", str(wrong_prior.exception))
+
+        current = self.record(
+            public_input,
+            self.execution(public_input, "passed", selected),
+            self.review("verified", selected, supersedes=prior_ref),
+        )
+        self.assertEqual(
+            current["freshness"]["supersedes_verification_ref"],
+            prior_ref,
+        )
+
+    def test_supersession_allows_changed_plan_with_exact_prior_owner(self) -> None:
+        prior_input = self.public_input(
+            "workflow",
+            task=True,
+            plan_ref="closeout-plan:prior",
+        )
+        selected = ["marketplace_index"]
+        prior = self.record(
+            prior_input,
+            self.execution(prior_input, "blocked", selected),
+            self.review("blocked", selected),
+        )
+        prior_ref = prior["identity"]["verification_ref"]
+
+        current_input = self.public_input(
+            "workflow",
+            task=True,
+            plan_ref="closeout-plan:current",
+        )
+        current = self.record(
+            current_input,
+            self.execution(current_input, "passed", selected),
+            self.review("verified", selected, supersedes=prior_ref),
+        )
+
+        self.assertEqual(
+            current["freshness"]["supersedes_verification_ref"],
+            prior_ref,
+        )
+        self.assertEqual(
+            current["public_input"]["plan_ref"],
+            "closeout-plan:current",
+        )
+
     def test_taskless_standalone_is_session_only(self) -> None:
         public_input = self.public_input("standalone", task=False)
         owner = self.record(

@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 import jsonschema
+from referencing import Registry, Resource
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -97,6 +98,44 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         jsonschema.Draft202012Validator(private_schema).validate(private_example)
         for wrapper in (PACKAGE / "scripts").glob("*.sh"):
             self.assertTrue(wrapper.stat().st_mode & stat.S_IXUSR, wrapper)
+
+    def test_recorder_input_schemas_resolve_private_contract_and_validate_examples(
+        self,
+    ) -> None:
+        private_schema = load("schemas/marketplace-verification.schema.json")
+        registry = Registry().with_resource(
+            "marketplace-verification.schema.json",
+            Resource.from_contents(private_schema),
+        )
+        cases = {
+            "semantic-review-input": "semantic-review-input",
+            "execution-facts": "execution-facts",
+        }
+        for schema_name, example_name in cases.items():
+            with self.subTest(schema=schema_name):
+                schema = load(f"schemas/{schema_name}.schema.json")
+                example = load(f"examples/{example_name}.json")
+                validator = jsonschema.Draft202012Validator(
+                    schema,
+                    registry=registry,
+                )
+                validator.validate(example)
+
+        malformed_review = load("examples/semantic-review-input.json")
+        malformed_review["redaction"] = "passed"
+        review_validator = jsonschema.Draft202012Validator(
+            load("schemas/semantic-review-input.schema.json"),
+            registry=registry,
+        )
+        self.assertFalse(review_validator.is_valid(malformed_review))
+
+        malformed_execution = load("examples/execution-facts.json")
+        malformed_execution["status"] = "success"
+        execution_validator = jsonschema.Draft202012Validator(
+            load("schemas/execution-facts.schema.json"),
+            registry=registry,
+        )
+        self.assertFalse(execution_validator.is_valid(malformed_execution))
 
     def test_session_only_input_has_no_task_work_route_fixture(self) -> None:
         standalone = load("examples/public-standalone-verification-input.json")

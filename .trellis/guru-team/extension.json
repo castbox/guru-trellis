@@ -299,11 +299,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-25T20:16:28Z",
+  "installed_at": "2026-07-25T23:16:25Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "feat/117-verify-extension-installation",
-    "commit": "5ffa1077167d067130e72e3768c9e9097052f8a6",
+    "commit": "538def79408d417107c3adae61c4466116395d96",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -495,7 +495,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "b0c517ab906dab70981d10e21ac3ad096b131e189cb14c2e24819010aa9b4d04",
-        "tree_sha256": "828ef971ce4494488e3d6a3d81f544ccf02ec8fd4e6f237e8a6f73f5ffa4286e"
+        "tree_sha256": "374475ba113a30409af7f1b8c55248ed6bb2771738a81e845e12b2c78fd792cf"
       },
       {
         "id": "guru-sync-base",
@@ -3613,7 +3613,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "5daa369632a758149f572885af0615509d924582a12547dda6fdbeef7d14ec13",
+        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
         "executable": false,
         "action": "unchanged"
       },
@@ -14323,7 +14323,7 @@
       {
         "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "5daa369632a758149f572885af0615509d924582a12547dda6fdbeef7d14ec13",
+        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
         "executable": false,
         "action": "unchanged"
       },
@@ -14631,7 +14631,7 @@
       {
         "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "5daa369632a758149f572885af0615509d924582a12547dda6fdbeef7d14ec13",
+        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
         "executable": false,
         "action": "unchanged"
       },
@@ -14939,7 +14939,7 @@
       {
         "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "5daa369632a758149f572885af0615509d924582a12547dda6fdbeef7d14ec13",
+        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
         "executable": false,
         "action": "unchanged"
       },
@@ -15247,7 +15247,7 @@
       {
         "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "5daa369632a758149f572885af0615509d924582a12547dda6fdbeef7d14ec13",
+        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
         "executable": false,
         "action": "unchanged"
       },

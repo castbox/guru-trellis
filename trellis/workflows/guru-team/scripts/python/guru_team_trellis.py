@@ -18371,6 +18371,120 @@ def extension_verification_schema(root: Path) -> dict[str, Any]:
     return schema
 
 
+def extension_verification_recorder_input_schema(
+    root: Path,
+    schema_name: str,
+    label: str,
+) -> dict[str, Any]:
+    if schema_name not in {
+        "semantic-review-input.schema.json",
+        "execution-facts.schema.json",
+    }:
+        raise WorkflowError(
+            f"{label.capitalize()} schema is unavailable.",
+            exit_code=2,
+        )
+    package = extension_verification_package_root(root)
+    schema_path = package / "schemas" / schema_name
+    errors: list[str] = []
+    schema = skill_read_schema(schema_path, label, errors)
+    private_schema = extension_verification_schema(root)
+    reference_prefix = "marketplace-verification.schema.json#"
+    resolved_references = 0
+
+    def private_pointer(fragment: str) -> dict[str, Any] | None:
+        if not fragment.startswith("/"):
+            errors.append(f"{label} schema has an invalid private-schema $ref")
+            return None
+        target: Any = private_schema
+        for encoded_part in fragment[1:].split("/"):
+            part = encoded_part.replace("~1", "/").replace("~0", "~")
+            if not isinstance(target, dict) or part not in target:
+                errors.append(f"{label} schema has an unresolved private-schema $ref")
+                return None
+            target = target[part]
+        if not isinstance(target, dict):
+            errors.append(
+                f"{label} schema private-schema $ref does not resolve to an object"
+            )
+            return None
+        return target
+
+    def project_references(node: Any) -> Any:
+        nonlocal resolved_references
+        if isinstance(node, list):
+            return [project_references(item) for item in node]
+        if not isinstance(node, dict):
+            return copy.deepcopy(node)
+        reference = node.get("$ref")
+        if reference is None or (
+            isinstance(reference, str)
+            and not reference.startswith(reference_prefix)
+        ):
+            return {
+                key: project_references(value)
+                for key, value in node.items()
+            }
+        if not isinstance(reference, str):
+            errors.append(f"{label} schema has a non-string $ref")
+            return {}
+        target = private_pointer(reference[len(reference_prefix):])
+        if target is None:
+            return {}
+        resolved_references += 1
+        resolved = project_references(target)
+        siblings = {
+            key: value
+            for key, value in node.items()
+            if key != "$ref"
+        }
+        if siblings:
+            return {
+                "allOf": [
+                    resolved,
+                    project_references(siblings),
+                ]
+            }
+        return resolved
+
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            f"{label.capitalize()} schema is unavailable.",
+            exit_code=2,
+            payload={"errors": context_sort(errors)},
+        )
+    resolved = project_references(schema)
+    if resolved_references == 0:
+        errors.append(f"{label} schema does not reference its private contract")
+    private_definitions = private_schema.get("$defs")
+    if not isinstance(private_definitions, dict):
+        errors.append("extension verification private schema has invalid $defs")
+    else:
+        existing_definitions = resolved.get("$defs")
+        if existing_definitions is not None and not isinstance(
+            existing_definitions,
+            dict,
+        ):
+            errors.append(f"{label} schema has invalid $defs")
+        elif isinstance(existing_definitions, dict) and (
+            set(existing_definitions) & set(private_definitions)
+        ):
+            errors.append(f"{label} schema collides with private contract $defs")
+        else:
+            resolved["$defs"] = {
+                **copy.deepcopy(existing_definitions or {}),
+                **copy.deepcopy(private_definitions),
+            }
+    errors.extend(skill_json_schema_subset_errors(resolved, label))
+    if errors:
+        raise WorkflowError(
+            f"{label.capitalize()} schema is invalid.",
+            exit_code=2,
+            payload={"errors": context_sort(errors)},
+        )
+    return resolved
+
+
 def extension_verification_payload_errors(
     root: Path,
     payload: dict[str, Any],
@@ -25172,22 +25286,21 @@ def extension_verification_review_input(
     value: str | None,
 ) -> dict[str, Any]:
     reviewed, _ = extension_verification_json_input(root, value)
-    required = {
-        "applicability",
-        "verification_profile",
-        "semantic_review",
-        "typed_exit",
-        "redaction",
-    }
-    allowed = required | {
-        "reason_code",
-        "remediation",
-        "supersedes_verification_ref",
-    }
-    if not required.issubset(reviewed) or not set(reviewed).issubset(allowed):
+    schema = extension_verification_recorder_input_schema(
+        root,
+        "semantic-review-input.schema.json",
+        "extension verification semantic review input",
+    )
+    errors = skill_json_schema_validation_errors(
+        reviewed,
+        schema,
+        "extension verification semantic review input",
+    )
+    if errors:
         raise WorkflowError(
-            "Extension verification semantic review input has an invalid closed shape.",
+            "Extension verification semantic review input failed schema validation.",
             exit_code=2,
+            payload={"errors": context_sort(errors)},
         )
     return reviewed
 
@@ -25197,24 +25310,21 @@ def extension_verification_execution_input(
     value: str | None,
 ) -> dict[str, Any]:
     execution, _ = extension_verification_json_input(root, value)
-    required = {
-        "schema_version",
-        "repo_ref",
-        "remote",
-        "ref",
-        "reviewed_head",
-        "remote_head",
-        "status",
-        "commands",
-        "capabilities",
-        "asset_digests",
-        "ownership",
-        "sidecars",
-    }
-    if set(execution) != required:
+    schema = extension_verification_recorder_input_schema(
+        root,
+        "execution-facts.schema.json",
+        "extension verification execution facts",
+    )
+    errors = skill_json_schema_validation_errors(
+        execution,
+        schema,
+        "extension verification execution facts",
+    )
+    if errors:
         raise WorkflowError(
-            "Extension verification execution facts have an invalid closed shape.",
+            "Extension verification execution facts failed schema validation.",
             exit_code=2,
+            payload={"errors": context_sort(errors)},
         )
     return execution
 
@@ -25389,23 +25499,39 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
         else None
     )
     supersedes = reviewed.get("supersedes_verification_ref")
+    prior_ref: str | None = None
     if artifact_path is not None and artifact_path.exists():
-        prior = read_json(artifact_path)
+        try:
+            prior = read_json(artifact_path)
+        except WorkflowError as exc:
+            raise WorkflowError(
+                "Existing extension verification prior owner result is invalid.",
+                exit_code=2,
+            ) from exc
+        prior_errors = extension_verification_payload_errors(root, prior)
+        if prior_errors:
+            raise WorkflowError(
+                "Existing extension verification prior owner result is invalid.",
+                exit_code=2,
+            )
         prior_identity = (
             prior.get("identity")
             if isinstance(prior.get("identity"), dict)
             else {}
         )
-        prior_ref = prior_identity.get("verification_ref")
-        if (
-            isinstance(prior_ref, str)
-            and prior_ref
-            and supersedes != prior_ref
-        ):
-            raise WorkflowError(
-                "Extension verification replacement must name the exact prior verification_ref.",
-                exit_code=2,
-            )
+        candidate_prior_ref = prior_identity.get("verification_ref")
+        if isinstance(candidate_prior_ref, str) and candidate_prior_ref:
+            prior_ref = candidate_prior_ref
+    if supersedes is not None and prior_ref is None:
+        raise WorkflowError(
+            "Extension verification supersession requires an existing prior owner result.",
+            exit_code=2,
+        )
+    if prior_ref is not None and supersedes != prior_ref:
+        raise WorkflowError(
+            "Extension verification replacement must name the exact prior verification_ref.",
+            exit_code=2,
+        )
     exit_id = str(reviewed["typed_exit"])
     payload: dict[str, Any] = {
         "schema_version": EXTENSION_VERIFICATION_SCHEMA_VERSION,

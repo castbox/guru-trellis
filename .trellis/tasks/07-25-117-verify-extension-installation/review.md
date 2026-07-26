@@ -2,63 +2,68 @@
 
 ## 审查身份与范围
 
-- 独立 reviewer：`/root/issue117_branch_review_final`
-- 角色：最终放行审查代理
-- 审查 HEAD：`5ffa1077167d067130e72e3768c9e9097052f8a6`
-- 完整范围：`origin/main...5ffa1077167d067130e72e3768c9e9097052f8a6`
+- 当前问题发现 reviewer：`/root/issue117_branch_review_final_afterfix`
+- 审查 HEAD：`538def79408d417107c3adae61c4466116395d96`
+- 完整范围：`origin/main...538def79408d417107c3adae61c4466116395d96`
 - Merge base：`0cd2498f821b38ce91bd82fa9e232b1528241e5d`
-- 原始报告：[第 1 轮完整原始报告](reviews/001-final.md)
+- Round 1/2 原始报告：[初始 finding 报告](reviews/001-final.md)
+- Round 3 原始报告：[F1/F2 closure 报告](reviews/002-closure.md)
+- Round 4 原始报告：[新 finding 报告](reviews/003-final.md)
 
-本轮只读覆盖 321 个 committed paths，包括 canonical Skill package、Interface、schemas、eval corpus、runtime executor/recorder/checker、public wrapper、registry、manifest、workflow graph、preset、installer、update/reapply、ownership、平台分发副本、规划 artifact 与 durable Docs SSOT。Reviewer 未修改、stage、commit、push 或创建 PR。
+Round 3 独立复核确认 `BR-117-F1` 与 `BR-117-F2` 已关闭。Round 4 原本按 fresh final review 分派，但完整审查当前 committed range 后发现新的 current-scope finding，因此已透明登记为问题发现审查轮，不能作为 zero-finding 最终放行。
 
-## Qualification 结论
+## 已关闭 finding
 
 ### `BR-117-F1` P1：credential URL 脱敏漏检
 
-场景属于 `normal_required_behavior`。`extension_verification_sensitive_text()` 使用 `r"https?://[^/\\s@]+@"`，raw 字符类中的 `\\s` 排除的是反斜杠与字母 `s`，不是空白。主会话只读 probe 复现：
+状态：`closed`
 
-```text
-https://token@example.invalid/path        -> detected
-https://user:secret@example.invalid/path  -> missed
-```
-
-AI-authored applicability、adequacy、finding 等 semantic evidence 会进入 recorder payload，而 Git remote URL parser 不覆盖这些字段。该缺陷违反 PRD 3.7、Issue #117 Redaction 和 package private-evidence 合同，可能把 credential URL 写入 tracked `marketplace-verification.json`。
-
-状态：`open`
+Round 3 复核了 authority-userinfo 检测、artifact write 前 fail-closed、generic public error、5 类独立 probe、Shared production eval、secret scan 与 canonical/installed bytes。关闭证据绑定 [F1/F2 closure 报告](reviews/002-closure.md)。
 
 ### `BR-117-F2` P1：task-bearing 调用未验证 task/worktree identity
 
-场景属于 `normal_required_behavior`。`extension_verification_task_dir()` 只校验 `task_ref` 可解析为精确 `.trellis/tasks/**` 路径；execute、record、check 均未加载 `task-start-context.json` 或执行 workspace boundary 校验。主会话只读 probe 证明现存 archived task 也会被接受。
+状态：`closed`
 
-该缺陷违反 PRD 3.3 和 Interface `repository_identity` 的明确要求。普通 stale 或误路由的 `task_ref` 可把当前 worktree digest、owner artifact 与 route DTO 绑定到错误或 archived task。
+Round 3 复核了 active task、task-start-context、repo、branch、active pointer 与 workspace boundary 统一 gate，并覆盖 wrong task、archived task、wrong repo、wrong branch、wrong worktree 与 taskless standalone。关闭证据绑定 [F1/F2 closure 报告](reviews/002-closure.md)。
+
+## 当前 open finding
+
+### `BR-117-F7` P2：recorder 未执行输入 schema，并接受不存在的 supersession lineage
+
+场景属于 `normal_required_behavior`。Package 已发布 `semantic-review-input.schema.json` 与 `execution-facts.schema.json`，但 recorder 只检查顶层 keys；普通嵌套类型错误会在字段访问时抛出未捕获 `AttributeError` 或 `TypeError`，而不是稳定的 `WorkflowError`。没有 prior `marketplace-verification.json` 时，任意 `supersedes_verification_ref` 也会被持久化并产生 checker-valid 的错误 lineage。
+
+该问题违反 PRD 3.3、Design 5.2/5.3 以及 package `Private evidence`、`Exits and re-entry` 合同。输入结构错误和首次调用误带 stale re-entry ref 都是 honest-but-fallible 的正常路径，不依赖恶意篡改、伪造或非常规并发。
 
 状态：`open`
 
+修复必须在访问嵌套字段或写 artifact 前执行已发布 schema 校验并统一转换为受控 `WorkflowError`；`supersedes_verification_ref` 只能在 exact prior owner artifact 存在且匹配时出现。需要补 malformed nested type、missing/invalid enum 与 no-prior/nonmatching/exact-prior supersession 回归。
+
 ## 验证证据
 
-- Runtime：584 passed，13 skipped
+- Runtime：588 passed，13 skipped
 - Skill packages：175 passed
-- Preset 与 ownership：54 passed
-- Extension runtime 定向：11 passed
-- Extension contract：7 passed
-- Source/installed validators：12 Skills、46 exits、27 targets，通过
-- Installed state：2322 managed files，0 sidecar，0 conflict
-- 六份 package：各 44 files，byte digest 一致
-- Overlay/ownership：43/43，drift check 通过
-- `git diff --check origin/main...HEAD`：通过
+- Preset：45 passed
+- Ownership 与 extension contract：16 passed
+- Source/installed validators：12 Skills、46 exits、27 targets
+- Installed state：2322 managed files，0 sidecar/removal/conflict
+- Shared、Codex source/installed production eval：各 7/7
+- Full local-source throwaway：exit 0
+- `git diff --check origin/main...HEAD` 与相关 `compileall`：通过
 
-既有测试全部通过，但没有覆盖上述两个正常路径缺陷。
+既有自动化通过，但未覆盖 F7 的 malformed recorder input 和 no-prior supersession 正常负例，不能反证该 finding。
 
 ## 文档、范围与影响
 
-Docs SSOT strategy 为 `ssot_first`，task delta 已合并到 durable docs；但当前 runtime 未完整承接 durable redaction 与 repository identity 合同，因此实现与 Docs SSOT 不一致。Issue Scope Ledger 仍只关闭 #117；push 后 exact feature-ref clean install 保持 publication 前强制后置项。
+Docs SSOT strategy 为 `ssot_first`。Canonical package contract、workflow specs、durable requirements、README、registry/manifest、installer 与平台分发副本总体同步；但 runtime 尚未完整承接已声明的 schema 与 supersession freshness 合同，因此实现和 Docs SSOT 仍不一致。
 
-无 CI/CD、容器、K8s、数据库 migration 或生产数据影响。`BR-117-F1` 存在 secret persistence 风险，`BR-117-F2` 存在跨 task artifact 污染和错误路由风险。
+Issue Scope Ledger 仍只关闭 #117。Exact pushed feature-ref clean install 保留为授权 push 后、创建 PR 前的 publication gate，当前 local-source throwaway 不冒充该证据。
+
+完整 diff 未修改 CI/CD、容器、Compose、K8s/Kustomize、数据库 migration、Makefile、dependency manifest 或生产数据面。F7 影响 recorder correctness 与 gate lineage，不扩大生产或数据副作用。
 
 ## AI Review Gate
 
-主会话复核代码、已批准 PRD/Interface/package contract 与两个只读 probe 后，确认两个候选均为 current-scope `qualified_finding`，严重度均为 P1，且状态均为 `open`。
+主会话复核 raw reports、已批准 PRD/Design/package contract、当前代码路径与独立复现后，确认 `BR-117-F7` 是 current-scope `qualified_finding`，严重度 P2，状态 `open`。
 
 最终 typed exit：`implementation_required`
 
-当前 committed branch 不得进入 publication；需返回实现阶段修复两项 finding，完成 fresh Phase 2、fresh task commit、finding closure 与 fresh final Branch Review。
+当前 committed branch 不得进入 publication。修复 F7 后必须重新完成完整 Phase 2、fresh task commit、finding closure 与独立 fresh final Branch Review。
