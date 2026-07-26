@@ -2297,6 +2297,7 @@ def extension_verification_execution(
     public_input: dict[str, Any],
     status: str,
     selected: list[str],
+    package: Path,
 ) -> dict[str, Any]:
     reviewed_head = (
         public_input["reviewed_head"]
@@ -2318,6 +2319,7 @@ def extension_verification_execution(
         []
         if status == "not_run"
         else [{
+            "id": "verify_throwaway_installation",
             "argv": [
                 "git",
                 "ls-remote",
@@ -2333,6 +2335,22 @@ def extension_verification_execution(
             "stderr_size_bytes": 0 if status == "passed" else 21,
         }]
     )
+    if status == "passed":
+        example = json.loads(
+            (package / "examples/execution-facts.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        asset_expectations = copy.deepcopy(example["asset_expectations"])
+        asset_digests = copy.deepcopy(example["asset_digests"])
+        asset_inventory = copy.deepcopy(example["asset_inventory"])
+    else:
+        asset_expectations = []
+        asset_digests = []
+        asset_inventory = runtime.extension_verification_asset_inventory_summary(
+            [],
+            [],
+        )
     return {
         "schema_version": "1.0",
         "repo_ref": public_input["repo_ref"],
@@ -2342,22 +2360,15 @@ def extension_verification_execution(
         "remote_head": remote_head,
         "status": status,
         "commands": commands,
-        "capabilities": [
-            {
-                "id": capability,
-                "status": capability_status,
-                "evidence_step": 0 if commands else None,
-            }
-            for capability in selected
-        ],
-        "asset_digests": (
-            [{
-                "path": "trellis/index.json",
-                "sha256": "0" * 64,
-            }]
-            if status == "passed"
-            else []
+        "capabilities": runtime.extension_verification_capability_facts(
+            selected,
+            capability_status,
+            commands,
+            asset_digests,
         ),
+        "asset_expectations": asset_expectations,
+        "asset_digests": asset_digests,
+        "asset_inventory": asset_inventory,
         "ownership": {
             "frozen_transitional_legacy_count": 43,
             "new_legacy_entries": [],
@@ -2604,6 +2615,7 @@ def stage_extension_verification_owner_execution(
                 invocation_input,
                 status,
                 selected,
+                request_package,
             ),
         )
         runtime.write_json(

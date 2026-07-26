@@ -59,24 +59,14 @@
     "execution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "commands", "capabilities", "asset_digests", "ownership", "sidecars"],
+      "required": ["status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars"],
       "properties": {
         "status": {"enum": ["not_run", "passed", "failed", "blocked"]},
         "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
         "capabilities": {"type": "array", "items": {"$ref": "#/$defs/capabilityFact"}},
-        "asset_digests": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["path", "sha256"],
-            "properties": {
-              "path": {"type": "string", "minLength": 1},
-              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
-            }
-          }
-        },
+        "asset_expectations": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/assetExpectation"}},
+        "asset_digests": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/assetDigest"}},
+        "asset_inventory": {"$ref": "#/$defs/assetInventory"},
         "ownership": {
           "type": "object",
           "additionalProperties": false,
@@ -171,8 +161,15 @@
     "command": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["argv", "exit_code", "stdout_sha256", "stderr_sha256", "stdout_size_bytes", "stderr_size_bytes"],
+      "required": ["id", "argv", "exit_code", "stdout_sha256", "stderr_sha256", "stdout_size_bytes", "stderr_size_bytes"],
       "properties": {
+        "id": {
+          "enum": [
+            "resolve_remote_ref", "resolve_remote_url", "clone_source",
+            "checkout_resolved_commit", "verify_checkout_commit",
+            "verify_throwaway_installation"
+          ]
+        },
         "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
         "exit_code": {"type": "integer"},
         "stdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
@@ -184,11 +181,106 @@
     "capabilityFact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "status", "evidence_step"],
+      "required": ["id", "status", "command_refs", "asset_paths"],
       "properties": {
         "id": {"$ref": "#/$defs/capability"},
         "status": {"enum": ["passed", "failed", "blocked", "not_run"]},
-        "evidence_step": {"type": ["integer", "null"], "minimum": 0}
+        "command_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "asset_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "assetCategory": {
+      "enum": ["workflow", "preset", "schema", "skill", "platform"]
+    },
+    "assetPlatform": {
+      "enum": ["shared", "codex", "claude", "cursor", null]
+    },
+    "assetExpectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category", "platform", "path", "source_path",
+        "expected_sha256", "relation"
+      ],
+      "properties": {
+        "category": {"$ref": "#/$defs/assetCategory"},
+        "platform": {"$ref": "#/$defs/assetPlatform"},
+        "path": {"type": "string", "minLength": 1},
+        "source_path": {"type": "string", "minLength": 1},
+        "expected_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "relation": {
+          "enum": [
+            "canonical_workflow", "managed_manifest",
+            "skill_manifest", "platform_manifest"
+          ]
+        }
+      }
+    },
+    "assetDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "platform", "path", "sha256"],
+      "properties": {
+        "category": {"$ref": "#/$defs/assetCategory"},
+        "platform": {"$ref": "#/$defs/assetPlatform"},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "assetCategoryFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "expected_count", "observed_count", "matched_count", "complete"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/assetCategory"},
+        "expected_count": {"type": "integer", "minimum": 0},
+        "observed_count": {"type": "integer", "minimum": 0},
+        "matched_count": {"type": "integer", "minimum": 0},
+        "complete": {"type": "boolean"}
+      }
+    },
+    "assetInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected_set_sha256", "expected_count", "observed_count",
+        "matched_count", "categories", "missing_paths", "duplicate_paths",
+        "unexpected_paths", "mismatched_paths", "relation_errors", "complete"
+      ],
+      "properties": {
+        "expected_set_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "expected_count": {"type": "integer", "minimum": 0},
+        "observed_count": {"type": "integer", "minimum": 0},
+        "matched_count": {"type": "integer", "minimum": 0},
+        "categories": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/assetCategoryFact"}
+        },
+        "missing_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "duplicate_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "unexpected_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "mismatched_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "relation_errors": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "complete": {"type": "boolean"}
       }
     },
     "adequacy": {

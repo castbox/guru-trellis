@@ -17735,6 +17735,69 @@ EXTENSION_VERIFICATION_CAPABILITIES = (
     "readme_commands",
     "redaction",
 )
+EXTENSION_VERIFICATION_ASSET_CATEGORIES = (
+    "workflow",
+    "preset",
+    "schema",
+    "skill",
+    "platform",
+)
+EXTENSION_VERIFICATION_CAPABILITY_ASSET_CATEGORIES = {
+    "marketplace_index": ("workflow",),
+    "new_repo_init": ("workflow", "preset"),
+    "existing_repo_preview_switch": ("workflow", "preset"),
+    "preset_initial_apply": ("preset", "schema"),
+    "preset_reapply": ("preset", "schema"),
+    "trellis_update_reapply": ("workflow", "preset", "schema"),
+    "managed_conflict_sidecars": ("preset",),
+    "skill_contract_discovery": ("schema", "skill"),
+    "platform_equality": ("skill", "platform"),
+    "ownership_inventory": ("preset",),
+    "readme_commands": ("workflow", "preset"),
+    "redaction": ("schema", "skill"),
+}
+EXTENSION_VERIFICATION_CAPABILITY_COMMAND_REFS = {
+    "marketplace_index": (
+        "resolve_remote_ref",
+        "clone_source",
+        "verify_checkout_commit",
+        "verify_throwaway_installation",
+    ),
+    "new_repo_init": (
+        "clone_source",
+        "verify_checkout_commit",
+        "verify_throwaway_installation",
+    ),
+    "existing_repo_preview_switch": (
+        "clone_source",
+        "verify_checkout_commit",
+        "verify_throwaway_installation",
+    ),
+    "preset_initial_apply": ("verify_throwaway_installation",),
+    "preset_reapply": ("verify_throwaway_installation",),
+    "trellis_update_reapply": (
+        "resolve_remote_ref",
+        "verify_throwaway_installation",
+    ),
+    "managed_conflict_sidecars": ("verify_throwaway_installation",),
+    "skill_contract_discovery": (
+        "clone_source",
+        "verify_throwaway_installation",
+    ),
+    "platform_equality": (
+        "clone_source",
+        "verify_throwaway_installation",
+    ),
+    "ownership_inventory": (
+        "clone_source",
+        "verify_throwaway_installation",
+    ),
+    "readme_commands": (
+        "resolve_remote_ref",
+        "verify_throwaway_installation",
+    ),
+    "redaction": ("verify_throwaway_installation",),
+}
 EXTENSION_VERIFICATION_CONSUMERS = {
     "verified": {"kind": "skill", "id": "guru-finalize-task"},
     "not_required": {"kind": "skill", "id": "guru-finalize-task"},
@@ -17804,12 +17867,14 @@ def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str],
 
 
 def extension_verification_command_evidence(
+    evidence_id: str,
     command: list[str],
     proc: subprocess.CompletedProcess[str],
     display_command: list[str] | None = None,
 ) -> dict[str, Any]:
     evidence = command_evidence(command, proc, display_command)
     return {
+        "id": evidence_id,
         "argv": evidence["command"],
         "exit_code": evidence["exit_code"],
         "stdout_sha256": evidence["stdout_sha256"],
@@ -17817,6 +17882,397 @@ def extension_verification_command_evidence(
         "stdout_size_bytes": evidence["stdout_size_bytes"],
         "stderr_size_bytes": evidence["stderr_size_bytes"],
     }
+
+
+def extension_verification_asset_inventory_summary(
+    expectations: list[dict[str, Any]],
+    asset_digests: list[dict[str, Any]],
+    *,
+    duplicate_paths: list[str] | None = None,
+    relation_errors: list[str] | None = None,
+) -> dict[str, Any]:
+    duplicate_paths = sorted(set(duplicate_paths or []))
+    relation_errors = sorted(set(relation_errors or []))
+    expected_paths = [
+        str(item.get("path") or "")
+        for item in expectations
+        if isinstance(item, dict)
+    ]
+    observed_paths = [
+        str(item.get("path") or "")
+        for item in asset_digests
+        if isinstance(item, dict)
+    ]
+    duplicate_paths.extend(
+        path
+        for path in sorted(set(expected_paths))
+        if expected_paths.count(path) != 1
+    )
+    duplicate_paths.extend(
+        path
+        for path in sorted(set(observed_paths))
+        if observed_paths.count(path) != 1
+    )
+    duplicate_paths = sorted(set(duplicate_paths))
+    expected_by_path = {
+        str(item["path"]): item
+        for item in expectations
+        if isinstance(item, dict)
+        and isinstance(item.get("path"), str)
+        and expected_paths.count(str(item["path"])) == 1
+    }
+    observed_by_path = {
+        str(item["path"]): item
+        for item in asset_digests
+        if isinstance(item, dict)
+        and isinstance(item.get("path"), str)
+        and observed_paths.count(str(item["path"])) == 1
+    }
+    missing_paths = sorted(set(expected_by_path) - set(observed_by_path))
+    unexpected_paths = sorted(set(observed_by_path) - set(expected_by_path))
+    mismatched_paths = sorted(
+        path
+        for path in set(expected_by_path) & set(observed_by_path)
+        if expected_by_path[path].get("expected_sha256") is None
+        or observed_by_path[path].get("sha256")
+        != expected_by_path[path].get("expected_sha256")
+        or observed_by_path[path].get("category")
+        != expected_by_path[path].get("category")
+        or observed_by_path[path].get("platform")
+        != expected_by_path[path].get("platform")
+    )
+    categories: list[dict[str, Any]] = []
+    for category in EXTENSION_VERIFICATION_ASSET_CATEGORIES:
+        category_expected = [
+            item
+            for item in expectations
+            if isinstance(item, dict) and item.get("category") == category
+        ]
+        category_observed = [
+            item
+            for item in asset_digests
+            if isinstance(item, dict) and item.get("category") == category
+        ]
+        category_paths = {
+            str(item.get("path") or "") for item in category_expected
+        }
+        matched_count = sum(
+            1
+            for path in category_paths
+            if path in expected_by_path
+            and path in observed_by_path
+            and path not in mismatched_paths
+        )
+        expected_count = len(category_expected)
+        observed_count = len(category_observed)
+        categories.append({
+            "id": category,
+            "expected_count": expected_count,
+            "observed_count": observed_count,
+            "matched_count": matched_count,
+            "complete": (
+                expected_count > 0
+                and observed_count == expected_count
+                and matched_count == expected_count
+                and not any(path in duplicate_paths for path in category_paths)
+            ),
+        })
+    complete = (
+        bool(expectations)
+        and all(item["complete"] for item in categories)
+        and not duplicate_paths
+        and not missing_paths
+        and not unexpected_paths
+        and not mismatched_paths
+        and not relation_errors
+    )
+    return {
+        "expected_set_sha256": context_digest(expectations),
+        "expected_count": len(expectations),
+        "observed_count": len(asset_digests),
+        "matched_count": sum(item["matched_count"] for item in categories),
+        "categories": categories,
+        "missing_paths": missing_paths,
+        "duplicate_paths": duplicate_paths,
+        "unexpected_paths": unexpected_paths,
+        "mismatched_paths": mismatched_paths,
+        "relation_errors": relation_errors,
+        "complete": complete,
+    }
+
+
+def extension_verification_installed_asset_facts(
+    source_checkout: Path,
+    installed_root: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    expectations: list[dict[str, Any]] = []
+    relation_errors: list[str] = []
+    duplicate_paths: list[str] = []
+
+    def add_expectation(
+        category: str,
+        installed_path: str,
+        source_path: str,
+        relation: str,
+        *,
+        platform: str | None = None,
+    ) -> None:
+        source = source_checkout / source_path
+        expected_sha256 = (
+            hashlib.sha256(source.read_bytes()).hexdigest()
+            if source.is_file() and not source.is_symlink()
+            else None
+        )
+        if expected_sha256 is None:
+            relation_errors.append(f"{installed_path}:missing_canonical_source")
+        expectations.append({
+            "category": category,
+            "platform": platform,
+            "path": installed_path,
+            "source_path": source_path,
+            "expected_sha256": expected_sha256,
+            "relation": relation,
+        })
+
+    add_expectation(
+        "workflow",
+        ".trellis/workflow.md",
+        "trellis/workflows/guru-team/workflow.md",
+        "canonical_workflow",
+    )
+    preset_sources = (
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/scripts/bash/execute-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/record-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/check-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/invoke-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    )
+    for source_path in preset_sources:
+        installed_path = (
+            ".trellis/guru-team/"
+            + source_path.removeprefix("trellis/workflows/guru-team/")
+        )
+        add_expectation(
+            "preset",
+            installed_path,
+            source_path,
+            "managed_manifest",
+        )
+    schema_root = source_checkout / "trellis/workflows/guru-team/schemas"
+    schema_sources = sorted(
+        path
+        for path in schema_root.rglob("*.json")
+        if path.is_file() and not path.is_symlink()
+    ) if schema_root.is_dir() and not schema_root.is_symlink() else []
+    if not schema_sources:
+        relation_errors.append("schema:missing_canonical_set")
+    for source in schema_sources:
+        relative = source.relative_to(schema_root).as_posix()
+        add_expectation(
+            "schema",
+            f".trellis/guru-team/schemas/{relative}",
+            source.relative_to(source_checkout).as_posix(),
+            "managed_manifest",
+        )
+    package_source_root = (
+        source_checkout
+        / "trellis/skills/guru-team/packages/"
+        "guru-verify-extension-installation"
+    )
+    package_sources = sorted(
+        path
+        for path in package_source_root.rglob("*")
+        if path.is_file()
+        and not path.is_symlink()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
+    ) if package_source_root.is_dir() and not package_source_root.is_symlink() else []
+    if not package_sources:
+        relation_errors.append("skill:missing_canonical_set")
+    destination_roots = (
+        (
+            "skill",
+            None,
+            ".trellis/guru-team/skills/packages/"
+            "guru-verify-extension-installation",
+            "skill_manifest",
+        ),
+        (
+            "platform",
+            "shared",
+            ".agents/skills/guru-verify-extension-installation",
+            "platform_manifest",
+        ),
+        (
+            "platform",
+            "codex",
+            ".codex/skills/guru-verify-extension-installation",
+            "platform_manifest",
+        ),
+        (
+            "platform",
+            "claude",
+            ".claude/skills/guru-verify-extension-installation",
+            "platform_manifest",
+        ),
+        (
+            "platform",
+            "cursor",
+            ".cursor/skills/guru-verify-extension-installation",
+            "platform_manifest",
+        ),
+    )
+    for source in package_sources:
+        package_relative = source.relative_to(package_source_root).as_posix()
+        source_path = source.relative_to(source_checkout).as_posix()
+        for category, platform, destination, relation in destination_roots:
+            add_expectation(
+                category,
+                f"{destination}/{package_relative}",
+                source_path,
+                relation,
+                platform=platform,
+            )
+
+    manifest_path = installed_root / ".trellis/guru-team/extension.json"
+    try:
+        manifest = read_json(manifest_path)
+    except WorkflowError:
+        manifest = {}
+        relation_errors.append(
+            ".trellis/guru-team/extension.json:missing_or_invalid"
+        )
+    install = manifest.get("install") if isinstance(manifest.get("install"), dict) else {}
+    managed_assets = (
+        install.get("managed_assets")
+        if isinstance(install.get("managed_assets"), list)
+        else []
+    )
+    skill_packages = (
+        manifest.get("skill_packages")
+        if isinstance(manifest.get("skill_packages"), dict)
+        else {}
+    )
+    manifest_files = (
+        skill_packages.get("files")
+        if isinstance(skill_packages.get("files"), list)
+        else []
+    )
+    selected_platforms = (
+        install.get("selected_platforms")
+        if isinstance(install.get("selected_platforms"), list)
+        else []
+    )
+    for expectation in expectations:
+        installed_path = str(expectation["path"])
+        relation = expectation["relation"]
+        expected_sha256 = expectation["expected_sha256"]
+        if relation == "managed_manifest":
+            occurrences = managed_assets.count(installed_path)
+            if occurrences != 1:
+                relation_errors.append(
+                    f"{installed_path}:managed_manifest_count={occurrences}"
+                )
+                if occurrences > 1:
+                    duplicate_paths.append(installed_path)
+        elif relation in {"skill_manifest", "platform_manifest"}:
+            records = [
+                item
+                for item in manifest_files
+                if isinstance(item, dict) and item.get("path") == installed_path
+            ]
+            if len(records) != 1:
+                relation_errors.append(
+                    f"{installed_path}:skill_manifest_count={len(records)}"
+                )
+                if len(records) > 1:
+                    duplicate_paths.append(installed_path)
+            else:
+                record = records[0]
+                if (
+                    record.get("source") != expectation["source_path"]
+                    or record.get("sha256") != expected_sha256
+                ):
+                    relation_errors.append(
+                        f"{installed_path}:manifest_relation_mismatch"
+                    )
+        platform = expectation.get("platform")
+        if (
+            platform in {"codex", "claude", "cursor"}
+            and selected_platforms.count(platform) != 1
+        ):
+            relation_errors.append(
+                f"{installed_path}:selected_platform_mismatch"
+            )
+
+    asset_digests: list[dict[str, Any]] = []
+    for expectation in expectations:
+        installed_path = str(expectation["path"])
+        path = installed_root / installed_path
+        if path.is_file() and not path.is_symlink():
+            asset_digests.append({
+                "category": expectation["category"],
+                "platform": expectation["platform"],
+                "path": installed_path,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            })
+    summary = extension_verification_asset_inventory_summary(
+        expectations,
+        asset_digests,
+        duplicate_paths=duplicate_paths,
+        relation_errors=relation_errors,
+    )
+    return expectations, asset_digests, summary
+
+
+def extension_verification_capability_facts(
+    selected_capabilities: list[str],
+    status: str,
+    commands: list[dict[str, Any]],
+    asset_digests: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    available_commands = {
+        str(item.get("id"))
+        for item in commands
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    assets_by_category: dict[str, list[str]] = {
+        category: sorted(
+            str(item["path"])
+            for item in asset_digests
+            if isinstance(item, dict)
+            and item.get("category") == category
+            and isinstance(item.get("path"), str)
+        )
+        for category in EXTENSION_VERIFICATION_ASSET_CATEGORIES
+    }
+    capability_status = (
+        status if status in {"passed", "failed", "blocked"} else "not_run"
+    )
+    return [
+        {
+            "id": capability,
+            "status": capability_status,
+            "command_refs": [
+                command_id
+                for command_id in (
+                    EXTENSION_VERIFICATION_CAPABILITY_COMMAND_REFS[capability]
+                )
+                if command_id in available_commands
+            ],
+            "asset_paths": sorted({
+                path
+                for category in (
+                    EXTENSION_VERIFICATION_CAPABILITY_ASSET_CATEGORIES[
+                        capability
+                    ]
+                )
+                for path in assets_by_category[category]
+            }),
+        }
+        for capability in selected_capabilities
+    ]
 
 
 def extension_verification_package_root(root: Path) -> Path:
@@ -18058,13 +18514,13 @@ def extension_verification_execute_facts(
     remote_proc = run(remote_command, cwd=root, check=False)
     commands.append(
         extension_verification_command_evidence(
+            "resolve_remote_ref",
             remote_command,
             remote_proc,
         )
     )
     remote_head = extension_verification_resolved_remote_head(remote_proc, ref)
     status = "blocked"
-    asset_digests: dict[str, str] = {}
     ownership: dict[str, Any] = {
         "frozen_transitional_legacy_count": 0,
         "new_legacy_entries": [],
@@ -18078,6 +18534,7 @@ def extension_verification_execute_facts(
         remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
         commands.append(
             extension_verification_command_evidence(
+                "resolve_remote_url",
                 ["git", "remote", "get-url", remote],
                 remote_url_proc,
             )
@@ -18104,6 +18561,7 @@ def extension_verification_execute_facts(
             clone_proc = run(clone_command, cwd=temp_root, check=False)
             commands.append(
                 extension_verification_command_evidence(
+                    "clone_source",
                     clone_command,
                     clone_proc,
                     [
@@ -18131,6 +18589,7 @@ def extension_verification_execute_facts(
                 )
                 commands.append(
                     extension_verification_command_evidence(
+                        "checkout_resolved_commit",
                         ["git", "checkout", "--detach", remote_head],
                         checkout_proc,
                     )
@@ -18149,6 +18608,7 @@ def extension_verification_execute_facts(
                 )
                 commands.append(
                     extension_verification_command_evidence(
+                        "verify_checkout_commit",
                         checkout_head_command,
                         checkout_head_proc,
                     )
@@ -18164,9 +18624,11 @@ def extension_verification_execute_facts(
                 source_checkout
                 / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
             )
+            install_work = temp_root / "install"
+            installed_root = install_work / "project"
             if checkout_head_matches and throwaway.is_file():
                 throwaway_proc = run(
-                    [str(throwaway)],
+                    [str(throwaway), str(install_work)],
                     cwd=source_checkout,
                     check=False,
                     env={
@@ -18177,31 +18639,31 @@ def extension_verification_execute_facts(
                 )
                 commands.append(
                     extension_verification_command_evidence(
-                        [str(throwaway)],
+                        "verify_throwaway_installation",
+                        [str(throwaway), str(install_work)],
                         throwaway_proc,
                         [
                             "<temp-source>/trellis/presets/guru-team/scripts/bash/"
-                            "verify-throwaway-install.sh"
+                            "verify-throwaway-install.sh",
+                            "<temp-install-work>",
                         ],
                     )
                 )
-            tracked_assets = (
-                "trellis/index.json",
-                "trellis/guru-team-extension.json",
-                "trellis/workflows/guru-team/workflow.md",
-                "trellis/presets/guru-team/scripts/bash/apply.sh",
-                "trellis/skills/guru-team/registry.json",
-                "trellis/skills/guru-team/packages/"
-                "guru-verify-extension-installation/interface.json",
-                "trellis/workflows/guru-team/schemas/"
-                "task-start-context.schema.json",
-                "trellis/workflows/guru-team/schemas/finish-summary.schema.json",
-                "trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
+            asset_expectations: list[dict[str, Any]] = []
+            installed_asset_digests: list[dict[str, Any]] = []
+            asset_inventory = extension_verification_asset_inventory_summary(
+                [],
+                [],
             )
-            for relative in tracked_assets:
-                path = source_checkout / relative
-                if path.is_file() and not path.is_symlink():
-                    asset_digests[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            if installed_root.is_dir() and not installed_root.is_symlink():
+                (
+                    asset_expectations,
+                    installed_asset_digests,
+                    asset_inventory,
+                ) = extension_verification_installed_asset_facts(
+                    source_checkout,
+                    installed_root,
+                )
             ownership_path = (
                 source_checkout
                 / "trellis/presets/guru-team/ownership/upstream-ownership.json"
@@ -18220,14 +18682,33 @@ def extension_verification_execute_facts(
                 and checkout_proc.returncode == 0
                 and checkout_head_matches
                 and throwaway_proc.returncode == 0
-                and len(asset_digests) == len(tracked_assets)
+                and asset_inventory["complete"]
                 and ownership["frozen_transitional_legacy_count"] == 43
                 and not ownership["new_legacy_entries"]
                 and not sidecars
                 else "failed"
             )
-    capability_status = status if status in {"passed", "failed", "blocked"} else "failed"
-    evidence_step = len(commands) - 1 if commands else None
+    else:
+        asset_expectations = []
+        installed_asset_digests = []
+        asset_inventory = extension_verification_asset_inventory_summary([], [])
+    capabilities = extension_verification_capability_facts(
+        selected_capabilities,
+        status,
+        commands,
+        installed_asset_digests,
+    )
+    if status == "passed" and any(
+        not item["command_refs"] or not item["asset_paths"]
+        for item in capabilities
+    ):
+        status = "failed"
+        capabilities = extension_verification_capability_facts(
+            selected_capabilities,
+            status,
+            commands,
+            installed_asset_digests,
+        )
     return {
         "schema_version": EXTENSION_VERIFICATION_SCHEMA_VERSION,
         "repo_ref": repo_ref,
@@ -18237,18 +18718,10 @@ def extension_verification_execute_facts(
         "remote_head": remote_head,
         "status": status,
         "commands": commands,
-        "capabilities": [
-            {
-                "id": capability,
-                "status": capability_status,
-                "evidence_step": evidence_step,
-            }
-            for capability in selected_capabilities
-        ],
-        "asset_digests": [
-            {"path": path, "sha256": sha256}
-            for path, sha256 in sorted(asset_digests.items())
-        ],
+        "capabilities": capabilities,
+        "asset_expectations": asset_expectations,
+        "asset_digests": installed_asset_digests,
+        "asset_inventory": asset_inventory,
         "ownership": ownership,
         "sidecars": sidecars,
     }
@@ -18354,11 +18827,84 @@ def extension_verification_semantic_shape_errors(
     )
     selected = profile.get("selected_capabilities")
     selected = selected if isinstance(selected, list) else []
-    capability_facts = {
-        item.get("id"): item.get("status")
+    command_ids = [
+        str(item.get("id"))
+        for item in execution.get("commands", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    ]
+    capability_rows = [
+        item
         for item in execution.get("capabilities", [])
         if isinstance(item, dict)
+    ]
+    capability_ids = [
+        str(item.get("id"))
+        for item in capability_rows
+        if isinstance(item.get("id"), str)
+    ]
+    capability_facts = {
+        str(item.get("id")): item.get("status")
+        for item in capability_rows
+        if isinstance(item.get("id"), str)
     }
+    asset_expectations = [
+        item
+        for item in execution.get("asset_expectations", [])
+        if isinstance(item, dict)
+    ]
+    asset_digests = [
+        item
+        for item in execution.get("asset_digests", [])
+        if isinstance(item, dict)
+    ]
+    expected_asset_paths = [
+        str(item.get("path"))
+        for item in asset_expectations
+        if isinstance(item.get("path"), str)
+    ]
+    observed_asset_paths = [
+        str(item.get("path"))
+        for item in asset_digests
+        if isinstance(item.get("path"), str)
+    ]
+    observed_by_path = {
+        str(item["path"]): item
+        for item in asset_digests
+        if isinstance(item.get("path"), str)
+        and observed_asset_paths.count(str(item["path"])) == 1
+    }
+    inventory = (
+        execution.get("asset_inventory")
+        if isinstance(execution.get("asset_inventory"), dict)
+        else {}
+    )
+    if len(command_ids) != len(set(command_ids)):
+        errors.append("execution command ids must be unique.")
+    if len(capability_ids) != len(set(capability_ids)):
+        errors.append("execution capability facts must be unique by id.")
+    if len(expected_asset_paths) != len(set(expected_asset_paths)):
+        errors.append("installed asset expectations must be unique by path.")
+    if len(observed_asset_paths) != len(set(observed_asset_paths)):
+        errors.append("installed asset digests must be unique by path.")
+    for item in capability_rows:
+        command_refs = (
+            item.get("command_refs")
+            if isinstance(item.get("command_refs"), list)
+            else []
+        )
+        asset_paths = (
+            item.get("asset_paths")
+            if isinstance(item.get("asset_paths"), list)
+            else []
+        )
+        if any(ref not in command_ids for ref in command_refs):
+            errors.append(
+                f"capability {item.get('id')} references an unknown command fact."
+            )
+        if any(path not in observed_by_path for path in asset_paths):
+            errors.append(
+                f"capability {item.get('id')} references missing installed asset evidence."
+            )
     if semantic.get("conclusion") != exit_id:
         errors.append("semantic conclusion must equal the AI-authored typed exit.")
     if exit_id == "verified":
@@ -18366,8 +18912,33 @@ def extension_verification_semantic_shape_errors(
             errors.append("verified requires applicability=required.")
         if execution.get("status") != "passed" or not selected:
             errors.append("verified requires a non-empty passed execution profile.")
+        if capability_ids != selected:
+            errors.append(
+                "verified requires one ordered capability fact for every selected capability."
+            )
         if any(capability_facts.get(item) != "passed" for item in selected):
             errors.append("verified requires every selected capability to pass.")
+        if (
+            inventory.get("complete") is not True
+            or inventory.get("expected_count") != len(asset_expectations)
+            or inventory.get("observed_count") != len(asset_digests)
+            or inventory.get("matched_count") != len(asset_expectations)
+            or inventory.get("expected_set_sha256")
+            != context_digest(asset_expectations)
+            or inventory.get("missing_paths")
+            or inventory.get("duplicate_paths")
+            or inventory.get("unexpected_paths")
+            or inventory.get("mismatched_paths")
+            or inventory.get("relation_errors")
+        ):
+            errors.append(
+                "verified requires a complete matching installed asset inventory."
+            )
+        for item in capability_rows:
+            if not item.get("command_refs") or not item.get("asset_paths"):
+                errors.append(
+                    f"verified capability {item.get('id')} requires command and installed asset evidence."
+                )
         if any(item.get("status") != "passed" for item in adequacy if isinstance(item, dict)):
             errors.append("verified requires every adequacy dimension to pass.")
         if any(item.get("status") == "open" for item in findings if isinstance(item, dict)):
@@ -18736,11 +19307,11 @@ def execute_marketplace_verification(
             steps[0]["passed"] and facts["remote_head"] == expected_head
         )
     digests = {
-        str(item["path"]): str(item["sha256"])
-        for item in facts["asset_digests"]
+        str(item["source_path"]): str(item["expected_sha256"])
+        for item in facts["asset_expectations"]
         if isinstance(item, dict)
-        and isinstance(item.get("path"), str)
-        and isinstance(item.get("sha256"), str)
+        and isinstance(item.get("source_path"), str)
+        and isinstance(item.get("expected_sha256"), str)
     }
     workflow_digest = str(
         digests.get("trellis/workflows/guru-team/workflow.md") or ""
@@ -25608,7 +26179,9 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
                 "status",
                 "commands",
                 "capabilities",
+                "asset_expectations",
                 "asset_digests",
+                "asset_inventory",
                 "ownership",
                 "sidecars",
             )

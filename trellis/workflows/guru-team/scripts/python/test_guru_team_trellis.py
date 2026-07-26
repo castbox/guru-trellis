@@ -14469,6 +14469,85 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
             self.assertEqual(violations, [".codex/agents/trellis-check.toml: handoff.workspace_path"])
 
 
+def materialize_extension_verification_installed_asset_target(
+    source: Path,
+    installed: Path,
+) -> list[dict[str, Any]]:
+    expectations, _, _ = gtt.extension_verification_installed_asset_facts(
+        source,
+        installed,
+    )
+    for expectation in expectations:
+        source_path = source / expectation["source_path"]
+        installed_path = installed / expectation["path"]
+        installed_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, installed_path)
+    managed_assets = [
+        item["path"]
+        for item in expectations
+        if item["relation"] == "managed_manifest"
+    ]
+    manifest_files = [
+        {
+            "path": item["path"],
+            "source": item["source_path"],
+            "sha256": item["expected_sha256"],
+            "executable": False,
+            "action": "installed",
+        }
+        for item in expectations
+        if item["relation"] in {"skill_manifest", "platform_manifest"}
+    ]
+    gtt.write_json(
+        installed / ".trellis/guru-team/extension.json",
+        {
+            "install": {
+                "selected_platforms": ["claude", "codex", "cursor"],
+                "managed_assets": managed_assets,
+            },
+            "skill_packages": {"files": manifest_files},
+        },
+    )
+    return expectations
+
+
+def copy_extension_verification_source_fixture(destination: Path) -> None:
+    source = Path(__file__).resolve().parents[5]
+    paths = (
+        "trellis/workflows/guru-team/workflow.md",
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/scripts/bash/"
+        "execute-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/"
+        "record-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/"
+        "check-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/bash/"
+        "invoke-extension-verification.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/presets/guru-team/scripts/bash/"
+        "verify-throwaway-install.sh",
+        "trellis/presets/guru-team/ownership/upstream-ownership.json",
+    )
+    for relative in paths:
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source / relative, target)
+    shutil.copytree(
+        source / "trellis/workflows/guru-team/schemas",
+        destination / "trellis/workflows/guru-team/schemas",
+    )
+    shutil.copytree(
+        source
+        / "trellis/skills/guru-team/packages/"
+        "guru-verify-extension-installation",
+        destination
+        / "trellis/skills/guru-team/packages/"
+        "guru-verify-extension-installation",
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+    )
+
+
 class MarketplaceVerificationContractTest(unittest.TestCase):
     MARKETPLACE_SCHEMA = gtt.read_json(Path(__file__).resolve().parents[2] / "schemas/marketplace-verification.schema.json")
 
@@ -14607,41 +14686,14 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
                     return mock.Mock(returncode=0, stdout="https://github.com/owner/repo.git\n", stderr="")
                 if command[:2] == ["git", "clone"]:
                     source_checkout = Path(command[-1])
-                    assets = {
-                        "trellis/index.json": "{}",
-                        "trellis/guru-team-extension.json": "{}",
-                        "trellis/workflows/guru-team/workflow.md": "workflow",
-                        "trellis/presets/guru-team/scripts/bash/apply.sh": "#!/usr/bin/env bash\n",
-                        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh": "#!/usr/bin/env bash\n",
-                        "trellis/skills/guru-team/registry.json": "{}",
-                        "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json": "{}",
-                        "trellis/workflows/guru-team/schemas/task-start-context.schema.json": "{}",
-                        "trellis/workflows/guru-team/schemas/finish-summary.schema.json": '{"title":"finish"}',
-                        "trellis/workflows/guru-team/schemas/closeout-plan.schema.json": '{"title":"closeout"}',
-                    }
-                    for relative, content in assets.items():
-                        target = source_checkout / relative
-                        target.parent.mkdir(parents=True, exist_ok=True)
-                        target.write_text(content, encoding="utf-8")
-                    legacy_entries = [
-                        {
-                            "category": "transitional_legacy",
-                            "path": f"legacy/{index}",
-                        }
-                        for index in range(43)
-                    ]
-                    legacy_paths = sorted(item["path"] for item in legacy_entries)
-                    gtt.write_json(
-                        source_checkout / "trellis/presets/guru-team/ownership/upstream-ownership.json",
-                        {
-                            "baseline": {
-                                "frozen_path_count": 43,
-                                "sorted_path_set_sha256": hashlib.sha256(
-                                    ("\n".join(legacy_paths) + "\n").encode("utf-8")
-                                ).hexdigest(),
-                            },
-                            "legacy_entries": legacy_entries,
-                        },
+                    copy_extension_verification_source_fixture(source_checkout)
+                    return mock.Mock(returncode=0, stdout="", stderr="")
+                if command[0].endswith(
+                    "verify-throwaway-install.sh"
+                ):
+                    materialize_extension_verification_installed_asset_target(
+                        cwd,
+                        Path(command[1]) / "project",
                     )
                     return mock.Mock(returncode=0, stdout="", stderr="")
                 if command[:3] == ["git", "rev-parse", "--verify"]:
@@ -14972,6 +15024,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             []
             if status == "not_run"
             else [{
+                "id": "verify_throwaway_installation",
                 "argv": [
                     sensitive_argv
                     or "git",
@@ -14995,6 +15048,22 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             if status == "blocked"
             else "not_run"
         )
+        if status == "passed":
+            example = json.loads(
+                (self.PACKAGE / "examples/execution-facts.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            asset_expectations = copy.deepcopy(example["asset_expectations"])
+            asset_digests = copy.deepcopy(example["asset_digests"])
+            asset_inventory = copy.deepcopy(example["asset_inventory"])
+        else:
+            asset_expectations = []
+            asset_digests = []
+            asset_inventory = gtt.extension_verification_asset_inventory_summary(
+                [],
+                [],
+            )
         return {
             "schema_version": "1.0",
             "repo_ref": public_input["repo_ref"],
@@ -15008,21 +15077,34 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             ),
             "status": status,
             "commands": commands,
-            "capabilities": [
-                {
-                    "id": capability,
-                    "status": capability_status,
-                    "evidence_step": 0 if commands else None,
-                }
-                for capability in selected
-            ],
-            "asset_digests": [],
+            "capabilities": gtt.extension_verification_capability_facts(
+                selected,
+                capability_status,
+                commands,
+                asset_digests,
+            ),
+            "asset_expectations": asset_expectations,
+            "asset_digests": asset_digests,
+            "asset_inventory": asset_inventory,
             "ownership": {
                 "frozen_transitional_legacy_count": 43,
                 "new_legacy_entries": [],
             },
             "sidecars": [],
         }
+
+    def materialize_installed_asset_target(
+        self,
+        source: Path,
+        installed: Path,
+    ) -> list[dict[str, Any]]:
+        return materialize_extension_verification_installed_asset_target(
+            source,
+            installed,
+        )
+
+    def copy_extension_source_fixture(self, destination: Path) -> None:
+        copy_extension_verification_source_fixture(destination)
 
     def review(
         self,
@@ -15865,6 +15947,232 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         drift = gtt.extension_verification_ownership_facts(modified)
         self.assertEqual(drift["frozen_transitional_legacy_count"], 44)
         self.assertTrue(drift["new_legacy_entries"])
+
+    def test_installed_asset_inventory_covers_expected_categories_and_relations(
+        self,
+    ) -> None:
+        source = Path(__file__).resolve().parents[5]
+        installed = self.root / "installed-assets"
+        expectations = self.materialize_installed_asset_target(
+            source,
+            installed,
+        )
+        observed_expectations, digests, inventory = (
+            gtt.extension_verification_installed_asset_facts(
+                source,
+                installed,
+            )
+        )
+
+        self.assertEqual(observed_expectations, expectations)
+        self.assertTrue(inventory["complete"])
+        self.assertEqual(inventory["expected_count"], len(expectations))
+        self.assertEqual(inventory["observed_count"], len(digests))
+        self.assertEqual(inventory["matched_count"], len(expectations))
+        self.assertEqual(
+            {item["id"] for item in inventory["categories"]},
+            {"workflow", "preset", "schema", "skill", "platform"},
+        )
+        self.assertTrue(all(item["complete"] for item in inventory["categories"]))
+        self.assertEqual(
+            {item["platform"] for item in expectations if item["category"] == "platform"},
+            {"shared", "codex", "claude", "cursor"},
+        )
+        self.assertTrue(
+            all(
+                item["path"].startswith((".",))
+                and not Path(item["path"]).is_absolute()
+                for item in digests
+            )
+        )
+
+    def test_installed_asset_inventory_fails_closed_for_mismatch_missing_and_duplicate(
+        self,
+    ) -> None:
+        source = Path(__file__).resolve().parents[5]
+        installed = self.root / "installed-assets"
+        expectations = self.materialize_installed_asset_target(
+            source,
+            installed,
+        )
+        platform_path = next(
+            item["path"]
+            for item in expectations
+            if item["category"] == "platform"
+            and item["platform"] == "codex"
+        )
+        (installed / platform_path).write_text("ordinary drift\n", encoding="utf-8")
+        _, _, mismatch = gtt.extension_verification_installed_asset_facts(
+            source,
+            installed,
+        )
+        self.assertFalse(mismatch["complete"])
+        self.assertIn(platform_path, mismatch["mismatched_paths"])
+
+        schema_path = next(
+            item["path"]
+            for item in expectations
+            if item["category"] == "schema"
+        )
+        (installed / schema_path).unlink()
+        _, _, missing = gtt.extension_verification_installed_asset_facts(
+            source,
+            installed,
+        )
+        self.assertFalse(missing["complete"])
+        self.assertIn(schema_path, missing["missing_paths"])
+
+        manifest_path = installed / ".trellis/guru-team/extension.json"
+        manifest = gtt.read_json(manifest_path)
+        duplicate_record = copy.deepcopy(manifest["skill_packages"]["files"][0])
+        manifest["skill_packages"]["files"].append(duplicate_record)
+        gtt.write_json(manifest_path, manifest)
+        _, _, duplicate = gtt.extension_verification_installed_asset_facts(
+            source,
+            installed,
+        )
+        self.assertFalse(duplicate["complete"])
+        self.assertIn(duplicate_record["path"], duplicate["duplicate_paths"])
+
+    def test_verified_rejects_incomplete_inventory_and_capability_evidence(
+        self,
+    ) -> None:
+        public_input = self.public_input("workflow", task=True)
+        selected = ["marketplace_index"]
+
+        incomplete = self.execution(public_input, "passed", selected)
+        missing_path = incomplete["asset_digests"].pop(0)["path"]
+        incomplete["asset_inventory"] = (
+            gtt.extension_verification_asset_inventory_summary(
+                incomplete["asset_expectations"],
+                incomplete["asset_digests"],
+            )
+        )
+        with self.assertRaises(gtt.WorkflowError) as missing_error:
+            self.record(
+                public_input,
+                incomplete,
+                self.review("verified", selected),
+            )
+        self.assertIn(
+            "complete matching installed asset inventory",
+            json.dumps(missing_error.exception.payload),
+        )
+        self.assertIn(
+            missing_path,
+            incomplete["asset_inventory"]["missing_paths"],
+        )
+
+        for fault in ("mismatch", "duplicate"):
+            with self.subTest(fault=fault):
+                invalid = self.execution(public_input, "passed", selected)
+                if fault == "mismatch":
+                    invalid["asset_digests"][0]["sha256"] = "f" * 64
+                else:
+                    duplicate = copy.deepcopy(invalid["asset_expectations"][0])
+                    duplicate["relation"] = "managed_manifest"
+                    invalid["asset_expectations"].append(duplicate)
+                invalid["asset_inventory"] = (
+                    gtt.extension_verification_asset_inventory_summary(
+                        invalid["asset_expectations"],
+                        invalid["asset_digests"],
+                    )
+                )
+                with self.assertRaises(gtt.WorkflowError) as invalid_error:
+                    self.record(
+                        public_input,
+                        invalid,
+                        self.review("verified", selected),
+                    )
+                self.assertIn(
+                    "complete matching installed asset inventory",
+                    json.dumps(invalid_error.exception.payload),
+                )
+
+        unbound = self.execution(public_input, "passed", selected)
+        unbound["capabilities"][0]["command_refs"] = []
+        unbound["capabilities"][0]["asset_paths"] = []
+        with self.assertRaises(gtt.WorkflowError) as capability_error:
+            self.record(
+                public_input,
+                unbound,
+                self.review("verified", selected),
+            )
+        self.assertIn(
+            "requires command and installed asset evidence",
+            json.dumps(capability_error.exception.payload),
+        )
+
+    def test_executor_collects_installed_target_and_binds_each_capability(
+        self,
+    ) -> None:
+        public_input = self.public_input("standalone", task=False)
+        remote_head = "b" * 40
+        selected = list(gtt.EXTENSION_VERIFICATION_CAPABILITIES)
+
+        def fake_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> mock.Mock:
+            if command[:2] == ["git", "ls-remote"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{remote_head}\trefs/heads/main\n",
+                    stderr="",
+                )
+            if command[:3] == ["git", "remote", "get-url"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout="https://github.com/example/guru-extension.git\n",
+                    stderr="",
+                )
+            if command[:2] == ["git", "clone"]:
+                self.copy_extension_source_fixture(Path(command[-1]))
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "checkout", "--detach"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "rev-parse", "--verify"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{remote_head}\n",
+                    stderr="",
+                )
+            self.assertEqual(len(command), 2)
+            install_work = Path(command[1])
+            self.materialize_installed_asset_target(
+                Path(cwd),
+                install_work / "project",
+            )
+            return mock.Mock(returncode=0, stdout="", stderr="")
+
+        with mock.patch.object(gtt, "run", side_effect=fake_run):
+            facts = gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                selected,
+                expected_head=remote_head,
+            )
+
+        self.assertEqual(facts["status"], "passed", facts)
+        self.assertTrue(facts["asset_inventory"]["complete"])
+        self.assertEqual(
+            {item["category"] for item in facts["asset_digests"]},
+            {"workflow", "preset", "schema", "skill", "platform"},
+        )
+        self.assertEqual(
+            [item["id"] for item in facts["capabilities"]],
+            selected,
+        )
+        for capability in facts["capabilities"]:
+            self.assertEqual(capability["status"], "passed")
+            self.assertTrue(capability["command_refs"])
+            self.assertTrue(capability["asset_paths"])
+        self.assertEqual(
+            facts["commands"][-1]["argv"][-1],
+            "<temp-install-work>",
+        )
 
     def test_executor_resolves_branch_lightweight_and_annotated_refs_to_commits(
         self,

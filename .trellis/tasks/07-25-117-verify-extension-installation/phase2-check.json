@@ -1,7 +1,7 @@
 {
   "mode": "workflow",
   "requirement_provenance": {
-    "summary": "Fresh Phase 2 完整复核 Issue #117 accepted_current authority、approved planning、issue scope ledger、durable requirements 与 BR-117-F1/F2/F7/F8/F9。当前范围覆盖两个 public input profiles、四 typed exits、task/worktree 与 remote identity、branch/lightweight/annotated tag、direct ref object 与 peeled checkout commit、post-checkout HEAD verification、schema/redaction/retry/stale、source/installed production eval、throwaway/update/reapply、完整 committed+dirty gate 和 remote publication 边界。",
+    "summary": "Fresh BR-117-F10 guru-check-task 复核 Issue #117 accepted_current authority、approved planning、issue scope ledger、durable requirements、完整 origin/main committed range、当前 dirty implementation 与 F1-F10 finding lineage。当前范围覆盖两个 public input profiles、四 typed exits、task/worktree/remote identity、真实 installed target、231 项 workflow/preset/schema/Skill/platform inventory、逐 capability command/asset evidence、source/installed production eval、clean install/update/reapply、redaction、agent recovery 与 publication boundary。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
@@ -34,7 +34,7 @@
         "size_bytes": 73045
       }
     ],
-    "facts_sha256": "c98dc21e73fb167ab61422e5acfd08dca8fd3cf5e2d2f564ecae7ae5167c3960"
+    "facts_sha256": "c150fd80f00c9612fc77f938f16a0ff92e2ccf8ec1897b66839f9bca22f458e1"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
@@ -50,6 +50,11 @@
         "size_bytes": 32830
       },
       {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "a4ee7063738234e8a623df0ffdb87a81fe5ac4f7405ccb95259074d390ab3c1a",
+        "size_bytes": 15812
+      },
+      {
         "path": ".trellis/spec/workflow/companion-scripts.md",
         "sha256": "5d53e51f0e181a30cd5340dc790653ab548575ab4af3ce633dcfcaf90827ebe6",
         "size_bytes": 97693
@@ -75,70 +80,142 @@
         "size_bytes": 73045
       },
       {
-        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
-        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
-        "size_bytes": 982
-      },
-      {
         "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
-        "sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "size_bytes": 14295
+        "sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "size_bytes": 14476
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "size_bytes": 6250
+        "sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "size_bytes": 7606
       },
       {
-        "path": "trellis/workflows/guru-team/workflow.md",
-        "sha256": "fc063fa5fe9928fee90e383b979cd54ef64afb5e1b99fce70cd5da722b166b02",
-        "size_bytes": 115174
-      }
-    ],
-    "sync_result": "ssot_first 已落实到 canonical Interface、Skill contract、runtime、tests、extension manifest 与 installed/Agents/Codex/Claude/Cursor 分发副本。F9 明确 direct ref object 与 resolved checkout commit 的分离、冻结 resolved commit、checkout 后 HEAD^{commit} exact comparison、mismatch fail closed，以及 remote_head/resolved_head 统一表示 actual checkout commit；未扩 public DTO、exit、consumer、workflow route、deployment 或 ownership 边界。",
-    "task_delta_merged": true,
-    "task_history_only": [
-      "Issue provenance、planning approval、agent liveness 与 Phase 2 review 过程证据",
-      "命令 session、失败复现与修复后完整 rerun 的任务级审计轨迹"
-    ],
-    "no_update_reason": null,
-    "followup_or_pr_limit": "F9 task commit 后必须 fresh 执行完整 origin/main...HEAD validation 并由独立 closure/final reviewer 覆盖；真实 pushed feature-ref clean install 必须在后续允许 push 后单独执行，当前 local unpublished current-source throwaway 不得冒充 publication gate。",
-    "facts_sha256": "c987000d5df11ade6fb4cd72c8848153b0be80e6e38e242845232a297e08a0be"
-  },
-  "implementation_handoff": {
-    "summary": "BR-117-F9 实现 agent 将 remote ref freeze 收敛为 direct object + peeled resolved commit 解析，executor 按 resolved commit checkout 并在 throwaway 前复验 HEAD^{commit}；checker 复用相同解析，private/public resolved_head 语义一致。Fresh 独立 Phase 2 完整复核 F1-F9、Docs SSOT、六处分发、native eval、full throwaway 与 redaction，0 open current-scope finding。",
-    "artifacts": [
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "size_bytes": 2005
+      },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
-        "sha256": "54b0674091ac5b704ccaba59610f276ead6499e4e2402e1910a51169a28fb9cb",
-        "size_bytes": 9443
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "size_bytes": 12308
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "size_bytes": 5128
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "size_bytes": 7541
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "size_bytes": 8604
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "f4cd40cb87617599267af29501dbab3ce6aab1ef42926c29158e8751afd7737a",
-        "size_bytes": 1601879
+        "sha256": "e256e2d536d0d9bd30e41d4c189fd91b5f30a9d85b1b522396bf3e9e3800923f",
+        "size_bytes": 1622088
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-        "sha256": "929045894057c9ed27daa10991e1a97f30dc921bbe715373fee6dde0260e9caa",
-        "size_bytes": 1229713
+        "sha256": "b53402ee7a5ae5fd7f33e9845954584d5780640127075c62ea90145958770f55",
+        "size_bytes": 1240896
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "07bb49b566dbb4ce318d7e2c41bea0c0748c1395d359d51ba03a321360a8562b",
+        "size_bytes": 155286
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "b415b145d487e7760e1c97bb13b74d99d089baf1b3356e14fe041cc4cfb2636d",
+        "size_bytes": 910085
+      }
+    ],
+    "sync_result": "ssot_first 已落实：F10 的 explicit throwaway work root、真实 <work>/project installed evidence、231 项 canonical/manifest/platform relation、category completeness、stable command ids、capability command_refs/asset_paths 与 verified fail-closed preconditions 已进入 canonical Interface、Skill contract、private schemas/examples、runtime、tests与extension manifest，并同步 installed/Agents/Codex/Claude/Cursor。Higher-level specs、requirements 与 README 已拥有 public I/O、ownership、install/update/reapply、remote/eval independence 合同；F10 未改变 stable Skill id、public DTO、typed exit、consumer route或安装命令。",
+    "task_delta_merged": true,
+    "task_history_only": [
+      "BR-117-F10 provenance、旧 command-only evidence 复现、实现与 Phase 2 审查过程",
+      "Claude inherited provider environment 401 诊断与 outer-runner clean-env rerun",
+      "agent liveness、temporary throwaway locator、raw command capture 与 review lineage"
+    ],
+    "no_update_reason": "Higher-level .trellis/spec、requirements 与 README 无新增修改，因为 F10 只收敛 package-private installed evidence 充分性，不改变公共 API、route、安装命令或用户可见行为；对应 durable package owners 已更新。",
+    "followup_or_pr_limit": "Exact pushed feature-ref clean install 必须在后续获得 push 授权后绑定实际 remote ref/HEAD 执行；本轮 local unpublished current-worktree sample 不得冒充 publication gate。",
+    "facts_sha256": "8b84c5c9d6f4b0821eee00c4846e5bfa04971d73c3712829ece2880785ff9f0b"
+  },
+  "implementation_handoff": {
+    "summary": "BR-117-F10 implementation agent 将成功 executor 收敛为真实 installed target 证据：显式传递 throwaway work root，只从 <work>/project 读取 bytes；构建 workflow/preset/schema/shared Skill/platform 五类 231 项 expected inventory 与四类 manifest relation；每个 selected capability 绑定 stable command_refs 和 installed asset_paths；missing、duplicate、unexpected、digest/category/platform/relation/ref/incomplete evidence 在 verified 前 fail closed。Public DTO、typed exits、consumers与AI semantic ownership不变，canonical/runtime/package/adapter已同步 dogfood与四平台。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+        "sha256": "c1bb11930bc712cf3231b6618786b38085eb673282d195d65274046edd60201d",
+        "size_bytes": 12779
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "e256e2d536d0d9bd30e41d4c189fd91b5f30a9d85b1b522396bf3e9e3800923f",
+        "size_bytes": 1622088
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "b53402ee7a5ae5fd7f33e9845954584d5780640127075c62ea90145958770f55",
+        "size_bytes": 1240896
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "07bb49b566dbb4ce318d7e2c41bea0c0748c1395d359d51ba03a321360a8562b",
+        "size_bytes": 155286
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
-        "sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "size_bytes": 14295
+        "sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "size_bytes": 14476
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "size_bytes": 6250
+        "sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "size_bytes": 7606
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "size_bytes": 2005
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "size_bytes": 12308
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "size_bytes": 5128
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "size_bytes": 7541
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "size_bytes": 8604
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "b415b145d487e7760e1c97bb13b74d99d089baf1b3356e14fe041cc4cfb2636d",
+        "size_bytes": 910085
       }
     ],
-    "facts_sha256": "97c4902f8332430b1808b8c9d5404781cfcc884bc9b5a4565b70e2e4d6db94ab"
+    "facts_sha256": "7c7be982edf41157be89dc7d264de483fa5eb33ef995c75faaad8dddbfabbf8a"
   },
   "agent_assignment": {
     "artifact_path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
     "implementation_agent_ids": [
+      "/root/issue117_f10_implement",
       "/root/issue117_f9_implement",
       "/root/issue117_fix_br_f7",
       "/root/issue117_fix_branch_review_p1",
@@ -151,186 +228,84 @@
       "/root/issue117_phase2_check_auth_rerun",
       "/root/issue117_phase2_check_branchfix",
       "/root/issue117_phase2_check_credentials_restored",
+      "/root/issue117_phase2_check_f10",
       "/root/issue117_phase2_check_f7",
       "/root/issue117_phase2_check_f8",
       "/root/issue117_phase2_check_f9",
       "/root/issue117_phase2_check_round5"
     ],
     "recovery_complete": true,
-    "phase2_state_sha256": "c735120bc8db48e1492f1d4c871ab88c133efc5f8eb605404ed71199ca05f292",
-    "facts_sha256": "c493442f3853c93b331f70e4ad3e3b6a4d4389d6214a4a46b3626d5156bf2618"
+    "phase2_state_sha256": "238d91fb26bb868e3fd63068abeabd275b550f4878841923897408ec7d8ec52a",
+    "facts_sha256": "b59cb71eaeffb08baecaa667a0d24714f3608665e0ff8f1e1013f738e0597f11"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "0cd2498f821b38ce91bd82fa9e232b1528241e5d",
-    "head": "3281db77b8f829e850064a33190838eb17ca4c31",
+    "head": "a47e1fbd7bedb001649814969096076bb70157db",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
+      ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
       ".agents/skills/guru-verify-extension-installation/interface.json",
       ".agents/skills/guru-verify-extension-installation/references/contract.md",
+      ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
       ".claude/skills/guru-verify-extension-installation/interface.json",
       ".claude/skills/guru-verify-extension-installation/references/contract.md",
+      ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
       ".codex/skills/guru-verify-extension-installation/interface.json",
       ".codex/skills/guru-verify-extension-installation/references/contract.md",
+      ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+      ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
       ".cursor/skills/guru-verify-extension-installation/interface.json",
       ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+      ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
       ".trellis/guru-team/extension.json",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
       ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
       ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
       ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
       ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
-      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
       ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
       ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
-      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
-      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
-      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+      ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
       "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
       "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
       "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
       "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
     ],
     "reviewed_paths": [
       {
-        "path": ".agents/skills/guru-verify-extension-installation/SKILL.md",
-        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
-        "size_bytes": 982
-      },
-      {
-        "path": ".agents/skills/guru-verify-extension-installation/interface.json",
-        "sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "size_bytes": 14295
-      },
-      {
-        "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
-        "sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "size_bytes": 6250
-      },
-      {
-        "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
-        "size_bytes": 6726
-      },
-      {
-        "path": ".claude/skills/guru-verify-extension-installation/SKILL.md",
-        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
-        "size_bytes": 982
-      },
-      {
-        "path": ".claude/skills/guru-verify-extension-installation/interface.json",
-        "sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "size_bytes": 14295
-      },
-      {
-        "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
-        "sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "size_bytes": 6250
-      },
-      {
-        "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
-        "size_bytes": 6726
-      },
-      {
-        "path": ".codex/skills/guru-verify-extension-installation/SKILL.md",
-        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
-        "size_bytes": 982
-      },
-      {
-        "path": ".codex/skills/guru-verify-extension-installation/interface.json",
-        "sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "size_bytes": 14295
-      },
-      {
-        "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
-        "sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "size_bytes": 6250
-      },
-      {
-        "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
-        "size_bytes": 6726
-      },
-      {
-        "path": ".cursor/skills/guru-verify-extension-installation/SKILL.md",
-        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
-        "size_bytes": 982
-      },
-      {
-        "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
-        "sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "size_bytes": 14295
-      },
-      {
-        "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
-        "sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "size_bytes": 6250
-      },
-      {
-        "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
-        "size_bytes": 6726
-      },
-      {
-        "path": ".trellis/guru-team/extension.json",
-        "sha256": "70ba987dbf2e517d5ad9993a6fb1d0ebb4de35af545517dd127038a11a5ca52e",
-        "size_bytes": 910085
-      },
-      {
-        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "f4cd40cb87617599267af29501dbab3ce6aab1ef42926c29158e8751afd7737a",
-        "size_bytes": 1601879
-      },
-      {
-        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
-        "sha256": "21ddaa1f7d316a2ec9e60d1d089dce1a2d14aaf4405a57685e1824196244e8e9",
-        "size_bytes": 154728
-      },
-      {
-        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/SKILL.md",
-        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
-        "size_bytes": 982
-      },
-      {
-        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
-        "sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "size_bytes": 14295
-      },
-      {
-        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "size_bytes": 6250
-      },
-      {
-        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
-        "size_bytes": 6726
-      },
-      {
-        "path": ".trellis/spec/docs/public-docs.md",
-        "sha256": "41ac4fefa51289534172f2dce3a6ebed730043307a6bdc02618ab099dab7a5bc",
-        "size_bytes": 25868
-      },
-      {
-        "path": ".trellis/spec/preset/installer.md",
-        "sha256": "08a3adf99113c1b0ba15de79e312781ea5b133d52eaaa34f5b4183196d83a7a8",
-        "size_bytes": 32830
-      },
-      {
-        "path": ".trellis/spec/workflow/companion-scripts.md",
-        "sha256": "5d53e51f0e181a30cd5340dc790653ab548575ab4af3ce633dcfcaf90827ebe6",
-        "size_bytes": 97693
-      },
-      {
-        "path": ".trellis/spec/workflow/skill-package-contract.md",
-        "sha256": "af80932037c4a59dfde07220646b91d9a3eacb4f64b7a62ee4da11c6e2fe0a97",
-        "size_bytes": 92101
-      },
-      {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
-        "sha256": "07c6b295d2c8bbe2a389c4ef0c65297fcfdf5dcc448f2f3c3fcee608c6d88d28",
-        "size_bytes": 344785
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
+        "sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
+        "size_bytes": 10446
       },
       {
         "path": ".trellis/tasks/07-25-117-verify-extension-installation/design.md",
@@ -343,89 +318,84 @@
         "size_bytes": 11831
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
-        "sha256": "54b0674091ac5b704ccaba59610f276ead6499e4e2402e1910a51169a28fb9cb",
-        "size_bytes": 9443
-      },
-      {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f8.md",
-        "sha256": "142cb2995543f2f9d9f61e36da27939f3a3cfa252eb04d49197ffb67a314df4f",
-        "size_bytes": 22195
-      },
-      {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f9.md",
-        "sha256": "7893a37806dceda76b4b09ff0d62ea8b0c8dc018f5d90d63538f00af3223490b",
-        "size_bytes": 22711
-      },
-      {
         "path": ".trellis/tasks/07-25-117-verify-extension-installation/planning-approval.json",
         "sha256": "89c98cfb502448329c9c5f7e8b35561f0536401a75680b5905d25b2ae9411b92",
         "size_bytes": 34324
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/prd.md",
-        "sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
-        "size_bytes": 10446
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/issue-scope-ledger.json",
+        "sha256": "bee871b96be8ea5306a781df51bdef29c244420c14c216fcbffb57742f08388c",
+        "size_bytes": 3640
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
-        "sha256": "4c762e40c6ab9ca1c7a34505a3f337ec88cc1a88213753a2b3dd7a9523a08eb2",
-        "size_bytes": 128023
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md",
+        "sha256": "c1bb11930bc712cf3231b6618786b38085eb673282d195d65274046edd60201d",
+        "size_bytes": 12779
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/phase2-worker-report-f10.md",
+        "sha256": "0b8f0720807f8c782aa27a9c5b48ce62714af85a26eec2fa1d88047f862ee5c1",
+        "size_bytes": 16122
+      },
+      {
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/agent-assignment.json",
+        "sha256": "7a7b14c867899abab66923dfc33492c948755577da4b52492c4a4f5e6799f8aa",
+        "size_bytes": 423155
       },
       {
         "path": ".trellis/tasks/07-25-117-verify-extension-installation/review.md",
-        "sha256": "61bc8b2eede546a119bbc6b3dfb2185b354d6fed8e429a7a7ef4ae2355b9b7a3",
-        "size_bytes": 5523
+        "sha256": "601974f36721f0994289479ce0b4c003e040d77bd6941898ecefc46c1ead6fb9",
+        "size_bytes": 6507
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/001-final.md",
-        "sha256": "8bf950739fe3f73c1cac5c8d8c13c1641a0e5336e1a2c66739d0f8098c500b8d",
-        "size_bytes": 4684
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/review-gate.json",
+        "sha256": "9b37977153704684a647b3b6d435971b78ad9392714c1ab913d6457c1727a145",
+        "size_bytes": 127256
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
-        "sha256": "67ea4c3edefd5ea9195ea19ca4f4f625cb14aaaa857101b573701dc06b9a204d",
-        "size_bytes": 10156
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/007-f9-closure.md",
+        "sha256": "c7e09f0b2f0a854b5975ea7801d3f190dcac36e747ceab060934ff537cd16343",
+        "size_bytes": 17892
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/003-final.md",
-        "sha256": "3801a80f5dcb528291ca70f95aa8443bdb77a627a9fe7dcce583af38a1f687cd",
-        "size_bytes": 9215
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/008-final.md",
+        "sha256": "f6ca3402a5829d110a52184ee4d9ca419c3cc781efb5ccabfba87fc534878581",
+        "size_bytes": 16939
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/004-f7-closure.md",
-        "sha256": "ccc17e911cbd7cf327863dd31b54c959cf35783736f7b436f8bc031f376c5c20",
-        "size_bytes": 12781
+        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/005.json",
+        "sha256": "2f5d2e782776111fee272165ed99cd7d1b7ead5880a245c3b7138dda41ea90f8",
+        "size_bytes": 48674
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/005-f8-closure.md",
-        "sha256": "0c5e199289de6c8a1948e8b2710ee2b97dddd7339c346ec8b99fd18bb4ceacc9",
-        "size_bytes": 11945
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "41ac4fefa51289534172f2dce3a6ebed730043307a6bdc02618ab099dab7a5bc",
+        "size_bytes": 25868
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/006-final.md",
-        "sha256": "bacbd394e5b52e495813d5ae468189acd24b903a088863640f28a3bf68f85b60",
-        "size_bytes": 14183
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "08a3adf99113c1b0ba15de79e312781ea5b133d52eaaa34f5b4183196d83a7a8",
+        "size_bytes": 32830
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/001.json",
-        "sha256": "e11444db68760591d4023eb727fb4cc81bc112ab9ff540c047a87504f00dec69",
-        "size_bytes": 537386
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "a4ee7063738234e8a623df0ffdb87a81fe5ac4f7405ccb95259074d390ab3c1a",
+        "size_bytes": 15812
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/002.json",
-        "sha256": "1af33ea53fa113b06ee22d32026d48700423b0882e3b0e79979635c2d134ad19",
-        "size_bytes": 38255
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "5d53e51f0e181a30cd5340dc790653ab548575ab4af3ce633dcfcaf90827ebe6",
+        "size_bytes": 97693
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/003.json",
-        "sha256": "04f8be33edcad18081507269364bcffc5a19e9669b3678099d919aff1682bb03",
-        "size_bytes": 35029
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "8f90813023c7aa9a1c9dfdf28ccd59ea84699ed02b42201e624988581201df8d",
+        "size_bytes": 43417
       },
       {
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/task-commit-plans/004.json",
-        "sha256": "9d1c721a017ce4818c0778e5ad5534b6b009f629ff63801f93338c2fb539395c",
-        "size_bytes": 20607
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "af80932037c4a59dfde07220646b91d9a3eacb4f64b7a62ee4da11c6e2fe0a97",
+        "size_bytes": 92101
       },
       {
         "path": "README.md",
@@ -443,102 +413,252 @@
         "size_bytes": 73045
       },
       {
-        "path": "trellis/guru-team-extension.json",
-        "sha256": "1bbdad90ee6dd2b9b46d9c2de00bc2ac2623edd3d30e9e58b8993bed8b245721",
-        "size_bytes": 12903
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-        "sha256": "17d293efddaf39599c72f1c0551bda00fbf3923d33f5a4c821c218e7d0fb59cb",
-        "size_bytes": 191988
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-        "sha256": "f322972ee36bdf72b1dfa1b03a63c1fc04b0bd849063306b09932f4cf056b552",
-        "size_bytes": 73016
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-        "sha256": "27b2e5a14981457f6896e1638ad8492a06541b5b6f27acb670c3977d8c67c024",
-        "size_bytes": 98959
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
-        "sha256": "60f49be0bfb5e3796fd2047a301d0234f0b1585d804badb2fa56e679f0189f60",
-        "size_bytes": 19152
-      },
-      {
-        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "21ddaa1f7d316a2ec9e60d1d089dce1a2d14aaf4405a57685e1824196244e8e9",
-        "size_bytes": 154728
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
-        "sha256": "7e2f03692ad70d17e31c0b7d74c7ae019c8241f174f9a156d6eccdb51dd1bd3f",
-        "size_bytes": 982
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
-        "sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "size_bytes": 14295
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "size_bytes": 6250
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
-        "sha256": "f1a8a8b55e5ee82273e808379acec67b7df04d1dbeaf9e9524766ffd44aa8535",
-        "size_bytes": 1947
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
-        "sha256": "da3177784e439e2c1df275544af3ad68a090b787c92693431f2de1c6dddc8b77",
-        "size_bytes": 8596
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/public-blocked-output.schema.json",
-        "sha256": "eeecd08c6cbfbfe1dd607403cdfe97d287300885776ed3fcb6929a52dd2ae1a6",
-        "size_bytes": 1039
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "bd909b8a928386953fc1a5029e11bce75ab3c0d2ad0989697d8fdab520022f16",
-        "size_bytes": 6726
-      },
-      {
-        "path": "trellis/skills/guru-team/registry.json",
-        "sha256": "048fc4aafe09fd5a41a8e4927ca5851ef338526cd085221f6a0c1d4bc3a83c11",
-        "size_bytes": 7357
-      },
-      {
-        "path": "trellis/workflows/guru-team/README.md",
-        "sha256": "6d1bbfe4f535de1ae51663e3478e410880b9105fcac7c412b744afab5337489f",
-        "size_bytes": 69095
-      },
-      {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "f4cd40cb87617599267af29501dbab3ce6aab1ef42926c29158e8751afd7737a",
-        "size_bytes": 1601879
+        "sha256": "e256e2d536d0d9bd30e41d4c189fd91b5f30a9d85b1b522396bf3e9e3800923f",
+        "size_bytes": 1622088
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-        "sha256": "929045894057c9ed27daa10991e1a97f30dc921bbe715373fee6dde0260e9caa",
-        "size_bytes": 1229713
+        "sha256": "b53402ee7a5ae5fd7f33e9845954584d5780640127075c62ea90145958770f55",
+        "size_bytes": 1240896
       },
       {
-        "path": "trellis/workflows/guru-team/workflow.md",
-        "sha256": "fc063fa5fe9928fee90e383b979cd54ef64afb5e1b99fce70cd5da722b166b02",
-        "size_bytes": 115174
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "e256e2d536d0d9bd30e41d4c189fd91b5f30a9d85b1b522396bf3e9e3800923f",
+        "size_bytes": 1622088
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "07bb49b566dbb4ce318d7e2c41bea0c0748c1395d359d51ba03a321360a8562b",
+        "size_bytes": 155286
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "sha256": "07bb49b566dbb4ce318d7e2c41bea0c0748c1395d359d51ba03a321360a8562b",
+        "size_bytes": 155286
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "b415b145d487e7760e1c97bb13b74d99d089baf1b3356e14fe041cc4cfb2636d",
+        "size_bytes": 910085
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "size_bytes": 5128
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "size_bytes": 7541
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+        "sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "size_bytes": 14476
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+        "sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "size_bytes": 7606
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "size_bytes": 2005
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "size_bytes": 12308
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "size_bytes": 8604
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "size_bytes": 5128
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "size_bytes": 7541
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+        "sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "size_bytes": 14476
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+        "sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "size_bytes": 7606
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "size_bytes": 2005
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "size_bytes": 12308
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "size_bytes": 8604
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "size_bytes": 5128
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "size_bytes": 7541
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+        "sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "size_bytes": 14476
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
+        "sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "size_bytes": 7606
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "size_bytes": 2005
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "size_bytes": 12308
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "size_bytes": 8604
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "size_bytes": 5128
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "size_bytes": 7541
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/interface.json",
+        "sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "size_bytes": 14476
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
+        "sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "size_bytes": 7606
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "size_bytes": 2005
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "size_bytes": 12308
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "size_bytes": 8604
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "size_bytes": 5128
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "size_bytes": 7541
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/interface.json",
+        "sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "size_bytes": 14476
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
+        "sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "size_bytes": 7606
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "size_bytes": 2005
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "size_bytes": 12308
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "size_bytes": 8604
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
+        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "size_bytes": 5128
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "size_bytes": 7541
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
+        "sha256": "7fd09f5a87bde841dc4057bb13b17529f1f6dd648eff5873d4599cfbbdab9cf4",
+        "size_bytes": 14476
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+        "sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "size_bytes": 7606
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/schemas/execution-facts.schema.json",
+        "sha256": "d7a733837ef846adffadc1fbd66fd2386bc4a75ede9019ca2bca04f244fd240b",
+        "size_bytes": 2005
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "sha256": "74e23907eaaf6a5050bd8c85d917ea459ee53048f940d07d505d1589a222590a",
+        "size_bytes": 12308
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "sha256": "26d6b890b17a98c4e2b0a8a7d20cbcbe17c93f243feb4747a49ae8cc2d1887b2",
+        "size_bytes": 8604
       }
     ],
-    "snapshot_sha256": "0e5d325146d0224b3fb3ba1abb3d8f651fe8dc85d5c7691a786726d7ef5c66d4"
+    "snapshot_sha256": "975707cd27d72ee818c6aaa08304d75df96a9d555383c30557caab31c6b26111"
   },
   "check_execution": {
     "commands": [
       {
-        "id": "runtime_unittest_f9",
+        "id": "runtime-full",
         "argv": [
           "python3",
           "-m",
@@ -546,33 +666,14 @@
           "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
         ],
         "exit_code": 0,
-        "stdout_sha256": "2a79e0531bbd8d7867edb77c1b5021a481357f24432601d8521e83c3c5f622c1",
+        "stdout_sha256": "d67ddbbbb7a52e1b9b10ce3141be454c2572041b876b0eb02947aaf6e77be700",
         "stdout_size_bytes": 2548,
-        "stderr_sha256": "74c9f29f8bafe0eb4443f3accd0e1493f6b8406863a73ee7b834f3ba9797232a",
-        "stderr_size_bytes": 3893,
-        "summary": "Fresh runtime 全量 596 passed，13 skipped。"
+        "stderr_sha256": "9b2b3680e0e2333057247b5541b0f50b3458c67fbd2a9eb2fbe8232db38d75a1",
+        "stderr_size_bytes": 3897,
+        "summary": "Fresh owner rerun passed 600 runtime tests with 13 expected skips."
       },
       {
-        "id": "focused_runtime_f9",
-        "argv": [
-          "python3",
-          "-m",
-          "unittest",
-          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-          "-k",
-          "ExtensionVerificationRuntimeTest",
-          "-k",
-          "MarketplaceVerificationContractTest"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "d1b52ca69b2eefc914d3a12a7ed90b558da0c728cd3f54a67ba9954251f2b464",
-        "stderr_size_bytes": 129,
-        "summary": "F9 focused 30 passed。"
-      },
-      {
-        "id": "skill_packages_unittest_f9",
+        "id": "skill-integration",
         "argv": [
           "python3",
           "-m",
@@ -582,83 +683,54 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "c98c1fb1080a44efc50d238487decf34060af71acdb7c7ea25b5b1b1883484ef",
+        "stderr_sha256": "8165f36e8613e79713578cea057281d8c78083dbceef317a5beb72c33820b309",
         "stderr_size_bytes": 4064,
-        "summary": "Fresh public Skill package 全量 175 passed。"
+        "summary": "Fresh owner rerun passed 175 Skill integration tests; stderr contains only temporary Git fixture output."
       },
       {
-        "id": "preset_unittest_f9",
+        "id": "preset-ownership",
         "argv": [
           "python3",
           "-m",
           "unittest",
-          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "6036d70dfcadaa32090ae98f9b72cd9d3d9f3d2ed157a82b6fd191e281a21ca4",
-        "stderr_size_bytes": 809,
-        "summary": "Fresh preset installer 45 passed。"
-      },
-      {
-        "id": "ownership_unittest_f9",
-        "argv": [
-          "python3",
-          "-m",
-          "unittest",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
           "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "f25c84cec2414d95699fea4be3ad262ca4c6bb8d4979036475581aa0d56e4fff",
-        "stderr_size_bytes": 107,
-        "summary": "Fresh upstream ownership 9 passed。"
+        "stderr_sha256": "b01392920de3843f79b03600246830469183252e77a39bb1fc00560a98fec1e3",
+        "stderr_size_bytes": 818,
+        "summary": "Fresh owner rerun passed 54 preset and ownership tests; invalid platform output is an expected negative assertion."
       },
       {
-        "id": "canonical_contract_f9",
+        "id": "package-contracts",
         "argv": [
           "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
           "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "60bb849356ffbc091f601e17fc6ae0b2eb5e26d734d433da020c6e775efbf97f",
-        "stderr_size_bytes": 106,
-        "summary": "Canonical package contract 8 passed。"
+        "stderr_sha256": "a2d5a3ba70242569e762c1d481cbf929f206bcade04865976fe21fddeb252d4b",
+        "stderr_size_bytes": 215,
+        "summary": "Fresh owner rerun passed all 114 tests across 12 canonical package contracts."
       },
       {
-        "id": "installed_contract_f9",
-        "argv": [
-          "python3",
-          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "60bb849356ffbc091f601e17fc6ae0b2eb5e26d734d433da020c6e775efbf97f",
-        "stderr_size_bytes": 106,
-        "summary": "Installed package contract 8 passed。"
-      },
-      {
-        "id": "apply_all_platforms_f9",
-        "argv": [
-          "trellis/presets/guru-team/scripts/bash/apply.sh",
-          "--repo",
-          ".",
-          "--all-platforms"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "703f805337ad5db285f913458f3612e8765e6460807e23ca1047a429e76b7ff9",
-        "stdout_size_bytes": 903306,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Manifest status ok；2322 managed files；0 sidecar/conflict/removal。"
-      },
-      {
-        "id": "source_skill_validator_f9",
+        "id": "source-validator",
         "argv": [
           ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
           "--root",
@@ -672,10 +744,10 @@
         "stdout_size_bytes": 1322,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Source graph passed：12 Skills、46 exits、12 invokes、27 targets、0 legacy。"
+        "summary": "Source validator passed 12 active Skills, 46 exits, 12 invokes, 27 targets and zero legacy errors."
       },
       {
-        "id": "installed_skill_validator_f9",
+        "id": "installed-validator",
         "argv": [
           ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
           "--root",
@@ -689,10 +761,10 @@
         "stdout_size_bytes": 1511,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Installed graph passed：12 Skills、46 exits、12 invokes、27 targets、0 legacy。"
+        "summary": "Installed validator passed the same graph closure with 2322 managed files and zero sidecar, removal or conflict."
       },
       {
-        "id": "dogfood_overlay_drift_f9",
+        "id": "dogfood-drift",
         "argv": [
           "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
         ],
@@ -701,422 +773,25 @@
         "stdout_size_bytes": 1790,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Dogfood overlays match canonical。"
+        "summary": "Dogfood overlay drift and frozen ownership facts passed."
       },
       {
-        "id": "upstream_ownership_f9",
-        "argv": [
-          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
-          "--repo",
-          ".",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "7f2ed5369d0d9507da23cc5007a7baebfe33c17e1b60a3de80690a43abef05e1",
-        "stdout_size_bytes": 1731,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "43 frozen/active、13 claims、54 managed assets、0 errors。"
-      },
-      {
-        "id": "discover_evals_source_f9",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/discover-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "source",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f3659a621bb577a9ee672dfbf85f0e659291b04d4c62e7f9fe9b91750a59a321",
-        "stdout_size_bytes": 3115,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Source discovery：7 cases、4 adapters。"
-      },
-      {
-        "id": "discover_evals_installed_f9",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/discover-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "installed",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f3659a621bb577a9ee672dfbf85f0e659291b04d4c62e7f9fe9b91750a59a321",
-        "stdout_size_bytes": 3115,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed discovery 与 source corpus identity 相同。"
-      },
-      {
-        "id": "eval_source_shared_f9",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "source",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--adapter",
-          "shared",
-          "--run-root",
-          "/tmp/issue117-f9-phase2.Y7tWWs/run-source-shared",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "107e88e1e51a7e450645df8d72c39def8bfdf797c139f89d84e5aeade06f4a40",
-        "stdout_size_bytes": 6742,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Shared source passed 7/7。"
-      },
-      {
-        "id": "eval_installed_shared_f9",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "installed",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--adapter",
-          "shared",
-          "--run-root",
-          "/tmp/issue117-f9-phase2.Y7tWWs/run-installed-shared",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "971d17b527d1bf758666668092ece2b2e333631deee281e8116f8bf77835cde5",
-        "stdout_size_bytes": 6766,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Shared installed passed 7/7。"
-      },
-      {
-        "id": "eval_source_codex_f9",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "source",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--adapter",
-          "codex",
-          "--run-root",
-          "/tmp/issue117-f9-phase2.Y7tWWs/run-source-codex",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "815632a6538eeab66dce96dbed9461b9d93a5ba04443461e1a3d94a0bae9946b",
-        "stdout_size_bytes": 6738,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Codex source passed 7/7。"
-      },
-      {
-        "id": "eval_installed_codex_f9",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "installed",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--adapter",
-          "codex",
-          "--run-root",
-          "/tmp/issue117-f9-phase2.Y7tWWs/run-installed-codex",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "bf9d0586d37712d1e70f15d9f88c34a68dc9de9bb2f59c8d126bc8accd1ef4c9",
-        "stdout_size_bytes": 6802,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Codex installed passed 7/7。"
-      },
-      {
-        "id": "eval_source_claude_f9",
-        "argv": [
-          "env",
-          "-u",
-          "ANTHROPIC_AUTH_TOKEN",
-          "-u",
-          "ANTHROPIC_BASE_URL",
-          "-u",
-          "ANTHROPIC_API_KEY",
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "source",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--adapter",
-          "claude",
-          "--run-root",
-          "/tmp/issue117-f9-phase2.Y7tWWs/run-source-claude",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "b132cc5fbc6c486b84e838758e6658a954d8f86a49c38af5863e3a24c0b2a494",
-        "stdout_size_bytes": 6789,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Claude source clean-auth 首轮完整 passed 7/7，无 transient。"
-      },
-      {
-        "id": "eval_installed_claude_f9",
-        "argv": [
-          "env",
-          "-u",
-          "ANTHROPIC_AUTH_TOKEN",
-          "-u",
-          "ANTHROPIC_BASE_URL",
-          "-u",
-          "ANTHROPIC_API_KEY",
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "installed",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--adapter",
-          "claude",
-          "--run-root",
-          "/tmp/issue117-f9-phase2.Y7tWWs/run-installed-claude",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "432fe302c3852f90261e77fd35b9eb890cd906cf4b41d59824e963f2980ce723",
-        "stdout_size_bytes": 6813,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Claude installed clean-auth 首轮完整 passed 7/7，无 transient。"
-      },
-      {
-        "id": "eval_source_cursor_f9",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "source",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--adapter",
-          "cursor",
-          "--run-root",
-          "/tmp/issue117-f9-phase2.Y7tWWs/run-source-cursor",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "c49b2bfbdf694157b41736df388d49af10643320e4466885ccb5737f34898a5e",
-        "stdout_size_bytes": 3135,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Cursor source 7/7 expected unsupported，未进入交互。"
-      },
-      {
-        "id": "eval_installed_cursor_f9",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "installed",
-          "--skill",
-          "guru-verify-extension-installation",
-          "--adapter",
-          "cursor",
-          "--run-root",
-          "/tmp/issue117-f9-phase2.Y7tWWs/run-installed-cursor",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "0bad117497b0fead5aded0ed321299d156ef5c329e1e791f8921694a0acec0ff",
-        "stdout_size_bytes": 3159,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Cursor installed 7/7 expected unsupported，未进入交互。"
-      },
-      {
-        "id": "full_local_source_throwaway_f9",
+        "id": "full-local-source-throwaway",
         "argv": [
           "env",
           "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
           "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-          "/tmp/issue117-f9-throwaway.YvRRhr"
+          "/tmp/issue117-f10-owner-throwaway"
         ],
         "exit_code": 0,
-        "stdout_sha256": "5ed6ab4b68c7cfaa5e104099e4590142f14fe2c97c23aa3f8bbe40d5f6ac08be",
+        "stdout_sha256": "47c4da00e12634b779001a9e6a3748f598cbed22bed8a2b6fb4843d7f601b24a",
         "stdout_size_bytes": 3646600,
-        "stderr_sha256": "6f708f6a4dc54cd59909b586c988f339287dda29001e258c85b83f1013caaf9a",
+        "stderr_sha256": "a690e8a3af83f01c8426bd4d661dd9f1252d0c4aaceeccbbda81540f70363642",
         "stderr_size_bytes": 930,
-        "summary": "Full local-source clean install/update/reapply passed；末尾 20/4/20 tests OK。"
+        "summary": "Fresh owner full throwaway exited 0 and covered public discovery, local unpublished workflow init, preview/switch, update, reselect, reapply, ownership, recovery and final zero-sidecar checks."
       },
       {
-        "id": "distribution_installed_f9",
-        "argv": [
-          "diff",
-          "-qr",
-          "--exclude=__pycache__",
-          "--exclude=*.pyc",
-          "trellis/skills/guru-team/packages/guru-verify-extension-installation",
-          ".trellis/guru-team/skills/packages/guru-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Installed package tree byte-identical。"
-      },
-      {
-        "id": "distribution_agents_f9",
-        "argv": [
-          "diff",
-          "-qr",
-          "--exclude=__pycache__",
-          "--exclude=*.pyc",
-          "trellis/skills/guru-team/packages/guru-verify-extension-installation",
-          ".agents/skills/guru-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Agents package tree byte-identical。"
-      },
-      {
-        "id": "distribution_codex_f9",
-        "argv": [
-          "diff",
-          "-qr",
-          "--exclude=__pycache__",
-          "--exclude=*.pyc",
-          "trellis/skills/guru-team/packages/guru-verify-extension-installation",
-          ".codex/skills/guru-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Codex package tree byte-identical。"
-      },
-      {
-        "id": "distribution_claude_f9",
-        "argv": [
-          "diff",
-          "-qr",
-          "--exclude=__pycache__",
-          "--exclude=*.pyc",
-          "trellis/skills/guru-team/packages/guru-verify-extension-installation",
-          ".claude/skills/guru-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Claude package tree byte-identical。"
-      },
-      {
-        "id": "distribution_cursor_f9",
-        "argv": [
-          "diff",
-          "-qr",
-          "--exclude=__pycache__",
-          "--exclude=*.pyc",
-          "trellis/skills/guru-team/packages/guru-verify-extension-installation",
-          ".cursor/skills/guru-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Cursor package tree byte-identical。"
-      },
-      {
-        "id": "runtime_equality_f9",
-        "argv": [
-          "cmp",
-          "-s",
-          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Canonical and installed runtime byte-identical。"
-      },
-      {
-        "id": "marketplace_json_f9",
-        "argv": [
-          "python3",
-          "-m",
-          "json.tool",
-          "trellis/index.json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "101d90da22a6d19aaeec41f08da41b7176c041de4e2c0ab9058624e1d496d51c",
-        "stdout_size_bytes": 773,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Marketplace index JSON valid。"
-      },
-      {
-        "id": "bash_syntax_f9",
-        "argv": [
-          "bash",
-          "-n",
-          "trellis/workflows/guru-team/scripts/bash/*.sh",
-          "trellis/presets/guru-team/scripts/bash/*.sh"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Bash syntax passed。"
-      },
-      {
-        "id": "python_compile_f9",
-        "argv": [
-          "python3",
-          "-m",
-          "py_compile",
-          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Python syntax passed。"
-      },
-      {
-        "id": "task_validate_f9",
+        "id": "task-validate",
         "argv": [
           "python3",
           "./.trellis/scripts/task.py",
@@ -1128,111 +803,68 @@
         "stdout_size_bytes": 333,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Task valid。"
+        "summary": "Task manifest validation passed."
       },
       {
-        "id": "workspace_boundary_f9",
+        "id": "diff-check",
         "argv": [
-          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
-          "--json",
-          "--task",
-          ".trellis/tasks/07-25-117-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "8cb07327ebdf0be148c6c000c4c53b7c627f48df6a61d33b5bc1e1d7131e0170",
-        "stdout_size_bytes": 2641,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Workspace boundary ok。"
-      },
-      {
-        "id": "planning_approval_f9",
-        "argv": [
-          "./.trellis/guru-team/scripts/bash/check-planning-approval.sh",
-          "--json",
-          "--task",
-          ".trellis/tasks/07-25-117-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "616fd8e25e407e26ea8549753389789dd6f74ee1e93978978b8b9e371f92906a",
-        "stdout_size_bytes": 782,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Planning approval current。"
-      },
-      {
-        "id": "agent_assignment_f9",
-        "argv": [
-          "./.trellis/guru-team/scripts/bash/check-agent-assignment.sh",
-          "--json",
-          "--task",
-          ".trellis/tasks/07-25-117-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "4104860d0b23502d120b67359d8751a948ca2b9837aad20a29110bcd544381f8",
-        "stdout_size_bytes": 1409,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "22 agents、7 review rounds，Phase 2 liveness current。"
-      },
-      {
-        "id": "commit_messages_f9",
-        "argv": [
-          "trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh",
-          "--json",
-          "--task",
-          ".trellis/tasks/07-25-117-verify-extension-installation"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "40270eb2c5d23449efe550e28e150aa8d5f78a4e27b2f1461b3958bf9984f123",
-        "stdout_size_bytes": 956,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Four prior task work commits valid。"
-      },
-      {
-        "id": "diff_check_committed_f9",
-        "argv": [
-          "git",
-          "diff",
-          "--check",
-          "origin/main...HEAD"
+          "/bin/zsh",
+          "-lc",
+          "git diff --check origin/main...HEAD && git diff --check"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Current committed range passed；F9 remains dirty and requires post-commit rerun。"
+        "summary": "Committed range and working-tree whitespace checks passed."
       },
       {
-        "id": "diff_check_base_worktree_f9",
+        "id": "distribution-equality",
         "argv": [
-          "git",
-          "diff",
-          "--check",
-          "origin/main"
+          "/bin/zsh",
+          "-lc",
+          "diff -qr --exclude='__pycache__' trellis/skills/guru-team/packages/guru-verify-extension-installation .trellis/guru-team/skills/packages/guru-verify-extension-installation && diff -qr --exclude='__pycache__' trellis/skills/guru-team/packages/guru-verify-extension-installation .agents/skills/guru-verify-extension-installation && diff -qr --exclude='__pycache__' trellis/skills/guru-team/packages/guru-verify-extension-installation .codex/skills/guru-verify-extension-installation && diff -qr --exclude='__pycache__' trellis/skills/guru-team/packages/guru-verify-extension-installation .claude/skills/guru-verify-extension-installation && diff -qr --exclude='__pycache__' trellis/skills/guru-team/packages/guru-verify-extension-installation .cursor/skills/guru-verify-extension-installation && cmp -s trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py && cmp -s trellis/skills/guru-team/adapters/eval/native_adapter.py .trellis/guru-team/skills/adapters/eval/native_adapter.py"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Base-to-working-tree F9 candidate passed。"
+        "summary": "Five package distribution comparisons plus runtime and native-adapter canonical/installed comparisons passed with fixture bytecode excluded."
       },
       {
-        "id": "diff_check_dirty_f9",
+        "id": "non-fixture-sidecar-scan",
         "argv": [
-          "git",
-          "diff",
-          "--check"
+          "/bin/zsh",
+          "-lc",
+          "test -z \"$(find . -type f \\( -name '*.new' -o -name '*.bak' \\) -not -path '*/fixtures/*' -print)\""
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Dirty F9 candidate passed。"
+        "summary": "Recursive non-fixture .new/.bak scan found no files."
+      },
+      {
+        "id": "python-compile",
+        "argv": [
+          "python3",
+          "-m",
+          "py_compile",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Changed canonical and installed Python runtime, tests and native adapter compiled successfully."
       }
     ],
     "worker_evidence": [
@@ -1291,445 +923,196 @@
         "summary": "F9 修复后的 fresh 独立完整 Phase 2 覆盖 Issue #117 committed+dirty scope、F1-F9、direct/peeled tag identity、post-checkout HEAD verification、Docs SSOT、六处分发、production eval、full local-source throwaway 与 redaction；0 open finding。报告 phase2-worker-report-f9.md SHA-256 7893a37806dceda76b4b09ff0d62ea8b0c8dc018f5d90d63538f00af3223490b、22711 bytes。",
         "evidence_only": true,
         "facts_sha256": "e1e0bd7c0dddcbc3141518a067b451bc8f2d6959c1cfd511354c99a86cea46ac"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue117_phase2_check_f10",
+        "summary": "Fresh independent Phase 2 report phase2-worker-report-f10.md SHA-256 0b8f0720807f8c782aa27a9c5b48ce62714af85a26eec2fa1d88047f862ee5c1 covers complete origin/main plus dirty F10 scope, task/spec/Docs SSOT, runtime 600/13 skipped, Skill integration 175, preset/ownership 54, packages 114, verifier contracts 9 each, Shared/Codex/clean-env Claude source+installed 7/7, Cursor unsupported, full local-source throwaway exit 0, retained inventory 231/231/231 complete with five category counts 1/6/4/44/176, empty error arrays, equality/syntax/task/diff/sidecar/redaction, zero current-scope finding/candidate/blocker and pass recommendation.",
+        "evidence_only": true,
+        "facts_sha256": "0b8f0720807f8c782aa27a9c5b48ce62714af85a26eec2fa1d88047f862ee5c1"
       }
     ],
     "unverified_items": [
       {
-        "id": "U2",
-        "command_or_area": "pushed feature-ref clean installation",
-        "reason": "Remote refs/heads/feat/117-verify-extension-installation 当前不存在，Phase 2 角色未获授权 push。",
-        "impact": "当前 throwaway 只证明 public discovery 加 local unpublished current-source sample；后续 push 后必须执行真实 exact-ref clean install，当前不得冒充 publication gate。",
-        "blocking": false
-      },
-      {
-        "id": "U3",
-        "command_or_area": "complete origin/main...HEAD validation after F9 task commit",
-        "reason": "当前 committed HEAD 3281db77 尚未包含 F9 runtime、tests、contract、interface 与 manifest candidate。",
-        "impact": "不阻塞当前 pre-commit Phase 2 passed；task commit 后必须 fresh rerun并由独立 F9 closure reviewer 验证完整 committed range。",
+        "id": "U1",
+        "command_or_area": "exact pushed feature-ref clean installation",
+        "reason": "Current workflow authorization explicitly forbids push and remote publication in trellis-continue; no exact pushed feature ref exists for the dirty F10 content.",
+        "impact": "Non-blocking for pre-commit Phase 2 because local-source throwaway, installed inventory and production eval fully cover implementation correctness. It remains a mandatory post-push publication gate and local evidence must not be presented as its substitute.",
         "blocking": false
       }
     ],
-    "execution_sha256": "072e02ce1cab3ef299983e19b188127cbafe3dd3fed3de4e726f73e8cc07ebff"
+    "execution_sha256": "d088c9e14a618b8575449412e44d16bce68554eeb3a12b87a4f9709671050046"
   },
   "scope_qualification": {
-    "candidates": [
-      {
-        "id": "C1",
-        "summary": "真实 remote ref 不可用时 executor 记录全零 HEAD，checker 将 live unresolved HEAD 判为 mismatch，导致 standalone blocked(remote_unavailable) 正常出口不可达。",
-        "trigger_refs": [
-          "prd.md: Auth、network、remote unavailable 必须返回 blocked",
-          "implement.md: 无 task standalone 安装或覆盖失败不得伪造 identity",
-          "design.md: auth/network/remote unavailable route 为 external_blocker -> blocked"
-        ],
-        "normal_path_reproduction": "对不存在的 remote/ref 执行 standalone executor 得到 blocked 和全零 remote_head；随后 recorder/checker 重查同一 ref 得空 HEAD并报 remote ref HEAD mismatch。",
-        "disposition": "current_scope",
-        "route_basis": "属于 #117 已批准 blocked route 与真实 remote unavailable 正常路径，必须在当前实现中修复并完整重跑。",
-        "severity": "P1",
-        "finding_id": "F1"
-      },
-      {
-        "id": "C2",
-        "summary": "workflow source 将 refs/heads/ 与 refs/tags/ 都折叠为同一个短 ref；当远端存在同名 branch/tag 时，安装命令不能保证解析到已审查的 exact ref。",
-        "trigger_refs": [
-          "prd.md: remote clean installation 必须绑定 exact branch 或 tag ref",
-          "design.md: exact-ref pinning 不得回落到隐式 main 或歧义短 ref",
-          "implement.md: branch/tag workflow source 与 remote HEAD 必须可确定性对应"
-        ],
-        "normal_path_reproduction": "创建同名 refs/heads/release 与 refs/tags/release；旧 workflow source 对两者都生成 #release，Trellis CLI 无法从输入区分调用方审查的是 branch 还是 tag。",
-        "disposition": "current_scope",
-        "route_basis": "属于 #117 已批准 exact remote-ref 安装合同的正常 branch/tag 路径，必须保留完整 namespace 并补回归。",
-        "severity": "P1",
-        "finding_id": "F2"
-      },
-      {
-        "id": "C3",
-        "summary": "Task-bearing verification 仅绑定 local/remote HEAD，同一 HEAD 下 tracked dirty implementation 变化后旧 evidence 仍返回 verified。",
-        "trigger_refs": [
-          "contract.md:90-93 要求 implementation/code/docs/tests drift 使旧 evidence stale",
-          "prd.md:110-113 要求 task/worktree content drift fail closed"
-        ],
-        "normal_path_reproduction": "在临时 task repo 记录 workflow verified 后，仅修改 tracked README.md 且不提交；remote HEAD 保持不变，checker 仍返回 status=ok/typed_exit=verified。",
-        "disposition": "current_scope",
-        "route_basis": "属于 #117 已批准 freshness 合同的普通 dirty-worktree 路径，必须在当前实现补 content binding。",
-        "severity": "P1",
-        "finding_id": "F3"
-      },
-      {
-        "id": "C4",
-        "summary": "Shared native eval consumer 仅等待 response 文件存在，producer 尚未完整写入时会解析空 JSON。",
-        "trigger_refs": [
-          "implement.md 要求完整 source/installed native production eval",
-          "PRD 要求 throwaway install/update/reapply 与 production eval 稳定通过"
-        ],
-        "normal_path_reproduction": "完整 throwaway 的 pre-#146 shared eval 在正常 stale-reentry-ready case 中，response_path 已创建但内容未完成，consumer json.loads 空串并抛 JSONDecodeError；同 target 后续 rerun 通过。",
-        "disposition": "current_scope",
-        "route_basis": "required full throwaway 正常路径真实触发，属于 #117 验收所覆盖的 eval adapter readiness correctness。",
-        "severity": "P1",
-        "finding_id": "F4"
-      },
-      {
-        "id": "C5",
-        "summary": "Credential URL sensitive-text regex 将 raw 字符类写成双反斜杠，导致包含字母 s 的 username/password authority userinfo 可漏检并进入 recorder payload。",
-        "trigger_refs": [
-          "prd.md 3.7：credential URL 与 raw sensitive content 必须 fail closed",
-          "Issue #117 accepted_current Redaction：credential URL 不得进入 tracked evidence",
-          "package contract：raw command output、credential URLs 与 tokens 不得 retained"
-        ],
-        "normal_path_reproduction": "将 https://user:secret@example.invalid/path 放入 AI-authored semantic evidence；旧 regex 对该正常 credential URL 返回 false，而 recorder 会持久化 semantic payload。",
-        "disposition": "current_scope",
-        "route_basis": "属于 #117 明确 redaction 合同及正常 recorder 输入路径，必须在当前实现修复并补 regression。",
-        "severity": "P1",
-        "finding_id": "F5"
-      },
-      {
-        "id": "C6",
-        "summary": "Task-bearing execute、record、check 只解析 task_ref 路径，未重建 active task、portable context、repo/branch/worktree identity，普通 stale 或误路由 task 可被接受。",
-        "trigger_refs": [
-          "prd.md 3.3：task/worktree repository identity 必须精确绑定",
-          "Interface repository_identity：task-bearing workflow 与 standalone 使用 active task identity",
-          "package contract：wrong task、archived task 与 wrong worktree 必须在执行或持久化前 fail closed"
-        ],
-        "normal_path_reproduction": "将 task_ref 指向仓库内现存 archived/completed task；旧 execute/record/check 只验证路径可解析并接受该 locator，可把当前 worktree evidence 绑定到错误 task。",
-        "disposition": "current_scope",
-        "route_basis": "属于 #117 明确 task-bearing repository identity 合同及普通 stale/misroute 路径，必须在当前实现修复。",
-        "severity": "P1",
-        "finding_id": "F6"
-      },
-      {
-        "id": "C7",
-        "summary": "record-extension-verification 未执行已发布 semantic/execution input schema，普通嵌套类型错误会抛出未捕获异常，且没有 prior artifact 时任意 supersedes_verification_ref 会形成 checker-valid 的错误 lineage。",
-        "trigger_refs": [
-          "prd.md 3.3：deterministic runtime 必须按声明 schema、identity 与 freshness fail closed",
-          "design.md 5.2/5.3：recorder 在字段访问和持久化前校验 input，并由 checker 校验 supersession freshness",
-          "package contract Private evidence / Exits and re-entry：只有 exact prior owner artifact 才允许 supersession"
-        ],
-        "normal_path_reproduction": "将 review.redaction 写成 string 或 execution.capabilities 写成 null，旧 recorder 分别抛出未捕获 AttributeError/TypeError；在无 prior marketplace-verification.json 的首次调用传入任意 supersedes ref，旧 recorder 会写出 checker-valid artifact。",
-        "disposition": "current_scope",
-        "route_basis": "属于 #117 已批准 recorder schema、retry/stale lineage 与 honest-but-fallible 正常输入路径，必须在当前实现修复并完整重跑。",
-        "severity": "P2",
-        "finding_id": "F7"
-      },
-      {
-        "id": "C8",
-        "summary": "Historical Branch Review raw report reviews/002-closure.md 在 EOF 保留多余空行，使完整 committed range 的 git diff --check 失败。",
-        "trigger_refs": [
-          "implement.md：完整 origin/main...HEAD 必须通过 whitespace validation",
-          ".trellis/spec/workflow/quality-guidelines.md：tracked workflow/task evidence 必须满足 repository lint",
-          "BR-117-F8：Round 5 qualification 将该正常 required gate failure 记录为 P3 current-scope finding"
-        ],
-        "normal_path_reproduction": "在修复前 committed HEAD 3bfbd100 执行 git diff --check origin/main...HEAD，稳定报告 reviews/002-closure.md:189 new blank line at EOF。",
-        "disposition": "current_scope",
-        "route_basis": "属于 Issue #117 已批准 full-range validation 与 Branch Review closure 正常路径；实现仅删除一个 EOF 多余空行，不扩大任务范围。",
-        "severity": "P3",
-        "finding_id": "F8"
-      },
-      {
-        "id": "C9",
-        "summary": "Annotated stable tag 的 direct tag-object OID 与实际 checkout commit 不同，旧 executor 未在 clone 后复验 HEAD 且把 object OID 传播为 remote_head/resolved_head。",
-        "trigger_refs": [
-          "prd.md 3.3：remote HEAD、reviewed HEAD 与 checkout identity 必须精确绑定",
-          "prd.md 3.5：真实 remote ref clean installation 必须验证实际 checkout",
-          "design.md 6.1：remote HEAD freeze 与 cloned checkout HEAD 复验",
-          "BR-117-F9：Round 7 将 annotated tag 正常路径登记为 P2 current-scope finding"
-        ],
-        "normal_path_reproduction": "公开 annotated tag refs/tags/v0.6.5-guru.2 的 direct object 为 77ced9be...，peeled 与 detached checkout commit 为 c2d4b039...；旧 executor 只记录 direct object 且无 post-checkout rev-parse comparison。",
-        "disposition": "current_scope",
-        "route_basis": "属于 Issue #117 已批准 stable tag、remote identity 与 clean checkout 正常路径；修复不依赖 hostile input、TOCTOU、竞态或其它排除场景。",
-        "severity": "P2",
-        "finding_id": "F9"
-      }
-    ],
-    "scope_sha256": "548aea24cd3928cfc69b0b3774a7b6f40d01ab5b78b2ffd9a1363703a241a8b4"
+    "candidates": [],
+    "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
   },
   "semantic_review": {
     "adequacy_dimensions": [
       {
         "id": "requirements",
         "status": "passed",
-        "summary": "Issue #117 accepted_current 与 approved planning 的两个 profiles、四 exits、双验收、retry/stale、redaction、task/ref/checkout identity、full-range validation 和 out-of-scope 均被当前实现与 durable requirements 承接。",
+        "summary": "Approved Issue #117 requirements and accepted_current authority are carried through F10 without expanding #118/#119/#132 or excluded hostile/concurrency scenarios.",
         "evidence_refs": [
           "planning",
           "requirement_provenance"
         ],
         "affected_sha256": "e8f4402d93bbd7bd141bd6fa0e493a452a5e4f71ec25f5fb82a8a5b48c25d714",
-        "finding_ids": [
-          "F9"
-        ],
+        "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "design",
         "status": "passed",
-        "summary": "Semantic owner 与 deterministic executor/recorder/checker 分离；F9 按设计将 direct ref object、peeled resolved commit、actual checkout HEAD 和 reviewed binding 分层，public DTO 不扩张。",
+        "summary": "F10 preserves the semantic/deterministic boundary and implements real installed inventory plus per-capability evidence inside the package-private runtime contract.",
         "evidence_refs": [
           "planning",
-          "repository_snapshot"
+          "requirement_provenance",
+          "docs_ssot_plan"
         ],
         "affected_sha256": "24437f24e32d194d8ac86759aa1f0af8fba0aeb03395df07c2a8dac7f66b9d9d",
-        "finding_ids": [
-          "F7",
-          "F9"
-        ],
+        "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "implementation",
         "status": "passed",
-        "summary": "F1-F9 均已实现并由 current committed+dirty diff、定向回归和 full rerun 复核；F9 冻结 resolved commit、按 commit checkout、post-checkout exact verify 并 fail closed mismatch。",
+        "summary": "Runtime reads the retained throwaway project, builds and verifies 231 expected assets, binds stable command and asset references, and fails closed before verified on incomplete or inconsistent evidence; public DTO and route contracts remain unchanged.",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "f4cd40cb87617599267af29501dbab3ce6aab1ef42926c29158e8751afd7737a",
-        "finding_ids": [
-          "F1",
-          "F2",
-          "F3",
-          "F4",
-          "F5",
-          "F6",
-          "F7",
-          "F8",
-          "F9"
-        ],
+        "affected_sha256": "c1bb11930bc712cf3231b6618786b38085eb673282d195d65274046edd60201d",
+        "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "tests",
         "status": "passed",
-        "summary": "Fresh runtime 596/13 skipped、F9 focused 30、Skill 175、preset 45、ownership 9、contract 8/8、validators、六处分发、Shared/Codex/Claude 7/7、Cursor unsupported 与 full throwaway 全部终态通过。",
+        "summary": "Fresh owner commands and the official trellis-check worker cover runtime, package, preset, ownership, validators, production eval, full throwaway, negative guards, distribution and static checks.",
         "evidence_refs": [
           "check_execution",
           "repository_snapshot"
         ],
-        "affected_sha256": "7893a37806dceda76b4b09ff0d62ea8b0c8dc018f5d90d63538f00af3223490b",
-        "finding_ids": [
-          "F1",
-          "F2",
-          "F3",
-          "F4",
-          "F5",
-          "F6",
-          "F7",
-          "F8",
-          "F9"
-        ],
-        "unverified_ids": [
-          "U2",
-          "U3"
-        ]
+        "affected_sha256": "0b8f0720807f8c782aa27a9c5b48ce62714af85a26eec2fa1d88047f862ee5c1",
+        "finding_ids": [],
+        "unverified_ids": []
       },
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "ssot_first 已执行；canonical Interface/contract 明确 direct/peeled identity、resolved commit freeze、post-checkout verification 与 remote_head/resolved_head 语义，六处分发同步。",
+        "summary": "ssot_first task deltas are merged into canonical Interface, contract, schemas/examples, runtime/tests and manifest; higher-level specs/README already own unchanged public behavior and need no duplicate F10 wording.",
         "evidence_refs": [
           "docs_ssot_plan",
-          "planning"
+          "planning",
+          "implementation_handoff"
         ],
-        "affected_sha256": "8779995c1ee1d375032ff324c3edcb80aa6db89c8856595cede0290dc4cd1b9e",
-        "finding_ids": [
-          "F9"
-        ],
+        "affected_sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "cross_layer",
         "status": "passed",
-        "summary": "Interface/contract/runtime/tests/manifest/registry/consumer closure 和 canonical/installed/platform distribution 保持一致；source/installed graph 12 Skills/46 exits/12 invokes/27 targets。",
+        "summary": "Canonical expectations, installed target bytes, manifest relations, private schemas/examples, recorder/checker gates, platform adapters and public projections agree across all six distributions.",
         "evidence_refs": [
           "repository_snapshot",
-          "check_execution",
-          "implementation_handoff"
+          "implementation_handoff",
+          "check_execution"
         ],
-        "affected_sha256": "29f1b5a8e94f57ba561cfa3af92854fea988233a3bc38e554eeebbff1360d3b5",
-        "finding_ids": [
-          "F7",
-          "F9"
-        ],
+        "affected_sha256": "e256e2d536d0d9bd30e41d4c189fd91b5f30a9d85b1b522396bf3e9e3800923f",
+        "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "compatibility",
         "status": "passed",
-        "summary": "Branch、lightweight tag 与 annotated tag 使用同一 exact ref parser并正确选择 resolved commit；update/reapply、ownership、task-bearing 与 taskless standalone behavior 均通过。",
+        "summary": "Existing workflow/standalone profiles, four exits, consumer mappings, upstream ownership, update/reapply, recovery and platform capability behavior remain compatible; Cursor reports unsupported rather than fabricated pass.",
         "evidence_refs": [
+          "requirement_provenance",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "929045894057c9ed27daa10991e1a97f30dc921bbe715373fee6dde0260e9caa",
-        "finding_ids": [
-          "F2",
-          "F6",
-          "F7",
-          "F9"
-        ],
+        "affected_sha256": "c9171977fd7a31020fc0d67a9ff5b3ccab3345003be8f01d681d5a59c4e26327",
+        "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "deployment_and_operations",
         "status": "passed",
-        "summary": "影响限于 Guru Team extension runtime、tests、Interface/contract、manifest 与受管分发副本；CI/CD、容器、Compose、K8s/Helm/Kustomize、DB migration、Makefile、dependency 和生产数据均无变化。",
+        "summary": "No CI/CD, dependency, container, Compose, Kubernetes, Helm/Kustomize, DB migration, Makefile, production deploy, restart, replay or data-write surface changed; security scan found no real credential.",
         "evidence_refs": [
           "repository_snapshot",
+          "check_execution",
           "requirement_provenance"
         ],
-        "affected_sha256": "447a9a20c7b4c91798712410f9feb90dcfb6ba0ca137f77712059592caa740e5",
-        "finding_ids": [
-          "F5"
-        ],
+        "affected_sha256": "0b8f0720807f8c782aa27a9c5b48ce62714af85a26eec2fa1d88047f862ee5c1",
+        "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "agent_recovery",
         "status": "passed",
-        "summary": "六个 completed implementation agents 与八个 completed Phase 2 check agents 的 liveness/recovery chain 已闭合；evt-0266 完成 F9 实现，evt-0280 完成本轮 fresh check。",
+        "summary": "All implementation and Phase 2 assignment/recovery chains have effective completed events; F10 implementation and fresh check agents are terminal and worker evidence binds the exact completed check-agent set.",
         "evidence_refs": [
           "agent_assignment",
           "implementation_handoff"
         ],
-        "affected_sha256": "07c6b295d2c8bbe2a389c4ef0c65297fcfdf5dcc448f2f3c3fcee608c6d88d28",
+        "affected_sha256": "7a7b14c867899abab66923dfc33492c948755577da4b52492c4a4f5e6799f8aa",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "完整 current-scope Phase 2 证据覆盖 F1-F9 与 BR-117-F1/F2/F7/F8/F9；post-commit full-range rerun和 post-push exact-ref clean install均明确保留且未由 precondition evidence 冒充。",
+        "summary": "Full current scope, dirty snapshot, all applicable local checks, production eval and retained installed inventory are current with zero blocking finding; exact pushed ref is explicitly deferred to the authorized publication stage and cannot be substituted by local evidence.",
         "evidence_refs": [
+          "planning",
+          "requirement_provenance",
+          "implementation_handoff",
+          "docs_ssot_plan",
+          "repository_snapshot",
           "check_execution",
-          "agent_assignment",
-          "docs_ssot_plan"
+          "agent_assignment"
         ],
-        "affected_sha256": "7893a37806dceda76b4b09ff0d62ea8b0c8dc018f5d90d63538f00af3223490b",
-        "finding_ids": [
-          "F3",
-          "F4",
-          "F5",
-          "F6",
-          "F7",
-          "F8",
-          "F9"
-        ],
+        "affected_sha256": "0b8f0720807f8c782aa27a9c5b48ce62714af85a26eec2fa1d88047f862ee5c1",
+        "finding_ids": [],
         "unverified_ids": [
-          "U2",
-          "U3"
+          "U1"
         ]
       }
     ],
-    "findings": [
-      {
-        "id": "F1",
-        "candidate_id": "C1",
-        "severity": "P1",
-        "summary": "Remote unavailable 正常路径的 blocked 出口因伪全零 HEAD 与 checker live unresolved HEAD 不一致而不可达；已改为 null、补真实回归并完整重跑，状态 resolved。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "blocking": true,
-        "status": "resolved"
-      },
-      {
-        "id": "F2",
-        "candidate_id": "C2",
-        "severity": "P1",
-        "summary": "同名 branch/tag 被折叠为同一短 workflow source，无法保证安装已审查 exact ref；已保留完整 refs/heads 或 refs/tags namespace并补定向及全量回归，状态 resolved。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "blocking": true,
-        "status": "resolved"
-      },
-      {
-        "id": "F3",
-        "candidate_id": "C3",
-        "severity": "P1",
-        "summary": "Task-bearing verification 旧证据未绑定 working-tree dirty content；现已加入 task_worktree_sha256，覆盖 working bytes、index blob/status、mode、delete、rename/copy并排除 owner artifact/ignored runtime，定向与全量回归通过。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "blocking": true,
-        "status": "resolved"
-      },
-      {
-        "id": "F4",
-        "candidate_id": "C4",
-        "severity": "P1",
-        "summary": "Shared native eval 旧 response readiness 存在 partial-file 窗口；现改为 pending 文件完整写入后 replace final，consumer 只等待 final 且 cleanup 覆盖 pending，定向与 full throwaway 回归通过。",
-        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "blocking": true,
-        "status": "resolved"
-      },
-      {
-        "id": "F5",
-        "candidate_id": "C5",
-        "severity": "P1",
-        "summary": "BR-117-F1 credential URL authority userinfo 漏检已修复：case-insensitive regex 覆盖 empty、username-only、username/password、percent-encoded 与 multiple-@，在 artifact write 前返回 generic error；runtime regression 与额外 probe 通过。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "blocking": true,
-        "status": "resolved"
-      },
-      {
-        "id": "F6",
-        "candidate_id": "C6",
-        "severity": "P1",
-        "summary": "BR-117-F2 task-bearing identity 缺口已修复：execute/record/check 统一校验 direct active task、task-start-context、status、repo、branch、active pointer 与 workspace boundary；wrong task、archived task、wrong worktree regressions 通过。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "blocking": true,
-        "status": "resolved"
-      },
-      {
-        "id": "F7",
-        "candidate_id": "C7",
-        "severity": "P2",
-        "summary": "BR-117-F7 已修复：semantic/execution input 在访问嵌套字段和写 artifact 前执行已发布 schema并统一返回受控 WorkflowError；no-prior 与 wrong-prior supersession 拒绝，只有 exact prior owner ref 允许，changed-plan exact-prior re-entry 回归通过。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "blocking": true,
-        "status": "resolved"
-      },
-      {
-        "id": "F8",
-        "candidate_id": "C8",
-        "severity": "P3",
-        "summary": "BR-117-F8 implementation candidate 已修复：reviews/002-closure.md 只删除一个 EOF 多余空行，base-to-working-tree 与 dirty whitespace validation 通过；正式 closure 保留到 task commit 后的独立 reviewer。",
-        "path": ".trellis/tasks/07-25-117-verify-extension-installation/reviews/002-closure.md",
-        "blocking": true,
-        "status": "resolved"
-      },
-      {
-        "id": "F9",
-        "candidate_id": "C9",
-        "severity": "P2",
-        "summary": "BR-117-F9 implementation candidate 已修复：direct object 与 peeled resolved commit 分离，executor 按 resolved commit checkout并在 throwaway 前 exact compare HEAD^{commit}；checker、workflow/private/public resolved-head 语义一致，branch/lightweight/annotated/mismatch tests 与真实 probe通过。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "blocking": true,
-        "status": "resolved"
-      }
-    ],
-    "adequacy_sha256": "671574a806b0ee6f8632f1ca4901a7a9601f058ee68a51fe47fc2032b5ca8eb4",
+    "findings": [],
     "ai_review_gate": {
       "status": "passed",
-      "summary": "Fresh F9 finding-fix Phase 2 覆盖 Issue #117 完整 approved scope、current committed+dirty diff、Docs SSOT、agent recovery、F1-F9、branch/lightweight/annotated identity、repository commands、production eval、Claude clean-auth first-run 7/7、full throwaway 与 redaction；所有 current-scope findings resolved，无 blocking unverified item。",
+      "summary": "Fresh F10 guru-check-task covered the complete approved Issue #117 scope, origin/main committed range, current dirty implementation and lifecycle evidence; real installed target inventory, per-capability evidence, six distributions, source/installed eval, full throwaway, Docs SSOT, recovery, redaction and deployment boundaries all pass. There are no current-scope findings or blocking unverified items.",
       "full_rerun": true,
       "planning_facts_sha256": "7b1dca53c4b841c8837a5372102a0337dbf0011a7a7a3b42bd1c7ab7a223a16a",
-      "snapshot_sha256": "0e5d325146d0224b3fb3ba1abb3d8f651fe8dc85d5c7691a786726d7ef5c66d4",
-      "scope_sha256": "548aea24cd3928cfc69b0b3774a7b6f40d01ab5b78b2ffd9a1363703a241a8b4",
-      "adequacy_sha256": "671574a806b0ee6f8632f1ca4901a7a9601f058ee68a51fe47fc2032b5ca8eb4",
-      "findings_count": 9,
-      "full_round_sha256": "e76a781ba828fe0b07dbf2bbe29e3cc6ef62e79607fd8f0118f918ca893807c6"
-    }
+      "snapshot_sha256": "975707cd27d72ee818c6aaa08304d75df96a9d555383c30557caab31c6b26111",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "adequacy_sha256": "f7a051c8f1d101c8cb94d8661639a5818106becebfcf7f20db353a982192567e",
+      "findings_count": 0,
+      "full_round_sha256": "b722bf88cd70e59e63d7f523caa0795abb51b9f357aa5a31e17bc01ea9d6f507"
+    },
+    "adequacy_sha256": "f7a051c8f1d101c8cb94d8661639a5818106becebfcf7f20db353a982192567e"
   },
   "human_confirmation": {
     "kind": "not-required",
     "status": "not_required",
-    "summary": "Phase 2 passed route 不需要 unconditional human confirmation；post-commit full-range review 与 push 后 exact-ref gate仍由后续 workflow 强制。",
+    "summary": "Phase 2 passed route has no unconditional human confirmation. Exact pushed feature-ref verification remains owned by the later authorized publication gate.",
     "confirmed_at": null
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "F1-F9 与 BR-117-F1/F2/F7/F8/F9 implementation candidates 全部 resolved，十个 adequacy dimensions 通过，完整验证证据 current；仅保留 post-commit U3 和 post-push U2 非阻塞 gate。",
+  "reason": "BR-117-F10 is closed by real installed 231-asset completeness and stable per-capability command/asset evidence; all ten adequacy dimensions and fresh local validation pass with zero open finding or blocking unverified item. Exact pushed feature-ref remains a non-blocking post-push gate.",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-26T03:46:59Z",
+  "generated_at": "2026-07-26T07:26:19Z",
   "task": {
     "task_dir": ".trellis/tasks/07-25-117-verify-extension-installation",
     "task_id": "117-verify-extension-installation",
@@ -1767,5 +1150,5 @@
     ],
     "facts_sha256": "7b1dca53c4b841c8837a5372102a0337dbf0011a7a7a3b42bd1c7ab7a223a16a"
   },
-  "facts_sha256": "2e94bbda276ff3988419ac61da9cb09dae816560ca0958773b2d15449d01a7bf"
+  "facts_sha256": "9726574b9215adce5f55cec7aca16eb362fbeadbd755273cab296cadecbe6d8e"
 }

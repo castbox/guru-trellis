@@ -1,166 +1,210 @@
-# #117 BR-117-F9 Implementation Complete
+# #117 BR-117-F10 Implementation Complete
 
 ## Files Modified
 
 - `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`
-  - 新增 requested ref direct/peeled 解析；
-  - executor 冻结 resolved commit，checkout 后验证
-    `git rev-parse --verify HEAD^{commit}`；
-  - checker 使用相同解析规则复核 remote freshness。
+  - executor 向 throwaway verifier 传递显式 work root，并只读取真实安装目标
+    `<work>/project`；
+  - 从 checked-out canonical source、installed extension manifest 与平台
+    destination 构建 231 项 deterministic expected asset set；
+  - 记录 stable command ids、installed asset expectations/digests/category
+    completeness，以及每个 capability 的 `command_refs` / `asset_paths`；
+  - `verified` 对 missing、duplicate、unexpected、digest mismatch、manifest /
+    platform relation error、unknown reference 与不完整 capability evidence
+    fail closed。
 - `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`
-  - 新增 branch、lightweight tag、annotated tag、checkout mismatch、
-    workflow reviewed commit binding、checker/public projection 测试；
-  - 更新 marketplace compatibility fixture 以承接 checkout commit evidence。
-- `trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json`
-  - 明确 remote identity 与 executor 绑定 resolved checkout commit。
-- `trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md`
-  - 明确 annotated tag peel、checkout commit 验证、fail-closed mismatch 及
-    `remote_head`/`resolved_head` 字段语义。
+  - 新增 231-asset inventory 正向与 mismatch/missing/duplicate 负例；
+  - 新增 executor 真实 installed target、capability evidence 与
+    `verified` completeness gate 测试；
+  - 抽取共用 source/install fixture helper，使 marketplace compatibility
+    成功路径也生成真实 `<work>/project`，不以 command exit 0 冒充安装通过。
+- `trellis/skills/guru-team/adapters/eval/native_adapter.py`
+  - production eval fixture 使用 package 自身完整 execution example；
+  - capability facts 使用 stable command/asset references，不再生成
+    `evidence_step`。
+- `trellis/skills/guru-team/packages/guru-verify-extension-installation/`
+  - 更新 `interface.json`、`references/contract.md`；
+  - 更新 execution/private evidence schemas 与 examples；
+  - package contract tests 增加 inventory/category/reference/private-schema
+    闭合验证。
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
   - 由 canonical workflow runtime 同步的 dogfood 运行副本。
+- `.trellis/guru-team/skills/adapters/eval/native_adapter.py`
+  - 由 canonical native adapter 同步的 installed 副本。
 - `.trellis/guru-team/skills/packages/guru-verify-extension-installation/`
-  - 同步 canonical package 的 `interface.json` 与 `references/contract.md`。
-- `.agents/skills/`、`.codex/skills/`、`.claude/skills/`、
-  `.cursor/skills/` 下的 `guru-verify-extension-installation`
-  - 同步相同的 package contract。
+  与 `.agents/skills/`、`.codex/skills/`、`.claude/skills/`、
+  `.cursor/skills/` 下的同名 package
+  - 由 preset apply 同步为 byte-identical package copies。
 - `.trellis/guru-team/extension.json`
-  - 更新 package/provenance digest，并稳定为全平台 `status=ok`。
+  - 更新 runtime/adapter/package file digests 与 dirty source provenance；
+  - 保持全平台、2322 managed files、zero conflict/sidecar/removal 的
+    installed manifest。
 - `.trellis/tasks/07-25-117-verify-extension-installation/implementation-handoff.md`
-  - 本轮 F9 实现、Docs SSOT、验证与 check 交接。
+  - 本轮 F10 实现、Docs SSOT、验证和 `trellis-check` 交接。
 
-未修改既有 `agent-assignment.json`、`review-gate.json`、`review.md`、
-`task-commit-plans/004.json` 或 `reviews/005-f8-closure.md` /
-`reviews/006-final.md`；这些并行生命周期产物保持原样。
+并行生命周期产物 `agent-assignment.json`、`review.md`、
+`review-gate.json`、`task-commit-plans/005.json`、
+`reviews/007-f9-closure.md` 与 `reviews/008-final.md` 不属于本次实现，
+保持其当前并行状态，不在本 handoff 中认领。
 
 ## Implementation Summary
 
-1. `git ls-remote` 现在一次请求 exact `<ref>` 与 `<ref>^{}`。共享 parser
-   只接受无重复、合法 lowercase 40-hex 的 exact rows：
-   - branch：direct commit；
-   - lightweight tag：direct commit；
-   - annotated tag：peeled commit，direct tag-object 不作为 resolved HEAD。
-2. Executor 在 clone 前冻结 resolved commit，并用它执行
-   `git checkout --detach <resolved-commit>`。
-3. Checkout 成功后必须运行并记录 sanitized
-   `git rev-parse --verify HEAD^{commit}` evidence。只有实际 checkout commit
-   与冻结 resolved commit 完全一致，才允许运行 throwaway installer；不一致时
-   `status=failed` 并 fail closed。
-4. Workflow 的 `reviewed_head` 与 compatibility API 的 `expected_head` 都和
-   resolved commit 比较，不再和 annotated tag direct object 比较。
-5. Checker freshness 复用相同 direct/peeled parser；private `remote_head`
-   与 standalone public `resolved_head` 均继续使用既有字段，但统一表示
-   verified checkout commit。没有向 public DTO 增加 tag-object identity。
-6. Branch、lightweight tag 和既有 marketplace source/ref 行为保持兼容；
-   schema version、public output shape、typed exits、consumer mapping均未改变。
+1. Executor 仍从 exact remote ref 冻结并验证 checkout commit，但 throwaway
+   command 现在接收显式临时 work root。安装证据只从该 command 生成的
+   `<work>/project` 读取，不从 source checkout、dogfood worktree 或合成空目录读取。
+2. Expected asset set 由四类 durable relation 构成：
+   - `canonical_workflow`：1 个 active workflow；
+   - `managed_manifest`：6 个 preset/runtime 与 4 个 schema；
+   - `skill_manifest`：44 个 installed shared package assets；
+   - `platform_manifest`：Agents/Codex/Claude/Cursor 共 176 个 package assets。
+3. 每个 expectation 记录 category、optional platform、installed path、
+   canonical source path、expected SHA-256 与 relation。Inventory 记录 expected
+   set digest、五类 count/completeness、missing/duplicate/unexpected/mismatched
+   paths、relation errors 和 final completeness。
+4. Installed digest 从 throwaway target 实际 bytes 计算。Manifest path/source/hash、
+   selected platform、canonical source existence 与 installed byte digest 任一不一致，
+   execution 均不能成为 `passed`。
+5. Command facts 使用 stable ids。Capability facts 通过 closed capability-to-command
+   与 capability-to-category mapping 生成 `command_refs` 和 `asset_paths`；
+   不再把共同的 last-command index 当作所有能力的充分证据。
+6. Recorder/semantic shape gate 对 duplicate command/capability facts、unknown
+   references、缺失 asset evidence 与 incomplete inventory fail closed。
+   `verified` 额外要求每个 selected capability 同时具有 passed command 和
+   installed asset evidence。
+7. Public output DTO、四个 typed exits、consumer mapping、remote/ref/HEAD
+   identity 与 semantic AI ownership 均未改变。Inventory、digests、capability
+   evidence 继续是 owner-private state。
 
 ## Requirement And Design Carryover
 
-- 完成 `BR-117-F9`：区分 requested ref direct object 与 resolved checkout
-  commit，冻结后验证实际 checkout，并在 mismatch 时阻止 throwaway/success。
-- 保留已审核的 public/private 边界：tag-object identity 不进入 public DTO；
-  `remote_head`/`resolved_head` 是 resolved commit。
-- 保留 workflow reviewed-commit binding、standalone session-only、blocked
-  unresolved ref、semantic Gate 与 recorder/validator 分层。
-- 未扩展恶意篡改、并发竞态、TOCTOU、锁、原子写入或其它已排除非功能场景。
-- 未修改 workflow route、schema、preset installer 行为、overlay surface、
-  ownership inventory、README command 或 release/deployment contract。
+- 完成 `BR-117-F10`：把真实 installed bytes、完整 expected set 与
+  per-capability evidence 纳入 deterministic facts，并阻止 partial install /
+  command-only success 进入 `verified`。
+- 保留已审核 semantic/deterministic 边界：AI 仍独占 applicability、profile、
+  adequacy、findings 与 route；runtime 只执行、记录、校验与投影。
+- 保留 workflow/standalone 两个输入、四个最小 exits、task-local/session-only
+  persistence、retry/stale、remote HEAD binding 和 redaction 合同。
+- 保留 production eval 与 clean installation 双验收：eval fixture 使用完整事实，
+  但不替代实际 install/update/reapply。
+- 未实现或激活 #118 producer edge、#119 finish-family integration 或 #132
+  legacy cleanup。
+- 未扩展恶意篡改、并发竞态、TOCTOU、锁、原子写入或其它明确排除场景。
 
 ## Docs SSOT Handoff
 
 - Strategy: `ssot_first`
-- Durable docs updated or checked:
-  - 已更新 canonical Skill `interface.json` 与 `references/contract.md`，使
-    ref peel、checkout verification 和字段语义成为 package durable contract；
-  - 实现前已核对 `.trellis/spec/workflow/workflow-contract.md`、
-    `companion-scripts.md`、`skill-package-contract.md`、
-    `quality-guidelines.md`、`.trellis/spec/preset/installer.md`、
-    `upstream-ownership.md`、`overlay-guidelines.md` 与
-    `.trellis/spec/docs/public-docs.md`；
-  - 上述 spec 已要求 cloned checkout commit verification、canonical-first
-    distribution、known-managed backup recovery 和 zero-sidecar 终态，因此没有
-    为 F9 重复新增更高层规则。
-- Task artifact delta merged back to durable docs:
-  - annotated tag direct object 与 peeled commit 的区分；
-  - checkout 后 `HEAD^{commit}` exact comparison；
-  - private `remote_head` / public `resolved_head` 均表示 resolved commit；
-  - direct tag-object 不进入 public DTO。
+- Durable docs/spec/contract sync:
+  - canonical package `interface.json` 已把 executor objective 与 `verified`
+    evidence 收敛为 command + complete installed inventory；
+  - canonical package `references/contract.md` 已拥有 work-root、installed target、
+    expected set、relation/category completeness、capability refs 与 fail-closed
+    规则；
+  - execution/private schemas 与 examples已成为 machine-readable durable
+    evidence contract，并同步全部 installed/platform copies；
+  - 实现前后核对 `skill-package-contract.md`、`companion-scripts.md`、
+    `quality-guidelines.md`、preset `installer.md`、`upstream-ownership.md`
+    与 `public-docs.md`。这些 higher-level owners 已要求 installed digests、
+    per-capability facts、remote clean install、update/reapply、ownership 与
+    production-eval independence，因此 F10 无需重复修改。
+- Task delta merged to durable owners:
+  - explicit throwaway work root 与 `<work>/project` installed evidence source；
+  - 231-asset canonical/manifest/platform relation model；
+  - category completeness、path/digest/relation failure matrix；
+  - stable command ids 与 capability command/asset references；
+  - `verified` 的 complete inventory 与 per-capability evidence preconditions。
 - Task-history-only content:
-  - F9 review finding provenance、复现用 direct/peeled OID、实现过程状态、
-    初次 installer recovery 过程和本 handoff 的命令证据。
-- No-update reason or follow-up / current PR limitation:
-  - `.trellis/spec/`、workflow、schema、overlay、README 和
-    `data-contracts.md` 无更新；现有 durable owners 已覆盖行为边界，F9
-    未新增 API 字段、route、安装命令或平台能力；
-  - exact pushed feature-ref clean install 仍受当前 PR 尚未 push 的限制。
-- Implementation inputs from durable docs:
-  - companion script executor/validator 边界；
-  - Skill minimal public I/O/private state；
-  - canonical/runtime/package/platform 镜像和 installer recovery 合同；
-  - normal-path correctness scope 与 required validation。
-- Implementation inputs from confirmed task delta:
-  - `BR-117-F9` 对 annotated tag object/commit 分离、post-checkout evidence、
-    mismatch fail-closed、branch/lightweight compatibility 与 workflow reviewed
-    commit binding 的精确要求。
+  - F10 finding provenance、首次旧 compatibility fixture failure与修复过程；
+  - Claude inherited environment 401 的诊断/clean-env rerun；
+  - preset backup recovery、throwaway temporary locators 和本 handoff 的命令证据。
+- No-update reason / current PR limitation:
+  - workflow route、`.trellis/spec/`、README、overlay 和 ownership inventory
+    无更新；F10 没有新增 public API、安装命令、route 或用户文档行为，相关
+    higher-level durable docs 已完整覆盖；
+  - exact pushed feature-ref clean installation 仍受当前分支未获 push 授权限制。
+- Durable-doc implementation inputs:
+  - package Interface/private state、companion executor/recorder/checker boundary；
+  - installer manifest/ownership/update/reapply 与 zero-sidecar contract；
+  - production eval/public-only projection 和 remote clean-install independence。
+- Confirmed task-delta implementation inputs:
+  - F10 要求的 installed target source、expected inventory、relation checks、
+    capability evidence、partial/mismatch/duplicate fail-closed 场景。
 
 ## Verification Results
 
-- Focused runtime:
-  - `ExtensionVerificationRuntimeTest`: 23 passed；
-  - `MarketplaceVerificationContractTest`: 7 passed。
-- Package contract:
-  - `guru-verify-extension-installation/tests/test_contract.py`: 8 passed。
+- Focused runtime after compatibility fixture repair:
+  - `MarketplaceVerificationContractTest` targeted success path +
+    `ExtensionVerificationRuntimeTest`: 28 passed。
 - Full runtime:
-  - `test_guru_team_trellis.py`: Ran 596，OK，13 skipped。
-- Real Git ref probe:
-  - branch 与 lightweight tag 只返回 direct commit；
-  - annotated tag 返回 direct tag-object 与 `<ref>^{}` peeled commit；
-  - peeled OID 与实际 checkout commit一致。
-- Preset distribution:
-  - 初次默认 apply 按合同生成 9 个 known-managed `.bak` 并因平台选择缩小
-    暂时移除 Claude；
-  - 9 个 backup 均逐一验证为 HEAD 旧托管版本后删除；
-  - `apply.sh --repo . --all-platforms` 重放并再次验证幂等；
-  - 最终 shared/Codex/Claude/Cursor 全同步，2322 managed files 全
-    `unchanged`，0 conflict、0 sidecar、0 removal。
-- Static/install checks:
-  - `check-dogfood-overlay-drift.sh`: passed；
-  - `check-upstream-ownership.sh --json`: `status=ok`；
-  - `check-skill-packages.sh --mode source`: passed；
-  - `check-skill-packages.sh --mode installed`: passed；
-  - canonical/installed runtime `cmp`: passed；
-  - canonical/installed runtime `py_compile`: passed；
-  - package wrapper `bash -n`: passed；
-  - recursive `.new`/`.bak` scan: zero；
-  - `.trellis/guru-team/extension.json`: package `status=ok`，全平台，
-    zero conflict/sidecar；
-  - `git diff --check`: passed。
-- Lint: pass，`git diff --check`、Python compile 与 shell syntax均通过。
-- TypeCheck: skipped；仓库对该单文件 runtime 没有独立静态 typecheck 命令，
-  由 full unittest、schema/package validators 与 Python compile 承接。
+  - `test_guru_team_trellis.py`: Ran 600，OK，13 skipped。
+- Package/preset suites:
+  - canonical verifier package: 9 passed；
+  - installed verifier package: 9 passed；
+  - all 12 canonical package contract files: 114 passed；
+  - `test_skill_packages.py`: 175 passed；
+  - preset/ownership Python suite: 54 passed。
+- Production eval:
+  - Shared source与 installed：各 7/7 passed；
+  - Codex source与 installed：各 7/7 passed；
+  - Claude source与 installed：外层移除 inherited
+    `ANTHROPIC_AUTH_TOKEN` / `ANTHROPIC_BASE_URL` 后各 7/7 passed；
+  - Cursor source与 installed：各 7/7 `unsupported`，符合当前 capability contract；
+  - Claude 初次 inherited-env run 的 7 个 case 均因 401 `execution_error`；
+    fresh `claude auth status` 证明 first-party login current，clean-env rerun
+    消除了该外部环境问题。
+- Full local-source throwaway:
+  - `verify-throwaway-install.sh` exit 0；
+  - 覆盖 public marketplace discovery、current-worktree local workflow sample、
+    initial apply、existing preview/switch、`trellis update --force`、workflow
+    reselect、preset reapply、no-developer preservation、pre-146 recovery、
+    ownership、installed eval 和 final zero-sidecar；
+  - retained `/project` 的 F10 collector：expected=231、observed=231、
+    matched=231、`complete=true`；
+  - category counts：workflow 1、preset 6、schema 4、skill 44、platform 176；
+  - missing/duplicate/unexpected/mismatched paths 与 relation errors 全为空。
+- Distribution/install checks:
+  - source/installed Skill validation passed，closure 12 active Skills /
+    46 exits / 27 targets；
+  - installed manifest 2322 managed files，0 conflict、0 sidecar、0 removal；
+  - upstream ownership 43-entry frozen inventory passed；
+  - dogfood overlay drift passed；
+  - canonical/installed/shared/Codex/Claude/Cursor package `diff -qr` passed；
+  - canonical/installed runtime、native adapter equality passed。
+- Static checks:
+  - changed JSON parse、Bash syntax、Python compile passed；
+  - recursive non-fixture `.new`/`.bak` scan为零；
+  - task validation与 `git diff --check` passed。
+- TypeCheck:
+  - skipped；仓库没有该 Python runtime 的独立静态 typecheck owner，由 full
+    unittest、schema/package validators 与 Python compile 承接。
 
-## Handoff For Check
+## Handoff For `trellis-check`
 
 - Focus areas:
-  - 用真实/fixture annotated tag 复核 direct object 与 peeled commit 不同，
-    executor checkout 与 public projection只使用 peeled commit；
-  - 确认 `HEAD^{commit}` command evidence 在 throwaway 之前，mismatch 时
-    throwaway 未执行且结果 fail closed；
-  - 复核 workflow `reviewed_head`、compatibility `expected_head`、
-    private `remote_head`、public `resolved_head` 的 commit identity 一致；
-  - 复核 branch/lightweight behavior、blocked unresolved ref、checker
-    freshness 与 semantic route 无回归；
-  - 检查 canonical/runtime/shared/Codex/Claude/Cursor bytes 和 extension
-    manifest digest；
-  - 执行完整 Docs SSOT reconciliation，确认无遗漏 schema/README/spec owner。
-- Validation intentionally deferred to `trellis-check`:
-  - Phase 2 semantic review 与 `phase2-check.json` recorder/validator；
-  - full throwaway install/update/reapply matrix；
-  - production native eval；
-  - exact pushed feature-ref real remote clean installation；
-  - Branch Review Gate、commit、push、PR readiness 与 issue closure。
+  - 复核 expected-set 来源只包含 checked-out canonical source 与 installed
+    extension manifest，installed digest只从 throwaway `<work>/project` 读取；
+  - 复核 1/6/4/44/176 五类资产、四种 relation、duplicate/path/digest/platform
+    负例与 final completeness 双向一致；
+  - 复核每个 capability 的 command refs 与 asset category mapping，确认不存在
+    command-only 或 asset-only `verified`；
+  - 复核 recorder/checker、private schema、examples 与 package contract 的
+    machine/semantic/public边界，确认 public DTO和 consumer无扩张；
+  - 复核 marketplace compatibility wrapper 继续调用唯一 executor，且测试 fixture
+    不再用 exit 0 绕过 installed evidence；
+  - 复核 canonical/runtime/shared/Codex/Claude/Cursor byte identity、extension
+    manifest digests、full throwaway final target与 zero-sidecar终态；
+  - 执行完整 Docs SSOT reconciliation，确认 F10 task delta 已全部进入 package
+    durable contract/schema，higher-level no-update reason成立。
+- Validations intentionally deferred to check:
+  - Phase 2 semantic review、finding classification与 `phase2-check.json`
+    recorder/validator；
+  - 独立复核完整 diff 与当前并行 task metadata，不复用本实现 agent判断。
+- Intentionally deferred beyond implementation/check:
+  - exact post-push remote-ref verification。当前未获 commit/push授权，local-source
+    throwaway不能冒充 exact pushed feature-ref；
+  - Branch Review Gate、task commit、push、PR readiness、Issue closure。
 - Remaining risks:
-  - 当前验证使用 local working-tree candidate；尚未绑定新的 task work commit；
-  - exact pushed ref 与真实外部网络/CLI 安装 surface 尚未验证；
-  - 首次 default apply 的 recoverable backup/platform-shrink 路径已恢复并通过
-    all-platform idempotence，但 check 应把最终 clean manifest 作为验收输入，
-    不引用中间 conflict 状态。
+  - exact remote-ref gate仍需在后续已授权 push 后绑定实际 remote HEAD；
+  - 当前 extension manifest记录 dirty source provenance，这是未提交实现阶段的
+    真实状态；后续 commit/apply/review应重新绑定最终 commit；
+  - Claude native eval依赖调用进程环境。当前 clean first-party环境已全量通过，
+    后续 check若继承冲突的 provider变量，应先区分环境配置与实现回归。

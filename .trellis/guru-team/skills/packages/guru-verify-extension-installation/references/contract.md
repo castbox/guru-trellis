@@ -48,9 +48,25 @@ The deterministic executor resolves the requested ref once, using the peeled
 commit for an annotated tag and the direct commit for a branch or lightweight
 tag. It freezes that commit, checks it out by object ID, and verifies the clone
 with `git rev-parse --verify HEAD^{commit}` before any throwaway installation.
-A checkout mismatch fails closed. The executor records only credentials-safe
-locators, sanitized argv, exit codes, output digests and sizes, asset digests,
-ownership facts, and sidecar facts. It never infers applicability or route.
+A checkout mismatch fails closed. The executor gives the throwaway installer an
+explicit temporary work root and reads assets only from its resulting clean
+`project` target. It derives a deterministic expected set from the checked-out
+canonical workflow/runtime/schema/package bytes and the installed extension
+manifest, then records installed workflow, preset, schema, shared Skill, and
+Agents/Codex/Claude/Cursor package digests. Every expectation names its
+canonical source, manifest/platform relation, expected digest, category, and
+optional platform. Category counts, missing/duplicate/unexpected/mismatched
+paths, relation errors, and the expected-set digest make completeness
+reviewable. Missing, duplicate, relation-mismatched, or byte-mismatched assets
+fail the execution before `verified`.
+
+Each selected capability records stable references to the command facts that
+executed it and to its corresponding installed asset digest paths. The
+monolithic throwaway command can support several capabilities, but a single
+last-command index is never copied across the profile as sufficient evidence.
+The executor records only credentials-safe locators, sanitized argv, exit codes,
+output digests and sizes, installed asset facts, ownership facts, and sidecar
+facts. It never infers applicability or route.
 
 After execution, the AI reviews applicability, capability coverage, remote
 identity, installation and update/reapply results, ownership, sidecars,
@@ -68,10 +84,11 @@ pointer, index, task artifact, or task-work route.
 
 The private evidence binds the public input, safe repository/ref/HEAD identity,
 AI applicability and reason, selected closed capability profile, sanitized
-command facts, asset/ownership/sidecar facts, AI adequacy, findings, actual
-exit, consumer, redaction scan, retry/supersession identity, and opaque
-`verification_ref`. Machine and semantic digests are recorded separately and
-then bound by the final evidence digest.
+command facts, installed asset expectations/digests/category completeness,
+per-capability command/asset references, ownership/sidecar facts, AI adequacy,
+findings, actual exit, consumer, redaction scan, retry/supersession identity,
+and opaque `verification_ref`. Machine and semantic digests are recorded
+separately and then bound by the final evidence digest.
 
 The checker validates schema, task/session persistence, public-input identity,
 remote/ref/HEAD binding, plan and supersession freshness, redaction, route
@@ -91,9 +108,11 @@ traces retain only generic errors or digests and never the credential URL.
 
 ## Exits and re-entry
 
-- `verified`: every selected capability and adequacy dimension passed, all
-  current-scope findings are closed, remote identity is current, and redaction
-  passed.
+- `verified`: every selected capability has passed command and installed asset
+  evidence, the deterministic expected asset set is complete with all category,
+  manifest, canonical, platform, and digest relations matched, every adequacy
+  dimension passed, all current-scope findings are closed, remote identity is
+  current, and redaction passed.
 - `not_required`: AI applicability evidence is complete and no execution
   profile or fabricated pass facts exist. A workflow input fixed to
   `verification_target=extension-installation` cannot silently use this exit.

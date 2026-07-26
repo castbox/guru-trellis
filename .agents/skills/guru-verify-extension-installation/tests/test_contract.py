@@ -144,6 +144,53 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         self.assertEqual(returned["mode"], "workflow")
         self.assertIn("task_ref", returned)
 
+    def test_private_execution_requires_installed_inventory_and_capability_bindings(
+        self,
+    ) -> None:
+        private_schema = load("schemas/marketplace-verification.schema.json")
+        registry = Registry().with_resource(
+            "marketplace-verification.schema.json",
+            Resource.from_contents(private_schema),
+        )
+        execution_schema = load("schemas/execution-facts.schema.json")
+        validator = jsonschema.Draft202012Validator(
+            execution_schema,
+            registry=registry,
+        )
+        execution = load("examples/execution-facts.json")
+        validator.validate(execution)
+
+        inventory = execution["asset_inventory"]
+        self.assertTrue(inventory["complete"])
+        self.assertEqual(
+            {item["id"] for item in inventory["categories"]},
+            {"workflow", "preset", "schema", "skill", "platform"},
+        )
+        self.assertEqual(
+            {item["category"] for item in execution["asset_expectations"]},
+            {"workflow", "preset", "schema", "skill", "platform"},
+        )
+        self.assertTrue(
+            all(item["command_refs"] and item["asset_paths"]
+                for item in execution["capabilities"])
+        )
+        self.assertTrue(
+            all(
+                item["path"].startswith(".")
+                for item in execution["asset_digests"]
+            )
+        )
+
+        missing_inventory = json.loads(json.dumps(execution))
+        del missing_inventory["asset_inventory"]
+        self.assertFalse(validator.is_valid(missing_inventory))
+        legacy_capability = json.loads(json.dumps(execution))
+        capability = legacy_capability["capabilities"][0]
+        capability["evidence_step"] = 0
+        del capability["command_refs"]
+        del capability["asset_paths"]
+        self.assertFalse(validator.is_valid(legacy_capability))
+
     def test_no_secret_marker_in_contract_assets(self) -> None:
         marker = "synthetic-" + "secret-marker"
         for path in PACKAGE.rglob("*"):

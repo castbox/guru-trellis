@@ -61,13 +61,13 @@
     {"id": "private_marketplace_verification", "path": "schemas/marketplace-verification.schema.json"}
   ],
   "validators": [
-    {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Freeze the remote ref's resolved commit, verify the cloned checkout commit, and execute the closed clean-install capability catalog while recording only sanitized deterministic facts"},
+    {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Freeze the remote ref's resolved commit, verify the cloned checkout commit, execute the closed clean-install capability catalog, and bind each capability to command facts plus a complete canonical/manifest/platform-related installed asset digest inventory"},
     {"id": "verification_recorder", "command": "scripts/record-extension-verification.sh", "runtime_command": "record-extension-verification", "objective_scope": "Record already completed AI applicability, profile, adequacy, findings and route with rebuilt machine facts"},
     {"id": "verification_checker", "command": "scripts/check-extension-verification.sh", "runtime_command": "check-extension-verification", "objective_scope": "Validate the one private evidence schema, identity, freshness, redaction, persistence and consumer without semantic judgment"},
     {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-extension-verification", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema branch and emit one minimal DTO"}
   ],
   "external_exits": [
-    {"id": "verified", "evidence": "AI adequacy passed for every affected extension surface and every selected deterministic capability passed", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
+    {"id": "verified", "evidence": "AI adequacy passed for every affected extension surface, every selected deterministic capability passed with command and installed asset evidence, and the expected installed inventory is complete and digest-matched", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
     {"id": "not_required", "evidence": "AI applicability review found no installable extension surface and no execution profile was fabricated", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
     {"id": "return_to_task_work", "evidence": "a task-bearing invocation has one or more open task-work findings", "consumer": {"kind": "workflow", "id": "guru-extension-verification-work-router"}},
     {"id": "blocked", "evidence": "remote, auth, network, taskless installation failure or another external dependency prevents completion", "consumer": {"kind": "stop", "id": "extension-installation-verification-blocked"}}
