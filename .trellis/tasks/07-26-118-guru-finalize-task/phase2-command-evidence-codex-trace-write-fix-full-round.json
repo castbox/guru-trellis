@@ -1,0 +1,2118 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "phase2-command-evidence-codex-trace-write-fix-full-round",
+  "task": ".trellis/tasks/07-26-118-guru-finalize-task",
+  "issue": {
+    "repo": "castbox/guru-trellis",
+    "number": 118,
+    "authority_comment_id": 5045036678,
+    "state": "OPEN"
+  },
+  "reviewer": {
+    "agent_id": "/root/issue118_phase2_codex_trace_fix_check",
+    "logical_role": "阶段二检查代理",
+    "independent_from_implementation": true
+  },
+  "objective_identity": {
+    "worktree": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+    "branch": "feat/118-guru-finalize-task",
+    "head": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2",
+    "base_ref": "origin/main",
+    "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "tracked_path_count": 532,
+    "tracked_added": 474,
+    "tracked_modified": 58,
+    "tracked_deleted": 0,
+    "tracked_diff_insertions": 76879,
+    "tracked_diff_deletions": 4767
+  },
+  "command_plan": {
+    "complete": true,
+    "formal_command_count": 83,
+    "intentional_omission_count": 4,
+    "categories": [
+      "entry_authority_context",
+      "static_lint_type",
+      "focused_and_full_tests",
+      "source_installed_contracts",
+      "public_wrapper_evals",
+      "platform_native_classification",
+      "distribution_install_update",
+      "scope_docs_security",
+      "terminal_hygiene"
+    ],
+    "preformal_setup_note": "Decision-relevant setup/exploration was rerun in formal capture; formal digests below supersede interactive setup output."
+  },
+  "capture": {
+    "root": "/tmp/guru118-phase2-codex-trace-fix.5KAQlU",
+    "root_is_repository_external": true,
+    "stream_policy": "raw stdout/stderr retained only until artifact generation and then removed; final artifact retains hashes/sizes and semantic summaries.",
+    "digest_algorithm": "sha256",
+    "root_removed_after_validation": true,
+    "root_removed_at": "2026-07-27T23:26:13Z",
+    "cleanup_method": "find_depth_delete_exact_repo_external_root",
+    "cleanup_verification": {
+      "argv": [
+        "test",
+        "!",
+        "-e",
+        "/tmp/guru118-phase2-codex-trace-fix.5KAQlU"
+      ],
+      "exit_code": 0,
+      "status": "absent"
+    }
+  },
+  "check_execution": {
+    "commands": [
+      {
+        "id": "claude-live-structured-audit",
+        "group": "audits",
+        "argv": [
+          "python3",
+          "-c",
+          "import json,pathlib,sys; r=json.loads(pathlib.Path(sys.argv[1]).read_text()); assert r[\"status\"]==\"execution_error\" and len(r[\"cases\"])==1 and r[\"cases\"][0][\"status\"]==\"execution_error\"; t=json.loads(pathlib.Path(r[\"cases\"][0][\"transcript_locator\"]).read_text()); a=t[\"argv\"]; assert t[\"adapter\"]==\"claude\" and t[\"returncode\"]!=0 and \"--print\" in a and \"--output-format\" in a and \"json\" in a and \"--permission-mode\" in a and \"dontAsk\" in a; native=json.loads(pathlib.Path(t[\"native_request_path\"]).read_text()); assert \"expected_exit\" not in native; payload=json.loads(t[\"stdout\"]); assert payload.get(\"api_error_status\")==401 and payload.get(\"permission_denials\")==[] and payload.get(\"usage\",{}).get(\"input_tokens\")==0 and payload.get(\"usage\",{}).get(\"output_tokens\")==0; print(json.dumps({\"runner_rc\":0,\"run_status\":r[\"status\"],\"case_status\":r[\"cases\"][0][\"status\"],\"adapter\":t[\"adapter\"],\"native_returncode\":t[\"returncode\"],\"stdin_protocol_argv\":a[1:],\"api_error_status\":payload[\"api_error_status\"],\"permission_denials\":payload[\"permission_denials\"],\"input_tokens\":0,\"output_tokens\":0,\"classification\":\"external_auth_residual_not_pass\"},sort_keys=True))",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/eval_other/claude-live-input-protocol.stdout"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:06:23Z",
+        "completed_at": "2026-07-27T23:06:23Z",
+        "exit_code": 0,
+        "stdout_sha256": "31a194fb387d31ec61c6b3bac3fdc0f81cfd4f3c70e99211a355817fe22fdf0d",
+        "stdout_size_bytes": 732,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Claude argv/input protocol 正确；HTTP 401、0 tokens、无 permission denial，分类 external residual。",
+        "status": "external_residual_confirmed"
+      },
+      {
+        "id": "codex-live-structured-audit",
+        "group": "audits",
+        "argv": [
+          "python3",
+          "-c",
+          "import json,pathlib,sys; result=json.loads(pathlib.Path(sys.argv[1]).read_text()); assert result[\"status\"]==\"passed\" and len(result[\"cases\"])==1; case=result[\"cases\"][0]; assert case[\"status\"]==\"passed\" and case[\"actual_exit\"]==\"publication_review_stale\"; transcript=json.loads(pathlib.Path(case[\"transcript_locator\"]).read_text()); argv=transcript[\"argv\"]; req=pathlib.Path(transcript[\"native_request_path\"]).resolve(); execution=req.parent; roots={pathlib.Path(argv[i+1]).resolve() for i,v in enumerate(argv[:-1]) if v==\"--add-dir\"}; cd=pathlib.Path(argv[argv.index(\"--cd\")+1]).resolve(); expected=pathlib.Path(sys.argv[2]).resolve(); assert execution in roots and cd==expected and not execution.is_relative_to(expected); native=json.loads(req.read_text()); assert \"expected_exit\" not in native; trace=json.loads(pathlib.Path(transcript[\"native_trace_path\"]).read_text()); assert len(trace[\"events\"])>=2 and trace[\"events\"][-1][\"kind\"]==\"invoke\" and pathlib.Path(trace[\"events\"][-1][\"wrapper_path\"]).name==\"invoke.sh\" and trace[\"events\"][-1][\"returncode\"]==0; print(json.dumps({\"run_status\":result[\"status\"],\"case_status\":case[\"status\"],\"actual_exit\":case[\"actual_exit\"],\"trusted_root\":str(cd),\"execution_root\":str(execution),\"execution_root_authorized\":execution in roots,\"repo_external\":not execution.is_relative_to(expected),\"native_request_has_expected_exit\":\"expected_exit\" in native,\"trace_event_count\":len(trace[\"events\"]),\"trace_last_kind\":trace[\"events\"][-1][\"kind\"],\"wrapper\":trace[\"events\"][-1][\"wrapper_path\"],\"wrapper_rc\":trace[\"events\"][-1][\"returncode\"]},sort_keys=True))",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/eval_codex/codex-live-trusted-root.stdout",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:04:54Z",
+        "completed_at": "2026-07-27T23:04:54Z",
+        "exit_code": 0,
+        "stdout_sha256": "ea9a2a0eb8b3530b498a7c16aee8320b03c506d70537ff475d145f2444c7d294",
+        "stdout_size_bytes": 674,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "execution root repo-external 且已授权；actual exit 正确；trace 末事件 invoke.sh，wrapper rc=0。",
+        "status": "passed"
+      },
+      {
+        "id": "cursor-live-structured-audit",
+        "group": "audits",
+        "argv": [
+          "python3",
+          "-c",
+          "import json,pathlib,sys; r=json.loads(pathlib.Path(sys.argv[1]).read_text()); assert r[\"status\"] in {\"unsupported\",\"unavailable\"} and len(r[\"cases\"])==1 and r[\"cases\"][0][\"status\"]==r[\"status\"]; t=json.loads(pathlib.Path(r[\"cases\"][0][\"transcript_locator\"]).read_text()); assert t[\"adapter\"]==\"cursor\" and t[\"status\"]==r[\"status\"] and t[\"reason\"]==\"authentication unavailable\"; print(json.dumps({\"runner_rc\":0,\"run_status\":r[\"status\"],\"case_status\":r[\"cases\"][0][\"status\"],\"adapter\":t[\"adapter\"],\"reason\":t[\"reason\"],\"classification\":\"expected_supported_terminal_no_semantic_pass\"},sort_keys=True))",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/eval_other/cursor-live-unsupported.stdout"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:06:24Z",
+        "completed_at": "2026-07-27T23:06:24Z",
+        "exit_code": 0,
+        "stdout_sha256": "40058ffb6c920daf29a1cc64bdea9f32c2428f7526970ab69ba0621753af2ed5",
+        "stdout_size_bytes": 203,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Cursor authentication unavailable 稳定映射 unsupported，不声称 semantic pass。",
+        "status": "expected_platform_terminal_confirmed"
+      },
+      {
+        "id": "shared-corpora-structured-audit",
+        "group": "audits",
+        "argv": [
+          "python3",
+          "-c",
+          "import json,pathlib,sys; outputs=[]; required={\"verification_required\",\"publication_review_stale\",\"resume_finalization\",\"reprepare_required\",\"published\",\"blocked\"}; [outputs.append(json.loads(pathlib.Path(p).read_text())) for p in sys.argv[1:]]; assert all(x[\"status\"]==\"passed\" and len(x[\"cases\"])==8 and all(c[\"status\"]==\"passed\" for c in x[\"cases\"]) for x in outputs); exits=[{c[\"actual_exit\"] for c in x[\"cases\"]} for x in outputs]; assert all(required <= e for e in exits); print(json.dumps({\"runs\":[{\"status\":x[\"status\"],\"case_count\":len(x[\"cases\"]),\"actual_exits\":sorted({c[\"actual_exit\"] for c in x[\"cases\"]})} for x in outputs]},sort_keys=True))",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/eval_shared/source-shared-real-wrapper.stdout",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/eval_shared/installed-shared-real-wrapper.stdout"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:04:54Z",
+        "completed_at": "2026-07-27T23:04:54Z",
+        "exit_code": 0,
+        "stdout_sha256": "06a60ee1267794518dbd40ea8ff767cfb08155b41ce7a2be2c668869952e1fcd",
+        "stdout_size_bytes": 369,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "source/installed 各 8 cases，六 exits 与 verified/not_required branches 全部 passed。",
+        "status": "passed"
+      },
+      {
+        "id": "clean-throwaway-full-chain",
+        "group": "distribution",
+        "argv": [
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/throwaway-full"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:57Z",
+        "completed_at": "2026-07-27T23:15:01Z",
+        "exit_code": 0,
+        "stdout_sha256": "bea542cc7b74b1ac451d6cad02d6efc4714abfdb2dd26cb3d2334852fe651bf2",
+        "stdout_size_bytes": 4165550,
+        "stderr_sha256": "66713a6a93e102dba274b2ccc94da333c1822ecea72e7ede42df18c498976dcc",
+        "stderr_size_bytes": 930,
+        "summary": "完整 clean throwaway rc=0；marketplace/init/install/update/reapply/.new/.bak/platform/OOTB 全链通过。",
+        "status": "passed"
+      },
+      {
+        "id": "dogfood-replica-all-platform-apply",
+        "group": "distribution",
+        "argv": [
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/dogfood-replica/trellis/presets/guru-team/scripts/bash/apply.sh",
+          "--repo",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/dogfood-replica",
+          "--all-platforms",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:03:02Z",
+        "completed_at": "2026-07-27T23:03:07Z",
+        "exit_code": 0,
+        "stdout_sha256": "4bbf85edff36a4db7a8479bc42bdd4ef0ce110f1bcef3c7847afc1179639f1dd",
+        "stdout_size_bytes": 1032885,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "replica all-platform preset apply rc=0。",
+        "status": "passed"
+      },
+      {
+        "id": "dogfood-replica-installed-validator",
+        "group": "distribution",
+        "argv": [
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/dogfood-replica/.trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/dogfood-replica",
+          "--mode",
+          "installed",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:03:07Z",
+        "completed_at": "2026-07-27T23:03:08Z",
+        "exit_code": 0,
+        "stdout_sha256": "906e4ce2e0ca4b62de1924cf1caa5b01e8a751b956c2e7490805198d5750280f",
+        "stdout_size_bytes": 1535,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "replica installed validator passed。",
+        "status": "passed"
+      },
+      {
+        "id": "dogfood-replica-overlay-drift",
+        "group": "distribution",
+        "argv": [
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/dogfood-replica/trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+          "--repo",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/dogfood-replica"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:03:08Z",
+        "completed_at": "2026-07-27T23:03:08Z",
+        "exit_code": 0,
+        "stdout_sha256": "b3bafca507c4743e965cd81eed5d8ee845c91589afaf38a18f1702ef854e4bd5",
+        "stdout_size_bytes": 1790,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "replica overlay drift passed。",
+        "status": "passed"
+      },
+      {
+        "id": "dogfood-replica-setup",
+        "group": "distribution",
+        "argv": [
+          "sh",
+          "-c",
+          "set -eu; target=\"/tmp/guru118-phase2-codex-trace-fix.5KAQlU/dogfood-replica\"; mkdir -p \"$target\"; rsync -a --exclude=.git --exclude=__pycache__ --exclude=\"*.pyc\" \"/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/\" \"$target/\"; git -C \"$target\" init -q; git -C \"$target\" config user.name \"Phase2 Replica\"; git -C \"$target\" config user.email \"phase2-replica@example.invalid\"; git -C \"$target\" add -A; git -C \"$target\" commit -q -m \"phase2 dogfood replica\""
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:58Z",
+        "completed_at": "2026-07-27T23:03:01Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "建立当前 working bytes 的仓库外 replica，避免禁止的当前 manifest provenance churn。",
+        "status": "passed"
+      },
+      {
+        "id": "dogfood-replica-sidecars",
+        "group": "distribution",
+        "argv": [
+          "find",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/dogfood-replica",
+          "-type",
+          "f",
+          "(",
+          "-name",
+          "*.new",
+          "-o",
+          "-name",
+          "*.bak",
+          ")",
+          "-print"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:03:08Z",
+        "completed_at": "2026-07-27T23:03:08Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "replica .new/.bak 为零。",
+        "status": "passed"
+      },
+      {
+        "id": "active-task",
+        "group": "entry",
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "current",
+          "--source"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:55Z",
+        "completed_at": "2026-07-27T22:56:55Z",
+        "exit_code": 0,
+        "stdout_sha256": "89842a60a1a13c76cf84db7b521ac0eb272b390acb21cb66bf8b33c1ef573f39",
+        "stdout_size_bytes": 126,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "active task locator 指向 #118 task。",
+        "status": "passed"
+      },
+      {
+        "id": "agent-assignment",
+        "group": "entry",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-agent-assignment.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task",
+          "--require-current-head"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:50Z",
+        "completed_at": "2026-07-27T22:56:55Z",
+        "exit_code": 0,
+        "stdout_sha256": "dcae4d01287a317ac99a3e7e10847ac3997f142357698b89d96674af50fd0012",
+        "stdout_size_bytes": 1369,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "assignment schema 1.2 与当前 HEAD 通过；39 agents、14 review rounds。",
+        "status": "passed"
+      },
+      {
+        "id": "context-handoffs",
+        "group": "entry",
+        "argv": [
+          "sh",
+          "-c",
+          "for f in .trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff*.md; do printf \"FILE:%s\\n\" \"$f\"; sed -n \"1,2000p\" \"$f\"; done"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:06Z",
+        "completed_at": "2026-07-27T22:57:06Z",
+        "exit_code": 0,
+        "stdout_sha256": "2085320ac95f2e18622ee5069afa992cb44561b04b70ef631609762c91bd77eb",
+        "stdout_size_bytes": 82257,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "完整读取 implementation handoff/recovery chain。",
+        "status": "passed"
+      },
+      {
+        "id": "context-phase2-and-ledger",
+        "group": "entry",
+        "argv": [
+          "sh",
+          "-c",
+          "jq . .trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json .trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json .trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:06Z",
+        "completed_at": "2026-07-27T22:57:06Z",
+        "exit_code": 0,
+        "stdout_sha256": "d9e4337907b7789147bbd7da0dc76d8f6237b2878cbf4759c4c19a9cc78e573a",
+        "stdout_size_bytes": 678835,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "读取 historical implementation_required phase2、ledger、assignment。",
+        "status": "passed"
+      },
+      {
+        "id": "context-specs",
+        "group": "entry",
+        "argv": [
+          "sh",
+          "-c",
+          "for f in .trellis/spec/workflow/index.md .trellis/spec/workflow/skill-package-contract.md .trellis/spec/workflow/companion-scripts.md .trellis/spec/workflow/quality-guidelines.md .trellis/spec/workflow/workflow-contract.md .trellis/spec/preset/index.md .trellis/spec/preset/installer.md .trellis/spec/preset/upstream-ownership.md .trellis/spec/docs/public-docs.md trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md; do printf \"FILE:%s\\n\" \"$f\"; sed -n \"1,2400p\" \"$f\"; done"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:06Z",
+        "completed_at": "2026-07-27T22:57:06Z",
+        "exit_code": 0,
+        "stdout_sha256": "375dd88c9876e0a1a12c38bbf7969b9f45ac6f39b3e86de0cf5555956fff7c99",
+        "stdout_size_bytes": 409884,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "读取 fallback 选择的 workflow/preset/docs/finalizer durable contracts。",
+        "status": "passed"
+      },
+      {
+        "id": "context-task-plans",
+        "group": "entry",
+        "argv": [
+          "sh",
+          "-c",
+          "for f in .trellis/tasks/07-26-118-guru-finalize-task/prd.md .trellis/tasks/07-26-118-guru-finalize-task/design.md .trellis/tasks/07-26-118-guru-finalize-task/implement.md; do printf \"FILE:%s\\n\" \"$f\"; sed -n \"1,2000p\" \"$f\"; done"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:05Z",
+        "completed_at": "2026-07-27T22:57:05Z",
+        "exit_code": 0,
+        "stdout_sha256": "a8e1904f0da8f01b04721ff97348e3c8978e4e525673d1b91065510bf09c5d7d",
+        "stdout_size_bytes": 38824,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "完整读取 approved prd/design/implement。",
+        "status": "passed"
+      },
+      {
+        "id": "current-dirty-diff-check",
+        "group": "entry",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:06Z",
+        "completed_at": "2026-07-27T22:57:06Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "当前 dirty delta 无 whitespace error。",
+        "status": "passed"
+      },
+      {
+        "id": "current-dirty-path-inventory",
+        "group": "entry",
+        "argv": [
+          "git",
+          "status",
+          "--short"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:05Z",
+        "completed_at": "2026-07-27T22:57:05Z",
+        "exit_code": 0,
+        "stdout_sha256": "6258a744e1d2457ef5e6a659eda71fe0872648a9d39dc8529eb3520916b4b354",
+        "stdout_size_bytes": 1660,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "完整 dirty/untracked inventory 已记录。",
+        "status": "passed"
+      },
+      {
+        "id": "deployment-surfaces-no-impact",
+        "group": "entry",
+        "argv": [
+          "git",
+          "diff",
+          "--exit-code",
+          "origin/main",
+          "--",
+          ".github",
+          ".circleci",
+          "Dockerfile",
+          "docker-compose.yml",
+          "docker-compose.yaml",
+          "Makefile",
+          "helm",
+          "charts",
+          "k8s",
+          "kubernetes",
+          "migrations",
+          "terraform"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:06Z",
+        "completed_at": "2026-07-27T22:57:06Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "CI/CD/container/K8s/DB migration/Terraform/Makefile 无 diff。",
+        "status": "passed"
+      },
+      {
+        "id": "full-committed-diff-check",
+        "group": "entry",
+        "argv": [
+          "git",
+          "diff",
+          "--check",
+          "origin/main...HEAD"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:06Z",
+        "completed_at": "2026-07-27T22:57:06Z",
+        "exit_code": 2,
+        "stdout_sha256": "35b2d142684e8b84d7bc4221f8d92ba49b9f2e926c237b702991bfe913b4e14a",
+        "stdout_size_bytes": 211,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "rc=2 仅命中 immutable Round 9 raw report line 203 trailing whitespace。",
+        "status": "expected_historical_residual"
+      },
+      {
+        "id": "full-effective-path-inventory",
+        "group": "entry",
+        "argv": [
+          "git",
+          "diff",
+          "--name-only",
+          "origin/main"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:05Z",
+        "completed_at": "2026-07-27T22:57:05Z",
+        "exit_code": 0,
+        "stdout_sha256": "2fa98782c3fab67a6a269306a33dbca47da81a7fdf8b4fc84ca1dc346ecc4894",
+        "stdout_size_bytes": 43479,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "origin/main 到当前工作树 tracked scope 为 532 paths。",
+        "status": "passed"
+      },
+      {
+        "id": "live-authority-comment",
+        "group": "entry",
+        "argv": [
+          "gh",
+          "api",
+          "repos/castbox/guru-trellis/issues/comments/5045036678"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:58Z",
+        "completed_at": "2026-07-27T22:56:59Z",
+        "exit_code": 0,
+        "stdout_sha256": "bc7d000bf52743b888ead0dd0045550597c515f7c8ec6ccc3f3968f4861099e8",
+        "stdout_size_bytes": 4755,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "accepted-current comment 5045036678 live 读取。",
+        "status": "passed"
+      },
+      {
+        "id": "live-issue-118",
+        "group": "entry",
+        "argv": [
+          "gh",
+          "issue",
+          "view",
+          "118",
+          "--repo",
+          "castbox/guru-trellis",
+          "--json",
+          "number,state,title,body,url,updatedAt"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:57Z",
+        "completed_at": "2026-07-27T22:56:58Z",
+        "exit_code": 0,
+        "stdout_sha256": "847f6e31361952034c04e9060ba4f9c9ed834ee95ec851bf4e708bc6765f95f2",
+        "stdout_size_bytes": 16832,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Issue #118 live OPEN 正文已读取。",
+        "status": "passed"
+      },
+      {
+        "id": "live-issue-state-matrix",
+        "group": "entry",
+        "argv": [
+          "gh",
+          "issue",
+          "list",
+          "--repo",
+          "castbox/guru-trellis",
+          "--state",
+          "all",
+          "--limit",
+          "200",
+          "--json",
+          "number,state"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:59Z",
+        "completed_at": "2026-07-27T22:57:00Z",
+        "exit_code": 0,
+        "stdout_sha256": "3fc46f0e86cadb5c15179d79640cbefd7cd648ab739fc7e5c62c270f3db8ff40",
+        "stdout_size_bytes": 2728,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "#105 closed；#115/#118/#119/#132 open，边界 current。",
+        "status": "passed"
+      },
+      {
+        "id": "official-custom-workflow",
+        "group": "entry",
+        "argv": [
+          "curl",
+          "-L",
+          "--fail",
+          "--silent",
+          "--show-error",
+          "https://docs.trytrellis.app/advanced/custom-workflow.md"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:02Z",
+        "completed_at": "2026-07-27T22:57:04Z",
+        "exit_code": 0,
+        "stdout_sha256": "2a8c667e41a3d19ee263e2d0b7c24b03396c83158ffaeb2e4778f1d6dd070b38",
+        "stdout_size_bytes": 8705,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "官方 custom workflow 文档 live 读取。",
+        "status": "passed"
+      },
+      {
+        "id": "official-index",
+        "group": "entry",
+        "argv": [
+          "curl",
+          "-L",
+          "--fail",
+          "--silent",
+          "--show-error",
+          "https://docs.trytrellis.app/index.md"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:01Z",
+        "completed_at": "2026-07-27T22:57:02Z",
+        "exit_code": 0,
+        "stdout_sha256": "f8ff29b77e59e09f1756450fd99242e4b0a716dac3b03c76b403120916637c1d",
+        "stdout_size_bytes": 6294,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "官方 Trellis 文档首页 live 读取。",
+        "status": "passed"
+      },
+      {
+        "id": "official-spec-marketplace",
+        "group": "entry",
+        "argv": [
+          "curl",
+          "-L",
+          "--fail",
+          "--silent",
+          "--show-error",
+          "https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:04Z",
+        "completed_at": "2026-07-27T22:57:05Z",
+        "exit_code": 0,
+        "stdout_sha256": "93d5a69a829fac508c7a78418dc37d9db296f438242573cedd0dcfcf335d5f91",
+        "stdout_size_bytes": 8611,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "官方 spec marketplace 文档 live 读取。",
+        "status": "passed"
+      },
+      {
+        "id": "planning-approval",
+        "group": "entry",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-planning-approval.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task",
+          "--require-exit",
+          "approved"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:37Z",
+        "completed_at": "2026-07-27T22:56:50Z",
+        "exit_code": 0,
+        "stdout_sha256": "b100fb1b7c949d9b14c159a4f97b907187cbaa08c979d61db8ec69f37d46eca2",
+        "stdout_size_bytes": 738,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "规划批准 schema/current digest/explicit review/ambiguity/fixed-scope evidence 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "protected-surfaces-no-diff",
+        "group": "entry",
+        "argv": [
+          "git",
+          "diff",
+          "--exit-code",
+          "origin/main",
+          "--",
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md",
+          "trellis/presets/guru-team/overlays",
+          ".agents/skills/trellis-finish-work",
+          ".codex/skills/trellis-finish-work",
+          ".codex/prompts/trellis-finish-work.md",
+          ".claude/commands/trellis/finish-work.md",
+          ".cursor/commands/trellis-finish-work.md",
+          ".trellis/scripts/task.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:06Z",
+        "completed_at": "2026-07-27T22:57:06Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "global workflows、upstream Finish family、preset overlays、official task.py 对 base 无 diff。",
+        "status": "passed"
+      },
+      {
+        "id": "remote-main-head",
+        "group": "entry",
+        "argv": [
+          "git",
+          "ls-remote",
+          "origin",
+          "refs/heads/main"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:55Z",
+        "completed_at": "2026-07-27T22:56:57Z",
+        "exit_code": 0,
+        "stdout_sha256": "a499cc1e2b41a787817a1db828ae742ce30dbf56286399fc21b0cebe7e4c3323",
+        "stdout_size_bytes": 57,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "远端 main 仍为 7820a9ee。",
+        "status": "passed"
+      },
+      {
+        "id": "repository-cache-inventory",
+        "group": "entry",
+        "argv": [
+          "find",
+          ".",
+          "-type",
+          "f",
+          "(",
+          "-name",
+          "*.pyc",
+          "-o",
+          "-name",
+          "*.pyo",
+          ")",
+          "-o",
+          "-type",
+          "d",
+          "-name",
+          "__pycache__"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:07Z",
+        "completed_at": "2026-07-27T22:57:07Z",
+        "exit_code": 0,
+        "stdout_sha256": "f3afd5f2b8cc1e5d1e6332bf13f94709ecfcc67581b8b5aedffeb598b773b074",
+        "stdout_size_bytes": 1022,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "预清理发现两个 reviewer-created ignored cache roots。",
+        "status": "cleanup_required"
+      },
+      {
+        "id": "repository-heads",
+        "group": "entry",
+        "argv": [
+          "git",
+          "rev-parse",
+          "HEAD",
+          "origin/main"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:55Z",
+        "completed_at": "2026-07-27T22:56:55Z",
+        "exit_code": 0,
+        "stdout_sha256": "4775ea4293c9dbd1022e75ae2c5c1fc6bf1f5849617818fa07ca1add32e5c346",
+        "stdout_size_bytes": 82,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "HEAD=c04ed1d7，origin/main=7820a9ee。",
+        "status": "passed"
+      },
+      {
+        "id": "repository-sidecar-inventory",
+        "group": "entry",
+        "argv": [
+          "find",
+          ".",
+          "-type",
+          "f",
+          "(",
+          "-name",
+          "*.new",
+          "-o",
+          "-name",
+          "*.bak",
+          ")",
+          "-print"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:07Z",
+        "completed_at": "2026-07-27T22:57:07Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "预检查 .new/.bak 为零。",
+        "status": "passed"
+      },
+      {
+        "id": "repository-status-before",
+        "group": "entry",
+        "argv": [
+          "git",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:57Z",
+        "completed_at": "2026-07-27T22:56:57Z",
+        "exit_code": 0,
+        "stdout_sha256": "6258a744e1d2457ef5e6a659eda71fe0872648a9d39dc8529eb3520916b4b354",
+        "stdout_size_bytes": 1660,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "记录正式检查前 17 tracked + 6 untracked 既有路径。",
+        "status": "passed"
+      },
+      {
+        "id": "task-validate",
+        "group": "entry",
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:55Z",
+        "completed_at": "2026-07-27T22:56:55Z",
+        "exit_code": 0,
+        "stdout_sha256": "53258e0eefd6d7cbd1d1af4e22029d99c1893edd325760ec743864222d862c58",
+        "stdout_size_bytes": 311,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "task.py validate 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "workspace-boundary",
+        "group": "entry",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:56:35Z",
+        "completed_at": "2026-07-27T22:56:36Z",
+        "exit_code": 0,
+        "stdout_sha256": "3e65e95eb395450fe649ea6acdfa80fa76acd6c800c4240cfea391e6f2b9acf7",
+        "stdout_size_bytes": 2428,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "工作区边界通过；expected/actual worktree 一致、source checkout clean、无 suspicious source artifact。",
+        "status": "passed"
+      },
+      {
+        "id": "codex-live-trusted-root",
+        "group": "eval_codex",
+        "argv": [
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "codex",
+          "--case",
+          "publication-review-stale",
+          "--run-root",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/runs/codex-live",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:01:56Z",
+        "completed_at": "2026-07-27T23:02:35Z",
+        "exit_code": 0,
+        "stdout_sha256": "a99c60ca7b5f3620e7784297d42945db1bfbd56ecf4d15bc838879ca5ee9f06a",
+        "stdout_size_bytes": 1261,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "runner rc=0；structured run/case 后续 audit 为 passed。",
+        "status": "passed"
+      },
+      {
+        "id": "claude-live-input-protocol",
+        "group": "eval_other",
+        "argv": [
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "claude",
+          "--case",
+          "publication-review-stale",
+          "--run-root",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/runs/claude-live",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:01:56Z",
+        "completed_at": "2026-07-27T23:05:04Z",
+        "exit_code": 0,
+        "stdout_sha256": "8f84e9eb001a838801f361ba7bddede273af7c0c554194bfcc6f41d0440362b1",
+        "stdout_size_bytes": 820,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "runner rc=0 但 structured execution_error；外部 401，不计 pass。",
+        "status": "external_residual"
+      },
+      {
+        "id": "cursor-live-unsupported",
+        "group": "eval_other",
+        "argv": [
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "cursor",
+          "--case",
+          "publication-review-stale",
+          "--run-root",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/runs/cursor-live",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:05:04Z",
+        "completed_at": "2026-07-27T23:05:05Z",
+        "exit_code": 0,
+        "stdout_sha256": "2fc8eb25ba5e8545f75158f7abe1d78c277fcc451717ac75d4a8f6e29e97cab3",
+        "stdout_size_bytes": 807,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "runner rc=0 且 structured unsupported；预期 terminal。",
+        "status": "expected_platform_terminal"
+      },
+      {
+        "id": "installed-shared-real-wrapper",
+        "group": "eval_shared",
+        "argv": [
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/.trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/runs/installed-shared",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:58Z",
+        "completed_at": "2026-07-27T23:03:32Z",
+        "exit_code": 0,
+        "stdout_sha256": "ae04e703b463e39cfe8f41bb4398597d8faf6ce00be89a7d7b917d1f5f24fc53",
+        "stdout_size_bytes": 7662,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "installed shared real-wrapper corpus 8/8 passed。",
+        "status": "passed"
+      },
+      {
+        "id": "source-shared-real-wrapper",
+        "group": "eval_shared",
+        "argv": [
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/runs/source-shared",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:01:56Z",
+        "completed_at": "2026-07-27T23:02:58Z",
+        "exit_code": 0,
+        "stdout_sha256": "431bfb18fc549a790fd17b4209d278faea47c1830278e5495e256a662b8ae99e",
+        "stdout_size_bytes": 7635,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "source shared real-wrapper corpus 8/8 passed。",
+        "status": "passed"
+      },
+      {
+        "id": "finalizer-owner-package",
+        "group": "packages_preset",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:54Z",
+        "completed_at": "2026-07-27T22:57:56Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "782346f98622c180185bb86b43a900e3ff65e59f7e966090357653c9f8fa108f",
+        "stderr_size_bytes": 103,
+        "summary": "guru-finalize-task package 5/5 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "installed-package-validator",
+        "group": "packages_preset",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:00:23Z",
+        "completed_at": "2026-07-27T23:00:24Z",
+        "exit_code": 0,
+        "stdout_sha256": "906e4ce2e0ca4b62de1924cf1caa5b01e8a751b956c2e7490805198d5750280f",
+        "stdout_size_bytes": 1535,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "installed validator passed，2659 managed，0 sidecar/removal/conflict。",
+        "status": "passed"
+      },
+      {
+        "id": "preset-installer-tests",
+        "group": "packages_preset",
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:58:12Z",
+        "completed_at": "2026-07-27T23:00:19Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "91511b514a361141afcb65eebc94006c85c2c8228a72450fb3b982afe328873c",
+        "stderr_size_bytes": 809,
+        "summary": "preset installer 45/45 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "publication-verification-owner-packages",
+        "group": "packages_preset",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:56Z",
+        "completed_at": "2026-07-27T22:58:12Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "6e99f49ff35ebfad6937ac8d211ba62e06771c19e0198fe0b8f11d67e820c46c",
+        "stderr_size_bytes": 128,
+        "summary": "#116/#117 owner packages 28/28 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "source-package-validator",
+        "group": "packages_preset",
+        "argv": [
+          "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:00:22Z",
+        "completed_at": "2026-07-27T23:00:23Z",
+        "exit_code": 0,
+        "stdout_sha256": "1c6b31cc2c6df8d7682eb57b6097bdfed893eab3bdaf4c9d4fe42800f5880d2a",
+        "stdout_size_bytes": 1346,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "source validator passed，13 active，markers=12/46/27。",
+        "status": "passed"
+      },
+      {
+        "id": "upstream-ownership-tests",
+        "group": "packages_preset",
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:00:20Z",
+        "completed_at": "2026-07-27T23:00:21Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "4eff3d32c5a36b62615042452fd4e3746b9aac91fc030498d15d27aa2aef7137",
+        "stderr_size_bytes": 107,
+        "summary": "ownership unit tests 9/9 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "upstream-ownership-validator",
+        "group": "packages_preset",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+          "--repo",
+          ".",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:00:22Z",
+        "completed_at": "2026-07-27T23:00:22Z",
+        "exit_code": 0,
+        "stdout_sha256": "5403ca759ffa967dbcc231bab5f5d000f8b9da2e12bfb82789458eacea1183e5",
+        "stdout_size_bytes": 1731,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "ownership validator status=ok，frozen=43，active Skills=13，planned=0。",
+        "status": "passed"
+      },
+      {
+        "id": "effective-full-diff-check",
+        "group": "review",
+        "argv": [
+          "git",
+          "diff",
+          "--check",
+          "origin/main",
+          "--",
+          ".",
+          ":(exclude).trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:10:21Z",
+        "completed_at": "2026-07-27T23:10:21Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "排除 immutable Round 9 raw evidence 后完整 effective diff whitespace check 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "finalizer-interface-docs-audit-rerun",
+        "group": "review",
+        "argv": [
+          "python3",
+          "-c",
+          "import json,pathlib,sys; i=json.loads(pathlib.Path(\"trellis/skills/guru-team/packages/guru-finalize-task/interface.json\").read_text()); p=i[\"public_contracts\"]; profiles=p[\"input\"][\"profiles\"]; outputs=p[\"outputs\"]; assert len(profiles)==7 and len(outputs)==6; ids={x[\"id\"] for x in profiles}; assert \"standalone_verification_not_required\" in ids; exits={x[\"exit_id\"] for x in outputs}; assert exits=={\"verification_required\",\"publication_review_stale\",\"resume_finalization\",\"reprepare_required\",\"published\",\"blocked\"}; registry=json.loads(pathlib.Path(\"trellis/skills/guru-team/registry.json\").read_text()); row=next(x for x in registry[\"skills\"] if x[\"id\"]==\"guru-finalize-task\"); assert row[\"state\"]==\"active\" and row[\"workflow_integration_state\"]==\"deferred\"; workflow=pathlib.Path(\"trellis/workflows/guru-team/workflow.md\").read_text(); assert \"\\\"skill\\\":\\\"guru-finalize-task\\\"\" not in workflow; docs=[\"README.md\",\"trellis/presets/guru-team/README.md\",\"trellis/workflows/guru-team/README.md\",\".trellis/spec/workflow/skill-package-contract.md\",\".trellis/spec/workflow/workflow-contract.md\",\".trellis/spec/workflow/quality-guidelines.md\",\".trellis/spec/preset/upstream-ownership.md\"]; assert all(\"guru-finalize-task\" in pathlib.Path(x).read_text() for x in docs); print(json.dumps({\"profiles\":sorted(ids),\"profile_count\":len(ids),\"exits\":sorted(exits),\"exit_count\":len(exits),\"registry_state\":row[\"state\"],\"workflow_integration_state\":row[\"workflow_integration_state\"],\"global_marker_present\":False,\"docs_checked\":docs},sort_keys=True))"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:10:54Z",
+        "completed_at": "2026-07-27T23:10:54Z",
+        "exit_code": 0,
+        "stdout_sha256": "ec1862f8e50fcdf0d186dc84f93be163603da30120200dee0684f35b582c4b99",
+        "stdout_size_bytes": 774,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "7 profiles/6 exits、active+deferred、无 global marker、durable docs surfaces 一致。",
+        "status": "passed_superseding"
+      },
+      {
+        "id": "finalizer-interface-docs-audit",
+        "group": "review",
+        "argv": [
+          "python3",
+          "-c",
+          "import json,pathlib,re; i=json.loads(pathlib.Path(\"trellis/skills/guru-team/packages/guru-finalize-task/interface.json\").read_text()); p=i[\"public_contracts\"]; profiles=p[\"input\"][\"profiles\"]; outputs=p[\"outputs\"]; assert len(profiles)==7 and len(outputs)==6; ids={x[\"id\"] for x in profiles}; assert \"standalone_verification_not_required\" in ids; exits={x[\"exit_id\"] for x in outputs}; assert exits=={\"verification_required\",\"publication_review_stale\",\"resume_finalization\",\"reprepare_required\",\"published\",\"blocked\"}; registry=json.loads(pathlib.Path(\"trellis/skills/guru-team/registry.json\").read_text()); row=next(x for x in registry[\"skills\"] if x[\"id\"]==\"guru-finalize-task\"); assert row[\"status\"]==\"active\" and row[\"workflow_integration_state\"]==\"deferred\"; workflow=pathlib.Path(\"trellis/workflows/guru-team/workflow.md\").read_text(); assert \"\\\"skill\\\":\\\"guru-finalize-task\\\"\" not in workflow; docs=[\"README.md\",\"trellis/presets/guru-team/README.md\",\"trellis/workflows/guru-team/README.md\",\".trellis/spec/workflow/skill-package-contract.md\",\".trellis/spec/workflow/workflow-contract.md\",\".trellis/spec/workflow/quality-guidelines.md\",\".trellis/spec/preset/upstream-ownership.md\"]; assert all(\"guru-finalize-task\" in pathlib.Path(x).read_text() for x in docs); print(json.dumps({\"profiles\":sorted(ids),\"profile_count\":len(ids),\"exits\":sorted(exits),\"exit_count\":len(exits),\"registry_status\":row[\"status\"],\"workflow_integration_state\":row[\"workflow_integration_state\"],\"global_marker_present\":False,\"docs_checked\":docs},sort_keys=True))"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:10:22Z",
+        "completed_at": "2026-07-27T23:10:23Z",
+        "exit_code": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "42387a87846ee03de9f0bbdaa3d0fb3d5ab14ade2de1017ed6a9b63aafd8370f",
+        "stderr_size_bytes": 93,
+        "summary": "setup_error：registry live field 为 state，不是 status。",
+        "status": "setup_error"
+      },
+      {
+        "id": "full-diff-name-status",
+        "group": "review",
+        "argv": [
+          "git",
+          "diff",
+          "--name-status",
+          "origin/main"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:10:22Z",
+        "completed_at": "2026-07-27T23:10:22Z",
+        "exit_code": 0,
+        "stdout_sha256": "aaba871ac7ac17938a99ebe8501ad32189da3b92c4b17ed4cfcfbec995d41229",
+        "stdout_size_bytes": 44543,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "532 tracked paths：474 added、58 modified、0 deleted。",
+        "status": "passed"
+      },
+      {
+        "id": "full-diff-stat",
+        "group": "review",
+        "argv": [
+          "git",
+          "diff",
+          "--stat",
+          "origin/main"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:10:22Z",
+        "completed_at": "2026-07-27T23:10:22Z",
+        "exit_code": 0,
+        "stdout_sha256": "296fc3fa3fc6235c1fffa009bf4bfe95baffb13a56703318b9f0090bc927ee40",
+        "stdout_size_bytes": 33162,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "当前 tracked base diff 为 532 files，76879 insertions，4767 deletions。",
+        "status": "passed"
+      },
+      {
+        "id": "sensitive-material-scan",
+        "group": "review",
+        "argv": [
+          "sh",
+          "-c",
+          "git diff --no-ext-diff --unified=0 origin/main -- . \":(exclude).trellis/tasks/07-26-118-guru-finalize-task/reviews/**\" | rg -n -- \"-----BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{32,}|postgres(ql)?://[^[:space:]]+:[^[:space:]@]+@\" || true"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:10:23Z",
+        "completed_at": "2026-07-27T23:10:23Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "effective diff 未命中常见 credential/private-key/database URL pattern。",
+        "status": "passed"
+      },
+      {
+        "id": "task-delta-profile-reconciliation",
+        "group": "review",
+        "argv": [
+          "sh",
+          "-c",
+          "rg -n \"standalone_verification_not_required|seven input profiles|七个 distinct|七个.*profiles|six input profiles|六个 input profiles|六 profiles\" .trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md .trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md .trellis/tasks/07-26-118-guru-finalize-task/prd.md .trellis/tasks/07-26-118-guru-finalize-task/design.md .trellis/tasks/07-26-118-guru-finalize-task/implement.md"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:10:23Z",
+        "completed_at": "2026-07-27T23:10:23Z",
+        "exit_code": 0,
+        "stdout_sha256": "3799b8b4b09deefd06f8885764be310a5f07e03970196244644a3c1864e9f907",
+        "stdout_size_bytes": 1425,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "六到七 profile 的 normal-path finding lifecycle 与 task-history reconciliation 已定位。",
+        "status": "passed"
+      },
+      {
+        "id": "closeout-transaction-matrix",
+        "group": "runtime",
+        "argv": [
+          "python3",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "CloseoutTransactionContractTest"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:12:10Z",
+        "completed_at": "2026-07-27T23:14:21Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "420cc6f24435ee54a867e9fd9390762082f0cb20e0483326cfe1ad2c9faea070",
+        "stderr_size_bytes": 1598,
+        "summary": "CloseoutTransactionContractTest 104/104 通过，覆盖 #105 matrix。",
+        "status": "passed"
+      },
+      {
+        "id": "focused-finalization-recovery-rerun",
+        "group": "runtime",
+        "argv": [
+          "python3",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "CloseoutTransactionContractTest.test_prepared_finalization_gate_recorder_reenters_checker",
+          "CloseoutTransactionContractTest.test_prepared_finalization_gate_reentry_rejects_arbitrary_metadata",
+          "CloseoutTransactionContractTest.test_real_workflow_verified_recorder_reenters_finalizer_wrapper",
+          "CloseoutTransactionContractTest.test_real_standalone_not_required_recorder_reenters_finalizer_wrapper"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:00:02Z",
+        "completed_at": "2026-07-27T23:00:07Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "133c18a28e9612ec44bad2a0ab0c55b92b3f4bd775000411b67314937acce78a",
+        "stderr_size_bytes": 102,
+        "summary": "纠正名称后 prepared gate 与 verified/not_required real wrapper re-entry 4/4 通过。",
+        "status": "passed_superseding"
+      },
+      {
+        "id": "focused-finalization-recovery",
+        "group": "runtime",
+        "argv": [
+          "python3",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "CloseoutTransactionContractTest.test_prepared_finalization_gate_recorder_reenters_checker",
+          "CloseoutTransactionContractTest.test_prepared_finalization_gate_reentry_rejects_arbitrary_metadata",
+          "CloseoutTransactionContractTest.test_verification_reentry_verified_routes_to_published",
+          "CloseoutTransactionContractTest.test_verification_reentry_standalone_not_required_routes_to_published"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:54Z",
+        "completed_at": "2026-07-27T22:57:55Z",
+        "exit_code": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "f9f2d2321295b1b323ca00463be328536169b415556e149c198c48f910ad3943",
+        "stderr_size_bytes": 1014,
+        "summary": "setup_error：两条不存在的 test method 名；另两条 prepared gate tests 已运行。",
+        "status": "setup_error"
+      },
+      {
+        "id": "runtime-full-matrix",
+        "group": "runtime",
+        "argv": [
+          "python3",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:55Z",
+        "completed_at": "2026-07-27T23:01:32Z",
+        "exit_code": 0,
+        "stdout_sha256": "0f8fecfd9b8ae462f88bbfe584094f2ac1056a7f55364e08d442dfbe1e5e9ec4",
+        "stdout_size_bytes": 2548,
+        "stderr_sha256": "c6f6365d3674dcfc497d8a191f8c6cdce7aaf793d2b596c11033d3f6cddf4988",
+        "stderr_size_bytes": 4451,
+        "summary": "626 passed，13 skipped。",
+        "status": "passed"
+      },
+      {
+        "id": "focused-codex-repo-external-regression",
+        "group": "skills",
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "Stage0PublicInvocationTests.test_codex_repo_external_execution_root_runs_real_finalizer_wrapper"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:57:54Z",
+        "completed_at": "2026-07-27T22:58:05Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "eb2442560c44fe08913a11ab0d1c256681aa0d4c2150d10175f6f3bcfddfa4dc",
+        "stderr_size_bytes": 208,
+        "summary": "新增 repo-external writable-root real-wrapper regression 1/1 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "skill-package-graph",
+        "group": "skills",
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T22:58:05Z",
+        "completed_at": "2026-07-27T23:05:49Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "187d73f1a5cdab2d723eeec7d2c0224de9444a6140d072616fad04ccd74459d9",
+        "stderr_size_bytes": 4510,
+        "summary": "full Skill package graph 180/180 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "adapter-canonical-dogfood-parity",
+        "group": "static",
+        "argv": [
+          "cmp",
+          "-s",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:46Z",
+        "completed_at": "2026-07-27T23:02:46Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical/dogfood adapter byte-identical。",
+        "status": "passed"
+      },
+      {
+        "id": "bash-syntax",
+        "group": "static",
+        "argv": [
+          "sh",
+          "-c",
+          "find trellis/workflows/guru-team/scripts/bash trellis/presets/guru-team/scripts/bash trellis/skills/guru-team/packages/guru-finalize-task/scripts .trellis/guru-team/skills/packages/guru-finalize-task/scripts .agents/skills/guru-finalize-task/scripts .codex/skills/guru-finalize-task/scripts .claude/skills/guru-finalize-task/scripts .cursor/skills/guru-finalize-task/scripts -type f -name \"*.sh\" -print0 | xargs -0 bash -n"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:01:18Z",
+        "completed_at": "2026-07-27T23:01:18Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "相关 Bash syntax 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "corpus-byte-identity",
+        "group": "static",
+        "argv": [
+          "shasum",
+          "-a",
+          "256",
+          "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+          ".agents/skills/guru-finalize-task/evals/evals.json",
+          ".codex/skills/guru-finalize-task/evals/evals.json",
+          ".claude/skills/guru-finalize-task/evals/evals.json",
+          ".cursor/skills/guru-finalize-task/evals/evals.json"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:46Z",
+        "completed_at": "2026-07-27T23:02:46Z",
+        "exit_code": 0,
+        "stdout_sha256": "b6eb7bf145fdd4d7b3e6f4a7780ff0a6cd8e6ea6f227f665ae6b206bad04240d",
+        "stdout_size_bytes": 740,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "六份 eval corpus SHA-256 一致。",
+        "status": "passed"
+      },
+      {
+        "id": "dogfood-overlay-drift",
+        "group": "static",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:46Z",
+        "completed_at": "2026-07-27T23:02:47Z",
+        "exit_code": 0,
+        "stdout_sha256": "b3bafca507c4743e965cd81eed5d8ee845c91589afaf38a18f1702ef854e4bd5",
+        "stdout_size_bytes": 1790,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "当前 dogfood overlay drift 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "expected-exit-boundary",
+        "group": "static",
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "Stage0PublicInvocationTests.test_all_24_stage0_cases_do_not_feed_expected_exit_to_wrappers",
+          "Stage0PublicInvocationTests.test_semantic_owner_recipe_is_independent_of_expected_exit",
+          "Stage0PublicInvocationTests.test_stage0_parser_has_no_caller_selected_exit_argument"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:01:19Z",
+        "completed_at": "2026-07-27T23:01:35Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "22533290e5ab3d11fde317622350b8287939de749512a500ee2c080a026feb57",
+        "stderr_size_bytes": 1793,
+        "summary": "3/3 证明 expected_exit 不进入 wrapper/native request，actual exit 后断言。",
+        "status": "passed"
+      },
+      {
+        "id": "extension-manifest-adapter-binding-rerun",
+        "group": "static",
+        "argv": [
+          "python3",
+          "-c",
+          "import hashlib,json,pathlib; m=json.loads(pathlib.Path(\".trellis/guru-team/extension.json\").read_text()); wanted=\"trellis/skills/guru-team/adapters/eval/native_adapter.py\"; rows=[x for x in m[\"skill_packages\"][\"files\"] if x[\"source\"]==wanted]; assert len(rows)==1; p=pathlib.Path(rows[0][\"path\"]); actual=hashlib.sha256(p.read_bytes()).hexdigest(); assert rows[0][\"sha256\"]==actual; print(json.dumps({\"path\":str(p),\"manifest_sha256\":rows[0][\"sha256\"],\"actual_sha256\":actual,\"status\":\"ok\"},sort_keys=True))"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:04:14Z",
+        "completed_at": "2026-07-27T23:04:14Z",
+        "exit_code": 0,
+        "stdout_sha256": "973b34d45f61829893b55d5e2839b32e83f5edabf3a3814132556f2861fe47f2",
+        "stdout_size_bytes": 258,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "live schema skill_packages.files 下 adapter digest 与实际 bytes 一致。",
+        "status": "passed_superseding"
+      },
+      {
+        "id": "extension-manifest-adapter-binding",
+        "group": "static",
+        "argv": [
+          "python3",
+          "-c",
+          "import hashlib,json,pathlib; m=json.loads(pathlib.Path(\".trellis/guru-team/extension.json\").read_text()); wanted=\"trellis/skills/guru-team/adapters/eval/native_adapter.py\"; rows=[x for x in m[\"install\"][\"managed_assets\"] if x[\"source\"]==wanted]; assert len(rows)==1; p=pathlib.Path(rows[0][\"path\"]); actual=hashlib.sha256(p.read_bytes()).hexdigest(); assert rows[0][\"sha256\"]==actual; print(json.dumps({\"path\":str(p),\"manifest_sha256\":rows[0][\"sha256\"],\"actual_sha256\":actual,\"status\":\"ok\"},sort_keys=True))"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:46Z",
+        "completed_at": "2026-07-27T23:02:46Z",
+        "exit_code": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "2ff982eceda86094c1dd70384061bd86b48553334c3b7730b4ec6d5facbb517a",
+        "stderr_size_bytes": 128,
+        "summary": "setup_error：probe 使用错误 manifest locator install.managed_assets。",
+        "status": "setup_error"
+      },
+      {
+        "id": "json-syntax",
+        "group": "static",
+        "argv": [
+          "sh",
+          "-c",
+          "find trellis/skills/guru-team/packages/guru-finalize-task .trellis/guru-team/skills/packages/guru-finalize-task .agents/skills/guru-finalize-task .codex/skills/guru-finalize-task .claude/skills/guru-finalize-task .cursor/skills/guru-finalize-task -type f -name \"*.json\" -print0 | xargs -0 -n1 jq empty"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:01:18Z",
+        "completed_at": "2026-07-27T23:01:19Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "finalizer canonical/installed/platform JSON syntax 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "parity-agents",
+        "group": "static",
+        "argv": [
+          "diff",
+          "-qr",
+          "trellis/skills/guru-team/packages/guru-finalize-task",
+          ".agents/skills/guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:45Z",
+        "completed_at": "2026-07-27T23:02:45Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical vs Agents package byte-identical。",
+        "status": "passed"
+      },
+      {
+        "id": "parity-claude",
+        "group": "static",
+        "argv": [
+          "diff",
+          "-qr",
+          "trellis/skills/guru-team/packages/guru-finalize-task",
+          ".claude/skills/guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:45Z",
+        "completed_at": "2026-07-27T23:02:45Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical vs Claude package byte-identical。",
+        "status": "passed"
+      },
+      {
+        "id": "parity-codex",
+        "group": "static",
+        "argv": [
+          "diff",
+          "-qr",
+          "trellis/skills/guru-team/packages/guru-finalize-task",
+          ".codex/skills/guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:45Z",
+        "completed_at": "2026-07-27T23:02:45Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical vs Codex package byte-identical。",
+        "status": "passed"
+      },
+      {
+        "id": "parity-cursor",
+        "group": "static",
+        "argv": [
+          "diff",
+          "-qr",
+          "trellis/skills/guru-team/packages/guru-finalize-task",
+          ".cursor/skills/guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:46Z",
+        "completed_at": "2026-07-27T23:02:46Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical vs Cursor package byte-identical。",
+        "status": "passed"
+      },
+      {
+        "id": "parity-installed",
+        "group": "static",
+        "argv": [
+          "diff",
+          "-qr",
+          "trellis/skills/guru-team/packages/guru-finalize-task",
+          ".trellis/guru-team/skills/packages/guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:45Z",
+        "completed_at": "2026-07-27T23:02:45Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical vs installed package byte-identical。",
+        "status": "passed"
+      },
+      {
+        "id": "python-compile",
+        "group": "static",
+        "argv": [
+          "python3",
+          "-m",
+          "py_compile",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:01:16Z",
+        "completed_at": "2026-07-27T23:01:17Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "适用 Python compile 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "runtime-canonical-dogfood-parity",
+        "group": "static",
+        "argv": [
+          "cmp",
+          "-s",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:02:46Z",
+        "completed_at": "2026-07-27T23:02:46Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "canonical/dogfood runtime byte-identical。",
+        "status": "passed"
+      },
+      {
+        "id": "shared-adapter-parsing",
+        "group": "static",
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "Stage0PublicInvocationTests.test_production_shared_adapter_stages_exact_allowlist_and_real_wrappers",
+          "Stage0PublicInvocationTests.test_shared_adapter_executes_checker_passed_semantic_wrapper"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:01:35Z",
+        "completed_at": "2026-07-27T23:02:45Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "f23405201a3515157e45ebf3cccf21f8b0d5cedf923584ab62e5f953a8a92ecf",
+        "stderr_size_bytes": 319,
+        "summary": "2/2 真实 shared adapter parsing/wrapper 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "clean-throwaway-structured-audit",
+        "group": "terminal",
+        "argv": [
+          "sh",
+          "-c",
+          "set -eu; root=\"/tmp/guru118-phase2-codex-trace-fix.5KAQlU/throwaway-full\"; test -d \"$root/project\"; rg -q \"Verified public marketplace discovery plus local unpublished workflow sample\" \"/tmp/guru118-phase2-codex-trace-fix.5KAQlU/distribution/clean-throwaway-full-chain.stdout\"; test -z \"$(find \"$root\" -type f \\( -name \"*.new\" -o -name \"*.bak\" \\) -print -quit)\"; test -z \"$(find \"$root\" \\( -type d -name __pycache__ -o -type f \\( -name \"*.pyc\" -o -name \"*.pyo\" \\) \\) -print -quit)\"; for p in \"$root/project/.trellis/guru-team/skills/packages/guru-finalize-task\" \"$root/project/.agents/skills/guru-finalize-task\" \"$root/project/.codex/skills/guru-finalize-task\" \"$root/project/.claude/skills/guru-finalize-task\" \"$root/project/.cursor/skills/guru-finalize-task\"; do test -d \"$p\"; done; printf \"%s\\n\" \"status=passed terminal=verified_public_marketplace_and_local_unpublished_sample sidecars=0 caches=0 platform_packages=5\""
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:15:46Z",
+        "completed_at": "2026-07-27T23:15:53Z",
+        "exit_code": 0,
+        "stdout_sha256": "5da34185df4955ab2de0824e01bb56653f90c02c9dbfc66c9233ffe5991fc355",
+        "stdout_size_bytes": 120,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "throwaway terminal、零 sidecar/cache、五个 installed package roots 通过。",
+        "status": "passed"
+      },
+      {
+        "id": "repository-status-after",
+        "group": "terminal",
+        "argv": [
+          "git",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:15:53Z",
+        "completed_at": "2026-07-27T23:15:54Z",
+        "exit_code": 0,
+        "stdout_sha256": "6258a744e1d2457ef5e6a659eda71fe0872648a9d39dc8529eb3520916b4b354",
+        "stdout_size_bytes": 1660,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "清理后 status 与检查前 baseline byte-identical。",
+        "status": "passed"
+      },
+      {
+        "id": "repository-terminal-hygiene",
+        "group": "terminal",
+        "argv": [
+          "sh",
+          "-c",
+          "find . \\( -type d -name __pycache__ -o -type f \\( -name \"*.pyc\" -o -name \"*.pyo\" -o -name \"*.new\" -o -name \"*.bak\" \\) \\) -print"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:15:53Z",
+        "completed_at": "2026-07-27T23:15:53Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "终态 repo cache/.new/.bak scan 为空。",
+        "status": "passed"
+      },
+      {
+        "id": "reviewer-cache-cleanup",
+        "group": "terminal",
+        "argv": [
+          "sh",
+          "-c",
+          "set -eu; git check-ignore .trellis/scripts/common/__pycache__ trellis/presets/guru-team/scripts/python/__pycache__ >/dev/null; rm -rf -- .trellis/scripts/common/__pycache__ trellis/presets/guru-team/scripts/python/__pycache__"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:15:53Z",
+        "completed_at": "2026-07-27T23:15:53Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "只删除两个本 reviewer 生成且 gitignored 的精确 cache roots。",
+        "status": "passed"
+      },
+      {
+        "id": "source-checkout-status-after",
+        "group": "terminal",
+        "argv": [
+          "git",
+          "-C",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:15:54Z",
+        "completed_at": "2026-07-27T23:15:54Z",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "source checkout 终态 clean。",
+        "status": "passed"
+      },
+      {
+        "id": "workspace-boundary-after",
+        "group": "terminal",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "cwd": "<task-worktree>",
+        "started_at": "2026-07-27T23:15:54Z",
+        "completed_at": "2026-07-27T23:15:54Z",
+        "exit_code": 0,
+        "stdout_sha256": "3e65e95eb395450fe649ea6acdfa80fa76acd6c800c4240cfea391e6f2b9acf7",
+        "stdout_size_bytes": 2428,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "终态 boundary 仍通过。",
+        "status": "passed"
+      }
+    ],
+    "intentional_omissions": [
+      {
+        "id": "current-worktree-all-platform-apply",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/apply.sh",
+          "--repo",
+          ".",
+          "--all-platforms",
+          "--json"
+        ],
+        "cwd": "<task-worktree>",
+        "execution_state": "omitted",
+        "exit_code": null,
+        "stdout_sha256": null,
+        "stdout_size_bytes": null,
+        "stderr_sha256": null,
+        "stderr_size_bytes": null,
+        "reason": "Owned-output boundary forbids editing .trellis/guru-team/extension.json; exact current bytes were exercised in a repository-external replica, while current dogfood drift and manifest binding were checked read-only.",
+        "impact": "none; replica apply plus current drift/manifest/parity cover the intended behavior without provenance timestamp churn."
+      },
+      {
+        "id": "remote-exact-feature-ref-verification",
+        "argv": [
+          "<guru-finalize-task>",
+          "verification_required",
+          "->",
+          "guru-verify-extension-installation"
+        ],
+        "cwd": "<not-executed>",
+        "execution_state": "omitted",
+        "exit_code": null,
+        "stdout_sha256": null,
+        "stdout_size_bytes": null,
+        "stderr_sha256": null,
+        "stderr_size_bytes": null,
+        "reason": "Feature ref has not been pushed and Phase 2 is not authorized to push or publish.",
+        "impact": "downstream finalization owner precondition; not a current implementation finding."
+      },
+      {
+        "id": "phase2-recorder",
+        "argv": [
+          "<record-phase2-check>",
+          "--input",
+          "<main-session-authored-semantic-input>"
+        ],
+        "cwd": "<task-worktree>",
+        "execution_state": "omitted",
+        "exit_code": null,
+        "stdout_sha256": null,
+        "stdout_size_bytes": null,
+        "stderr_sha256": null,
+        "stderr_size_bytes": null,
+        "reason": "The handoff explicitly reserves semantic recording to the main session.",
+        "impact": "This raw report recommends one exit but does not claim Guru pass."
+      },
+      {
+        "id": "dedicated-static-type-checker",
+        "argv": [
+          "<repository-configured-type-checker>"
+        ],
+        "cwd": "<task-worktree>",
+        "execution_state": "omitted",
+        "exit_code": null,
+        "stdout_sha256": null,
+        "stdout_size_bytes": null,
+        "stderr_sha256": null,
+        "stderr_size_bytes": null,
+        "reason": "Repository defines no standalone static type-check command.",
+        "impact": "Applicable Python py_compile, schema/interface validators and full tests passed."
+      }
+    ],
+    "runner_terminal_status": "complete",
+    "semantic_status": "passed_with_qualified_residuals"
+  },
+  "supersessions": [
+    {
+      "from": "focused-finalization-recovery",
+      "to": "focused-finalization-recovery-rerun",
+      "reason": "Two test method names were stale/nonexistent; the corrected four exact supported tests passed."
+    },
+    {
+      "from": "extension-manifest-adapter-binding",
+      "to": "extension-manifest-adapter-binding-rerun",
+      "reason": "First probe used the wrong live manifest locator; corrected skill_packages.files binding passed."
+    },
+    {
+      "from": "finalizer-interface-docs-audit",
+      "to": "finalizer-interface-docs-audit-rerun",
+      "reason": "First probe used registry status instead of live field state; corrected audit passed."
+    },
+    {
+      "from": "full-committed-diff-check",
+      "to": "effective-full-diff-check",
+      "reason": "The only signal is immutable Round 9 assignment-bound raw trailing whitespace; excluding only that historical evidence yields a clean effective diff."
+    }
+  ],
+  "structured_terminals": {
+    "shared": {
+      "source": {
+        "status": "passed",
+        "cases": 8
+      },
+      "installed": {
+        "status": "passed",
+        "cases": 8
+      },
+      "actual_exits": [
+        "blocked",
+        "publication_review_stale",
+        "published",
+        "reprepare_required",
+        "resume_finalization",
+        "verification_required"
+      ]
+    },
+    "codex": {
+      "runner_exit_code": 0,
+      "run_status": "passed",
+      "case_status": "passed",
+      "actual_exit": "publication_review_stale",
+      "trusted_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+      "execution_root": "/tmp/guru118-phase2-codex-trace-fix.5KAQlU/runs/codex-live/current/publication-review-stale/execution",
+      "execution_root_repository_external": true,
+      "execution_root_authorized": true,
+      "native_request_contains_expected_exit": false,
+      "trace_event_count": 2,
+      "trace_last_kind": "invoke",
+      "wrapper_path_suffix": "public-packages/guru-finalize-task/scripts/invoke.sh",
+      "wrapper_return_code": 0
+    },
+    "claude": {
+      "runner_exit_code": 0,
+      "run_status": "execution_error",
+      "case_status": "execution_error",
+      "classification": "external_auth_residual_not_pass",
+      "api_error_status": 401,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "permission_denials": [],
+      "protocol": "stdin plus single JSON stdout"
+    },
+    "cursor": {
+      "runner_exit_code": 0,
+      "run_status": "unsupported",
+      "case_status": "unsupported",
+      "classification": "expected_supported_terminal_no_semantic_pass",
+      "reason": "authentication unavailable"
+    },
+    "throwaway": {
+      "exit_code": 0,
+      "terminal": "verified_public_marketplace_and_local_unpublished_sample",
+      "stdout_sha256": "bea542cc7b74b1ac451d6cad02d6efc4714abfdb2dd26cb3d2334852fe651bf2",
+      "stdout_size_bytes": 4165550,
+      "stderr_sha256": "66713a6a93e102dba274b2ccc94da333c1822ecea72e7ede42df18c498976dcc",
+      "stderr_size_bytes": 930,
+      "sidecars": 0,
+      "caches": 0
+    }
+  },
+  "finding_closure": {
+    "candidate_id": "C-CODEX-TRACE-WRITE-01",
+    "finding_id": "F-CODEX-TRACE-WRITE-01",
+    "prior_severity": "P1",
+    "current_disposition": "resolved_in_current_diff",
+    "normal_path_proof": "Real Codex trusted-root public-wrapper eval with absolute repository-external run root completed passed/passed. The exact execution root owning native-trace-helper.py, native-trace.json and native-last-message.txt is an authorized --add-dir; actual exit is publication_review_stale; trace ends in real invoke.sh with rc=0."
+  },
+  "findings": {
+    "open_counts": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    },
+    "items": []
+  },
+  "residuals": [
+    {
+      "id": "claude-live-auth",
+      "classification": "external_residual",
+      "blocking": false,
+      "summary": "Claude reached the declared input/JSON protocol but external authentication returned 401 with zero tokens; this is not a pass and not a current-scope implementation finding."
+    },
+    {
+      "id": "remote-exact-ref-verification",
+      "classification": "downstream_finalization_precondition",
+      "blocking": false,
+      "summary": "Exact pushed feature-ref verification remains for #117/#118 after content push; Phase 2 did not push."
+    },
+    {
+      "id": "cursor-unsupported",
+      "classification": "expected_platform_terminal",
+      "blocking": false,
+      "summary": "Cursor returned stable unsupported because authentication is unavailable; no semantic pass was claimed."
+    },
+    {
+      "id": "round9-trailing-whitespace",
+      "classification": "out_of_scope_historical_observation",
+      "blocking": false,
+      "summary": "git diff --check origin/main...HEAD reports one trailing space in immutable Round 9 raw evidence line 203; effective current diff passes and the evidence bytes were not rewritten."
+    }
+  ],
+  "docs_ssot": {
+    "strategy": "ssot_first",
+    "outcome": "consistent_no_new_update_needed",
+    "durable_docs_current": true,
+    "task_delta_merged": true,
+    "current_fix_docs_update_needed": false,
+    "reconciliation": "Durable specs/package contract/README surfaces already require repo-external native trace and real-wrapper execution. The adapter fix restores conformance without changing public behavior. The historical six-to-seven input-profile refinement is recorded by the not-required finding lifecycle and current durable seven-profile contract; it is not a new product-scope expansion.",
+    "task_history_only": [
+      "implementation handoffs",
+      "Phase 2 raw reports and command evidence",
+      "review rounds and finding closure"
+    ],
+    "followups": [
+      "#119 Finish-family global integration and #115 closure",
+      "#132 upstream overlay cleanup",
+      "exact pushed-ref verification in later #117/#118 owner gate"
+    ]
+  },
+  "scope": {
+    "close_issues": [
+      118
+    ],
+    "related_issues": [
+      81,
+      115
+    ],
+    "followup_issues": [
+      119,
+      132
+    ],
+    "preserved_transaction_issue": 105,
+    "excluded": [
+      "hostile/forgery/tamper/attack model",
+      "concurrent finalizers/locks/TOCTOU",
+      "extra fault injection/crash consistency/cross-OS atomicity"
+    ]
+  },
+  "safety_and_operations": {
+    "secrets_found": false,
+    "dependency_impact": false,
+    "ci_cd_impact": false,
+    "container_impact": false,
+    "kubernetes_impact": false,
+    "database_migration_impact": false,
+    "makefile_impact": false,
+    "deployment_or_production_write": false,
+    "distribution_impact": "additive Guru package/runtime/schema/preset assets verified by replica and throwaway install/update/reapply"
+  },
+  "side_effects": {
+    "implementation_files_modified_by_reviewer": false,
+    "github_mutations": false,
+    "commit": false,
+    "push": false,
+    "pull_request": false,
+    "archive": false,
+    "ready": false,
+    "publication": false,
+    "record_phase2_check_called": false,
+    "reviewer_owned_outputs": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-codex-trace-write-fix-full-round.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-codex-trace-write-fix-full-round.md"
+    ]
+  },
+  "terminal": {
+    "status": "complete",
+    "lint": "passed_with_qualified_immutable_raw_residual",
+    "typecheck": "passed_applicable_checks",
+    "tests": "passed",
+    "recommended_typed_exit": "passed",
+    "recommended_consumer": "skill:guru-create-task-commit",
+    "open_findings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    },
+    "main_session_must_record_semantic_gate": true
+  }
+}

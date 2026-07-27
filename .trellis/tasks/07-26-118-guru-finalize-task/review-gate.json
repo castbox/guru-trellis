@@ -1,11 +1,11 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-07-27T15:57:56Z",
+  "generated_at": "2026-07-27T19:20:18Z",
   "task_dir": ".trellis/tasks/07-26-118-guru-finalize-task",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "feat/118-guru-finalize-task",
-  "head": "77ad13f0a65f652e68e655afbe11917aa659df5c",
+  "head": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/guru-finalize-task/SKILL.md",
@@ -401,11 +401,14 @@
     ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round2.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-verification-metadata-reentry-fix.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-verification-metadata-reentry.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
@@ -430,6 +433,8 @@
     ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/published-materialization-locator-probe.py",
     ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/recovery-metadata-tail-probe.py",
     ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
@@ -438,6 +443,7 @@
     ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/005.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
@@ -558,20 +564,17 @@
     ".trellis/tasks/07-26-118-guru-finalize-task",
     "--base-branch",
     "main",
+    "--pass",
     "--summary",
-    "Round 11 fresh independent reviewer 完整覆盖 origin/main...77ad13f0 的 526-path committed range，Round 12 在相同 HEAD 正式拥有 normal-path P1 verification metadata re-entry 与 P3 trailing whitespace；当前 P0/P1/P2/P3=0/1/0/1，唯一 route 为 implementation_required。",
+    "Round 13 独立 closure 与不同身份 Round 14 fresh final review 完整覆盖 origin/main...c04ed1d7 的 532 paths；当前 P0/P1/P2/P3=0/0/0/0、scope proposals=0，建议 passed。",
     "--evidence",
-    "Round 11 raw report SHA-256 bbd4d927574b69ea4d8d5deb6c2103e317a714e8db78f24b1a92a2193b2ff56f；Round 12 owner report SHA-256 fb0b284130f09e71db74c2909adc6b96bb7de4bf9908b41e5e5fed47e1b50dcb。",
+    "Round 13 raw report 8a75a023... 关闭 verification metadata re-entry P1，并将 assignment-bound Round9 whitespace 重资格化为 nonblocking rejected observation。",
     "--evidence",
-    "Independent real non-staged Git fixture reproduced marketplace-verification.json unexpected_status_paths；source/installed staged eval each 8/8 不能反驳 production-path defect。",
+    "Round 14 raw report a9294f13... 独立完成 re-entry 4/4、recovery 6/6、contract 5/5、isolation 3/3 与 public-wrapper eval 8/8，核对 Docs SSOT、parity、security 和 scope boundaries。",
     "--evidence",
-    "Runtime 620/13 skipped、Skill 179、Preset/ownership 54、focused closeout 100 与 fresh throwaway exit 0；git diff --check 仅命中 Round9 line203 whitespace。",
-    "--evidence",
-    "Scope 只关闭 #118；#115 不关闭，#119/#132 保持 follow-up；#105 transaction semantics、global workflow、upstream Finish 与 preset overlay 边界未改变。",
-    "--evidence",
-    "Deployment impact：dependency、CI/CD、container、K8s、DB migration、Makefile、Terraform 与 production data-write changed-path count 为 0；无 deploy 或 migration。",
+    "部署影响审查：本次是 Guru Team extension package/runtime/schema/docs/tests 的 additive change；Docker、Compose、CI/CD、Kubernetes、Kustomize、Helm、DB migration、Makefile、Terraform changed paths均为0，不需要同步调整部署资产，无服务 rollout 或 production data write。",
     "--reviewer",
-    "/root/issue118_branch_final_review_round11",
+    "/root/issue118_branch_final_round14",
     "--review-source",
     "independent-agent",
     "--review-report",
@@ -579,139 +582,83 @@
     "--agent-assignment",
     ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
     "--skill-input",
-    ".trellis/.runtime/guru-team/issue118-branch-review-round11-input.json",
+    ".trellis/.runtime/guru-team/issue118-branch-review-round14-input.json",
     "--semantic-review-file",
-    ".trellis/.runtime/guru-team/issue118-branch-review-round11-semantic.json",
+    ".trellis/.runtime/guru-team/issue118-branch-review-round14-semantic.json",
     "--typed-exit",
-    "implementation_required"
+    "passed"
   ],
   "conclusion": {
-    "passed": false,
-    "summary": "Round 11 fresh independent reviewer 完整覆盖 origin/main...77ad13f0 的 526-path committed range，Round 12 在相同 HEAD 正式拥有 normal-path P1 verification metadata re-entry 与 P3 trailing whitespace；当前 P0/P1/P2/P3=0/1/0/1，唯一 route 为 implementation_required。",
+    "passed": true,
+    "summary": "Round 13 独立 closure 与不同身份 Round 14 fresh final review 完整覆盖 origin/main...c04ed1d7 的 532 paths；当前 P0/P1/P2/P3=0/0/0/0、scope proposals=0，建议 passed。",
     "block_priorities": [
       "P0",
       "P1",
       "P2",
       "P3"
     ],
-    "blocking_findings_count": 2,
-    "findings_count": 2,
+    "blocking_findings_count": 0,
+    "findings_count": 0,
     "observations_count": 1,
     "followup_candidates_count": 2
   },
-  "findings": [
-    {
-      "priority": "P1",
-      "message": "#117 正常写入 task-local marketplace-verification.json 后，#118 publication augmentation 在 verification owner checker 前将该路径判为 unexpected，真实 verified/not_required re-entry 稳定退化为 publication_review_stale。",
-      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "candidate_ref": "C-R11-VERIFICATION-METADATA-REENTRY-01",
-      "disposition": "qualified_finding",
-      "scenario_class": "normal_required_behavior",
-      "affected_behavior": "#117 正常写入 task-local marketplace-verification.json 后，#118 publication augmentation 在 verification owner checker 前将该路径判为 unexpected，真实 verified/not_required re-entry 稳定退化为 publication_review_stale。",
-      "evidence_refs": [
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md",
-        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
-        ".trellis/spec/workflow/workflow-contract.md",
-        ".trellis/spec/workflow/skill-package-contract.md",
-        ".trellis/spec/workflow/companion-scripts.md"
-      ],
-      "requirement_refs": [
-        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R6",
-        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R10",
-        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md AC3",
-        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md AC6"
-      ],
-      "scope_basis": "Issue #118 approved current scope requires consuming #117 verified|not_required minimal DTO after normal recorder evidence is written, while finalizer privately owns publication/verification re-entry correctness.",
-      "qualification_reason": "Round 11 使用正常 recorder artifact、immutable plan/gate 和 real non-staged preview 即稳定复现 unexpected_status_paths；无需伪造、恶意输入、并发、锁、TOCTOU、crash 或范围扩张。既有 staged eval 在真实 publication owner 校验前 early return，不能反驳 production-path defect。",
-      "finding_ref": "F-VERIFICATION-METADATA-REENTRY-01",
-      "severity": "P1",
-      "owner_round": 12,
-      "reviewed_head": "77ad13f0a65f652e68e655afbe11917aa659df5c",
-      "status": "open",
-      "closure_evidence": []
-    },
-    {
-      "priority": "P3",
-      "message": "Committed Round 9 review report 的 line 203 含 trailing whitespace，使完整 branch diff 的 required git diff --check 失败。",
-      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
-      "candidate_ref": "C-R11-ROUND9-TRAILING-WHITESPACE-01",
-      "disposition": "qualified_finding",
-      "scenario_class": "normal_required_behavior",
-      "affected_behavior": "Committed Round 9 review report 的 line 203 含 trailing whitespace，使完整 branch diff 的 required git diff --check 失败。",
-      "evidence_refs": [
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md"
-      ],
-      "requirement_refs": [
-        "AGENTS.md Phase 2 and Branch Review diff hygiene gate"
-      ],
-      "scope_basis": "Round 9 report 是 Issue #118 当前 committed branch diff 与 review lifecycle evidence 的组成部分，完整 diff hygiene 属于当前 acceptance。",
-      "qualification_reason": "Fresh git diff --check origin/main...77ad13f0 仅在该行稳定失败；不依赖非标准场景或范围扩张。",
-      "finding_ref": "F-ROUND9-TRAILING-WHITESPACE-01",
-      "severity": "P3",
-      "owner_round": 12,
-      "reviewed_head": "77ad13f0a65f652e68e655afbe11917aa659df5c",
-      "status": "open",
-      "closure_evidence": []
-    }
-  ],
+  "findings": [],
   "observations": [
     {
       "kind": "observation",
       "message": "Claude installed native invocation is blocked by an external 401 Invalid API key in the current environment.",
       "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "candidate_ref": "C-R11-CLAUDE-401",
+      "candidate_ref": "C-R14-CLAUDE-401",
       "disposition": "observation",
       "scenario_class": "out_of_scope",
       "affected_behavior": "Claude installed native invocation is blocked by an external 401 Invalid API key in the current environment.",
       "evidence_refs": [
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
-        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md"
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md"
       ],
       "requirement_refs": [
         "Issue #118 platform corpus and protocol acceptance"
       ],
-      "scope_basis": "Source covers Claude input protocol and adapter parsing; current native credential availability is an external environment condition.",
-      "qualification_reason": "Evidence honestly records execution_error and does not claim native success; external authentication failure does not establish a committed source contract violation."
+      "scope_basis": "Source and controlled tests cover Claude input protocol and adapter parsing; current credential availability is external.",
+      "qualification_reason": "Evidence records the execution error honestly and does not claim native success; the external authentication condition does not prove a committed source defect."
     }
   ],
   "followup_candidates": [
     {
       "kind": "followup_candidate",
-      "message": "Exact feature ref has not been pushed, so pushed-ref marketplace verification has not run.",
+      "message": "The exact feature ref has not been pushed, so remote marketplace verification has not yet executed.",
       "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "candidate_ref": "C-R11-PUSHED-REF-01",
+      "candidate_ref": "C-R14-PUSHED-REF-VERIFICATION",
       "disposition": "followup_candidate",
       "scenario_class": "out_of_scope",
-      "affected_behavior": "Exact feature ref has not been pushed, so pushed-ref marketplace verification has not run.",
+      "affected_behavior": "The exact feature ref has not been pushed, so remote marketplace verification has not yet executed.",
       "evidence_refs": [
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md"
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md"
       ],
       "requirement_refs": [
         "AGENTS.md out-of-box gate",
         "Issue #118 verification ordering"
       ],
-      "scope_basis": "Branch Review has no content-push authority; exact remote ref verification belongs to the post-push #117 owner gate.",
-      "qualification_reason": "Fresh local throwaway passed, but main cannot impersonate an unpushed feature ref; this is a later closeout action, not a current branch defect."
+      "scope_basis": "Branch Review has no content-push authority; exact remote verification is the post-push #117 owner gate.",
+      "qualification_reason": "Fresh local throwaway and installed evidence passed, but local/main cannot impersonate an unpushed exact feature ref; this is a downstream closeout precondition, not a branch defect."
     },
     {
       "kind": "followup_candidate",
-      "message": "#119 global Finish integration/combined acceptance/#115 closure and #132 upstream overlay cleanup remain unimplemented.",
+      "message": "#119 global Finish integration, combined acceptance and #115 closure, plus #132 upstream overlay cleanup, remain unimplemented.",
       "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
-      "candidate_ref": "C-R11-DEFERRED-119-132",
+      "candidate_ref": "C-R14-DEFERRED-119-132",
       "disposition": "followup_candidate",
       "scenario_class": "out_of_scope",
-      "affected_behavior": "#119 global Finish integration/combined acceptance/#115 closure and #132 upstream overlay cleanup remain unimplemented.",
+      "affected_behavior": "#119 global Finish integration, combined acceptance and #115 closure, plus #132 upstream overlay cleanup, remain unimplemented.",
       "evidence_refs": [
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json"
       ],
       "requirement_refs": [
         "Issue #118 accepted-current scope boundary"
       ],
-      "scope_basis": "#119 and #132 are the declared unique follow-up owners.",
-      "qualification_reason": "Current diff leaves global workflow, upstream Finish and preset overlays unchanged; preserving the follow-up boundary is correct and must not become a #118 finding."
+      "scope_basis": "#119 and #132 are the declared unique follow-up owners, while #115 remains related only.",
+      "qualification_reason": "Current diff leaves the global workflow, upstream Finish family and preset overlays unchanged; preserving this ownership boundary is correct."
     }
   ],
   "issue_scope": {
@@ -774,23 +721,23 @@
     ]
   },
   "verification_evidence": {
-    "base_head": "origin/main...77ad13f0a65f652e68e655afbe11917aa659df5c",
-    "changed_file_count": 526,
-    "reviewer": "/root/issue118_branch_final_review_round11",
+    "base_head": "origin/main...c04ed1d7a816ac80217953bcf52f7a2a44b645d2",
+    "changed_file_count": 532,
+    "reviewer": "/root/issue118_branch_final_round14",
     "review_source": "independent-agent",
     "review_report": {
       "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
-      "sha256": "0abc90797b95d20c49cd298f6be2a09a092becac2a1d20e93d6adfc0308d774c",
-      "size_bytes": 6502,
-      "modified_at": "2026-07-27T15:53:27.094638+00:00"
+      "sha256": "e39a04b40ed6e46c7ea6307bda59398aaff76447b3ed2fa8daaa8c6c3a50cc20",
+      "size_bytes": 7193,
+      "modified_at": "2026-07-27T19:16:00.538397+00:00"
     },
     "agent_assignment": {
       "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
-      "sha256": "07e35f99d00917e4237d40a82c5bc1a1bd734e5b3bbcf5f7e03ec8c5f61504d7",
-      "size_bytes": 483593,
-      "modified_at": "2026-07-27T15:53:07.308327+00:00",
+      "sha256": "2598cc7306a91b70b6880201a1add078b9f13617a8abc920af1101f8fcb9a9f7",
+      "size_bytes": 532191,
+      "modified_at": "2026-07-27T19:15:41.289479+00:00",
       "schema_version": "1.2",
-      "artifact_head": "77ad13f0a65f652e68e655afbe11917aa659df5c",
+      "artifact_head": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2",
       "roles": [
         "实现代理",
         "最终放行审查代理",
@@ -798,11 +745,11 @@
         "问题闭环审查代理",
         "阶段二检查代理"
       ],
-      "agents_count": 30,
-      "review_rounds_count": 12,
-      "reuse_decisions_count": 12,
-      "status_events_count": 391,
-      "effective_status_events_count": 391,
+      "agents_count": 34,
+      "review_rounds_count": 14,
+      "reuse_decisions_count": 15,
+      "status_events_count": 423,
+      "effective_status_events_count": 423,
       "event_corrections_count": 0,
       "recovery_links_count": 0,
       "task": ".trellis/tasks/07-26-118-guru-finalize-task",
@@ -940,14 +887,34 @@
         "sha256": "fb0b284130f09e71db74c2909adc6b96bb7de4bf9908b41e5e5fed47e1b50dcb",
         "size_bytes": 15042,
         "modified_at": "2026-07-27T15:51:51.881060+00:00"
+      },
+      {
+        "round": 13,
+        "logical_role": "问题闭环审查代理",
+        "agent_id": "/root/issue118_branch_closure_round13",
+        "reviewed_head": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md",
+        "sha256": "8a75a02379ccfe638481e0683e45b7c2542d82d8db24f136b0a72123b28afad1",
+        "size_bytes": 12807,
+        "modified_at": "2026-07-27T18:51:10.255849+00:00"
+      },
+      {
+        "round": 14,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/issue118_branch_final_round14",
+        "reviewed_head": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+        "sha256": "a9294f1387c0b01100c298843d73e83c3dcff4d509043a7130b7cc824c887f34",
+        "size_bytes": 17241,
+        "modified_at": "2026-07-27T19:10:09.015215+00:00"
       }
     ],
     "evidence": [
-      "Round 11 raw report SHA-256 bbd4d927574b69ea4d8d5deb6c2103e317a714e8db78f24b1a92a2193b2ff56f；Round 12 owner report SHA-256 fb0b284130f09e71db74c2909adc6b96bb7de4bf9908b41e5e5fed47e1b50dcb。",
-      "Independent real non-staged Git fixture reproduced marketplace-verification.json unexpected_status_paths；source/installed staged eval each 8/8 不能反驳 production-path defect。",
-      "Runtime 620/13 skipped、Skill 179、Preset/ownership 54、focused closeout 100 与 fresh throwaway exit 0；git diff --check 仅命中 Round9 line203 whitespace。",
-      "Scope 只关闭 #118；#115 不关闭，#119/#132 保持 follow-up；#105 transaction semantics、global workflow、upstream Finish 与 preset overlay 边界未改变。",
-      "Deployment impact：dependency、CI/CD、container、K8s、DB migration、Makefile、Terraform 与 production data-write changed-path count 为 0；无 deploy 或 migration。"
+      "Round 13 raw report 8a75a023... 关闭 verification metadata re-entry P1，并将 assignment-bound Round9 whitespace 重资格化为 nonblocking rejected observation。",
+      "Round 14 raw report a9294f13... 独立完成 re-entry 4/4、recovery 6/6、contract 5/5、isolation 3/3 与 public-wrapper eval 8/8，核对 Docs SSOT、parity、security 和 scope boundaries。",
+      "部署影响审查：本次是 Guru Team extension package/runtime/schema/docs/tests 的 additive change；Docker、Compose、CI/CD、Kubernetes、Kustomize、Helm、DB migration、Makefile、Terraform changed paths均为0，不需要同步调整部署资产，无服务 rollout 或 production data write。"
     ],
     "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
   },
@@ -985,8 +952,10 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round2.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-verification-metadata-reentry-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
@@ -1008,6 +977,8 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
         "README.md",
         "trellis/presets/guru-team/README.md",
@@ -1141,11 +1112,14 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round2.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-verification-metadata-reentry-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-verification-metadata-reentry.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
@@ -1170,6 +1144,8 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/published-materialization-locator-probe.py",
         ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/recovery-metadata-tail-probe.py",
         ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
@@ -1178,6 +1154,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/005.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
@@ -1597,6 +1574,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-verification-metadata-reentry.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
@@ -1605,6 +1583,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/005.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
@@ -1963,6 +1942,7 @@
       ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/semantic-review-input.schema.json",
       ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
       ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-verification-metadata-reentry.json",
       ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
       ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
       ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
@@ -1999,23 +1979,93 @@
   },
   "skill_id": "guru-review-branch",
   "mode": "workflow",
-  "review_intent": "fresh_final_review",
-  "typed_exit": "implementation_required",
+  "review_intent": "finding_fix_review",
+  "typed_exit": "passed",
   "semantic_review": {
-    "qualified_findings": [
+    "qualified_findings": [],
+    "scope_proposals": [],
+    "observations": [
       {
-        "candidate_ref": "C-R11-VERIFICATION-METADATA-REENTRY-01",
-        "disposition": "qualified_finding",
+        "candidate_ref": "C-R14-CLAUDE-401",
+        "disposition": "observation",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "Claude installed native invocation is blocked by an external 401 Invalid API key in the current environment.",
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "evidence_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md"
+        ],
+        "requirement_refs": [
+          "Issue #118 platform corpus and protocol acceptance"
+        ],
+        "scope_basis": "Source and controlled tests cover Claude input protocol and adapter parsing; current credential availability is external.",
+        "qualification_reason": "Evidence records the execution error honestly and does not claim native success; the external authentication condition does not prove a committed source defect."
+      }
+    ],
+    "followup_candidates": [
+      {
+        "candidate_ref": "C-R14-PUSHED-REF-VERIFICATION",
+        "disposition": "followup_candidate",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "The exact feature ref has not been pushed, so remote marketplace verification has not yet executed.",
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "evidence_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md"
+        ],
+        "requirement_refs": [
+          "AGENTS.md out-of-box gate",
+          "Issue #118 verification ordering"
+        ],
+        "scope_basis": "Branch Review has no content-push authority; exact remote verification is the post-push #117 owner gate.",
+        "qualification_reason": "Fresh local throwaway and installed evidence passed, but local/main cannot impersonate an unpushed exact feature ref; this is a downstream closeout precondition, not a branch defect."
+      },
+      {
+        "candidate_ref": "C-R14-DEFERRED-119-132",
+        "disposition": "followup_candidate",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "#119 global Finish integration, combined acceptance and #115 closure, plus #132 upstream overlay cleanup, remain unimplemented.",
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+        "evidence_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json"
+        ],
+        "requirement_refs": [
+          "Issue #118 accepted-current scope boundary"
+        ],
+        "scope_basis": "#119 and #132 are the declared unique follow-up owners, while #115 remains related only.",
+        "qualification_reason": "Current diff leaves the global workflow, upstream Finish family and preset overlays unchanged; preserving this ownership boundary is correct."
+      }
+    ],
+    "rejected_candidates": [
+      {
+        "candidate_ref": "C-R14-CURRENT-FINALIZER-CONTRACT",
+        "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "#117 正常写入 task-local marketplace-verification.json 后，#118 publication augmentation 在 verification owner checker 前将该路径判为 unexpected，真实 verified/not_required re-entry 稳定退化为 publication_review_stale。",
+        "affected_behavior": "Issue #118 current finalizer package could violate its approved closeout ownership, public/private I/O, recovery, distribution or compatibility contract.",
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+        "evidence_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json"
+        ],
+        "requirement_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R1-R13",
+          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md AC1-AC18",
+          "Issue #118 accepted-current authority"
+        ],
+        "scope_basis": "The complete approved Issue #118 scope and origin/main...c04ed1d7 committed range were reviewed.",
+        "qualification_reason": "Fresh final review, current Phase 2, exact task-commit continuity, public-wrapper evals, parity checks and protected-surface scans prove no current contract violation."
+      },
+      {
+        "candidate_ref": "C-R14-VERIFICATION-METADATA-REENTRY",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "The current finalizer could reject valid #117 verified or task-bearing standalone not_required owner evidence, or accept arbitrary metadata without explicit owner binding.",
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
         "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
-          ".trellis/spec/workflow/workflow-contract.md",
-          ".trellis/spec/workflow/skill-package-contract.md",
-          ".trellis/spec/workflow/companion-scripts.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md"
         ],
         "requirement_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R6",
@@ -2023,110 +2073,59 @@
           ".trellis/tasks/07-26-118-guru-finalize-task/prd.md AC3",
           ".trellis/tasks/07-26-118-guru-finalize-task/prd.md AC6"
         ],
-        "scope_basis": "Issue #118 approved current scope requires consuming #117 verified|not_required minimal DTO after normal recorder evidence is written, while finalizer privately owns publication/verification re-entry correctness.",
-        "qualification_reason": "Round 11 使用正常 recorder artifact、immutable plan/gate 和 real non-staged preview 即稳定复现 unexpected_status_paths；无需伪造、恶意输入、并发、锁、TOCTOU、crash 或范围扩张。既有 staged eval 在真实 publication owner 校验前 early return，不能反驳 production-path defect。",
-        "finding_ref": "F-VERIFICATION-METADATA-REENTRY-01",
-        "severity": "P1",
-        "owner_round": 12,
-        "reviewed_head": "77ad13f0a65f652e68e655afbe11917aa659df5c",
-        "status": "open",
-        "closure_evidence": []
+        "scope_basis": "#118 owns the normal post-push verification re-entry and strict finalizer-private metadata boundary.",
+        "qualification_reason": "Current owner-check-first ordering and default-closed exact allowlist passed two real positive and two strict negative producer-to-wrapper regressions; the prior P1 is closed."
       },
       {
-        "candidate_ref": "C-R11-ROUND9-TRAILING-WHITESPACE-01",
-        "disposition": "qualified_finding",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "Committed Round 9 review report 的 line 203 含 trailing whitespace，使完整 branch diff 的 required git diff --check 失败。",
-        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
-        "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md"
-        ],
-        "requirement_refs": [
-          "AGENTS.md Phase 2 and Branch Review diff hygiene gate"
-        ],
-        "scope_basis": "Round 9 report 是 Issue #118 当前 committed branch diff 与 review lifecycle evidence 的组成部分，完整 diff hygiene 属于当前 acceptance。",
-        "qualification_reason": "Fresh git diff --check origin/main...77ad13f0 仅在该行稳定失败；不依赖非标准场景或范围扩张。",
-        "finding_ref": "F-ROUND9-TRAILING-WHITESPACE-01",
-        "severity": "P3",
-        "owner_round": 12,
-        "reviewed_head": "77ad13f0a65f652e68e655afbe11917aa659df5c",
-        "status": "open",
-        "closure_evidence": []
-      }
-    ],
-    "scope_proposals": [],
-    "observations": [
-      {
-        "candidate_ref": "C-R11-CLAUDE-401",
-        "disposition": "observation",
-        "scenario_class": "out_of_scope",
-        "affected_behavior": "Claude installed native invocation is blocked by an external 401 Invalid API key in the current environment.",
-        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md"
-        ],
-        "requirement_refs": [
-          "Issue #118 platform corpus and protocol acceptance"
-        ],
-        "scope_basis": "Source covers Claude input protocol and adapter parsing; current native credential availability is an external environment condition.",
-        "qualification_reason": "Evidence honestly records execution_error and does not claim native success; external authentication failure does not establish a committed source contract violation."
-      }
-    ],
-    "followup_candidates": [
-      {
-        "candidate_ref": "C-R11-PUSHED-REF-01",
-        "disposition": "followup_candidate",
-        "scenario_class": "out_of_scope",
-        "affected_behavior": "Exact feature ref has not been pushed, so pushed-ref marketplace verification has not run.",
-        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-        "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md"
-        ],
-        "requirement_refs": [
-          "AGENTS.md out-of-box gate",
-          "Issue #118 verification ordering"
-        ],
-        "scope_basis": "Branch Review has no content-push authority; exact remote ref verification belongs to the post-push #117 owner gate.",
-        "qualification_reason": "Fresh local throwaway passed, but main cannot impersonate an unpushed feature ref; this is a later closeout action, not a current branch defect."
-      },
-      {
-        "candidate_ref": "C-R11-DEFERRED-119-132",
-        "disposition": "followup_candidate",
-        "scenario_class": "out_of_scope",
-        "affected_behavior": "#119 global Finish integration/combined acceptance/#115 closure and #132 upstream overlay cleanup remain unimplemented.",
-        "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
-        "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json"
-        ],
-        "requirement_refs": [
-          "Issue #118 accepted-current scope boundary"
-        ],
-        "scope_basis": "#119 and #132 are the declared unique follow-up owners.",
-        "qualification_reason": "Current diff leaves global workflow, upstream Finish and preset overlays unchanged; preserving the follow-up boundary is correct and must not become a #118 finding."
-      }
-    ],
-    "rejected_candidates": [
-      {
-        "candidate_ref": "C-R11-EXCLUDED-HARDENING",
+        "candidate_ref": "C-R14-ROUND9-TRAILING-WHITESPACE",
         "disposition": "rejected_candidate",
         "scenario_class": "out_of_scope",
-        "affected_behavior": "Malicious actors, artifact/state forgery, concurrent finalizers, locks, TOCTOU, extra fault injection, crash consistency and cross-OS atomicity.",
+        "affected_behavior": "Round 9 historical raw review evidence contains one trailing-whitespace line reported by full-range git diff --check.",
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+        "evidence_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md"
+        ],
+        "requirement_refs": [
+          ".agents/skills/guru-review-branch/references/contract.md raw report retention"
+        ],
+        "scope_basis": "The affected bytes are assignment-bound immutable lifecycle evidence, not current product/runtime behavior or a legally rewritable task contract.",
+        "qualification_reason": "Changing the raw report would invalidate its recorded digest; rewriting historical ownership or adding a lint exception is outside approved #118 scope, so the signal remains a nonblocking observation without severity."
+      },
+      {
+        "candidate_ref": "C-R14-EXCLUDED-HARDENING",
+        "disposition": "rejected_candidate",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "Malicious actors, artifact or state forgery, concurrent finalizers, locks, TOCTOU, extra fault injection, crash consistency and cross-OS atomicity.",
         "path": "AGENTS.md",
         "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md"
         ],
         "requirement_refs": [],
-        "scope_basis": "Repository honest-but-fallible policy and Issue #118 authority explicitly exclude these hostile/nonstandard hardening scenarios.",
-        "qualification_reason": "These candidates cannot be reproduced on a supported normal path without deliberate forgery or unapproved nonfunctional expansion, so they receive no severity and do not block acceptance."
+        "scope_basis": "Repository honest-but-fallible policy and Issue #118 authority explicitly exclude these hostile or nonstandard hardening scenarios.",
+        "qualification_reason": "These candidates require deliberate forgery or unapproved nonfunctional expansion and cannot receive severity or block current acceptance."
+      },
+      {
+        "candidate_ref": "C-R14-SECRET-DENYLIST-LITERAL",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "A credential scan match could indicate a private-key disclosure in the committed range.",
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+        "evidence_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md"
+        ],
+        "requirement_refs": [
+          "AGENTS.md security and publication rules"
+        ],
+        "scope_basis": "Secret and sensitive-data disclosure checks apply to the complete branch range.",
+        "qualification_reason": "The sole pattern match is the documented validator denylist literal in historical review evidence, not credential material; no secret was disclosed."
       }
     ],
     "ai_review_gate": {
-      "status": "implementation_required",
-      "summary": "Round 11 fresh independent review covers the complete origin/main...77ad13f0 526-path range and qualifies P1 F-VERIFICATION-METADATA-REENTRY-01 plus P3 F-ROUND9-TRAILING-WHITESPACE-01 on normal required paths. P0/P1/P2/P3=0/1/0/1, with zero scope proposals. Fixes, fresh Phase 2, a new task commit and complete Branch Review are mandatory before publication."
+      "status": "passed",
+      "summary": "Round 13 independently closed the current P1 and requalified the immutable Round 9 whitespace signal as a nonblocking rejected observation; a different Round 14 fresh final reviewer covered all 532 committed paths at c04ed1d7 and found P0/P1/P2/P3=0/0/0/0 with zero scope proposals. Current tests, public-wrapper evals, Docs SSOT, package parity, protected surfaces, security and deployment boundaries support the passed route while Claude live 401 and exact pushed-ref verification remain honest downstream residuals."
     }
   },
-  "facts_sha256": "34796967c1029dd8b1a01954e1bd12fcd0a1cecbc6662242cc20f77820f71aad"
+  "facts_sha256": "21f8a7bd19f73fb9c6d27390249e0dbbb7df411ad1ba035b096b8b84214d72c5"
 }

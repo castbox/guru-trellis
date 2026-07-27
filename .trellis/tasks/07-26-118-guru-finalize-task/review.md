@@ -1,104 +1,114 @@
-# #118 Branch Review Round 11 语义门禁汇总
+# #118 Branch Review 最终语义汇总
 
 ## 门禁结论
 
 - Task：`.trellis/tasks/07-26-118-guru-finalize-task`
 - Branch：`feat/118-guru-finalize-task`
 - Base：`origin/main@7820a9eeec2a2a75fb52fba156a7211d9f9fb09c`
-- Committed HEAD：`77ad13f0a65f652e68e655afbe11917aa659df5c`
-- 完整范围：`origin/main...77ad13f0a65f652e68e655afbe11917aa659df5c`
-- Diff：526 paths，70807 insertions，4753 deletions
-- Review intent：`fresh_final_review`
-- 独立审查代理：`/root/issue118_branch_final_review_round11`
-- Current findings：P0=0、P1=1、P2=0、P3=1
+- Committed HEAD：`c04ed1d7a816ac80217953bcf52f7a2a44b645d2`
+- 完整范围：`origin/main...c04ed1d7a816ac80217953bcf52f7a2a44b645d2`
+- Diff：532 paths，74550 insertions，4753 deletions
+- Review intent：`finding_fix_review`
+- Finding closure reviewer：`/root/issue118_branch_closure_round13`
+- Fresh final reviewer：`/root/issue118_branch_final_round14`
+- Current findings：P0=0、P1=0、P2=0、P3=0
 - Scope proposals：0
-- AI Review Gate：`implementation_required`
+- AI Review Gate：`passed`
 
-Round 11 使用未参与 implementation、Phase 2 或 Round 1-10 review/closure 的全新 technical
-reviewer，完整覆盖 current committed range。该轮在正常、受支持且无需恶意输入、伪造、并发、
-锁、TOCTOU 或 crash 的路径中资格化一个 P1 correctness finding，并确认一个 P3 lint finding。
-因此旧 `passed` Branch Review 与所有 publication/finalization evidence 均已 stale；必须先修复、
-重跑完整 Phase 2、创建新 task commit，再重新执行完整 Branch Review。
+Round 13 使用未参与实现、Phase 2 或 Round 11/12 discovery 的全新 reviewer，确认
+`F-VERIFICATION-METADATA-REENTRY-01` 已在当前 commit 中闭环，并以 assignment-bound raw
+report identity 将 Round 9 whitespace candidate 重资格化为 `rejected_candidate/out_of_scope`
+nonblocking observation。Round 14 使用不同且未参与任何 finding closure 的 fresh reviewer，
+完整覆盖 current range，独立复核 planning、Docs SSOT、runtime、public/private I/O、tests、
+distribution、部署/安全影响和 scope boundary，最终未发现 open P0-P3 finding 或 scope proposal。
 
 ## Scope 与边界
 
-- Live Issue #118 与 accepted-current comment `issuecomment-5045036678` 仍是当前 authority。
-- `issue-scope-ledger.json` 仍只将 #118 作为 close issue；#115 不关闭，#119 独占 global Finish
-  family integration、combined acceptance 与关闭 #115，#132 独占 upstream overlay cleanup。
-- #105 transaction/recovery/legacy takeover 语义不得改变或重新关闭。
-- 完整 diff 对 global workflow、upstream `trellis-finish-work` family、official `task.py` 与 preset
-  overlays 的 changed-path count 均为 0。
-- 恶意 actor、artifact/hash/state forgery、攻击模型、并发 finalizer、锁、TOCTOU、额外 fault
-  injection、偶发 crash consistency 与跨 OS atomicity 继续 out of scope。
+- 只关闭 #118；`issue-scope-ledger.json` 的唯一 `close_issues` 为 #118。
+- #115 保持 related umbrella；#119 独占 Finish family integration、combined acceptance 和关闭 #115。
+- #132 独占 upstream overlay cleanup。
+- #105 transaction/recovery substrate 仅被复用，未重新关闭或改变事务语义。
+- 完整 diff 对 global workflow、upstream `trellis-finish-work` Skill/Command/Prompt、official
+  `task.py` 与 preset overlays 的 changed-path count 均为 0。
+- 恶意 actor、伪造 artifact/state、并发 finalizer、锁、TOCTOU、额外 fault injection、偶发
+  crash consistency 与跨 OS atomicity 继续 out of scope。
 
-## Qualification-First Findings
+## Finding Closure
 
-### P1 `F-VERIFICATION-METADATA-REENTRY-01`
+### `F-VERIFICATION-METADATA-REENTRY-01`
 
-- 场景：`normal_required_behavior`；current scope。
-- Requirement：`prd.md` R6/R10、AC3/AC6，以及 durable workflow/package/runtime Docs SSOT 要求
-  content push 后由 #117 recorder 写出 current、same-plan/ref/HEAD verification evidence，#118 再消费
-  `verified` 或 task-bearing standalone `not_required` 继续 finalization。
-- 正常 recorder 将 task-local owner evidence 写入 `marketplace-verification.json`。
-- 真实 `finalization_preview_context()` 在读取 verification owner 前先执行 publication owner check；
-  finalizer compatibility augmentation 的 `finalization_paths` allowlist 仅包含
-  `closeout-plan.json` 与 `task-finalization-gate.json`，遗漏上述 #117 artifact。
-- 独立最小 Git fixture 稳定返回
-  `unexpected_status_paths=[.../marketplace-verification.json]`；真实 preview 因此提前路由
-  `publication_review_stale`，无法到达 verification owner checker。
-- Source/installed shared eval 各 8/8 通过不能关闭 finding，因为
-  `GURU_TEAM_EVAL_STAGING=1` 在真实 publication owner 校验前 early return。
-- Severity：P1。该缺陷稳定阻断 content push 后的 required verified/not_required 主发布链。
-- Required closure：精确接纳并 owner-validate current plan-bound
-  `marketplace-verification.json`，不得放宽 arbitrary metadata；增加不使用 eval staging、真实调用
-  #117 recorder 后执行 #118 public wrapper 的 regression。
+- 原场景为 `normal_required_behavior`，要求 #118 在 content push 后消费 #117
+  `verified|not_required` owner evidence。
+- Current runtime 先运行 #117 owner checker，只有 checker `status=ok` 且 actual exit 为
+  `verified|not_required` 时，才向默认关闭的 publication augmentation 精确加入当前 task 的
+  `marketplace-verification.json`。
+- Workflow verified 与 task-bearing standalone not_required 的真实 recorder-to-public-wrapper
+  regression 通过；arbitrary metadata 与 missing explicit owner binding 继续 fail closed。
+- Canonical/dogfood runtime byte-identical，generic #117 checker、public DTO/schema、global
+  workflow、preset overlays、upstream Finish 和 #105 transaction semantics 均未修改。
+- Round 13 结论：`closed`。
 
-### P3 `F-ROUND9-TRAILING-WHITESPACE-01`
+### Round 9 whitespace candidate
 
-- 场景：`normal_required_behavior`；current scope。
-- `git diff --check origin/main...77ad13f0` 仅命中
-  `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md:203` trailing
-  whitespace。
-- Severity：P3。它不改变 runtime 行为，但使 required diff hygiene/lint 失败。
-- Required closure：删除该行尾空格，并在新 Phase 2 与 Branch Review 中重新验证。
+- `git diff --check origin/main...c04ed1d7` 的唯一输出仍为 Round 9 raw report line 203。
+- 该 raw report 的当前 bytes/digest/size 精确绑定 `agent-assignment.json` Round 9 lifecycle。
+  修改 bytes 会制造 mandatory report-retention digest mismatch；改写历史 binding 或增加特例
+  ignore mechanism 均不属于 #118 approved scope。
+- Round 13/14 结论：`rejected_candidate`，scenario=`out_of_scope`，仅保留为 nonblocking
+  historical evidence observation，不携带 current severity。
 
 ## Current Evidence
 
-- Raw Round 11 report：
-  `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md`
-- Raw report SHA-256：`bbd4d927574b69ea4d8d5deb6c2103e317a714e8db78f24b1a92a2193b2ff56f`
-- Raw report：15283 bytes，235 lines。
-- Assignment/liveness：Round 11 从 `evt-0374-21142bb1d6` assigned 到
-  `evt-0391-c3fd27fd8d` completed；review round 11 与 from10/to11 `new-agent` 决策已登记。
-- Round 12 discovery owner report：
-  `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md`，
-  SHA-256 `fb0b284130f09e71db74c2909adc6b96bb7de4bf9908b41e5e5fed47e1b50dcb`，
-  15042 bytes，276 lines；from11/to12 `reuse` 决策与 review round 12 已登记，两项 finding 的
-  `owner_round=12`。
-- Runtime full：620 passed，13 skipped。
-- Skill package full：179 passed。
-- Preset/ownership：54 passed。
-- Publication allowlist + closeout contract focused：100 passed。
-- Source/installed shared wrapper eval：各 8/8 passed，但明确属于 staging-only evidence。
-- Fresh throwaway：terminal exit 0，覆盖 marketplace discovery、fresh install、official update、
-  workflow switch、preset reapply、`.new/.bak` 处理、platform distribution、ownership、overlay drift、
-  installed closeout 与 wrapper smoke。
-- Workspace boundary passed；source checkout clean；HEAD 在审查前后保持 `77ad13f0`。
-- Exact feature ref 尚未 push，remote verification 正确保留给 content push 后的 #117 owner gate。
-- Claude native 仍受外部 `401 Invalid API key` 阻塞，未声称 native success。
+- Phase 2 public exit=`passed`，artifact SHA-256
+  `435164b0e39cb479654aca5f2c466f118ddc1bf576434742358e27924cf9daff`。
+- Current task commit=`c04ed1d7a816ac80217953bcf52f7a2a44b645d2`，parent=`77ad13f0...`，
+  14 个 committed paths 的 tree/blob/mode/message evidence 全部匹配。
+- Round 13 raw report SHA-256
+  `8a75a02379ccfe638481e0683e45b7c2542d82d8db24f136b0a72123b28afad1`，12807 bytes。
+- Round 14 raw report SHA-256
+  `a9294f1387c0b01100c298843d73e83c3dcff4d509043a7130b7cc824c887f34`，17241 bytes。
+- Round 14 独立验证：re-entry 4/4、route/recovery 6/6、package contract 5/5、expected-exit
+  isolation 3/3、真实 source/shared public-wrapper eval 8/8，Python compile 与跨平台 byte parity
+  均通过。
+- Phase 2 全量证据：#105 closeout 102；runtime 624 passed/13 skipped；Skill/package/eval 179；
+  preset/ownership 54；source/installed shared eval 各 8/8；clean throwaway exit 0。
+- Shared/Codex/Claude/Cursor corpus byte-identical；Codex trusted root、Claude input protocol、
+  Cursor unsupported/unavailable 与 shared parsing 均有 current source/test evidence。
+
+## Raw Review Reports
+
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-001-final-release.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-002-problem-discovery.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-011-final-release.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-012-problem-discovery.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md`
+- `.trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md`
 
 ## Docs SSOT、安全与部署
 
-- Docs SSOT strategy=`ssot_first`。Durable SSOT 已定义 verifier metadata-tail compatibility 与
-  verified/not_required re-entry；P1 是 code/test 对 SSOT 的偏离，不是缺少首次 docs merge。
-- 未发现 secret、credential、private key、signed URL、`.env` 或客户数据泄漏。
-- Dependency、CI/CD、container、Compose、Kubernetes、Helm/Kustomize、DB migration、Makefile、
-  Terraform 与 production data-write changed-path scan 均为 0；无需 deploy 或数据迁移。
+- Docs SSOT strategy=`ssot_first`；durable workflow/package/runtime contracts已覆盖 owner-check-first
+  verification re-entry、exact finalizer-owned metadata tail、minimal DTO、六 exits 与 recovery。
+  Current commit 是 code/test correctness closure，无新增 durable semantic delta。
+- 未发现 secret、credential、private key、signed URL、`.env`、客户数据或原始 provider payload。
+- Dependency、CI/CD、container、Kubernetes、DB migration、Makefile、Terraform 与 production
+  data-write changed-path scan均为 0；无需 deploy 或数据迁移。
+- Additive extension package/install/update surface 已由 clean throwaway marketplace、preset
+  install/reapply、official update、`.new/.bak`、平台分发和 overlay drift 验证覆盖。
 
-## 结论与唯一出口
+## Residuals 与出口
 
-Round 11 current P0/P1/P2/P3=`0/1/0/1`，两个 findings 都已通过 current scope、正常行为和 requirement
-binding 资格审核，并由 Round 12 discovery owner 正式持有；没有 scope proposal。唯一合法 typed
-exit 为 `implementation_required`，handoff
-只包含 task identity、reviewed HEAD 与两个 finding refs。该出口不授权 publication review、push、PR、
-archive、Ready、merge 或 Issue closure。
+- Claude native 仍因当前环境外部 `401 Invalid API key` 未获 live success；不得对外宣称通过。
+- Feature exact ref 尚未 push；remote marketplace verification 必须在 content push 后由 #117
+  owner gate执行，不能用 local/main 验证替代。
+- Push、Draft PR、archive、three-way HEAD equality、draft-to-ready 与 Issue closure 均尚未执行，
+  仍受 publication review 和 `guru-finalize-task` exact digest confirmation 约束。
+- Current open P0/P1/P2/P3=`0/0/0/0`，scope proposals=`0`。
+- 唯一合法 typed exit：`passed`，consumer=`guru-review-task-publication`。

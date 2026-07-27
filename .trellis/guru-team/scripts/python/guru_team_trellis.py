@@ -28213,13 +28213,29 @@ def resolve_closeout_pre_draft_state(
             readiness.get("skill_id") == TASK_PUBLICATION_SKILL_ID
             and "publish_inputs" not in readiness
         ):
-            cmd_check_task_publication_review(
-                argparse.Namespace(
-                    root=str(root),
-                    task=repo_relative(root, task_dir),
-                    expected_exit="ready",
+            finalization_gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+            if (
+                finalization_gate_path.is_file()
+                and not finalization_gate_path.is_symlink()
+            ):
+                check_task_publication_for_finalization_augmentation(
+                    root,
+                    task_dir,
+                    readiness,
+                    expected_closeout_plan_digest=None,
+                    additional_owned_paths=[
+                        repo_relative(root, finalization_gate_path)
+                    ],
+                    require_plan=False,
                 )
-            )
+            else:
+                cmd_check_task_publication_review(
+                    argparse.Namespace(
+                        root=str(root),
+                        task=repo_relative(root, task_dir),
+                        expected_exit="ready",
+                    )
+                )
             return "prepared"
     if not plan_path.is_file() or not readiness_path.is_file():
         raise WorkflowError("Interrupted closeout has an incomplete plan/readiness pair.", exit_code=2)

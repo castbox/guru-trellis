@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import textwrap
 import threading
 import unittest
 from pathlib import Path
@@ -4255,6 +4256,112 @@ class Stage0PublicInvocationTests(unittest.TestCase):
         self.assertEqual(result["status"], "passed", result)
         return result
 
+    def write_workspace_enforcing_fake_codex(self) -> Path:
+        binary = Path(self.temp.name) / "codex-native-bin/codex"
+        binary.parent.mkdir()
+        binary.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                from __future__ import annotations
+
+                import json
+                import os
+                import subprocess
+                import sys
+                from pathlib import Path
+
+
+                def option(arguments: list[str], flag: str) -> str:
+                    index = arguments.index(flag)
+                    return arguments[index + 1]
+
+
+                def main() -> int:
+                    arguments = sys.argv[1:]
+                    request_path = Path(os.environ["GURU_TEAM_NATIVE_REQUEST"]).resolve()
+                    execution_root = request_path.parent
+                    writable_roots = {
+                        Path(arguments[index + 1]).resolve()
+                        for index, value in enumerate(arguments[:-1])
+                        if value == "--add-dir"
+                    }
+                    if execution_root not in writable_roots:
+                        print("repo-external execution root is not writable", file=sys.stderr)
+                        return 73
+
+                    request = json.loads(request_path.read_text(encoding="utf-8"))
+                    protocol = json.loads(
+                        Path(os.environ["GURU_TEAM_NATIVE_PROTOCOL"]).read_text(
+                            encoding="utf-8"
+                        )
+                    )
+                    facts = None
+                    workdir = Path(request["workdir"])
+                    for relative in request["files"]:
+                        payload = json.loads((workdir / relative).read_text(encoding="utf-8"))
+                        if isinstance(payload.get("public_invocation"), dict):
+                            facts = payload
+                            break
+                    if facts is None:
+                        print("public invocation facts are unavailable", file=sys.stderr)
+                        return 74
+
+                    helper = str(protocol["helper_path"])
+                    common = [
+                        "--trace", str(protocol["trace_path"]),
+                        "--request-sha256", str(protocol["request_sha256"]),
+                        "--projection-root", str(protocol["projection_root"]),
+                        "--skill-sha256", str(protocol["skill_sha256"]),
+                        "--wrapper-sha256", str(protocol["wrapper_sha256"]),
+                    ]
+                    read_result = subprocess.run(
+                        [
+                            sys.executable, helper, *common, "read",
+                            "--kind", "skill_contract",
+                            "--path", str(protocol["skill_path"]),
+                        ],
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    if read_result.returncode != 0:
+                        sys.stderr.write(read_result.stderr)
+                        return read_result.returncode
+
+                    invoke_result = subprocess.run(
+                        [
+                            sys.executable, helper, *common, "invoke",
+                            "--wrapper", str(protocol["wrapper_path"]), "--",
+                            *facts["public_invocation"]["arguments"],
+                        ],
+                        cwd=request["public_package_root"],
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    if invoke_result.returncode != 0:
+                        sys.stderr.write(invoke_result.stderr)
+                        return invoke_result.returncode
+                    Path(option(arguments, "--output-last-message")).write_text(
+                        invoke_result.stdout,
+                        encoding="utf-8",
+                    )
+                    print(json.dumps({"type": "turn.completed"}))
+                    return 0
+
+
+                if __name__ == "__main__":
+                    raise SystemExit(main())
+                """
+            ),
+            encoding="utf-8",
+        )
+        binary.chmod(0o755)
+        return binary
+
     def test_installed_task_plan_clarify_scope_router_is_routing_only(self) -> None:
         workflow = (self.repo / ".trellis/workflow.md").read_text(encoding="utf-8")
         assert_task_plan_clarify_scope_router_contract(self, workflow)
@@ -4395,6 +4502,60 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             },
         )
         self.assertFalse((task_dir / "closeout-plan.json").exists())
+
+    def test_codex_repo_external_execution_root_runs_real_finalizer_wrapper(
+        self,
+    ) -> None:
+        codex = self.write_workspace_enforcing_fake_codex()
+        run_root = Path(self.temp.name) / "repo-external-codex-finalizer"
+        self.assertFalse(run_root.resolve().is_relative_to(self.repo.resolve()))
+        process = subprocess.run(
+            [
+                str(self.repo / ".trellis/guru-team/scripts/bash/run-skill-evals.sh"),
+                "--root", str(self.repo),
+                "--mode", "installed",
+                "--skill", "guru-finalize-task",
+                "--adapter", "codex",
+                "--case", "publication-review-stale",
+                "--run-root", str(run_root),
+                "--json",
+            ],
+            cwd=self.repo,
+            env={
+                **os.environ,
+                "PATH": f"{codex.parent}{os.pathsep}{os.environ.get('PATH', '')}",
+                "PYTHONDONTWRITEBYTECODE": "1",
+            },
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(process.returncode, 0, process.stderr)
+        payload = json.loads(process.stdout)
+        self.assertEqual(payload["status"], "passed", payload)
+        case = payload["cases"][0]
+        self.assertEqual(case["status"], "passed", case)
+        self.assertEqual(case["actual_exit"], "publication_review_stale")
+
+        transcript = json.loads(
+            Path(case["transcript_locator"]).read_text(encoding="utf-8")
+        )
+        execution_root = Path(transcript["native_request_path"]).resolve().parent
+        writable_roots = {
+            Path(transcript["argv"][index + 1]).resolve()
+            for index, value in enumerate(transcript["argv"][:-1])
+            if value == "--add-dir"
+        }
+        self.assertIn(execution_root, writable_roots)
+        trace = json.loads(
+            Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(trace["events"][-1]["kind"], "invoke")
+        self.assertEqual(
+            Path(trace["events"][-1]["wrapper_path"]).name,
+            "invoke.sh",
+        )
 
     def test_production_shared_adapter_stages_exact_allowlist_and_real_wrappers(self) -> None:
         self.assertEqual(native_adapter.PRODUCTION_SKILLS, {

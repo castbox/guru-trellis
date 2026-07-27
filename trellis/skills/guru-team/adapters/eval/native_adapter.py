@@ -3794,9 +3794,11 @@ def native_argv(
     if adapter == "codex":
         output_path = native_request_path.with_name("native-last-message.txt")
         trusted_root = str(Path(request["runtime_target"]).resolve().parents[4])
+        execution_root = str(native_request_path.resolve().parent)
         return [
             command, "exec", "--ephemeral", "--ignore-user-config", "--sandbox", "workspace-write",
-            "--cd", trusted_root, "--add-dir", workdir, "--add-dir", str(projection_root),
+            "--cd", trusted_root, "--add-dir", execution_root,
+            "--add-dir", workdir, "--add-dir", str(projection_root),
             "--output-last-message", str(output_path), context,
         ], output_path
     if adapter == "claude":

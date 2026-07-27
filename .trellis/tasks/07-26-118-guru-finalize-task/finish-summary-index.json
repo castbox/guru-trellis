@@ -13,7 +13,7 @@
       "同月 legacy partial plan 仅由 exact plan-bound takeover 接续，保留 generic/cross-month recovery。",
       "Production eval 调用真实 wrapper，按 actual exit 选 schema，返回后断言 expected_exit。",
       "Canonical、dogfood、四平台、preset 和 extension inventory 保持 byte/mode、update/reapply 一致。",
-      "Standalone not-required 绑定 private remote、exact ref 与 reviewed HEAD，wrong remote/ref 失败。"
+      "Verified/not_required re-entry 先通过 #117 owner checker，再仅放行 exact task-local metadata；wrong remote/ref/arbitrary metadata 失败。"
     ],
     "affected_surfaces": [
       {

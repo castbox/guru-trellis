@@ -17119,6 +17119,210 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 self.context,
             )
 
+    def exercise_prepared_finalization_gate_reentry(
+        self,
+        *,
+        arbitrary_metadata: bool = False,
+    ) -> dict[str, object] | None:
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        gate_relative = f"{task_ref}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+        unexpected_relative = f"{task_ref}/arbitrary-finalization-note.md"
+        plan = self.build_plan(include_finalization_gate=True)
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+        publication_ref = "publication:prepared-recorder-reentry"
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "reviewed_head": self.head,
+            "publication_ref": publication_ref,
+            "finalization_intent": "Finalize the exact reviewed task plan.",
+        }
+        stored_repository = {
+            "head": self.head,
+            "branch": "fix/105-closeout",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/runtime.py"],
+            "status_paths": [f"{task_ref}/pr-body.md"],
+        }
+        stored_entries = {
+            entry_id: gtt.task_publication_binding(entry_id)
+            for entry_id in (
+                "runtime_dependency",
+                "task_workspace",
+                "task_identity",
+                "branch_review_handoff",
+                "planning_approval",
+                "phase2_check",
+                "issue_scope_ledger",
+                "docs_ssot_reconciliation",
+                "branch_review_evidence",
+                "publication_content",
+                "review_range_and_working_tree",
+                "invocation_freshness",
+            )
+        }
+        publication = {
+            "skill_id": gtt.TASK_PUBLICATION_SKILL_ID,
+            "task_dir": task_ref,
+            "profile": "publication_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+            "supersedes_publication_ref": None,
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:prepared-recorder-reentry",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "entry_preconditions": stored_entries,
+                "publication_ref": publication_ref,
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, publication)
+        prepared = {
+            "plan": plan,
+            "ledger": self.ledger,
+            "gate": self.gate,
+            "finalizer_takeover": None,
+            "month_supersession": None,
+        }
+        review = {
+            "review": {
+                "status": "passed",
+                "summary": "The exact prepared plan is current.",
+                "evidence_refs": [plan_ref, publication_ref],
+            },
+            "confirmation": {
+                "status": "confirmed",
+                "confirmed_plan_digest": plan["plan_digest"],
+                "summary": "The exact prepared plan digest was confirmed.",
+            },
+            "route": {
+                "typed_exit": "verification_required",
+                "consumer": gtt.FINALIZATION_CONSUMERS["verification_required"],
+                "output": {
+                    "exit_id": "verification_required",
+                    "task_ref": task_ref,
+                    "plan_ref": plan_ref,
+                    "repo_ref": plan["git"]["repo"],
+                    "reviewed_head": plan["git"]["reviewed_work_head"],
+                    "verification_target": "extension-installation",
+                },
+            },
+            "supersedes_gate_ref": None,
+        }
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+        runtime_args = argparse.Namespace(
+            root=str(self.root),
+            input="unused-public-input.json",
+            review_input="unused-review-input.json",
+            gate=None,
+            dry_run=False,
+            finish_summary_index_file=None,
+            repo="owner/repo",
+            remote="origin",
+        )
+
+        def current_repository() -> dict[str, object]:
+            paths = list(stored_repository["status_paths"])
+            if (self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT).is_file():
+                paths.append(gate_relative)
+            if (self.task_dir / "arbitrary-finalization-note.md").is_file():
+                paths.append(unexpected_relative)
+            return {**stored_repository, "status_paths": sorted(paths)}
+
+        def current_entries(
+            *_args: object,
+            **_kwargs: object,
+        ) -> tuple[dict[str, object], list[str], dict[str, object], dict[str, object]]:
+            repository = current_repository()
+            entries = copy.deepcopy(stored_entries)
+            entries["review_range_and_working_tree"] = (
+                gtt.task_publication_binding(repository)
+            )
+            return entries, [], {}, repository
+
+        def publication_errors(
+            *_args: object,
+            **_kwargs: object,
+        ) -> list[str]:
+            if not (self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT).is_file():
+                return []
+            return [
+                "task publication repository binding is stale",
+                "task publication entry precondition bindings are stale",
+            ]
+
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "finalization_task_dir", return_value=self.task_dir),
+            mock.patch.object(
+                gtt,
+                "finalization_public_input",
+                return_value=(public_input, "<test>"),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_semantic_review_input",
+                return_value=review,
+            ),
+            mock.patch.object(gtt, "finalization_package_root", return_value=package_root),
+            mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
+            mock.patch.object(gtt, "finalization_verification_owner_result", return_value=None),
+            mock.patch.object(
+                gtt,
+                "finalization_current_verification_owner_result",
+                return_value=None,
+            ),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                side_effect=publication_errors,
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                side_effect=lambda *_args, **_kwargs: current_repository(),
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_entry_precondition_bindings",
+                side_effect=current_entries,
+            ),
+        ):
+            recorded = gtt.cmd_record_finalization_gate(runtime_args)
+            self.assertEqual(recorded["typed_exit"], "verification_required")
+            if arbitrary_metadata:
+                (self.task_dir / "arbitrary-finalization-note.md").write_text(
+                    "ordinary unowned metadata\n",
+                    encoding="utf-8",
+                )
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.cmd_check_finalization_gate(runtime_args)
+                return None
+            return gtt.cmd_check_finalization_gate(runtime_args)
+
+    def test_prepared_finalization_gate_recorder_reenters_checker(self) -> None:
+        checked = self.exercise_prepared_finalization_gate_reentry()
+        assert checked is not None
+        self.assertEqual(checked["transaction_state"], "prepared")
+        self.assertEqual(checked["typed_exit"], "verification_required")
+
+    def test_prepared_finalization_gate_reentry_rejects_arbitrary_metadata(self) -> None:
+        self.assertIsNone(
+            self.exercise_prepared_finalization_gate_reentry(arbitrary_metadata=True)
+        )
+
     def exercise_real_verification_metadata_reentry(
         self,
         *,

@@ -1,0 +1,561 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "007",
+  "task": {
+    "id": "118-guru-finalize-task",
+    "path": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "status": "in_progress",
+    "branch": "feat/118-guru-finalize-task"
+  },
+  "issue": {
+    "primary_issue": 118,
+    "ledger_sha256": "9dbd0ae3cea694c1b381dee1f631d36423b3547a8a8f5562caaee8e728ada452"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+      "sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+      "size": 38697
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "sha256": "eb7a5c60f7fb2eb50bdcfefb20f566726f91eb8fd25f9502eecc6050853ad013",
+      "size": 121978
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "sha256": "9dbd0ae3cea694c1b381dee1f631d36423b3547a8a8f5562caaee8e728ada452",
+      "size": 4949
+    },
+    "task": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
+      "sha256": "44c9c3c6896b30aec2fcd78dd9493959314a533ee929796538d604edc62382b1",
+      "size": 659
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "00c82951defff1ddfd894f94a7e71ecbaca78c79",
+        "worktree_sha256": "36e83bbf29f3e5761e4de7edf1f5c5dfa202028a310a6814ff60241cb5cdb08c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ff62f8c6f2a9df24a045fbf46cb06b92af435556",
+        "worktree_sha256": "d1f4cfbb598d61189df305e6bb3c307f4842b58dc4c72cce7965454054345af9",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "10b11b4d2ce8b9482d5a5d75e430bd3a15721424",
+        "worktree_sha256": "e519f1babbf5b90999f9cc3f64b431d7fc544a2e9fe2f640be482d4372a8fc35",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fe3a393d7c7fbe79bedb0083e3276ba3726dd999",
+        "worktree_sha256": "924a67b7fe9630f7b7159ac74bb19a6ebdff4f6d73a5a1f24dccc3634baa0d3b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3a569b391e7da10fd7d5d217ea8b2340c9f3e88c",
+        "worktree_sha256": "25e412973dc4199bb5ac82691712b9ff26a4e412a8ee3a4ec329f089559230e8",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-codex-trace-write-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f7665ed0096904de8c057708ec372834e6e1f07f9694e9d6206cd78772d40347",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalization-gate-reentry-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0fcd7ecf6b1e1bdb1937d206a338abe005ceea7b24330e8ee9fc7bc948294768",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8004aaf666cc804c74f8cd7fb58eedc27b3030b2",
+        "worktree_sha256": "9dbd0ae3cea694c1b381dee1f631d36423b3547a8a8f5562caaee8e728ada452",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-codex-trace-write-fix-full-round.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "251db650e19f34cd4324f460bd4e00b1a200d06de245b019a246ff5741c0ece0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalization-gate-reentry-full-round.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c77597ed827cf2a4b7b85d73ae5c6bebfdfb8e013a9a25b6d71eb86e8461579f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "514b3c16bee344e291b29d632a29594b25b14b53",
+        "worktree_sha256": "eb7a5c60f7fb2eb50bdcfefb20f566726f91eb8fd25f9502eecc6050853ad013",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-codex-trace-write-fix-full-round.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "5ea3cdcd427767a8838c6bca46d2aaa74f8fad73b8d771f14dc747c1447ed321",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalization-gate-reentry-full-round.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "130ddf7136ae63d25149816c4e15e145982db0e29c3e9dcd9086f038603cc6cc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a8735225191d3154facb6c9416510be09e1d1e42",
+        "worktree_sha256": "fc6f26f272ea18d4c26ba10a7531f7e6fc54fbfe3cceecbe25fbaad2bd33d30c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "20a4e6cf847bfe9dcd6b8374a5c948f37e2b44e8",
+        "worktree_sha256": "901f9f0b167e46d5516dad34d7fea52b0a515e4710d6e91ffc0c9b139fdb3607",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8fa1e6d45672386672e76ad07cd14d24909fff9d",
+        "worktree_sha256": "9a298b456944d7e7e24d67235ea318b4ca372f80ffc4b015fee7ee62c41208bf",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a652123ddb99fe20de8f3d6d60523095bde57dbe",
+        "worktree_sha256": "e39a04b40ed6e46c7ea6307bda59398aaff76447b3ed2fa8daaa8c6c3a50cc20",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "8a75a02379ccfe638481e0683e45b7c2542d82d8db24f136b0a72123b28afad1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "a9294f1387c0b01100c298843d73e83c3dcff4d509043a7130b7cc824c887f34",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b02ddb65545eec0f0941a50e2708604334aeb97e",
+        "worktree_sha256": "73bec2b805732d90532ccdbbe79cead8e85f03f7b5b1934d048af757200c07c4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d107c9479395b01e9a9462ea8c95642d5dd7b409",
+        "worktree_sha256": "7c7082eec89778c66d8259f1ebad84f01eef9b7b8149418c92ca7da8fbe0d328",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "10b11b4d2ce8b9482d5a5d75e430bd3a15721424",
+        "worktree_sha256": "e519f1babbf5b90999f9cc3f64b431d7fc544a2e9fe2f640be482d4372a8fc35",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8a0703951d7bc2f5bf177511aca98da589ad678f",
+        "worktree_sha256": "22c9e5db21f8f5d0769ae9392f5e8d0c947b64a9e7b7e3db1f866e042182fd1b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ff62f8c6f2a9df24a045fbf46cb06b92af435556",
+        "worktree_sha256": "d1f4cfbb598d61189df305e6bb3c307f4842b58dc4c72cce7965454054345af9",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "06aa884f83ded3dfbd5038bd296da0120c46930a",
+        "worktree_sha256": "d5ff5a102d86d7153f6a1118d92018cd23de35067f72bd14bd7ad673a4d003bc",
+        "mode": "100644"
+      }
+    ],
+    "digest": "4b0472011b63bdc048d86c4377db06eab21779770cbd1504ecd19f11fe3beced"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-codex-trace-write-fix.md",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalization-gate-reentry-fix.md",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-codex-trace-write-fix-full-round.md",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalization-gate-reentry-full-round.md",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-codex-trace-write-fix-full-round.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalization-gate-reentry-full-round.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+    ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-codex-trace-write-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalization-gate-reentry-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-codex-trace-write-fix-full-round.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalization-gate-reentry-full-round.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-codex-trace-write-fix-full-round.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalization-gate-reentry-full-round.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+    "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #118 修复 finalizer 重入与 Codex eval 边界",
+    "body": "背景：\n#118 的 prepared finalization 在写入精确 gate metadata 后无法合法重入；repo-external Codex production eval 也未授权 native trace 所在 execution root，可能出现 runner rc=0 但真实 public wrapper 未执行。\n\n变更：\n- 允许 prepared state 仅携带 finalizer-owned exact gate metadata 重入，任意额外 metadata 继续 fail closed。\n- 为 Codex workspace-write 授权精确 repo-external execution root，同步 canonical/dogfood adapter 与 manifest binding。\n- 增加真实 public-wrapper regression，补齐 implementation handoff、83-command Phase 2 与 finding closure evidence。\n\n边界：\n不修改 public DTO/schema/exit、global workflow、preset overlays、upstream trellis-finish-work 或 official task.py；不并入 #119/#132，不关闭 #115，也不改变 #105 transaction semantics。\n\n验证：\nRuntime 626 passed/13 skipped、CloseoutTransactionContractTest 104、Skill graph 180、finalizer 5、#116/#117 28、preset 45、ownership 9、source/installed shared eval 各 8/8、真实 Codex repo-external wrapper 与 clean throwaway install/update/reapply/platform chain通过。Claude live 401、Cursor expected unsupported、未 push exact-ref 与 immutable Round 9 whitespace 均如实保留为非阻断 residual。\n\nRefs #118",
+    "bytes": "fix(trellis): #118 修复 finalizer 重入与 Codex eval 边界\n\n背景：\n#118 的 prepared finalization 在写入精确 gate metadata 后无法合法重入；repo-external Codex production eval 也未授权 native trace 所在 execution root，可能出现 runner rc=0 但真实 public wrapper 未执行。\n\n变更：\n- 允许 prepared state 仅携带 finalizer-owned exact gate metadata 重入，任意额外 metadata 继续 fail closed。\n- 为 Codex workspace-write 授权精确 repo-external execution root，同步 canonical/dogfood adapter 与 manifest binding。\n- 增加真实 public-wrapper regression，补齐 implementation handoff、83-command Phase 2 与 finding closure evidence。\n\n边界：\n不修改 public DTO/schema/exit、global workflow、preset overlays、upstream trellis-finish-work 或 official task.py；不并入 #119/#132，不关闭 #115，也不改变 #105 transaction semantics。\n\n验证：\nRuntime 626 passed/13 skipped、CloseoutTransactionContractTest 104、Skill graph 180、finalizer 5、#116/#117 28、preset 45、ownership 9、source/installed shared eval 各 8/8、真实 Codex repo-external wrapper 与 clean throwaway install/update/reapply/platform chain通过。Claude live 401、Cursor expected unsupported、未 push exact-ref 与 immutable Round 9 whitespace 均如实保留为非阻断 residual。\n\nRefs #118\n",
+    "sha256": "9818dddb0a2f23555584ecb16b51a01e5cfbf601490cbdf9b308829c719b0098"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "All 25 current dirty paths are task-scoped and covered by the current Phase 2 artifact or its recorder-self evidence; 007.json is the Skill-owned candidate path. The Chinese Conventional Commit message accurately describes both closed findings, exact validation and excluded ownership, uses only Refs #118, and claims no remote publication or Issue closure.",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "The user replied 确认继续 for immutable task-commit-preview-007.json SHA-256 0002e137d84919c152c3a83bcff6303ff1829af611e2af47baa26d2380bb4054, authorizing exactly this one ordinary local task commit and no push, PR, archive, Ready, merge, Issue closure or mutation, amend, rebase, reset, stash or force operation."
+  },
+  "freshness": {
+    "captured_at": "2026-07-27T23:41:30Z",
+    "plan_digest": "940676b199827f2c9def338c489e089cf24c3bf3f648c2cb1b17dabf961f01c6"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}
