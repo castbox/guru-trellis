@@ -26992,6 +26992,118 @@ def closeout_month_supersession_errors(
     return errors
 
 
+def build_closeout_finalizer_gate_takeover_plan(
+    previous: dict[str, Any],
+    *,
+    evidence_parent_head: str,
+    committed: bool,
+) -> dict[str, Any]:
+    """Build the one legal same-month migration from a pre-finalizer plan."""
+    validate_closeout_plan(previous)
+    projection = previous["projection"]
+    active_gate = (
+        f"{previous['task']['active_locator']}/{TASK_FINALIZATION_GATE_ARTIFACT}"
+    )
+    archive_gate = (
+        f"{previous['task']['archive_locator']}/{TASK_FINALIZATION_GATE_ARTIFACT}"
+    )
+    summary = projection["summary_template"]
+    artifacts = summary["artifacts"]
+    changed_paths = summary["git"]["changed_paths"]
+    search_paths = summary["index"]["search_terms"]["paths"]
+    gate_already_owned = (
+        TASK_FINALIZATION_GATE_ARTIFACT in projection["move_paths"]
+        or TASK_FINALIZATION_GATE_ARTIFACT in projection["tracked_move_paths"]
+        or TASK_FINALIZATION_GATE_ARTIFACT
+        in projection["untracked_archive_outputs"]
+        or active_gate in projection["evidence_paths"]
+        or active_gate in projection["metadata_allowlist"]
+        or archive_gate in projection["metadata_allowlist"]
+        or artifacts.get("task_finalization_gate")
+        == TASK_FINALIZATION_GATE_ARTIFACT
+        or TASK_FINALIZATION_GATE_ARTIFACT in artifacts.values()
+        or active_gate in changed_paths
+        or archive_gate in changed_paths
+        or active_gate in search_paths
+        or archive_gate in search_paths
+    )
+    if gate_already_owned:
+        raise WorkflowError(
+            "Finalizer takeover requires a complete pre-finalizer closeout plan.",
+            exit_code=2,
+        )
+    if committed and not re.fullmatch(r"[0-9a-f]{40}", evidence_parent_head):
+        raise WorkflowError(
+            "Committed finalizer takeover requires the exact prior evidence HEAD.",
+            exit_code=2,
+        )
+
+    current = copy.deepcopy(previous)
+    current_projection = current["projection"]
+    current_projection["move_paths"] = sorted(
+        {*current_projection["move_paths"], TASK_FINALIZATION_GATE_ARTIFACT}
+    )
+    current_projection["untracked_archive_outputs"] = sorted(
+        {
+            *current_projection["untracked_archive_outputs"],
+            TASK_FINALIZATION_GATE_ARTIFACT,
+        }
+    )
+    current_projection["metadata_allowlist"] = sorted(
+        {*current_projection["metadata_allowlist"], archive_gate}
+    )
+    current_summary = current_projection["summary_template"]
+    current_summary["artifacts"] = {
+        key: filename
+        for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
+        if filename
+        in {
+            *current_summary["artifacts"].values(),
+            TASK_FINALIZATION_GATE_ARTIFACT,
+        }
+    }
+    current_summary["git"]["changed_paths"] = sorted(
+        {*current_summary["git"]["changed_paths"], archive_gate}
+    )
+    current_summary["index"]["search_terms"]["paths"] = sorted(
+        {*current_summary["index"]["search_terms"]["paths"], archive_gate}
+    )
+    if committed:
+        current["git"]["evidence_parent_head"] = evidence_parent_head
+        current_projection["evidence_paths"] = sorted(
+            f"{current['task']['active_locator']}/{name}"
+            for name in (CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT)
+        )
+    current_projection["summary_template_sha256"] = closeout_json_artifact_sha256(
+        current_summary
+    )
+    current["plan_digest"] = ""
+    current["plan_digest"] = closeout_plan_digest(current)
+    return validate_closeout_plan(current)
+
+
+def closeout_finalizer_gate_takeover_errors(
+    previous: dict[str, Any],
+    current: dict[str, Any],
+    *,
+    evidence_parent_head: str,
+    committed: bool,
+) -> list[str]:
+    try:
+        expected = build_closeout_finalizer_gate_takeover_plan(
+            previous,
+            evidence_parent_head=evidence_parent_head,
+            committed=committed,
+        )
+    except WorkflowError as exc:
+        return [str(exc)]
+    if current != expected:
+        return [
+            "same-month finalizer takeover changed facts beyond the exact private gate augmentation."
+        ]
+    return []
+
+
 def official_after_archive_hook_state(root: Path) -> dict[str, Any]:
     """Reject official after_archive hooks before the archive command can run them."""
     config_path = root / ".trellis/config.yaml"
@@ -27523,6 +27635,19 @@ def build_closeout_plan(
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
     if not archive_locator:
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
+    legacy_finalizer_gate_takeover = bool(
+        include_finalization_gate
+        and existing_projection
+        and closeout_archive_month(existing_plan) == archive_month_now
+        and TASK_FINALIZATION_GATE_ARTIFACT
+        not in existing_projection.get("move_paths", [])
+    )
+    committed_finalizer_gate_takeover = bool(
+        legacy_finalizer_gate_takeover and reviewed_head_now != reviewed_head
+    )
+    if committed_finalizer_gate_takeover:
+        validate_closeout_evidence_commit(root, existing_plan, reviewed_head_now)
+        evidence_parent_head = reviewed_head_now
     assert_closeout_archive_path_preflight(root, archive_locator)
     observed_task_files = {
         path.relative_to(task_dir).as_posix()
@@ -27538,12 +27663,22 @@ def build_closeout_plan(
     if existing_projection:
         task_files = set(existing_projection.get("move_paths", []))
         unexpected_task_files = sorted(observed_task_files - task_files)
-        if unexpected_task_files:
+        allowed_takeover_files = (
+            {TASK_FINALIZATION_GATE_ARTIFACT}
+            if legacy_finalizer_gate_takeover
+            else set()
+        )
+        blocking_task_files = sorted(
+            set(unexpected_task_files) - allowed_takeover_files
+        )
+        if blocking_task_files:
             raise WorkflowError(
                 "Persisted closeout plan does not own newly added task artifacts.",
                 exit_code=2,
-                payload={"unexpected_task_files": unexpected_task_files},
+                payload={"unexpected_task_files": blocking_task_files},
             )
+        if legacy_finalizer_gate_takeover:
+            task_files.add(TASK_FINALIZATION_GATE_ARTIFACT)
     else:
         if (task_dir / FINISH_SUMMARY_ARTIFACT).exists():
             raise WorkflowError(
@@ -27560,6 +27695,10 @@ def build_closeout_plan(
     if existing_projection:
         tracked_move_paths = list(existing_projection.get("tracked_move_paths", []))
         untracked_archive_outputs = list(existing_projection.get("untracked_archive_outputs", []))
+        if legacy_finalizer_gate_takeover:
+            untracked_archive_outputs = sorted(
+                {*untracked_archive_outputs, TASK_FINALIZATION_GATE_ARTIFACT}
+            )
     else:
         untracked_archive_outputs = [FINISH_SUMMARY_ARTIFACT]
         if include_finalization_gate:
@@ -27570,7 +27709,9 @@ def build_closeout_plan(
         {f"{active_locator}/{name}" for name in tracked_move_paths}
         | {f"{archive_locator}/{name}" for name in move_paths}
     )
-    if existing_projection and superseding_committed_month:
+    if existing_projection and (
+        superseding_committed_month or committed_finalizer_gate_takeover
+    ):
         evidence_paths = sorted(
             f"{active_locator}/{name}"
             for name in (CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT)
@@ -27786,6 +27927,7 @@ def prepare_closeout(
         ),
     )
     month_supersession: dict[str, Any] | None = None
+    finalizer_takeover: dict[str, Any] | None = None
     existing = closeout_plan_path(task_dir)
     if existing.is_file():
         persisted = validate_closeout_plan(read_json(existing))
@@ -27793,51 +27935,93 @@ def prepare_closeout(
             previous_month = closeout_archive_month(persisted)
             next_month = closeout_archive_month(plan)
             committed = current_head(root) != reviewed_head
-            supersession_errors = closeout_month_supersession_errors(
-                persisted,
-                plan,
-                previous_evidence_head=current_head(root),
-                committed=committed,
+            takeover_errors = (
+                closeout_finalizer_gate_takeover_errors(
+                    persisted,
+                    plan,
+                    evidence_parent_head=current_head(root),
+                    committed=committed,
+                )
+                if bool(getattr(args, "include_finalization_gate", False))
+                and previous_month == next_month
+                else ["same-month finalizer takeover is not applicable."]
             )
             if (
-                previous_month == next_month
-                or task.get("status") != "in_progress"
-                or (root / persisted["task"]["archive_locator"]).exists()
-                or supersession_errors
+                not takeover_errors
+                and task.get("status") == "in_progress"
+                and not (root / persisted["task"]["archive_locator"]).exists()
             ):
-                raise WorkflowError(
-                    "Persisted closeout plan no longer matches protected inputs.",
-                    exit_code=2,
-                    payload={
-                        "persisted_digest": persisted.get("plan_digest"),
-                        "rebuilt_digest": plan.get("plan_digest"),
-                        "month_supersession_errors": supersession_errors,
-                    },
-                )
-            if committed:
-                if not closeout_evidence_is_committed(root, task_dir, persisted, ledger, gate):
-                    raise WorkflowError(
-                        "Committed stale-month plan is not an exact evidence commit and cannot be superseded.",
-                        exit_code=2,
-                    )
-                prior_state = "evidence_pushed"
-            else:
                 prior_state = resolve_closeout_pre_draft_state(
                     root, task_dir, persisted, ledger, gate
                 )
-                if prior_state not in {"content_pushed", "evidence_ready"}:
+                legal_states = (
+                    {"evidence_pushed"}
+                    if committed
+                    else {"content_pushed", "evidence_ready"}
+                )
+                if prior_state not in legal_states:
                     raise WorkflowError(
-                        "Uncommitted stale-month plan has no unique reprepare state.",
+                        "Same-month finalizer takeover requires one exact pre-draft legacy state.",
                         exit_code=2,
-                        payload={"state": prior_state},
+                        payload={
+                            "state": prior_state,
+                            "committed": committed,
+                        },
                     )
-            month_supersession = {
-                "previous_plan": persisted,
-                "previous_month": previous_month,
-                "current_month": next_month,
-                "committed": committed,
-                "prior_state": prior_state,
-            }
+                finalizer_takeover = {
+                    "previous_plan": persisted,
+                    "previous_plan_digest": persisted["plan_digest"],
+                    "current_plan_digest": plan["plan_digest"],
+                    "committed": committed,
+                    "prior_state": prior_state,
+                }
+            else:
+                supersession_errors = closeout_month_supersession_errors(
+                    persisted,
+                    plan,
+                    previous_evidence_head=current_head(root),
+                    committed=committed,
+                )
+                if (
+                    previous_month == next_month
+                    or task.get("status") != "in_progress"
+                    or (root / persisted["task"]["archive_locator"]).exists()
+                    or supersession_errors
+                ):
+                    raise WorkflowError(
+                        "Persisted closeout plan no longer matches protected inputs.",
+                        exit_code=2,
+                        payload={
+                            "persisted_digest": persisted.get("plan_digest"),
+                            "rebuilt_digest": plan.get("plan_digest"),
+                            "finalizer_takeover_errors": takeover_errors,
+                            "month_supersession_errors": supersession_errors,
+                        },
+                    )
+                if committed:
+                    if not closeout_evidence_is_committed(root, task_dir, persisted, ledger, gate):
+                        raise WorkflowError(
+                            "Committed stale-month plan is not an exact evidence commit and cannot be superseded.",
+                            exit_code=2,
+                        )
+                    prior_state = "evidence_pushed"
+                else:
+                    prior_state = resolve_closeout_pre_draft_state(
+                        root, task_dir, persisted, ledger, gate
+                    )
+                    if prior_state not in {"content_pushed", "evidence_ready"}:
+                        raise WorkflowError(
+                            "Uncommitted stale-month plan has no unique reprepare state.",
+                            exit_code=2,
+                            payload={"state": prior_state},
+                        )
+                month_supersession = {
+                    "previous_plan": persisted,
+                    "previous_month": previous_month,
+                    "current_month": next_month,
+                    "committed": committed,
+                    "prior_state": prior_state,
+                }
         else:
             plan = persisted
     return {
@@ -27853,6 +28037,7 @@ def prepare_closeout(
         "body": body,
         "body_source": body_source,
         "month_supersession": month_supersession,
+        "finalizer_takeover": finalizer_takeover,
     }
 
 
@@ -29324,6 +29509,85 @@ def apply_active_closeout_month_supersession(
     return "evidence_ready" if committed else str(supersession["prior_state"])
 
 
+def apply_active_closeout_finalizer_takeover(
+    root: Path,
+    task_dir: Path,
+    prepared: dict[str, Any],
+    finalization_gate: Any,
+) -> str:
+    takeover = prepared.get("finalizer_takeover")
+    if not isinstance(takeover, dict):
+        raise WorkflowError("Closeout finalizer takeover state is missing.", exit_code=2)
+    previous = takeover["previous_plan"]
+    plan = prepared["plan"]
+    committed = takeover.get("committed") is True
+    current = current_head(root)
+    errors = closeout_finalizer_gate_takeover_errors(
+        previous,
+        plan,
+        evidence_parent_head=current,
+        committed=committed,
+    )
+    if closeout_archive_month(previous) != closeout_archive_month(plan):
+        errors.append("finalizer takeover must preserve the existing archive month")
+    if committed != (current != plan["git"]["reviewed_work_head"]):
+        errors.append("finalizer takeover commit state changed after preview")
+    persisted_path = closeout_plan_path(task_dir)
+    persisted = (
+        validate_closeout_plan(read_json(persisted_path))
+        if persisted_path.is_file()
+        else None
+    )
+    if persisted != previous:
+        errors.append("persisted predecessor plan changed after preview")
+    gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+    persisted_gate = read_json(gate_path) if gate_path.is_file() else None
+    expected_gate_plan = {
+        "available": True,
+        "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+        "plan_digest": plan["plan_digest"],
+        "reviewed_head": plan["git"]["reviewed_work_head"],
+    }
+    if (
+        not isinstance(finalization_gate, dict)
+        or finalization_gate.get("skill_id") != FINALIZE_TASK_SKILL_ID
+        or finalization_gate.get("plan") != expected_gate_plan
+        or persisted_gate != finalization_gate
+    ):
+        errors.append("finalizer takeover gate is not bound to the augmented plan")
+    actual_prior_state = resolve_closeout_pre_draft_state(
+        root,
+        task_dir,
+        previous,
+        prepared["ledger"],
+        prepared["gate"],
+    )
+    if actual_prior_state != takeover.get("prior_state"):
+        errors.append("finalizer takeover predecessor state changed after preview")
+    if errors:
+        raise WorkflowError(
+            "Closeout finalizer takeover is no longer valid.",
+            exit_code=2,
+            payload={"errors": sorted(set(errors)), "stage": "finalizer-takeover"},
+        )
+
+    readiness_path, readiness = build_pr_readiness_snapshot(
+        root,
+        task_dir,
+        repo=plan["git"]["repo"],
+        base_branch=plan["git"]["base_branch"],
+        head_branch=plan["git"]["head_branch"],
+        reviewed_head_sha=plan["git"]["reviewed_work_head"],
+        title=plan["publish"]["title"],
+        draft=True,
+        closeout_plan_digest=plan["plan_digest"],
+        allow_closeout_digest_replacement=True,
+    )
+    write_json(persisted_path, plan)
+    write_json(readiness_path, readiness)
+    return "evidence_ready" if committed else str(takeover["prior_state"])
+
+
 def resume_active_archive_move(
     root: Path,
     args: argparse.Namespace,
@@ -29513,6 +29777,13 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
         )
         entry_state = apply_active_closeout_month_supersession(root, task_dir, prepared)
+    elif prepared.get("finalizer_takeover") is not None:
+        entry_state = apply_active_closeout_finalizer_takeover(
+            root,
+            task_dir,
+            prepared,
+            getattr(args, "finalization_gate", None),
+        )
     else:
         entry_state = resolve_closeout_pre_draft_state(
             root, task_dir, plan, ledger, prepared["gate"]
@@ -30467,7 +30738,9 @@ def finalization_preview_context(
             setattr(args, "include_finalization_gate", True)
             prepared = prepare_closeout(root, args, config, task_dir, task_context)
             plan = prepared["plan"]
-            if prepared.get("month_supersession") is not None:
+            if prepared.get("finalizer_takeover") is not None:
+                state = prepared["finalizer_takeover"]["prior_state"]
+            elif prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
             else:
                 state = resolve_closeout_pre_draft_state(

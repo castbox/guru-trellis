@@ -16999,6 +16999,125 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 include_finalization_gate=include_finalization_gate,
             )
 
+    def write_legacy_partial_closeout(
+        self,
+    ) -> tuple[dict[str, object], dict[str, object], list[str]]:
+        self.task["status"] = "in_progress"
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        with mock.patch.object(gtt, "current_head", return_value=self.head):
+            plan = self.build_plan()
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        publish_inputs = {
+            "repo": plan["git"]["repo"],
+            "base_branch": plan["git"]["base_branch"],
+            "head_branch": plan["git"]["head_branch"],
+            "reviewed_head_sha": plan["git"]["reviewed_work_head"],
+            "title": plan["publish"]["title"],
+            "body_source": gtt.PR_BODY_ARTIFACT,
+            "body_sha256": plan["publish"]["body_sha256"],
+            "draft": True,
+            "reviewed_source": f"body-artifact:{gtt.PR_READINESS_ARTIFACT}",
+            "closeout_plan_digest": plan["plan_digest"],
+        }
+        gtt.write_json(
+            self.task_dir / gtt.PR_READINESS_ARTIFACT,
+            {
+                "ready": True,
+                "body_file": gtt.PR_BODY_ARTIFACT,
+                "publish_inputs": publish_inputs,
+                "publish_inputs_sha256": gtt.canonical_json_sha256(publish_inputs),
+            },
+        )
+        ledger = gtt.record_marketplace_machine_evidence(
+            self.ledger,
+            plan["marketplace"]["pending_machine"],
+        )
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
+        dirty_paths = sorted(plan["projection"]["evidence_paths"])
+        return plan, ledger, dirty_paths
+
+    def finalizer_takeover_runtime(
+        self,
+        ledger: dict[str, object],
+        dirty_paths: list[str],
+    ) -> tuple[argparse.Namespace, list[object]]:
+        args = argparse.Namespace(
+            root=str(self.root),
+            repo="owner/repo",
+            remote="origin",
+            finish_summary_index_file=None,
+            include_finalization_gate=True,
+        )
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
+            return mock.Mock(returncode=0, stdout=stdout, stderr="")
+
+        return args, [
+            mock.patch.object(
+                gtt,
+                "official_after_archive_hook_state",
+                return_value={"commands": []},
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_review_gate",
+                return_value=(self.task_dir / "review-gate.json", self.gate, []),
+            ),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(
+                gtt,
+                "load_finish_summary_index",
+                return_value=(self.task_dir / "finish-summary-index.json", self.index),
+            ),
+            mock.patch.object(gtt, "load_issue_scope_ledger", return_value=ledger),
+            mock.patch.object(gtt, "validate_ledger_for_publish", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_reviewed_body",
+                return_value=(
+                    (self.task_dir / "pr-body.md").read_text(encoding="utf-8"),
+                    {"kind": "test-owner"},
+                ),
+            ),
+            mock.patch.object(gtt, "validate_pr_body_quality", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "validate_reviewed_body_source_for_publish",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "validate_closeout_task_children"),
+            mock.patch.object(gtt, "validate_github_remote_repository"),
+            mock.patch.object(gtt, "base_branch_from_sources", return_value="main"),
+            mock.patch.object(gtt, "current_branch", return_value="fix/105-closeout"),
+            mock.patch.object(
+                gtt,
+                "pr_title_from_task",
+                return_value="#105 重构 finish-work 收尾事务",
+            ),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "current_archive_month", return_value="2026-07"),
+            mock.patch.object(gtt, "git_status_paths", return_value=dirty_paths),
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+        ]
+
+    def prepare_finalizer_takeover(
+        self,
+        ledger: dict[str, object],
+        dirty_paths: list[str],
+    ) -> dict[str, object]:
+        args, patches = self.finalizer_takeover_runtime(ledger, dirty_paths)
+        with contextlib.ExitStack() as stack:
+            for patcher in patches:
+                stack.enter_context(patcher)
+            return gtt.prepare_closeout(
+                self.root,
+                args,
+                {},
+                self.task_dir,
+                self.context,
+            )
+
     def test_finalization_eval_context_carries_publication_stale_owner_facts(self) -> None:
         public_input = {
             "profile": "publication_ready",
@@ -18659,6 +18778,348 @@ shutil.move(str(active), str(archived))
         self.assertNotIn(
             mock.call(["git", "add", "-A", "--", plan["task"]["active_locator"]], cwd=self.root),
             run_stdout.mock_calls,
+        )
+
+    def test_same_month_legacy_partial_finalizer_takeover_runs_recorder_checker_and_transition(
+        self,
+    ) -> None:
+        legacy_plan, ledger, dirty_paths = self.write_legacy_partial_closeout()
+        legacy_plan_path = self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT
+        legacy_plan_bytes = legacy_plan_path.read_bytes()
+
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        public_input = {
+            "profile": "standalone_finalization",
+            "mode": "standalone",
+            "task_ref": task_ref,
+        }
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+
+        def enter_command_runtime(
+            stack: contextlib.ExitStack,
+            current_dirty_paths: list[str],
+        ) -> argparse.Namespace:
+            runtime_args, patchers = self.finalizer_takeover_runtime(
+                ledger,
+                current_dirty_paths,
+            )
+            for patcher in patchers:
+                stack.enter_context(patcher)
+            stack.enter_context(mock.patch.object(gtt, "repo_root", return_value=self.root))
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_public_input",
+                    return_value=(public_input, "<test>"),
+                )
+            )
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_publication_owner_result",
+                    return_value={
+                        "owner_status": "current",
+                        "publication_ref": "publication:test-current",
+                    },
+                )
+            )
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_verification_owner_result",
+                    return_value=None,
+                )
+            )
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_current_verification_owner_result",
+                    return_value=None,
+                )
+            )
+            stack.enter_context(mock.patch.object(gtt, "load_config", return_value={}))
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "load_task_start_context",
+                    return_value=self.context,
+                )
+            )
+            stack.enter_context(mock.patch.object(gtt, "assert_workspace_boundary"))
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_package_root",
+                    return_value=package_root,
+                )
+            )
+            runtime_args.input = "unused-public-input.json"
+            return runtime_args
+
+        with contextlib.ExitStack() as stack:
+            preview_args = enter_command_runtime(stack, dirty_paths)
+            preview_result = gtt.cmd_preview_finalization(preview_args)
+            preview_context = gtt.finalization_preview_context(
+                self.root,
+                preview_args,
+                public_input,
+            )
+        preview = preview_context["prepared"]
+        assert isinstance(preview, dict)
+        self.assertEqual(
+            preview_result["closeout_plan_digest"],
+            preview["plan"]["plan_digest"],
+        )
+        takeover = preview["finalizer_takeover"]
+        self.assertIsNotNone(takeover)
+        assert isinstance(takeover, dict)
+        augmented_plan = preview["plan"]
+        self.assertNotEqual(
+            legacy_plan["plan_digest"],
+            augmented_plan["plan_digest"],
+        )
+        self.assertEqual(
+            takeover["previous_plan_digest"],
+            legacy_plan["plan_digest"],
+        )
+        self.assertEqual(
+            takeover["current_plan_digest"],
+            augmented_plan["plan_digest"],
+        )
+        self.assertEqual(legacy_plan_path.read_bytes(), legacy_plan_bytes)
+
+        route = {
+            "typed_exit": "verification_required",
+            "consumer": gtt.FINALIZATION_CONSUMERS["verification_required"],
+            "output": {
+                "exit_id": "verification_required",
+                "task_ref": task_ref,
+                "plan_ref": f"closeout-plan:{augmented_plan['plan_digest']}",
+                "repo_ref": augmented_plan["git"]["repo"],
+                "reviewed_head": augmented_plan["git"]["reviewed_work_head"],
+                "verification_target": "extension-installation",
+            },
+        }
+        reviewed = {
+            "review": {
+                "status": "passed",
+                "summary": "The exact augmented takeover plan is current.",
+                "evidence_refs": [
+                    f"closeout-plan:{augmented_plan['plan_digest']}",
+                    "publication:test-current",
+                ],
+            },
+            "confirmation": {
+                "status": "confirmed",
+                "confirmed_plan_digest": augmented_plan["plan_digest"],
+                "summary": "The augmented candidate digest was confirmed exactly.",
+            },
+            "route": route,
+            "supersedes_gate_ref": None,
+        }
+        with contextlib.ExitStack() as stack:
+            recorder_args = enter_command_runtime(stack, dirty_paths)
+            recorder_args.review_input = "unused-review-input.json"
+            recorder_args.dry_run = False
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_semantic_review_input",
+                    return_value=reviewed,
+                )
+            )
+            recorded = gtt.cmd_record_finalization_gate(recorder_args)
+        self.assertEqual(recorded["plan_digest"], augmented_plan["plan_digest"])
+        self.assertEqual(legacy_plan_path.read_bytes(), legacy_plan_bytes)
+
+        gate_path = self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT
+        gate = gtt.read_json(gate_path)
+        dirty_with_gate = sorted(
+            {*dirty_paths, gtt.repo_relative(self.root, gate_path)}
+        )
+        with contextlib.ExitStack() as stack:
+            checker_args = enter_command_runtime(stack, dirty_with_gate)
+            checker_args.gate = None
+            checked_result = gtt.cmd_check_finalization_gate(checker_args)
+            checked_context = gtt.finalization_preview_context(
+                self.root,
+                checker_args,
+                public_input,
+            )
+            execute_args = copy.copy(checker_args)
+            executed = gtt.cmd_execute_finalization_transition(execute_args)
+        rebuilt = checked_context["prepared"]
+        assert isinstance(rebuilt, dict)
+        self.assertEqual(rebuilt["plan"], augmented_plan)
+        self.assertEqual(
+            rebuilt["finalizer_takeover"]["previous_plan_digest"],
+            legacy_plan["plan_digest"],
+        )
+        self.assertEqual(
+            checked_result["plan_digest"],
+            augmented_plan["plan_digest"],
+        )
+        self.assertEqual(checked_context["plan"], augmented_plan)
+        self.assertEqual(executed["stage"], "content_pushed")
+        self.assertEqual(executed["typed_exit"], "verification_required")
+        self.assertEqual(legacy_plan_path.read_bytes(), legacy_plan_bytes)
+        gate = gtt.read_json(gate_path)
+
+        def replacement_readiness(
+            _root: Path,
+            _task_dir: Path,
+            **kwargs: object,
+        ) -> tuple[Path, dict[str, object]]:
+            self.assertTrue(kwargs["allow_closeout_digest_replacement"])
+            self.assertEqual(
+                kwargs["closeout_plan_digest"],
+                augmented_plan["plan_digest"],
+            )
+            readiness_path = self.task_dir / gtt.PR_READINESS_ARTIFACT
+            readiness = gtt.read_json(readiness_path)
+            readiness["publish_inputs"]["closeout_plan_digest"] = augmented_plan[
+                "plan_digest"
+            ]
+            readiness["publish_inputs_sha256"] = gtt.canonical_json_sha256(
+                readiness["publish_inputs"]
+            )
+            return readiness_path, readiness
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "git_status_paths", return_value=dirty_with_gate),
+            mock.patch.object(
+                gtt,
+                "build_pr_readiness_snapshot",
+                side_effect=replacement_readiness,
+            ),
+        ):
+            transition_state = gtt.apply_active_closeout_finalizer_takeover(
+                self.root,
+                self.task_dir,
+                rebuilt,
+                gate,
+            )
+        self.assertEqual(transition_state, "content_pushed")
+        self.assertEqual(gtt.read_json(legacy_plan_path), augmented_plan)
+        self.assertIn(
+            gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            augmented_plan["projection"]["move_paths"],
+        )
+        self.assertIn(
+            gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            augmented_plan["projection"]["untracked_archive_outputs"],
+        )
+        self.assertIn(
+            f"{augmented_plan['task']['archive_locator']}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}",
+            augmented_plan["projection"]["metadata_allowlist"],
+        )
+
+        one_time = self.prepare_finalizer_takeover(ledger, dirty_with_gate)
+        self.assertIsNone(one_time["finalizer_takeover"])
+        self.assertEqual(one_time["plan"], augmented_plan)
+
+        gtt.write_json(
+            self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            {"status": "passed"},
+        )
+        expected_evidence = set(augmented_plan["projection"]["evidence_paths"])
+        exact_dirty = expected_evidence | {gtt.repo_relative(self.root, gate_path)}
+
+        def fake_stdout(command: list[str], **_kwargs: object) -> str:
+            if command[:4] == ["git", "diff", "--cached", "--name-only"]:
+                return "\n".join(sorted(expected_evidence))
+            if command[:3] == ["git", "rev-parse", "HEAD"]:
+                return self.head
+            return ""
+
+        with (
+            mock.patch.object(gtt, "git_status_paths", return_value=sorted(exact_dirty)),
+            mock.patch.object(gtt, "run_stdout", side_effect=fake_stdout) as run_stdout,
+            mock.patch.object(gtt, "validate_closeout_evidence_commit"),
+        ):
+            committed = gtt.commit_closeout_evidence_metadata(
+                self.root,
+                self.task_dir,
+                augmented_plan,
+                finalizer_mode=True,
+            )
+        self.assertEqual(committed["paths"], sorted(expected_evidence))
+        self.assertIn(
+            mock.call(["git", "add", "--", *sorted(expected_evidence)], cwd=self.root),
+            run_stdout.mock_calls,
+        )
+        self.assertNotIn(gtt.repo_relative(self.root, gate_path), committed["paths"])
+
+    def test_same_month_finalizer_takeover_rejects_any_other_new_artifact(self) -> None:
+        self.write_legacy_partial_closeout()
+        (self.task_dir / "unexpected-owner.json").write_text("{}\n", encoding="utf-8")
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            self.build_plan(include_finalization_gate=True)
+        self.assertEqual(
+            raised.exception.payload["unexpected_task_files"],
+            ["unexpected-owner.json"],
+        )
+
+    def test_committed_finalizer_takeover_binds_prior_evidence_head_and_minimal_tail(
+        self,
+    ) -> None:
+        legacy_plan = self.build_plan()
+        evidence_head = "b" * 40
+        current = gtt.build_closeout_finalizer_gate_takeover_plan(
+            legacy_plan,
+            evidence_parent_head=evidence_head,
+            committed=True,
+        )
+        self.assertEqual(current["git"]["evidence_parent_head"], evidence_head)
+        self.assertEqual(
+            current["projection"]["evidence_paths"],
+            sorted(
+                f"{current['task']['active_locator']}/{name}"
+                for name in (gtt.CLOSEOUT_PLAN_ARTIFACT, gtt.PR_READINESS_ARTIFACT)
+            ),
+        )
+        self.assertEqual(
+            gtt.closeout_finalizer_gate_takeover_errors(
+                legacy_plan,
+                current,
+                evidence_parent_head=evidence_head,
+                committed=True,
+            ),
+            [],
+        )
+        changed = copy.deepcopy(current)
+        changed["publish"]["title"] = "unexpected semantic change"
+        changed["plan_digest"] = gtt.closeout_plan_digest(changed)
+        self.assertTrue(
+            gtt.closeout_finalizer_gate_takeover_errors(
+                legacy_plan,
+                changed,
+                evidence_parent_head=evidence_head,
+                committed=True,
+            )
+        )
+
+    def test_generic_closeout_still_rejects_finalizer_gate_on_legacy_plan(self) -> None:
+        self.write_legacy_partial_closeout()
+        gtt.write_json(
+            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            {"schema_version": "test-private-gate"},
+        )
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            self.build_plan(include_finalization_gate=False)
+        self.assertEqual(
+            raised.exception.payload["unexpected_task_files"],
+            [gtt.TASK_FINALIZATION_GATE_ARTIFACT],
         )
 
     def test_closeout_evidence_commit_rejects_other_task_metadata(self) -> None:

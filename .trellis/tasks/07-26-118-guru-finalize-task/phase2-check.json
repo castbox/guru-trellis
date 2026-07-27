@@ -65,7 +65,7 @@
         "size_bytes": 66370
       }
     ],
-    "sync_result": "The approved finalizer-only #117 metadata-tail augmentation, private published marker, strict terminal materialization, exact archive locator, immutable-plan repository binding and legal recovery-state contract are merged into step-local and durable SSOT. Package counts, global marker counts and the #119/#132 ownership boundary remain reconciled.",
+    "sync_result": "Durable SSOT remains reconciled for the complete Issue #118 package. The exact same-month legacy finalizer takeover implements the already-approved #105-compatible private recovery contract, so the post-Branch-finding delta requires no additional durable docs update; #119/#132 ownership is unchanged.",
     "task_delta_merged": true,
     "task_history_only": [
       "Planning and accepted-authority provenance",
@@ -74,10 +74,10 @@
     ],
     "no_update_reason": null,
     "followup_or_pr_limit": "Global Finish-family activation and combined acceptance remain Issue #119; physical upstream overlay cleanup remains Issue #132; exact pushed feature-ref installation and real GitHub finalization side effects remain publication-time evidence.",
-    "facts_sha256": "f903992502649aefb6ab43abece3b21ed52a6cc52d3868437e1c6a063ba1207d"
+    "facts_sha256": "d4bb5e41ea9eb1cb672440626af98e7e4e7c525400a23ec17a5e65536b2e3287"
   },
   "implementation_handoff": {
-    "summary": "Round 3 implementation closed F-RECOVERY-03, F-MATERIALIZATION-04, F-LOCATOR-05, F-IDENTITY-06 and F-STATE-07, preserved the four earlier fixes, synchronized canonical and installed assets, and completed scoped validation without commit or publication side effects.",
+    "summary": "Round 4 implementation closed Branch Review finding F-FINAL-LEGACY-01 with one exact same-month legacy-plan finalizer takeover, preserved generic #105 and cross-month fail-closed behavior, synchronized canonical/dogfood runtime, and completed scoped validation without publication side effects.",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
@@ -93,13 +93,19 @@
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
         "sha256": "c80722767e27325573ae3ce5717b7168ecf8ed85a5de076e9482f29f1acec642",
         "size_bytes": 6884
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+        "sha256": "345afb57a64a183888090c9663d59686fcad5b9521f654192a319f9ba3d070d7",
+        "size_bytes": 6414
       }
     ],
-    "facts_sha256": "9d5e116f7342cb635ce105c9811075dbddfb2e56ee036119cf093067aa3f7dbb"
+    "facts_sha256": "8c116a1102ef61496c95a26c7adfe888f0a65a697da3b765f5c84965e53c3002"
   },
   "agent_assignment": {
     "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
     "implementation_agent_ids": [
+      "/root/issue118_branch_finding_fix",
       "/root/issue118_impl_correction_replacement",
       "/root/issue118_impl_final",
       "/root/issue118_impl_round2_replacement",
@@ -107,487 +113,73 @@
     ],
     "check_agent_ids": [
       "/root/issue118_phase2_check",
+      "/root/issue118_phase2_post_branch_fix_check",
       "/root/issue118_phase2_round3_check",
       "/root/issue118_phase2_round4_check"
     ],
     "recovery_complete": true,
-    "phase2_state_sha256": "42409471d4d3fe6be0ea495471366fe944dbffd68243746830d294e674198912",
-    "facts_sha256": "21267a020ff1dc41ecab12d6f5cb38c2782969f03ea0e830c02aba18a3993971"
+    "phase2_state_sha256": "9061f7109452df9c98adb9ee6b43bf46555be5eac0b0a165659f85987ca4a532",
+    "facts_sha256": "a1f31eb63977a6b9834c4585f38b28be582f1cfe4ab7b18a076a9564d220d344"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
-    "head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "head": "5695f7aab15b5d40660b535948c11c0ef55300f5",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
-      ".agents/skills/guru-finalize-task/SKILL.md",
-      ".agents/skills/guru-finalize-task/evals/evals.json",
-      ".agents/skills/guru-finalize-task/evals/files/blocked-private-state-facts.json",
-      ".agents/skills/guru-finalize-task/evals/files/cross-month-reprepare-facts.json",
-      ".agents/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".agents/skills/guru-finalize-task/evals/files/publication-ready-input.json",
-      ".agents/skills/guru-finalize-task/evals/files/publication-review-stale-facts.json",
-      ".agents/skills/guru-finalize-task/evals/files/publication-verification-required-facts.json",
-      ".agents/skills/guru-finalize-task/evals/files/published-recovery-facts.json",
-      ".agents/skills/guru-finalize-task/evals/files/reprepare-preview-input.json",
-      ".agents/skills/guru-finalize-task/evals/files/same-plan-resume-facts.json",
-      ".agents/skills/guru-finalize-task/evals/files/same-plan-resume-input.json",
-      ".agents/skills/guru-finalize-task/evals/files/standalone-finalization-input.json",
-      ".agents/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".agents/skills/guru-finalize-task/evals/files/verification-verified-input.json",
-      ".agents/skills/guru-finalize-task/evals/files/verified-reentry-published-facts.json",
-      ".agents/skills/guru-finalize-task/examples/public-blocked-output.json",
-      ".agents/skills/guru-finalize-task/examples/public-invocation-error.json",
-      ".agents/skills/guru-finalize-task/examples/public-publication-ready-authoring.json",
-      ".agents/skills/guru-finalize-task/examples/public-publication-ready-input.json",
-      ".agents/skills/guru-finalize-task/examples/public-publication-review-stale-authoring.json",
-      ".agents/skills/guru-finalize-task/examples/public-publication-review-stale-output.json",
-      ".agents/skills/guru-finalize-task/examples/public-published-output.json",
-      ".agents/skills/guru-finalize-task/examples/public-reprepare-preview-authoring.json",
-      ".agents/skills/guru-finalize-task/examples/public-reprepare-preview-input.json",
-      ".agents/skills/guru-finalize-task/examples/public-reprepare-required-output.json",
-      ".agents/skills/guru-finalize-task/examples/public-resume-finalization-output.json",
-      ".agents/skills/guru-finalize-task/examples/public-same-plan-resume-authoring.json",
-      ".agents/skills/guru-finalize-task/examples/public-same-plan-resume-input.json",
-      ".agents/skills/guru-finalize-task/examples/public-standalone-finalization-input.json",
-      ".agents/skills/guru-finalize-task/examples/public-verification-not-required-authoring.json",
-      ".agents/skills/guru-finalize-task/examples/public-verification-not-required-input.json",
-      ".agents/skills/guru-finalize-task/examples/public-verification-required-authoring.json",
-      ".agents/skills/guru-finalize-task/examples/public-verification-required-output.json",
-      ".agents/skills/guru-finalize-task/examples/public-verification-verified-authoring.json",
-      ".agents/skills/guru-finalize-task/examples/public-verification-verified-input.json",
-      ".agents/skills/guru-finalize-task/examples/semantic-review-input.json",
-      ".agents/skills/guru-finalize-task/examples/task-finalization-gate.json",
-      ".agents/skills/guru-finalize-task/interface.json",
-      ".agents/skills/guru-finalize-task/references/contract.md",
-      ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-blocked-output.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-invocation-error.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-publication-ready-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-publication-review-stale-output.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-published-output.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-reprepare-preview-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-reprepare-required-output.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-resume-finalization-output.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-same-plan-resume-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-standalone-finalization-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-verification-not-required-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-verification-required-output.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-verification-verified-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/semantic-review-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".agents/skills/guru-finalize-task/scripts/check-finalization-gate.sh",
-      ".agents/skills/guru-finalize-task/scripts/execute-finalization-transition.sh",
-      ".agents/skills/guru-finalize-task/scripts/invoke.sh",
-      ".agents/skills/guru-finalize-task/scripts/preview-finalization.sh",
-      ".agents/skills/guru-finalize-task/scripts/record-finalization-gate.sh",
-      ".agents/skills/guru-finalize-task/tests/test_contract.py",
-      ".agents/skills/guru-review-task-publication/interface.json",
-      ".agents/skills/guru-verify-extension-installation/examples/public-verification-required-authoring.json",
-      ".agents/skills/guru-verify-extension-installation/interface.json",
-      ".claude/skills/guru-finalize-task/SKILL.md",
-      ".claude/skills/guru-finalize-task/evals/evals.json",
-      ".claude/skills/guru-finalize-task/evals/files/blocked-private-state-facts.json",
-      ".claude/skills/guru-finalize-task/evals/files/cross-month-reprepare-facts.json",
-      ".claude/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".claude/skills/guru-finalize-task/evals/files/publication-ready-input.json",
-      ".claude/skills/guru-finalize-task/evals/files/publication-review-stale-facts.json",
-      ".claude/skills/guru-finalize-task/evals/files/publication-verification-required-facts.json",
-      ".claude/skills/guru-finalize-task/evals/files/published-recovery-facts.json",
-      ".claude/skills/guru-finalize-task/evals/files/reprepare-preview-input.json",
-      ".claude/skills/guru-finalize-task/evals/files/same-plan-resume-facts.json",
-      ".claude/skills/guru-finalize-task/evals/files/same-plan-resume-input.json",
-      ".claude/skills/guru-finalize-task/evals/files/standalone-finalization-input.json",
-      ".claude/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".claude/skills/guru-finalize-task/evals/files/verification-verified-input.json",
-      ".claude/skills/guru-finalize-task/evals/files/verified-reentry-published-facts.json",
-      ".claude/skills/guru-finalize-task/examples/public-blocked-output.json",
-      ".claude/skills/guru-finalize-task/examples/public-invocation-error.json",
-      ".claude/skills/guru-finalize-task/examples/public-publication-ready-authoring.json",
-      ".claude/skills/guru-finalize-task/examples/public-publication-ready-input.json",
-      ".claude/skills/guru-finalize-task/examples/public-publication-review-stale-authoring.json",
-      ".claude/skills/guru-finalize-task/examples/public-publication-review-stale-output.json",
-      ".claude/skills/guru-finalize-task/examples/public-published-output.json",
-      ".claude/skills/guru-finalize-task/examples/public-reprepare-preview-authoring.json",
-      ".claude/skills/guru-finalize-task/examples/public-reprepare-preview-input.json",
-      ".claude/skills/guru-finalize-task/examples/public-reprepare-required-output.json",
-      ".claude/skills/guru-finalize-task/examples/public-resume-finalization-output.json",
-      ".claude/skills/guru-finalize-task/examples/public-same-plan-resume-authoring.json",
-      ".claude/skills/guru-finalize-task/examples/public-same-plan-resume-input.json",
-      ".claude/skills/guru-finalize-task/examples/public-standalone-finalization-input.json",
-      ".claude/skills/guru-finalize-task/examples/public-verification-not-required-authoring.json",
-      ".claude/skills/guru-finalize-task/examples/public-verification-not-required-input.json",
-      ".claude/skills/guru-finalize-task/examples/public-verification-required-authoring.json",
-      ".claude/skills/guru-finalize-task/examples/public-verification-required-output.json",
-      ".claude/skills/guru-finalize-task/examples/public-verification-verified-authoring.json",
-      ".claude/skills/guru-finalize-task/examples/public-verification-verified-input.json",
-      ".claude/skills/guru-finalize-task/examples/semantic-review-input.json",
-      ".claude/skills/guru-finalize-task/examples/task-finalization-gate.json",
-      ".claude/skills/guru-finalize-task/interface.json",
-      ".claude/skills/guru-finalize-task/references/contract.md",
-      ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-blocked-output.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-invocation-error.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-publication-ready-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-publication-review-stale-output.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-published-output.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-reprepare-preview-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-reprepare-required-output.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-resume-finalization-output.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-same-plan-resume-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-standalone-finalization-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-verification-not-required-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-verification-required-output.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-verification-verified-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/semantic-review-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".claude/skills/guru-finalize-task/scripts/check-finalization-gate.sh",
-      ".claude/skills/guru-finalize-task/scripts/execute-finalization-transition.sh",
-      ".claude/skills/guru-finalize-task/scripts/invoke.sh",
-      ".claude/skills/guru-finalize-task/scripts/preview-finalization.sh",
-      ".claude/skills/guru-finalize-task/scripts/record-finalization-gate.sh",
-      ".claude/skills/guru-finalize-task/tests/test_contract.py",
-      ".claude/skills/guru-review-task-publication/interface.json",
-      ".claude/skills/guru-verify-extension-installation/examples/public-verification-required-authoring.json",
-      ".claude/skills/guru-verify-extension-installation/interface.json",
-      ".codex/skills/guru-finalize-task/SKILL.md",
-      ".codex/skills/guru-finalize-task/evals/evals.json",
-      ".codex/skills/guru-finalize-task/evals/files/blocked-private-state-facts.json",
-      ".codex/skills/guru-finalize-task/evals/files/cross-month-reprepare-facts.json",
-      ".codex/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".codex/skills/guru-finalize-task/evals/files/publication-ready-input.json",
-      ".codex/skills/guru-finalize-task/evals/files/publication-review-stale-facts.json",
-      ".codex/skills/guru-finalize-task/evals/files/publication-verification-required-facts.json",
-      ".codex/skills/guru-finalize-task/evals/files/published-recovery-facts.json",
-      ".codex/skills/guru-finalize-task/evals/files/reprepare-preview-input.json",
-      ".codex/skills/guru-finalize-task/evals/files/same-plan-resume-facts.json",
-      ".codex/skills/guru-finalize-task/evals/files/same-plan-resume-input.json",
-      ".codex/skills/guru-finalize-task/evals/files/standalone-finalization-input.json",
-      ".codex/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".codex/skills/guru-finalize-task/evals/files/verification-verified-input.json",
-      ".codex/skills/guru-finalize-task/evals/files/verified-reentry-published-facts.json",
-      ".codex/skills/guru-finalize-task/examples/public-blocked-output.json",
-      ".codex/skills/guru-finalize-task/examples/public-invocation-error.json",
-      ".codex/skills/guru-finalize-task/examples/public-publication-ready-authoring.json",
-      ".codex/skills/guru-finalize-task/examples/public-publication-ready-input.json",
-      ".codex/skills/guru-finalize-task/examples/public-publication-review-stale-authoring.json",
-      ".codex/skills/guru-finalize-task/examples/public-publication-review-stale-output.json",
-      ".codex/skills/guru-finalize-task/examples/public-published-output.json",
-      ".codex/skills/guru-finalize-task/examples/public-reprepare-preview-authoring.json",
-      ".codex/skills/guru-finalize-task/examples/public-reprepare-preview-input.json",
-      ".codex/skills/guru-finalize-task/examples/public-reprepare-required-output.json",
-      ".codex/skills/guru-finalize-task/examples/public-resume-finalization-output.json",
-      ".codex/skills/guru-finalize-task/examples/public-same-plan-resume-authoring.json",
-      ".codex/skills/guru-finalize-task/examples/public-same-plan-resume-input.json",
-      ".codex/skills/guru-finalize-task/examples/public-standalone-finalization-input.json",
-      ".codex/skills/guru-finalize-task/examples/public-verification-not-required-authoring.json",
-      ".codex/skills/guru-finalize-task/examples/public-verification-not-required-input.json",
-      ".codex/skills/guru-finalize-task/examples/public-verification-required-authoring.json",
-      ".codex/skills/guru-finalize-task/examples/public-verification-required-output.json",
-      ".codex/skills/guru-finalize-task/examples/public-verification-verified-authoring.json",
-      ".codex/skills/guru-finalize-task/examples/public-verification-verified-input.json",
-      ".codex/skills/guru-finalize-task/examples/semantic-review-input.json",
-      ".codex/skills/guru-finalize-task/examples/task-finalization-gate.json",
-      ".codex/skills/guru-finalize-task/interface.json",
-      ".codex/skills/guru-finalize-task/references/contract.md",
-      ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-blocked-output.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-invocation-error.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-publication-ready-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-publication-review-stale-output.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-published-output.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-reprepare-preview-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-reprepare-required-output.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-resume-finalization-output.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-same-plan-resume-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-standalone-finalization-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-verification-not-required-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-verification-required-output.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-verification-verified-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/semantic-review-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".codex/skills/guru-finalize-task/scripts/check-finalization-gate.sh",
-      ".codex/skills/guru-finalize-task/scripts/execute-finalization-transition.sh",
-      ".codex/skills/guru-finalize-task/scripts/invoke.sh",
-      ".codex/skills/guru-finalize-task/scripts/preview-finalization.sh",
-      ".codex/skills/guru-finalize-task/scripts/record-finalization-gate.sh",
-      ".codex/skills/guru-finalize-task/tests/test_contract.py",
-      ".codex/skills/guru-review-task-publication/interface.json",
-      ".codex/skills/guru-verify-extension-installation/examples/public-verification-required-authoring.json",
-      ".codex/skills/guru-verify-extension-installation/interface.json",
-      ".cursor/skills/guru-finalize-task/SKILL.md",
-      ".cursor/skills/guru-finalize-task/evals/evals.json",
-      ".cursor/skills/guru-finalize-task/evals/files/blocked-private-state-facts.json",
-      ".cursor/skills/guru-finalize-task/evals/files/cross-month-reprepare-facts.json",
-      ".cursor/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".cursor/skills/guru-finalize-task/evals/files/publication-ready-input.json",
-      ".cursor/skills/guru-finalize-task/evals/files/publication-review-stale-facts.json",
-      ".cursor/skills/guru-finalize-task/evals/files/publication-verification-required-facts.json",
-      ".cursor/skills/guru-finalize-task/evals/files/published-recovery-facts.json",
-      ".cursor/skills/guru-finalize-task/evals/files/reprepare-preview-input.json",
-      ".cursor/skills/guru-finalize-task/evals/files/same-plan-resume-facts.json",
-      ".cursor/skills/guru-finalize-task/evals/files/same-plan-resume-input.json",
-      ".cursor/skills/guru-finalize-task/evals/files/standalone-finalization-input.json",
-      ".cursor/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".cursor/skills/guru-finalize-task/evals/files/verification-verified-input.json",
-      ".cursor/skills/guru-finalize-task/evals/files/verified-reentry-published-facts.json",
-      ".cursor/skills/guru-finalize-task/examples/public-blocked-output.json",
-      ".cursor/skills/guru-finalize-task/examples/public-invocation-error.json",
-      ".cursor/skills/guru-finalize-task/examples/public-publication-ready-authoring.json",
-      ".cursor/skills/guru-finalize-task/examples/public-publication-ready-input.json",
-      ".cursor/skills/guru-finalize-task/examples/public-publication-review-stale-authoring.json",
-      ".cursor/skills/guru-finalize-task/examples/public-publication-review-stale-output.json",
-      ".cursor/skills/guru-finalize-task/examples/public-published-output.json",
-      ".cursor/skills/guru-finalize-task/examples/public-reprepare-preview-authoring.json",
-      ".cursor/skills/guru-finalize-task/examples/public-reprepare-preview-input.json",
-      ".cursor/skills/guru-finalize-task/examples/public-reprepare-required-output.json",
-      ".cursor/skills/guru-finalize-task/examples/public-resume-finalization-output.json",
-      ".cursor/skills/guru-finalize-task/examples/public-same-plan-resume-authoring.json",
-      ".cursor/skills/guru-finalize-task/examples/public-same-plan-resume-input.json",
-      ".cursor/skills/guru-finalize-task/examples/public-standalone-finalization-input.json",
-      ".cursor/skills/guru-finalize-task/examples/public-verification-not-required-authoring.json",
-      ".cursor/skills/guru-finalize-task/examples/public-verification-not-required-input.json",
-      ".cursor/skills/guru-finalize-task/examples/public-verification-required-authoring.json",
-      ".cursor/skills/guru-finalize-task/examples/public-verification-required-output.json",
-      ".cursor/skills/guru-finalize-task/examples/public-verification-verified-authoring.json",
-      ".cursor/skills/guru-finalize-task/examples/public-verification-verified-input.json",
-      ".cursor/skills/guru-finalize-task/examples/semantic-review-input.json",
-      ".cursor/skills/guru-finalize-task/examples/task-finalization-gate.json",
-      ".cursor/skills/guru-finalize-task/interface.json",
-      ".cursor/skills/guru-finalize-task/references/contract.md",
-      ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-blocked-output.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-invocation-error.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-publication-ready-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-publication-review-stale-output.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-published-output.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-reprepare-preview-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-reprepare-required-output.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-resume-finalization-output.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-same-plan-resume-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-standalone-finalization-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-verification-not-required-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-verification-required-output.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-verification-verified-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/semantic-review-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".cursor/skills/guru-finalize-task/scripts/check-finalization-gate.sh",
-      ".cursor/skills/guru-finalize-task/scripts/execute-finalization-transition.sh",
-      ".cursor/skills/guru-finalize-task/scripts/invoke.sh",
-      ".cursor/skills/guru-finalize-task/scripts/preview-finalization.sh",
-      ".cursor/skills/guru-finalize-task/scripts/record-finalization-gate.sh",
-      ".cursor/skills/guru-finalize-task/tests/test_contract.py",
-      ".cursor/skills/guru-review-task-publication/interface.json",
-      ".cursor/skills/guru-verify-extension-installation/examples/public-verification-required-authoring.json",
-      ".cursor/skills/guru-verify-extension-installation/interface.json",
-      ".trellis/guru-team/extension.json",
-      ".trellis/guru-team/scripts/bash/check-finalization-gate.sh",
-      ".trellis/guru-team/scripts/bash/execute-finalization-transition.sh",
-      ".trellis/guru-team/scripts/bash/preview-finalization.sh",
-      ".trellis/guru-team/scripts/bash/record-finalization-gate.sh",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
-      ".trellis/guru-team/skills/consumers/stop/production/finalize-task-blocked.schema.json",
-      ".trellis/guru-team/skills/consumers/workflow/production/finalize-task-published.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/blocked-private-state-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/cross-month-reprepare-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/publication-ready-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/publication-review-stale-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/publication-verification-required-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/published-recovery-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/reprepare-preview-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/same-plan-resume-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/same-plan-resume-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/standalone-finalization-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/verification-verified-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/verified-reentry-published-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-blocked-output.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-invocation-error.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-publication-ready-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-publication-ready-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-publication-review-stale-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-publication-review-stale-output.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-published-output.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-reprepare-preview-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-reprepare-preview-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-reprepare-required-output.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-resume-finalization-output.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-same-plan-resume-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-same-plan-resume-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-finalization-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-verification-not-required-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-verification-not-required-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-verification-required-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-verification-required-output.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-verification-verified-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-verification-verified-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/semantic-review-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/task-finalization-gate.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-blocked-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-invocation-error.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-publication-ready-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-publication-review-stale-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-published-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-reprepare-preview-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-reprepare-required-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-resume-finalization-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-same-plan-resume-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-standalone-finalization-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-verification-not-required-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-verification-required-output.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-verification-verified-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/semantic-review-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/scripts/check-finalization-gate.sh",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/scripts/execute-finalization-transition.sh",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/scripts/invoke.sh",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/scripts/preview-finalization.sh",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/scripts/record-finalization-gate.sh",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
-      ".trellis/guru-team/skills/packages/guru-review-task-publication/interface.json",
-      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-verification-required-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
-      ".trellis/guru-team/skills/registry.json",
-      ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
-      ".trellis/spec/docs/public-docs.md",
-      ".trellis/spec/preset/installer.md",
-      ".trellis/spec/preset/upstream-ownership.md",
-      ".trellis/spec/workflow/companion-scripts.md",
-      ".trellis/spec/workflow/index.md",
-      ".trellis/spec/workflow/quality-guidelines.md",
-      ".trellis/spec/workflow/skill-package-contract.md",
-      ".trellis/spec/workflow/workflow-contract.md",
       ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
-      ".trellis/tasks/07-26-118-guru-finalize-task/check.jsonl",
-      ".trellis/tasks/07-26-118-guru-finalize-task/context-discovery.json",
-      ".trellis/tasks/07-26-118-guru-finalize-task/contract-wording-review.json",
-      ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/implement.jsonl",
-      ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round2.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
-      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
-      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round4.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
-      ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/published-materialization-locator-probe.py",
-      ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/recovery-metadata-tail-probe.py",
-      ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
-      ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
-      "README.md",
-      "trellis/guru-team-extension.json",
-      "trellis/presets/guru-team/README.md",
-      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "trellis/skills/guru-team/consumers/stop/production/finalize-task-blocked.schema.json",
-      "trellis/skills/guru-team/consumers/workflow/production/finalize-task-published.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/blocked-private-state-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/cross-month-reprepare-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-ready-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-review-stale-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-verification-required-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/published-recovery-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/reprepare-preview-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/same-plan-resume-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/same-plan-resume-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/standalone-finalization-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/verification-verified-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/verified-reentry-published-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-blocked-output.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-invocation-error.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-publication-ready-authoring.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-publication-ready-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-publication-review-stale-authoring.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-publication-review-stale-output.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-published-output.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-reprepare-preview-authoring.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-reprepare-preview-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-reprepare-required-output.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-resume-finalization-output.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-same-plan-resume-authoring.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-same-plan-resume-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-finalization-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-not-required-authoring.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-not-required-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-required-authoring.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-required-output.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-verified-authoring.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-verification-verified-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/semantic-review-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/task-finalization-gate.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-blocked-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-invocation-error.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-publication-ready-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-publication-review-stale-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-published-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-reprepare-preview-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-reprepare-required-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-resume-finalization-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-same-plan-resume-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-standalone-finalization-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-verification-not-required-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-verification-required-output.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-verification-verified-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/semantic-review-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/check-finalization-gate.sh",
-      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/execute-finalization-transition.sh",
-      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/invoke.sh",
-      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/preview-finalization.sh",
-      "trellis/skills/guru-team/packages/guru-finalize-task/scripts/record-finalization-gate.sh",
-      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-      "trellis/skills/guru-team/packages/guru-review-task-publication/interface.json",
-      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-verification-required-authoring.json",
-      "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
-      "trellis/skills/guru-team/registry.json",
-      "trellis/skills/guru-team/schemas/skill-registry.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-registry.schema.json",
-      "trellis/skills/guru-team/tests/test_skill_packages.py",
-      "trellis/workflows/guru-team/README.md",
-      "trellis/workflows/guru-team/scripts/bash/check-finalization-gate.sh",
-      "trellis/workflows/guru-team/scripts/bash/execute-finalization-transition.sh",
-      "trellis/workflows/guru-team/scripts/bash/preview-finalization.sh",
-      "trellis/workflows/guru-team/scripts/bash/record-finalization-gate.sh",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-001-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-002-problem-discovery.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/001.json",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
       "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
       "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
     ],
     "reviewed_paths": [
       {
-        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round4.md",
-        "sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9",
-        "size_bytes": 11260
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "f9ab331ec8e28975f5ed6ea1bb4c75bdb6e9d6ef1551c5b0b31cc49e27db5f39",
+        "size_bytes": 1696513
       },
       {
-        "path": ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
-        "sha256": "c829d88fb08fcddb59d3b5be0765866d1e4df02c16bb4b70772fbca60a848ff4",
-        "size_bytes": 4804
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "fbd13d4fd76597d6b12009b608597396a8cf4609b9861d9694421b690c1fcf5b",
+        "size_bytes": 27355
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "2ba00bcf9933bb3c1006e03dff47c7c70d49b70317cf47389d253ca37bc931ca",
+        "size_bytes": 34173
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "5744371a126e181eac6e1d8fd7eb2c3d855a199804055088d162e9e5bf999ab4",
+        "size_bytes": 16254
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "f7f0564d445e4971cbbc99c32e73c02be66c2ac39282b4b9bca2a24fe970a5ba",
+        "size_bytes": 99069
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "9dbf6cf7d87337f980e2bf3839ab9afc50365de4a9bf4cd7631901a0ef4a5d2d",
+        "size_bytes": 46127
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "f99f7941878678edd59fb7ee72d513041e8d23f99bf8bf074582920cb3ceaaaf",
+        "size_bytes": 96317
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "sha256": "936f866befb921db75fd0cd7c077cefc484106e619c16d17ee56adbf6223f584",
+        "size_bytes": 66370
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
@@ -595,14 +187,74 @@
         "size_bytes": 6884
       },
       {
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "c6edd4cf8f0b1562d13beaa6a73575a9eb014678c6a9ddc502ebb71a95b82724",
-        "size_bytes": 1685569
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+        "sha256": "345afb57a64a183888090c9663d59686fcad5b9521f654192a319f9ba3d070d7",
+        "size_bytes": 6414
       },
       {
-        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-        "sha256": "d597b872feeb8c6c5e1fe274f16ea9d51976c38296a9411b5927b7233aebe725",
-        "size_bytes": 1276872
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
+        "sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
+        "size_bytes": 8888
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round4.md",
+        "sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9",
+        "size_bytes": 11260
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+        "sha256": "b660855fd7589dbf81ffc76a22d8295341e50a63b348b5fd25711d1458d7fdbb",
+        "size_bytes": 138658
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+        "sha256": "5ca2ebb9700f51382e2569c5bc55d792b63eb2bf9755ede8fb65b0d0ac0be981",
+        "size_bytes": 4519
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-001-final-release.md",
+        "sha256": "fb20ddde215358278b41a2cf0e4516de49f1c03e56b79c2be9fceec278869082",
+        "size_bytes": 14348
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-002-problem-discovery.md",
+        "sha256": "85fb4589c3b43ae4bd944b88f214dbd6c567df1f7efa98231c202f3f1e6ca3df",
+        "size_bytes": 10946
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
+        "sha256": "c829d88fb08fcddb59d3b5be0765866d1e4df02c16bb4b70772fbca60a848ff4",
+        "size_bytes": 4804
+      },
+      {
+        "path": "README.md",
+        "sha256": "bb17bc6c06513101481ff83e4e142ea5067491dfe1c6efaf96192ce3f1444f33",
+        "size_bytes": 80489
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "sha256": "9b5e3ec926e19d629532bc018cf8cfd9f5ab37b85460fdb998758842998e5244",
+        "size_bytes": 14039
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "d1ccb3630cd1072a36094684a4a101753fcc66e1785992c97d66fb508b1d59f3",
+        "size_bytes": 193563
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "sha256": "b7b583c23c88f7554e03a3aa0c114f6dfed0bfae8e45eae6b68c7375bfe9ade6",
+        "size_bytes": 73468
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "sha256": "1adf3b31d822b2181d0581c40db9a1be8f58c376f0699548c2818ae83ec52658",
+        "size_bytes": 98984
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "sha256": "c7e736cc20d09e14da41f83738b1d95e8264ce282c822c4136bb1b5af9664760",
+        "size_bytes": 19152
       },
       {
         "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
@@ -630,77 +282,27 @@
         "size_bytes": 4978
       },
       {
-        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
-        "sha256": "e7222f1669535d0999ea54c04ad7e6275ba0beb3095111d46e93862aebb54721",
-        "size_bytes": 255178
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-        "sha256": "b7b583c23c88f7554e03a3aa0c114f6dfed0bfae8e45eae6b68c7375bfe9ade6",
-        "size_bytes": 73468
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-        "sha256": "1adf3b31d822b2181d0581c40db9a1be8f58c376f0699548c2818ae83ec52658",
-        "size_bytes": 98984
-      },
-      {
-        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-        "sha256": "d1ccb3630cd1072a36094684a4a101753fcc66e1785992c97d66fb508b1d59f3",
-        "size_bytes": 193563
-      },
-      {
         "path": "trellis/skills/guru-team/registry.json",
         "sha256": "2ad872ab199595da2612a3f39f2e901de05bb894b2b54a721e9acc599a384e95",
         "size_bytes": 7697
       },
       {
-        "path": "trellis/guru-team-extension.json",
-        "sha256": "9b5e3ec926e19d629532bc018cf8cfd9f5ab37b85460fdb998758842998e5244",
-        "size_bytes": 14039
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "e7222f1669535d0999ea54c04ad7e6275ba0beb3095111d46e93862aebb54721",
+        "size_bytes": 255178
       },
       {
-        "path": ".trellis/spec/workflow/skill-package-contract.md",
-        "sha256": "f99f7941878678edd59fb7ee72d513041e8d23f99bf8bf074582920cb3ceaaaf",
-        "size_bytes": 96317
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "f9ab331ec8e28975f5ed6ea1bb4c75bdb6e9d6ef1551c5b0b31cc49e27db5f39",
+        "size_bytes": 1696513
       },
       {
-        "path": ".trellis/spec/workflow/workflow-contract.md",
-        "sha256": "936f866befb921db75fd0cd7c077cefc484106e619c16d17ee56adbf6223f584",
-        "size_bytes": 66370
-      },
-      {
-        "path": ".trellis/spec/workflow/companion-scripts.md",
-        "sha256": "f7f0564d445e4971cbbc99c32e73c02be66c2ac39282b4b9bca2a24fe970a5ba",
-        "size_bytes": 99069
-      },
-      {
-        "path": ".trellis/spec/workflow/quality-guidelines.md",
-        "sha256": "9dbf6cf7d87337f980e2bf3839ab9afc50365de4a9bf4cd7631901a0ef4a5d2d",
-        "size_bytes": 46127
-      },
-      {
-        "path": ".trellis/spec/preset/upstream-ownership.md",
-        "sha256": "5744371a126e181eac6e1d8fd7eb2c3d855a199804055088d162e9e5bf999ab4",
-        "size_bytes": 16254
-      },
-      {
-        "path": ".trellis/spec/preset/installer.md",
-        "sha256": "2ba00bcf9933bb3c1006e03dff47c7c70d49b70317cf47389d253ca37bc931ca",
-        "size_bytes": 34173
-      },
-      {
-        "path": ".trellis/spec/docs/public-docs.md",
-        "sha256": "fbd13d4fd76597d6b12009b608597396a8cf4609b9861d9694421b690c1fcf5b",
-        "size_bytes": 27355
-      },
-      {
-        "path": "README.md",
-        "sha256": "bb17bc6c06513101481ff83e4e142ea5067491dfe1c6efaf96192ce3f1444f33",
-        "size_bytes": 80489
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "2f25cd7c54a4027f7cf0767689829f2a63fa19492d77a264afb7ecb6155eeee8",
+        "size_bytes": 1295599
       }
     ],
-    "snapshot_sha256": "9446ae2780e80f57ad8fb2e0c578cbe89b13a99b0030a252cb0c7b8a45551dce"
+    "snapshot_sha256": "1a26a408eefd59a5f192931c9f91b0c7de12352b12b5e1e3236aa51bdacdf0d2"
   },
   "check_execution": {
     "commands": [
@@ -860,6 +462,54 @@
         "stderr_sha256": "4c1a022ccd853765007f05f07b0e8699b693a98cce9688d4ca26f92745a08e21",
         "stderr_size_bytes": 930,
         "summary": "Fresh clean throwaway passed public marketplace discovery, local unpublished canonical workflow sample, initial install/reapply, official update, managed hash and .new/.bak recovery, all-platform distribution, real wrappers/evals and installed closeout recovery."
+      },
+      {
+        "id": "official_trellis_check_post_branch_fix_report",
+        "argv": [
+          "sed",
+          "-n",
+          "1,260p",
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
+        "stdout_size_bytes": 8888,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Read the fresh independent post-Branch-finding full-scope report: F-FINAL-LEGACY-01 closed, zero open P0-P3, full repository suites and clean throwaway exit 0, Docs SSOT no additional update needed."
+      },
+      {
+        "id": "focused_legacy_takeover_post_branch_fix",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_same_month_legacy_partial_finalizer_takeover_runs_recorder_checker_and_transition",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_same_month_finalizer_takeover_rejects_any_other_new_artifact",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_committed_finalizer_takeover_binds_prior_evidence_head_and_minimal_tail",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_generic_closeout_still_rejects_finalizer_gate_on_legacy_plan"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "12827b8bc06d2c9106bad1ba7359d78887b2e837bbaf473e226bb73a96c9e680",
+        "stderr_size_bytes": 102,
+        "summary": "Four focused production regressions passed: real wrapper command flow, arbitrary artifact rejection, committed exact-tail binding, and generic #105 gate rejection."
+      },
+      {
+        "id": "agent_assignment_recovery_post_branch_fix",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-agent-assignment.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "d55204e2ae2fadead1dea239a559901358c7fe54764df9ccb125647f719c3fb8",
+        "stdout_size_bytes": 1331,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Assignment schema 1.2 is valid with 241 effective events, no correction/recovery error, and completed implementation/check chains including the post-finding checker."
       }
     ],
     "worker_evidence": [
@@ -883,6 +533,13 @@
         "summary": "The fresh independent Round 4 checker reviewed the complete current scope and dirty diff, closed all nine findings, found no open P0-P3 issue, reconciled Docs SSOT and completed full distribution and throwaway verification.",
         "evidence_only": true,
         "facts_sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue118_phase2_post_branch_fix_check",
+        "summary": "The fresh independent post-Branch-finding checker reviewed the complete Issue #118 scope and current dirty fix, closed F-FINAL-LEGACY-01, found zero open P0-P3, reran full suites, a real command-dispatch takeover, clean install/update/reapply/all-platform wrapper validation, Docs SSOT and final hygiene.",
+        "evidence_only": true,
+        "facts_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec"
       }
     ],
     "unverified_items": [
@@ -908,7 +565,7 @@
         "blocking": false
       }
     ],
-    "execution_sha256": "d6d4fa117f0282fe58e7aaa1947dd910bb3b7ca62c5d862b5bcea2fb4724eb65"
+    "execution_sha256": "10abbb0e4cb05c6c0c6963283ef6954d2d5b3ebb0ba0872e6ca46871ad187147"
   },
   "scope_qualification": {
     "candidates": [
@@ -1038,31 +695,45 @@
         "route_basis": "Issue #118, accepted authority and AGENTS.md explicitly exclude these expansions.",
         "severity": null,
         "finding_id": null
+      },
+      {
+        "id": "C-FINAL-LEGACY-01",
+        "summary": "A valid same-month legacy partial #105 closeout plan did not own the new finalizer private gate, blocking standalone recovery after the recorder wrote that gate.",
+        "trigger_refs": [
+          "prd.md R2/R8/R10/R11 and AC6/AC8",
+          "design.md single #105 engine and standalone recovery contract",
+          "Branch Review F-FINAL-LEGACY-01"
+        ],
+        "normal_path_reproduction": "The final Branch Review reproduced the failure with a valid same-month in-progress partial plan, honest finalizer recorder output and ordinary evidence staging; the post-fix checker reran preview, recorder, checker, verification transition and formal takeover through the real command dispatcher.",
+        "disposition": "current_scope",
+        "route_basis": "The exact one-time plan-bound takeover now owns only task-finalization-gate.json; generic #105, arbitrary extra paths and cross-month behavior remain fail closed.",
+        "severity": "P1",
+        "finding_id": "F-FINAL-LEGACY-01"
       }
     ],
-    "scope_sha256": "d64d1fb8953f32c0c2def5889c94b92fbc488024b533248313b9e3cad8f12887"
+    "scope_sha256": "e68cdaadfc6b8f879a69e7e24d678226dd31a1d9d90bb7c97659d818b2838e41"
   },
   "semantic_review": {
     "adequacy_dimensions": [
       {
         "id": "requirements",
         "status": "passed",
-        "summary": "R1-R16 and AC1-AC14 are carried by the package, transaction, DTO, recovery, eval, distribution and issue-boundary implementation.",
+        "summary": "R1-R16 and AC1-AC14 remain carried by the complete package; the fresh full rerun confirms the legacy partial takeover required by #105 compatibility and standalone recovery.",
         "evidence_refs": [
           "planning",
           "requirement_provenance",
           "check_execution"
         ],
-        "affected_sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [
           "F-DOC-01",
-          "F-SCHEMA-02",
-          "F-ROUTE-01",
           "F-DTO-02",
-          "F-RECOVERY-03",
-          "F-MATERIALIZATION-04",
-          "F-LOCATOR-05",
           "F-IDENTITY-06",
+          "F-LOCATOR-05",
+          "F-MATERIALIZATION-04",
+          "F-RECOVERY-03",
+          "F-ROUTE-01",
+          "F-SCHEMA-02",
           "F-STATE-07"
         ],
         "unverified_ids": []
@@ -1070,17 +741,17 @@
       {
         "id": "design",
         "status": "passed",
-        "summary": "The single engine, private gate, terminal materialization, archive locator, repository binding and recovery matrix match the approved design.",
+        "summary": "The single engine, private gate, exact one-time legacy takeover, terminal materialization, archive locator, repository binding and recovery matrix match the approved design.",
         "evidence_refs": [
           "planning",
           "implementation_handoff"
         ],
-        "affected_sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [
-          "F-RECOVERY-03",
-          "F-MATERIALIZATION-04",
-          "F-LOCATOR-05",
           "F-IDENTITY-06",
+          "F-LOCATOR-05",
+          "F-MATERIALIZATION-04",
+          "F-RECOVERY-03",
           "F-STATE-07"
         ],
         "unverified_ids": []
@@ -1088,22 +759,23 @@
       {
         "id": "implementation",
         "status": "passed",
-        "summary": "All nine historical normal-path findings are resolved and no new current-scope candidate was found in the complete dirty implementation.",
+        "summary": "All ten historical normal-path findings, including F-FINAL-LEGACY-01, are resolved and no new current-scope candidate was found in the complete dirty implementation.",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [
           "F-DOC-01",
-          "F-SCHEMA-02",
-          "F-ROUTE-01",
           "F-DTO-02",
-          "F-RECOVERY-03",
-          "F-MATERIALIZATION-04",
-          "F-LOCATOR-05",
+          "F-FINAL-LEGACY-01",
           "F-IDENTITY-06",
+          "F-LOCATOR-05",
+          "F-MATERIALIZATION-04",
+          "F-RECOVERY-03",
+          "F-ROUTE-01",
+          "F-SCHEMA-02",
           "F-STATE-07"
         ],
         "unverified_ids": []
@@ -1111,20 +783,21 @@
       {
         "id": "tests",
         "status": "passed",
-        "summary": "Focused probes, runtime/package/preset/finalizer full suites, real installed wrapper eval and clean throwaway all reached their expected terminals.",
+        "summary": "Focused takeover regressions, real command-dispatch probe, runtime/package/preset/finalizer full suites, installed wrapper eval and clean throwaway reached expected terminals.",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "c829d88fb08fcddb59d3b5be0765866d1e4df02c16bb4b70772fbca60a848ff4",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [
-          "F-SCHEMA-02",
-          "F-ROUTE-01",
           "F-DTO-02",
-          "F-RECOVERY-03",
-          "F-MATERIALIZATION-04",
-          "F-LOCATOR-05",
+          "F-FINAL-LEGACY-01",
           "F-IDENTITY-06",
+          "F-LOCATOR-05",
+          "F-MATERIALIZATION-04",
+          "F-RECOVERY-03",
+          "F-ROUTE-01",
+          "F-SCHEMA-02",
           "F-STATE-07"
         ],
         "unverified_ids": [
@@ -1134,12 +807,12 @@
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "SSOT-first reconciliation is complete and preserves the Issue #119 and Issue #132 ownership boundaries.",
+        "summary": "SSOT-first reconciliation remains complete; the finding fix implements an existing durable contract and needs no additional docs update, preserving #119/#132 ownership.",
         "evidence_refs": [
           "docs_ssot_plan",
           "repository_snapshot"
         ],
-        "affected_sha256": "c829d88fb08fcddb59d3b5be0765866d1e4df02c16bb4b70772fbca60a848ff4",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [
           "F-DOC-01",
           "F-RECOVERY-03"
@@ -1151,22 +824,22 @@
       {
         "id": "cross_layer",
         "status": "passed",
-        "summary": "#116/#117 seed, finalizer checker, executor, archive and terminal DTO share one current identity, state, freshness and locator contract.",
+        "summary": "#116/#117 evidence, the finalizer private gate, legacy-plan takeover, executor, archive and terminal DTO share one current identity, state, freshness and locator contract.",
         "evidence_refs": [
           "requirement_provenance",
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [
-          "F-SCHEMA-02",
-          "F-ROUTE-01",
           "F-DTO-02",
-          "F-RECOVERY-03",
-          "F-MATERIALIZATION-04",
-          "F-LOCATOR-05",
           "F-IDENTITY-06",
+          "F-LOCATOR-05",
+          "F-MATERIALIZATION-04",
+          "F-RECOVERY-03",
+          "F-ROUTE-01",
+          "F-SCHEMA-02",
           "F-STATE-07"
         ],
         "unverified_ids": []
@@ -1174,17 +847,18 @@
       {
         "id": "compatibility",
         "status": "passed",
-        "summary": "Issue #105 transaction semantics and regression matrix remain green while the new owner boundary reliably enters and recovers the existing engine.",
+        "summary": "Issue #105 transaction semantics and full matrix remain green; only the exact finalizer-owned gate is added to a valid same-month predecessor plan, while generic and cross-month paths remain strict.",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [
-          "F-ROUTE-01",
-          "F-RECOVERY-03",
-          "F-MATERIALIZATION-04",
+          "F-FINAL-LEGACY-01",
           "F-LOCATOR-05",
+          "F-MATERIALIZATION-04",
+          "F-RECOVERY-03",
+          "F-ROUTE-01",
           "F-STATE-07"
         ],
         "unverified_ids": []
@@ -1192,38 +866,40 @@
       {
         "id": "deployment_and_operations",
         "status": "passed",
-        "summary": "The reviewed diff has no dependency, CI/CD, container, Compose, Kubernetes, Helm, Kustomize, database migration, Makefile, deploy or production data-write impact.",
+        "summary": "The complete reviewed diff has no dependency, CI/CD, container, Compose, Kubernetes, Helm, Kustomize, DB migration, Makefile, deploy or production data-write impact.",
         "evidence_refs": [
           "requirement_provenance",
           "repository_snapshot"
         ],
-        "affected_sha256": "09270b3b597d7fb48759765eeaeb6feda28693eeecbbed898dd7d5073e60e2a9",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "agent_recovery",
         "status": "passed",
-        "summary": "All implementation and independent Phase 2 checker terminal, replacement and recovery chains are recorded and validator-clean.",
+        "summary": "All implementation and independent Phase 2 checker chains, including the post-Branch-finding implementer/checker pair, are terminal and validator-clean.",
         "evidence_refs": [
           "agent_assignment"
         ],
-        "affected_sha256": "db73584cc4094585b2592484c4f939e076c8da10cb1dac6514539d1cdcac42e7",
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "Round 4 is a fresh full-scope rerun with all applicable commands terminal, zero open P0-P3 finding and explicit non-blocking publication-time or deferred limits.",
+        "summary": "The post-Branch-finding round is a fresh full-scope rerun with all applicable suites, command probe, throwaway, distribution and hygiene terminal; zero open P0-P3 remains.",
         "evidence_refs": [
           "planning",
           "docs_ssot_plan",
           "check_execution",
           "agent_assignment"
         ],
-        "affected_sha256": "c829d88fb08fcddb59d3b5be0765866d1e4df02c16bb4b70772fbca60a848ff4",
-        "finding_ids": [],
+        "affected_sha256": "98be72035e2f8e8dc0775c3df8e3e37cc3e8c156f6c10b71ff795b57f5d5eaec",
+        "finding_ids": [
+          "F-FINAL-LEGACY-01"
+        ],
         "unverified_ids": [
           "UV-REMOTE-01",
           "UV-SIDE-EFFECT-02",
@@ -1312,20 +988,29 @@
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
         "blocking": true,
         "status": "resolved"
+      },
+      {
+        "id": "F-FINAL-LEGACY-01",
+        "candidate_id": "C-FINAL-LEGACY-01",
+        "severity": "P1",
+        "summary": "Same-month legacy partial plans now support one exact finalizer private-gate takeover without weakening generic #105 or other recovery paths.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
       }
     ],
     "ai_review_gate": {
       "status": "passed",
-      "summary": "Fresh independent full-scope Round 4 closes all nine findings, finds no open P0-P3 issue, completes Docs SSOT reconciliation and verifies runtime, package, distribution, update and clean-install behavior.",
+      "summary": "Fresh independent post-Branch-finding full-scope review closes all ten findings, finds zero open P0-P3, confirms Docs SSOT reconciliation and verifies runtime, packages, real command dispatch, distribution, update and clean-install behavior.",
       "full_rerun": true,
       "planning_facts_sha256": "9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70",
-      "snapshot_sha256": "9446ae2780e80f57ad8fb2e0c578cbe89b13a99b0030a252cb0c7b8a45551dce",
-      "scope_sha256": "d64d1fb8953f32c0c2def5889c94b92fbc488024b533248313b9e3cad8f12887",
-      "adequacy_sha256": "aa962430b21d4a27a100ed08359992bbe9e4da7ed19ab42ef2fb17d46960e650",
-      "findings_count": 9,
-      "full_round_sha256": "b08e1ec7c1b2b6f91454aa8c1501dee890c419838d51bb2f985467c295e692e3"
+      "snapshot_sha256": "1a26a408eefd59a5f192931c9f91b0c7de12352b12b5e1e3236aa51bdacdf0d2",
+      "scope_sha256": "e68cdaadfc6b8f879a69e7e24d678226dd31a1d9d90bb7c97659d818b2838e41",
+      "adequacy_sha256": "7dd56c93cb9df270193a7f1cc485f69404a5f1700fb51711d0a5fc7406f38d4b",
+      "findings_count": 10,
+      "full_round_sha256": "1cdcd001aa8334cf5c32abaf24287c23572b0c8425f7d4db5482dade6f6b0438"
     },
-    "adequacy_sha256": "aa962430b21d4a27a100ed08359992bbe9e4da7ed19ab42ef2fb17d46960e650"
+    "adequacy_sha256": "7dd56c93cb9df270193a7f1cc485f69404a5f1700fb51711d0a5fc7406f38d4b"
   },
   "human_confirmation": {
     "kind": "not-required",
@@ -1335,14 +1020,14 @@
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "All ten current-scope adequacy dimensions passed in a fresh full rerun; all nine findings are resolved, no blocking unverified item remains, Docs SSOT is reconciled and the agent recovery chain is complete.",
+  "reason": "All ten adequacy dimensions passed in a fresh full rerun; all ten historical findings are resolved, no blocking unverified item remains, Docs SSOT is reconciled, and the complete implementation/check recovery chain is terminal.",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-26T22:34:45Z",
+  "generated_at": "2026-07-27T01:44:18Z",
   "task": {
     "task_dir": ".trellis/tasks/07-26-118-guru-finalize-task",
     "task_id": "118-guru-finalize-task",
@@ -1380,5 +1065,5 @@
     ],
     "facts_sha256": "9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70"
   },
-  "facts_sha256": "95680f0f6ba5a5f0e2e2cffc96c7db2e44078a30c1b10562ab4f09f3a03385d8"
+  "facts_sha256": "59520187e1d1c95da2ca63759779bedfc6d9348640f6968d19af368e8cd93aca"
 }
