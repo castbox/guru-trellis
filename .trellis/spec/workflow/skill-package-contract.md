@@ -601,15 +601,17 @@ five are
 `guru-review-branch:passed -> guru-review-task-publication:publication_review`.
 The finalization family adds
 `guru-review-task-publication:ready -> guru-finalize-task:publication_ready`,
-both `guru-verify-extension-installation:verified|not_required` re-entry
-profiles, and the finalizer's `verification_required`,
+the workflow-shaped `guru-verify-extension-installation:verified` re-entry and
+the reachable task-bearing standalone `not_required` re-entry, and the
+finalizer's `verification_required`,
 `publication_review_stale`, `same_plan_resume`, and `reprepare_preview`
 targets. Their projected seed fields are respectively `source_exit/task_ref`,
 `source_exit/task_ref/checked_head/check_ref`, and
 `source_exit/task_ref`, `task_ref/base_ref/committed_head`, and
 `task_ref/reviewed_head/review_ref`; every finalization-family seed is the
-minimal field set declared by its target profile, with reprepare fixed to
-`task_ref/reason_code`. Target package
+minimal field set declared by its target profile, with standalone not-required
+fixed to `repo_ref/resolved_head/verification_ref` plus target-authored
+`profile/mode/task_ref`, and reprepare fixed to `task_ref/reason_code`. Target package
 authoring examples supply every remaining
 required fresh semantic field. The validator proves disjoint partition,
 required-set equality, no-overwrite merge, and full target-schema validity;
@@ -1517,15 +1519,20 @@ The independent outputs are:
 - `verified`: workflow passes only
   `task_ref/plan_ref/reviewed_head/verification_ref`; standalone returns the
   safe repo/head/session verification identity;
-- `not_required`: workflow-shaped identity is published for the active
-  finalizer consumer, but a workflow invocation may not actually select this exit;
-  standalone returns only repo/head identity;
+- `not_required`: the workflow-shaped schema branch remains stable, but a
+  workflow invocation may not actually select this exit; the active finalizer
+  edge selects the reachable task-bearing standalone
+  `repo_ref/resolved_head/verification_ref` branch and target-authors only the
+  finalizer profile, mode, and task identity;
 - `return_to_task_work`: task identity, open finding refs, and fixed
   `resume_target=phase-2`;
 - `blocked`: stable reason code and remediation, with safe repo/head identity
   in standalone mode.
 
-`verified` and `not_required` target active `guru-finalize-task`;
+Workflow `verified` and the reachable task-bearing standalone `not_required`
+target active `guru-finalize-task`; the workflow-shaped not-required branch is
+retained only as a compatible schema surface because workflow applicability
+conflict cannot produce it.
 `return_to_task_work` targets the workflow router; `blocked` targets the stop.
 The Interface publishes one schema/example/projection per exit. Verification
 profile, applicability reason, adequacy, command facts, digests, asset and
@@ -1557,11 +1564,14 @@ installation.
 ## Task Finalization Owner
 
 `guru-finalize-task` is the active Interface 1.3 semantic owner of the complete
-task closeout loop. Its six distinct public profiles cover publication entry,
-verified and not-required verification re-entry, same-plan resume,
-cross-month reprepare, and standalone finalization. It consumes only the
-minimal #116/#117 DTO seeds plus target-owned AI intent/context; runtime never
-authors or reconstructs those semantic fields.
+task closeout loop. Its seven distinct public profiles cover publication entry,
+verified and workflow-compatible not-required verification re-entry, reachable
+task-bearing standalone not-required re-entry, same-plan resume, cross-month
+reprepare, and standalone finalization. The reachable not-required edge
+consumes `repo_ref/resolved_head/verification_ref` and target-authors only
+`profile/mode/task_ref`; the private current plan and task-local #117 evidence
+provide plan binding. Runtime never authors task identity, AI intent/context,
+verification judgment, or owner evidence.
 
 The package owns six independent `exit_id` outputs:
 `verification_required`, `publication_review_stale`, `resume_finalization`,
@@ -1588,7 +1598,11 @@ keeps its prior `git add -A -- <task-root>` evidence transaction; only the
 explicit finalizer mode permits a plan-declared untracked private gate and
 stages the exact evidence allowlist.
 
-The generic #117 owner checker remains unchanged and strict. Finalizer-only
+The generic #117 owner checker remains unchanged and strict. The finalizer
+accepts standalone not-required only when the task-local #117 artifact reports
+that exact exit and its repository, resolved HEAD, verification ref, task, and
+private plan match; same-plan resume reuses the same private binding without
+adding plan identity to the producer DTO. Finalizer-only
 compatibility may accept its normal post-review metadata tail only when task,
 plan, reviewed HEAD, repository, remote ref, evidence allowlist, validated
 evidence commit, committed plan/evidence blobs, and exact archive transaction

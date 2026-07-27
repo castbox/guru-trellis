@@ -346,7 +346,158 @@
     "plan_digest": "1c492270b274ae91b7250395ba96d8befcb71523b015955599ec697b76f9a702"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-27T07:04:30Z",
+    "commit_sha": "925007cb6f9b8101360db8fb93f92ef6b35a5b77",
+    "parent": "4847bfb8763483b4648915ce1da918cdfb24a678",
+    "message_sha256": "9de26045a423ce615fc15a76bffffd52df73eb70832328319a2e68096c29b96d",
+    "committed_paths": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "71b1f386bd6a6a53a32dedf69968518a88eec118",
+      "actual_tree": "71b1f386bd6a6a53a32dedf69968518a88eec118",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          "expected_blob": "773ffa8ffed5427fac88bd3406878e7b4d5ea98c",
+          "expected_mode": "100644",
+          "actual_blob": "773ffa8ffed5427fac88bd3406878e7b4d5ea98c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          "expected_blob": "2d2809d2760926760404dd0edbc5230c5c58940d",
+          "expected_mode": "100644",
+          "actual_blob": "2d2809d2760926760404dd0edbc5230c5c58940d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
+          "expected_blob": "a0a3f1688bbca8b219ffed206c2dd831bc56b353",
+          "expected_mode": "100644",
+          "actual_blob": "a0a3f1688bbca8b219ffed206c2dd831bc56b353",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          "expected_blob": "f9c70b176fb6d9bafdc12bd52a1be3b0ffbc236e",
+          "expected_mode": "100644",
+          "actual_blob": "f9c70b176fb6d9bafdc12bd52a1be3b0ffbc236e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          "expected_blob": "009bfee151702be8ac35aea313ad10d0a5f6ddbf",
+          "expected_mode": "100644",
+          "actual_blob": "009bfee151702be8ac35aea313ad10d0a5f6ddbf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
+          "expected_blob": "dae714fa45526ae01d25a83644a165e59c1fae69",
+          "expected_mode": "100644",
+          "actual_blob": "dae714fa45526ae01d25a83644a165e59c1fae69",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          "expected_blob": "dd617a644d457c3d4532ea6b092f5697308d0c8e",
+          "expected_mode": "100644",
+          "actual_blob": "dd617a644d457c3d4532ea6b092f5697308d0c8e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          "expected_blob": "7309ad211048910ba76083adc31480c563f528fa",
+          "expected_mode": "100644",
+          "actual_blob": "7309ad211048910ba76083adc31480c563f528fa",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+          "expected_blob": "f4789bc29817ccd1155d97c2d862662834633efe",
+          "expected_mode": "100644",
+          "actual_blob": "f4789bc29817ccd1155d97c2d862662834633efe",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md",
+          "expected_blob": "3c65334dc6870ae3cde8004bdef68e8ca7208f63",
+          "expected_mode": "100644",
+          "actual_blob": "3c65334dc6870ae3cde8004bdef68e8ca7208f63",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md",
+          "expected_blob": "617d3019754ee1c5d8606a9420c76334bde0d48c",
+          "expected_mode": "100644",
+          "actual_blob": "617d3019754ee1c5d8606a9420c76334bde0d48c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
+          "expected_blob": "02ca8a20d2f68f263caefa8d8b098938684d76e5",
+          "expected_mode": "100644",
+          "actual_blob": "02ca8a20d2f68f263caefa8d8b098938684d76e5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
+          "expected_blob": "7d587fd5ee37cc3ef7b72dd6290b645dc9fc84d9",
+          "expected_mode": "100644",
+          "actual_blob": "7d587fd5ee37cc3ef7b72dd6290b645dc9fc84d9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+          "expected_blob": "61ef13b00a45d714b049bc22d5de8a4445fae5cf",
+          "expected_mode": "100644",
+          "actual_blob": "61ef13b00a45d714b049bc22d5de8a4445fae5cf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
+          "expected_blob": "0870da5b499fbb0acfa1466f71ba7e5c98944ef3",
+          "expected_mode": "100644",
+          "actual_blob": "0870da5b499fbb0acfa1466f71ba7e5c98944ef3",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

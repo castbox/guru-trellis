@@ -268,7 +268,7 @@ current payload hashes 随本次 active route 更新。
 structurally distinct inputs、四个 per-exit contracts、private
 `marketplace-verification.json` schema、seven-case production corpus 与 thin wrappers。
 它不修改 Stage 0 6/24 或 production 3/11 manifest。Active
-`guru-finalize-task` 另行安装六个 distinct profiles、六个 `exit_id` outputs、
+`guru-finalize-task` 另行安装七个 distinct profiles、六个 `exit_id` outputs、
 private gate、八条 production eval cases 与四个 finalization runtime wrappers，并
 具体绑定 #116/#117 producer edges。Source/installed package closure 为 13 Skills /
 52 exits；global workflow marker closure 仍为 12 invokes / 46 exits / 27 targets。

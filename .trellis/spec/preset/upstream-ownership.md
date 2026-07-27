@@ -299,7 +299,7 @@ the active owner; it does not add an overlay path or change any immutable
 baseline digest.
 
 `guru-finalize-task` is an active Guru-owned additive package and the semantic
-owner of its six-profile, six-exit closeout loop. The current package graph is
+owner of its seven-profile, six-exit closeout loop. The current package graph is
 thirteen active Skills and 52 external exits, with twelve target-owned
 `skill_input_authoring_seed` handoffs. Global workflow markers deliberately
 remain 12 invokes, 46 exits, and 27 targets until #119 activates the Finish

@@ -675,7 +675,7 @@ the other.
 
 ## Task Finalization Quality
 
-`guru-finalize-task` quality coverage exercises all six distinct public input
+`guru-finalize-task` quality coverage exercises all seven distinct public input
 profiles, all six `exit_id` outputs, the seven finalization-family target-owned
 authoring handoffs, semantic Gate/confirmation ordering, and the owner-private
 recovery loop. Together with the five prior handoffs, the active package graph

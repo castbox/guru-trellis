@@ -89,14 +89,17 @@ Active `guru-verify-extension-installation` 独立拥有
 `verification_required` target bootstrap 与 standalone
 `standalone_verification` input。#117 只发布 target schema/example/eval 和四出口
 contract；active finalizer 已拥有 producer edge，但本 workflow 不在 #119 前激活
-Finish-family invocation。其 `verified` / `not_required` 指向 active finalizer，
+Finish-family invocation。其 workflow `verified` 与可达的 task-bearing standalone
+`not_required` 指向 active finalizer；后者投影 repo/resolved HEAD/verification ref，
+task identity 由 target author，private plan 不进入 DTO。
 `return_to_task_work` 回 Phase 2，`blocked` 停止。Skill 内部 AI 独占
 applicability、closed capability profile、adequacy、finding 和 route；workflow 只拥有
 marker、consumer 和 fail-closed transition。
 
-Active `guru-finalize-task` 是完整 closeout 的 step-local semantic owner。六个
-distinct profiles 承接 publication、verified/not-required verification、same-plan
-resume、cross-month reprepare 与 standalone；六个 outputs 统一使用 `exit_id`。
+Active `guru-finalize-task` 是完整 closeout 的 step-local semantic owner。七个
+distinct profiles 承接 publication、verified/workflow-compatible not-required、
+可达的 task-bearing standalone not-required、same-plan resume、cross-month
+reprepare 与 standalone；六个 outputs 统一使用 `exit_id`。
 Immutable plan、exact confirmation、PR/archive/recovery facts 与内部 transaction
 states 全部 private。Deterministic runtime 只复用 #105 engine 执行 content push、
 verification boundary、唯一 Draft PR、final projection、official archive transaction、

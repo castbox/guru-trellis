@@ -419,8 +419,10 @@ All three public README files name active Interface 1.3 semantic
 `standalone_verification` inputs, runtime commands
 `execute-extension-verification`, `record-extension-verification`,
 `check-extension-verification`, and `invoke-extension-verification`, and four
-minimal exits. They state that `verified` / `not_required` target active
-`guru-finalize-task`, `return_to_task_work` repeats Phase 2 and downstream
+minimal exits. They state that workflow `verified` and reachable task-bearing
+standalone `not_required` target active `guru-finalize-task`, while the
+workflow-shaped not-required schema branch remains compatible but unreachable
+from a workflow applicability conflict. `return_to_task_work` repeats Phase 2 and downstream
 review, and `blocked` stops.
 
 Docs explain that the package owns applicability, capability profile, adequacy,
@@ -454,12 +456,17 @@ completion.
 ## Task Finalization Documentation
 
 All three public README files name active Interface 1.3 semantic
-`guru-finalize-task`, its six distinct public input profiles, six `exit_id`
+`guru-finalize-task`, its seven distinct public input profiles, six `exit_id`
 outputs, owner-private closeout/gate/recovery facts, exact digest confirmation,
 and reuse of the existing #105 deterministic transaction engine. They state
 that scripts execute, validate, and record only after AI review and any required
 human confirmation; scripts do not choose plan, scope, readiness, recovery
 route, or semantic pass.
+They distinguish the preserved workflow-compatible not-required profile from
+the reachable task-bearing standalone #117 edge. That edge publishes only
+`repo_ref/resolved_head/verification_ref`; the finalizer target authors
+`profile/mode/task_ref`, binds current task-local evidence to the private plan,
+and does not expose plan identity in the producer handoff.
 
 The READMEs describe the current package graph as thirteen active Skills and 52
 external exits with twelve target-owned `skill_input_authoring_seed` handoffs.

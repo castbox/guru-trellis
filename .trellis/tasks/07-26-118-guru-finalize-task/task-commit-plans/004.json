@@ -1,0 +1,2385 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "004",
+  "task": {
+    "id": "118-guru-finalize-task",
+    "path": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "status": "in_progress",
+    "branch": "feat/118-guru-finalize-task"
+  },
+  "issue": {
+    "primary_issue": 118,
+    "ledger_sha256": "e0858c37fd888b31847658294fe94f49e2c17cf04f1857c83f7e91e0646b6e62"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "925007cb6f9b8101360db8fb93f92ef6b35a5b77"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+      "sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+      "size": 38697
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "sha256": "2b81a7c4ccce3375aedf4ab511898fab20ce504a6edcbb17186915b37cbb0f18",
+      "size": 56631
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "sha256": "e0858c37fd888b31847658294fe94f49e2c17cf04f1857c83f7e91e0646b6e62",
+      "size": 4572
+    },
+    "task": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
+      "sha256": "44c9c3c6896b30aec2fcd78dd9493959314a533ee929796538d604edc62382b1",
+      "size": 659
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-finalize-task/evals/evals.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "859eacca8726e048b4a7ceb44735aa5e9b071711",
+        "worktree_sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "83c932fe75f2425112ae09405ee745c9105fd90f",
+        "worktree_sha256": "a4b09bacb6dae8d57c9e2c69028396a1447fe10f094a0576e5ca9b7a393517ea",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "06d3b2ab58c5efb2f213ce989ab38b8f89bcf3a4",
+        "worktree_sha256": "eaaec546e875b35179076af4767aff39c4f94e33ecd22b902426d95066f47f21",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "45ba283040a1a1666d46f5aa60f9f6698a6bdabacfd6849a47355f270014ded7",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6c4e47aad7596f5d5f8148c5cc31579878ad8bb8779ba934aac22892b675a67e",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "52e3cbb994c6450828551e5ab02e4190eeeb50e6",
+        "worktree_sha256": "3cc7291ba7fe6f3f425134fc4f452546f04caff238f1f61c27a0352b5d1949a8",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e505bd0faee0f592a7d3c25f3c5787506b1867eb",
+        "worktree_sha256": "c6c14b4bf66290f4f5afe258e58109a8b277801d9962cbe65bee62a0bae7a3e4",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/schemas/public-input.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8c39c6a6f08f0b29d11bd77b187654d24fc127ce",
+        "worktree_sha256": "d430018b2726e6e0b2f82fa69d73bc1440940e2709c246a1780e79fbb26660ee",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "218500f6eb5f602f1def9eb4d1c7a68b581e0440e5a779e620ad064e702b810a",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "66554476e86b94d060adafac45751d539ec592d4",
+        "worktree_sha256": "ba09e4733cf51e01fcf597012bcf478060128fb557c4da02de638b5bde1b83f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e89dbb7909f92174eaafae486fc7b3d24775ac8a",
+        "worktree_sha256": "f80452ce6564bec72e5f037294ea8c46163d8caf59fb547971b99292e6289f31",
+        "mode": "100755"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "537824731c7b9749d0ad6819e62b95afe2cb073d",
+        "worktree_sha256": "26bd4c8a6b404ac1685c249344e609b7aaea823301a2d4b5077fefc796cba908",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4204854293fe43b1077819be4c7f4c2fbd6510f",
+        "worktree_sha256": "768d1dd1ecba21fe1f23406d33c8732049517d27ebb413c56bb9e389212b64f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+        "worktree_sha256": "223ab8ae598c7c37be230806f9576fa91a0292d37ef08ec8c13b8e7625d8af66",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+        "worktree_sha256": "41c5b2cf8254aa8d5a042b6d4e0427207e585b9d573d4a5df54bdfefe7f87069",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/evals/evals.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "859eacca8726e048b4a7ceb44735aa5e9b071711",
+        "worktree_sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "83c932fe75f2425112ae09405ee745c9105fd90f",
+        "worktree_sha256": "a4b09bacb6dae8d57c9e2c69028396a1447fe10f094a0576e5ca9b7a393517ea",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "06d3b2ab58c5efb2f213ce989ab38b8f89bcf3a4",
+        "worktree_sha256": "eaaec546e875b35179076af4767aff39c4f94e33ecd22b902426d95066f47f21",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "45ba283040a1a1666d46f5aa60f9f6698a6bdabacfd6849a47355f270014ded7",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6c4e47aad7596f5d5f8148c5cc31579878ad8bb8779ba934aac22892b675a67e",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "52e3cbb994c6450828551e5ab02e4190eeeb50e6",
+        "worktree_sha256": "3cc7291ba7fe6f3f425134fc4f452546f04caff238f1f61c27a0352b5d1949a8",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e505bd0faee0f592a7d3c25f3c5787506b1867eb",
+        "worktree_sha256": "c6c14b4bf66290f4f5afe258e58109a8b277801d9962cbe65bee62a0bae7a3e4",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/schemas/public-input.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8c39c6a6f08f0b29d11bd77b187654d24fc127ce",
+        "worktree_sha256": "d430018b2726e6e0b2f82fa69d73bc1440940e2709c246a1780e79fbb26660ee",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "218500f6eb5f602f1def9eb4d1c7a68b581e0440e5a779e620ad064e702b810a",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "66554476e86b94d060adafac45751d539ec592d4",
+        "worktree_sha256": "ba09e4733cf51e01fcf597012bcf478060128fb557c4da02de638b5bde1b83f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e89dbb7909f92174eaafae486fc7b3d24775ac8a",
+        "worktree_sha256": "f80452ce6564bec72e5f037294ea8c46163d8caf59fb547971b99292e6289f31",
+        "mode": "100755"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "537824731c7b9749d0ad6819e62b95afe2cb073d",
+        "worktree_sha256": "26bd4c8a6b404ac1685c249344e609b7aaea823301a2d4b5077fefc796cba908",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4204854293fe43b1077819be4c7f4c2fbd6510f",
+        "worktree_sha256": "768d1dd1ecba21fe1f23406d33c8732049517d27ebb413c56bb9e389212b64f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+        "worktree_sha256": "223ab8ae598c7c37be230806f9576fa91a0292d37ef08ec8c13b8e7625d8af66",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+        "worktree_sha256": "41c5b2cf8254aa8d5a042b6d4e0427207e585b9d573d4a5df54bdfefe7f87069",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/evals/evals.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "859eacca8726e048b4a7ceb44735aa5e9b071711",
+        "worktree_sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "83c932fe75f2425112ae09405ee745c9105fd90f",
+        "worktree_sha256": "a4b09bacb6dae8d57c9e2c69028396a1447fe10f094a0576e5ca9b7a393517ea",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "06d3b2ab58c5efb2f213ce989ab38b8f89bcf3a4",
+        "worktree_sha256": "eaaec546e875b35179076af4767aff39c4f94e33ecd22b902426d95066f47f21",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "45ba283040a1a1666d46f5aa60f9f6698a6bdabacfd6849a47355f270014ded7",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6c4e47aad7596f5d5f8148c5cc31579878ad8bb8779ba934aac22892b675a67e",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "52e3cbb994c6450828551e5ab02e4190eeeb50e6",
+        "worktree_sha256": "3cc7291ba7fe6f3f425134fc4f452546f04caff238f1f61c27a0352b5d1949a8",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e505bd0faee0f592a7d3c25f3c5787506b1867eb",
+        "worktree_sha256": "c6c14b4bf66290f4f5afe258e58109a8b277801d9962cbe65bee62a0bae7a3e4",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/schemas/public-input.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8c39c6a6f08f0b29d11bd77b187654d24fc127ce",
+        "worktree_sha256": "d430018b2726e6e0b2f82fa69d73bc1440940e2709c246a1780e79fbb26660ee",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "218500f6eb5f602f1def9eb4d1c7a68b581e0440e5a779e620ad064e702b810a",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "66554476e86b94d060adafac45751d539ec592d4",
+        "worktree_sha256": "ba09e4733cf51e01fcf597012bcf478060128fb557c4da02de638b5bde1b83f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e89dbb7909f92174eaafae486fc7b3d24775ac8a",
+        "worktree_sha256": "f80452ce6564bec72e5f037294ea8c46163d8caf59fb547971b99292e6289f31",
+        "mode": "100755"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "537824731c7b9749d0ad6819e62b95afe2cb073d",
+        "worktree_sha256": "26bd4c8a6b404ac1685c249344e609b7aaea823301a2d4b5077fefc796cba908",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4204854293fe43b1077819be4c7f4c2fbd6510f",
+        "worktree_sha256": "768d1dd1ecba21fe1f23406d33c8732049517d27ebb413c56bb9e389212b64f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+        "worktree_sha256": "223ab8ae598c7c37be230806f9576fa91a0292d37ef08ec8c13b8e7625d8af66",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+        "worktree_sha256": "41c5b2cf8254aa8d5a042b6d4e0427207e585b9d573d4a5df54bdfefe7f87069",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/evals/evals.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "859eacca8726e048b4a7ceb44735aa5e9b071711",
+        "worktree_sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "83c932fe75f2425112ae09405ee745c9105fd90f",
+        "worktree_sha256": "a4b09bacb6dae8d57c9e2c69028396a1447fe10f094a0576e5ca9b7a393517ea",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "06d3b2ab58c5efb2f213ce989ab38b8f89bcf3a4",
+        "worktree_sha256": "eaaec546e875b35179076af4767aff39c4f94e33ecd22b902426d95066f47f21",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "45ba283040a1a1666d46f5aa60f9f6698a6bdabacfd6849a47355f270014ded7",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6c4e47aad7596f5d5f8148c5cc31579878ad8bb8779ba934aac22892b675a67e",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "52e3cbb994c6450828551e5ab02e4190eeeb50e6",
+        "worktree_sha256": "3cc7291ba7fe6f3f425134fc4f452546f04caff238f1f61c27a0352b5d1949a8",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e505bd0faee0f592a7d3c25f3c5787506b1867eb",
+        "worktree_sha256": "c6c14b4bf66290f4f5afe258e58109a8b277801d9962cbe65bee62a0bae7a3e4",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/schemas/public-input.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8c39c6a6f08f0b29d11bd77b187654d24fc127ce",
+        "worktree_sha256": "d430018b2726e6e0b2f82fa69d73bc1440940e2709c246a1780e79fbb26660ee",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "218500f6eb5f602f1def9eb4d1c7a68b581e0440e5a779e620ad064e702b810a",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "66554476e86b94d060adafac45751d539ec592d4",
+        "worktree_sha256": "ba09e4733cf51e01fcf597012bcf478060128fb557c4da02de638b5bde1b83f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e89dbb7909f92174eaafae486fc7b3d24775ac8a",
+        "worktree_sha256": "f80452ce6564bec72e5f037294ea8c46163d8caf59fb547971b99292e6289f31",
+        "mode": "100755"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "537824731c7b9749d0ad6819e62b95afe2cb073d",
+        "worktree_sha256": "26bd4c8a6b404ac1685c249344e609b7aaea823301a2d4b5077fefc796cba908",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4204854293fe43b1077819be4c7f4c2fbd6510f",
+        "worktree_sha256": "768d1dd1ecba21fe1f23406d33c8732049517d27ebb413c56bb9e389212b64f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+        "worktree_sha256": "223ab8ae598c7c37be230806f9576fa91a0292d37ef08ec8c13b8e7625d8af66",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+        "worktree_sha256": "41c5b2cf8254aa8d5a042b6d4e0427207e585b9d573d4a5df54bdfefe7f87069",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "03a2b879b217328c416b1198d54295cb92e65481",
+        "worktree_sha256": "b68d0d861fb5a5eb155155c89e070f5a0b8952dbf60231fef15a41ada8c359ca",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2c9641ae67503592b8cbdccf95d8a8be936ab6cb",
+        "worktree_sha256": "3d9211630c33ce4cfda0bad57e8fb22dcdd4defe5f2e53f02cc34350855f0f6e",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "85d2249503e7a597a5e38fe0407de79759fd0626",
+        "worktree_sha256": "834f07870bed612de06be6af243f7866a7cda4023a1655dd46200007a6418a02",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "859eacca8726e048b4a7ceb44735aa5e9b071711",
+        "worktree_sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "83c932fe75f2425112ae09405ee745c9105fd90f",
+        "worktree_sha256": "a4b09bacb6dae8d57c9e2c69028396a1447fe10f094a0576e5ca9b7a393517ea",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "06d3b2ab58c5efb2f213ce989ab38b8f89bcf3a4",
+        "worktree_sha256": "eaaec546e875b35179076af4767aff39c4f94e33ecd22b902426d95066f47f21",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "45ba283040a1a1666d46f5aa60f9f6698a6bdabacfd6849a47355f270014ded7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6c4e47aad7596f5d5f8148c5cc31579878ad8bb8779ba934aac22892b675a67e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "52e3cbb994c6450828551e5ab02e4190eeeb50e6",
+        "worktree_sha256": "3cc7291ba7fe6f3f425134fc4f452546f04caff238f1f61c27a0352b5d1949a8",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e505bd0faee0f592a7d3c25f3c5787506b1867eb",
+        "worktree_sha256": "c6c14b4bf66290f4f5afe258e58109a8b277801d9962cbe65bee62a0bae7a3e4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-input.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8c39c6a6f08f0b29d11bd77b187654d24fc127ce",
+        "worktree_sha256": "d430018b2726e6e0b2f82fa69d73bc1440940e2709c246a1780e79fbb26660ee",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "218500f6eb5f602f1def9eb4d1c7a68b581e0440e5a779e620ad064e702b810a",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "66554476e86b94d060adafac45751d539ec592d4",
+        "worktree_sha256": "ba09e4733cf51e01fcf597012bcf478060128fb557c4da02de638b5bde1b83f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e89dbb7909f92174eaafae486fc7b3d24775ac8a",
+        "worktree_sha256": "f80452ce6564bec72e5f037294ea8c46163d8caf59fb547971b99292e6289f31",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "537824731c7b9749d0ad6819e62b95afe2cb073d",
+        "worktree_sha256": "26bd4c8a6b404ac1685c249344e609b7aaea823301a2d4b5077fefc796cba908",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4204854293fe43b1077819be4c7f4c2fbd6510f",
+        "worktree_sha256": "768d1dd1ecba21fe1f23406d33c8732049517d27ebb413c56bb9e389212b64f7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+        "worktree_sha256": "223ab8ae598c7c37be230806f9576fa91a0292d37ef08ec8c13b8e7625d8af66",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+        "worktree_sha256": "41c5b2cf8254aa8d5a042b6d4e0427207e585b9d573d4a5df54bdfefe7f87069",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ccf5036d64d2b54c49a89bdd891188494e99e8e6",
+        "worktree_sha256": "ee9042b87d12582a46f64695c6aefe89b5e9d7eaf40383bc2336b015537cf6f3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "45950e0858baee088b3a8b7161323fd36b976ae6",
+        "worktree_sha256": "968600b1e0e556d47fbf11bc8917b0b3df9a8bdc3b1fb9ba514b2b5b6c6bac8e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "27c017f449ea6292c39dd5037b8a9c759856d80e",
+        "worktree_sha256": "1e04f32cb2e66fcbf8af8c0de181e0334f241adf05b989627da3345c0b9a5ccc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5b8511a8d68b47172602407c09156928f1e07fca",
+        "worktree_sha256": "f0045e8e0199effbd45dbda393b9599f699e089caf46882520d01449bbe000eb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5ebfba67e16faf7805f473f23c141107ce40d272",
+        "worktree_sha256": "3684aa5a219fa4c9eff589a550ddabb1faf0159cedbcaa9b8e680d7d971cb268",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6c0daa8ddf0ecd4d907d87d680d52939bf608997",
+        "worktree_sha256": "7cc8145d871b84abca2b55b4d16b643fa75c20038953124095baf1e13ae7e545",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "30b1fbadccb5cd6c14df89f653e53cc46550a470",
+        "worktree_sha256": "732a313ebfb8fb582eb73e95add9455c324f8d3928989d1674f2438131cab66b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "773ffa8ffed5427fac88bd3406878e7b4d5ea98c",
+        "worktree_sha256": "8c9657b64c6e377bf324d66439ff5ffdb525a4c63930766ca88254d97bbc9193",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ccabdb182555dc0fe92f436cf8b95d65bdd9c6df35f603068f97f6cd528ab5f5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-ref-binding-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "35bad7e5f24c7607e4dcc60ef4c301499f5ecd336dc9b4e5c35ff02ecc86de91",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "009bfee151702be8ac35aea313ad10d0a5f6ddbf",
+        "worktree_sha256": "2b81a7c4ccce3375aedf4ab511898fab20ce504a6edcbb17186915b37cbb0f18",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round6.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "395c52a1c524079962346b6dc8bc9cc8cc523983be70f49f964602596dc05520",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round7.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7309ad211048910ba76083adc31480c563f528fa",
+        "worktree_sha256": "c338a02dcdf7c38cd0b4f4253974b5e7ecbf532f9352f25578fc7af93ddea25f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f4789bc29817ccd1155d97c2d862662834633efe",
+        "worktree_sha256": "ce5436be35f6087daf87b03dd8061631f4aefbce2ba291f48910b57f29bffbf4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c0bcafd48378f141fe51ecbcaa28d8ee32a26c6937235b95e54924af42c1007e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "a02ffc9e9c57372792354f723826452a64d085db0f0cafb5efc92b8b9ab58b8e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0870da5b499fbb0acfa1466f71ba7e5c98944ef3",
+        "worktree_sha256": "b9672ec07b589625aaca6cc5ab33cc780160fea924973770aa3f31b003f43657",
+        "mode": "100644"
+      },
+      {
+        "path": "README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dc95debb46b18c854c60078d770633cde67998fa",
+        "worktree_sha256": "7ff12d49ff3a0d5bbe5c9d601b8992f2b5c527bce7d65d42dbc78365e64aaf8d",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "eca59040fbb0e04676029015f3514179cb1f55b6",
+        "worktree_sha256": "e4a8f428a894f2b75be8b1741fed35d6d6e43ab944ac867b3070e85fdbac7395",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "84b51bc4040bcf0c6b666b8d18a17ba78a2a4077",
+        "worktree_sha256": "692cccb1cc50e4f59b38eed894c7fbcbd442e30b9d05797b2cbd8308bb550f9b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bfbcfe3a5bc9411f5fbf8a53facd542050b62b48",
+        "worktree_sha256": "5f0876166d3bd8434056b3573d3237d847d68163a47ba35dc99c5a34fd2ea000",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "14e54d9b8fb3ad1c6759a75bfec5d5baa8fba5b7",
+        "worktree_sha256": "9a2fd38bcdc1aa15330aca4772b52fa239042ef37e73fd233e0855dae165225b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "85d2249503e7a597a5e38fe0407de79759fd0626",
+        "worktree_sha256": "834f07870bed612de06be6af243f7866a7cda4023a1655dd46200007a6418a02",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "859eacca8726e048b4a7ceb44735aa5e9b071711",
+        "worktree_sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "83c932fe75f2425112ae09405ee745c9105fd90f",
+        "worktree_sha256": "a4b09bacb6dae8d57c9e2c69028396a1447fe10f094a0576e5ca9b7a393517ea",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "06d3b2ab58c5efb2f213ce989ab38b8f89bcf3a4",
+        "worktree_sha256": "eaaec546e875b35179076af4767aff39c4f94e33ecd22b902426d95066f47f21",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "45ba283040a1a1666d46f5aa60f9f6698a6bdabacfd6849a47355f270014ded7",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6c4e47aad7596f5d5f8148c5cc31579878ad8bb8779ba934aac22892b675a67e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "52e3cbb994c6450828551e5ab02e4190eeeb50e6",
+        "worktree_sha256": "3cc7291ba7fe6f3f425134fc4f452546f04caff238f1f61c27a0352b5d1949a8",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e505bd0faee0f592a7d3c25f3c5787506b1867eb",
+        "worktree_sha256": "c6c14b4bf66290f4f5afe258e58109a8b277801d9962cbe65bee62a0bae7a3e4",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-input.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8c39c6a6f08f0b29d11bd77b187654d24fc127ce",
+        "worktree_sha256": "d430018b2726e6e0b2f82fa69d73bc1440940e2709c246a1780e79fbb26660ee",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "218500f6eb5f602f1def9eb4d1c7a68b581e0440e5a779e620ad064e702b810a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "66554476e86b94d060adafac45751d539ec592d4",
+        "worktree_sha256": "ba09e4733cf51e01fcf597012bcf478060128fb557c4da02de638b5bde1b83f7",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e89dbb7909f92174eaafae486fc7b3d24775ac8a",
+        "worktree_sha256": "f80452ce6564bec72e5f037294ea8c46163d8caf59fb547971b99292e6289f31",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "537824731c7b9749d0ad6819e62b95afe2cb073d",
+        "worktree_sha256": "26bd4c8a6b404ac1685c249344e609b7aaea823301a2d4b5077fefc796cba908",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4204854293fe43b1077819be4c7f4c2fbd6510f",
+        "worktree_sha256": "768d1dd1ecba21fe1f23406d33c8732049517d27ebb413c56bb9e389212b64f7",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0194848d9539e1fa5043f0fde8b5c58d22f07eb6",
+        "worktree_sha256": "223ab8ae598c7c37be230806f9576fa91a0292d37ef08ec8c13b8e7625d8af66",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "48d2e6b1beeb98b935681db5a14560bf85d954f3",
+        "worktree_sha256": "41c5b2cf8254aa8d5a042b6d4e0427207e585b9d573d4a5df54bdfefe7f87069",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6c161a172dbddc51ca275e0663f5e5bc8e370aef",
+        "worktree_sha256": "528e452d8bc7c39838a44444bde2362b1dab88754cee2633e395d601534d0b1a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "576c3357126f7317f14bd4fcfb66841686f6fce2",
+        "worktree_sha256": "04a94a50a2adbd819b0646677fd739be36f44dea76eba7a739ba21834082b256",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2c9641ae67503592b8cbdccf95d8a8be936ab6cb",
+        "worktree_sha256": "3d9211630c33ce4cfda0bad57e8fb22dcdd4defe5f2e53f02cc34350855f0f6e",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ed2e36eb99b5d5b597c1512c4fb5c5a85d19af5b",
+        "worktree_sha256": "3a408eb450006b012f64c58cc860c4d74824a00b9d0a57cadf2ffd1e7c7d7217",
+        "mode": "100644"
+      }
+    ],
+    "digest": "c3d55282680a0ad9d8004c74adf20c71f49648e498bd79488661871a5619e13a"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-finalize-task/evals/evals.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/schemas/public-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-finalize-task/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/evals/evals.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/schemas/public-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-finalize-task/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/evals/evals.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/schemas/public-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-finalize-task/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/evals/evals.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/schemas/public-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-finalize-task/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/index.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-ref-binding-fix.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round6.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round7.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "README.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/guru-team-extension.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-finalize-task/evals/evals.json",
+    ".agents/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+    ".agents/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+    ".agents/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+    ".agents/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+    ".agents/skills/guru-finalize-task/interface.json",
+    ".agents/skills/guru-finalize-task/references/contract.md",
+    ".agents/skills/guru-finalize-task/schemas/public-input.schema.json",
+    ".agents/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+    ".agents/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+    ".agents/skills/guru-finalize-task/tests/test_contract.py",
+    ".agents/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+    ".agents/skills/guru-verify-extension-installation/interface.json",
+    ".agents/skills/guru-verify-extension-installation/references/contract.md",
+    ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".claude/skills/guru-finalize-task/evals/evals.json",
+    ".claude/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+    ".claude/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+    ".claude/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+    ".claude/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+    ".claude/skills/guru-finalize-task/interface.json",
+    ".claude/skills/guru-finalize-task/references/contract.md",
+    ".claude/skills/guru-finalize-task/schemas/public-input.schema.json",
+    ".claude/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+    ".claude/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+    ".claude/skills/guru-finalize-task/tests/test_contract.py",
+    ".claude/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+    ".claude/skills/guru-verify-extension-installation/interface.json",
+    ".claude/skills/guru-verify-extension-installation/references/contract.md",
+    ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".codex/skills/guru-finalize-task/evals/evals.json",
+    ".codex/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+    ".codex/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+    ".codex/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+    ".codex/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+    ".codex/skills/guru-finalize-task/interface.json",
+    ".codex/skills/guru-finalize-task/references/contract.md",
+    ".codex/skills/guru-finalize-task/schemas/public-input.schema.json",
+    ".codex/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+    ".codex/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+    ".codex/skills/guru-finalize-task/tests/test_contract.py",
+    ".codex/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+    ".codex/skills/guru-verify-extension-installation/interface.json",
+    ".codex/skills/guru-verify-extension-installation/references/contract.md",
+    ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".cursor/skills/guru-finalize-task/evals/evals.json",
+    ".cursor/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+    ".cursor/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
+    ".cursor/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+    ".cursor/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+    ".cursor/skills/guru-finalize-task/interface.json",
+    ".cursor/skills/guru-finalize-task/references/contract.md",
+    ".cursor/skills/guru-finalize-task/schemas/public-input.schema.json",
+    ".cursor/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+    ".cursor/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+    ".cursor/skills/guru-finalize-task/tests/test_contract.py",
+    ".cursor/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
+    ".cursor/skills/guru-verify-extension-installation/interface.json",
+    ".cursor/skills/guru-verify-extension-installation/references/contract.md",
+    ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-input.schema.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+    ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+    ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/upstream-ownership.md",
+    ".trellis/spec/workflow/index.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-ref-binding-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round6.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round7.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+    "README.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+    "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-input.schema.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
+    "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #118 闭合独立验证任务收尾",
+    "body": "背景：\nBranch Review 发现非 extension task 缺少可达的 #117 not_required producer edge，后续 Phase 2 又发现 private owner evidence 未精确绑定 immutable plan remote/ref。\n\n变更：\n新增 #117 standalone not_required 最小输出与 #118 target-owned standalone profile，使用真实 public wrapper 和 declared no-overwrite projection 覆盖 terminal published；同时把 private verification evidence 的 remote/ref 绑定到 plan remote/head branch，并同步 canonical、dogfood、Codex、Claude、Cursor、Docs SSOT、examples、schemas 与 tests。\n\n边界：\n仅交付 Issue #118 的 guru-finalize-task package、Guru runtime assets、schema/example/test 和 additive distribution；不修改 global workflow、upstream trellis-finish-work family、official task.py 或 preset overlays；不并入 #119/#132，不关闭 #115，不改变 #105 事务语义，不执行 push、PR、archive、Issue mutation、deploy 或 production write。\n\n验证：\n- fresh Round 7 Phase 2：P0/P1/P2/P3 全 0，guru-check-task public exit=passed\n- finalizer 5、verifier 10、runtime 617 passed/13 skipped、Skill/eval 179、preset 45\n- source/installed real two-wrapper not_required eval 均 actual published\n- clean throwaway marketplace/install/reapply/update/.new/.bak/all-platform distribution exit 0\n- ownership、overlay drift、public/private DTO、scope/security/deploy 与 whitespace hygiene 通过\n- Claude native 真实调用为外部 401，未声称成功；exact pushed-ref verification 保留给 publication gate\n\nRefs #118",
+    "bytes": "fix(workflow): #118 闭合独立验证任务收尾\n\n背景：\nBranch Review 发现非 extension task 缺少可达的 #117 not_required producer edge，后续 Phase 2 又发现 private owner evidence 未精确绑定 immutable plan remote/ref。\n\n变更：\n新增 #117 standalone not_required 最小输出与 #118 target-owned standalone profile，使用真实 public wrapper 和 declared no-overwrite projection 覆盖 terminal published；同时把 private verification evidence 的 remote/ref 绑定到 plan remote/head branch，并同步 canonical、dogfood、Codex、Claude、Cursor、Docs SSOT、examples、schemas 与 tests。\n\n边界：\n仅交付 Issue #118 的 guru-finalize-task package、Guru runtime assets、schema/example/test 和 additive distribution；不修改 global workflow、upstream trellis-finish-work family、official task.py 或 preset overlays；不并入 #119/#132，不关闭 #115，不改变 #105 事务语义，不执行 push、PR、archive、Issue mutation、deploy 或 production write。\n\n验证：\n- fresh Round 7 Phase 2：P0/P1/P2/P3 全 0，guru-check-task public exit=passed\n- finalizer 5、verifier 10、runtime 617 passed/13 skipped、Skill/eval 179、preset 45\n- source/installed real two-wrapper not_required eval 均 actual published\n- clean throwaway marketplace/install/reapply/update/.new/.bak/all-platform distribution exit 0\n- ownership、overlay drift、public/private DTO、scope/security/deploy 与 whitespace hygiene 通过\n- Claude native 真实调用为外部 401，未声称成功；exact pushed-ref verification 保留给 publication gate\n\nRefs #118\n",
+    "sha256": "909a8173dde7448a8a4222a98494172a3c040ee55e8082195ee211aa4bc21011"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "All current dirty paths exactly match the fresh Phase 2 snapshot plus phase2-check.json. The Chinese Conventional Commit message truthfully describes the two resolved normal-path findings, validation and deferred boundaries. The index is empty, Git is in an ordinary operation state, and no unrelated path is authorized.",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "User confirmed the exact local task commit plan with digest 05fd6941af37fea07c3bd0a759b610db5345d590ae32dcf73145568f3afdb121; authorization covers only the listed paths, message and local commit side effect."
+  },
+  "freshness": {
+    "captured_at": "2026-07-27T11:36:15Z",
+    "plan_digest": "9507f6c3a215ba5703cf46920357b1454b84bc0ef62178e3691ba2221b92cd32"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

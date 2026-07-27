@@ -959,7 +959,9 @@ caller intent, and optional task identity.
 
 The Skill's unique consumers are:
 
-- `verified` and `not_required` -> active `guru-finalize-task`;
+- workflow `verified` and reachable task-bearing standalone `not_required` ->
+  active `guru-finalize-task`; the workflow-shaped not-required schema remains
+  compatible but the workflow applicability conflict cannot produce it;
 - `return_to_task_work` -> `guru-extension-verification-work-router`, which
   resumes Phase 2 and the complete downstream review sequence;
 - `blocked` -> `extension-installation-verification-blocked`.

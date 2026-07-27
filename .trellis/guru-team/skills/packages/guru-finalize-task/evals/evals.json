@@ -121,10 +121,10 @@
     },
     {
       "id": "not-required-reentry-published",
-      "prompt": "Invoke the finalizer from current not-required verification evidence for the same plan and reviewed HEAD.",
+      "prompt": "Invoke the standalone verifier, apply its declared not-required projection without overwrite, and invoke the finalizer for the same private plan and resolved HEAD.",
       "expected_exit": "published",
       "expected_output": "The checked terminal DTO contains the exact published pull request identity.",
-      "input_profile_id": "verification_not_required",
+      "input_profile_id": "standalone_verification_not_required",
       "assertions": {
         "deterministic": [
           {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "published"}

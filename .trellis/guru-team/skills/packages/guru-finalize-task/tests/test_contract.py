@@ -70,7 +70,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     )
                 )
 
-    def test_six_profiles_and_six_exits_are_closed(self) -> None:
+    def test_seven_profiles_and_six_exits_are_closed(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
         profiles = interface["public_contracts"]["input"]["profiles"]
         outputs = interface["public_contracts"]["outputs"]
@@ -80,6 +80,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "publication_ready",
                 "verification_verified",
                 "verification_not_required",
+                "standalone_verification_not_required",
                 "same_plan_resume",
                 "reprepare_preview",
                 "standalone_finalization",
@@ -115,6 +116,33 @@ class FinalizeTaskContractTests(unittest.TestCase):
             )
         )
         self.assertEqual(set(authoring), set(consumer["contract"]["authoring_fields"]))
+
+    def test_standalone_not_required_profile_is_closed_and_target_authored(self) -> None:
+        interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
+        profile = next(
+            item
+            for item in interface["public_contracts"]["input"]["profiles"]
+            if item["id"] == "standalone_verification_not_required"
+        )
+        schema = json.loads(
+            (PACKAGE / profile["schema"]["path"]).read_text(encoding="utf-8")
+        )
+        example = json.loads(
+            (PACKAGE / profile["example"]["path"]).read_text(encoding="utf-8")
+        )
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual(
+            set(schema["required"]),
+            {
+                "profile",
+                "mode",
+                "task_ref",
+                "repo_ref",
+                "resolved_head",
+                "verification_ref",
+            },
+        )
+        self.assertEqual(set(example), set(schema["required"]))
 
     def test_package_source_contract(self) -> None:
         result = subprocess.run(

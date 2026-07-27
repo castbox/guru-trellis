@@ -17137,6 +17137,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "reviewed_head": self.head,
                 "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
                 "repo_ref": "owner/repo",
+                "remote": "origin",
+                "head_branch": "main",
                 "publication_ref": "publication:eval-current",
                 "verification_ref": None,
                 "publication_status": "stale",
@@ -17472,6 +17474,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "marketplace": {"required": True},
             "git": {
                 "repo": "owner/repo",
+                "remote": "origin",
+                "head_branch": "main",
                 "reviewed_work_head": self.head,
             },
             "task": {
@@ -17791,6 +17795,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "repo": "owner/repo",
                 "reviewed_work_head": reviewed_head,
             },
+            "marketplace": {"required": False},
             "projection": {
                 "evidence_paths": [
                     f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
@@ -17962,6 +17967,263 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 plan_ref=plan_ref,
                 reviewed_head=reviewed_head,
             )
+
+    def test_standalone_not_required_augmentation_accepts_only_private_plan_binding(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        locator = f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        plan = {
+            "plan_digest": "b" * 64,
+            "task": {
+                "active_locator": task_ref,
+                "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
+            },
+            "git": {
+                "repo": "owner/repo",
+                "remote": "origin",
+                "head_branch": "main",
+                "reviewed_work_head": self.head,
+            },
+            "marketplace": {"required": False},
+            "projection": {
+                "evidence_paths": [locator],
+                "untracked_archive_outputs": [],
+            },
+        }
+        payload = {
+            "public_input": {
+                "profile": "standalone_verification",
+                "mode": "standalone",
+                "task_ref": task_ref,
+                "repo_ref": "owner/repo",
+            },
+            "typed_exit": "not_required",
+            "mode": "standalone",
+            "profile": "standalone_verification",
+            "identity": {"verification_ref": "extension-verification:current"},
+            "repository": {
+                "repo_ref": "owner/repo",
+                "remote": "origin",
+                "ref": "refs/heads/main",
+                "reviewed_head": None,
+                "remote_head": self.head,
+            },
+        }
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+        live_remote = mock.Mock(
+            returncode=0,
+            stdout=f"{self.head}\trefs/heads/main\n",
+            stderr="",
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "extension_verification_payload_errors",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "git_status_paths", return_value=[locator]),
+            mock.patch.object(gtt, "run", return_value=live_remote) as run_remote,
+        ):
+            checked = gtt.check_extension_verification_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                locator,
+                plan=plan,
+                task_ref=task_ref,
+                plan_ref=plan_ref,
+                reviewed_head=self.head,
+            )
+            self.assertEqual(checked["typed_exit"], "not_required")
+            run_remote.assert_called_with(
+                [
+                    "git",
+                    "ls-remote",
+                    "origin",
+                    "refs/heads/main",
+                    "refs/heads/main^{}",
+                ],
+                cwd=self.root,
+                check=False,
+            )
+
+            stale = copy.deepcopy(payload)
+            stale["repository"]["remote_head"] = "f" * 40
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_finalization_augmentation(
+                    self.root,
+                    self.task_dir,
+                    stale,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    reviewed_head=self.head,
+                )
+
+            wrong_remote = copy.deepcopy(payload)
+            wrong_remote["repository"]["remote"] = "secondary"
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_finalization_augmentation(
+                    self.root,
+                    self.task_dir,
+                    wrong_remote,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    reviewed_head=self.head,
+                )
+
+            wrong_ref = copy.deepcopy(payload)
+            wrong_ref["repository"]["ref"] = "refs/heads/other"
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_finalization_augmentation(
+                    self.root,
+                    self.task_dir,
+                    wrong_ref,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    reviewed_head=self.head,
+                )
+
+    def test_standalone_not_required_owner_binds_task_plan_head_and_ref(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan = {
+            "plan_digest": "b" * 64,
+            "task": {
+                "active_locator": task_ref,
+                "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
+            },
+            "git": {
+                "repo": "owner/repo",
+                "remote": "origin",
+                "head_branch": "main",
+                "reviewed_work_head": self.head,
+            },
+            "marketplace": {"required": False},
+        }
+        verification_ref = "extension-verification:current"
+        payload = {
+            "mode": "standalone",
+            "profile": "standalone_verification",
+            "typed_exit": "not_required",
+            "public_input": {
+                "profile": "standalone_verification",
+                "mode": "standalone",
+                "task_ref": task_ref,
+                "repo_ref": "owner/repo",
+            },
+            "repository": {
+                "repo_ref": "owner/repo",
+                "remote": "origin",
+                "ref": "refs/heads/main",
+                "remote_head": self.head,
+            },
+            "identity": {"verification_ref": verification_ref},
+        }
+        checked = {
+            "typed_exit": "not_required",
+            "mode": "standalone",
+            "verification_ref": verification_ref,
+        }
+        self.assertTrue(
+            gtt.finalization_standalone_not_required_owner_is_current(
+                payload,
+                checked,
+                plan,
+                task_ref=task_ref,
+            )
+        )
+
+        public_input = {
+            "profile": "standalone_verification_not_required",
+            "mode": "standalone",
+            "task_ref": task_ref,
+            "repo_ref": "owner/repo",
+            "resolved_head": self.head,
+            "verification_ref": verification_ref,
+        }
+        locator = f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_payload",
+                return_value=(payload, locator),
+            ),
+            mock.patch.object(
+                gtt,
+                "check_extension_verification_result",
+                return_value=checked,
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_plan",
+                return_value=plan,
+            ),
+        ):
+            result = gtt.finalization_verification_owner_result(
+                self.root,
+                self.task_dir,
+                public_input,
+            )
+            self.assertEqual(result, (payload, checked))
+            current = gtt.finalization_current_verification_owner_result(
+                self.root,
+                self.task_dir,
+                task_ref=task_ref,
+                plan_ref=f"closeout-plan:{plan['plan_digest']}",
+                reviewed_head=self.head,
+                plan=plan,
+            )
+            self.assertEqual(current, (payload, checked))
+
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_verification_owner_result(
+                    self.root,
+                    self.task_dir,
+                    {**public_input, "resolved_head": "c" * 40},
+                )
+
+        stale = copy.deepcopy(payload)
+        stale["repository"]["remote_head"] = "c" * 40
+        self.assertFalse(
+            gtt.finalization_standalone_not_required_owner_is_current(
+                stale,
+                checked,
+                plan,
+                task_ref=task_ref,
+            )
+        )
+
+        wrong_remote = copy.deepcopy(payload)
+        wrong_remote["repository"]["remote"] = "secondary"
+        self.assertFalse(
+            gtt.finalization_standalone_not_required_owner_is_current(
+                wrong_remote,
+                checked,
+                plan,
+                task_ref=task_ref,
+            )
+        )
+
+        wrong_ref = copy.deepcopy(payload)
+        wrong_ref["repository"]["ref"] = "refs/heads/other"
+        self.assertFalse(
+            gtt.finalization_standalone_not_required_owner_is_current(
+                wrong_ref,
+                checked,
+                plan,
+                task_ref=task_ref,
+            )
+        )
 
     def test_archived_finalization_recovery_reads_committed_plan_and_evidence(
         self,

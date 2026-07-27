@@ -1,1 +1,1 @@
-{"profile":"verification_not_required","mode":"workflow","task_ref":".trellis/tasks/current","plan_ref":"closeout-plan:placeholder","reviewed_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reentry_intent":"Continue the same plan after current not-required verification evidence."}
+{"profile":"standalone_verification_not_required","mode":"standalone","task_ref":".trellis/tasks/current","repo_ref":"example/guru-extension","resolved_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","verification_ref":"extension-verification:placeholder"}

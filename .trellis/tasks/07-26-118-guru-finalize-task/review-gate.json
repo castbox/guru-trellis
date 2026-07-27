@@ -1,11 +1,11 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-07-27T04:03:55Z",
+  "generated_at": "2026-07-27T07:48:12Z",
   "task_dir": ".trellis/tasks/07-26-118-guru-finalize-task",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "feat/118-guru-finalize-task",
-  "head": "4847bfb8763483b4648915ce1da918cdfb24a678",
+  "head": "925007cb6f9b8101360db8fb93f92ef6b35a5b77",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/guru-finalize-task/SKILL.md",
@@ -362,11 +362,13 @@
     ".trellis/tasks/07-26-118-guru-finalize-task/context-discovery.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/contract-wording-review.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/implement.jsonl",
     ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round2.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
@@ -374,18 +376,25 @@
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round4.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-001-final-release.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-002-problem-discovery.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/published-materialization-locator-probe.py",
     ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/recovery-metadata-tail-probe.py",
     ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
     ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/001.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
     ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
     "README.md",
@@ -499,21 +508,12 @@
     ".trellis/tasks/07-26-118-guru-finalize-task",
     "--base-branch",
     "main",
-    "--pass",
     "--summary",
-    "Round 5 已通过 direct new-agent decisions 从 Round 1/2 original finding owner 闭环 F-FINAL-LEGACY-01；Round 6 随后覆盖完整 origin/main...4847bfb 467-path current range并成为最后零 finding 轮，Branch Review 通过。",
+    "Round 7 fresh independent review 覆盖 origin/main...925007cb 476-path range并资格化 P1 F-NOT-REQUIRED-EDGE-01；Round 8 在同一 HEAD 建立正式 finding owner binding。P0=0、P1=1、P2=0、P3=0，route=implementation_required。",
     "--evidence",
-    "Lifecycle：Round 5 report SHA-256 c72021ad8f094e4c6bad512754ac519fbf4f7e99e1b863f1192688428110d5a1；assignment 分别记录 Round1→5 与 Round2→5 new-agent decisions。Round 6 final report SHA-256 f2cbca7694d3bacdb4339103b8847a32839de4d49a3c0ac3426ee1dae821b689，fresh agent、current HEAD、findings_count=0。",
-    "--evidence",
-    "验证：Round 6 fresh focused 6/6、transaction 93/93、finalizer 4/4、installed real wrapper 8/8、platform protocol 2/2；Phase2 runtime 615 passed/13 skipped、packages178、preset45、ownership9、clean throwaway exit0。",
-    "--evidence",
-    "安装升级影响：additive extension/preset/package/schema/runtime distribution 已通过 marketplace install/reapply、official update、managed hashes、.new/.bak recovery、all-platform byte/mode identity、overlay drift 与 sidecar/cache zero-hit；未修改 upstream Trellis/global workflow/upstream trellis-finish-work。",
-    "--evidence",
-    "安全与部署：未发现 secret、credential、private key、.env、signed URL、客户数据或敏感原始 payload；无 dependency、CI/CD、container、K8s/Helm、DB migration、Makefile、服务部署或 production data write 变化。",
-    "--evidence",
-    "Issue scope：只关闭 #118；#81/#115 保持 related，#119/#132 保持 follow-up；#105事务语义不变，hostile/forgery/concurrency/locks/TOCTOU/fault/crash/cross-OS保持out of scope。",
+    "Round 7 raw report SHA-256 c0bcafd48378f141fe51ecbcaa28d8ee32a26c6937235b95e54924af42c1007e；Round 8 owner report SHA-256 a02ffc9e9c57372792354f723826452a64d085db0f0cafb5efc92b8b9ab58b8e；正常 marketplace.required=false probe 证明 #117 not_required producer 到 #118 terminal published 不可达。",
     "--reviewer",
-    "/root/issue118_branch_final_review_round6",
+    "/root/issue118_branch_review_round7",
     "--review-source",
     "independent-agent",
     "--review-report",
@@ -521,27 +521,58 @@
     "--agent-assignment",
     ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
     "--skill-input",
-    ".trellis/.runtime/guru-team/issue118-branch-review-public-input.json",
+    ".trellis/.runtime/guru-team/issue118-branch-review-round7-input.json",
     "--semantic-review-file",
-    ".trellis/.runtime/guru-team/issue118-branch-review-semantic-input.json",
+    ".trellis/.runtime/guru-team/issue118-branch-review-round7-semantic.json",
     "--typed-exit",
-    "passed"
+    "implementation_required"
   ],
   "conclusion": {
-    "passed": true,
-    "summary": "Round 5 已通过 direct new-agent decisions 从 Round 1/2 original finding owner 闭环 F-FINAL-LEGACY-01；Round 6 随后覆盖完整 origin/main...4847bfb 467-path current range并成为最后零 finding 轮，Branch Review 通过。",
+    "passed": false,
+    "summary": "Round 7 fresh independent review 覆盖 origin/main...925007cb 476-path range并资格化 P1 F-NOT-REQUIRED-EDGE-01；Round 8 在同一 HEAD 建立正式 finding owner binding。P0=0、P1=1、P2=0、P3=0，route=implementation_required。",
     "block_priorities": [
       "P0",
       "P1",
       "P2",
       "P3"
     ],
-    "blocking_findings_count": 0,
-    "findings_count": 0,
+    "blocking_findings_count": 1,
+    "findings_count": 1,
     "observations_count": 0,
     "followup_candidates_count": 0
   },
-  "findings": [],
+  "findings": [
+    {
+      "priority": "P1",
+      "message": "正常 non-extension standalone task 在 marketplace.required=false 时无法从 #117 not_required producer edge 到达 finalizer terminal published。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "candidate_ref": "C-R7-NOTREQ-02",
+      "disposition": "qualified_finding",
+      "scenario_class": "normal_required_behavior",
+      "affected_behavior": "正常 non-extension standalone task 在 marketplace.required=false 时无法从 #117 not_required producer edge 到达 finalizer terminal published。",
+      "evidence_refs": [
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+      ],
+      "requirement_refs": [
+        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R5",
+        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R6",
+        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R10",
+        ".trellis/tasks/07-26-118-guru-finalize-task/prd.md AC3"
+      ],
+      "scope_basis": "Issue #118 current acceptance 明确消费 #117 verified|not_required 最小 DTO，并要求 active standalone finalizer 完成闭环；不需要 extension verification 的正常 task 属于已批准范围。",
+      "qualification_reason": "Round 7 在无需伪造、并发或范围扩张的 marketplace.required=false 正常路径复现：#117 workflow 拒绝 not_required，standalone output 缺 finalizer task/plan identity；#118 又拒绝 verification_required 与缺 owner evidence 的 published，resume 仅自循环。现有 eval 直接注入 owner facts，未执行 producer edge。",
+      "finding_ref": "F-NOT-REQUIRED-EDGE-01",
+      "severity": "P1",
+      "owner_round": 8,
+      "reviewed_head": "925007cb6f9b8101360db8fb93f92ef6b35a5b77",
+      "status": "open",
+      "closure_evidence": []
+    }
+  ],
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
@@ -552,7 +583,22 @@
         "url": "https://github.com/castbox/guru-trellis/issues/118",
         "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
         "reason": "#118 的全部 accepted-current acceptance 由本 task 覆盖；这是唯一 close target。",
-        "acceptance_evidence": []
+        "acceptance_evidence": [
+          "Post-finding Phase 2 typed exit=passed：runtime 615 passed/13 skipped、Skill packages 178、preset 45、finalizer 4、ownership 9、installed real-wrapper production eval 8/8；Docs SSOT reconciliation current。",
+          "Branch Review 覆盖 origin/main...4847bfb8763483b4648915ce1da918cdfb24a678 的 467-path committed range；历史 F-FINAL-LEGACY-01 已 closed，最后 Round 6 为 fresh current zero-finding review，P0/P1/P2/P3 均为 0，typed exit=passed。",
+          "Full local-source clean throwaway exit 0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
+          {
+            "type": "remote_marketplace_verification",
+            "status": "pending",
+            "required": true,
+            "artifact_path": "marketplace-verification.json",
+            "artifact_sha256": "",
+            "verified_content_head": "4847bfb8763483b4648915ce1da918cdfb24a678",
+            "remote_head": "",
+            "publish_head": "4847bfb8763483b4648915ce1da918cdfb24a678",
+            "commands_passed": false
+          }
+        ]
       }
     ],
     "related_issues": [
@@ -589,23 +635,23 @@
     ]
   },
   "verification_evidence": {
-    "base_head": "origin/main...4847bfb8763483b4648915ce1da918cdfb24a678",
-    "changed_file_count": 467,
-    "reviewer": "/root/issue118_branch_final_review_round6",
+    "base_head": "origin/main...925007cb6f9b8101360db8fb93f92ef6b35a5b77",
+    "changed_file_count": 476,
+    "reviewer": "/root/issue118_branch_review_round7",
     "review_source": "independent-agent",
     "review_report": {
       "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
-      "sha256": "1df271de38638d4630c15edba2453dc470e8fd9ca085ded316ebd556abbfa0bf",
-      "size_bytes": 5805,
-      "modified_at": "2026-07-27T03:59:39.624331+00:00"
+      "sha256": "ce5436be35f6087daf87b03dd8061631f4aefbce2ba291f48910b57f29bffbf4",
+      "size_bytes": 8064,
+      "modified_at": "2026-07-27T07:42:14.134662+00:00"
     },
     "agent_assignment": {
       "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
-      "sha256": "71e13a5389c21ddd98c4de8b936ccd253c1ac2a8f2470f1edbdac8ef2bfb37aa",
-      "size_bytes": 311689,
-      "modified_at": "2026-07-27T03:59:07.319904+00:00",
+      "sha256": "cbb1f7661fe6db41a525dca70b582c5942d6ebc31927a0a0ada25b324485c689",
+      "size_bytes": 347269,
+      "modified_at": "2026-07-27T07:41:55.680731+00:00",
       "schema_version": "1.2",
-      "artifact_head": "4847bfb8763483b4648915ce1da918cdfb24a678",
+      "artifact_head": "925007cb6f9b8101360db8fb93f92ef6b35a5b77",
       "roles": [
         "实现代理",
         "最终放行审查代理",
@@ -613,11 +659,11 @@
         "问题闭环审查代理",
         "阶段二检查代理"
       ],
-      "agents_count": 18,
-      "review_rounds_count": 6,
-      "reuse_decisions_count": 6,
-      "status_events_count": 264,
-      "effective_status_events_count": 264,
+      "agents_count": 21,
+      "review_rounds_count": 8,
+      "reuse_decisions_count": 7,
+      "status_events_count": 291,
+      "effective_status_events_count": 291,
       "event_corrections_count": 0,
       "recovery_links_count": 0,
       "task": ".trellis/tasks/07-26-118-guru-finalize-task",
@@ -689,14 +735,32 @@
         "sha256": "f2cbca7694d3bacdb4339103b8847a32839de4d49a3c0ac3426ee1dae821b689",
         "size_bytes": 17078,
         "modified_at": "2026-07-27T03:57:28.363409+00:00"
+      },
+      {
+        "round": 7,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/issue118_branch_review_round7",
+        "reviewed_head": "925007cb6f9b8101360db8fb93f92ef6b35a5b77",
+        "findings_count": 1,
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
+        "sha256": "c0bcafd48378f141fe51ecbcaa28d8ee32a26c6937235b95e54924af42c1007e",
+        "size_bytes": 16731,
+        "modified_at": "2026-07-27T07:33:14.552248+00:00"
+      },
+      {
+        "round": 8,
+        "logical_role": "问题发现审查代理",
+        "agent_id": "/root/issue118_branch_review_round7",
+        "reviewed_head": "925007cb6f9b8101360db8fb93f92ef6b35a5b77",
+        "findings_count": 1,
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
+        "sha256": "a02ffc9e9c57372792354f723826452a64d085db0f0cafb5efc92b8b9ab58b8e",
+        "size_bytes": 13163,
+        "modified_at": "2026-07-27T07:40:52.966709+00:00"
       }
     ],
     "evidence": [
-      "Lifecycle：Round 5 report SHA-256 c72021ad8f094e4c6bad512754ac519fbf4f7e99e1b863f1192688428110d5a1；assignment 分别记录 Round1→5 与 Round2→5 new-agent decisions。Round 6 final report SHA-256 f2cbca7694d3bacdb4339103b8847a32839de4d49a3c0ac3426ee1dae821b689，fresh agent、current HEAD、findings_count=0。",
-      "验证：Round 6 fresh focused 6/6、transaction 93/93、finalizer 4/4、installed real wrapper 8/8、platform protocol 2/2；Phase2 runtime 615 passed/13 skipped、packages178、preset45、ownership9、clean throwaway exit0。",
-      "安装升级影响：additive extension/preset/package/schema/runtime distribution 已通过 marketplace install/reapply、official update、managed hashes、.new/.bak recovery、all-platform byte/mode identity、overlay drift 与 sidecar/cache zero-hit；未修改 upstream Trellis/global workflow/upstream trellis-finish-work。",
-      "安全与部署：未发现 secret、credential、private key、.env、signed URL、客户数据或敏感原始 payload；无 dependency、CI/CD、container、K8s/Helm、DB migration、Makefile、服务部署或 production data write 变化。",
-      "Issue scope：只关闭 #118；#81/#115 保持 related，#119/#132 保持 follow-up；#105事务语义不变，hostile/forgery/concurrency/locks/TOCTOU/fault/crash/cross-OS保持out of scope。"
+      "Round 7 raw report SHA-256 c0bcafd48378f141fe51ecbcaa28d8ee32a26c6937235b95e54924af42c1007e；Round 8 owner report SHA-256 a02ffc9e9c57372792354f723826452a64d085db0f0cafb5efc92b8b9ab58b8e；正常 marketplace.required=false probe 证明 #117 not_required producer 到 #118 terminal published 不可达。"
     ],
     "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
   },
@@ -726,15 +790,22 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round2.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round4.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-001-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-002-problem-discovery.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
         "README.md",
         "trellis/presets/guru-team/README.md",
@@ -846,11 +917,13 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/context-discovery.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/contract-wording-review.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/implement.jsonl",
         ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round2.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round3.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
@@ -858,18 +931,25 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round4.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-001-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-002-problem-discovery.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/published-materialization-locator-probe.py",
         ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/recovery-metadata-tail-probe.py",
         ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/001.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
         "trellis/guru-team-extension.json",
@@ -1258,6 +1338,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/context-discovery.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/contract-wording-review.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
@@ -1265,6 +1346,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/001.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
         "trellis/guru-team-extension.json",
@@ -1605,6 +1687,7 @@
       ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round2.md",
       ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round3.md",
       ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round4.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
       ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report.md",
       "trellis/skills/guru-team/consumers/stop/production/finalize-task-blocked.schema.json",
       "trellis/skills/guru-team/consumers/workflow/production/finalize-task-published.schema.json",
@@ -1634,39 +1717,64 @@
   "skill_id": "guru-review-branch",
   "mode": "workflow",
   "review_intent": "fresh_final_review",
-  "typed_exit": "passed",
+  "typed_exit": "implementation_required",
   "semantic_review": {
-    "qualified_findings": [],
+    "qualified_findings": [
+      {
+        "candidate_ref": "C-R7-NOTREQ-02",
+        "disposition": "qualified_finding",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "正常 non-extension standalone task 在 marketplace.required=false 时无法从 #117 not_required producer edge 到达 finalizer terminal published。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+        ],
+        "requirement_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R5",
+          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R6",
+          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R10",
+          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md AC3"
+        ],
+        "scope_basis": "Issue #118 current acceptance 明确消费 #117 verified|not_required 最小 DTO，并要求 active standalone finalizer 完成闭环；不需要 extension verification 的正常 task 属于已批准范围。",
+        "qualification_reason": "Round 7 在无需伪造、并发或范围扩张的 marketplace.required=false 正常路径复现：#117 workflow 拒绝 not_required，standalone output 缺 finalizer task/plan identity；#118 又拒绝 verification_required 与缺 owner evidence 的 published，resume 仅自循环。现有 eval 直接注入 owner facts，未执行 producer edge。",
+        "finding_ref": "F-NOT-REQUIRED-EDGE-01",
+        "severity": "P1",
+        "owner_round": 8,
+        "reviewed_head": "925007cb6f9b8101360db8fb93f92ef6b35a5b77",
+        "status": "open",
+        "closure_evidence": []
+      }
+    ],
     "scope_proposals": [],
     "observations": [],
     "followup_candidates": [],
     "rejected_candidates": [
       {
-        "candidate_ref": "C-FINAL-LEGACY-01-FINAL",
+        "candidate_ref": "C-R7-PRECONDITION-01",
         "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "历史 F-FINAL-LEGACY-01 所描述的同月合法 #105 partial plan 接管阻断是否仍存在于当前 committed HEAD。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "affected_behavior": "publication precondition wording 是否错误阻断 publication_review_stale recovery route。",
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
         "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
-          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
         ],
         "requirement_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R2",
-          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R11",
-          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md AC8",
-          ".trellis/tasks/07-26-118-guru-finalize-task/design.md standalone_finalization"
+          ".trellis/tasks/07-26-118-guru-finalize-task/prd.md R11"
         ],
-        "scope_basis": "Issue #118 current acceptance 要求保持 #105 closeout transaction semantics 并支持 standalone active/partial recovery；同月 legacy partial plan takeover 属于 normal required behavior。",
-        "qualification_reason": "Round 5 已分别以 fresh new-agent decisions 从 Round 1/2 original finding owner 直接闭环到 4847bfb，Round 6 在此后对完整 467-path range 独立复核。Current code 提供 exact one-time、same-month、plan-bound takeover，并在正式写入前复核 predecessor plan/state、current HEAD/commit state、augmented digest 与 owner-private gate；fresh focused 6/6、transaction 93/93、wrapper 8/8、platform 2/2 及 negative controls 反证旧 violation 仍存在。Generic #105、额外 artifact 与 cross-month 继续 fail closed。"
+        "scope_basis": "publication readiness/staleness routing 属于 #118 active semantic recovery contract。",
+        "qualification_reason": "Current runtime 保留 missing/stale owner fact 并允许 AI 选择 publication_review_stale，与 durable active recovery 语义一致；未证明正常路径违反 current contract。"
       }
     ],
     "ai_review_gate": {
-      "status": "passed",
-      "summary": "Round 5 已补齐 Round 1/2 original finding owner 的 direct new-agent closure，Round 6 是随后最后、current、zero-finding 的 fresh final review。完整 origin/main...4847bfb 467-path range 无新的 current-scope qualified candidate，P0/P1/P2/P3 均为 0；Docs SSOT、scope、安装升级、安全与部署证据足以进入 publication review。"
+      "status": "implementation_required",
+      "summary": "Round 7 fresh independent review 覆盖 origin/main...925007cb 476-path range并资格化 P1 F-NOT-REQUIRED-EDGE-01：marketplace.required=false 的正常 standalone closeout 缺少可达的 #117 not_required producer -> #118 consumer edge。P0=0、P1=1、P2=0、P3=0；C-R7-PRECONDITION-01 为 rejected_candidate。修复、Docs SSOT、Phase 2、commit 和 fresh Branch Review 前不得进入 publication。"
     }
   },
-  "facts_sha256": "802d213f494b981d2174e337006c18dcbbda4113e23f87ad56c803d9e6101974"
+  "facts_sha256": "75f0a2c5e19982d2afb4c1e2dbc36f9419914c6d0bf3bca2940b0e8996e7476e"
 }

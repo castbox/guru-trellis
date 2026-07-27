@@ -75,6 +75,7 @@
         "guru-finalize-task-input-reprepare-preview-1.0",
         "guru-finalize-task-input-same-plan-resume-1.0",
         "guru-finalize-task-input-standalone-finalization-1.0",
+        "guru-finalize-task-input-standalone-verification-not-required-1.0",
         "guru-finalize-task-input-verification-not-required-1.0",
         "guru-finalize-task-input-verification-verified-1.0",
         "guru-production-approve-task-plan-input-clarification-reentry-1.0",

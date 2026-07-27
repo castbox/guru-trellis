@@ -4474,6 +4474,61 @@ class Stage0PublicInvocationTests(unittest.TestCase):
         finally:
             native_adapter.PRODUCTION_SKILLS = original_allowlist
 
+    def test_not_required_eval_executes_producer_projection_and_finalizer_wrappers(
+        self,
+    ) -> None:
+        result = self.run_shared_eval(
+            "guru-finalize-task",
+            "not-required-reentry-published",
+        )
+        case = result["cases"][0]
+        self.assertEqual(case["actual_exit"], "published")
+        transcript_path = Path(case["transcript_locator"])
+        execution = transcript_path.parent / "execution"
+        owner_repo = execution / "owner-repo"
+        chain = json.loads((
+            owner_repo
+            / ".trellis/.runtime/guru-team/evals/not-required-producer-edge.json"
+        ).read_text(encoding="utf-8"))
+        self.assertEqual(
+            chain["producer_wrapper"],
+            ".trellis/guru-team/skills/packages/"
+            "guru-verify-extension-installation/scripts/invoke.sh",
+        )
+        self.assertEqual(chain["producer_output"]["exit_id"], "not_required")
+        self.assertEqual(chain["producer_output"]["mode"], "standalone")
+        self.assertEqual(chain["projection_id"], "project_not_required")
+        self.assertEqual(
+            set(chain["seed"]),
+            {"repo_ref", "resolved_head", "verification_ref"},
+        )
+        self.assertEqual(
+            set(chain["authoring"]),
+            {"profile", "mode", "task_ref"},
+        )
+        self.assertFalse(set(chain["seed"]) & set(chain["authoring"]))
+        self.assertEqual(
+            chain["target_input"]["profile"],
+            "standalone_verification_not_required",
+        )
+        owner = json.loads((
+            owner_repo
+            / ".trellis/tasks/archive/2026-07/current/"
+            "marketplace-verification.json"
+        ).read_text(encoding="utf-8"))
+        self.assertEqual(owner["typed_exit"], "not_required")
+        self.assertEqual(owner["mode"], "standalone")
+        self.assertEqual(
+            owner["public_input"]["task_ref"],
+            ".trellis/tasks/current",
+        )
+        transcript = json.loads(transcript_path.read_text(encoding="utf-8"))
+        self.assertTrue(
+            transcript["wrapper_path"].endswith(
+                "public-packages/guru-finalize-task/scripts/invoke.sh"
+            )
+        )
+
     def test_publication_shared_eval_executes_all_three_actual_wrappers(self) -> None:
         for case_id, expected_exit in (
             ("workflow-initial-ready", "ready"),

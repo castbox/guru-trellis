@@ -276,7 +276,7 @@ publication semantic gate；`ready` 向 active `guru-finalize-task` 投影
 `task_ref/reviewed_head/publication_ref`。新增 active
 `guru-verify-extension-installation` 以两个独立 input profiles、四个 minimal exits
 和唯一 task-local-or-session private owner result 负责 extension installation
-semantic gate。新增 active `guru-finalize-task` 以六个 distinct input profiles、
+semantic gate。新增 active `guru-finalize-task` 以七个 distinct input profiles、
 六个 `exit_id` outputs、owner-private `task-finalization-gate.json` 与既有 #105
 transaction engine 负责完整 semantic closeout。当前 package closure 为 13 Skills /
 52 exits，
@@ -287,7 +287,10 @@ transaction engine 负责完整 semantic closeout。当前 package closure 为 1
 `guru-verify-extension-installation` 的 workflow input
 `verification_required` 只携带 `task_ref/plan_ref/repo_ref/reviewed_head/
 verification_target` 与固定 discriminator；active finalizer producer 与 #117 的
-`verified|not_required` re-entry 使用 target-owned authoring seed。Standalone direct
+`verified` workflow re-entry 与可达的 task-bearing standalone `not_required`
+re-entry 使用 target-owned authoring seed；后者只投影
+`repo_ref/resolved_head/verification_ref`，由 finalizer target author
+`profile/mode/task_ref`，plan identity 保持 private。Standalone direct
 discovery 使用结构不同的
 `standalone_verification`，只携带 repo、remote、ref、caller intent 与可选 task。
 Skill 的 AI owner 判断 applicability、closed capability profile、adequacy、finding
@@ -988,8 +991,10 @@ apply/reapply、`trellis update` 后再次选择/apply、ownership/sidecar、Ski
 
 Standalone 调用由所选平台发现 Skill 后完整执行 AI review、executor、recorder、
 checker 和 public wrapper；不要把 package example 或 caller-selected
-`expected_exit` 当作 owner result。`verified` / `not_required` 桥接 active
-`guru-finalize-task`，`return_to_task_work` 回到 Phase 2，`blocked` 停止。
+`expected_exit` 当作 owner result。Workflow `verified` 与 task-bearing standalone
+`not_required` 桥接 active `guru-finalize-task`；workflow-shaped not-required schema
+保持兼容，但 applicability conflict 不能产生该 exit。`return_to_task_work` 回到
+Phase 2，`blocked` 停止。
 Workflow-required target 若 AI 判断 `not_required` 会以 applicability conflict
 失败关闭，不能静默跳过。
 

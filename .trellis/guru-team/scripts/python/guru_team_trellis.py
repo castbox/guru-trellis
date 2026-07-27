@@ -30296,21 +30296,41 @@ def check_extension_verification_for_finalization_augmentation(
         or reviewed_head != plan["git"]["reviewed_work_head"]
     ):
         errors.append("finalization verification recovery identity is not plan-bound")
-    if (
-        owner_input.get("mode") != "workflow"
-        or owner_input.get("task_ref") != task_ref
-        or owner_input.get("plan_ref") != plan_ref
-        or owner_input.get("reviewed_head") != reviewed_head
-        or normalize_github_repository(owner_input.get("repo_ref"))
-        != plan["git"]["repo"]
-    ):
-        errors.append("finalization verification owner seed does not match the immutable plan")
-
     repository = (
         payload.get("repository")
         if isinstance(payload.get("repository"), dict)
         else {}
     )
+    owner_mode = owner_input.get("mode")
+    if owner_mode == "workflow":
+        if (
+            owner_input.get("task_ref") != task_ref
+            or owner_input.get("plan_ref") != plan_ref
+            or owner_input.get("reviewed_head") != reviewed_head
+            or normalize_github_repository(owner_input.get("repo_ref"))
+            != plan["git"]["repo"]
+        ):
+            errors.append(
+                "finalization verification owner seed does not match the immutable plan"
+            )
+    elif owner_mode == "standalone":
+        if (
+            payload.get("typed_exit") != "not_required"
+            or owner_input.get("profile") != "standalone_verification"
+            or owner_input.get("task_ref") != task_ref
+            or normalize_github_repository(owner_input.get("repo_ref"))
+            != plan["git"]["repo"]
+            or repository.get("remote") != plan["git"]["remote"]
+            or repository.get("ref")
+            != f"refs/heads/{plan['git']['head_branch']}"
+            or repository.get("remote_head") != reviewed_head
+            or plan.get("marketplace", {}).get("required") is not False
+        ):
+            errors.append(
+                "standalone not-required owner evidence does not match the immutable plan"
+            )
+    else:
+        errors.append("finalization verification owner mode is unsupported")
     if os.environ.get("GURU_TEAM_EVAL_STAGING") != "1":
         remote = str(repository.get("remote") or "")
         ref = str(repository.get("ref") or "")
@@ -30362,13 +30382,56 @@ def check_extension_verification_for_finalization_augmentation(
     }
 
 
+def finalization_standalone_not_required_owner_is_current(
+    payload: dict[str, Any],
+    checked: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    task_ref: str,
+) -> bool:
+    owner_input = (
+        payload.get("public_input")
+        if isinstance(payload.get("public_input"), dict)
+        else {}
+    )
+    repository = (
+        payload.get("repository")
+        if isinstance(payload.get("repository"), dict)
+        else {}
+    )
+    return (
+        checked.get("typed_exit") == "not_required"
+        and checked.get("mode") == "standalone"
+        and payload.get("mode") == "standalone"
+        and payload.get("profile") == "standalone_verification"
+        and owner_input.get("mode") == "standalone"
+        and owner_input.get("profile") == "standalone_verification"
+        and owner_input.get("task_ref") == task_ref
+        and normalize_github_repository(owner_input.get("repo_ref"))
+        == plan["git"]["repo"]
+        and normalize_github_repository(repository.get("repo_ref"))
+        == plan["git"]["repo"]
+        and repository.get("remote") == plan["git"]["remote"]
+        and repository.get("ref")
+        == f"refs/heads/{plan['git']['head_branch']}"
+        and repository.get("remote_head") == plan["git"]["reviewed_work_head"]
+        and plan.get("marketplace", {}).get("required") is False
+        and checked.get("verification_ref")
+        == payload.get("identity", {}).get("verification_ref")
+    )
+
+
 def finalization_verification_owner_result(
     root: Path,
     task_dir: Path,
     public_input: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]] | None:
     profile = public_input.get("profile")
-    if profile not in {"verification_verified", "verification_not_required"}:
+    if profile not in {
+        "verification_verified",
+        "verification_not_required",
+        "standalone_verification_not_required",
+    }:
         return None
     payload, locator = finalization_verification_augmentation_payload(
         root,
@@ -30391,6 +30454,9 @@ def finalization_verification_owner_result(
         plan = finalization_verification_augmentation_plan(root, task_dir)
         if plan is None:
             raise
+        standalone_not_required = (
+            profile == "standalone_verification_not_required"
+        )
         checked = check_extension_verification_for_finalization_augmentation(
             root,
             task_dir,
@@ -30398,22 +30464,50 @@ def finalization_verification_owner_result(
             locator,
             plan=plan,
             task_ref=str(public_input.get("task_ref") or ""),
-            plan_ref=str(public_input.get("plan_ref") or ""),
-            reviewed_head=str(public_input.get("reviewed_head") or ""),
+            plan_ref=(
+                f"closeout-plan:{plan['plan_digest']}"
+                if standalone_not_required
+                else str(public_input.get("plan_ref") or "")
+            ),
+            reviewed_head=(
+                str(plan["git"]["reviewed_work_head"])
+                if standalone_not_required
+                else str(public_input.get("reviewed_head") or "")
+            ),
         )
-    expected_exit = (
-        "verified" if profile == "verification_verified" else "not_required"
-    )
-    if (
-        checked.get("typed_exit") != expected_exit
-        or owner_input.get("task_ref") != public_input.get("task_ref")
-        or owner_input.get("plan_ref") != public_input.get("plan_ref")
-        or owner_input.get("reviewed_head") != public_input.get("reviewed_head")
-        or (
-            expected_exit == "verified"
-            and checked.get("verification_ref") != public_input.get("verification_ref")
+    if profile == "standalone_verification_not_required":
+        plan = finalization_verification_augmentation_plan(root, task_dir)
+        matches = (
+            plan is not None
+            and finalization_standalone_not_required_owner_is_current(
+                payload,
+                checked,
+                plan,
+                task_ref=str(public_input.get("task_ref") or ""),
+            )
+            and normalize_github_repository(public_input.get("repo_ref"))
+            == plan["git"]["repo"]
+            and public_input.get("resolved_head")
+            == plan["git"]["reviewed_work_head"]
+            and public_input.get("verification_ref")
+            == checked.get("verification_ref")
         )
-    ):
+    else:
+        expected_exit = (
+            "verified" if profile == "verification_verified" else "not_required"
+        )
+        matches = (
+            checked.get("typed_exit") == expected_exit
+            and owner_input.get("task_ref") == public_input.get("task_ref")
+            and owner_input.get("plan_ref") == public_input.get("plan_ref")
+            and owner_input.get("reviewed_head") == public_input.get("reviewed_head")
+            and (
+                expected_exit != "verified"
+                or checked.get("verification_ref")
+                == public_input.get("verification_ref")
+            )
+        )
+    if not matches:
         raise WorkflowError(
             "Task finalization verification seed does not match current owner evidence.",
             exit_code=2,
@@ -30464,7 +30558,24 @@ def finalization_current_verification_owner_result(
             plan_ref=plan_ref,
             reviewed_head=reviewed_head,
         )
-    if (
+    if checked.get("typed_exit") == "not_required" and owner_input.get("mode") == "standalone":
+        current_plan = plan or finalization_verification_augmentation_plan(
+            root,
+            task_dir,
+        )
+        if (
+            current_plan is None
+            or current_plan.get("plan_digest") != plan_ref.removeprefix("closeout-plan:")
+            or current_plan.get("git", {}).get("reviewed_work_head") != reviewed_head
+            or not finalization_standalone_not_required_owner_is_current(
+                payload,
+                checked,
+                current_plan,
+                task_ref=task_ref,
+            )
+        ):
+            return None
+    elif (
         checked.get("typed_exit") not in {"verified", "not_required"}
         or owner_input.get("task_ref") != task_ref
         or owner_input.get("plan_ref") != plan_ref
@@ -30493,6 +30604,8 @@ def finalization_eval_preview_context(
         "reviewed_head",
         "archive_locator",
         "repo_ref",
+        "remote",
+        "head_branch",
         "publication_ref",
         "verification_ref",
         "publication_status",
@@ -30516,6 +30629,7 @@ def finalization_eval_preview_context(
     verification_exit = {
         "verification_verified": "verified",
         "verification_not_required": "not_required",
+        "standalone_verification_not_required": "not_required",
     }.get(public_input.get("profile"))
     verification_ref = payload.get("verification_ref")
     if (
@@ -30586,22 +30700,85 @@ def finalization_eval_preview_context(
         "publication_status": payload["publication_status"],
         "publication_stale_reason": payload["publication_stale_reason"],
     }
+    plan = {
+        "plan_digest": payload["plan_digest"],
+        "git": {
+            "repo": payload["repo_ref"],
+            "remote": payload["remote"],
+            "head_branch": payload["head_branch"],
+            "reviewed_work_head": payload["reviewed_head"],
+        },
+        "marketplace": {"required": payload["marketplace_required"]},
+        "task": {
+            "active_locator": payload["task_ref"],
+            "archive_locator": payload["archive_locator"],
+        },
+    }
+    if public_input.get("profile") == "standalone_verification_not_required":
+        owner, locator = finalization_verification_augmentation_payload(
+            root,
+            task_dir,
+        )
+        owner_input = (
+            owner.get("public_input")
+            if isinstance(owner.get("public_input"), dict)
+            else {}
+        )
+        errors = extension_verification_payload_errors(
+            root,
+            owner,
+            expected_public_input=owner_input,
+        )
+        checked = {
+            "status": "ok",
+            "typed_exit": owner.get("typed_exit"),
+            "mode": owner.get("mode"),
+            "verification_ref": owner.get("identity", {}).get("verification_ref"),
+            "artifact_sha256": context_digest(owner),
+        }
+        expected_locator = (
+            f"{repo_relative(root, task_dir)}/{MARKETPLACE_VERIFICATION_ARTIFACT}"
+        )
+        if (
+            errors
+            or locator != expected_locator
+            or not finalization_standalone_not_required_owner_is_current(
+                owner,
+                checked,
+                plan,
+                task_ref=payload["task_ref"],
+            )
+            or public_input.get("repo_ref") != payload["repo_ref"]
+            or public_input.get("resolved_head") != payload["reviewed_head"]
+            or public_input.get("verification_ref")
+            != checked.get("verification_ref")
+        ):
+            raise WorkflowError(
+                "Task finalization eval standalone owner evidence is invalid.",
+                exit_code=2,
+                payload={"errors": errors},
+            )
+        verification: tuple[dict[str, Any], dict[str, Any]] | None = (
+            owner,
+            checked,
+        )
+    else:
+        verification = (
+            (
+                {"eval_owner_result": True},
+                {
+                    "typed_exit": verification_exit,
+                    "verification_ref": verification_ref,
+                },
+            )
+            if verification_exit is not None
+            else None
+        )
     return {
         "task_dir": task_dir,
         "task_context": None,
         "prepared": None,
-        "plan": {
-            "plan_digest": payload["plan_digest"],
-            "git": {
-                "repo": payload["repo_ref"],
-                "reviewed_work_head": payload["reviewed_head"],
-            },
-            "marketplace": {"required": payload["marketplace_required"]},
-            "task": {
-                "active_locator": payload["task_ref"],
-                "archive_locator": payload["archive_locator"],
-            },
-        },
+        "plan": plan,
         "plan_ref": payload["plan_ref"],
         "transaction_state": payload["transaction_state"],
         "published_transition_complete": payload["transaction_state"] == "ready",
@@ -30616,17 +30793,7 @@ def finalization_eval_preview_context(
         "publication": {"publication_ref": payload["publication_ref"]},
         "publication_status": payload["publication_status"],
         "publication_stale_reason": payload["publication_stale_reason"],
-        "verification": (
-            (
-                {"eval_owner_result": True},
-                {
-                    "typed_exit": verification_exit,
-                    "verification_ref": verification_ref,
-                },
-            )
-            if verification_exit is not None
-            else None
-        ),
+        "verification": verification,
         "facts": facts,
         "current_facts_sha256": context_digest(facts),
     }

@@ -580,8 +580,10 @@ workflow/stop consumers, private gate schema, seven-case corpus, thin wrappers,
 registry row, workflow markers, and extension inventories. It participates in
 the current thirteen-Skill/52-exit package graph without changing the Stage 0
 six-Skill/24-exit identity or the production three-Skill/11-exit membership.
-Its `verified` and `not_required` producer edges now target active
-`guru-finalize-task`; global Finish routing remains deferred to #119.
+Its workflow `verified` and reachable task-bearing standalone `not_required`
+producer edges now target active `guru-finalize-task`; the workflow-shaped
+not-required branch remains compatible but cannot be emitted by a workflow
+applicability conflict. Global Finish routing remains deferred to #119.
 
 Managed executable companion assets include
 `execute-extension-verification.sh`,
@@ -609,12 +611,16 @@ remote ref/HEAD or report that verification as deferred.
 ## Task Finalization Package Activation
 
 `guru-finalize-task` is installed as an additive active Interface 1.3 package
-with six distinct public input profiles, six `exit_id` output contracts,
+with seven distinct public input profiles, six `exit_id` output contracts,
 twelve target-owned `skill_input_authoring_seed` handoffs across the
 complete package graph, one owner-private finalization gate, the closeout-plan
 schema, real-wrapper eval corpus, and the deterministic runtime wrappers. Its
 canonical, installed shared, Codex, Cursor, and Claude package/corpus bytes must
 remain identical and every wrapper must retain executable mode.
+The reachable #117 not-required edge installs as a task-bearing standalone
+projection of `repo_ref/resolved_head/verification_ref`; the finalizer target
+authors `profile/mode/task_ref`, retains plan identity privately, and preserves
+the existing workflow-shaped compatibility profile.
 
 The current source/installed package graph contains thirteen active Skills and
 52 external exits. The global workflow projection deliberately remains 12

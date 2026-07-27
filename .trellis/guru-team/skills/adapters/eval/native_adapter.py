@@ -2299,6 +2299,8 @@ def extension_verification_execution(
     status: str,
     selected: list[str],
     package: Path,
+    *,
+    standalone_resolved_head: str | None = None,
 ) -> dict[str, Any]:
     reviewed_head = (
         public_input["reviewed_head"]
@@ -2308,7 +2310,7 @@ def extension_verification_execution(
     remote_head = (
         None
         if status == "blocked" and public_input["mode"] == "standalone"
-        else reviewed_head or "a" * 40
+        else reviewed_head or standalone_resolved_head or "a" * 40
     )
     capability_status = {
         "passed": "passed",
@@ -2617,6 +2619,12 @@ def stage_extension_verification_owner_execution(
                 status,
                 selected,
                 request_package,
+                standalone_resolved_head=(
+                    head
+                    if invocation_input.get("mode") == "standalone"
+                    and isinstance(invocation_input.get("task_ref"), str)
+                    else None
+                ),
             ),
         )
         runtime.write_json(
@@ -2690,6 +2698,160 @@ def stage_extension_verification_owner_execution(
     return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
 
 
+def stage_finalization_not_required_edge(
+    runtime: Any,
+    fixture: Path,
+    fixture_runtime_target: Path,
+    finalizer_package: Path,
+    authored_input_path: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    verifier_package = (
+        fixture
+        / ".trellis/guru-team/skills/packages/"
+        "guru-verify-extension-installation"
+    )
+    verifier_input_path = runtime_dir / "not-required-verifier-input.json"
+    runtime.write_json(
+        verifier_input_path,
+        {
+            "profile": "standalone_verification",
+            "mode": "standalone",
+            "repo_ref": "example/guru-extension",
+            "remote": "origin",
+            "ref": "refs/heads/main",
+            "caller_intent": "verify-extension-installation",
+            "task_ref": ".trellis/tasks/current",
+        },
+    )
+    stage_extension_verification_owner_execution(
+        runtime,
+        fixture,
+        fixture_runtime_target,
+        verifier_package,
+        "extension-standalone-not-required",
+        verifier_input_path,
+    )
+
+    producer_wrapper = verifier_package / "scripts/invoke.sh"
+    producer = subprocess.run(
+        [
+            str(producer_wrapper),
+            "--input",
+            verifier_input_path.relative_to(fixture).as_posix(),
+            "--owner-result",
+            ".trellis/tasks/current/marketplace-verification.json",
+        ],
+        cwd=fixture,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env={**os.environ, "GURU_TEAM_EVAL_STAGING": "1"},
+    )
+    if producer.returncode != 0:
+        raise ValueError(
+            "not-required producer wrapper failed: " + producer.stderr.strip()
+        )
+    try:
+        producer_output = json.loads(producer.stdout)
+    except json.JSONDecodeError as exc:
+        raise ValueError("not-required producer wrapper returned invalid JSON") from exc
+    if not isinstance(producer_output, dict) or producer_output.get("exit_id") != "not_required":
+        raise ValueError("not-required producer wrapper returned the wrong typed exit")
+
+    verifier_interface = json.loads(
+        (verifier_package / "interface.json").read_text(encoding="utf-8")
+    )
+    projection = next(
+        (
+            item
+            for item in verifier_interface["public_contracts"]["projections"]
+            if item.get("id") == "project_not_required"
+        ),
+        None,
+    )
+    consumer = next(
+        (
+            item
+            for item in verifier_interface["public_contracts"]["consumer_inputs"]
+            if item.get("id") == "not_required_finalization_seed"
+        ),
+        None,
+    )
+    if not isinstance(projection, dict) or not isinstance(consumer, dict):
+        raise ValueError("not-required declared projection is unavailable")
+    contract = consumer.get("contract")
+    mappings = projection.get("mappings")
+    if not isinstance(contract, dict) or not isinstance(mappings, list):
+        raise ValueError("not-required declared projection is malformed")
+    seed = {
+        str(item["target"]): producer_output[str(item["source"])]
+        for item in mappings
+        if isinstance(item, dict)
+        and isinstance(item.get("source"), str)
+        and isinstance(item.get("target"), str)
+    }
+    seed_fields = contract.get("seed_fields")
+    authoring_fields = contract.get("authoring_fields")
+    if (
+        list(seed) != seed_fields
+        or not isinstance(authoring_fields, list)
+        or set(seed_fields) & set(authoring_fields)
+        or contract.get("profile_id") != "standalone_verification_not_required"
+    ):
+        raise ValueError("not-required seed and authoring partition is invalid")
+    authored = json.loads(authored_input_path.read_text(encoding="utf-8"))
+    authoring = {
+        field: authored[field]
+        for field in authoring_fields
+        if field in authored
+    }
+    if set(authoring) != set(authoring_fields):
+        raise ValueError("not-required target authoring fields are incomplete")
+    merged = {**seed, **authoring}
+    if len(merged) != len(seed) + len(authoring):
+        raise ValueError("not-required target authoring overwrote producer seed")
+
+    finalizer_interface = json.loads(
+        (finalizer_package / "interface.json").read_text(encoding="utf-8")
+    )
+    target_profile = next(
+        item
+        for item in finalizer_interface["public_contracts"]["input"]["profiles"]
+        if item.get("id") == contract["profile_id"]
+    )
+    target_schema = runtime.skill_read_schema(
+        finalizer_package / target_profile["schema"]["path"],
+        "not-required finalizer target schema",
+        [],
+    )
+    target_errors = runtime.skill_json_schema_validation_errors(
+        merged,
+        target_schema,
+        "not-required finalizer target input",
+    )
+    if target_errors:
+        raise ValueError(
+            "not-required projected finalizer input is invalid: "
+            + "; ".join(target_errors)
+        )
+    runtime.write_json(fixture / OWNER_INPUT, merged)
+    runtime.write_json(
+        runtime_dir / "not-required-producer-edge.json",
+        {
+            "producer_wrapper": producer_wrapper.relative_to(fixture).as_posix(),
+            "producer_output": producer_output,
+            "projection_id": projection["id"],
+            "seed": seed,
+            "authoring": authoring,
+            "target_input": merged,
+        },
+    )
+    return merged, producer_output
+
+
 def stage_finalization_owner_execution(
     runtime: Any,
     fixture: Path,
@@ -2761,21 +2923,31 @@ def stage_finalization_owner_execution(
         )
 
     task = fixture / ".trellis/tasks/current"
-    task.mkdir(parents=True, exist_ok=True)
-    runtime.write_json(task / "task.json", {
-        "id": "current",
-        "name": "current",
-        "title": "Finalization eval",
-        "status": "in_progress",
-        "branch": "main",
-        "base_branch": "main",
-    })
-    run_git(fixture, "add", ".")
-    run_git(fixture, "commit", "-q", "-m", "stage finalization owner")
-    head = run_git(fixture, "rev-parse", "HEAD")
-
-    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
-    public_input["task_ref"] = ".trellis/tasks/current"
+    if recipe == "finalization-not-required-published":
+        public_input, producer_output = stage_finalization_not_required_edge(
+            runtime,
+            fixture,
+            fixture_runtime_target,
+            package,
+            public_input_path,
+        )
+        head = run_git(fixture, "rev-parse", "HEAD")
+    else:
+        task.mkdir(parents=True, exist_ok=True)
+        runtime.write_json(task / "task.json", {
+            "id": "current",
+            "name": "current",
+            "title": "Finalization eval",
+            "status": "in_progress",
+            "branch": "main",
+            "base_branch": "main",
+        })
+        run_git(fixture, "add", ".")
+        run_git(fixture, "commit", "-q", "-m", "stage finalization owner")
+        head = run_git(fixture, "rev-parse", "HEAD")
+        public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+        public_input["task_ref"] = ".trellis/tasks/current"
+        producer_output = None
     plan_digest = "b" * 64
     plan_ref = f"closeout-plan:{plan_digest}"
     if "plan_ref" in public_input:
@@ -2784,7 +2956,7 @@ def stage_finalization_owner_execution(
         public_input["reviewed_head"] = head
     if "publication_ref" in public_input:
         public_input["publication_ref"] = "publication:eval-current"
-    if "verification_ref" in public_input:
+    if "verification_ref" in public_input and producer_output is None:
         public_input["verification_ref"] = "verification:eval-current"
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
@@ -2794,7 +2966,27 @@ def stage_finalization_owner_execution(
     context_path = runtime_dir / "finalization-context.json"
     archive_locator = ".trellis/tasks/archive/2026-07/current"
     if transaction_state == "ready":
-        (fixture / archive_locator).mkdir(parents=True, exist_ok=True)
+        archive_dir = fixture / archive_locator
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        if recipe == "finalization-not-required-published":
+            archived_verification = archive_dir / "marketplace-verification.json"
+            shutil.copy2(
+                task / "marketplace-verification.json",
+                archived_verification,
+            )
+            run_git(
+                fixture,
+                "add",
+                "--",
+                archived_verification.relative_to(fixture).as_posix(),
+            )
+            run_git(
+                fixture,
+                "commit",
+                "-q",
+                "-m",
+                "stage archived not-required owner evidence",
+            )
     context_payload = {
         "schema_version": "1.0",
         "task_ref": public_input["task_ref"],
@@ -2804,11 +2996,17 @@ def stage_finalization_owner_execution(
         "reviewed_head": head,
         "archive_locator": archive_locator,
         "repo_ref": "example/guru-extension",
+        "remote": "origin",
+        "head_branch": "main",
         "publication_ref": "publication:eval-current",
         "verification_ref": (
-            "extension-verification:eval-current"
+            public_input.get("verification_ref")
             if public_input.get("profile")
-            in {"verification_verified", "verification_not_required"}
+            in {
+                "verification_verified",
+                "verification_not_required",
+                "standalone_verification_not_required",
+            }
             else None
         ),
         "publication_status": (

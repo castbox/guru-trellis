@@ -114,19 +114,26 @@ commands.
 
 ## Public Inputs
 
-The six closed profiles are:
+The seven closed profiles are:
 
 - `publication_ready`: #116 seed plus fresh `finalization_intent`.
 - `verification_verified`: #117 verified seed plus fresh `reentry_intent`.
 - `verification_not_required`: #117 not-required seed plus fresh
-  `reentry_intent`.
+  `reentry_intent`; this workflow-shaped compatibility profile remains stable.
+- `standalone_verification_not_required`: the reachable task-bearing #117
+  standalone seed `repo_ref/resolved_head/verification_ref` plus target-authored
+  `profile/mode/task_ref`. The finalizer loads the private current plan and
+  task-local owner evidence instead of publishing `plan_ref`.
 - `same_plan_resume`: task/plan seed plus fresh recovery intent/context.
 - `reprepare_preview`: task/reason seed plus fresh reprepare intent/context.
 - `standalone_finalization`: caller-authored standalone task intent/context.
 
 Producer seed fields and target authoring fields are disjoint. Their union
 equals the target profile required set. Runtime performs a no-overwrite merge
-and never invents AI intent or context.
+and never invents AI intent, task identity, verification judgment, or owner
+evidence. The standalone not-required binding requires the owner evidence,
+repository, resolved HEAD, verification ref, task, and private plan to remain
+current; same-plan recovery reuses that private binding.
 
 ## Public Exits
 

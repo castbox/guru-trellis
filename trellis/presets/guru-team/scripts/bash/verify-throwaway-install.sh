@@ -1554,7 +1554,7 @@ assert api["skill_contracts"]["registry_schema_id"] == "guru-team-skill-registry
 assert api["skill_contracts"]["supported_interface_schema_ids"] == ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"]
 assert api["skill_contracts"]["current_interface_schema_id"] == "guru-team-skill-interface-1.3"
 assert api["skill_contracts"]["legacy_skill_ids"] == []
-assert len(api["skill_contracts"]["public_input_schema_ids"]) == 36
+assert len(api["skill_contracts"]["public_input_schema_ids"]) == 37
 assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 52
 assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 15
 assert api["skill_contracts"]["migration_manifests"] == [

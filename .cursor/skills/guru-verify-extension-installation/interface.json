@@ -140,12 +140,12 @@
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-finalize-task/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "verification_not_required",
-          "seed_fields": ["task_ref", "plan_ref", "reviewed_head"],
-          "authoring_fields": ["profile", "mode", "reentry_intent"],
+          "profile_id": "standalone_verification_not_required",
+          "seed_fields": ["repo_ref", "resolved_head", "verification_ref"],
+          "authoring_fields": ["profile", "mode", "task_ref"],
           "authoring_example": {
             "id": "finalization_not_required_authoring",
-            "path": "examples/public-verification-not-required-authoring.json"
+            "path": "examples/public-standalone-verification-not-required-authoring.json"
           }
         }
       },
@@ -181,9 +181,9 @@
         "consumer_input_id": "not_required_finalization_seed",
         "operation": "select",
         "mappings": [
-          {"source": "task_ref", "target": "task_ref"},
-          {"source": "plan_ref", "target": "plan_ref"},
-          {"source": "reviewed_head", "target": "reviewed_head"}
+          {"source": "repo_ref", "target": "repo_ref"},
+          {"source": "resolved_head", "target": "resolved_head"},
+          {"source": "verification_ref", "target": "verification_ref"}
         ]
       },
       {

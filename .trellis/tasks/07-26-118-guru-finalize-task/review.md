@@ -2,11 +2,11 @@
 
 ## 门禁状态
 
-- 审查范围：`origin/main@7820a9eeec2a2a75fb52fba156a7211d9f9fb09c...4847bfb8763483b4648915ce1da918cdfb24a678`
-- 审查 HEAD：`4847bfb8763483b4648915ce1da918cdfb24a678`
-- 当前最新轮次：`round-006`
-- 语义出口：`passed`
-- 当前未解决问题：`0`（P0=0，P1=0，P2=0，P3=0）
+- 审查范围：`origin/main@7820a9eeec2a2a75fb52fba156a7211d9f9fb09c...925007cb6f9b8101360db8fb93f92ef6b35a5b77`
+- 审查 HEAD：`925007cb6f9b8101360db8fb93f92ef6b35a5b77`
+- 当前最新轮次：`round-008`
+- 语义出口：`implementation_required`
+- 当前未解决问题：`1`（P0=0，P1=1，P2=0，P3=0）
 - 发布边界：本汇总只支持 Branch Review Gate recorder；不授权 push、PR、archive、finish 或 issue close。
 
 ## 审查轮次
@@ -19,8 +19,28 @@
 | 4 | 最终放行审查代理，fresh `new-agent` | [round-004-final-release.md](reviews/round-004-final-release.md) | `4847bfb8763483b4648915ce1da918cdfb24a678` | zero-finding；被后续 lifecycle round 取代为历史证据 | 0 |
 | 5 | 问题闭环审查代理，fresh `new-agent` from Round 1/2 | [round-005-finding-owner-closure.md](reviews/round-005-finding-owner-closure.md) | `4847bfb8763483b4648915ce1da918cdfb24a678` | direct finding-owner closure | 0 |
 | 6 | 最终放行审查代理，fresh `new-agent` | [round-006-final-release.md](reviews/round-006-final-release.md) | `4847bfb8763483b4648915ce1da918cdfb24a678` | passed；最后、current、zero-finding | 0 |
+| 7 | 最终放行审查代理，fresh `new-agent` | [round-007-final-release.md](reviews/round-007-final-release.md) | `925007cb6f9b8101360db8fb93f92ef6b35a5b77` | implementation required；资格化 normal-path P1 | P1=1 |
+| 8 | 问题发现审查代理，same-agent `reuse` from Round 7 | [round-008-problem-discovery.md](reviews/round-008-problem-discovery.md) | `925007cb6f9b8101360db8fb93f92ef6b35a5b77` | finding owner binding | P1=1 |
 
 ## Finding 生命周期
+
+### `F-NOT-REQUIRED-EDGE-01`（当前 P1，open）
+
+- Scenario：`normal_required_behavior`。
+- Requirement：`prd.md` R5、R6、R10、AC3，以及 active package/durable contracts 对
+  `verification_not_required` re-entry、standalone finalization 与完整 closeout loop 的声明。
+- Violation：正常 `marketplace.required=false` standalone closeout 中，#117 workflow mode 拒绝
+  `not_required`，#117 standalone DTO 又缺少 finalizer 所需 `task_ref/plan_ref/reviewed_head`；#118
+  同时拒绝不需要 verification 的 `verification_required` 与缺少 owner evidence 的 `published`，
+  `resume_finalization` 只能自循环，无法到达 terminal closeout。
+- Reproduction：Round 7 deterministic probe 在同一正常 `evidence_pushed` state 证明
+  `published` 与 `verification_required` 均 blocked；现有 installed not-required eval 直接注入
+  verification facts，未执行 #117 producer/projection。
+- Closure required：统一 #117 producer 与 finalizer consumer contract，补充真实
+  producer -> projection -> finalizer regression，并同步 durable Docs SSOT；随后重跑 Phase 2、task
+  commit、finding closure 与 fresh final Branch Review。
+- Owner：Round 8 `/root/issue118_branch_review_round7`；Round 7→8 same-agent `reuse`；reviewed HEAD
+  `925007cb`；当前状态 open。
 
 ### `F-FINAL-LEGACY-01`（历史 P1，closed）
 
@@ -40,6 +60,8 @@
 - Round 4：SHA-256 `2b1b2ad56f3e3f6dcc1628f26df6be25dca9aa274ad90aec4398e859a124e5aa`，18229 bytes。
 - Round 5：SHA-256 `c72021ad8f094e4c6bad512754ac519fbf4f7e99e1b863f1192688428110d5a1`，16769 bytes。
 - Round 6：SHA-256 `f2cbca7694d3bacdb4339103b8847a32839de4d49a3c0ac3426ee1dae821b689`，17078 bytes。
+- Round 7：SHA-256 `c0bcafd48378f141fe51ecbcaa28d8ee32a26c6937235b95e54924af42c1007e`，16731 bytes。
+- Round 8：SHA-256 `a02ffc9e9c57372792354f723826452a64d085db0f0cafb5efc92b8b9ab58b8e`，13163 bytes。
 - Post-finding Phase 2：runtime 615 passed/13 skipped、Skill packages 178、preset 45、finalizer 4、ownership 9、installed wrapper 8/8、clean throwaway exit 0。
 - Current final reviewer：focused 6/6、transaction 93/93、finalizer 4/4、wrapper 8/8、platform protocol 2/2；source/installed validators、all-platform byte/mode identity、overlay drift、task validation、`git diff --check`、cache/sidecar/no-write 均通过。
 
@@ -47,15 +69,21 @@
 
 - 批准策略：`ssot_first`。
 - Durable SSOT 已拥有 finalizer semantic owner、single #105 transaction engine、private gate、same-plan recovery、six exits、minimal DTO 与 #119/#132 boundaries。
-- Finding fix 兑现既有合同，没有改变 public I/O、global route、inventory 或 docs navigation；最终 `no_docs_update_needed` 成立，finding 细节保留为 task history。
+- Round 7 证明 `not_required` reachability 的 durable docs、#117 producer、#118 consumer 与 eval 不一致；
+  当前 `ssot_first` reconciliation 不成立。修复必须先同步 durable contracts，再由新 Phase 2 复核。
 
 ## Scope、安全与部署
 
 - Scope ledger 只关闭 #118；#81/#115 保持 related；#119/#132 保持 follow-up ownership；不改变 #105 已完成事务语义。
 - 未发现 credential、token、private key、`.env`、签名 URL、客户数据或敏感原始记录泄漏。
-- 无 dependency、CI/CD、container、K8s/Helm、DB migration、Makefile、服务部署或 production data write 变化；存在 additive extension/preset/package/schema/runtime 安装与升级影响，已由 clean install/update/reapply/all-platform evidence 覆盖。
+- 无 dependency、CI/CD、container、K8s/Helm、DB migration、Makefile、服务部署或 production data write 变化；存在 additive extension/preset/package/schema/runtime 安装与升级影响，既有 distribution evidence 通过，但不能抵消当前 semantic edge P1。
 - #119 global Finish integration、#132 upstream overlay cleanup 与 hostile/forgery/concurrency/locks/TOCTOU/fault/crash/cross-OS 扩张均保持 out of scope。
 
 ## 结论
 
-Round 5 已从 Round 1/2 original finding owner 建立 direct `new-agent` closure；Round 6 fresh final reviewer 随后覆盖完整 `origin/main...4847bfb` 467-path committed range，并成为最后、current、zero-finding 的最终轮。历史 finding 已闭环，无新的 current-scope qualified candidate，P0/P1/P2/P3 均为 0；Branch Review AI Gate 结论为 `passed`。
+Round 5/6 已闭环历史 `F-FINAL-LEGACY-01`，但随后 task metadata commit 使旧 Gate stale。Round 7
+fresh reviewer 覆盖完整 `origin/main...925007cb` 476-path committed range，并资格化正常 non-extension
+standalone closeout 的 P1 `F-NOT-REQUIRED-EDGE-01`；Round 8 随后以同一独立 reviewer 在相同 HEAD
+建立正式问题发现 owner binding。P0=0、P1=1、P2=0、P3=0；Branch Review AI
+Gate 结论为 `implementation_required`。修复、Docs SSOT、Phase 2、task commit 与 fresh review 完成前
+不得进入 publication 或 finalization。

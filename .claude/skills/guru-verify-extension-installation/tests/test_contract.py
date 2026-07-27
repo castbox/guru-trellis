@@ -99,6 +99,37 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         for wrapper in (PACKAGE / "scripts").glob("*.sh"):
             self.assertTrue(wrapper.stat().st_mode & stat.S_IXUSR, wrapper)
 
+    def test_not_required_projects_the_reachable_standalone_seed(self) -> None:
+        interface = load("interface.json")
+        consumer = next(
+            item
+            for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "not_required_finalization_seed"
+        )
+        self.assertEqual(
+            consumer["contract"]["profile_id"],
+            "standalone_verification_not_required",
+        )
+        self.assertEqual(
+            consumer["contract"]["seed_fields"],
+            ["repo_ref", "resolved_head", "verification_ref"],
+        )
+        self.assertEqual(
+            consumer["contract"]["authoring_fields"],
+            ["profile", "mode", "task_ref"],
+        )
+        projection = next(
+            item
+            for item in interface["public_contracts"]["projections"]
+            if item["id"] == "project_not_required"
+        )
+        self.assertEqual(
+            [item["source"] for item in projection["mappings"]],
+            ["repo_ref", "resolved_head", "verification_ref"],
+        )
+        output = load("examples/public-not-required-output.json")
+        self.assertEqual(output["mode"], "standalone")
+
     def test_recorder_input_schemas_resolve_private_contract_and_validate_examples(
         self,
     ) -> None:

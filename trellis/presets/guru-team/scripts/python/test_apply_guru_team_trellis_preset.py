@@ -1627,7 +1627,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
         for field, expected_count in (
-            ("public_input_schema_ids", 36),
+            ("public_input_schema_ids", 37),
             ("typed_output_schema_ids", 52),
             ("private_artifact_schema_ids", 15),
         ):

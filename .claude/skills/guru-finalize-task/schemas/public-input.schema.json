@@ -5,6 +5,7 @@
     {"$ref": "public-publication-ready-input.schema.json"},
     {"$ref": "public-verification-verified-input.schema.json"},
     {"$ref": "public-verification-not-required-input.schema.json"},
+    {"$ref": "public-standalone-verification-not-required-input.schema.json"},
     {"$ref": "public-same-plan-resume-input.schema.json"},
     {"$ref": "public-reprepare-preview-input.schema.json"},
     {"$ref": "public-standalone-finalization-input.schema.json"}

@@ -78,7 +78,7 @@ Before editing workflow behavior:
   `verification_required` target profile; standalone calls use the distinct
   `standalone_verification` profile.
 - `guru-finalize-task` is the active semantic owner of immutable closeout-plan
-  review, exact digest confirmation, six distinct input profiles, six public
+  review, exact digest confirmation, seven distinct input profiles, six public
   exits, and the owner-private recovery loop. It reuses the existing #105
   deterministic transaction engine. Package discovery is active while global
   Finish-family invocation/order remains deferred to #119.
@@ -148,7 +148,7 @@ eval, and canonical/installed/platform/update/reapply verification.
 The durable contracts for active `guru-finalize-task` are split across
 `skill-package-contract.md`, `workflow-contract.md`, `companion-scripts.md`,
 `quality-guidelines.md`, `preset/installer.md`, `preset/upstream-ownership.md`,
-and `docs/public-docs.md`. Together they own its six profiles, six external
+and `docs/public-docs.md`. Together they own its seven profiles, six external
 exits, immutable closeout plan, exact digest confirmation, owner-private
 recovery facts, real-wrapper eval, and additive distribution.
 
