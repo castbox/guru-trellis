@@ -16975,6 +16975,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         *,
         repo: str = "owner/repo",
         include_finalization_gate: bool = False,
+        head_branch: str = "fix/105-closeout",
     ) -> dict[str, object]:
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
             stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
@@ -16993,7 +16994,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 repo=repo,
                 remote="origin",
                 base_branch="main",
-                head_branch="fix/105-closeout",
+                head_branch=head_branch,
                 reviewed_head=self.head,
                 title="#105 重构 finish-work 收尾事务",
                 include_finalization_gate=include_finalization_gate,
@@ -17116,6 +17117,475 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 {},
                 self.task_dir,
                 self.context,
+            )
+
+    def exercise_real_verification_metadata_reentry(
+        self,
+        *,
+        marketplace_required: bool,
+        arbitrary_metadata: bool = False,
+    ) -> dict[str, object] | None:
+        source_root = Path(__file__).resolve().parents[5]
+        package_root = self.root / "trellis/skills/guru-team/packages"
+        for skill_id in (
+            gtt.EXTENSION_VERIFICATION_SKILL_ID,
+            gtt.FINALIZE_TASK_SKILL_ID,
+        ):
+            shutil.copytree(
+                source_root / "trellis/skills/guru-team/packages" / skill_id,
+                package_root / skill_id,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+            )
+        self.PACKAGE = package_root / gtt.EXTENSION_VERIFICATION_SKILL_ID
+
+        (self.root / ".gitignore").write_text(
+            ".trellis/.runtime/\n",
+            encoding="utf-8",
+        )
+        config_path = self.root / ".trellis/guru-team/config.yml"
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        config_path.write_text(
+            "workspace_mode: current\n"
+            "github_repo: example/guru-extension\n"
+            "publish:\n"
+            "  remote: origin\n",
+            encoding="utf-8",
+        )
+        task_script = self.root / ".trellis/scripts/task.py"
+        task_script.parent.mkdir(parents=True, exist_ok=True)
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        task_script.write_text(
+            "#!/usr/bin/env python3\n"
+            "import sys\n"
+            f"TASK = {task_ref!r}\n"
+            "if sys.argv[1:] in (['current'], ['current', '--source']):\n"
+            "    print(TASK)\n"
+            "    raise SystemExit(0)\n"
+            "raise SystemExit(2)\n",
+            encoding="utf-8",
+        )
+
+        self.task.update({
+            "status": "in_progress",
+            "branch": "main",
+            "base_branch": "main",
+        })
+        self.context.update({
+            "schema_version": "1.0",
+            "source_issue": {"number": 105},
+            "branch_name": "main",
+            "base_branch": "main",
+            "base_ref": "main",
+            "base_head_sha": "0" * 40,
+            "remote_head_sha": "0" * 40,
+            "source_repo": {
+                "repo": "example/guru-extension",
+                "url": "https://github.com/example/guru-extension",
+            },
+            "task_slug": "105-closeout",
+            "task_title": "#105 closeout",
+            "workspace_slug": "105-closeout",
+            "task_workspace_id": "105-closeout",
+            "assignee": "finalization-reentry",
+            "actor": {"login": "finalization-reentry"},
+            "issue_scope_ledger_seed": {},
+            "intake_summary": {
+                "duplicate_decision": {},
+                "naming_quality": {},
+                "confirmation": {},
+            },
+        })
+        self.gate.update({
+            "head": "0" * 40,
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+        })
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        gtt.write_json(self.task_dir / "task-start-context.json", self.context)
+        gtt.write_json(self.task_dir / "review-gate.json", self.gate)
+
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.name", "Finalization Reentry"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "finalization-reentry@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        remote = self.root / ".trellis/.runtime/remote.git"
+        remote.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
+        subprocess.run(
+            ["git", "remote", "add", "origin", str(remote)],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "reviewed finalization fixture"],
+            cwd=self.root,
+            check=True,
+        )
+        self.head = gtt.current_head(self.root)
+        subprocess.run(
+            ["git", "push", "-qu", "origin", "main"],
+            cwd=self.root,
+            check=True,
+        )
+
+        self.gate["head"] = self.head
+        if not marketplace_required:
+            self.gate["changed_files"] = ["docs/internal-note.md"]
+        gtt.write_json(self.task_dir / "review-gate.json", self.gate)
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(
+                gtt,
+                "official_after_archive_hook_state",
+                return_value={"commands": []},
+            ),
+        ):
+            plan = self.build_plan(
+                repo="example/guru-extension",
+                include_finalization_gate=True,
+                head_branch="main",
+            )
+        self.assertEqual(plan["marketplace"]["required"], marketplace_required)
+        if marketplace_required:
+            self.ledger = gtt.record_marketplace_machine_evidence(
+                self.ledger,
+                plan["marketplace"]["pending_machine"],
+            )
+            gtt.write_json(
+                self.task_dir / "issue-scope-ledger.json",
+                self.ledger,
+            )
+        stored_repository = gtt.task_publication_repository_binding(
+            self.root,
+            self.task_dir,
+        )
+        stored_entries = {
+            entry_id: gtt.task_publication_binding(entry_id)
+            for entry_id in (
+                "runtime_dependency",
+                "task_workspace",
+                "task_identity",
+                "branch_review_handoff",
+                "planning_approval",
+                "phase2_check",
+                "issue_scope_ledger",
+                "docs_ssot_reconciliation",
+                "branch_review_evidence",
+                "publication_content",
+                "review_range_and_working_tree",
+                "invocation_freshness",
+            )
+        }
+        publication_ref = "publication:real-recorder-reentry"
+        publication = {
+            "task_dir": task_ref,
+            "profile": "publication_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+            "supersedes_publication_ref": None,
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:real-recorder-reentry",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "entry_preconditions": stored_entries,
+                "publication_ref": publication_ref,
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, publication)
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+
+        if marketplace_required:
+            verification_input = {
+                "profile": "verification_required",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "plan_ref": plan_ref,
+                "repo_ref": "example/guru-extension",
+                "reviewed_head": self.head,
+                "verification_target": "extension-installation",
+            }
+            selected = ["marketplace_index"]
+            execution = ExtensionVerificationRuntimeTest.execution(
+                self,
+                verification_input,
+                "passed",
+                selected,
+            )
+            review = ExtensionVerificationRuntimeTest.review(
+                self,
+                "verified",
+                selected,
+            )
+        else:
+            verification_input = {
+                "profile": "standalone_verification",
+                "mode": "standalone",
+                "repo_ref": "example/guru-extension",
+                "remote": "origin",
+                "ref": "refs/heads/main",
+                "caller_intent": "verify-extension-installation",
+                "task_ref": task_ref,
+            }
+            execution = ExtensionVerificationRuntimeTest.execution(
+                self,
+                verification_input,
+                "not_run",
+                [],
+            )
+            execution["remote_head"] = self.head
+            review = ExtensionVerificationRuntimeTest.review(
+                self,
+                "not_required",
+                [],
+            )
+        owner = ExtensionVerificationRuntimeTest.record(
+            self,
+            verification_input,
+            execution,
+            review,
+        )
+        verification_input_path = (
+            ".trellis/.runtime/guru-team/tests/public-input.json"
+        )
+        verification_locator = (
+            f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        )
+        verification_output = gtt.cmd_invoke_extension_verification(
+            argparse.Namespace(
+                root=str(self.root),
+                input=verification_input_path,
+                owner_result=verification_locator,
+            )
+        )
+        self.assertEqual(
+            owner["identity"]["verification_ref"],
+            verification_output["verification_ref"],
+        )
+
+        if marketplace_required:
+            finalization_input = {
+                "profile": "verification_verified",
+                "mode": "workflow",
+                "task_ref": verification_output["task_ref"],
+                "plan_ref": verification_output["plan_ref"],
+                "reviewed_head": verification_output["reviewed_head"],
+                "verification_ref": verification_output["verification_ref"],
+                "reentry_intent": "Continue the current owner-verified plan.",
+            }
+        else:
+            finalization_input = {
+                "profile": "standalone_verification_not_required",
+                "mode": "standalone",
+                "task_ref": task_ref,
+                "repo_ref": verification_output["repo_ref"],
+                "resolved_head": verification_output["resolved_head"],
+                "verification_ref": verification_output["verification_ref"],
+            }
+        finalization_input_path = (
+            self.root / ".trellis/.runtime/guru-team/tests/finalization-input.json"
+        )
+        gtt.write_json(finalization_input_path, finalization_input)
+        finalization_input_locator = gtt.repo_relative(
+            self.root,
+            finalization_input_path,
+        )
+        if arbitrary_metadata:
+            (self.task_dir / "arbitrary-finalization-note.md").write_text(
+                "not owner-bound\n",
+                encoding="utf-8",
+            )
+
+        def current_entries(
+            *_args: object,
+            **_kwargs: object,
+        ) -> tuple[dict[str, object], list[str], dict[str, object], dict[str, object]]:
+            repository = gtt.task_publication_repository_binding(
+                self.root,
+                self.task_dir,
+            )
+            entries = copy.deepcopy(stored_entries)
+            entries["review_range_and_working_tree"] = (
+                gtt.task_publication_binding(repository)
+            )
+            return entries, [], {}, repository
+
+        prepared = {
+            "plan": plan,
+            "ledger": self.ledger,
+            "gate": self.gate,
+            "finalizer_takeover": None,
+            "month_supersession": None,
+        }
+        runtime_args = argparse.Namespace(
+            root=str(self.root),
+            input=finalization_input_locator,
+            repo="example/guru-extension",
+            remote="origin",
+            finish_summary_index_file=None,
+            include_finalization_gate=True,
+            review_input=None,
+            dry_run=False,
+            owner_result=None,
+        )
+        with (
+            mock.patch.dict(
+                os.environ,
+                {"GURU_TEAM_EVAL_STAGING": "0"},
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                return_value=[
+                    "task publication repository binding is stale",
+                    "task publication entry precondition bindings are stale",
+                ],
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_entry_precondition_bindings",
+                side_effect=current_entries,
+            ),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pre_draft_state",
+                return_value="content_pushed",
+            ),
+        ):
+            if arbitrary_metadata:
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.cmd_preview_finalization(runtime_args)
+                return None
+
+            preview = gtt.cmd_preview_finalization(runtime_args)
+            self.assertEqual(preview["transaction_state"], "content_pushed")
+            self.assertEqual(preview["plan_ref"], plan_ref)
+            review_input = {
+                "schema_version": "1.0",
+                "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
+                "review": {
+                    "status": "passed",
+                    "summary": "Current verification evidence is plan-bound.",
+                    "evidence_refs": [plan_ref, publication_ref],
+                },
+                "confirmation": {
+                    "status": "confirmed",
+                    "confirmed_plan_digest": plan["plan_digest"],
+                    "summary": "The current immutable plan remains confirmed.",
+                },
+                "route": {
+                    "typed_exit": "resume_finalization",
+                    "consumer": gtt.FINALIZATION_CONSUMERS[
+                        "resume_finalization"
+                    ],
+                    "output": {
+                        "exit_id": "resume_finalization",
+                        "task_ref": task_ref,
+                        "plan_ref": plan_ref,
+                    },
+                },
+                "supersedes_gate_ref": None,
+            }
+            review_input_path = (
+                self.root / ".trellis/.runtime/guru-team/tests/finalization-review.json"
+            )
+            gtt.write_json(review_input_path, review_input)
+            runtime_args.review_input = gtt.repo_relative(
+                self.root,
+                review_input_path,
+            )
+            recorded = gtt.cmd_record_finalization_gate(runtime_args)
+            self.assertEqual(recorded["typed_exit"], "resume_finalization")
+            expected_dirty = set(plan["projection"]["evidence_paths"])
+            expected_dirty.update(
+                gtt.finalization_uncommitted_output_paths(self.root, plan)
+            )
+            expected_dirty.add(verification_locator)
+            self.assertEqual(set(gtt.git_status_paths(self.root)), expected_dirty)
+            checked_preview = gtt.cmd_preview_finalization(runtime_args)
+            self.assertEqual(checked_preview["plan_ref"], plan_ref)
+
+            finalizer_package = package_root / gtt.FINALIZE_TASK_SKILL_ID
+            with (
+                mock.patch.object(
+                    gtt,
+                    "stage0_invocation_identity",
+                    return_value=(gtt.FINALIZE_TASK_SKILL_ID, finalizer_package),
+                ),
+                mock.patch.object(
+                    gtt,
+                    "stage0_repo_root",
+                    return_value=self.root,
+                ),
+            ):
+                output = gtt.cmd_invoke_stage0_skill(runtime_args)
+            self.assertEqual(
+                output,
+                {
+                    "exit_id": "resume_finalization",
+                    "task_ref": task_ref,
+                    "plan_ref": plan_ref,
+                },
+            )
+        return {
+            "owner": owner,
+            "verification_output": verification_output,
+            "preview": preview,
+            "wrapper_output": output,
+        }
+
+    def test_real_workflow_verified_recorder_reenters_finalizer_wrapper(self) -> None:
+        result = self.exercise_real_verification_metadata_reentry(
+            marketplace_required=True,
+        )
+        assert result is not None
+        self.assertEqual(result["owner"]["typed_exit"], "verified")
+
+    def test_real_standalone_not_required_recorder_reenters_finalizer_wrapper(
+        self,
+    ) -> None:
+        result = self.exercise_real_verification_metadata_reentry(
+            marketplace_required=False,
+        )
+        assert result is not None
+        self.assertEqual(result["owner"]["typed_exit"], "not_required")
+
+    def test_real_verification_reentry_rejects_arbitrary_metadata(self) -> None:
+        self.assertIsNone(
+            self.exercise_real_verification_metadata_reentry(
+                marketplace_required=True,
+                arbitrary_metadata=True,
+            )
+        )
+
+    def test_verification_metadata_path_requires_explicit_owner_binding(self) -> None:
+        verification_path = (
+            f"{gtt.repo_relative(self.root, self.task_dir)}/"
+            f"{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        )
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "finalization metadata path is invalid",
+        ):
+            gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                {},
+                expected_closeout_plan_digest=None,
+                additional_owned_paths=[verification_path],
+                require_plan=False,
             )
 
     def test_finalization_eval_context_carries_publication_stale_owner_facts(self) -> None:

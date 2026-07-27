@@ -406,7 +406,185 @@
     "plan_digest": "cba1f5b2579d1c6946a1c63f5608f4bf6f7f96c1c931c4313968bd4e19a6492c"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-27T15:00:33Z",
+    "commit_sha": "77ad13f0a65f652e68e655afbe11917aa659df5c",
+    "parent": "4f254b70cfc817bc34e6d20ad508dee91f910846",
+    "message_sha256": "61c6a7137c0bdf4d062b109e3809004024f8054afe857e52f3edd2a7dcacb83b",
+    "committed_paths": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/005.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "1d47661dc181c9c69e03aa746867e598b4dd57e8",
+      "actual_tree": "1d47661dc181c9c69e03aa746867e598b4dd57e8",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "d3838c6358341319f6b1adb8b91e6f132a533d31",
+          "expected_mode": "100755",
+          "actual_blob": "d3838c6358341319f6b1adb8b91e6f132a533d31",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          "expected_blob": "29aa9be96dd0d88f3f9171a748be9a9747ceee97",
+          "expected_mode": "100644",
+          "actual_blob": "29aa9be96dd0d88f3f9171a748be9a9747ceee97",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          "expected_blob": "3a569b391e7da10fd7d5d217ea8b2340c9f3e88c",
+          "expected_mode": "100644",
+          "actual_blob": "3a569b391e7da10fd7d5d217ea8b2340c9f3e88c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
+          "expected_blob": "1d74baa10e7caa1a5550c2bf758a943a929b43dc",
+          "expected_mode": "100644",
+          "actual_blob": "1d74baa10e7caa1a5550c2bf758a943a929b43dc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          "expected_blob": "8004aaf666cc804c74f8cd7fb58eedc27b3030b2",
+          "expected_mode": "100644",
+          "actual_blob": "8004aaf666cc804c74f8cd7fb58eedc27b3030b2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+          "expected_blob": "5b47f84bb972bd89d26585c2eee912f0f5e4de01",
+          "expected_mode": "100644",
+          "actual_blob": "5b47f84bb972bd89d26585c2eee912f0f5e4de01",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          "expected_blob": "191f9afba0b19a029d388f038ddf0fe6f906f1e2",
+          "expected_mode": "100644",
+          "actual_blob": "191f9afba0b19a029d388f038ddf0fe6f906f1e2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          "expected_blob": "a8735225191d3154facb6c9416510be09e1d1e42",
+          "expected_mode": "100644",
+          "actual_blob": "a8735225191d3154facb6c9416510be09e1d1e42",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+          "expected_blob": "20a4e6cf847bfe9dcd6b8374a5c948f37e2b44e8",
+          "expected_mode": "100644",
+          "actual_blob": "20a4e6cf847bfe9dcd6b8374a5c948f37e2b44e8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          "expected_blob": "f712c845edbb4c6b910258d099ed496c2426e04e",
+          "expected_mode": "100644",
+          "actual_blob": "f712c845edbb4c6b910258d099ed496c2426e04e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+          "expected_blob": "5003e7e3fddce1c0bbdf9a5c3b437cd99e7552d3",
+          "expected_mode": "100644",
+          "actual_blob": "5003e7e3fddce1c0bbdf9a5c3b437cd99e7552d3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+          "expected_blob": "d7461b86e4604d0dd4cdfa92f5a9668a66107880",
+          "expected_mode": "100644",
+          "actual_blob": "d7461b86e4604d0dd4cdfa92f5a9668a66107880",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+          "expected_blob": "a6f573c3dff8b88198dd2db1d0e5bcd457d2f3de",
+          "expected_mode": "100644",
+          "actual_blob": "a6f573c3dff8b88198dd2db1d0e5bcd457d2f3de",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+          "expected_blob": "66c8f1d6ab028181a3b84c8db099ea1864e5a8d5",
+          "expected_mode": "100644",
+          "actual_blob": "66c8f1d6ab028181a3b84c8db099ea1864e5a8d5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/005.json",
+          "expected_blob": "aeaf98955c865dfb7088b96530abeb24ba721083",
+          "expected_mode": "100644",
+          "actual_blob": "aeaf98955c865dfb7088b96530abeb24ba721083",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+          "expected_blob": "d107c9479395b01e9a9462ea8c95642d5dd7b409",
+          "expected_mode": "100644",
+          "actual_blob": "d107c9479395b01e9a9462ea8c95642d5dd7b409",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "d3838c6358341319f6b1adb8b91e6f132a533d31",
+          "expected_mode": "100755",
+          "actual_blob": "d3838c6358341319f6b1adb8b91e6f132a533d31",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "f276eaeb209860ef32c1a536eed2bad017af19ac",
+          "expected_mode": "100644",
+          "actual_blob": "f276eaeb209860ef32c1a536eed2bad017af19ac",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

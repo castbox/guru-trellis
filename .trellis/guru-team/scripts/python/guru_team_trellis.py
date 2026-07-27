@@ -14177,10 +14177,11 @@ def task_publication_finalization_owned_status_allowlist(
     task_dir: Path,
     input_values: list[str],
 ) -> set[str]:
-    """Accept only explicitly named finalizer-owned plan and gate paths."""
+    """Accept only explicitly named finalizer compatibility paths."""
     candidates = (
         closeout_plan_path(task_dir),
         task_dir / TASK_FINALIZATION_GATE_ARTIFACT,
+        marketplace_verification_path(task_dir, load_config(root)),
     )
     allowed: set[str] = set()
     for path in candidates:
@@ -15273,6 +15274,7 @@ def check_task_publication_for_finalization_augmentation(
     *,
     expected_closeout_plan_digest: str | None,
     additional_owned_paths: list[str] | None = None,
+    allow_verification_metadata: bool = False,
     require_plan: bool = True,
 ) -> dict[str, Any]:
     """Recheck a ready gate across an exact finalizer-owned metadata delta."""
@@ -15282,6 +15284,11 @@ def check_task_publication_for_finalization_augmentation(
     plan_relative = repo_relative(root, plan_path)
     gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
     gate_relative = repo_relative(root, gate_path)
+    verification_path = marketplace_verification_path(task_dir, load_config(root))
+    verification_relative = repo_relative(root, verification_path)
+    accepted_additional_paths = {plan_relative, gate_relative}
+    if allow_verification_metadata:
+        accepted_additional_paths.add(verification_relative)
     finalization_paths = [plan_relative] if require_plan else []
     if gate_path.is_file() and not gate_path.is_symlink():
         finalization_paths.append(gate_relative)
@@ -15290,7 +15297,7 @@ def check_task_publication_for_finalization_augmentation(
         if (
             relative is None
             or relative.as_posix() != value
-            or value not in {plan_relative, gate_relative}
+            or value not in accepted_additional_paths
         ):
             raise WorkflowError(
                 "Task publication finalization metadata path is invalid.",
@@ -30099,6 +30106,7 @@ def finalization_publication_owner_result(
     root: Path,
     task_dir: Path,
     public_input: dict[str, Any],
+    verification: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     path = task_publication_path(task_dir)
     if path.is_symlink():
@@ -30119,6 +30127,28 @@ def finalization_publication_owner_result(
         if plan_path.is_file()
         else None
     )
+    additional_owned_paths = (
+        [repo_relative(root, gate_path)] if gate_path.is_file() else []
+    )
+    allow_verification_metadata = False
+    if verification is not None:
+        checked_verification = verification[1]
+        if (
+            checked_verification.get("status") != "ok"
+            or checked_verification.get("typed_exit")
+            not in {"verified", "not_required"}
+        ):
+            raise WorkflowError(
+                "Task finalization publication augmentation requires current owner-checked verification evidence.",
+                exit_code=2,
+            )
+        additional_owned_paths.append(
+            repo_relative(
+                root,
+                marketplace_verification_path(task_dir, load_config(root)),
+            )
+        )
+        allow_verification_metadata = True
     try:
         if plan_path.is_file() or gate_path.is_file():
             checked = check_task_publication_for_finalization_augmentation(
@@ -30126,9 +30156,8 @@ def finalization_publication_owner_result(
                 task_dir,
                 payload,
                 expected_closeout_plan_digest=expected_plan_digest,
-                additional_owned_paths=(
-                    [repo_relative(root, gate_path)] if gate_path.is_file() else []
-                ),
+                additional_owned_paths=additional_owned_paths,
+                allow_verification_metadata=allow_verification_metadata,
                 require_plan=plan_path.is_file(),
             )
         else:
@@ -30354,6 +30383,8 @@ def check_extension_verification_for_finalization_augmentation(
         expected_dirty = set(plan["projection"]["evidence_paths"])
         expected_dirty.update(finalization_uncommitted_output_paths(root, plan))
         actual_dirty = set(git_status_paths(root))
+        if locator in actual_dirty:
+            expected_dirty.add(locator)
         if actual_dirty != expected_dirty:
             errors.append("finalization verification metadata tail exceeds the plan allowlist")
     else:
@@ -30363,6 +30394,8 @@ def check_extension_verification_for_finalization_augmentation(
             errors.append(str(exc))
         expected_dirty = finalization_uncommitted_output_paths(root, plan)
         actual_dirty = set(git_status_paths(root))
+        if locator in actual_dirty:
+            expected_dirty.add(locator)
         if actual_dirty != expected_dirty:
             errors.append("post-evidence finalization worktree exceeds the plan allowlist")
 
@@ -30853,7 +30886,17 @@ def finalization_preview_context(
     if eval_context is not None:
         return eval_context
     task_dir = finalization_task_dir(root, public_input)
-    publication = finalization_publication_owner_result(root, task_dir, public_input)
+    verification = finalization_verification_owner_result(
+        root,
+        task_dir,
+        public_input,
+    )
+    publication = finalization_publication_owner_result(
+        root,
+        task_dir,
+        public_input,
+        verification,
+    )
     if publication.get("owner_status") == "stale":
         facts = {
             "task_ref": public_input["task_ref"],
@@ -30876,7 +30919,6 @@ def finalization_preview_context(
             "facts": facts,
             "current_facts_sha256": context_digest(facts),
         }
-    verification = finalization_verification_owner_result(root, task_dir, public_input)
     config = load_config(root)
     if task_dir_is_archived(root, task_dir):
         plan = finalization_verification_augmentation_plan(root, task_dir)

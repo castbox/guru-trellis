@@ -1,0 +1,613 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "phase2-command-evidence",
+  "task": ".trellis/tasks/07-26-118-guru-finalize-task",
+  "issue": 118,
+  "reviewer": {
+    "agent_id": "/root/issue118_phase2_verification_reentry",
+    "logical_role": "阶段二检查代理"
+  },
+  "objective_identity": {
+    "repo_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+    "branch": "feat/118-guru-finalize-task",
+    "head": "77ad13f0a65f652e68e655afbe11917aa659df5c",
+    "base_ref": "origin/main",
+    "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c"
+  },
+  "capture": {
+    "completed_at": "2026-07-27T18:20:15Z",
+    "root": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry",
+    "root_is_gitignored": true,
+    "stream_policy": "Each command wrote exact stdout and stderr bytes to separate files before digest and size calculation.",
+    "digest_algorithm": "sha256",
+    "bytes_retained": true
+  },
+  "check_execution": {
+    "status": "passed",
+    "commands": [
+      {
+        "command_id": "final_workspace_boundary",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "c58cdb7ad7d0ec9974d11a3c644d1f35321cbeefb808910692f2b819df26a2ef",
+        "stdout_size_bytes": 1549,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_workspace_boundary.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_workspace_boundary.stderr",
+        "summary": "Workspace boundary status=ok; expected and actual worktree match, source checkout status is empty, and suspicious source artifacts are empty."
+      },
+      {
+        "command_id": "final_planning_approval",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e11d2c2c6fca79fa5ac4f7a5ae78c8e91efcd9582680feccfdd7075c820f872d",
+        "stdout_size_bytes": 738,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_planning_approval.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_planning_approval.stderr",
+        "summary": "Planning approval status=ok and typed_exit=approved; reviewed planning digests remain current for HEAD 77ad13f0."
+      },
+      {
+        "command_id": "final_agent_assignment",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          ".trellis/guru-team/scripts/bash/check-agent-assignment.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "8da20832659d4e07cbb52eb33f2d2bcc0ebe6f5e57b6c93c7c3575d8138d4a05",
+        "stdout_size_bytes": 1369,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_agent_assignment.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_agent_assignment.stderr",
+        "summary": "Assignment status=ok with 12 review rounds, 12 reuse decisions, and 414 effective status events at capture time."
+      },
+      {
+        "command_id": "source_package_validator",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "1c6b31cc2c6df8d7682eb57b6097bdfed893eab3bdaf4c9d4fe42800f5880d2a",
+        "stdout_size_bytes": 1346,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/source_package_validator.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/source_package_validator.stderr",
+        "summary": "Source Skill package validation passed with 13 active, 0 planned, 0 legacy, and global 12 invoke/46 exit/27 target markers."
+      },
+      {
+        "command_id": "installed_package_validator",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "906e4ce2e0ca4b62de1924cf1caa5b01e8a751b956c2e7490805198d5750280f",
+        "stdout_size_bytes": 1535,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/installed_package_validator.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/installed_package_validator.stderr",
+        "summary": "Installed Skill package validation passed with 13 active packages, 2659 managed files, and zero sidecars, removals, or conflicts."
+      },
+      {
+        "command_id": "overlay_drift",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "b3bafca507c4743e965cd81eed5d8ee845c91589afaf38a18f1702ef854e4bd5",
+        "stdout_size_bytes": 1790,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/overlay_drift.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/overlay_drift.stderr",
+        "summary": "Dogfood overlay copies match canonical Guru Team overlays."
+      },
+      {
+        "command_id": "upstream_ownership",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "ea6e56208f235de61d4b66ff5ab4160f9302d2c1c4d8716ea4739e85db223b22",
+        "stdout_size_bytes": 67,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/upstream_ownership.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/upstream_ownership.stderr",
+        "summary": "Upstream ownership validation passed with 43 active, 0 removed, and 13 managed claims."
+      },
+      {
+        "command_id": "focused_p1",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_real_workflow_verified_recorder_reenters_finalizer_wrapper",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_real_standalone_not_required_recorder_reenters_finalizer_wrapper",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_real_verification_reentry_rejects_arbitrary_metadata",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_verification_metadata_path_requires_explicit_owner_binding"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "d4070144b6c1b6f2862a38e8204fc25c852aeda93aaab102e830301d8523b895",
+        "stderr_size_bytes": 102,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/focused_p1.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/focused_p1.stderr",
+        "summary": "Four real/negative verification metadata re-entry regressions passed in 3.723s."
+      },
+      {
+        "command_id": "closeout_105",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "3a1d430c61f981e470acc59292815c615e03c5372a67d4e3e52fe761df4e7448",
+        "stderr_size_bytes": 1571,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/closeout_105.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/closeout_105.stderr",
+        "summary": "Closeout transaction class passed 102 tests in 97.778s; argparse negative-path diagnostics are expected test output."
+      },
+      {
+        "command_id": "runtime_full",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "77b94db45bfaae138fde1c67768387bd21b6d5518e1292c18834a7ee303fef4e",
+        "stdout_size_bytes": 2548,
+        "stderr_sha256": "e38ed362b8a639b74bfb043081f7ec5d1b07c23d9f71b638bb02d04dcd1e6410",
+        "stderr_size_bytes": 4125,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/runtime_full.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/runtime_full.stderr",
+        "summary": "Runtime full suite passed 624 tests in 163.890s with 13 skipped."
+      },
+      {
+        "command_id": "skill_full",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.skills.guru-team.tests.test_skill_packages"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "91b4be16faeeb4d94a5595058693e0ac388f31b0c9d86f0373341eeaf77b6518",
+        "stderr_size_bytes": 4388,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/skill_full.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/skill_full.stderr",
+        "summary": "Skill package and production eval suite passed 179 tests in 356.655s."
+      },
+      {
+        "command_id": "preset_tests",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.presets.guru-team.scripts.python.test_apply_guru_team_trellis_preset"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "efc806e9abba9e449f73c09c5fd56f7902e3db454d689220a24a1b179e9f0ec3",
+        "stderr_size_bytes": 809,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/preset_tests.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/preset_tests.stderr",
+        "summary": "Preset installer suite passed 45 tests in 112.865s; invalid-platform argparse output is an expected negative test."
+      },
+      {
+        "command_id": "ownership_tests",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.presets.guru-team.scripts.python.test_upstream_ownership"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "1e110fc6178e7f3d57161b7c7cfdef935a738500810e70bae75ddd880b93fbdf",
+        "stderr_size_bytes": 107,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/ownership_tests.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/ownership_tests.stderr",
+        "summary": "Upstream ownership test suite passed 9 tests in 0.795s."
+      },
+      {
+        "command_id": "source_shared_eval",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/private/tmp/guru-118-phase2-command-eval-source.60qQgG",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e51cb727007a8f993da842700b6e4914439afd30147efbcc380389c2d6afd377",
+        "stdout_size_bytes": 7509,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/source_shared_eval.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/source_shared_eval.stderr",
+        "summary": "Source shared real-wrapper eval passed all 8 cases."
+      },
+      {
+        "command_id": "installed_shared_eval",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          ".",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/private/tmp/guru-118-phase2-command-eval-installed.xxd77b",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "7ab94b8d1e19a24b4c8db769448c5e2d2210d9e2bc82f46e6b98e7e7801a2054",
+        "stdout_size_bytes": 7536,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/installed_shared_eval.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/installed_shared_eval.stderr",
+        "summary": "Installed shared real-wrapper eval passed all 8 cases."
+      },
+      {
+        "command_id": "clean_throwaway",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
+          "PYTHONPYCACHEPREFIX=/private/tmp/guru-118-phase2-command-throwaway.Fgkrpb/pycache",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "/private/tmp/guru-118-phase2-command-throwaway.Fgkrpb/throwaway"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "69ad082f1b9568ae16d1239dba469bd0358adbd30a35e794533eecae8034ffed",
+        "stdout_size_bytes": 4165536,
+        "stderr_sha256": "ec1c03b529cc513e9357044b5df9dbcde94d6d10e93d6a66a08f29f8e476c2cc",
+        "stderr_size_bytes": 930,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/clean_throwaway.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/clean_throwaway.stderr",
+        "summary": "Complete clean throwaway verifier passed marketplace discovery, local unpublished workflow sample, install/reapply/update, .new/.bak handling, platform distribution, installed closeout, validators, ownership, and overlay checks; terminal line confirmed verification at the throwaway project."
+      },
+      {
+        "command_id": "final_dirty_diff_check",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_dirty_diff_check.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_dirty_diff_check.stderr",
+        "summary": "Current tracked working-tree diff has no whitespace errors."
+      },
+      {
+        "command_id": "final_full_range_diff_check",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "git",
+          "diff",
+          "--check",
+          "origin/main...HEAD"
+        ],
+        "exit_code": 2,
+        "stdout_sha256": "35b2d142684e8b84d7bc4221f8d92ba49b9f2e926c237b702991bfe913b4e14a",
+        "stdout_size_bytes": 211,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_full_range_diff_check.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_full_range_diff_check.stderr",
+        "summary": "Expected nonzero observation: only immutable Round 9 raw review evidence line 203 has trailing whitespace; Phase 2 requalified this as a nonblocking rejected candidate because changing bytes breaks assignment identity."
+      },
+      {
+        "command_id": "final_worktree_status",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "git",
+          "status",
+          "--short"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "fb053344609367cad37a5a2f87d55a262c6b25214f19f86838d021e333e94be9",
+        "stdout_size_bytes": 829,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_worktree_status.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_worktree_status.stderr",
+        "summary": "Worktree status contains the scoped runtime/test/handoff/report delta plus concurrent main-owned review, assignment, and commit-plan metadata; capture files are ignored."
+      },
+      {
+        "command_id": "final_source_status",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "git",
+          "-C",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis",
+          "status",
+          "--short",
+          "--branch"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "5fbcb2990ad25e368c12219bf3ddca36e464d044e7acac16696fa8cd54159185",
+        "stdout_size_bytes": 22,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_source_status.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_source_status.stderr",
+        "summary": "Source checkout is clean on main tracking origin/main."
+      },
+      {
+        "command_id": "final_cache_sidecar_hygiene",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "find",
+          ".",
+          "(",
+          "-name",
+          "*.new",
+          "-o",
+          "-name",
+          "*.bak",
+          "-o",
+          "-name",
+          "__pycache__",
+          "-o",
+          "-name",
+          "*.pyc",
+          "-o",
+          "-name",
+          "*.pyo",
+          ")",
+          "-print"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_cache_sidecar_hygiene.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/final_cache_sidecar_hygiene.stderr",
+        "summary": "No .new, .bak, __pycache__, .pyc, or .pyo paths remain in the worktree."
+      },
+      {
+        "command_id": "protected_paths_diff",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "git",
+          "diff",
+          "--name-only",
+          "origin/main",
+          "--",
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md",
+          ".trellis/scripts/task.py",
+          "trellis/presets/guru-team/overlays",
+          ".agents/skills/trellis-finish-work",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-finish-work",
+          ".claude/commands/trellis/finish-work.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/protected_paths_diff.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/protected_paths_diff.stderr",
+        "summary": "Global workflow, official task.py, preset overlays, and upstream trellis-finish-work family have no diff from origin/main."
+      },
+      {
+        "command_id": "task_validate",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "53258e0eefd6d7cbd1d1af4e22029d99c1893edd325760ec743864222d862c58",
+        "stdout_size_bytes": 311,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/task_validate.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/task_validate.stderr",
+        "summary": "Task JSONL validation passed for implement.jsonl and check.jsonl."
+      },
+      {
+        "command_id": "temp_root_cleanup",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "test",
+          "!",
+          "-e",
+          "/private/tmp/guru-118-phase2-command-pycache.y9lnqS",
+          "!",
+          "-e",
+          "/private/tmp/guru-118-phase2-command-eval-source.60qQgG",
+          "!",
+          "-e",
+          "/private/tmp/guru-118-phase2-command-eval-installed.xxd77b",
+          "!",
+          "-e",
+          "/private/tmp/guru-118-phase2-command-throwaway.Fgkrpb"
+        ],
+        "exit_code": 2,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "408c0e5b7797cc86b1a190aef3ae7fd7851267e9d132f98f4f9ae1fb2d042139",
+        "stderr_size_bytes": 39,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/temp_root_cleanup.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/temp_root_cleanup.stderr",
+        "summary": "Superseded capture command: one test builtin received multiple predicates and returned too many arguments; this was a checker argv error, not a product or cleanup failure."
+      },
+      {
+        "command_id": "temp_root_cleanup_corrected",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "test ! -e /private/tmp/guru-118-phase2-command-pycache.y9lnqS && test ! -e /private/tmp/guru-118-phase2-command-eval-source.60qQgG && test ! -e /private/tmp/guru-118-phase2-command-eval-installed.xxd77b && test ! -e /private/tmp/guru-118-phase2-command-throwaway.Fgkrpb"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/temp_root_cleanup_corrected.stdout",
+        "stderr_capture": ".trellis/.runtime/guru-team/phase2-command-capture-verification-metadata-reentry/temp_root_cleanup_corrected.stderr",
+        "summary": "Corrected cleanup assertion passed: test pycache, source eval, installed eval, and clean throwaway roots are absent after confirming no matching processes and deleting each exact root."
+      }
+    ]
+  },
+  "historical_records_without_command_bytes": [
+    {
+      "record_id": "initial_zero_test_command",
+      "raw_locator": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "summary": "A status event records an initial Skill discovery command-selection error that ran 0 tests and exited 5 before corrected direct package runners. Exact argv and separated stream bytes were not retained, so no digest or command row is fabricated."
+    },
+    {
+      "record_id": "initial_clean_throwaway_enospc",
+      "raw_locator": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md",
+      "raw_report_sha256": "4c94e53a9f854ef73c8411623d490ae7734420402b6c36161a3c50ba73aee748",
+      "raw_report_size_bytes": 15527,
+      "summary": "The raw Phase 2 report records the initial verifier ENOSPC terminal. Exact full stdout/stderr bytes were not retained. The current clean_throwaway command row is a separately captured, complete rerun that exited 0."
+    },
+    {
+      "record_id": "claude_live_401",
+      "raw_locator": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md",
+      "raw_report_sha256": "4c94e53a9f854ef73c8411623d490ae7734420402b6c36161a3c50ba73aee748",
+      "raw_report_size_bytes": 15527,
+      "summary": "The raw Phase 2 report records Claude live execution_error with API 401 and zero tokens. The approved capture-only rerun explicitly prohibited another Claude live invocation, so no new command row is claimed."
+    }
+  ],
+  "failures_and_observations": [
+    {
+      "command_id": "final_full_range_diff_check",
+      "classification": "nonblocking_rejected_candidate",
+      "reason": "The only whitespace signal belongs to immutable Round 9 raw review evidence whose bytes are bound by agent-assignment identity."
+    },
+    {
+      "command_id": "temp_root_cleanup",
+      "classification": "superseded_checker_command_error",
+      "reason": "The invalid multi-predicate test argv was corrected by temp_root_cleanup_corrected, which exited 0."
+    },
+    {
+      "record_id": "claude_live_401",
+      "classification": "external_live_residual",
+      "reason": "Package-controlled Claude protocol coverage passed elsewhere; native authentication remained unavailable and was not rerun."
+    }
+  ],
+  "terminal": {
+    "status": "complete",
+    "mandatory_capture_coverage": "complete",
+    "clean_throwaway_exit_code": 0,
+    "all_capture_temp_roots_removed": true,
+    "capture_root_retained": true,
+    "phase2_route": "passed",
+    "open_findings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    }
+  }
+}
