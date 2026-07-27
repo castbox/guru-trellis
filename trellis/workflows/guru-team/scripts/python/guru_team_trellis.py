@@ -15398,7 +15398,7 @@ def check_task_publication_for_finalization_augmentation(
                         task_dir,
                         load_config(root),
                         invocation,
-                        finalization_owned_paths=[plan_relative],
+                        finalization_owned_paths=finalization_paths,
                     )
                 )
                 expected_entries = (

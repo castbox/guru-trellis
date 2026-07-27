@@ -6,8 +6,8 @@
     "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
     "reason": "当前唯一独立交付单元。",
     "acceptance_evidence": [
-      "Post-finding Phase 2 typed exit=passed：runtime 615 passed/13 skipped、Skill packages 178、preset 45、finalizer 4、ownership 9、installed real-wrapper production eval 8/8；Docs SSOT reconciliation current。",
-      "Branch Review 覆盖 origin/main...4847bfb8763483b4648915ce1da918cdfb24a678 的 467-path committed range；历史 F-FINAL-LEGACY-01 已 closed，最后 Round 6 为 fresh current zero-finding review，P0/P1/P2/P3 均为 0，typed exit=passed。",
+      "Phase 2 Round 7 typed exit=passed：runtime 617 passed/13 skipped、Skill/eval 179、preset 45、finalizer 5、verifier 10；真实 two-wrapper producer edge、remote/ref binding 与 Docs SSOT reconciliation current，P0/P1/P2/P3 open findings 均为 0。",
+      "Branch Review 覆盖 origin/main...4f254b70cfc817bc34e6d20ad508dee91f910846 的 519-path committed range；F-FINAL-LEGACY-01、F-NOT-REQUIRED-EDGE-01 与 P2-R6-STANDALONE-REF-BINDING-01 已 closed，Round 10 为 fresh current zero-finding review，P0/P1/P2/P3 均为 0，typed exit=passed。",
       "Full local-source clean throwaway exit 0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
       {
         "type": "remote_marketplace_verification",
@@ -15,9 +15,9 @@
         "required": true,
         "artifact_path": "marketplace-verification.json",
         "artifact_sha256": "",
-        "verified_content_head": "4847bfb8763483b4648915ce1da918cdfb24a678",
+        "verified_content_head": "4f254b70cfc817bc34e6d20ad508dee91f910846",
         "remote_head": "",
-        "publish_head": "4847bfb8763483b4648915ce1da918cdfb24a678",
+        "publish_head": "4f254b70cfc817bc34e6d20ad508dee91f910846",
         "commands_passed": false
       }
     ]
@@ -29,8 +29,8 @@
       "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
       "reason": "#118 的全部 accepted-current acceptance 由本 task 覆盖；这是唯一 close target。",
       "acceptance_evidence": [
-        "Post-finding Phase 2 typed exit=passed：runtime 615 passed/13 skipped、Skill packages 178、preset 45、finalizer 4、ownership 9、installed real-wrapper production eval 8/8；Docs SSOT reconciliation current。",
-        "Branch Review 覆盖 origin/main...4847bfb8763483b4648915ce1da918cdfb24a678 的 467-path committed range；历史 F-FINAL-LEGACY-01 已 closed，最后 Round 6 为 fresh current zero-finding review，P0/P1/P2/P3 均为 0，typed exit=passed。",
+        "Phase 2 Round 7 typed exit=passed：runtime 617 passed/13 skipped、Skill/eval 179、preset 45、finalizer 5、verifier 10；真实 two-wrapper producer edge、remote/ref binding 与 Docs SSOT reconciliation current，P0/P1/P2/P3 open findings 均为 0。",
+        "Branch Review 覆盖 origin/main...4f254b70cfc817bc34e6d20ad508dee91f910846 的 519-path committed range；F-FINAL-LEGACY-01、F-NOT-REQUIRED-EDGE-01 与 P2-R6-STANDALONE-REF-BINDING-01 已 closed，Round 10 为 fresh current zero-finding review，P0/P1/P2/P3 均为 0，typed exit=passed。",
         "Full local-source clean throwaway exit 0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
         {
           "type": "remote_marketplace_verification",
@@ -38,9 +38,9 @@
           "required": true,
           "artifact_path": "marketplace-verification.json",
           "artifact_sha256": "",
-          "verified_content_head": "4847bfb8763483b4648915ce1da918cdfb24a678",
+          "verified_content_head": "4f254b70cfc817bc34e6d20ad508dee91f910846",
           "remote_head": "",
-          "publish_head": "4847bfb8763483b4648915ce1da918cdfb24a678",
+          "publish_head": "4f254b70cfc817bc34e6d20ad508dee91f910846",
           "commands_passed": false
         }
       ]

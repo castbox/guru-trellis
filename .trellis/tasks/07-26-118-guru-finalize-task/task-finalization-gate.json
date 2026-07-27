@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-finalize-task",
+  "generated_at": "2026-07-27T13:11:56Z",
+  "invocation": {
+    "profile": "publication_ready",
+    "mode": "workflow",
+    "task_ref": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "input_identity_sha256": "a09d9c9f4891504d61be77f64fa5bae61ad2a64faa214747b273c8492e48ac3a"
+  },
+  "plan": {
+    "available": true,
+    "plan_ref": "closeout-plan:07f089a5f5e77f7c4add3e7bdfd485ebde26349ccba63f273df2f858b0057121",
+    "plan_digest": "07f089a5f5e77f7c4add3e7bdfd485ebde26349ccba63f273df2f858b0057121",
+    "reviewed_head": "4f254b70cfc817bc34e6d20ad508dee91f910846"
+  },
+  "review": {
+    "status": "passed",
+    "summary": "AI 已复核精确 immutable plan：repo/base/branch/HEAD/task/archive identity、唯一 Draft PR strategy、仅关闭 #118 的 scope、mandatory extension verification、12-path evidence allowlist、单次 archive transaction、三方 HEAD equality 与 recovery routes 均充分且 current；当前唯一合法外部 route 为 verification_required，无 revision action。",
+    "evidence_refs": [
+      "closeout-plan:07f089a5f5e77f7c4add3e7bdfd485ebde26349ccba63f273df2f858b0057121",
+      "publication:63200f5a2be00d87156ba3763a32f87338a4ae541213b15fce3b73a85a9e64ef",
+      "review-gate:c04e7b201fb3ce9eeb5c55061a04feb0bff883a1a1dd5d69207db45d3b71af1f"
+    ]
+  },
+  "confirmation": {
+    "status": "confirmed",
+    "confirmed_plan_digest": "07f089a5f5e77f7c4add3e7bdfd485ebde26349ccba63f273df2f858b0057121",
+    "summary": "用户在看到 canonical bytes SHA-256、精确 closeout_plan_digest、完整 scope、identity、副作用顺序与 recovery 条件后明确回复“确认继续”，授权该 immutable plan；首次 transition 必须在 verification_required 停止。"
+  },
+  "route": {
+    "typed_exit": "verification_required",
+    "consumer": {
+      "kind": "skill",
+      "id": "guru-verify-extension-installation"
+    },
+    "output": {
+      "exit_id": "verification_required",
+      "task_ref": ".trellis/tasks/07-26-118-guru-finalize-task",
+      "plan_ref": "closeout-plan:07f089a5f5e77f7c4add3e7bdfd485ebde26349ccba63f273df2f858b0057121",
+      "repo_ref": "castbox/guru-trellis",
+      "reviewed_head": "4f254b70cfc817bc34e6d20ad508dee91f910846",
+      "verification_target": "extension-installation"
+    }
+  },
+  "freshness": {
+    "current_facts_sha256": "e45a508e3628972b533aab5368a24796b2bb66c0e07fd2cd8f687ec6b7815784",
+    "supersedes_gate_ref": null
+  }
+}

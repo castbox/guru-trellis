@@ -15,17 +15,17 @@
 
 ## 验证结果
 
-- Post-finding Phase 2：runtime 615 passed、13 skipped；Skill packages 178 passed；preset 45 passed；finalizer package 4 passed；ownership 9 passed；installed real-wrapper production eval 8/8 passed。
-- Final Branch Review：focused legacy takeover/cross-month 6/6 passed；closeout transaction matrix 93/93 passed；finalizer package 4/4、installed wrapper 8/8、platform protocol 2/2 passed。
-- Source/installed validators、canonical/dogfood runtime identity、Shared/Codex/Claude/Cursor package byte/mode identity、dogfood overlay drift、task artifact validation、Bash/Python/JSON checks、`git diff --check` 与 cache/sidecar hygiene 均通过。
-- Clean throwaway exit 0，覆盖 workflow marketplace discovery、preset initial install/reapply、official update、managed hashes、`.new/.bak` recovery、all-platform distribution、真实 wrappers/evals 与 installed closeout recovery。
-- 当前通过的是 local unpublished source throwaway。真实 pushed feature-ref verification 仍是 finalization 的 mandatory post-push gate；在它通过前不得创建 Draft PR 或 archive task。
+- Phase 2 Round 7：runtime 617 passed、13 skipped；Skill/eval 179 passed；preset 45 passed；finalizer 5/5、verifier 10/10；P0/P1/P2/P3 open findings 均为 0。
+- Final Branch Review：remote/ref exact 与 mismatch 2/2、真实 #117 wrapper -> projection -> #118 wrapper edge 1/1、closeout transaction matrix 95/95、finalizer 5/5、verifier 10/10 全部 fresh passed。
+- Source/installed production eval 均返回 actual `published`；source/installed validators、canonical/dogfood runtime identity、六份 Shared/Agents/Codex/Claude/Cursor package byte/mode identity、dogfood overlay drift、task artifact validation、39 Bash、398 JSON、23 Python compile、`git diff --check` 与 cache/sidecar hygiene 均通过。
+- Clean throwaway exit 0，覆盖 workflow marketplace discovery、preset initial install/reapply、official update、managed hashes、`.new/.bak` recovery、四平台分发、真实 wrappers/evals 与 installed closeout recovery。
+- Claude installed native 调用因外部 `401 Invalid API key` 未取得 native success；协议与 adapter parsing 自动化通过。当前通过的是 local unpublished source throwaway，真实 pushed feature-ref verification 仍是 finalization 的 mandatory post-push gate；在它通过前不得创建 Draft PR 或 archive task。
 
 ## Review Gate
 
-Branch Review 覆盖完整 `origin/main...4847bfb` 的 467-path committed range。历史 P1 `F-FINAL-LEGACY-01` 已由 exact one-time、same-month、plan-bound takeover 修复，并由原 finding owner 的 fresh replacement closure 与随后独立 final reviewer 复核。
+Branch Review 覆盖完整 `origin/main...4f254b70cfc817bc34e6d20ad508dee91f910846` 的 519-path committed range。历史 P1 `F-FINAL-LEGACY-01`、当前 P1 `F-NOT-REQUIRED-EDGE-01` 与 Phase 2 P2 `P2-R6-STANDALONE-REF-BINDING-01` 均已由 current normal-path evidence 闭环。
 
-最终 Round 6 为最后、current、zero-finding 的 fresh final review；P0/P1/P2/P3 均为 0，旧候选因当前正常路径证据已反证而保留为 `rejected_candidate`。正式 Branch Review recorder、checker 与 public wrapper 均返回 `passed`。
+Round 9 replacement closure 完成真实 two-wrapper edge、remote/ref mismatch 与 #105 transaction 复核；不同身份的 Round 10 是最后、current、zero-finding fresh final review。P0/P1/P2/P3 均为 0，scope proposal 为 0；正式 Branch Review recorder、checker 与 public wrapper 均返回 `passed`，gate artifact SHA-256 为 `c04e7b201fb3ce9eeb5c55061a04feb0bff883a1a1dd5d69207db45d3b71af1f`。
 
 ## Issue 关闭范围
 

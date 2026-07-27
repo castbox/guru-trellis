@@ -1,0 +1,412 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "005",
+  "task": {
+    "id": "118-guru-finalize-task",
+    "path": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "status": "in_progress",
+    "branch": "feat/118-guru-finalize-task"
+  },
+  "issue": {
+    "primary_issue": 118,
+    "ledger_sha256": "5333c084f16c0bbee36d91956b58b4e3108d7bf3fdea06b6d6f5f9ce27157ffa"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "4f254b70cfc817bc34e6d20ad508dee91f910846"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+      "sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+      "size": 38697
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "sha256": "5ea89d13a3a7ff652f245e6a680b07d406b7c20f8075a3f4b054433a589da69b",
+      "size": 52297
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "sha256": "5333c084f16c0bbee36d91956b58b4e3108d7bf3fdea06b6d6f5f9ce27157ffa",
+      "size": 4750
+    },
+    "task": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
+      "sha256": "44c9c3c6896b30aec2fcd78dd9493959314a533ee929796538d604edc62382b1",
+      "size": 659
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab9663fcf4a35982143de08065892ea549cf26eb",
+        "worktree_sha256": "27a88480f3c2e3b08f0a6499d292a815661787e68f84832efaa04696a10baf55",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0e101e7c37a3b85b63c542dde4060b153b36bf1c",
+        "worktree_sha256": "3499c86613356ab3d8ab006e0d854d074ea28812d109008ef34deb4bf9985c71",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2d2809d2760926760404dd0edbc5230c5c58940d",
+        "worktree_sha256": "97c452fabce80ec81dc6e7d03cac382aed39bdc591fbfc5bdded576d27116b4e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "a14151c8b6bf7a3b7e7f62ecac284df52253ae0573b6c371fe8564b9a2d03573",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f9c70b176fb6d9bafdc12bd52a1be3b0ffbc236e",
+        "worktree_sha256": "5333c084f16c0bbee36d91956b58b4e3108d7bf3fdea06b6d6f5f9ce27157ffa",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "74a9eac9b329481c65162f4923ef131457c60262",
+        "worktree_sha256": "5ea89d13a3a7ff652f245e6a680b07d406b7c20f8075a3f4b054433a589da69b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dd617a644d457c3d4532ea6b092f5697308d0c8e",
+        "worktree_sha256": "b250cb2d9ee1da09da4a460c49e7289bfa496e00cb80b79abec769dbb64a7ce3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ab9a66667becb7b752e32f6389a02d0365a11ceb5a95b02cae91ffa29c0cfc50",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6e03ffd6568c8f4ba0aedc76504e77ead0535db7",
+        "worktree_sha256": "c04e7b201fb3ce9eeb5c55061a04feb0bff883a1a1dd5d69207db45d3b71af1f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fa73cd016d6cb956a32ab89a4796b538dd93f2ac",
+        "worktree_sha256": "44780e46e7dc68ac17bded7f065bec2ed55f951f5f03f2bc7cdf9a179eda79b0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "b1424b1a0a5080730383834c820ad4f50d20f15216f2aec7a9c5a2177dbab3ce",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "b6566dab00c007305b2a24fad55aa02ed8086e4629c09902cbbd2fddb5d4b69a",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a756a5770b19b170137828957fb47dd627dde382",
+        "worktree_sha256": "d53cebceaf777b1dcb8e7f47a035b3519108081b75b511e4010ab1a7644da2b4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "5a1116e347483ea6170f5fe136a0e5b6de7ce2c998b0a85fb49a1aa443fdb667",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab9663fcf4a35982143de08065892ea549cf26eb",
+        "worktree_sha256": "27a88480f3c2e3b08f0a6499d292a815661787e68f84832efaa04696a10baf55",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "34c223b0635666c2aba54c2e0b85d9f88f657d5b",
+        "worktree_sha256": "bb384eb69d6359020e63ba737b18e9606907ec7743de8158bb5e788dc0be24a3",
+        "mode": "100644"
+      }
+    ],
+    "digest": "df579bb365ce9d9d3840a8c316d3f079f0ea3df33e31b226e4188bc184e4bbaf"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Fresh gate-only Phase 2 evidence covers this exact Issue #118 implementation or task-evidence path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/005.json",
+      "category": "task-reviewed",
+      "reason": "The current guru-create-task-commit preview owns this deterministic candidate artifact.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/005.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #118 修复 finalization gate-only freshness 校验",
+    "body": "背景：\n#118 的首次 formal finalization 在仅新增 task-finalization-gate.json 时被错误判定 publication evidence stale。\n\n变更：\n- 让 entry-precondition 重算复用已验证的 exact finalization_paths。\n- 增加 gate-only 正向及 unexpected metadata/require_plan fail-closed 回归。\n- 同步 canonical/dogfood runtime，并记录新的 Phase 2 与历史 gate evidence。\n\n边界：\n不改 global workflow、upstream trellis-finish-work、#105 transaction semantics，也不并入 #119/#132；保留 Claude 401 与未 push exact-ref verification residual。\n\n验证：\nGate-only 5/5、publication+closeout 100/100、runtime 620 passed/13 skipped、Skill/eval 179/179、preset 45/45、ownership 9/9，clean throwaway exit 0。\n\nRefs #118",
+    "bytes": "fix(trellis): #118 修复 finalization gate-only freshness 校验\n\n背景：\n#118 的首次 formal finalization 在仅新增 task-finalization-gate.json 时被错误判定 publication evidence stale。\n\n变更：\n- 让 entry-precondition 重算复用已验证的 exact finalization_paths。\n- 增加 gate-only 正向及 unexpected metadata/require_plan fail-closed 回归。\n- 同步 canonical/dogfood runtime，并记录新的 Phase 2 与历史 gate evidence。\n\n边界：\n不改 global workflow、upstream trellis-finish-work、#105 transaction semantics，也不并入 #119/#132；保留 Claude 401 与未 push exact-ref verification residual。\n\n验证：\nGate-only 5/5、publication+closeout 100/100、runtime 620 passed/13 skipped、Skill/eval 179/179、preset 45/45、ownership 9/9，clean throwaway exit 0。\n\nRefs #118\n",
+    "sha256": "61c6a7137c0bdf4d062b109e3809004024f8054afe857e52f3edd2a7dcacb83b"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex main session /root",
+    "summary": "Reviewed the exact 18-path local commit scope, Chinese Conventional Commit message, Issue #118-only reference, current Phase 2 evidence, Docs SSOT outcome, upgrade/deployment/security boundaries and absence of unrelated worktree state.",
+    "evidence": [
+      "phase2-check.json typed exit passed at HEAD 4f254b70 with artifact SHA-256 5ea89d13a3a7ff652f245e6a680b07d406b7c20f8075a3f4b054433a589da69b.",
+      "Independent report phase2-check-gate-only-fix.md SHA-256 7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401 reports zero open P0-P3 finding.",
+      "Every current dirty path is Issue #118 implementation or task evidence covered by the current Phase 2 snapshot; source checkout is clean.",
+      "The operation is one ordinary local commit only and does not push, publish, archive, ready, merge or mutate any Issue."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-after-exact-plan",
+    "evidence": "User confirmed the exact local task commit preview plan with digest aef8c47054369cba9a8669b5c16dacc431b9e5e1f5ddaa6d83b45d1974d92118; authorization covers only the listed paths, exact message and one ordinary local commit side effect."
+  },
+  "freshness": {
+    "captured_at": "2026-07-27T14:48:26Z",
+    "plan_digest": "cba1f5b2579d1c6946a1c63f5608f4bf6f7f96c1c931c4313968bd4e19a6492c"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

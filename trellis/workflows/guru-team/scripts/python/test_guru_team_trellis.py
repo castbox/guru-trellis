@@ -19592,6 +19592,236 @@ shutil.move(str(active), str(archived))
             [plan_relative],
         )
 
+    def test_publication_finalization_gate_only_augmentation_uses_exact_current_paths(
+        self,
+    ) -> None:
+        task_relative = self.task_dir.relative_to(self.root).as_posix()
+        gate_relative = f"{task_relative}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+        stored_repository = {
+            "head": self.head,
+            "branch": "fix/105-closeout",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/runtime.py"],
+            "status_paths": [f"{task_relative}/pr-body.md"],
+        }
+        stored_entries = {
+            entry_id: gtt.task_publication_binding(entry_id)
+            for entry_id in (
+                "runtime_dependency",
+                "task_workspace",
+                "task_identity",
+                "branch_review_handoff",
+                "planning_approval",
+                "phase2_check",
+                "issue_scope_ledger",
+                "docs_ssot_reconciliation",
+                "branch_review_evidence",
+                "publication_content",
+                "review_range_and_working_tree",
+                "invocation_freshness",
+            )
+        }
+        payload = {
+            "task_dir": task_relative,
+            "profile": "publication_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+            "supersedes_publication_ref": None,
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:checked",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "entry_preconditions": stored_entries,
+                "publication_ref": "publication:checked",
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(
+            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            {"schema_version": "test-private-gate"},
+        )
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, payload)
+        current_repository = {
+            **stored_repository,
+            "status_paths": sorted(
+                [*stored_repository["status_paths"], gate_relative]
+            ),
+        }
+        current_entries = json.loads(json.dumps(stored_entries))
+        current_entries["review_range_and_working_tree"] = (
+            gtt.task_publication_binding(current_repository)
+        )
+
+        def entry_preconditions(
+            *_args: object,
+            finalization_owned_paths: list[str] | None = None,
+            **_kwargs: object,
+        ) -> tuple[dict[str, object], list[str], dict[str, str], dict[str, object]]:
+            if finalization_owned_paths != [gate_relative]:
+                return (
+                    {},
+                    ["gate-only finalization paths were not forwarded exactly"],
+                    {"head": self.head},
+                    current_repository,
+                )
+            return current_entries, [], {"head": self.head}, current_repository
+
+        with (
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                return_value=[
+                    "task publication repository binding is stale",
+                    "task publication entry precondition bindings are stale",
+                ],
+            ) as check_errors,
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=current_repository,
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_entry_precondition_bindings",
+                side_effect=entry_preconditions,
+            ) as entry_bindings,
+        ):
+            checked = gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                expected_closeout_plan_digest=None,
+                additional_owned_paths=[gate_relative],
+                require_plan=False,
+            )
+        self.assertEqual(checked["typed_exit"], "ready")
+        self.assertEqual(checked["finalization_owned_delta"], [gate_relative])
+        self.assertEqual(
+            check_errors.call_args.kwargs["finalization_owned_paths"],
+            [gate_relative],
+        )
+        self.assertEqual(
+            entry_bindings.call_args.kwargs["finalization_owned_paths"],
+            [gate_relative],
+        )
+
+    def test_publication_finalization_gate_only_rejects_unexpected_metadata_delta(
+        self,
+    ) -> None:
+        task_relative = self.task_dir.relative_to(self.root).as_posix()
+        gate_relative = f"{task_relative}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+        unexpected = f"{task_relative}/unexpected-finalization-note.md"
+        stored_repository = {
+            "head": self.head,
+            "branch": "fix/105-closeout",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/runtime.py"],
+            "status_paths": [f"{task_relative}/pr-body.md"],
+        }
+        payload = {
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:checked",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "publication_ref": "publication:checked",
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(
+            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            {"schema_version": "test-private-gate"},
+        )
+        current_repository = {
+            **stored_repository,
+            "status_paths": sorted(
+                [*stored_repository["status_paths"], gate_relative, unexpected]
+            ),
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                return_value=["task publication repository binding is stale"],
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=current_repository,
+            ),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                expected_closeout_plan_digest=None,
+                additional_owned_paths=[gate_relative],
+                require_plan=False,
+            )
+        self.assertIn(
+            "task publication repository binding is stale",
+            raised.exception.payload["errors"],
+        )
+        self.assertEqual(
+            raised.exception.payload["allowed_finalization_paths"],
+            [gate_relative],
+        )
+
+    def test_publication_finalization_plan_required_rejects_gate_only_delta(
+        self,
+    ) -> None:
+        task_relative = self.task_dir.relative_to(self.root).as_posix()
+        gate_relative = f"{task_relative}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+        payload = {
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:checked",
+            },
+            "deterministic_bindings": {
+                "repository": {
+                    "head": self.head,
+                    "branch": "fix/105-closeout",
+                    "base_ref": "origin/main",
+                    "diff_paths": ["src/runtime.py"],
+                    "status_paths": [f"{task_relative}/pr-body.md"],
+                },
+                "publication_ref": "publication:checked",
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(
+            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            {"schema_version": "test-private-gate"},
+        )
+        with (
+            mock.patch.object(gtt, "task_publication_check_errors", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=payload["deterministic_bindings"]["repository"],
+            ),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                expected_closeout_plan_digest=None,
+                additional_owned_paths=[gate_relative],
+                require_plan=True,
+            )
+        self.assertIn(
+            "task publication finalization augmentation requires the exact closeout plan",
+            raised.exception.payload["errors"],
+        )
+
     def test_publication_finalization_augmentation_rejects_other_metadata_delta(self) -> None:
         digest = "f" * 64
         task_relative = self.task_dir.relative_to(self.root).as_posix()

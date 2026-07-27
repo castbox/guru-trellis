@@ -1,89 +1,112 @@
-# #118 Branch Review 汇总
+# #118 Branch Review 最终汇总
 
-## 门禁状态
+## 门禁结论
 
-- 审查范围：`origin/main@7820a9eeec2a2a75fb52fba156a7211d9f9fb09c...925007cb6f9b8101360db8fb93f92ef6b35a5b77`
-- 审查 HEAD：`925007cb6f9b8101360db8fb93f92ef6b35a5b77`
-- 当前最新轮次：`round-008`
-- 语义出口：`implementation_required`
-- 当前未解决问题：`1`（P0=0，P1=1，P2=0，P3=0）
-- 发布边界：本汇总只支持 Branch Review Gate recorder；不授权 push、PR、archive、finish 或 issue close。
+- Task：`.trellis/tasks/07-26-118-guru-finalize-task`
+- Branch：`feat/118-guru-finalize-task`
+- Base：`origin/main@7820a9eeec2a2a75fb52fba156a7211d9f9fb09c`
+- Committed HEAD：`4f254b70cfc817bc34e6d20ad508dee91f910846`
+- 完整范围：`origin/main...4f254b70cfc817bc34e6d20ad508dee91f910846`
+- Diff：519 paths，66184 insertions，4713 deletions
+- Review intent：`fresh_final_review`
+- 最终审查代理：`/root/issue118_branch_final_review_round10`
+- 当前 findings：P0=0、P1=0、P2=0、P3=0
+- Scope proposals：0
+- AI Review Gate：`passed`
+
+Round 9 replacement closure 在当前 HEAD 上关闭了最后一项 Branch Review finding，并复核了
+Phase 2 的 remote/ref binding finding。Round 10 使用未参与 implementation、Phase 2 或此前
+review/closure 的全新 technical reviewer，对完整 519-path committed range 做了 qualification-first
+fresh final review；没有发现新的 current-scope finding。本汇总只授权 Branch Review recorder 与
+publication review preparation，不授权 push、PR、archive、draft-to-ready、Issue close 或生产写入。
+
+## Issue 与范围
+
+- Live Issue #118 与 accepted-current comment `issuecomment-5045036678` 已在 Round 10 现场复核。
+- `issue-scope-ledger.json` 只把 #118 列为 `close_issues`；#81/#115 为 related，#119/#132 为 follow-up。
+- #119 独占 global Finish family integration、combined acceptance 与关闭 #115；#132 独占 upstream overlay cleanup。
+- #105 的既有 transaction/recovery/legacy takeover 语义保持不变，本 task 不重新关闭或重定义 #105。
+- 恶意 actor、伪造 artifact/hash/state、并发 finalizer、锁、TOCTOU、额外 fault injection、偶发 crash
+  consistency 与跨 OS 原子性均没有 current authority trigger，保持 out of scope。
 
 ## 审查轮次
 
-| 轮次 | 角色与复用 | 原始报告 | 审查 HEAD | 结论 | 当前问题 |
-| --- | --- | --- | --- | --- | --- |
-| 1 | 最终放行审查代理，fresh `new-agent` | [round-001-final-release.md](reviews/round-001-final-release.md) | `5695f7aab15b5d40660b535948c11c0ef55300f5` | implementation required | P1=1 |
-| 2 | 问题发现审查代理，same-agent `reuse` | [round-002-problem-discovery.md](reviews/round-002-problem-discovery.md) | `5695f7aab15b5d40660b535948c11c0ef55300f5` | finding owner binding | P1=1 |
-| 3 | 问题闭环审查代理，failed predecessor 后 `replace` | [round-003-finding-closure.md](reviews/round-003-finding-closure.md) | `4847bfb8763483b4648915ce1da918cdfb24a678` | finding closed | 0 |
-| 4 | 最终放行审查代理，fresh `new-agent` | [round-004-final-release.md](reviews/round-004-final-release.md) | `4847bfb8763483b4648915ce1da918cdfb24a678` | zero-finding；被后续 lifecycle round 取代为历史证据 | 0 |
-| 5 | 问题闭环审查代理，fresh `new-agent` from Round 1/2 | [round-005-finding-owner-closure.md](reviews/round-005-finding-owner-closure.md) | `4847bfb8763483b4648915ce1da918cdfb24a678` | direct finding-owner closure | 0 |
-| 6 | 最终放行审查代理，fresh `new-agent` | [round-006-final-release.md](reviews/round-006-final-release.md) | `4847bfb8763483b4648915ce1da918cdfb24a678` | passed；最后、current、zero-finding | 0 |
-| 7 | 最终放行审查代理，fresh `new-agent` | [round-007-final-release.md](reviews/round-007-final-release.md) | `925007cb6f9b8101360db8fb93f92ef6b35a5b77` | implementation required；资格化 normal-path P1 | P1=1 |
-| 8 | 问题发现审查代理，same-agent `reuse` from Round 7 | [round-008-problem-discovery.md](reviews/round-008-problem-discovery.md) | `925007cb6f9b8101360db8fb93f92ef6b35a5b77` | finding owner binding | P1=1 |
+1. [round-001-final-release.md](reviews/round-001-final-release.md)：在 `5695f7aa` 发现 P1 `F-FINAL-LEGACY-01`。
+2. [round-002-problem-discovery.md](reviews/round-002-problem-discovery.md)：同一 finding discoverer 建立 owner binding。
+3. [round-003-finding-closure.md](reviews/round-003-finding-closure.md)：replacement closure 在 `4847bfb` 关闭历史 P1。
+4. [round-004-final-release.md](reviews/round-004-final-release.md)：历史 zero-finding final review。
+5. [round-005-finding-owner-closure.md](reviews/round-005-finding-owner-closure.md)：补齐 Round 1/2 owner direct closure。
+6. [round-006-final-release.md](reviews/round-006-final-release.md)：历史 current zero-finding final review。
+7. [round-007-final-release.md](reviews/round-007-final-release.md)：在 `925007cb` 发现 P1 `F-NOT-REQUIRED-EDGE-01`。
+8. [round-008-problem-discovery.md](reviews/round-008-problem-discovery.md)：同一 reviewer 建立正式 finding owner binding。
+9. [round-009-finding-closure.md](reviews/round-009-finding-closure.md)：replacement closure 在 `4f254b70` 关闭当前 P1，并复核 Phase 2 P2。
+10. [round-010-final-release.md](reviews/round-010-final-release.md)：fresh final reviewer 完整覆盖 current range，P0-P3 全 0。
 
 ## Finding 生命周期
 
-### `F-NOT-REQUIRED-EDGE-01`（当前 P1，open）
+| Finding | 场景 | 状态 | Current closure evidence |
+| --- | --- | --- | --- |
+| `F-FINAL-LEGACY-01` P1 | `normal_required_behavior` | closed | Round 3/5 closure，Round 6/10 fresh requalification，#105 matrix 95/95 |
+| `F-NOT-REQUIRED-EDGE-01` P1 | `normal_required_behavior` | closed | Round 9 real #117 wrapper -> projection -> #118 wrapper edge，Round 10 fresh final review |
+| `P2-R6-STANDALONE-REF-BINDING-01` P2 | `normal_required_behavior` | closed | Round 9/10 exact remote/ref accept 与 wrong remote/ref reject regressions |
 
-- Scenario：`normal_required_behavior`。
-- Requirement：`prd.md` R5、R6、R10、AC3，以及 active package/durable contracts 对
-  `verification_not_required` re-entry、standalone finalization 与完整 closeout loop 的声明。
-- Violation：正常 `marketplace.required=false` standalone closeout 中，#117 workflow mode 拒绝
-  `not_required`，#117 standalone DTO 又缺少 finalizer 所需 `task_ref/plan_ref/reviewed_head`；#118
-  同时拒绝不需要 verification 的 `verification_required` 与缺少 owner evidence 的 `published`，
-  `resume_finalization` 只能自循环，无法到达 terminal closeout。
-- Reproduction：Round 7 deterministic probe 在同一正常 `evidence_pushed` state 证明
-  `published` 与 `verification_required` 均 blocked；现有 installed not-required eval 直接注入
-  verification facts，未执行 #117 producer/projection。
-- Closure required：统一 #117 producer 与 finalizer consumer contract，补充真实
-  producer -> projection -> finalizer regression，并同步 durable Docs SSOT；随后重跑 Phase 2、task
-  commit、finding closure 与 fresh final Branch Review。
-- Owner：Round 8 `/root/issue118_branch_review_round7`；Round 7→8 same-agent `reuse`；reviewed HEAD
-  `925007cb`；当前状态 open。
+`C-R7-PRECONDITION-01` 保持 `rejected_candidate`：missing/stale publication owner facts 可合法路由
+`publication_review_stale`，current code 与 contract 没有 normal-path violation。
 
-### `F-FINAL-LEGACY-01`（历史 P1，closed）
+## 当前合同与实现证据
 
-- Scenario：`normal_required_behavior`。
-- Requirement：`prd.md` R2、R11、AC8，以及 approved standalone partial recovery design。
-- 历史 violation：合法同月 #105 partial plan 不拥有 finalizer private gate，正常 recorder 写 gate 后 checker/transition 被 `unexpected_task_files` 阻断。
-- 修复：commit `4847bfb8763483b4648915ce1da918cdfb24a678` 增加 exact one-time、same-month、plan-bound takeover；正式 transition 前保持 predecessor plan bytes，并重新核对 predecessor plan/state、current HEAD/commit state、augmented digest 与 exact owner-private gate。
-- Closure：Round 3 fresh focused/cross-month 6/6、ownership 9/9、byte/mode/no-write 通过；generic #105、任意 extra artifact 与 cross-month 继续 fail closed。
-- Direct closure：Round 5 由未参与 earlier work 的全新 agent 分别通过 `Round 1 -> 5` 与 `Round 2 -> 5` 的 `new-agent` decisions 直接闭环原 finding owner；focused 6/6、transaction 93/93 通过。
-- Final requalification：Round 6 独立复跑 focused 6/6、transaction 93/93、finalizer 4/4、installed wrapper 8/8、platform protocol 2/2 与 validators；旧 violation 在 current HEAD 不可复现，因此作为 `rejected_candidate` 保留，无 severity。
+- `guru-finalize-task` 保持 `judgment_mode=semantic`，独占 immutable closeout plan、exact human digest
+  confirmation、content push、verification route、唯一 Draft PR identity、projection/archive/three-way HEAD、
+  draft-to-ready 与 recovery judgment；脚本只做 executor/validator/recorder。
+- Public Interface 1.3 使用七个 distinct inputs 和六个统一 `exit_id` outputs；private transaction states、
+  closeout/readiness/verification/PR/archive/recovery facts 没有进入 public DTO。
+- `reprepare_required` producer seed 仅为 `task_ref/reason_code`；target authoring fields 与 seed 零重叠，
+  runtime 不合成 fresh AI intent/context。
+- #116 `ready` 与 #117 `verified|not_required` 通过 declared minimal projections 进入 #118；真实
+  `not_required` production eval 执行 #117 public wrapper、thin projection/no-overwrite merge 和 #118 public wrapper。
+- Actual exit 先选择 per-exit schema，再断言 `expected_exit`；native request 不含 `expected_exit`。
+- Canonical、installed Shared、Agents、Codex、Claude、Cursor finalizer package 共六份、66 files/6 executables，
+  bytes 与 executable-mode relative set 一致。
+- 完整 diff 对 global workflow、upstream `trellis-finish-work` family、official `task.py` 与 preset overlays
+  的 changed path count 均为 0。
 
-## 证据
+## Evidence 与验证
 
-- Round 1：SHA-256 `fb20ddde215358278b41a2cf0e4516de49f1c03e56b79c2be9fceec278869082`，14348 bytes。
-- Round 2：SHA-256 `85fb4589c3b43ae4bd944b88f214dbd6c567df1f7efa98231c202f3f1e6ca3df`，10946 bytes。
-- Round 3：SHA-256 `3186bf1d57f23e9fbfa37a0447d2d4b1d0e4312cc7302b3e3ae76f31fdbf1cd6`，15802 bytes。
-- Round 4：SHA-256 `2b1b2ad56f3e3f6dcc1628f26df6be25dca9aa274ad90aec4398e859a124e5aa`，18229 bytes。
-- Round 5：SHA-256 `c72021ad8f094e4c6bad512754ac519fbf4f7e99e1b863f1192688428110d5a1`，16769 bytes。
-- Round 6：SHA-256 `f2cbca7694d3bacdb4339103b8847a32839de4d49a3c0ac3426ee1dae821b689`，17078 bytes。
-- Round 7：SHA-256 `c0bcafd48378f141fe51ecbcaa28d8ee32a26c6937235b95e54924af42c1007e`，16731 bytes。
-- Round 8：SHA-256 `a02ffc9e9c57372792354f723826452a64d085db0f0cafb5efc92b8b9ab58b8e`，13163 bytes。
-- Post-finding Phase 2：runtime 615 passed/13 skipped、Skill packages 178、preset 45、finalizer 4、ownership 9、installed wrapper 8/8、clean throwaway exit 0。
-- Current final reviewer：focused 6/6、transaction 93/93、finalizer 4/4、wrapper 8/8、platform protocol 2/2；source/installed validators、all-platform byte/mode identity、overlay drift、task validation、`git diff --check`、cache/sidecar/no-write 均通过。
+- Planning approval：schema 2.0，typed exit `approved`，facts SHA-256
+  `9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70`。
+- Phase 2 Round 7：typed exit `passed`，artifact SHA-256
+  `2b81a7c4ccce3375aedf4ab511898fab20ce504a6edcbb17186915b37cbb0f18`，facts SHA-256
+  `87ff19653684886146c33afb9f220f378c954c769ee4c56dab9f73bd37335d1d`。
+- Task commit 004：`4f254b70`，parent `925007cb`，122 exact stage paths，committed tree/path/blob/mode
+  与 immutable planned candidate 一致；working-copy plan 仅保留 executor 的 `committed` result。
+- Round 9 report：SHA-256 `b1424b1a0a5080730383834c820ad4f50d20f15216f2aec7a9c5a2177dbab3ce`。
+- Round 10 report：SHA-256 `b6566dab00c007305b2a24fad55aa02ed8086e4629c09902cbbd2fddb5d4b69a`。
+- Fresh static：`git diff --check`、39 Bash、398 JSON、23 Python compile 全通过。
+- Fresh tests：finalizer 5/5、verifier 10/10、remote/ref 2/2、real edge 1/1、#105 transaction 95/95。
+- Source/installed wrapper eval 均返回 actual `published`；source/installed package validators、六份
+  byte/mode identity、dogfood overlay drift 与 zero `.new/.bak` 通过。
+- Phase 2 clean throwaway 已覆盖 marketplace/preset install/reapply、official update、known `.bak`、unknown
+  `.new`、sidecar resolution、四平台分发与 installed closeout，并与本 commit candidate bytes 连续。
 
-## Docs SSOT
+## Docs SSOT、安全与部署
 
-- 批准策略：`ssot_first`。
-- Durable SSOT 已拥有 finalizer semantic owner、single #105 transaction engine、private gate、same-plan recovery、six exits、minimal DTO 与 #119/#132 boundaries。
-- Round 7 证明 `not_required` reachability 的 durable docs、#117 producer、#118 consumer 与 eval 不一致；
-  当前 `ssot_first` reconciliation 不成立。修复必须先同步 durable contracts，再由新 Phase 2 复核。
+- Docs SSOT strategy 为 `ssot_first`；durable package/workflow/preset specs、README、task artifacts、code、
+  schemas、examples 与 tests 对七 profiles、六 exits、minimal projections、private state 和 #119/#132
+  deferred ownership 一致。
+- 未发现 secret、credential、private key、signed URL、`.env` 或客户数据泄漏。
+- 无 dependency、CI/CD、container、Compose、Kubernetes、Helm/Kustomize、DB migration、Makefile、
+  Terraform、config rollout 或 production data-write surface；无需部署或数据迁移。
 
-## Scope、安全与部署
+## 诚实残余
 
-- Scope ledger 只关闭 #118；#81/#115 保持 related；#119/#132 保持 follow-up ownership；不改变 #105 已完成事务语义。
-- 未发现 credential、token、private key、`.env`、签名 URL、客户数据或敏感原始记录泄漏。
-- 无 dependency、CI/CD、container、K8s/Helm、DB migration、Makefile、服务部署或 production data write 变化；存在 additive extension/preset/package/schema/runtime 安装与升级影响，既有 distribution evidence 通过，但不能抵消当前 semantic edge P1。
-- #119 global Finish integration、#132 upstream overlay cleanup 与 hostile/forgery/concurrency/locks/TOCTOU/fault/crash/cross-OS 扩张均保持 out of scope。
+- Claude installed native 调用受外部 `401 Invalid API key` 阻塞；未声称 native success。
+- 当前 feature branch 尚未 push，exact pushed-ref marketplace verification 必须在 content push 后由 #117 owner 执行。
+- 真实 content push、Draft PR、archive、three-way HEAD、draft-to-ready 与 Issue closure 尚未执行。
+- #119 integration 与 #132 cleanup 保持 follow-up，不升级为 #118 finding。
 
 ## 结论
 
-Round 5/6 已闭环历史 `F-FINAL-LEGACY-01`，但随后 task metadata commit 使旧 Gate stale。Round 7
-fresh reviewer 覆盖完整 `origin/main...925007cb` 476-path committed range，并资格化正常 non-extension
-standalone closeout 的 P1 `F-NOT-REQUIRED-EDGE-01`；Round 8 随后以同一独立 reviewer 在相同 HEAD
-建立正式问题发现 owner binding。P0=0、P1=1、P2=0、P3=0；Branch Review AI
-Gate 结论为 `implementation_required`。修复、Docs SSOT、Phase 2、task commit 与 fresh review 完成前
-不得进入 publication 或 finalization。
+当前 `origin/main...4f254b70` 完整 committed range 已通过独立 Branch Review：所有历史/current findings
+均有 closure evidence，最后一轮是 current、fresh、zero-finding，P0/P1/P2/P3=`0/0/0/0`，scope
+proposal=`0`。AI Review Gate 的唯一合法 typed exit 为 `passed`，下一 consumer 是 publication content
+preparation 后的 `guru-review-task-publication`。

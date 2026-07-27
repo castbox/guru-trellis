@@ -1,7 +1,7 @@
 {
   "mode": "workflow",
   "requirement_provenance": {
-    "summary": "Round 7 owner review re-read the approved Chinese planning artifacts, accepted-current Issue #118 authority, the current issue ledger, and both post-review finding handoffs. The only close target remains #118; #115 remains related, #119 owns Finish-family integration and #115 closure, #132 owns upstream overlay cleanup, and completed #105 transaction semantics remain unchanged.",
+    "summary": "Gate-only fix 后的 owner review 重新读取已批准中文 planning、Issue #118 accepted-current authority、current scope ledger 与完整实现/检查 handoff。唯一 close target 仍为 #118；#115 related，#119 拥有 Finish-family integration 与 #115 closure，#132 拥有 upstream overlay cleanup，#105 transaction semantics 不变。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
@@ -29,7 +29,7 @@
         "size_bytes": 96
       }
     ],
-    "facts_sha256": "8b2abd14d6396ed3df8ba16d36f012b59054bd18f2469aa1aea7abc4d4ba84e8"
+    "facts_sha256": "4165e0a45a5c78b820c67ba63782ddded45664df15ad1976f4f9af3cd27d4949"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
@@ -90,20 +90,21 @@
         "size_bytes": 80827
       }
     ],
-    "sync_result": "Durable README, workflow/preset specifications, finalizer/verifier step-local contracts, Interface 1.3 profiles, runtime contracts and installed distribution are reconciled. The finalizer now has seven profiles and six exits, including a reachable standalone not_required producer projection, while private remote/ref identity remains plan-bound. The latest upstream-ownership wording was corrected from six-profile to seven-profile and fresh validation found no remaining active wording drift.",
+    "sync_result": "既有 durable README、workflow/preset specs 与 finalizer/verifier contracts 已定义 finalizer-owned exact metadata delta、owner-private gate、formal freshness 与 unexpected-path fail closed。本轮 runtime correctness fix 使实现重新符合该合同，不改变 public I/O、transaction order、recovery matrix 或安装语义；canonical/dogfood runtime 已同步且 drift 为零。",
     "task_delta_merged": true,
     "task_history_only": [
       "Accepted authority and approved planning provenance",
+      "Exact command digests and publication-time residuals",
+      "Gate-only implementation handoff 与本轮 Phase 2 raw report",
       "Implementation, finding and agent recovery history",
-      "Phase 2 and Branch Review round evidence",
-      "Exact command digests and publication-time residuals"
+      "Phase 2 and Branch Review round evidence"
     ],
     "no_update_reason": null,
-    "followup_or_pr_limit": "Global Finish-family activation and combined acceptance remain Issue #119; upstream overlay cleanup remains Issue #132; pushed exact-ref verification and real GitHub/archive side effects remain publication/finalization evidence.",
-    "facts_sha256": "640fbaf990f08a3fd4eafc590a400fd4abc13cee3fc8cda9ea0781dc709f79da"
+    "followup_or_pr_limit": "Global Finish-family activation 与 combined acceptance 仍属 Issue #119；upstream overlay cleanup 仍属 Issue #132；exact pushed feature-ref verification 与真实 GitHub/archive side effects 仍属 publication/finalization owner evidence。",
+    "facts_sha256": "db250a3c7a9307361db0ff933209a342d1b2a41ba958639351d045f1d2765a42"
   },
   "implementation_handoff": {
-    "summary": "The complete current handoff chain covers the original implementation, all prior correction rounds, the reachable #117 not_required producer edge, the target-owned standalone #118 profile, the private remote/ref binding correction, distribution synchronization, validation, scope and the absence of publication side effects.",
+    "summary": "完整 handoff chain 覆盖原始 #118 实现、既往 correction rounds、#117 not_required edge、private remote/ref binding，以及本轮 gate-only freshness fix。最新修复只把已验证 finalization_paths 复用于 entry-precondition recomputation，并保持 unexpected metadata、require_plan、#105/#119/#132/upstream/global boundaries 不变。",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
@@ -111,9 +112,19 @@
         "size_bytes": 6695
       },
       {
-        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
-        "sha256": "dea1ab4217291c3dd4c11b5b72536afed96eea75b6d7c06d261743305f04efe7",
-        "size_bytes": 14116
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
+        "sha256": "a14151c8b6bf7a3b7e7f62ecac284df52253ae0573b6c371fe8564b9a2d03573",
+        "size_bytes": 4203
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md",
+        "sha256": "ccabdb182555dc0fe92f436cf8b95d65bdd9c6df35f603068f97f6cd528ab5f5",
+        "size_bytes": 10036
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-ref-binding-fix.md",
+        "sha256": "35bad7e5f24c7607e4dcc60ef4c301499f5ecd336dc9b4e5c35ff02ecc86de91",
+        "size_bytes": 6544
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round2.md",
@@ -131,22 +142,18 @@
         "size_bytes": 6414
       },
       {
-        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md",
-        "sha256": "ccabdb182555dc0fe92f436cf8b95d65bdd9c6df35f603068f97f6cd528ab5f5",
-        "size_bytes": 10036
-      },
-      {
-        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-ref-binding-fix.md",
-        "sha256": "35bad7e5f24c7607e4dcc60ef4c301499f5ecd336dc9b4e5c35ff02ecc86de91",
-        "size_bytes": 6544
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
+        "sha256": "dea1ab4217291c3dd4c11b5b72536afed96eea75b6d7c06d261743305f04efe7",
+        "size_bytes": 14116
       }
     ],
-    "facts_sha256": "7816b09ad4ba33d1be8705e261816a133cb93f11f83311af63fb9ec20dd7ed92"
+    "facts_sha256": "4f530e4bb47596da2a7226bb260cdb777b3aee8f8c01856444baef6d34fda0e7"
   },
   "agent_assignment": {
     "artifact_path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
     "implementation_agent_ids": [
       "/root/issue118_branch_finding_fix",
+      "/root/issue118_gate_only_fix",
       "/root/issue118_impl_correction_replacement",
       "/root/issue118_impl_final",
       "/root/issue118_impl_round2_replacement",
@@ -157,6 +164,7 @@
     ],
     "check_agent_ids": [
       "/root/issue118_phase2_check",
+      "/root/issue118_phase2_gate_only_fix",
       "/root/issue118_phase2_post_branch_fix_check",
       "/root/issue118_phase2_round3_check",
       "/root/issue118_phase2_round4_check",
@@ -165,141 +173,37 @@
       "/root/issue118_phase2_round7_check"
     ],
     "recovery_complete": true,
-    "phase2_state_sha256": "69bb23fd75bb45af3b3865de9b75375e6fc6c129e0a842b1aa0d82d0d56c5596",
-    "facts_sha256": "59afe823670bbca27b69e1610d631fec3deaf49be9b2ab1f3a9b338ade8f416e"
+    "phase2_state_sha256": "054706ab92fd6f566b6b09cd1c7a771a6586e4888a81e6b77b1cb03728be4b87",
+    "facts_sha256": "fd59ef5af213a1554c463dd10582da93a4020ba14e42e0a0d1aede08ac514e53"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
-    "head": "925007cb6f9b8101360db8fb93f92ef6b35a5b77",
+    "head": "4f254b70cfc817bc34e6d20ad508dee91f910846",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
-      ".agents/skills/guru-finalize-task/evals/evals.json",
-      ".agents/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".agents/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".agents/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
-      ".agents/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
-      ".agents/skills/guru-finalize-task/interface.json",
-      ".agents/skills/guru-finalize-task/references/contract.md",
-      ".agents/skills/guru-finalize-task/schemas/public-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
-      ".agents/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".agents/skills/guru-finalize-task/tests/test_contract.py",
-      ".agents/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
-      ".agents/skills/guru-verify-extension-installation/interface.json",
-      ".agents/skills/guru-verify-extension-installation/references/contract.md",
-      ".agents/skills/guru-verify-extension-installation/tests/test_contract.py",
-      ".claude/skills/guru-finalize-task/evals/evals.json",
-      ".claude/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".claude/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".claude/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
-      ".claude/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
-      ".claude/skills/guru-finalize-task/interface.json",
-      ".claude/skills/guru-finalize-task/references/contract.md",
-      ".claude/skills/guru-finalize-task/schemas/public-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
-      ".claude/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".claude/skills/guru-finalize-task/tests/test_contract.py",
-      ".claude/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
-      ".claude/skills/guru-verify-extension-installation/interface.json",
-      ".claude/skills/guru-verify-extension-installation/references/contract.md",
-      ".claude/skills/guru-verify-extension-installation/tests/test_contract.py",
-      ".codex/skills/guru-finalize-task/evals/evals.json",
-      ".codex/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".codex/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".codex/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
-      ".codex/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
-      ".codex/skills/guru-finalize-task/interface.json",
-      ".codex/skills/guru-finalize-task/references/contract.md",
-      ".codex/skills/guru-finalize-task/schemas/public-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
-      ".codex/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".codex/skills/guru-finalize-task/tests/test_contract.py",
-      ".codex/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
-      ".codex/skills/guru-verify-extension-installation/interface.json",
-      ".codex/skills/guru-verify-extension-installation/references/contract.md",
-      ".codex/skills/guru-verify-extension-installation/tests/test_contract.py",
-      ".cursor/skills/guru-finalize-task/evals/evals.json",
-      ".cursor/skills/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".cursor/skills/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".cursor/skills/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
-      ".cursor/skills/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
-      ".cursor/skills/guru-finalize-task/interface.json",
-      ".cursor/skills/guru-finalize-task/references/contract.md",
-      ".cursor/skills/guru-finalize-task/schemas/public-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
-      ".cursor/skills/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".cursor/skills/guru-finalize-task/tests/test_contract.py",
-      ".cursor/skills/guru-verify-extension-installation/examples/public-not-required-output.json",
-      ".cursor/skills/guru-verify-extension-installation/interface.json",
-      ".cursor/skills/guru-verify-extension-installation/references/contract.md",
-      ".cursor/skills/guru-verify-extension-installation/tests/test_contract.py",
-      ".trellis/guru-team/extension.json",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
-      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
-      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
-      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
-      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
-      ".trellis/spec/docs/public-docs.md",
-      ".trellis/spec/preset/installer.md",
-      ".trellis/spec/preset/upstream-ownership.md",
-      ".trellis/spec/workflow/index.md",
-      ".trellis/spec/workflow/quality-guidelines.md",
-      ".trellis/spec/workflow/skill-package-contract.md",
-      ".trellis/spec/workflow/workflow-contract.md",
       ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
-      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-ref-binding-fix.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round6.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round7.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
       ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
       ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
-      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
-      "README.md",
-      "trellis/guru-team-extension.json",
-      "trellis/presets/guru-team/README.md",
-      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/not-required-reentry-published-facts.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/verification-not-required-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-verification-not-required-authoring.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/examples/public-standalone-verification-not-required-input.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/public-standalone-verification-not-required-input.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
-      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/public-not-required-output.json",
-      "trellis/skills/guru-team/packages/guru-verify-extension-installation/interface.json",
-      "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-      "trellis/skills/guru-team/tests/test_skill_packages.py",
-      "trellis/workflows/guru-team/README.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
       "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
       "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
     ],
     "reviewed_paths": [
       {
         "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "3d9211630c33ce4cfda0bad57e8fb22dcdd4defe5f2e53f02cc34350855f0f6e",
-        "size_bytes": 1702853
+        "sha256": "27a88480f3c2e3b08f0a6499d292a815661787e68f84832efaa04696a10baf55",
+        "size_bytes": 1702856
       },
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
@@ -348,8 +252,18 @@
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
-        "sha256": "8c9657b64c6e377bf324d66439ff5ffdb525a4c63930766ca88254d97bbc9193",
-        "size_bytes": 407838
+        "sha256": "3499c86613356ab3d8ab006e0d854d074ea28812d109008ef34deb4bf9985c71",
+        "size_bytes": 458237
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+        "sha256": "97c452fabce80ec81dc6e7d03cac382aed39bdc591fbfc5bdded576d27116b4e",
+        "size_bytes": 7644
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
+        "sha256": "a14151c8b6bf7a3b7e7f62ecac284df52253ae0573b6c371fe8564b9a2d03573",
+        "size_bytes": 4203
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md",
@@ -363,8 +277,13 @@
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
-        "sha256": "e0858c37fd888b31847658294fe94f49e2c17cf04f1857c83f7e91e0646b6e62",
-        "size_bytes": 4572
+        "sha256": "5333c084f16c0bbee36d91956b58b4e3108d7bf3fdea06b6d6f5f9ce27157ffa",
+        "size_bytes": 4750
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
+        "sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
+        "size_bytes": 14386
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round6.md",
@@ -378,18 +297,23 @@
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
-        "sha256": "c3f57806058f6d3b0fdba2fcd3509c9350637bee075f584adeeef6ad5812dd3e",
-        "size_bytes": 6123
+        "sha256": "b250cb2d9ee1da09da4a460c49e7289bfa496e00cb80b79abec769dbb64a7ce3",
+        "size_bytes": 6473
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+        "sha256": "ab9a66667becb7b752e32f6389a02d0365a11ceb5a95b02cae91ffa29c0cfc50",
+        "size_bytes": 64670
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
-        "sha256": "c338a02dcdf7c38cd0b4f4253974b5e7ecbf532f9352f25578fc7af93ddea25f",
-        "size_bytes": 147954
+        "sha256": "c04e7b201fb3ce9eeb5c55061a04feb0bff883a1a1dd5d69207db45d3b71af1f",
+        "size_bytes": 170011
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
-        "sha256": "ce5436be35f6087daf87b03dd8061631f4aefbce2ba291f48910b57f29bffbf4",
-        "size_bytes": 8064
+        "sha256": "44780e46e7dc68ac17bded7f065bec2ed55f951f5f03f2bc7cdf9a179eda79b0",
+        "size_bytes": 8093
       },
       {
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-007-final-release.md",
@@ -400,6 +324,26 @@
         "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-008-problem-discovery.md",
         "sha256": "a02ffc9e9c57372792354f723826452a64d085db0f0cafb5efc92b8b9ab58b8e",
         "size_bytes": 13163
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md",
+        "sha256": "b1424b1a0a5080730383834c820ad4f50d20f15216f2aec7a9c5a2177dbab3ce",
+        "size_bytes": 18367
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-010-final-release.md",
+        "sha256": "b6566dab00c007305b2a24fad55aa02ed8086e4629c09902cbbd2fddb5d4b69a",
+        "size_bytes": 17714
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/004.json",
+        "sha256": "d53cebceaf777b1dcb8e7f47a035b3519108081b75b511e4010ab1a7644da2b4",
+        "size_bytes": 195605
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+        "sha256": "5a1116e347483ea6170f5fe136a0e5b6de7ce2c998b0a85fb49a1aa443fdb667",
+        "size_bytes": 2484
       },
       {
         "path": "README.md",
@@ -442,6 +386,11 @@
         "size_bytes": 966
       },
       {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+        "sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4",
+        "size_bytes": 6161
+      },
+      {
         "path": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
         "sha256": "3cc7291ba7fe6f3f425134fc4f452546f04caff238f1f61c27a0352b5d1949a8",
         "size_bytes": 21103
@@ -465,11 +414,6 @@
         "path": "trellis/skills/guru-team/packages/guru-finalize-task/schemas/task-finalization-gate.schema.json",
         "sha256": "ba09e4733cf51e01fcf597012bcf478060128fb557c4da02de638b5bde1b83f7",
         "size_bytes": 4061
-      },
-      {
-        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
-        "sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4",
-        "size_bytes": 6161
       },
       {
         "path": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
@@ -503,16 +447,16 @@
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "3d9211630c33ce4cfda0bad57e8fb22dcdd4defe5f2e53f02cc34350855f0f6e",
-        "size_bytes": 1702853
+        "sha256": "27a88480f3c2e3b08f0a6499d292a815661787e68f84832efaa04696a10baf55",
+        "size_bytes": 1702856
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-        "sha256": "3a408eb450006b012f64c58cc860c4d74824a00b9d0a57cadf2ffd1e7c7d7217",
-        "size_bytes": 1304915
+        "sha256": "bb384eb69d6359020e63ba737b18e9606907ec7743de8158bb5e788dc0be24a3",
+        "size_bytes": 1313749
       }
     ],
-    "snapshot_sha256": "ca990fca3dedbf67339fef346292d4b4711b111d93c818837c48e5eebde73d62"
+    "snapshot_sha256": "b9637ca2ed30b9fcd1f1b234b9e193d12e4a81fcc1861ce67cb0b645b64a7b70"
   },
   "check_execution": {
     "commands": [
@@ -525,11 +469,11 @@
           ".trellis/tasks/07-26-118-guru-finalize-task"
         ],
         "exit_code": 0,
-        "stdout_sha256": "59a4c535939c8a61d7a2432af988f1f1b36f41286467ebbae6c3c06dc1a9f2f0",
-        "stdout_size_bytes": 10569,
+        "stdout_sha256": "bfbe47cb1f30f12fb664b76615989f2e094d126ba0072783dca4910083d1524a",
+        "stdout_size_bytes": 1873,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "The exact issue worktree, branch, base and source-checkout boundary remain valid; all current dirty paths are within the reviewed Issue #118 candidate and task evidence scope."
+        "summary": "独立 worktree 与 source checkout 边界 current，source checkout clean。"
       },
       {
         "id": "owner_planning_approval",
@@ -540,11 +484,11 @@
           ".trellis/tasks/07-26-118-guru-finalize-task"
         ],
         "exit_code": 0,
-        "stdout_sha256": "8e5a0f0bf4607148e0274b92c0d0c740a27e83d276f09bf05b368a46051b177e",
+        "stdout_sha256": "d66a2c3533aef51598048a4d8c36b1337323a9719fea94e74e2c843e82f52910",
         "stdout_size_bytes": 738,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Current approved guru-planning-approval-2.0 evidence remains valid for the unchanged planning documents and authority."
+        "summary": "已审核的 planning document digests current，typed exit 为 approved。"
       },
       {
         "id": "owner_agent_assignment",
@@ -555,11 +499,11 @@
           ".trellis/tasks/07-26-118-guru-finalize-task"
         ],
         "exit_code": 0,
-        "stdout_sha256": "942d335163f54d00b7d0b49f3631c4397eac53a2a3f3177fb9e569022c42d2bf",
-        "stdout_size_bytes": 1365,
+        "stdout_sha256": "9ddd74554c2f2cd82e52ed1bb7c75d0798b5099c5602d3c89be3df59563c6aa9",
+        "stdout_size_bytes": 1369,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "All eight completed implementation agents and seven completed Phase 2 check agents have terminal effective events with no unresolved recovery chain."
+        "summary": "实现与 Phase 2 代理均有 terminal effective completed 事件，recovery chain 闭合。"
       },
       {
         "id": "owner_source_packages",
@@ -576,7 +520,7 @@
         "stdout_size_bytes": 1346,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Source package validation found 13 active packages and no planned or legacy package error."
+        "summary": "Canonical Skill packages 结构、schema、examples 与 wrapper 校验通过。"
       },
       {
         "id": "owner_installed_packages",
@@ -593,7 +537,7 @@
         "stdout_size_bytes": 1535,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Installed package validation found 2659 managed files and no removal, conflict or sidecar issue."
+        "summary": "Dogfood installed Skill packages 与 sidecar/removal/conflict 校验通过。"
       },
       {
         "id": "owner_upstream_ownership",
@@ -608,7 +552,7 @@
         "stdout_size_bytes": 1731,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Ownership validation kept all 43 frozen upstream entries unchanged, with 13 active Skills and no removed path."
+        "summary": "Upstream ownership freeze 与 additive distribution 边界通过。"
       },
       {
         "id": "owner_overlay_drift",
@@ -620,7 +564,7 @@
         "stdout_size_bytes": 1790,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Canonical and dogfood overlay copies have no drift."
+        "summary": "Canonical overlay 与 dogfood 安装副本无 drift。"
       },
       {
         "id": "owner_contract_source",
@@ -639,7 +583,7 @@
         "stdout_size_bytes": 14077,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Source discovery returned Interface 1.3 with seven distinct profiles, six typed exits, declared projections and owner-private artifacts."
+        "summary": "Source guru-finalize-task Interface 1.3 contract discovery 通过。"
       },
       {
         "id": "owner_contract_installed",
@@ -658,7 +602,7 @@
         "stdout_size_bytes": 14077,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Installed finalizer contract discovery is byte-identical to source."
+        "summary": "Installed guru-finalize-task contract discovery 与 source 一致。"
       },
       {
         "id": "owner_evals_source",
@@ -677,7 +621,7 @@
         "stdout_size_bytes": 3375,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Source eval discovery returned all eight production cases and four adapters, including the real not_required producer edge."
+        "summary": "Source production eval corpus discovery 通过。"
       },
       {
         "id": "owner_evals_installed",
@@ -696,7 +640,58 @@
         "stdout_size_bytes": 3375,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Installed eval corpus discovery is byte-identical to source."
+        "summary": "Installed production eval corpus discovery 与 source 一致。"
+      },
+      {
+        "id": "owner_gate_only_focused",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_publication_finalization_augmentation_accepts_only_exact_closeout_plan",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_publication_finalization_gate_only_augmentation_uses_exact_current_paths",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_publication_finalization_gate_only_rejects_unexpected_metadata_delta",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_publication_finalization_plan_required_rejects_gate_only_delta",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_publication_finalization_augmentation_rejects_other_metadata_delta"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "38bf320bde0206302c1e57a1b42621b895232f0c74ebfec8c7b81ec6681fa5a0",
+        "stderr_size_bytes": 103,
+        "summary": "Gate-only exact delta、unexpected metadata、require_plan 与既有 plan paths 5/5 通过；先前错误 class locator 未执行候选代码，已由本 exact locator replacement 取代。"
+      },
+      {
+        "id": "owner_finalizer_contract",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "c672bfc6d6dfca2df45138c5957060867fa3cd961b6787b934261be02c61eb5c",
+        "stderr_size_bytes": 103,
+        "summary": "guru-finalize-task package contract tests 5/5 通过。"
+      },
+      {
+        "id": "owner_task_validate",
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "53258e0eefd6d7cbd1d1af4e22029d99c1893edd325760ec743864222d862c58",
+        "stdout_size_bytes": 311,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Trellis task 全部结构验证通过。"
       },
       {
         "id": "owner_diff_check",
@@ -711,65 +706,22 @@
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "The complete base-to-working-tree candidate has no whitespace error."
+        "summary": "Current base-to-working-tree tracked diff 无 whitespace error。"
       },
       {
-        "id": "owner_focused_remote_ref",
-        "argv": [
-          "env",
-          "PYTHONDONTWRITEBYTECODE=1",
-          "python3",
-          "-m",
-          "unittest",
-          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_standalone_not_required_augmentation_accepts_only_private_plan_binding",
-          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest.test_standalone_not_required_owner_binds_task_plan_head_and_ref"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "cbe4b84d897ac017db0552ccb3a31855ff0fb172bc344c967c4c4c92eb19e624",
-        "stderr_size_bytes": 100,
-        "summary": "Two focused runtime tests passed exact remote/ref binding and rejected same-SHA wrong-remote, wrong-ref and stale-HEAD cases."
-      },
-      {
-        "id": "owner_installed_two_wrapper",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
-          "--root",
-          ".",
-          "--mode",
-          "installed",
-          "--skill",
-          "guru-finalize-task",
-          "--adapter",
-          "shared",
-          "--case",
-          "not-required-reentry-published",
-          "--run-root",
-          "/tmp/guru118-owner-record.tjQEnG/installed-two-wrapper",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "99309deb1b2523a399c9d499f91fa12db7219095aa5c5c4c025462db2919818b",
-        "stdout_size_bytes": 1252,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "The installed production eval invoked the real #117 public wrapper, applied its declared no-overwrite projection, invoked the real #118 public wrapper, selected the actual published schema first and then passed expected-exit assertion."
-      },
-      {
-        "id": "round7_worker_report",
+        "id": "phase2_worker_report",
         "argv": [
           "sed",
           "-n",
-          "1,360p",
-          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round7.md"
+          "1,240p",
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md"
         ],
         "exit_code": 0,
-        "stdout_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
-        "stdout_size_bytes": 16419,
+        "stdout_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
+        "stdout_size_bytes": 14386,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "The complete fresh independent Round 7 report covers the full current scope, both finding closures, 617 runtime tests, 179 skill/eval tests, 45 preset tests, clean throwaway installation, four-platform distribution, Docs SSOT and residuals."
+        "summary": "Fresh independent Phase 2 报告覆盖完整 current scope，P0-P3 均为零，并如实保留 Claude 401 与未 push exact-ref residual。"
       }
     ],
     "worker_evidence": [
@@ -779,6 +731,13 @@
         "summary": "The first independent checker supplied full-scope evidence and qualified the initial normal-path implementation findings that later rounds closed.",
         "evidence_only": true,
         "facts_sha256": "0ca34460e29243056493d13f116463d69297da11f0f6803b6bf314aa6443f82a"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue118_phase2_gate_only_fix",
+        "summary": "Fresh independent gate-only Phase 2 reviewer covered the complete current scope, exact one-line fix, all regression/runtime/package/eval/preset/install/update/platform/Docs SSOT/hygiene boundaries, reported zero open P0-P3 finding, and preserved Claude 401 plus unpushed exact-ref as nonblocking residuals.",
+        "evidence_only": true,
+        "facts_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401"
       },
       {
         "source": "official_trellis_check",
@@ -826,37 +785,66 @@
     "unverified_items": [
       {
         "id": "UV-CLAUDE-NATIVE-01",
-        "command_or_area": "Claude installed native production invocation",
-        "reason": "The bounded real Claude call reached the API but returned 401 Invalid API key; automated native stdin/file protocol, safe-mode, allowed-tool and parsing coverage passed.",
-        "impact": "No Claude native success is claimed. This external credential condition does not reproduce a candidate defect and remains nonblocking for source Phase 2.",
+        "command_or_area": "Claude source real-native production eval",
+        "reason": "Five real Claude CLI cases returned external 401 Invalid API key with zero tokens and no permission denial; three later cases were affected by temporary-volume exhaustion before owner staging. Candidate-controlled 179-suite covers Claude input protocol and error parsing.",
+        "impact": "No Claude native success is claimed. The external credential/capacity condition does not reproduce a supported-path candidate defect and is nonblocking for Phase 2.",
         "blocking": false
       },
       {
         "id": "UV-REMOTE-02",
         "command_or_area": "Exact pushed feature-ref marketplace and extension installation",
-        "reason": "The reviewed branch is intentionally not pushed before the task commit, new Branch Review, publication review and finalizer confirmation gates.",
-        "impact": "Fresh local clean throwaway installation passed, but formal #117 exact pushed-ref verification remains publication-time owner evidence and is not claimed here.",
+        "reason": "The reviewed branch remains intentionally unpushed before fresh task commit, Branch Review, publication review and immutable-plan confirmation.",
+        "impact": "Clean throwaway verified public marketplace discovery plus local unpublished current candidate. Formal exact pushed-ref verification remains the post-content-push #117 owner gate and is not claimed here.",
         "blocking": false
       },
       {
         "id": "UV-SIDE-EFFECT-03",
-        "command_or_area": "Real content/evidence push, unique Draft PR, archive transaction, three-way HEAD equality, draft-to-ready and Issue close",
+        "command_or_area": "Content/evidence push, unique Draft PR, archive transaction, three-way HEAD equality, draft-to-ready and Issue close",
         "reason": "Phase 2 has neither ownership nor confirmation to perform finalization side effects.",
-        "impact": "Wrapper and transaction behavior passed; real GitHub and archive facts must be established only by guru-finalize-task after exact immutable-plan confirmation.",
+        "impact": "Wrapper and transaction behavior passed; real GitHub/archive facts must be established only by guru-finalize-task after a new exact immutable-plan confirmation.",
         "blocking": false
       },
       {
         "id": "UV-DEFERRED-04",
         "command_or_area": "Issue #119 global Finish integration and Issue #132 upstream overlay cleanup",
-        "reason": "Both changes are explicitly outside Issue #118 and owned by their respective follow-ups.",
-        "impact": "They are not claimed, do not block #118, and cannot be authorized by this pass.",
+        "reason": "Both are explicitly outside Issue #118 and owned by their follow-ups.",
+        "impact": "They are not claimed, do not block #118, and are not authorized by this Phase 2 pass.",
         "blocking": false
       }
     ],
-    "execution_sha256": "92e2b0c49203ddb7517c32175c30c79929e139d35fb9233e9b98580fa66464ff"
+    "execution_sha256": "88900efbf3ed61c0473cede0f94d814e4e3dc473d3c004106edae5fb76e660e5"
   },
   "scope_qualification": {
     "candidates": [
+      {
+        "id": "C-GATE-ONLY-FRESHNESS-01",
+        "summary": "Formal finalization gate recording introduced only task-finalization-gate.json, but publication entry-precondition recomputation hardcoded closeout-plan.json and immediately made the valid gate-only transition stale.",
+        "trigger_refs": [
+          "prd.md:R1",
+          "prd.md:R7",
+          "design.md:finalization-owned exact metadata delta",
+          "implementation-handoff-gate-only-fix.md"
+        ],
+        "normal_path_reproduction": "On the supported honest recorder-to-checker path, record-finalization-gate wrote the owner-private gate and the checker returned plan identity/current facts/plan_ref mismatches before any executor ran.",
+        "disposition": "current_scope",
+        "route_basis": "Immutable plan freshness and finalizer-owned pre-executor metadata are exclusively owned by #118; the one-line fix does not add #119 routing, #132 overlay cleanup or new #105 semantics.",
+        "severity": "P1",
+        "finding_id": "F-GATE-ONLY-FRESHNESS-01"
+      },
+      {
+        "id": "C-R6-STANDALONE-REF-BINDING-01",
+        "summary": "The standalone not_required owner checker accepted the same SHA when its private evidence named a different remote or ref than the immutable plan.",
+        "trigger_refs": [
+          "design.md:verification-owner-binding",
+          "implementation-handoff-ref-binding-fix.md",
+          "phase2-worker-report-round6.md"
+        ],
+        "normal_path_reproduction": "The supported normal same-task/repo/SHA path was reproduced with remote=secondary or ref=refs/heads/other and was accepted before the fix. Current focused tests reject both while accepting exact origin plus refs/heads/main and matching live HEAD.",
+        "disposition": "current_scope",
+        "route_basis": "Private plan/ref currentness is owned by #118 and the fix keeps public DTOs and the generic #117 checker unchanged.",
+        "severity": "P2",
+        "finding_id": "P2-R6-STANDALONE-REF-BINDING-01"
+      },
       {
         "id": "C-R7-NOTREQ-02",
         "summary": "The original standalone non-extension path lacked a reachable #117 not_required producer projection into #118 and could not reach terminal published.",
@@ -872,39 +860,26 @@
         "route_basis": "The behavior is explicit Issue #118 standalone acceptance and was corrected without adding #119 workflow activation or #132 overlay work.",
         "severity": "P1",
         "finding_id": "F-NOT-REQUIRED-EDGE-01"
-      },
-      {
-        "id": "C-R6-STANDALONE-REF-BINDING-01",
-        "summary": "The standalone not_required owner checker accepted the same SHA when its private evidence named a different remote or ref than the immutable plan.",
-        "trigger_refs": [
-          "design.md:verification-owner-binding",
-          "implementation-handoff-ref-binding-fix.md",
-          "phase2-worker-report-round6.md"
-        ],
-        "normal_path_reproduction": "The supported normal same-task/repo/SHA path was reproduced with remote=secondary or ref=refs/heads/other and was accepted before the fix. Current focused tests reject both while accepting exact origin plus refs/heads/main and matching live HEAD.",
-        "disposition": "current_scope",
-        "route_basis": "Private plan/ref currentness is owned by #118 and the fix keeps public DTOs and the generic #117 checker unchanged.",
-        "severity": "P2",
-        "finding_id": "P2-R6-STANDALONE-REF-BINDING-01"
       }
     ],
-    "scope_sha256": "5b5fabdd9f73edf7084b4dcb0c57a619457f9ea97788a38b16aaccee560424e8"
+    "scope_sha256": "b78ea1f87f26a4ff4ee6d40bb75e067f52e36794200fcaefcddb8e799e4b5e47"
   },
   "semantic_review": {
     "adequacy_dimensions": [
       {
         "id": "requirements",
         "status": "passed",
-        "summary": "R1-R16, AC1-AC14 and accepted-current authority are carried by the seven-profile public package, private runtime, schemas, evals and additive distribution while #118 remains the only close target.",
+        "summary": "R1-R16、AC1-AC14 与 accepted-current authority 仍由七 profile、六 exit、private runtime 与 additive distribution 承接；gate-only fix 恢复 immutable closeout 前置 transition，唯一 close target 仍为 #118。",
         "evidence_refs": [
           "planning",
           "requirement_provenance",
           "implementation_handoff",
           "check_execution"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [
-          "F-NOT-REQUIRED-EDGE-01"
+          "F-NOT-REQUIRED-EDGE-01",
+          "F-GATE-ONLY-FRESHNESS-01"
         ],
         "unverified_ids": [
           "UV-DEFERRED-04"
@@ -913,46 +888,49 @@
       {
         "id": "design",
         "status": "passed",
-        "summary": "Semantic judgment, immutable plan, exact human digest, verification routing, one Draft identity, final projection, one archive transaction, three-way HEAD equality and recovery state machine match the approved design and accepted correction handoffs.",
+        "summary": "Immutable plan、exact confirmation、verification route、单一 Draft、final projection、single archive transaction、three-way HEAD equality 与 recovery state machine 保持设计一致；gate-only owner allowlist 已按同一 exact paths 重算。",
         "evidence_refs": [
           "planning",
           "implementation_handoff",
           "repository_snapshot"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [
-          "P2-R6-STANDALONE-REF-BINDING-01"
+          "P2-R6-STANDALONE-REF-BINDING-01",
+          "F-GATE-ONLY-FRESHNESS-01"
         ],
         "unverified_ids": []
       },
       {
         "id": "implementation",
         "status": "passed",
-        "summary": "Deterministic code remains executor, validator and recorder only; internal finalization states and owner-private remote/ref facts do not leak into public Skills or DTOs, and both current-scope defects are resolved.",
+        "summary": "Deterministic runtime 仍仅是 executor/validator/recorder；本轮一行修复未新增 semantic judgment、public DTO/state/exit/route，并保持 canonical/dogfood byte identity。",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [
           "F-NOT-REQUIRED-EDGE-01",
-          "P2-R6-STANDALONE-REF-BINDING-01"
+          "P2-R6-STANDALONE-REF-BINDING-01",
+          "F-GATE-ONLY-FRESHNESS-01"
         ],
         "unverified_ids": []
       },
       {
         "id": "tests",
         "status": "passed",
-        "summary": "Finalizer 5, verifier 10, runtime 617 with 13 skipped, Skill/eval 179, preset 45, focused remote/ref and real source/installed two-wrapper cases all passed; clean throwaway exited zero.",
+        "summary": "Gate-only 5/5、publication+closeout 100/100、runtime 620/13 skipped、finalizer 5/5、Skill/eval 179/179、preset 45/45、ownership 9/9、public wrappers 与 clean throwaway 均通过。",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [
           "F-NOT-REQUIRED-EDGE-01",
-          "P2-R6-STANDALONE-REF-BINDING-01"
+          "P2-R6-STANDALONE-REF-BINDING-01",
+          "F-GATE-ONLY-FRESHNESS-01"
         ],
         "unverified_ids": [
           "UV-CLAUDE-NATIVE-01",
@@ -962,14 +940,15 @@
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "SSOT-first reconciliation is complete across durable specs, step-local contracts, README and installed copies; active wording now consistently states seven profiles and six exits, and #119/#132 ownership remains explicit.",
+        "summary": "SSOT-first durable contracts 已在本修复前定义 exact finalization metadata/freshness 行为；runtime correctness fix 无需新增 durable contract，最新 handoff/report 仅保留 task history。",
         "evidence_refs": [
           "docs_ssot_plan",
           "repository_snapshot"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [
-          "F-NOT-REQUIRED-EDGE-01"
+          "F-NOT-REQUIRED-EDGE-01",
+          "F-GATE-ONLY-FRESHNESS-01"
         ],
         "unverified_ids": [
           "UV-DEFERRED-04"
@@ -978,14 +957,14 @@
       {
         "id": "cross_layer",
         "status": "passed",
-        "summary": "#116 ready and #117 verified/not_required minimal DTOs project into owner-private closeout state and per-exit outputs with distinct profiles, target-owned authoring and no producer/runtime field overlap.",
+        "summary": "#116 ready 与 #117 verified/not_required 仍通过 distinct profiles 投影为 #118 owner-private closeout state；gate-only private metadata 不进入跨 Skill DTO。",
         "evidence_refs": [
           "requirement_provenance",
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [
           "F-NOT-REQUIRED-EDGE-01",
           "P2-R6-STANDALONE-REF-BINDING-01"
@@ -995,46 +974,48 @@
       {
         "id": "compatibility",
         "status": "passed",
-        "summary": "The #105 transaction matrix, same-month legacy takeover, cross-month reprepare, public projections, upstream no-write boundary and non-activation of global Finish behavior remain intact.",
+        "summary": "#105 transaction matrix、plan-only/gate+plan、unexpected-path fail closed、same-month/cross-month recovery 与 upstream no-write boundary 保持绿色。",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
-        "finding_ids": [],
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
+        "finding_ids": [
+          "F-GATE-ONLY-FRESHNESS-01"
+        ],
         "unverified_ids": []
       },
       {
         "id": "deployment_and_operations",
         "status": "passed",
-        "summary": "The complete candidate has no dependency, CI/CD, container, Compose, Kubernetes, Helm/Kustomize, DB migration, Makefile, deployment, config migration or production data-write impact.",
+        "summary": "Current delta 无 dependency、CI/CD、container、Compose、Kubernetes、Helm/Kustomize、DB migration、Makefile、production config/data/write 或 deployment 影响。",
         "evidence_refs": [
           "requirement_provenance",
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "agent_recovery",
         "status": "passed",
-        "summary": "All effective implementation and Phase 2 checker identities, including both latest correction agents and the fresh Round 7 checker, are terminal with no unresolved recovery link.",
+        "summary": "全部 implementation 与 Phase 2 check identities（含最新 gate-only implement/check）均 terminal completed，liveness/recovery chain 无未闭环项。",
         "evidence_refs": [
           "implementation_handoff",
           "agent_assignment",
           "check_execution"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "The current round covers planning, provenance, all handoffs, durable Docs SSOT, the full effective candidate, owner commands, all seven worker reports, installation/update/platform behavior and final hygiene with no blocking unverified item.",
+        "summary": "本轮覆盖 planning/provenance/handoffs、完整 candidate、owner facts、independent worker、Docs SSOT、runtime/package/eval/preset/install/update/platform/hygiene；无 blocking unverified item。",
         "evidence_refs": [
           "planning",
           "requirement_provenance",
@@ -1044,10 +1025,11 @@
           "check_execution",
           "agent_assignment"
         ],
-        "affected_sha256": "207ba413c4d92fb4a67116316913da9677339aebde15c252bd3db725207c0d36",
+        "affected_sha256": "7c633c3c49ecd25a0f22f9595dc02eb250d04b8decf20d82ae0163f5cba61401",
         "finding_ids": [
           "F-NOT-REQUIRED-EDGE-01",
-          "P2-R6-STANDALONE-REF-BINDING-01"
+          "P2-R6-STANDALONE-REF-BINDING-01",
+          "F-GATE-ONLY-FRESHNESS-01"
         ],
         "unverified_ids": [
           "UV-CLAUDE-NATIVE-01",
@@ -1058,6 +1040,15 @@
       }
     ],
     "findings": [
+      {
+        "id": "F-GATE-ONLY-FRESHNESS-01",
+        "candidate_id": "C-GATE-ONLY-FRESHNESS-01",
+        "severity": "P1",
+        "summary": "Resolved by passing the exact already-validated finalization_paths into entry-precondition recomputation, with gate-only exact-pass and fail-closed regressions.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
       {
         "id": "F-NOT-REQUIRED-EDGE-01",
         "candidate_id": "C-R7-NOTREQ-02",
@@ -1079,33 +1070,33 @@
     ],
     "ai_review_gate": {
       "status": "passed",
-      "summary": "The owner semantic gate accepts the fresh independent Round 7 full-scope evidence: all ten adequacy dimensions pass, both prior current-scope findings are resolved, zero open P0-P3 finding and zero blocking unverified item remain, Docs SSOT is reconciled and the implementation/check recovery chain is complete.",
+      "summary": "Owner semantic gate accepts the fresh independent gate-only Phase 2 full-scope round: all ten adequacy dimensions pass, three current-scope findings are resolved, zero open P0-P3 and zero blocking unverified item remain, Docs SSOT is reconciled, and implementation/check recovery is complete.",
       "full_rerun": true,
       "planning_facts_sha256": "9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70",
-      "snapshot_sha256": "ca990fca3dedbf67339fef346292d4b4711b111d93c818837c48e5eebde73d62",
-      "scope_sha256": "5b5fabdd9f73edf7084b4dcb0c57a619457f9ea97788a38b16aaccee560424e8",
-      "adequacy_sha256": "0b950621f0f0ad2300390eaf49bbde65cf09e83b1bf1444c34ace38229230c93",
-      "findings_count": 2,
-      "full_round_sha256": "68cd4932b67a5bb7f97e96b0e2dd3f3a31803450829818389b2fcf6a21ae3686"
+      "snapshot_sha256": "b9637ca2ed30b9fcd1f1b234b9e193d12e4a81fcc1861ce67cb0b645b64a7b70",
+      "scope_sha256": "b78ea1f87f26a4ff4ee6d40bb75e067f52e36794200fcaefcddb8e799e4b5e47",
+      "adequacy_sha256": "20925de6fabedd24e5f5fabe33c5ca418380ff0c1c1e501f7922bcd109201d38",
+      "findings_count": 3,
+      "full_round_sha256": "a2408ae0eda41cd4f9cc44ad14befcc9a3c926623c04d5fb6760dbc5b7e71b9e"
     },
-    "adequacy_sha256": "0b950621f0f0ad2300390eaf49bbde65cf09e83b1bf1444c34ace38229230c93"
+    "adequacy_sha256": "20925de6fabedd24e5f5fabe33c5ca418380ff0c1c1e501f7922bcd109201d38"
   },
   "human_confirmation": {
     "kind": "not-required",
     "status": "not_required",
-    "summary": "guru-check-task has no unconditional human confirmation; guru-create-task-commit owns the next exact immutable commit plan and mandatory confirmation.",
+    "summary": "guru-check-task 没有 unconditional human confirmation；guru-create-task-commit 拥有下一份 exact immutable commit plan 与 mandatory confirmation。",
     "confirmed_at": null
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "Fresh Round 7 full-scope semantic review passed all ten dimensions after closing F-NOT-REQUIRED-EDGE-01 and P2-R6-STANDALONE-REF-BINDING-01, with no planning drift, no open finding, no blocking verification item, reconciled Docs SSOT and a terminal implementation/check recovery chain.",
+  "reason": "Gate-only fix 后的 fresh full-scope semantic review 通过十个维度；所有 current-scope findings resolved，无 blocking verification item，Docs SSOT 与 agent recovery current。",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-27T11:20:03Z",
+  "generated_at": "2026-07-27T14:43:29Z",
   "task": {
     "task_dir": ".trellis/tasks/07-26-118-guru-finalize-task",
     "task_id": "118-guru-finalize-task",
@@ -1143,5 +1134,5 @@
     ],
     "facts_sha256": "9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70"
   },
-  "facts_sha256": "87ff19653684886146c33afb9f220f378c954c769ee4c56dab9f73bd37335d1d"
+  "facts_sha256": "11de583e4acbb0592c728759ac0ad69c82ba6bccc5c555517456ee966ef70c5e"
 }
