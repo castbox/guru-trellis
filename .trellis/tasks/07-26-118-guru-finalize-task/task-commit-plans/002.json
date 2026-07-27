@@ -327,7 +327,149 @@
     "plan_digest": "616ab493af2ed70d92122d5a3b8a157aa9abaf2d21fc77bbbc657e38575ebb82"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-27T01:56:19Z",
+    "commit_sha": "4847bfb8763483b4648915ce1da918cdfb24a678",
+    "parent": "5695f7aab15b5d40660b535948c11c0ef55300f5",
+    "message_sha256": "6e387f56b383164a1a4ba360de7cb89367afe4a10f72722e6299adc52dd35fe4",
+    "committed_paths": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-001-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-002-problem-discovery.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/001.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "c07da1cb5cedf5478bace09e2fe7e2a7ca38f02b",
+      "actual_tree": "c07da1cb5cedf5478bace09e2fe7e2a7ca38f02b",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "2c9641ae67503592b8cbdccf95d8a8be936ab6cb",
+          "expected_mode": "100755",
+          "actual_blob": "2c9641ae67503592b8cbdccf95d8a8be936ab6cb",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          "expected_blob": "e2a044d0cf88fd80dd6c777caee6f8d825bb2d52",
+          "expected_mode": "100644",
+          "actual_blob": "e2a044d0cf88fd80dd6c777caee6f8d825bb2d52",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-round4.md",
+          "expected_blob": "645303ebf0eda0c67222a90e221fb20e0e08c108",
+          "expected_mode": "100644",
+          "actual_blob": "645303ebf0eda0c67222a90e221fb20e0e08c108",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          "expected_blob": "5008f6b68d81c3f1c11d9ae32e0642ebc807d3bf",
+          "expected_mode": "100644",
+          "actual_blob": "5008f6b68d81c3f1c11d9ae32e0642ebc807d3bf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-post-branch-fix.md",
+          "expected_blob": "1405fd959ebd265625fc1fc02b8b7612e6cb6ca7",
+          "expected_mode": "100644",
+          "actual_blob": "1405fd959ebd265625fc1fc02b8b7612e6cb6ca7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          "expected_blob": "dda15a0f17136656f7ae22422598ad11c3bf7eb3",
+          "expected_mode": "100644",
+          "actual_blob": "dda15a0f17136656f7ae22422598ad11c3bf7eb3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+          "expected_blob": "b941ef4b99f7a8141ba1350b0eecb300f52e70c2",
+          "expected_mode": "100644",
+          "actual_blob": "b941ef4b99f7a8141ba1350b0eecb300f52e70c2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-001-final-release.md",
+          "expected_blob": "2e4d1479b287bde379a5c43ab4306e6bb60a4929",
+          "expected_mode": "100644",
+          "actual_blob": "2e4d1479b287bde379a5c43ab4306e6bb60a4929",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-002-problem-discovery.md",
+          "expected_blob": "2f2734e1a59350684e9edea1868d374f535f4d23",
+          "expected_mode": "100644",
+          "actual_blob": "2f2734e1a59350684e9edea1868d374f535f4d23",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/001.json",
+          "expected_blob": "9ee0744f4877ea87052d5b13b425541dffa6edae",
+          "expected_mode": "100644",
+          "actual_blob": "9ee0744f4877ea87052d5b13b425541dffa6edae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+          "expected_blob": "533cca4c99dea0890d0205b3b9cc27fe94131f93",
+          "expected_mode": "100644",
+          "actual_blob": "533cca4c99dea0890d0205b3b9cc27fe94131f93",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "expected_blob": "c2b77ee035a750725c825c9b98846d770cef23ea",
+          "expected_mode": "100644",
+          "actual_blob": "c2b77ee035a750725c825c9b98846d770cef23ea",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "2c9641ae67503592b8cbdccf95d8a8be936ab6cb",
+          "expected_mode": "100755",
+          "actual_blob": "2c9641ae67503592b8cbdccf95d8a8be936ab6cb",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "ed2e36eb99b5d5b597c1512c4fb5c5a85d19af5b",
+          "expected_mode": "100644",
+          "actual_blob": "ed2e36eb99b5d5b597c1512c4fb5c5a85d19af5b",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

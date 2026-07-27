@@ -1,0 +1,352 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "118-guru-finalize-task",
+    "path": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "status": "in_progress",
+    "branch": "feat/118-guru-finalize-task"
+  },
+  "issue": {
+    "primary_issue": 118,
+    "ledger_sha256": "e0858c37fd888b31847658294fe94f49e2c17cf04f1857c83f7e91e0646b6e62"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "4847bfb8763483b4648915ce1da918cdfb24a678"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+      "sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+      "size": 38697
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "sha256": "237e7a4b2cb137bee17a077ad48f3adae912f3f777d2e6b0b46d9bf2f51074f9",
+      "size": 49293
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "sha256": "e0858c37fd888b31847658294fe94f49e2c17cf04f1857c83f7e91e0646b6e62",
+      "size": 4572
+    },
+    "task": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
+      "sha256": "44c9c3c6896b30aec2fcd78dd9493959314a533ee929796538d604edc62382b1",
+      "size": 659
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e2a044d0cf88fd80dd6c777caee6f8d825bb2d52",
+        "worktree_sha256": "70df10bd809ebb6864c9bb3da1edac426b0e68ff12e9293c76487f32cd7a2ba0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "16f51d2578e0435954faf040bf276ae5487459f267bedbc5042973907d004729",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "dea1ab4217291c3dd4c11b5b72536afed96eea75b6d7c06d261743305f04efe7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f6b1d97238126d2868e43ea428bb699d6f08c801",
+        "worktree_sha256": "e0858c37fd888b31847658294fe94f49e2c17cf04f1857c83f7e91e0646b6e62",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5008f6b68d81c3f1c11d9ae32e0642ebc807d3bf",
+        "worktree_sha256": "237e7a4b2cb137bee17a077ad48f3adae912f3f777d2e6b0b46d9bf2f51074f9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "fbf5068293c814369b2b920538ef1832a0c0c4e367495054916a2c1a6a99061c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c3f57806058f6d3b0fdba2fcd3509c9350637bee075f584adeeef6ad5812dd3e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dda15a0f17136656f7ae22422598ad11c3bf7eb3",
+        "worktree_sha256": "9f17495a4a42168bd94ad8bd14a1c9672438ba0853c9fa238149dd835a68a135",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b941ef4b99f7a8141ba1350b0eecb300f52e70c2",
+        "worktree_sha256": "1df271de38638d4630c15edba2453dc470e8fd9ca085ded316ebd556abbfa0bf",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "3186bf1d57f23e9fbfa37a0447d2d4b1d0e4312cc7302b3e3ae76f31fdbf1cd6",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2b1b2ad56f3e3f6dcc1628f26df6be25dca9aa274ad90aec4398e859a124e5aa",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c72021ad8f094e4c6bad512754ac519fbf4f7e99e1b863f1192688428110d5a1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f2cbca7694d3bacdb4339103b8847a32839de4d49a3c0ac3426ee1dae821b689",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "533cca4c99dea0890d0205b3b9cc27fe94131f93",
+        "worktree_sha256": "566af312be0e07e314a7a59c0dd71a3b7b1f777ef2d67ef371ab690d0a88c417",
+        "mode": "100644"
+      }
+    ],
+    "digest": "6f5bf136a5de04f16a9e0a769eb4701d0d145c1967aca3d219ca31d4f7cd5fc9"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-worker-report-round5.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-003-finding-closure.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-004-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-005-finding-owner-closure.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-006-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/002.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/003.json"
+  ],
+  "message": {
+    "subject": "chore(workflow): #118 固化发布前任务证据",
+    "body": "背景：\n稳定 implementation handoff 补齐后，既有 Phase 2、task commit、Branch Review 与 publication binding 不再覆盖新增 task history，需要重新固化 current evidence。\n\n变更：\n记录 stable handoff、Round 5 独立完整检查与 fresh guru-check-task passed artifact；保留六轮 Branch Review 生命周期、Issue Scope Ledger、PR body 和 finish summary candidates，作为新 HEAD 的独立 Branch Review 与 publication review 输入。\n\n边界：\n本提交仅包含 #118 task-local metadata，不修改产品代码、global workflow 或 upstream trellis-finish-work family；不并入 #119/#132，不关闭 #115，不改变 #105 事务语义，不执行 push、PR、archive、Issue mutation、deploy 或 production write。\n\n验证：\n- guru-check-task recorder/checker 与真实 public wrapper 返回 passed\n- runtime 615 passed，13 skipped；Skill packages 178、preset 45、finalizer 4\n- focused takeover/reprepare 6、closeout transaction 93、platform protocol 2、installed wrapper eval 8/8\n- clean throwaway install/reapply/update/.new/.bak/all-platform distribution exit 0\n- overlay drift、ownership、scope/security/deploy 与 whitespace hygiene 通过\n\nRefs #118",
+    "bytes": "chore(workflow): #118 固化发布前任务证据\n\n背景：\n稳定 implementation handoff 补齐后，既有 Phase 2、task commit、Branch Review 与 publication binding 不再覆盖新增 task history，需要重新固化 current evidence。\n\n变更：\n记录 stable handoff、Round 5 独立完整检查与 fresh guru-check-task passed artifact；保留六轮 Branch Review 生命周期、Issue Scope Ledger、PR body 和 finish summary candidates，作为新 HEAD 的独立 Branch Review 与 publication review 输入。\n\n边界：\n本提交仅包含 #118 task-local metadata，不修改产品代码、global workflow 或 upstream trellis-finish-work family；不并入 #119/#132，不关闭 #115，不改变 #105 事务语义，不执行 push、PR、archive、Issue mutation、deploy 或 production write。\n\n验证：\n- guru-check-task recorder/checker 与真实 public wrapper 返回 passed\n- runtime 615 passed，13 skipped；Skill packages 178、preset 45、finalizer 4\n- focused takeover/reprepare 6、closeout transaction 93、platform protocol 2、installed wrapper eval 8/8\n- clean throwaway install/reapply/update/.new/.bak/all-platform distribution exit 0\n- overlay drift、ownership、scope/security/deploy 与 whitespace hygiene 通过\n\nRefs #118\n",
+    "sha256": "9de26045a423ce615fc15a76bffffd52df73eb70832328319a2e68096c29b96d"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "14 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local evidence 或 publication candidates；003.json 仅作为 Skill 自有 artifact。消息准确描述 metadata tail，close/ref、#105/#119/#132、安全、部署与副作用边界均正确。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户已确认精确本地 task commit 授权 envelope；digest=0725eb2909654aa34ddd88c5194e8986ec7261ea4f17f6a42f472a86af714b5e。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-27T06:58:47Z",
+    "plan_digest": "1c492270b274ae91b7250395ba96d8befcb71523b015955599ec697b76f9a702"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}
