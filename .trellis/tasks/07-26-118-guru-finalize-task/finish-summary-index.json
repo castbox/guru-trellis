@@ -4,16 +4,16 @@
     "problem": "Guru Team 缺少独立拥有任务终结判断、精确确认、发布、归档和恢复路由的闭环 Skill，无法用最小 typed handoff 接续 publication 与 verification evidence。",
     "outcome": "新增 guru-finalize-task semantic Skill，独占 immutable plan、verification、唯一 Draft PR、final projection、单次 archive transaction、三方 HEAD equality、draft-to-ready 和封闭 recovery，并完成 additive distribution。",
     "changed_behavior": [
-      "AI 审查 plan、scope、readiness、recovery route 和 exact confirmation；script 只执行、校验、记录事实。",
-      "Publication、verification、resume、reprepare 与 standalone 使用七个互斥 input profiles。",
-      "六个 exit_id 各自输出 named consumer 所需的最小 DTO，private state 不跨 Skill。",
-      "Reprepare seed 仅含 task/reason；fresh intent/context 由目标 authoring，runtime 不合成判断。",
-      "Content push 后先做 remote extension verification，再绑定唯一 Draft PR、projection 和单次 archive transaction。",
+      "AI 审查 plan、scope、readiness、recovery route 和 exact confirmation；script 仅执行、校验、记录。",
+      "Publication、verification、resume、reprepare、standalone 使用七个互斥 input profiles。",
+      "六个 exit_id 只输出 named consumer 所需的最小 DTO；private state 不跨 Skill。",
+      "Reprepare seed 仅含 task/reason；fresh intent/context 由目标 authoring。",
+      "Content push 后先做 remote verification，再绑定唯一 Draft PR、projection 与单次 archive transaction。",
       "Draft-to-ready 前校验 local、remote branch、PR head 三方相等，ready 后不再提交。",
-      "同月 legacy partial plan 仅由 exact plan-bound takeover 接续，保留 generic/cross-month recovery。",
-      "Production eval 调用真实 wrapper，按 actual exit 选 schema，返回后断言 expected_exit。",
-      "Canonical、dogfood、四平台、preset 和 extension inventory 保持 byte/mode、update/reapply 一致。",
-      "Verified/not_required re-entry 先通过 #117 owner checker，再仅放行 exact task-local metadata；wrong remote/ref/arbitrary metadata 失败。"
+      "同月 legacy partial plan 只由 exact plan-bound takeover 接续；cross-month 走 reprepare。",
+      "Production eval 调用真实 wrapper，先按 actual exit 选 schema，再断言 expected_exit。",
+      "Canonical、dogfood、四平台、preset 与 extension inventory 保持 byte/mode/update 一致。",
+      "Verified/not_required 先通过 #117 owner checker，再只放行 exact task metadata。"
     ],
     "affected_surfaces": [
       {
@@ -69,7 +69,7 @@
       {
         "contract": "Immutable closeout plan and confirmation",
         "before": "副作用计划与确认未绑定同一 immutable identity。",
-        "after": "Preview 生成 immutable plan；首次副作用或 plan 变化前确认 exact digest。",
+        "after": "Preview 生成 immutable plan；首次副作用或 plan 变化前确认 exact digest；prepared re-entry 只接受 exact gate metadata。",
         "source_artifact": ""
       },
       {
@@ -111,7 +111,7 @@
       {
         "contract": "Production eval routing",
         "before": "Eval 可能预选 expected route 或绕过 public wrapper。",
-        "after": "Eval 调用真实 wrapper，按 actual exit 选 schema，返回后断言 expected_exit。",
+        "after": "Eval 调用真实 wrapper，Codex 精确授权 execution root；按 actual exit 选 schema，返回后断言 expected_exit。",
         "source_artifact": ""
       },
       {

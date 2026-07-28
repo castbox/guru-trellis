@@ -1,0 +1,337 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "phase2-command-evidence-live-wrapper-namespace-fix-full-round",
+  "task": ".trellis/tasks/07-26-118-guru-finalize-task",
+  "issue": {
+    "repo": "castbox/guru-trellis",
+    "number": 118,
+    "authority_comment_id": 5045036678,
+    "state": "OPEN"
+  },
+  "reviewer": {
+    "agent_id": "/root/issue118_live_wrapper_fix_phase2_check",
+    "logical_role": "阶段二检查代理",
+    "independent_from_implementation": true
+  },
+  "objective_identity": {
+    "worktree": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+    "branch": "feat/118-guru-finalize-task",
+    "head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+    "base_ref": "origin/main",
+    "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "committed_path_count": 541,
+    "committed_insertions": 81273,
+    "committed_deletions": 4767,
+    "current_fix_path_count": 3,
+    "current_fix_insertions": 150,
+    "current_fix_deletions": 3
+  },
+  "planning_identity": {
+    "checker_status": "ok",
+    "typed_exit": "approved",
+    "consumer": "workflow:phase-1-task-activation",
+    "facts_sha256": "9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70",
+    "artifact_sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+    "prd_sha256": "770e27527c6b65496d6a68380d42addcc5dc39d3ad5b5161d0172a15aac19bd9",
+    "design_sha256": "a9d8777afeaa5a880b8bcdba016bd7981be0286fe130d577c4ef6f8a9b39d4b5",
+    "implement_sha256": "d26bb6137afa4ae8a5b8b1e3859d74ecb312b03975043f09013712e3261e09a8"
+  },
+  "implementation_identity": {
+    "canonical_runtime_sha256": "af701c408047a3a28382f1901997b9e1abd6d50f5cdabc9774a0d97d4952a7c0",
+    "dogfood_runtime_sha256": "af701c408047a3a28382f1901997b9e1abd6d50f5cdabc9774a0d97d4952a7c0",
+    "canonical_tests_sha256": "ede5236383544f7a4d3cc1d7613241deb402dcb3d0b778159bf53bef6f6434b4",
+    "handoff_sha256": "2154f3ee9ffdafeb61d0a254c78437eec5a91744657e37ab8bc803c877514b6c",
+    "agent_assignment_sha256_before_reviewer_outputs": "9e2daf0c864cf3a5922892795ebdfbc6a555842743d5254c4bddf076235e22ce"
+  },
+  "check_execution": {
+    "full_round": true,
+    "raw_streams_retained": false,
+    "raw_stream_note": "Commands were observed to terminal completion in the checker session. This compact handoff records exact result counts and semantic outcomes; it does not invent unavailable stdout/stderr digests.",
+    "checks": [
+      {
+        "id": "workspace-boundary",
+        "kind": "validator",
+        "command": "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task .trellis/tasks/07-26-118-guru-finalize-task",
+        "exit_code": 0,
+        "result": "expected worktree equals actual repo root; source checkout clean; suspicious_source_artifacts empty"
+      },
+      {
+        "id": "planning-approval",
+        "kind": "validator",
+        "command": "./.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-26-118-guru-finalize-task",
+        "exit_code": 0,
+        "result": "status ok; typed exit approved; reviewed planning digests current"
+      },
+      {
+        "id": "live-old-gate-public-wrapper",
+        "kind": "normal_path_probe",
+        "result": "structured owner_result_not_checked; no AttributeError or traceback",
+        "status": "expected_fail_closed"
+      },
+      {
+        "id": "live-old-gate-direct-checker",
+        "kind": "freshness_probe",
+        "result": "plan identity mismatch; current facts mismatch; route plan_ref mismatch",
+        "status": "expected_fail_closed"
+      },
+      {
+        "id": "fresh-isolated-wrapper-fixture",
+        "kind": "focused_tests",
+        "passed": 4,
+        "failed": 0,
+        "coverage": "verified and not_required re-entry, arbitrary metadata rejection, initial no-plan explicit index/body gate"
+      },
+      {
+        "id": "runtime-full",
+        "kind": "tests",
+        "passed": 627,
+        "skipped": 13,
+        "failed": 0
+      },
+      {
+        "id": "closeout-transaction-matrix",
+        "kind": "tests",
+        "passed": 105,
+        "failed": 0,
+        "coverage": "Issue #105 transaction and recovery matrix"
+      },
+      {
+        "id": "skill-package-graph",
+        "kind": "tests",
+        "passed": 180,
+        "failed": 0
+      },
+      {
+        "id": "owner-package-contracts",
+        "kind": "tests",
+        "passed": 33,
+        "failed": 0,
+        "coverage": "guru-review-task-publication, guru-verify-extension-installation, guru-finalize-task"
+      },
+      {
+        "id": "expected-exit-boundary",
+        "kind": "tests",
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "id": "preset-installer",
+        "kind": "tests",
+        "passed": 45,
+        "failed": 0
+      },
+      {
+        "id": "upstream-ownership",
+        "kind": "tests",
+        "passed": 9,
+        "failed": 0
+      },
+      {
+        "id": "source-installed-package-validators",
+        "kind": "validator",
+        "exit_code": 0,
+        "result": "13 active skills; 52 external exits; workflow markers 12/46/27; sidecars/conflicts 0"
+      },
+      {
+        "id": "source-shared-real-wrapper",
+        "kind": "production_eval",
+        "passed_cases": 8,
+        "total_cases": 8,
+        "actual_exit_coverage": 6
+      },
+      {
+        "id": "installed-shared-real-wrapper",
+        "kind": "production_eval",
+        "passed_cases": 8,
+        "total_cases": 8,
+        "actual_exit_coverage": 6
+      },
+      {
+        "id": "codex-live-trusted-root",
+        "kind": "native_eval",
+        "status": "passed",
+        "result": "trusted Git root and real public wrapper execution passed"
+      },
+      {
+        "id": "claude-live-input-protocol",
+        "kind": "native_eval",
+        "status": "external_auth_residual_not_pass",
+        "result": "CLI returned HTTP 401 Invalid API key; protocol coverage retained by package graph"
+      },
+      {
+        "id": "cursor-live",
+        "kind": "native_eval",
+        "status": "unsupported",
+        "result": "expected stable unsupported terminal; no semantic pass claimed"
+      },
+      {
+        "id": "canonical-dogfood-runtime-parity",
+        "kind": "byte_parity",
+        "exit_code": 0,
+        "sha256": "af701c408047a3a28382f1901997b9e1abd6d50f5cdabc9774a0d97d4952a7c0"
+      },
+      {
+        "id": "all-platform-package-parity",
+        "kind": "byte_parity",
+        "exit_code": 0,
+        "result": "shared, installed, Codex, Claude and Cursor package copies match"
+      },
+      {
+        "id": "eval-corpus-parity",
+        "kind": "byte_parity",
+        "exit_code": 0,
+        "sha256": "07603a307748e067ea316a03b0dcb6ecf128b114fea680ea2b3e5dd21df4dfb4"
+      },
+      {
+        "id": "overlay-drift-and-static-validation",
+        "kind": "lint_type",
+        "exit_code": 0,
+        "result": "overlay drift, ownership validator, py_compile, Bash syntax, git diff --check HEAD, task validate and protected/deploy no-diff passed"
+      },
+      {
+        "id": "clean-throwaway-full-chain",
+        "kind": "out_of_box_install",
+        "exit_code": 0,
+        "result": "exact branch workflow source plus local canonical preset; install/reapply; official trellis update; managed hashes; .new/.bak recovery; zero sidecar; all-platform distribution; installed wrapper and closeout recovery"
+      },
+      {
+        "id": "throwaway-cleanup",
+        "kind": "terminal_hygiene",
+        "command": "find /tmp/guru-118-phase2.3qVvl2 -depth -delete",
+        "exit_code": 0,
+        "result": "exact repository-external temporary root removed and confirmed absent"
+      }
+    ],
+    "intentional_omissions": [
+      {
+        "id": "dedicated-static-type-checker",
+        "reason": "Repository defines no standalone static type-check command.",
+        "impact": "Changed Python py_compile, schema/interface validators and full tests passed."
+      },
+      {
+        "id": "phase2-recorder",
+        "reason": "Main session owns semantic recording after checker lifecycle completion.",
+        "impact": "This report recommends one exit but does not claim the owner-recorded Guru pass."
+      },
+      {
+        "id": "remote-exact-ref-verification-and-finalization",
+        "reason": "Phase 2 reviewer has no push/publication/finalization authority and current plan/gate are stale.",
+        "impact": "Fresh downstream #117/#118 gates remain mandatory."
+      }
+    ],
+    "runner_terminal_status": "complete",
+    "semantic_status": "passed_with_qualified_external_residuals"
+  },
+  "finding_closure": {
+    "candidate_id": "C-LIVE-WRAPPER-NAMESPACE-01",
+    "finding_id": "F-LIVE-WRAPPER-NAMESPACE-01",
+    "prior_severity": "current_scope_correctness_defect",
+    "current_disposition": "resolved_in_current_diff",
+    "normal_path_proof": "The public wrapper no longer raises AttributeError. Fresh isolated verified/not_required re-entry passes, arbitrary metadata remains rejected, initial no-plan still requires explicit reviewed content, and the old live gate fails closed only on current identity/facts/plan_ref drift."
+  },
+  "findings": {
+    "open_counts": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    },
+    "items": []
+  },
+  "residuals": [
+    {
+      "id": "claude-live-auth",
+      "classification": "external_residual",
+      "blocking": false,
+      "summary": "Claude live CLI returned HTTP 401 Invalid API key; this is not a pass and not a current-scope implementation finding."
+    },
+    {
+      "id": "cursor-unsupported",
+      "classification": "expected_platform_terminal",
+      "blocking": false,
+      "summary": "Cursor returned stable unsupported; no semantic pass was claimed."
+    },
+    {
+      "id": "stale-closeout-evidence",
+      "classification": "required_fresh_gate_reentry",
+      "blocking": false,
+      "summary": "The prior closeout plan, finalization gate, Phase 2, commit/review/publication and confirmation evidence cannot be reused after current source/task drift."
+    },
+    {
+      "id": "remote-exact-ref-verification",
+      "classification": "downstream_finalization_precondition",
+      "blocking": false,
+      "summary": "Fresh exact pushed-ref verification remains for the later #117/#118 owner gate."
+    }
+  ],
+  "docs_ssot": {
+    "strategy": "ssot_first",
+    "outcome": "consistent_no_new_update_needed",
+    "durable_docs_current": true,
+    "task_delta_merged": true,
+    "current_fix_docs_update_needed": false,
+    "reconciliation": "The current patch repairs the owner-private Namespace used by the already-defined real public wrapper and recovery contract. It does not change public I/O, transaction order, route, install inventory, overlay or platform distribution.",
+    "task_history_only": [
+      "implementation-handoff-live-wrapper-namespace-fix.md",
+      "phase2-check-live-wrapper-namespace-fix-full-round.md",
+      "phase2-command-evidence-live-wrapper-namespace-fix-full-round.json"
+    ],
+    "followups": [
+      "#119 Finish-family global integration and #115 closure",
+      "#132 upstream overlay cleanup",
+      "fresh exact pushed-ref verification and finalization gates"
+    ]
+  },
+  "scope": {
+    "close_issues": [118],
+    "related_issues": [115],
+    "followup_issues": [119, 132],
+    "preserved_transaction_issue": 105,
+    "excluded": [
+      "hostile/forgery/tamper/attack model",
+      "concurrent finalizers/locks/TOCTOU",
+      "extra fault injection/crash consistency/cross-OS atomicity"
+    ]
+  },
+  "safety_and_operations": {
+    "secrets_found": false,
+    "dependency_impact": false,
+    "ci_cd_impact": false,
+    "container_impact": false,
+    "kubernetes_impact": false,
+    "database_migration_impact": false,
+    "makefile_impact": false,
+    "deployment_or_production_write": false,
+    "distribution_impact": false
+  },
+  "side_effects": {
+    "implementation_files_modified_by_reviewer": false,
+    "github_mutations": false,
+    "commit": false,
+    "push": false,
+    "pull_request": false,
+    "archive": false,
+    "ready": false,
+    "publication": false,
+    "record_phase2_check_called": false,
+    "reviewer_owned_outputs": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json"
+    ]
+  },
+  "terminal": {
+    "status": "complete",
+    "lint": "passed",
+    "typecheck": "passed_applicable_checks",
+    "tests": "passed",
+    "recommended_typed_exit": "passed",
+    "recommended_consumer": "skill:guru-create-task-commit",
+    "open_findings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    },
+    "main_session_must_record_semantic_gate": true
+  }
+}

@@ -1,0 +1,466 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "008",
+  "task": {
+    "id": "118-guru-finalize-task",
+    "path": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "status": "in_progress",
+    "branch": "feat/118-guru-finalize-task"
+  },
+  "issue": {
+    "primary_issue": 118,
+    "ledger_sha256": "2284fd85b1d621f44d48097bf529dec5b73be07f8c46eb6641259ac3c0ba073a"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+      "sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+      "size": 38697
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "sha256": "8d55a2c8322900953269373fa2d32be69f347bbcaedac2870344383a1d55ba42",
+      "size": 181899
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "sha256": "2284fd85b1d621f44d48097bf529dec5b73be07f8c46eb6641259ac3c0ba073a",
+      "size": 5136
+    },
+    "task": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
+      "sha256": "44c9c3c6896b30aec2fcd78dd9493959314a533ee929796538d604edc62382b1",
+      "size": 659
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ca0f2aea682e75f83cdbdd00b2267ec10ffa76a2",
+        "worktree_sha256": "af701c408047a3a28382f1901997b9e1abd6d50f5cdabc9774a0d97d4952a7c0",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c5db4e5c13538a4955a635f80c3551586f7b95b1",
+        "worktree_sha256": "8b9b458398af24f9a9187609ff2d177f9ca8a37a26fae1416df42c251e000eb3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d26f1f9ba335c83c6c9af17ce197688a2e78075f1dddee42deb497e457307f13",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "40ba265149326468541a2f4880c7cd344e413fcf",
+        "worktree_sha256": "f42388c955beafe0cc28aeb9046f302325c2cf2b8c770b86ff8fa3c2fce916dd",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-live-wrapper-namespace-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2154f3ee9ffdafeb61d0a254c78437eec5a91744657e37ab8bc803c877514b6c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "851cce1b36a00ea5cc1902ba0a05ce7d2a2238bd",
+        "worktree_sha256": "2284fd85b1d621f44d48097bf529dec5b73be07f8c46eb6641259ac3c0ba073a",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2a74ae2f84742b75c126cccf0bd77c06cc22d16f0d8faa5b9cf498acb85fae30",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d6f594a610cddd857c7a8e221ede26744ab90c79fd48ed68e31294eeb4de6830",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b2467ac6c074795a7b866fba3d2278d90057ceae",
+        "worktree_sha256": "8d55a2c8322900953269373fa2d32be69f347bbcaedac2870344383a1d55ba42",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "6bf7d3f77d235b4d712a854969c5ff976c3d950787753595c7dc3761153086a1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "de1e29c39de44663b35a6bc9f6c6065cff4beb5e36c141f9b361080b9b3c5d88",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "75eff969032b03b7fb15e1cebd2b02221119cdbc",
+        "worktree_sha256": "3e9e4147f6ebe9259181cc921c75f59843c49f450ae0729465bab28f49c93e4e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "456fc3c16d3674efeb29f48569ffa672f1282e96",
+        "worktree_sha256": "4f3034e79bea9d854a73240b68515d13043c36d4db32d758d8b2c96b20d4fb85",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3da37326775cf2380c8a98e241c1e5492438bc63",
+        "worktree_sha256": "c9fa52ae6eecaaa8fd717754532a5c6b006b9830517a5b4a67af53c6aadae5c5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "16c25c8ead665307fffafd39b3f67a69070d6675",
+        "worktree_sha256": "f968921a76f87b7333ca0bcc654399ab79ee2ff6196bd2d278291331b1465ecf",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-015-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "5d34b624f7e14670642b6762010b4c52ccf8f4af152cd1b7fad0107585fbcf86",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b2ec676fa5bc905edf118f5bc57b18732e076f8d",
+        "worktree_sha256": "f69706bb3bb5af80baebee9fba3e5558221d62140e1216a22670f768700a7076",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ced8d709d6f6f02ed5f0199c29f548d6fe91f644",
+        "worktree_sha256": "711042c6d1ad9db7c6d8ea89bf036a1bda3b80b5cf393466d0a449e4e1f11876",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ca0f2aea682e75f83cdbdd00b2267ec10ffa76a2",
+        "worktree_sha256": "af701c408047a3a28382f1901997b9e1abd6d50f5cdabc9774a0d97d4952a7c0",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6b7e8de31fed8dda33839ed5d20a3d7f6b7dd861",
+        "worktree_sha256": "ede5236383544f7a4d3cc1d7613241deb402dcb3d0b778159bf53bef6f6434b4",
+        "mode": "100644"
+      }
+    ],
+    "digest": "702320cb149d2479b81ac73044fe53f79e73c9207f09ff73e05f3ab758ec72de"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-live-wrapper-namespace-fix.md",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-015-final-release.md",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-live-wrapper-namespace-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-015-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #118 修复 finalizer public wrapper 重入",
+    "body": "背景：\n真实 content push 后，guru-finalize-task public wrapper 在 content_pushed re-entry 中因缺少 checker-private Namespace 字段抛出 AttributeError。\n\n变更：\n- 仅从 validated task-local immutable plan 重建 checker-private args。\n- 保持 public CLI/DTO、initial no-plan fail-closed 与 #105 transaction 语义不变。\n- 增加 positive/negative wrapper regressions，并记录 fresh exact-stream Phase 2。\n- 将失效 plan/gate 与旧 review/publication evidence 保留为不可复用的 task history。\n\n边界：\n不修改 public CLI/DTO/schema/exit、global workflow、preset overlays、upstream trellis-finish-work 或 official task.py；只处理 #118，#115 为 related，#119/#132 为 follow-up，不关闭或改变 #105。\n\n验证：\nRuntime 627 passed/13 skipped、#105 transaction 105、Skill graph 180、focused Namespace 5；128 条 exact command records 与 clean throwaway 安装、update、reapply、.new/.bak 和平台分发全链通过。\n\nRefs #118",
+    "bytes": "fix(trellis): #118 修复 finalizer public wrapper 重入\n\n背景：\n真实 content push 后，guru-finalize-task public wrapper 在 content_pushed re-entry 中因缺少 checker-private Namespace 字段抛出 AttributeError。\n\n变更：\n- 仅从 validated task-local immutable plan 重建 checker-private args。\n- 保持 public CLI/DTO、initial no-plan fail-closed 与 #105 transaction 语义不变。\n- 增加 positive/negative wrapper regressions，并记录 fresh exact-stream Phase 2。\n- 将失效 plan/gate 与旧 review/publication evidence 保留为不可复用的 task history。\n\n边界：\n不修改 public CLI/DTO/schema/exit、global workflow、preset overlays、upstream trellis-finish-work 或 official task.py；只处理 #118，#115 为 related，#119/#132 为 follow-up，不关闭或改变 #105。\n\n验证：\nRuntime 627 passed/13 skipped、#105 transaction 105、Skill graph 180、focused Namespace 5；128 条 exact command records 与 clean throwaway 安装、update、reapply、.new/.bak 和平台分发全链通过。\n\nRefs #118\n",
+    "sha256": "853e79049287f92b893fe94dd9277160c4c16a41b0bab5ee26e8cb9cd588075d"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "AI Review Gate 复核了 fresh Phase 2、完整 20-path dirty snapshot、21-path exact stage projection、commit message、Issue ledger、canonical/dogfood identity、deployment/security boundary 与 stale-history policy；全部路径均属于 #118 已审查 finding-fix 范围，无 unrelated 或 blocking path。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户明确确认 human plan SHA-256 241c12ef82b80a57df064e1a7ef75386e30ba86547ab2e74bd491fe1da8f62ac；授权仅创建并执行该 21-path task commit，不授权 push、PR、archive、merge 或 Issue mutation。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-28T03:25:30Z",
+    "plan_digest": "6a8d55792a13690e7549f2ed82425e9bcea04ef29767cf1bb8b4d1f00fdf07b1"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

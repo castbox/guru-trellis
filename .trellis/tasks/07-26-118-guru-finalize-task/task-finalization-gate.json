@@ -1,33 +1,34 @@
 {
   "schema_version": "1.0",
   "skill_id": "guru-finalize-task",
-  "generated_at": "2026-07-27T19:46:45Z",
+  "generated_at": "2026-07-28T00:42:09Z",
   "invocation": {
     "profile": "publication_ready",
     "mode": "workflow",
     "task_ref": ".trellis/tasks/07-26-118-guru-finalize-task",
-    "input_identity_sha256": "63ba8919cb40ee5751a006df6a0cb7dfc1598c23060b029c770105e2257959d7"
+    "input_identity_sha256": "1df48ca6e14010302d9cb227fc5a466d16d5078190070bd0ffc326095f81f526"
   },
   "plan": {
     "available": true,
-    "plan_ref": "closeout-plan:dd54730f47e5176fcf6ee134715985a266da9b2753ff34f7a30f8ef0e5d0ef2b",
-    "plan_digest": "dd54730f47e5176fcf6ee134715985a266da9b2753ff34f7a30f8ef0e5d0ef2b",
-    "reviewed_head": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2"
+    "plan_ref": "closeout-plan:59ce5a04a6e9470d7d5e99ab76f8821af0b1ae8cc0448f0ded08b205021d88f6",
+    "plan_digest": "59ce5a04a6e9470d7d5e99ab76f8821af0b1ae8cc0448f0ded08b205021d88f6",
+    "reviewed_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f"
   },
   "review": {
     "status": "passed",
-    "summary": "AI 已复核 exact immutable plan dd54730f：repo/base/branch/reviewed HEAD、只关闭 #118 的 scope、mandatory pushed-ref extension verification、12-path evidence allowlist、唯一 Draft PR identity、65-path official archive projection、单次 archive metadata transaction、三方 HEAD equality、draft-to-ready 与封闭 recovery routes 均充分且 current。当前 state=prepared，首个且唯一合法外部 route 为 verification_required，无 revision action。",
+    "summary": "AI 已复核 exact immutable plan 59ce5a04：repo/base/branch/reviewed HEAD、只关闭 #118 的 scope、mandatory pushed-ref extension verification、11-path pre-draft evidence set、唯一 Draft PR identity、73-path official archive projection、单次 archive metadata transaction、三方 HEAD equality、draft-to-ready 与封闭 recovery routes 均充分且 current。Finalization preview 暴露的 retrieval_text 超限已通过 allowlisted metadata revision 收敛至 2935 并完成 fresh publication review；当前 state=prepared，首个且唯一合法外部 route 为 verification_required，无 revision action。",
     "evidence_refs": [
-      "closeout-plan:dd54730f47e5176fcf6ee134715985a266da9b2753ff34f7a30f8ef0e5d0ef2b",
-      "publication:58cb4b5365933ba157338d756dda74423785c30f351cc327b5e4ac63c664dd1e",
-      "review-gate:9a298b456944d7e7e24d67235ea318b4ca372f80ffc4b015fee7ee62c41208bf",
-      "canonical-plan-bytes:a38c983bbaa232cd1d2aaba30c84d070f7101e0c61eb1b0e0fbe2b741af1b28f"
+      "closeout-plan:59ce5a04a6e9470d7d5e99ab76f8821af0b1ae8cc0448f0ded08b205021d88f6",
+      "publication:52b5107ff497d584ecd2ea539a51da4c5042e55e7f7f5ec3a255319c44a5877f",
+      "review-gate:c9fa52ae6eecaaa8fd717754532a5c6b006b9830517a5b4a67af53c6aadae5c5",
+      "canonical-plan-bytes:d26f1f9ba335c83c6c9af17ce197688a2e78075f1dddee42deb497e457307f13",
+      "current-facts:9a1f1d8df3938e2e5d6f2664eec01540e2241ea617bf69762c83f1e5260a8a84"
     ]
   },
   "confirmation": {
     "status": "confirmed",
-    "confirmed_plan_digest": "dd54730f47e5176fcf6ee134715985a266da9b2753ff34f7a30f8ef0e5d0ef2b",
-    "summary": "用户已在看到 exact closeout_plan_digest、canonical bytes SHA-256、repo/base/branch/HEAD、12-path evidence set、Draft PR、archive、Ready 与 Issue scope 副作用后明确回复“确认继续”，授权该 immutable plan；首次 transition 必须在 verification_required 边界停止。"
+    "confirmed_plan_digest": "59ce5a04a6e9470d7d5e99ab76f8821af0b1ae8cc0448f0ded08b205021d88f6",
+    "summary": "用户已在看到 exact closeout_plan_digest、canonical bytes SHA-256、repo/base/branch/HEAD、11-path pre-draft evidence set、73-path archive projection、Draft PR、archive、Ready 与 Issue scope 副作用后明确回复“确认继续”，授权该 immutable plan；首次 transition 必须在 verification_required 边界停止。"
   },
   "route": {
     "typed_exit": "verification_required",
@@ -38,14 +39,14 @@
     "output": {
       "exit_id": "verification_required",
       "task_ref": ".trellis/tasks/07-26-118-guru-finalize-task",
-      "plan_ref": "closeout-plan:dd54730f47e5176fcf6ee134715985a266da9b2753ff34f7a30f8ef0e5d0ef2b",
+      "plan_ref": "closeout-plan:59ce5a04a6e9470d7d5e99ab76f8821af0b1ae8cc0448f0ded08b205021d88f6",
       "repo_ref": "castbox/guru-trellis",
-      "reviewed_head": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2",
+      "reviewed_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
       "verification_target": "extension-installation"
     }
   },
   "freshness": {
-    "current_facts_sha256": "6e088cf7a0dafc0cd9617c2cdb4fa571bf34ab17f0f788a263737c12cd16fe01",
-    "supersedes_gate_ref": "finalization-gate:5a1116e347483ea6170f5fe136a0e5b6de7ce2c998b0a85fb49a1aa443fdb667"
+    "current_facts_sha256": "9a1f1d8df3938e2e5d6f2664eec01540e2241ea617bf69762c83f1e5260a8a84",
+    "supersedes_gate_ref": "finalization-gate:7c7082eec89778c66d8259f1ebad84f01eef9b7b8149418c92ca7da8fbe0d328"
   }
 }

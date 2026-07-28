@@ -24917,9 +24917,14 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                     public_input,
                     args.owner_result,
                 )
-                owner_result, owner_plan = check_finalization_gate_result(
+                checker_args = finalization_public_wrapper_checker_args(
                     root,
                     args,
+                    owner_path.parent,
+                )
+                owner_result, owner_plan = check_finalization_gate_result(
+                    root,
+                    checker_args,
                     public_input,
                     owner_result,
                     owner_path,
@@ -31362,6 +31367,40 @@ def finalization_gate_input(
             exit_code=2,
         )
     return read_json(path), path
+
+
+def finalization_public_wrapper_checker_args(
+    root: Path,
+    args: argparse.Namespace,
+    task_dir: Path,
+) -> argparse.Namespace:
+    checker_args = copy.copy(args)
+    checker_args.root = str(root)
+    checker_args.finish_summary_index_file = None
+    checker_args.body_file = None
+    checker_args.body_artifact = None
+    checker_args.repo = None
+    checker_args.remote = None
+    checker_args.title = None
+
+    plan_path = closeout_plan_path(task_dir)
+    if not plan_path.exists():
+        return checker_args
+    if not plan_path.is_file() or plan_path.is_symlink():
+        raise WorkflowError(
+            "Task finalization public wrapper requires a safe immutable plan.",
+            exit_code=2,
+        )
+    plan = validate_closeout_plan(read_json(plan_path))
+    checker_args.finish_summary_index_file = str(
+        task_dir / FINISH_SUMMARY_INDEX_ARTIFACT
+    )
+    checker_args.body_file = str(task_dir / PR_BODY_ARTIFACT)
+    checker_args.repo = plan["git"]["repo"]
+    checker_args.base_branch = plan["git"]["base_branch"]
+    checker_args.remote = plan["git"]["remote"]
+    checker_args.title = plan["publish"]["title"]
+    return checker_args
 
 
 def check_finalization_gate_result(

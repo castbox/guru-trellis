@@ -555,7 +555,257 @@
     "plan_digest": "940676b199827f2c9def338c489e089cf24c3bf3f648c2cb1b17dabf961f01c6"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-27T23:42:33Z",
+    "commit_sha": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+    "parent": "c04ed1d7a816ac80217953bcf52f7a2a44b645d2",
+    "message_sha256": "9818dddb0a2f23555584ecb16b51a01e5cfbf601490cbdf9b308829c719b0098",
+    "committed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-codex-trace-write-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalization-gate-reentry-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-codex-trace-write-fix-full-round.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalization-gate-reentry-full-round.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-codex-trace-write-fix-full-round.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalization-gate-reentry-full-round.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "e5449b15e126dfea9e0463c856587fd5890426ae",
+      "actual_tree": "e5449b15e126dfea9e0463c856587fd5890426ae",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "8ae9b4477aca3f9aeb20c05a75625f315bd89107",
+          "expected_mode": "100644",
+          "actual_blob": "8ae9b4477aca3f9aeb20c05a75625f315bd89107",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "ca0f2aea682e75f83cdbdd00b2267ec10ffa76a2",
+          "expected_mode": "100755",
+          "actual_blob": "ca0f2aea682e75f83cdbdd00b2267ec10ffa76a2",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "expected_blob": "d69f197e788878c1fe970ab653d01e4b04a8176d",
+          "expected_mode": "100644",
+          "actual_blob": "d69f197e788878c1fe970ab653d01e4b04a8176d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          "expected_blob": "c5db4e5c13538a4955a635f80c3551586f7b95b1",
+          "expected_mode": "100644",
+          "actual_blob": "c5db4e5c13538a4955a635f80c3551586f7b95b1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          "expected_blob": "40ba265149326468541a2f4880c7cd344e413fcf",
+          "expected_mode": "100644",
+          "actual_blob": "40ba265149326468541a2f4880c7cd344e413fcf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-codex-trace-write-fix.md",
+          "expected_blob": "ba8c2eb92d2b22ca3ce241670a50d145b3f03b8c",
+          "expected_mode": "100644",
+          "actual_blob": "ba8c2eb92d2b22ca3ce241670a50d145b3f03b8c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalization-gate-reentry-fix.md",
+          "expected_blob": "ebb860c45e2cd7039485cf9f1b7377a8562c88ab",
+          "expected_mode": "100644",
+          "actual_blob": "ebb860c45e2cd7039485cf9f1b7377a8562c88ab",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          "expected_blob": "851cce1b36a00ea5cc1902ba0a05ce7d2a2238bd",
+          "expected_mode": "100644",
+          "actual_blob": "851cce1b36a00ea5cc1902ba0a05ce7d2a2238bd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-codex-trace-write-fix-full-round.md",
+          "expected_blob": "39941be03dd568b4a820dc822ca7c0141bcfb840",
+          "expected_mode": "100644",
+          "actual_blob": "39941be03dd568b4a820dc822ca7c0141bcfb840",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalization-gate-reentry-full-round.md",
+          "expected_blob": "0baa371f0f8f56f16977b9080a43199668720e1f",
+          "expected_mode": "100644",
+          "actual_blob": "0baa371f0f8f56f16977b9080a43199668720e1f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          "expected_blob": "b2467ac6c074795a7b866fba3d2278d90057ceae",
+          "expected_mode": "100644",
+          "actual_blob": "b2467ac6c074795a7b866fba3d2278d90057ceae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-codex-trace-write-fix-full-round.json",
+          "expected_blob": "9b3083c5550b03965c3ce1ec7c75a28ada3cda7d",
+          "expected_mode": "100644",
+          "actual_blob": "9b3083c5550b03965c3ce1ec7c75a28ada3cda7d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalization-gate-reentry-full-round.json",
+          "expected_blob": "55bcadd155c656aebbb97297fd326f1c1f6e5872",
+          "expected_mode": "100644",
+          "actual_blob": "55bcadd155c656aebbb97297fd326f1c1f6e5872",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          "expected_blob": "75eff969032b03b7fb15e1cebd2b02221119cdbc",
+          "expected_mode": "100644",
+          "actual_blob": "75eff969032b03b7fb15e1cebd2b02221119cdbc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+          "expected_blob": "456fc3c16d3674efeb29f48569ffa672f1282e96",
+          "expected_mode": "100644",
+          "actual_blob": "456fc3c16d3674efeb29f48569ffa672f1282e96",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          "expected_blob": "3da37326775cf2380c8a98e241c1e5492438bc63",
+          "expected_mode": "100644",
+          "actual_blob": "3da37326775cf2380c8a98e241c1e5492438bc63",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+          "expected_blob": "16c25c8ead665307fffafd39b3f67a69070d6675",
+          "expected_mode": "100644",
+          "actual_blob": "16c25c8ead665307fffafd39b3f67a69070d6675",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-013-finding-closure.md",
+          "expected_blob": "371fd97029bafb1a4c17600dcd96f4f8ef1c064a",
+          "expected_mode": "100644",
+          "actual_blob": "371fd97029bafb1a4c17600dcd96f4f8ef1c064a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
+          "expected_blob": "0a68a18734332efff0b86462f256b667fbc193ed",
+          "expected_mode": "100644",
+          "actual_blob": "0a68a18734332efff0b86462f256b667fbc193ed",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/006.json",
+          "expected_blob": "358e9ac843d7ac9393696bae58f0001fe8f59a98",
+          "expected_mode": "100644",
+          "actual_blob": "358e9ac843d7ac9393696bae58f0001fe8f59a98",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+          "expected_blob": "b2ec676fa5bc905edf118f5bc57b18732e076f8d",
+          "expected_mode": "100644",
+          "actual_blob": "b2ec676fa5bc905edf118f5bc57b18732e076f8d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+          "expected_blob": "ced8d709d6f6f02ed5f0199c29f548d6fe91f644",
+          "expected_mode": "100644",
+          "actual_blob": "ced8d709d6f6f02ed5f0199c29f548d6fe91f644",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "expected_blob": "d69f197e788878c1fe970ab653d01e4b04a8176d",
+          "expected_mode": "100644",
+          "actual_blob": "d69f197e788878c1fe970ab653d01e4b04a8176d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "d27e47acc15550bd3e4bb1de30ae63d52b34aeff",
+          "expected_mode": "100644",
+          "actual_blob": "d27e47acc15550bd3e4bb1de30ae63d52b34aeff",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "ca0f2aea682e75f83cdbdd00b2267ec10ffa76a2",
+          "expected_mode": "100755",
+          "actual_blob": "ca0f2aea682e75f83cdbdd00b2267ec10ffa76a2",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "6b7e8de31fed8dda33839ed5d20a3d7f6b7dd861",
+          "expected_mode": "100644",
+          "actual_blob": "6b7e8de31fed8dda33839ed5d20a3d7f6b7dd861",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

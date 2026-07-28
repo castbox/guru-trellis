@@ -17722,6 +17722,43 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.assertEqual(checked_preview["plan_ref"], plan_ref)
 
             finalizer_package = package_root / gtt.FINALIZE_TASK_SKILL_ID
+            wrapper_args = argparse.Namespace(
+                input=finalization_input_locator,
+                owner_result=None,
+                owner_prerequisites=None,
+                owner_change_request=None,
+                owner_plan=None,
+                source_exit=None,
+                mode=None,
+                repo_root=None,
+                base_branch=None,
+                route=None,
+            )
+
+            def wrapper_prepare(
+                _root: Path,
+                checker_args: argparse.Namespace,
+                _config: dict[str, object],
+                _task_dir: Path,
+                _task_context: dict[str, object],
+            ) -> dict[str, object]:
+                self.assertEqual(
+                    Path(checker_args.finish_summary_index_file).resolve(),
+                    (self.task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT).resolve(),
+                )
+                self.assertEqual(
+                    Path(checker_args.body_file).resolve(),
+                    (self.task_dir / gtt.PR_BODY_ARTIFACT).resolve(),
+                )
+                self.assertEqual(checker_args.repo, plan["git"]["repo"])
+                self.assertEqual(
+                    checker_args.base_branch,
+                    plan["git"]["base_branch"],
+                )
+                self.assertEqual(checker_args.remote, plan["git"]["remote"])
+                self.assertEqual(checker_args.title, plan["publish"]["title"])
+                return prepared
+
             with (
                 mock.patch.object(
                     gtt,
@@ -17733,8 +17770,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     "stage0_repo_root",
                     return_value=self.root,
                 ),
+                mock.patch.object(
+                    gtt,
+                    "prepare_closeout",
+                    side_effect=wrapper_prepare,
+                ),
             ):
-                output = gtt.cmd_invoke_stage0_skill(runtime_args)
+                output = gtt.cmd_invoke_stage0_skill(wrapper_args)
             self.assertEqual(
                 output,
                 {
@@ -17773,6 +17815,33 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 arbitrary_metadata=True,
             )
         )
+
+    def test_public_wrapper_does_not_default_initial_preview_sources(self) -> None:
+        wrapper_args = argparse.Namespace(base_branch=None)
+        checker_args = gtt.finalization_public_wrapper_checker_args(
+            self.root,
+            wrapper_args,
+            self.task_dir,
+        )
+        self.assertIsNone(checker_args.finish_summary_index_file)
+        self.assertIsNone(checker_args.body_file)
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "finish-work requires task-local finish-summary-index.json",
+        ):
+            gtt.load_finish_summary_index(
+                self.task_dir,
+                checker_args.finish_summary_index_file,
+            )
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "finish-work requires --body-file",
+        ):
+            gtt.resolve_closeout_reviewed_body(
+                self.root,
+                self.task_dir,
+                checker_args,
+            )
 
     def test_verification_metadata_path_requires_explicit_owner_binding(self) -> None:
         verification_path = (
