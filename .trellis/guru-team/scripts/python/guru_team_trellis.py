@@ -28547,7 +28547,12 @@ def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dic
 
 
 def validate_closeout_marketplace_artifact(
-    root: Path, task_dir: Path, plan: dict[str, Any], ledger: dict[str, Any]
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    ledger: dict[str, Any],
+    *,
+    _verification_projection: dict[str, Any] | None = None,
 ) -> None:
     if not plan["marketplace"]["required"]:
         return
@@ -28557,7 +28562,12 @@ def validate_closeout_marketplace_artifact(
     artifact = task_dir / locator
     if not artifact.is_file():
         raise WorkflowError("Marketplace verifier artifact is missing from the task.", exit_code=2)
-    verification = read_json(artifact)
+    # The projection supplies legacy fields; the owner path remains the bytes-digest SSOT.
+    verification = (
+        _verification_projection
+        if _verification_projection is not None
+        else read_json(artifact)
+    )
     if verification.get("status") != "passed" or marketplace_verification_contract_errors(verification):
         raise WorkflowError("Marketplace verifier artifact is not a passed canonical artifact.", exit_code=2)
     expected = closeout_passed_marketplace_evidence(root, artifact, verification)
@@ -28583,6 +28593,8 @@ def build_final_archive_projection(
     task_dir: Path,
     prepared: dict[str, Any],
     pr: dict[str, Any],
+    *,
+    _verification_projection: dict[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     plan = prepared["plan"]
     ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
@@ -28602,7 +28614,13 @@ def build_final_archive_projection(
         require_summary=False,
         expected_head=current_head(root),
     )
-    validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+    validate_closeout_marketplace_artifact(
+        root,
+        task_dir,
+        plan,
+        ledger,
+        _verification_projection=_verification_projection,
+    )
     summary = closeout_summary_for_pr(plan, pr)
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
         raise WorkflowError("Final projection must contain one canonical PR ref.", exit_code=2)
@@ -28739,7 +28757,13 @@ def validate_closeout_evidence_commit(
         validate_closeout_evidence_commit(root, previous, expected_parent, _seen=seen)
 
 
-def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[str, Any]) -> None:
+def validate_closeout_active_projection(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    *,
+    _verification_projection: dict[str, Any] | None = None,
+) -> None:
     if repo_relative(root, task_dir) != plan["task"]["active_locator"] or not task_dir.is_dir():
         raise WorkflowError("Closeout active projection locator is invalid.", exit_code=2)
     actual_files = sorted(path.relative_to(task_dir).as_posix() for path in task_dir.rglob("*") if path.is_file())
@@ -28752,7 +28776,13 @@ def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[s
         )
     read_and_validate_closeout_final_summary(task_dir / FINISH_SUMMARY_ARTIFACT, plan)
     ledger = read_json(task_dir / "issue-scope-ledger.json")
-    validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+    validate_closeout_marketplace_artifact(
+        root,
+        task_dir,
+        plan,
+        ledger,
+        _verification_projection=_verification_projection,
+    )
 
 
 def closeout_commit_tree_entry(root: Path, commit: str, path: str) -> tuple[str, str, str]:
@@ -29246,13 +29276,19 @@ def execute_archive_metadata_transaction(
     plan: dict[str, Any],
     *,
     bound_pr: dict[str, Any] | None = None,
+    _verification_projection: dict[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     archive_script = root / ".trellis/scripts/task.py"
     if not archive_script.is_file():
         raise WorkflowError(f"Trellis task.py not found: {archive_script}")
     evidence_commit = current_head(root)
     validate_closeout_evidence_commit(root, plan, evidence_commit)
-    validate_closeout_active_projection(root, task_dir, plan)
+    validate_closeout_active_projection(
+        root,
+        task_dir,
+        plan,
+        _verification_projection=_verification_projection,
+    )
     assert_closeout_archive_path_preflight(root, plan["task"]["archive_locator"])
     validate_closeout_pre_move_continuity(
         root,
@@ -29639,7 +29675,15 @@ def resume_active_archive_move(
     summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if not summary_path.is_file():
         raise WorkflowError("Archive-move recovery requires the validated final summary.", exit_code=2)
-    validate_closeout_active_projection(root, task_dir, plan)
+    verification_projection = getattr(args, "external_verification", None)
+    if not isinstance(verification_projection, dict):
+        verification_projection = None
+    validate_closeout_active_projection(
+        root,
+        task_dir,
+        plan,
+        _verification_projection=verification_projection,
+    )
     validate_closeout_evidence_commit(root, plan, current_head(root))
     assert_closeout_archive_month_current(plan)
     official_after_archive_hook_state(root)
@@ -29667,6 +29711,7 @@ def resume_active_archive_move(
         task_dir,
         plan,
         bound_pr=pr,
+        _verification_projection=verification_projection,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
@@ -29775,6 +29820,9 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
 
     prepared = prepare_closeout(root, args, config, task_dir, task_context)
     plan = prepared["plan"]
+    verification_projection = getattr(args, "external_verification", None)
+    if not isinstance(verification_projection, dict):
+        verification_projection = None
     if args.dry_run:
         return {
             "status": "dry-run",
@@ -29833,8 +29881,8 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
 
     if entry_state in {"prepared", "content_pushed"}:
         if plan["marketplace"]["required"]:
-            verification = getattr(args, "external_verification", None)
-            if not isinstance(verification, dict):
+            verification = verification_projection
+            if verification is None:
                 verification = execute_marketplace_verification(
                     root,
                     task_dir,
@@ -29870,7 +29918,12 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
     finish_summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if finish_summary_path.is_file():
-        validate_closeout_active_projection(root, task_dir, plan)
+        validate_closeout_active_projection(
+            root,
+            task_dir,
+            plan,
+            _verification_projection=verification_projection,
+        )
         validate_closeout_pull_request_identity(
             root,
             task_dir,
@@ -29881,7 +29934,13 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             expected_head=current_head(root),
         )
     else:
-        finish_summary_path, _summary = build_final_archive_projection(root, task_dir, prepared, pr)
+        finish_summary_path, _summary = build_final_archive_projection(
+            root,
+            task_dir,
+            prepared,
+            pr,
+            _verification_projection=verification_projection,
+        )
     finalization_gate = getattr(args, "finalization_gate", None)
     if isinstance(finalization_gate, dict):
         if (
@@ -29898,6 +29957,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         plan,
         bound_pr=pr,
+        _verification_projection=verification_projection,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {

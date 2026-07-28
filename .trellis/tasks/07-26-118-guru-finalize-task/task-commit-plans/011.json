@@ -1,0 +1,295 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "011",
+  "task": {
+    "id": "118-guru-finalize-task",
+    "path": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "status": "in_progress",
+    "branch": "feat/118-guru-finalize-task"
+  },
+  "issue": {
+    "primary_issue": 118,
+    "ledger_sha256": "7e87b26c76fe8ba4a53f028ad4f606af04e7e1477e817d4e6327b833a77b2954"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "85ab42837a44968d892f520614ab611becf5b8d5"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+      "sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+      "size": 38697
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "sha256": "bba4a6833323d906e48c28d9738009a04a89f3f132c4f769acba411d3f8f41bd",
+      "size": 111254
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "sha256": "7e87b26c76fe8ba4a53f028ad4f606af04e7e1477e817d4e6327b833a77b2954",
+      "size": 4240
+    },
+    "task": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
+      "sha256": "44c9c3c6896b30aec2fcd78dd9493959314a533ee929796538d604edc62382b1",
+      "size": 659
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "978af32aaf69dbae4ecf8cc7af80e58d002b1aeb",
+        "worktree_sha256": "1b9f1ad19e39ffe99a5e9590be6759075f9e5f1e47bd62d4fe040ebc18e8d0de",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1188c3741347241fd6e757eb30512f918ecbd4ae",
+        "worktree_sha256": "af86c1f21083add21c913f54365aa07d68a44c4b10317356e22f52a6510b604d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+        "index_status": "",
+        "worktree_status": "D",
+        "untracked": false,
+        "deleted": true,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3fdb7c494ec69660a8f6e4d9974932d22f955722",
+        "worktree_sha256": null,
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "873eab5769c47ba9386bc21e2afa7fb7ac4684f11f57da8411b87dab1ccef079",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5176906f7d74c3e9ef4f30b8eb31abff10309882",
+        "worktree_sha256": "7e87b26c76fe8ba4a53f028ad4f606af04e7e1477e817d4e6327b833a77b2954",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/marketplace-verification.json",
+        "index_status": "",
+        "worktree_status": "D",
+        "untracked": false,
+        "deleted": true,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1cc7e2f4ccb36e99e7e7a54161cd0d40e3a276ba",
+        "worktree_sha256": null,
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-final-projection-chain-fix-full-round.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ef14638998fe5602c9a9f9cede931405a4c248d3d8b50a33b275588803fbc8a8",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4f46d869af8a6856f827f5a8e8be766d89f7fa6b",
+        "worktree_sha256": "bba4a6833323d906e48c28d9738009a04a89f3f132c4f769acba411d3f8f41bd",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-final-projection-chain-fix-full-round.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d1bbb1f6d7e18155fac376a46d30fbf8728a19ddf3ebff1ad1f68af386201ec1",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "978af32aaf69dbae4ecf8cc7af80e58d002b1aeb",
+        "worktree_sha256": "1b9f1ad19e39ffe99a5e9590be6759075f9e5f1e47bd62d4fe040ebc18e8d0de",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5bc98c1cc58dafb713704d27c812cf97b43ce84b",
+        "worktree_sha256": "9682b9940c1634af5a6efe544307fc0f59825503e333acd283f615e14cd80906",
+        "mode": "100644"
+      }
+    ],
+    "digest": "0ebeb45e757f21763ea1f3c7cf6547cbc179b4898a435c4b50196a1e89f4c1a2"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/marketplace-verification.json",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-final-projection-chain-fix-full-round.md",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-final-projection-chain-fix-full-round.json",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/011.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/marketplace-verification.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-final-projection-chain-fix-full-round.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-final-projection-chain-fix-full-round.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/011.json",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(finalize): #118 修复终结投影验证链路",
+    "body": "背景：\n#117 Interface 1.3 owner evidence 在 Draft PR 后被 final projection 按 #105 legacy schema 重新校验，正常 verified 路径因形状不兼容而阻断。\n\n变更：\n- 将 finalizer-private verification projection 贯穿 final、active、archive 与 active recovery consumer。\n- 保持无 projection 的 #105 legacy 路径不变，并继续以真实 owner artifact bytes 绑定 ledger SHA。\n- 同步 canonical/dogfood runtime，补充 production 与负向回归，并清理失效 closeout/verification checkpoint。\n\n边界：\n不修改 #105 事务语义、#117 public DTO/schema/checker、global workflow、preset/overlay 或 upstream Finish family；#115 仅关联，#119/#132 仍为 follow-up。\n\n验证：\nRuntime 629 passed/13 skipped、#105 transaction 107、Skill/package/eval 180、finalizer/#116/#117 33、preset 45、ownership 9；clean throwaway 全链通过；fresh Phase 2 public wrapper exit=passed 且 P0-P3 为 0。\n\nRefs #118",
+    "bytes": "fix(finalize): #118 修复终结投影验证链路\n\n背景：\n#117 Interface 1.3 owner evidence 在 Draft PR 后被 final projection 按 #105 legacy schema 重新校验，正常 verified 路径因形状不兼容而阻断。\n\n变更：\n- 将 finalizer-private verification projection 贯穿 final、active、archive 与 active recovery consumer。\n- 保持无 projection 的 #105 legacy 路径不变，并继续以真实 owner artifact bytes 绑定 ledger SHA。\n- 同步 canonical/dogfood runtime，补充 production 与负向回归，并清理失效 closeout/verification checkpoint。\n\n边界：\n不修改 #105 事务语义、#117 public DTO/schema/checker、global workflow、preset/overlay 或 upstream Finish family；#115 仅关联，#119/#132 仍为 follow-up。\n\n验证：\nRuntime 629 passed/13 skipped、#105 transaction 107、Skill/package/eval 180、finalizer/#116/#117 33、preset 45、ownership 9；clean throwaway 全链通过；fresh Phase 2 public wrapper exit=passed 且 P0-P3 为 0。\n\nRefs #118\n",
+    "sha256": "6e3de2766d268e2128b384623e4e1ff913a3eae31590c71f8855bd221efb11c3"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "11 个 current dirty path 均属于 #118 final projection compatibility fix、fresh Phase 2 evidence 或 stale owner-private checkpoint cleanup；011.json 仅作为 Skill-owned candidate。提交消息准确描述修复、验证和排除边界，仅使用 Refs #118，且不授权任何远端或发布副作用。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户在完整展示 immutable task-commit-preview-011.json SHA-256 cb2c5cdda9cb58abe55ef4e5239cf23666bfe1d9a0537b31ab70353b75cd557c、12 个 stage path、精确消息和副作用后连续两次回复确认继续；授权仅创建这一笔 ordinary local task commit，不授权 push、PR mutation、archive、Ready、merge、Issue mutation、amend、rebase、reset、stash 或 force operation。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-28T15:51:44Z",
+    "plan_digest": "07737a7e01bb156e80a58563a5435507fcfc75f513d4dee20dd315c6a7951e7d"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

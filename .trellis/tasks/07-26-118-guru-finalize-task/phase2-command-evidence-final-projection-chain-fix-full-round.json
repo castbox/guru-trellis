@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "phase2-command-evidence-final-projection-chain-fix-full-round",
+  "generated_at": "2026-07-28T15:15:16Z",
+  "task": ".trellis/tasks/07-26-118-guru-finalize-task",
+  "reviewer": {
+    "agent_id": "/root/issue118_phase2_final_projection_chain",
+    "logical_role": "阶段二检查代理",
+    "independent_from_implementation_agent": "/root/issue118_final_projection_chain_fix"
+  },
+  "objective_identity": {
+    "checked_head": "85ab42837a44968d892f520614ab611becf5b8d5",
+    "base": "origin/main@7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "branch": "feat/118-guru-finalize-task",
+    "pull_request": 160,
+    "issue": 118,
+    "working_tree_scope": "current uncommitted final projection compatibility chain fix plus task-local metadata"
+  },
+  "semantic_review": {
+    "qualified_findings": {"P0": 0, "P1": 0, "P2": 0, "P3": 0},
+    "scope_proposals": 0,
+    "typed_exit_recommendation": "passed",
+    "consumer": "skill:guru-create-task-commit",
+    "projection_chain": [
+      "cmd_execute_finalization_transition",
+      "cmd_finish_work",
+      "build_final_archive_projection",
+      "validate_closeout_active_projection",
+      "execute_archive_metadata_transaction",
+      "resume_active_archive_move"
+    ],
+    "owner_binding": "The in-memory compatibility projection supplies legacy #105 validation fields while artifact existence, locator, and artifact_sha256 remain bound to the task-local #117 owner bytes.",
+    "legacy_compatibility": "Calls without _verification_projection continue to read and validate the legacy on-disk artifact.",
+    "public_contract": "No public DTO, schema, Interface, gate artifact, workflow route, preset, overlay, README, or platform package surface changed.",
+    "production_regression_limit": "The regression executes the public finalizer transition, cmd_finish_work, final projection, and active projection. It mocks publication/current-state fixture setup and Git/GitHub/archive side effects; those mocks do not replace the projection consumers under review."
+  },
+  "docs_ssot": {
+    "strategy": "ssot_first",
+    "current_fix_result": "no_docs_update_needed",
+    "durable_docs_current": true,
+    "task_delta_merged": true,
+    "reason": "The fix restores runtime behavior already required by durable finalizer/#117/#105 contracts and introduces no durable semantic or public contract delta.",
+    "task_history_only": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-final-projection-chain-fix-full-round.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-final-projection-chain-fix-full-round.json"
+    ]
+  },
+  "command_classification": {
+    "command_count": 53,
+    "expected_nonzero": [
+      {"id": "full-branch-diff-hygiene", "reason": "Immutable historical raw review evidence has one trailing-whitespace observation at reviews/round-009-finding-closure.md:203; final HEAD bytes were restored and separately verified."},
+      {"id": "stale-phase2-check", "reason": "Old Phase 2 evidence must fail against the current implementation and assignment snapshot."},
+      {"id": "stale-review-gate", "reason": "Old Branch Review evidence must fail against the current implementation and assignment snapshot."},
+      {"id": "stale-publication-gate", "reason": "Old publication evidence must fail after the current implementation and stale verification cleanup."}
+    ],
+    "superseded_or_nonfinal": [
+      {"id": "closeout-schema-parity", "reason": "Raw byte cmp detected formatting-only differences; canonical JSON equality is proved by closeout-schema-semantic-parity."},
+      {"id": "ledger-remote-evidence-zero", "reason": "Reviewer shell quoting error; superseded by ledger-remote-evidence-zero-corrected."},
+      {"id": "combined-branch-dirty-diff-hygiene", "reason": "Captured while the immutable historical report had a temporary mechanical whitespace edit; excluded from final-state evidence."}
+    ],
+    "final_state_bindings": [
+      "immutable-raw-review-head-parity",
+      "current-dirty-candidate-hygiene",
+      "ledger-remote-evidence-zero-corrected",
+      "stale-checkpoints-absent",
+      "task-still-active",
+      "local-head",
+      "remote-head",
+      "pr-live",
+      "issue-live"
+    ]
+  },
+  "validation_summary": {
+    "focused_regressions": "5 passed",
+    "closeout_transaction": "107 passed",
+    "runtime_full": "629 passed, 13 skipped",
+    "skill_package_eval": "180 passed",
+    "finalizer_contract": "5 passed",
+    "publication_contract": "18 passed",
+    "verification_contract": "10 passed",
+    "preset_installer": "45 passed",
+    "ownership": "9 passed",
+    "clean_throwaway": "passed with terminal marker Verified throwaway Guru Team Trellis install",
+    "lint": "passed for current dirty candidate; one immutable historical observation retained",
+    "typecheck": "no configured static type checker; py_compile and closed schema/interface validators passed"
+  },
+  "capture": {
+    "temporary_root": "/tmp/guru118-final-projection-phase2.5EKsM0",
+    "raw_stream_policy": "Retained through JSON validation and removed before terminal handoff.",
+    "cleanup_status": "verified_absent_after_artifact_readback",
+    "commands_source_sha256": "a1881560002959e942cfd36e5482487d30ff6bedbb6d5f89841c4f1b21c13ca0"
+  },
+  "commands": [
+{"id":"focused-regressions","argv":["python3","trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py","CloseoutTransactionContractTest.test_real_workflow_verified_reentry_executes_remaining_finalization","CloseoutTransactionContractTest.test_finalizer_projection_rejects_owner_bytes_head_and_plan_mismatch","CloseoutTransactionContractTest.test_marketplace_relative_locator_survives_exact_archive_move_with_digest","CloseoutTransactionContractTest.test_active_completed_archive_move_recovery_skips_verifier_and_pr_create","CloseoutTransactionContractTest.test_finalization_verification_augmentation_is_exactly_plan_bound"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":103,"sha256":"d00c477eb59c96189d7e20020c910e949e45e4294e5cf302997fe7cbb2327ddf"}},
+{"id":"closeout-transaction","argv":["python3","trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py","CloseoutTransactionContractTest"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":1601,"sha256":"bedd98b842e1886e4bfa155c9876cdf24bc33e3838d749dbcf4c5659ed59f7f0"}},
+{"id":"runtime-full","argv":["python3","trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"],"exit_code":0,"stdout":{"size_bytes":2548,"sha256":"403561959519e8b4df54e19c1083d5d2fd9622ce1baf64208b41f08d2b2de685"},"stderr":{"size_bytes":4454,"sha256":"9c383efd2ee9c6c5bb10ebb38a6b8f6ca0d16b33a5b69abb3ee87923ea9234bd"}},
+{"id":"skill-package-eval","argv":["python3","trellis/skills/guru-team/tests/test_skill_packages.py"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":4510,"sha256":"b3352bfeab8fc31bced3e410842af313f724896da3ee39ecf91d62b5ba6d526f"}},
+{"id":"finalizer-contract","argv":["python3","trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":103,"sha256":"3b18de8bb3c412650e7955d17b9e8887e84db50e6197ca69b873bf35a6669428"}},
+{"id":"publication-contract","argv":["python3","trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":118,"sha256":"74cbbe61eb49d256f5aecdd74adf433cb065c990a72049cb0040c31ee8d18f4f"}},
+{"id":"verification-contract","argv":["python3","trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":109,"sha256":"b3422b145032ac3a56ce40c0e8bbe6f04030fe26a1ce1f5388afec7a5b7cbee0"}},
+{"id":"preset-installer-tests","argv":["python3","trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":809,"sha256":"ef442ada76ce106c9453e6d780073f7bff49e20ca17ee7e433c8f964a6d40033"}},
+{"id":"ownership-tests","argv":["python3","trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":107,"sha256":"9e32e28b8ece3fcac71012baed4138cee3643fcabc1c9dbec187aeeafdc9abf1"}},
+{"id":"python-compile","argv":["env","PYTHONPYCACHEPREFIX=/tmp/guru118-final-projection-phase2.5EKsM0/pycache","python3","-m","py_compile","trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",".trellis/guru-team/scripts/python/guru_team_trellis.py","trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py","trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"bash-syntax","argv":["bash","-n","trellis/workflows/guru-team/scripts/bash/finish-work.sh","trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh","trellis/presets/guru-team/scripts/bash/apply.sh","trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh","trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh","trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"source-package-validator","argv":["trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh","--root",".","--json","--mode","source"],"exit_code":0,"stdout":{"size_bytes":1346,"sha256":"1c6b31cc2c6df8d7682eb57b6097bdfed893eab3bdaf4c9d4fe42800f5880d2a"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"installed-package-validator","argv":[".trellis/guru-team/scripts/bash/check-skill-packages.sh","--root",".","--json","--mode","installed"],"exit_code":0,"stdout":{"size_bytes":1535,"sha256":"906e4ce2e0ca4b62de1924cf1caa5b01e8a751b956c2e7490805198d5750280f"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"ownership-validator","argv":["trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh","--repo",".","--json"],"exit_code":0,"stdout":{"size_bytes":1731,"sha256":"5403ca759ffa967dbcc231bab5f5d000f8b9da2e12bfb82789458eacea1183e5"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"dogfood-overlay-drift","argv":["trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh","--repo","."],"exit_code":0,"stdout":{"size_bytes":1790,"sha256":"b3bafca507c4743e965cd81eed5d8ee845c91589afaf38a18f1702ef854e4bd5"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"task-validate","argv":["python3","./.trellis/scripts/task.py","validate",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":311,"sha256":"53258e0eefd6d7cbd1d1af4e22029d99c1893edd325760ec743864222d862c58"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"planning-validator","argv":["./.trellis/guru-team/scripts/bash/check-planning-approval.sh","--json","--task",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":738,"sha256":"65fb122892d5c225e121d69740eb34cf438f3c78ab202dd183393f9b88140964"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"assignment-validator","argv":["./.trellis/guru-team/scripts/bash/check-agent-assignment.sh","--json","--task",".trellis/tasks/07-26-118-guru-finalize-task","--require-current-head"],"exit_code":0,"stdout":{"size_bytes":1369,"sha256":"bf888e40c7b02427a64ecd9c062134d9bad79cd188d45991f4e906f70f74778e"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"workspace-validator","argv":["./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh","--json","--task",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":1288,"sha256":"a2bf38015cff4bea11c1fd4521bf1d5a51149882e902de2070cb20af4fc564dc"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"canonical-dogfood-runtime","argv":["cmp","-s","trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",".trellis/guru-team/scripts/python/guru_team_trellis.py"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"closeout-schema-parity","argv":["cmp","-s","trellis/workflows/guru-team/schemas/closeout-plan.schema.json","trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json"],"exit_code":1,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"package-installed-parity","argv":["diff","-qr","--exclude=__pycache__","trellis/skills/guru-team/packages/guru-finalize-task",".trellis/guru-team/skills/packages/guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"package-shared-parity","argv":["diff","-qr","--exclude=__pycache__","trellis/skills/guru-team/packages/guru-finalize-task",".agents/skills/guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"package-codex-parity","argv":["diff","-qr","--exclude=__pycache__","trellis/skills/guru-team/packages/guru-finalize-task",".codex/skills/guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"package-claude-parity","argv":["diff","-qr","--exclude=__pycache__","trellis/skills/guru-team/packages/guru-finalize-task",".claude/skills/guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"package-cursor-parity","argv":["diff","-qr","--exclude=__pycache__","trellis/skills/guru-team/packages/guru-finalize-task",".cursor/skills/guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"current-diff-hygiene","argv":["git","diff","--check"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"full-branch-diff-hygiene","argv":["git","diff","--check","origin/main...HEAD"],"exit_code":2,"stdout":{"size_bytes":211,"sha256":"35b2d142684e8b84d7bc4221f8d92ba49b9f2e926c237b702991bfe913b4e14a"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"closeout-schema-semantic-parity","argv":["bash","-c","cmp -s <(jq -S -c . \"$1\") <(jq -S -c . \"$2\")","--","trellis/workflows/guru-team/schemas/closeout-plan.schema.json","trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"current-diff-hygiene-after-fix","argv":["git","diff","--check"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"combined-branch-dirty-diff-hygiene","argv":["git","diff","--check","origin/main"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"immutable-raw-review-head-parity","argv":["git","diff","--exit-code","HEAD","--",".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-009-finding-closure.md"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"current-dirty-candidate-hygiene","argv":["git","diff","--check","HEAD"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"clean-throwaway","argv":["env","TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#feat/118-guru-finalize-task","trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh","/tmp/guru118-final-projection-phase2.5EKsM0/throwaway"],"exit_code":0,"stdout":{"size_bytes":4165480,"sha256":"b7a56c03aaefa4305864ec38867e8b724f2f675ec9007f83998627106072d66a"},"stderr":{"size_bytes":930,"sha256":"46d2efba0eec4c49291a027934758ece0f6bc1ac854c77f7f1f2f8d894cd194d"}},
+{"id":"stale-phase2-check","argv":[".trellis/guru-team/skills/packages/guru-check-task/scripts/check-phase2-check.sh","--root",".","--json","--task",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":2,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":532,"sha256":"7c9fd7376caa116c1b43cb131c6495be5bf36f5691029a047f0d326b6fe8489e"}},
+{"id":"stale-review-gate","argv":[".trellis/guru-team/scripts/bash/check-review-gate.sh","--root",".","--json","--task",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":2,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":1926,"sha256":"872cf0b8a850f63f8c6b3a0952b6a17110c88e9113d0642ae3ad1380e98b92d8"}},
+{"id":"stale-publication-gate","argv":[".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh","--root",".","--json","--task",".trellis/tasks/07-26-118-guru-finalize-task","--expected-exit","ready"],"exit_code":2,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":2599,"sha256":"c1c7c784215d9d00acca80cf63e31b1e3b749bce3dbd34e949955a5a8b83b71f"}},
+{"id":"stale-checkpoints-absent","argv":["bash","-c","test ! -e \"$1/closeout-plan.json\" && test ! -e \"$1/marketplace-verification.json\" && test ! -e \"$1/task-finalization-gate.json\" && test ! -e \"$1/finish-summary.json\"","--",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"ledger-remote-evidence-zero","argv":["bash","-c","test \"$(jq \"[.. | objects | select(.type? == \\\\\"remote_marketplace_verification\\\\\")] | length\" \"$1/issue-scope-ledger.json\")\" = 0","--",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":1,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":238,"sha256":"dc62c4aaf2077ff87a1af6e8dd5c88a2bf905f27f9ba94046af91e0a1833174f"}},
+{"id":"task-still-active","argv":["bash","-c","test \"$(jq -r .status \"$1/task.json\")\" = in_progress && test -d \"$1\"","--",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"pr-body-close-scope","argv":["bash","-c","test \"$(rg -o \"Closes #[0-9]+\" \"$1/pr-body.md\" | sort -u)\" = \"Closes #118\" && ! rg -n \"(?:Closes|Fixes|Resolves) #(115|119|132)\" \"$1/pr-body.md\"","--",".trellis/tasks/07-26-118-guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"local-head","argv":["git","rev-parse","HEAD"],"exit_code":0,"stdout":{"size_bytes":41,"sha256":"a3ba481e319ccaa35f4a1b3fcca3482c9bac9c2445f6455e6d223ca102f4eb3f"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"remote-head","argv":["git","ls-remote","origin","refs/heads/feat/118-guru-finalize-task"],"exit_code":0,"stdout":{"size_bytes":80,"sha256":"3707e7559d22d9eb8bdf729b7c4f4bf2d102819ad035db4f370092b598a27448"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"pr-live","argv":["gh","pr","view","160","--repo","castbox/guru-trellis","--json","number,state,isDraft,headRefName,headRefOid,baseRefName,title,url,updatedAt"],"exit_code":0,"stdout":{"size_bytes":327,"sha256":"6953ec01b9eda59cf04fab939e6f727a04b05190d8131640eda62accfcdeeb85"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"issue-live","argv":["gh","issue","view","118","--repo","castbox/guru-trellis","--json","number,state,stateReason,title,url,updatedAt"],"exit_code":0,"stdout":{"size_bytes":210,"sha256":"d967548e9c8e8ce9f7102694bfa5eeb61d6530c173fc8c6a097f2bd0172ecdd1"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"official-index","argv":["curl","--fail","--location","https://docs.trytrellis.app/index.md"],"exit_code":0,"stdout":{"size_bytes":6294,"sha256":"f8ff29b77e59e09f1756450fd99242e4b0a716dac3b03c76b403120916637c1d"},"stderr":{"size_bytes":475,"sha256":"42967888cc48bef4bc8410423ad55e7661873daf6e45a73bb37faf1eaac60dda"}},
+{"id":"official-custom-workflow","argv":["curl","--fail","--location","https://docs.trytrellis.app/advanced/custom-workflow.md"],"exit_code":0,"stdout":{"size_bytes":8705,"sha256":"2a8c667e41a3d19ee263e2d0b7c24b03396c83158ffaeb2e4778f1d6dd070b38"},"stderr":{"size_bytes":396,"sha256":"92469ade6a489c56c1fbac8755d58fa8957d881012571b8250bb729a7a661361"}},
+{"id":"official-spec-marketplace","argv":["curl","--fail","--location","https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md"],"exit_code":0,"stdout":{"size_bytes":8611,"sha256":"93d5a69a829fac508c7a78418dc37d9db296f438242573cedd0dcfcf335d5f91"},"stderr":{"size_bytes":396,"sha256":"ded01284d885b893b6765e2b5b5ac7f968d25f36077b32da03df6b61e36c7158"}},
+{"id":"candidate-prohibited-paths","argv":["bash","-c","! git diff --name-only origin/main | rg \"(^|/)(trellis-finish-work|finish-work\\\\.md|task\\\\.py$)|trellis/workflows/guru-team/workflow\\\\.md|^\\\\.trellis/workflow\\\\.md|node_modules\""],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"deploy-paths-absent","argv":["bash","-c","! git diff --name-only origin/main | rg \"(^|/)(Dockerfile|docker-compose|k8s|kustomize|migrations|Makefile|\\\\.github/workflows)(/|$)\""],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"sidecars-absent","argv":["bash","-c","! git ls-files --others --exclude-standard | rg \"(\\\\.new|\\\\.bak)$\""],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"sensitive-pattern-scan","argv":["bash","-c","! git diff origin/main -- . \":(exclude).trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json\" | rg -i \"(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|password[[:space:]]*[:=][[:space:]]*[^<[:space:]])\""],"exit_code":0,"stdout":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},
+{"id":"ledger-remote-evidence-zero-corrected","argv":["jq","-e","[.. | objects | select(.type? == \"remote_marketplace_verification\")] | length == 0",".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json"],"exit_code":0,"stdout":{"size_bytes":5,"sha256":"a17fcf0a2f50e2d495e4f90ce263410edc183add6c62699a2facbccf60410f74"},"stderr":{"size_bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}
+  ]
+}

@@ -17654,8 +17654,14 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
         prepared = {
             "plan": plan,
+            "task": self.task,
+            "task_context": self.context,
             "ledger": self.ledger,
             "gate": self.gate,
+            "body": (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(
+                encoding="utf-8"
+            ),
+            "finish_summary_index": self.index,
             "finalizer_takeover": None,
             "month_supersession": None,
         }
@@ -17765,33 +17771,70 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 owner_path = self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
                 owner_sha256 = hashlib.sha256(owner_path.read_bytes()).hexdigest()
                 archived = self.root / plan["task"]["archive_locator"]
-                recorded_ledger: dict[str, object] = {}
+                for relative in plan["projection"]["move_paths"]:
+                    path = self.task_dir / relative
+                    if (
+                        relative != gtt.FINISH_SUMMARY_ARTIFACT
+                        and not path.exists()
+                    ):
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_text("production finalization fixture\n", encoding="utf-8")
 
-                def finish_remaining(
-                    finish_args: argparse.Namespace,
+                pr = {
+                    **closeout_head_repository_fields(
+                        "example/guru-extension"
+                    ),
+                    "number": 118,
+                    "url": (
+                        "https://github.com/example/"
+                        "guru-extension/pull/118"
+                    ),
+                    "title": plan["publish"]["title"],
+                    "body": (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(
+                        encoding="utf-8"
+                    ),
+                    "headRefName": plan["git"]["head_branch"],
+                    "baseRefName": plan["git"]["base_branch"],
+                    "headRefOid": self.head,
+                    "isDraft": True,
+                }
+
+                def commit_evidence(
+                    *_args: object,
+                    **_kwargs: object,
                 ) -> dict[str, object]:
-                    compatibility = finish_args.external_verification
+                    gtt.write_json(
+                        self.task_dir / gtt.PR_READINESS_ARTIFACT,
+                        {
+                            "publish_inputs": {
+                                "closeout_plan_digest": plan["plan_digest"],
+                            }
+                        },
+                    )
+                    return {"commit": self.head}
+
+                def archive_remaining(
+                    _root: Path,
+                    _task_dir: Path,
+                    _plan: dict[str, object],
+                    *,
+                    bound_pr: dict[str, object] | None = None,
+                    _verification_projection: dict[str, object] | None = None,
+                ) -> tuple[Path, dict[str, object]]:
+                    self.assertEqual(bound_pr, pr)
+                    self.assertIsNotNone(_verification_projection)
+                    assert _verification_projection is not None
                     self.assertEqual(
                         gtt.marketplace_verification_contract_errors(
-                            compatibility
+                            _verification_projection
                         ),
                         [],
                     )
-                    self.assertEqual(compatibility["verified_head"], self.head)
-                    self.assertEqual(compatibility["remote_head"], self.head)
-                    evidence = gtt.closeout_passed_marketplace_evidence(
+                    gtt.validate_closeout_active_projection(
                         self.root,
-                        owner_path,
-                        compatibility,
-                    )
-                    self.assertEqual(evidence["artifact_sha256"], owner_sha256)
-                    self.assertEqual(evidence["verified_content_head"], self.head)
-                    self.assertEqual(evidence["remote_head"], self.head)
-                    recorded_ledger.update(
-                        gtt.record_marketplace_machine_evidence(
-                            self.ledger,
-                            evidence,
-                        )
+                        self.task_dir,
+                        plan,
+                        _verification_projection=_verification_projection,
                     )
                     archived.mkdir(parents=True)
                     gtt.write_json(
@@ -17800,30 +17843,52 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                             self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT
                         ),
                     )
-                    return {
-                        "archived_task_dir": str(archived),
-                        "publish": {
-                            "pr": {
-                                "number": 118,
-                                "url": (
-                                    "https://github.com/example/"
-                                    "guru-extension/pull/118"
-                                ),
-                            }
-                        },
-                    }
+                    return archived, {"commit": self.head}
 
-                with mock.patch.object(
-                    gtt,
-                    "cmd_finish_work",
-                    side_effect=finish_remaining,
-                ) as finish:
+                with (
+                    mock.patch.object(gtt, "require_gh_auth"),
+                    mock.patch.object(
+                        gtt,
+                        "validate_publish_identity_and_remote_head",
+                    ),
+                    mock.patch.object(
+                        gtt,
+                        "commit_closeout_evidence_metadata",
+                        side_effect=commit_evidence,
+                    ),
+                    mock.patch.object(
+                        gtt,
+                        "resolve_closeout_pull_request",
+                        return_value=pr,
+                    ),
+                    mock.patch.object(
+                        gtt,
+                        "execute_archive_metadata_transaction",
+                        side_effect=archive_remaining,
+                    ) as archive,
+                    mock.patch.object(
+                        gtt,
+                        "ensure_closeout_pr_ready",
+                        return_value={
+                            "status": "ready",
+                            "pr": pr,
+                            "local_head": self.head,
+                            "remote_head": self.head,
+                        },
+                    ),
+                ):
                     transition = gtt.cmd_execute_finalization_transition(
                         runtime_args
                     )
-                finish.assert_called_once()
+                archive.assert_called_once()
                 self.assertEqual(transition["typed_exit"], "published")
                 self.assertEqual(transition["output"]["pr_number"], 118)
+                self.assertTrue(
+                    (self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT).is_file()
+                )
+                recorded_ledger = gtt.read_json(
+                    self.task_dir / "issue-scope-ledger.json"
+                )
                 for issue_key in ("primary_issue", "close_issues"):
                     issues = recorded_ledger[issue_key]
                     issue_rows = issues if isinstance(issues, list) else [issues]
@@ -17939,6 +18004,85 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         assert result is not None
         self.assertEqual(result["owner"]["typed_exit"], "verified")
         self.assertEqual(result["transition"]["typed_exit"], "published")
+
+    def test_finalizer_projection_rejects_owner_bytes_head_and_plan_mismatch(
+        self,
+    ) -> None:
+        result = self.exercise_real_verification_metadata_reentry(
+            marketplace_required=True,
+        )
+        assert result is not None
+        plan = gtt.validate_closeout_plan(
+            gtt.read_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT)
+        )
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+        verification = gtt.finalization_current_verification_owner_result(
+            self.root,
+            self.task_dir,
+            task_ref=task_ref,
+            plan_ref=plan_ref,
+            reviewed_head=plan["git"]["reviewed_work_head"],
+            plan=plan,
+        )
+        self.assertIsNotNone(verification)
+        assert verification is not None
+        projection = (
+            gtt.finalization_marketplace_verification_compatibility_projection(
+                self.root,
+                self.task_dir,
+                plan,
+                verification,
+            )
+        )
+        owner_path = self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+        owner_bytes = owner_path.read_bytes()
+        evidence = gtt.closeout_passed_marketplace_evidence(
+            self.root,
+            owner_path,
+            projection,
+        )
+        ledger = gtt.record_marketplace_machine_evidence(self.ledger, evidence)
+
+        owner_path.write_bytes(owner_bytes + b" ")
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "ledger evidence does not match",
+        ):
+            gtt.validate_closeout_marketplace_artifact(
+                self.root,
+                self.task_dir,
+                plan,
+                ledger,
+                _verification_projection=projection,
+            )
+        owner_path.write_bytes(owner_bytes)
+
+        wrong_head = copy.deepcopy(plan)
+        wrong_head["git"]["reviewed_work_head"] = "f" * 40
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "stale extension verification evidence",
+        ):
+            gtt.finalization_marketplace_verification_compatibility_projection(
+                self.root,
+                self.task_dir,
+                wrong_head,
+                verification,
+            )
+
+        wrong_plan = copy.deepcopy(plan)
+        wrong_plan["plan_digest"] = "f" * 64
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "stale extension verification evidence",
+        ):
+            gtt.finalization_marketplace_verification_compatibility_projection(
+                self.root,
+                self.task_dir,
+                wrong_plan,
+                verification,
+            )
 
     def test_real_standalone_not_required_recorder_reenters_finalizer_wrapper(
         self,
@@ -19594,6 +19738,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             evidence = gtt.closeout_passed_marketplace_evidence(self.root, artifact, verification)
             ledger = gtt.record_marketplace_machine_evidence(self.ledger, evidence)
             gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
+            gtt.validate_closeout_marketplace_artifact(
+                self.root,
+                self.task_dir,
+                plan,
+                ledger,
+            )
             gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
             gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, {"ready": True})
             summary = gtt.closeout_summary_for_pr(
@@ -21625,7 +21775,7 @@ shutil.move(str(active), str(archived))
                 )[1],
             ),
             mock.patch.object(gtt, "ensure_closeout_draft_pr", side_effect=lambda *a: (order.append("draft"), pr)[1]),
-            mock.patch.object(gtt, "build_final_archive_projection", side_effect=lambda *a: (order.append("projection"), (self.task_dir / "finish-summary.json", {}))[1]),
+            mock.patch.object(gtt, "build_final_archive_projection", side_effect=lambda *a, **k: (order.append("projection"), (self.task_dir / "finish-summary.json", {}))[1]),
             mock.patch.object(gtt, "execute_archive_metadata_transaction", side_effect=lambda *a, **k: (order.append("archive"), (archived, {"commit": self.head}))[1]),
             mock.patch.object(gtt, "ensure_closeout_pr_ready", side_effect=lambda *a, **k: (order.append("ready"), {"status": "ready"})[1]),
         ):
@@ -21829,6 +21979,8 @@ shutil.move(str(active), str(archived))
         gtt.write_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT, {"schema_version": 1})
         archived = self.root / plan["task"]["archive_locator"]
         args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
+        verification_projection = {"status": "passed"}
+        args.external_verification = verification_projection
         body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
         summary = gtt.closeout_summary_for_pr(
             plan, {"number": 105, "url": "https://github.com/owner/repo/pull/105"}
@@ -21850,7 +22002,7 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "load_issue_scope_ledger", return_value=self.ledger),
             mock.patch.object(gtt, "closeout_evidence_is_committed", return_value=True),
             mock.patch.object(gtt, "validate_finish_summary"),
-            mock.patch.object(gtt, "validate_closeout_active_projection"),
+            mock.patch.object(gtt, "validate_closeout_active_projection") as active,
             mock.patch.object(gtt, "validate_closeout_evidence_commit"),
             mock.patch.object(gtt, "current_head", return_value=self.head),
             mock.patch.object(gtt, "require_gh_auth"),
@@ -21862,7 +22014,19 @@ shutil.move(str(active), str(archived))
         ):
             result = gtt.resume_active_archive_move(self.root, args, {}, self.task_dir, self.context)
         self.assertEqual(result["entry_state"], "archive_moved")
-        archive.assert_called_once()
+        active.assert_called_once_with(
+            self.root,
+            self.task_dir,
+            plan,
+            _verification_projection=verification_projection,
+        )
+        archive.assert_called_once_with(
+            self.root,
+            self.task_dir,
+            plan,
+            bound_pr=draft,
+            _verification_projection=verification_projection,
+        )
         verifier.assert_not_called()
         create.assert_not_called()
 

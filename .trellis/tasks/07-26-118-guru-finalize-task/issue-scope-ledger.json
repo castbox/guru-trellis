@@ -8,18 +8,7 @@
     "acceptance_evidence": [
       "Current Phase 2 typed exit=passed：runtime 628 passed/13 skipped、#105 transaction 106、Skill/package/eval 180、finalizer + #116/#117 33、focused owner projection 6、active/archive 6、preset 45、ownership 9；29 条 retained command evidence identity 全部重算匹配，current P0/P1/P2/P3 open findings 均为 0。",
       "Branch Review 覆盖 origin/main...1e5b1479b72e5b253c9755244be87f906cf855f4 的 559-path/10-commit range；Round 18 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead。",
-      "Full local-source clean throwaway current-candidate chain rc=0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution、ownership、overlay drift 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
-      {
-        "type": "remote_marketplace_verification",
-        "status": "passed",
-        "required": true,
-        "artifact_path": "marketplace-verification.json",
-        "artifact_sha256": "66625c4de68a8997e4a2c882fa83f6e0a38a85b0debb6025d37f86ac794d7336",
-        "verified_content_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
-        "remote_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
-        "publish_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
-        "commands_passed": true
-      }
+      "Full local-source clean throwaway current-candidate chain rc=0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution、ownership、overlay drift 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。"
     ]
   },
   "close_issues": [
@@ -31,18 +20,7 @@
       "acceptance_evidence": [
         "Current Phase 2 typed exit=passed：runtime 628 passed/13 skipped、#105 transaction 106、Skill/package/eval 180、finalizer + #116/#117 33、focused owner projection 6、active/archive 6、preset 45、ownership 9；29 条 retained command evidence identity 全部重算匹配，current P0/P1/P2/P3 open findings 均为 0。",
         "Branch Review 覆盖 origin/main...1e5b1479b72e5b253c9755244be87f906cf855f4 的 559-path/10-commit range；Round 18 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead。",
-        "Full local-source clean throwaway current-candidate chain rc=0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution、ownership、overlay drift 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
-        {
-          "type": "remote_marketplace_verification",
-          "status": "passed",
-          "required": true,
-          "artifact_path": "marketplace-verification.json",
-          "artifact_sha256": "66625c4de68a8997e4a2c882fa83f6e0a38a85b0debb6025d37f86ac794d7336",
-          "verified_content_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
-          "remote_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
-          "publish_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
-          "commands_passed": true
-        }
+        "Full local-source clean throwaway current-candidate chain rc=0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution、ownership、overlay drift 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。"
       ]
     }
   ],
