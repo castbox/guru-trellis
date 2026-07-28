@@ -460,7 +460,212 @@
     "plan_digest": "6a8d55792a13690e7549f2ed82425e9bcea04ef29767cf1bb8b4d1f00fdf07b1"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-28T03:27:01Z",
+    "commit_sha": "362f8cd62c62621e892b46e68763ae4323460871",
+    "parent": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+    "message_sha256": "853e79049287f92b893fe94dd9277160c4c16a41b0bab5ee26e8cb9cd588075d",
+    "committed_paths": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-live-wrapper-namespace-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-015-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "adbc382354c27769adcf0c227c5b158a4046cc3a",
+      "actual_tree": "adbc382354c27769adcf0c227c5b158a4046cc3a",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "4be7b5ccebe37facb7a6c4c351ee74e1c445cd91",
+          "expected_mode": "100755",
+          "actual_blob": "4be7b5ccebe37facb7a6c4c351ee74e1c445cd91",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          "expected_blob": "c1cce46828a28802a1d3ba5becf49275388ccb14",
+          "expected_mode": "100644",
+          "actual_blob": "c1cce46828a28802a1d3ba5becf49275388ccb14",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+          "expected_blob": "ff48956d4d6ba7b9a237e5f95d9e7b671a03321f",
+          "expected_mode": "100644",
+          "actual_blob": "ff48956d4d6ba7b9a237e5f95d9e7b671a03321f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          "expected_blob": "faa8387238d6c17b1487c901d2ff4178a9f17d64",
+          "expected_mode": "100644",
+          "actual_blob": "faa8387238d6c17b1487c901d2ff4178a9f17d64",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-live-wrapper-namespace-fix.md",
+          "expected_blob": "24731aef8c8457e708c106110174fdee1bc63636",
+          "expected_mode": "100644",
+          "actual_blob": "24731aef8c8457e708c106110174fdee1bc63636",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          "expected_blob": "c49a6773104c6bbff7b2123385f1d1a6740b400f",
+          "expected_mode": "100644",
+          "actual_blob": "c49a6773104c6bbff7b2123385f1d1a6740b400f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md",
+          "expected_blob": "a88bd324a055df93b472da398e3316b2e97cb40d",
+          "expected_mode": "100644",
+          "actual_blob": "a88bd324a055df93b472da398e3316b2e97cb40d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
+          "expected_blob": "ade29f530252a74b9e0c51c40ca58ab262cb569f",
+          "expected_mode": "100644",
+          "actual_blob": "ade29f530252a74b9e0c51c40ca58ab262cb569f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          "expected_blob": "eab91347a6a51953ef65fac403072cc09670f20f",
+          "expected_mode": "100644",
+          "actual_blob": "eab91347a6a51953ef65fac403072cc09670f20f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
+          "expected_blob": "978fab4ca89214516aa7c789912f7d0343d7b23c",
+          "expected_mode": "100644",
+          "actual_blob": "978fab4ca89214516aa7c789912f7d0343d7b23c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json",
+          "expected_blob": "c29f2cddf4950a0d429f879f14623acb0569c02d",
+          "expected_mode": "100644",
+          "actual_blob": "c29f2cddf4950a0d429f879f14623acb0569c02d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          "expected_blob": "9b516900429d90b3109b2c737978b515f3f125c8",
+          "expected_mode": "100644",
+          "actual_blob": "9b516900429d90b3109b2c737978b515f3f125c8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+          "expected_blob": "ebd0582fb07b441fe8fc9205a5c57af7244117db",
+          "expected_mode": "100644",
+          "actual_blob": "ebd0582fb07b441fe8fc9205a5c57af7244117db",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          "expected_blob": "fac94da64c5d25529cde5acca3a6eb4b9a8ede6c",
+          "expected_mode": "100644",
+          "actual_blob": "fac94da64c5d25529cde5acca3a6eb4b9a8ede6c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+          "expected_blob": "a99848b626b87fcb24fab872cd7c1fed4e575e24",
+          "expected_mode": "100644",
+          "actual_blob": "a99848b626b87fcb24fab872cd7c1fed4e575e24",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-015-final-release.md",
+          "expected_blob": "0f147e9b7fbcd18327d076efa7d746c3a1c283c6",
+          "expected_mode": "100644",
+          "actual_blob": "0f147e9b7fbcd18327d076efa7d746c3a1c283c6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
+          "expected_blob": "ff8e8402043df6486639ca2a306ea5c379254d0c",
+          "expected_mode": "100644",
+          "actual_blob": "ff8e8402043df6486639ca2a306ea5c379254d0c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+          "expected_blob": "c430de1012a628f30b17d6d5dc9255c6a5aaa13a",
+          "expected_mode": "100644",
+          "actual_blob": "c430de1012a628f30b17d6d5dc9255c6a5aaa13a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+          "expected_blob": "4ecb9e0a11710b4b82c83880992f34ff88f0fff5",
+          "expected_mode": "100644",
+          "actual_blob": "4ecb9e0a11710b4b82c83880992f34ff88f0fff5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "4be7b5ccebe37facb7a6c4c351ee74e1c445cd91",
+          "expected_mode": "100755",
+          "actual_blob": "4be7b5ccebe37facb7a6c4c351ee74e1c445cd91",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "111f1066b5c255e38994b3c7c8b66af9f6a82e86",
+          "expected_mode": "100644",
+          "actual_blob": "111f1066b5c255e38994b3c7c8b66af9f6a82e86",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

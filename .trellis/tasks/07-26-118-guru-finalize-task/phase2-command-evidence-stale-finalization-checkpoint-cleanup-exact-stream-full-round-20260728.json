@@ -1,0 +1,3223 @@
+{
+  "agent_evidence": {
+    "artifact": {
+      "agents_count": 46,
+      "artifact_head": "362f8cd62c62621e892b46e68763ae4323460871",
+      "effective_status_events_count": 521,
+      "event_corrections_count": 0,
+      "modified_at": "2026-07-28T05:46:43.014571+00:00",
+      "notes": "platform_nickname \u4ec5\u4f5c\u5c55\u793a\uff1bgate \u5224\u65ad\u4f7f\u7528 logical_role\u3001agent_id\u3001HEAD\u3001digest \u4e0e AI/human \u8bb0\u5f55\u7684\u590d\u7528\u51b3\u7b56\u3002",
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "recovery_links_count": 0,
+      "reuse_decisions_count": 16,
+      "review_rounds_count": 16,
+      "roles": [
+        "\u5b9e\u73b0\u4ee3\u7406",
+        "\u6700\u7ec8\u653e\u884c\u5ba1\u67e5\u4ee3\u7406",
+        "\u95ee\u9898\u53d1\u73b0\u5ba1\u67e5\u4ee3\u7406",
+        "\u95ee\u9898\u95ed\u73af\u5ba1\u67e5\u4ee3\u7406",
+        "\u9636\u6bb5\u4e8c\u68c0\u67e5\u4ee3\u7406"
+      ],
+      "schema_version": "1.2",
+      "sha256": "332de714bca56e6db4e114b72e2eed4397a3a45f305dc819108dd871c59d4a8b",
+      "size_bytes": 657501,
+      "status_events_count": 521,
+      "task": ".trellis/tasks/07-26-118-guru-finalize-task"
+    },
+    "current_round_check_agent": "/root/issue118_phase2_stale_checkpoint_exact_stream",
+    "validator_status": "ok"
+  },
+  "artifact_type": "phase2-command-evidence-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728",
+  "capture": {
+    "cleanup_status": "verified_absent_after_json_readback",
+    "cleanup_verified_absent": true,
+    "integrity_readback": {
+      "all_argv_exact_lists": true,
+      "all_nonzero_have_rationale": true,
+      "all_record_digest_size_match": true,
+      "all_stream_digest_size_match": true,
+      "duplicate_ids": [],
+      "errors": [],
+      "manifest_command_count": 72,
+      "manifest_stream_count": 144,
+      "recomputed_command_count": 72,
+      "recomputed_stream_count": 144,
+      "unique_id_count": 72
+    },
+    "location_policy": "repo-external safe temporary directory",
+    "manifest": {
+      "command_count": 72,
+      "sha256": "d9b609253283de90cab832ceb185aa8fb7a3c814f09a58dc748363c5b3899248",
+      "size_bytes": 118298,
+      "stream_count": 144
+    },
+    "raw_streams_retained_through_json_readback": true,
+    "temporary_root": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures"
+  },
+  "check_execution": {
+    "commands": [
+      {
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "current",
+          "--source"
+        ],
+        "completed_at": "2026-07-28T05:47:11Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 159,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "active-task",
+        "record_locator": "active-task.record.json",
+        "record_sha256": "3a5bf441232fac76000032c914202219ae3109eb930ddf17f961b92205e935d5",
+        "record_size_bytes": 998,
+        "started_at": "2026-07-28T05:47:11Z",
+        "status": "passed",
+        "stderr_locator": "active-task.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "active-task.stdout",
+        "stdout_sha256": "89842a60a1a13c76cf84db7b521ac0eb272b390acb21cb66bf8b33c1ef573f39",
+        "stdout_size_bytes": 126,
+        "summary": "Active task resolves exactly to Issue #118 task."
+      },
+      {
+        "argv": [
+          "pwd"
+        ],
+        "completed_at": "2026-07-28T05:47:11Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 3,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "pwd",
+        "record_locator": "pwd.record.json",
+        "record_sha256": "46d86672357cf647a0ca1908c186f2a50bc33516729e872b54cb2b105142ccdd",
+        "record_size_bytes": 902,
+        "started_at": "2026-07-28T05:47:11Z",
+        "status": "passed",
+        "stderr_locator": "pwd.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "pwd.stdout",
+        "stdout_sha256": "3b2d75bb35e9d1f870e1eb06be1d970d2d2c40cdb7044dcbd76555d1ea6b47b6",
+        "stdout_size_bytes": 83,
+        "summary": "Command cwd is the required Issue #118 worktree."
+      },
+      {
+        "argv": [
+          "git",
+          "rev-parse",
+          "--show-toplevel"
+        ],
+        "completed_at": "2026-07-28T05:47:11Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 8,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "repository-root",
+        "record_locator": "repository-root.record.json",
+        "record_sha256": "d5c1d5a667536b140a7710bdacb9935b02139adc7d40c05fdfc50ed5086649b5",
+        "record_size_bytes": 979,
+        "started_at": "2026-07-28T05:47:11Z",
+        "status": "passed",
+        "stderr_locator": "repository-root.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "repository-root.stdout",
+        "stdout_sha256": "3b2d75bb35e9d1f870e1eb06be1d970d2d2c40cdb7044dcbd76555d1ea6b47b6",
+        "stdout_size_bytes": 83,
+        "summary": "Git root equals the required Issue #118 worktree."
+      },
+      {
+        "argv": [
+          "bash",
+          "-c",
+          "printf 'HEAD='; git rev-parse HEAD; printf 'origin/main='; git rev-parse origin/main; printf 'branch='; git branch --show-current"
+        ],
+        "completed_at": "2026-07-28T05:47:11Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 26,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "repository-identity",
+        "record_locator": "repository-identity.record.json",
+        "record_sha256": "09688a18b70ea3ed67f518a3d0102a4537b9a30a72ed9a99a2ec9e62a5b8c199",
+        "record_size_bytes": 1098,
+        "started_at": "2026-07-28T05:47:11Z",
+        "status": "passed",
+        "stderr_locator": "repository-identity.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "repository-identity.stdout",
+        "stdout_sha256": "3030ea66c375e043dacb09a7a987337de9e9d8ca0785b2f19d0636c5ffee0c0d",
+        "stdout_size_bytes": 134,
+        "summary": "Captured HEAD, base HEAD, and branch identity."
+      },
+      {
+        "argv": [
+          "git",
+          "-C",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis",
+          "status",
+          "--porcelain=v1",
+          "--branch"
+        ],
+        "completed_at": "2026-07-28T05:47:11Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 25,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "source-checkout-status-before",
+        "record_locator": "source-checkout-status-before.record.json",
+        "record_sha256": "fc7aca219f4dde8c718f87de0c1f2cdb0c6f06df19d27941306627c4ce92347f",
+        "record_size_bytes": 1102,
+        "started_at": "2026-07-28T05:47:11Z",
+        "status": "passed",
+        "stderr_locator": "source-checkout-status-before.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "source-checkout-status-before.stdout",
+        "stdout_sha256": "5fbcb2990ad25e368c12219bf3ddca36e464d044e7acac16696fa8cd54159185",
+        "stdout_size_bytes": 22,
+        "summary": "Source checkout status captured before validation."
+      },
+      {
+        "argv": [
+          "git",
+          "status",
+          "--porcelain=v1",
+          "--branch"
+        ],
+        "completed_at": "2026-07-28T05:47:11Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 30,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "repository-status-before",
+        "record_locator": "repository-status-before.record.json",
+        "record_sha256": "f20303d9fc70b30d074a7920633f810907fae5133f4d69ade825fe1e6e52d917",
+        "record_size_bytes": 1020,
+        "started_at": "2026-07-28T05:47:11Z",
+        "status": "passed",
+        "stderr_locator": "repository-status-before.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "repository-status-before.stdout",
+        "stdout_sha256": "3dbc8ca678e16315892c01bf6ec52b99cb5b1888c4578124ce74eefbb312e78f",
+        "stdout_size_bytes": 1198,
+        "summary": "Task worktree status captured before validation."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T05:47:11Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 255,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "workspace-boundary",
+        "record_locator": "workspace-boundary.record.json",
+        "record_sha256": "478fd9820a89f1e5f675aae65e34ebe73f7806eb2adf47cbb64184c305b4f885",
+        "record_size_bytes": 1127,
+        "started_at": "2026-07-28T05:47:11Z",
+        "status": "passed",
+        "stderr_locator": "workspace-boundary.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "workspace-boundary.stdout",
+        "stdout_sha256": "e34be8d3a005b668b1db9dbfb29f413071bfa51f328f7d3a0583e1ce2eebe0ac",
+        "stdout_size_bytes": 1852,
+        "summary": "Workspace boundary, source checkout, task worktree, and suspicious artifacts validated."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-planning-approval.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T05:47:28Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 17032,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "planning-approval",
+        "record_locator": "planning-approval.record.json",
+        "record_sha256": "6731023391b649759494938f456f4e8c869efbd8316e0be4fbbd5d10dbde4503",
+        "record_size_bytes": 1102,
+        "started_at": "2026-07-28T05:47:11Z",
+        "status": "passed",
+        "stderr_locator": "planning-approval.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "planning-approval.stdout",
+        "stdout_sha256": "7902e38ff1b07940d1f51f648ea08b7ed3ad52ec99547ec5cc6d44d6f839c06c",
+        "stdout_size_bytes": 738,
+        "summary": "Current planning approval and approved content digests validated."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-agent-assignment.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task",
+          "--require-current-head"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 5400,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "agent-assignment",
+        "record_locator": "agent-assignment.record.json",
+        "record_sha256": "6d10fcd5b90cbda661a891f14e009d7c1b915ce1e110a1b0a67e7b9688592d97",
+        "record_size_bytes": 1136,
+        "started_at": "2026-07-28T05:47:28Z",
+        "status": "passed",
+        "stderr_locator": "agent-assignment.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "agent-assignment.stdout",
+        "stdout_sha256": "f830b7dfd8bef338c1270283c3c12449df2b1cbe592e5321dcbc6c5324bd8f67",
+        "stdout_size_bytes": 1369,
+        "summary": "Current implementation/check assignment and recovery structure validated."
+      },
+      {
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 38,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "entry",
+        "id": "task-validate",
+        "record_locator": "task-validate.record.json",
+        "record_sha256": "059e36f45607a13e5a49b23e42ef444d953eb34ea070e5c8beb5991866143d3a",
+        "record_size_bytes": 1022,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "task-validate.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "task-validate.stdout",
+        "stdout_sha256": "53258e0eefd6d7cbd1d1af4e22029d99c1893edd325760ec743864222d862c58",
+        "stdout_size_bytes": 311,
+        "summary": "Task JSONL structure validated."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "\nimport json\nimport pathlib\nimport subprocess\n\nrows = subprocess.check_output(\n    [\"git\", \"status\", \"--porcelain=v1\"], text=True\n).splitlines()\nparsed = []\nskipped_deleted = []\nfor row in rows:\n    code = row[:2]\n    path = row[3:]\n    if \" -> \" in path:\n        path = path.split(\" -> \", 1)[1]\n    if not path.endswith(\".json\"):\n        continue\n    candidate = pathlib.Path(path)\n    if \"D\" in code and not candidate.exists():\n        skipped_deleted.append(path)\n        continue\n    with candidate.open(\"r\", encoding=\"utf-8\") as handle:\n        json.load(handle)\n    parsed.append(path)\nprint(json.dumps({\n    \"parsed_count\": len(parsed),\n    \"parsed_paths\": sorted(parsed),\n    \"intentionally_deleted_json\": sorted(skipped_deleted),\n}, sort_keys=True))\n"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 56,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "changed-existing-json",
+        "record_locator": "changed-existing-json.record.json",
+        "record_sha256": "d1bb527a1dd4e7f0d59df0aef57417dab29457326ef655845aaca1d3d7284b9b",
+        "record_size_bytes": 1833,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "changed-existing-json.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "changed-existing-json.stdout",
+        "stdout_sha256": "83027bc9570c903205a384e31cdd715f4b1c3db34ed734e021f381bfad5f5880",
+        "stdout_size_bytes": 761,
+        "summary": "Every changed JSON that still exists parses; intended checkpoint deletions are explicit."
+      },
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 23,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "current-dirty-diff-check",
+        "record_locator": "current-dirty-diff-check.record.json",
+        "record_sha256": "63ec1f21ee8358e86cb5a207a5aa6c1da7fb33306e8cc6633f8dc4a24a9e8aa3",
+        "record_size_bytes": 989,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "current-dirty-diff-check.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "current-dirty-diff-check.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Current dirty diff has no whitespace errors."
+      },
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--check",
+          "origin/main...HEAD"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 117,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 2,
+        "expected_exit_codes": [
+          2
+        ],
+        "expected_nonzero_rationale": "The only diagnostic is immutable historical reviews/round-009-finding-closure.md:203; current cleanup does not rewrite raw review evidence.",
+        "group": "static",
+        "id": "committed-diff-check",
+        "record_locator": "committed-diff-check.record.json",
+        "record_sha256": "0e2608f31bad52ebf77dbf2c72729be76601a85317b40db8fc68ea814496f257",
+        "record_size_bytes": 1189,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "expected_nonzero",
+        "stderr_locator": "committed-diff-check.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "committed-diff-check.stdout",
+        "stdout_sha256": "35b2d142684e8b84d7bc4221f8d92ba49b9f2e926c237b702991bfe913b4e14a",
+        "stdout_size_bytes": 211,
+        "summary": "Historical raw review evidence retains one known trailing-whitespace diagnostic."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "\nimport hashlib\nimport json\nimport pathlib\nimport subprocess\n\ntask = pathlib.Path(\".trellis/tasks/07-26-118-guru-finalize-task\")\nnames = [\"closeout-plan.json\", \"task-finalization-gate.json\"]\nexpected = {\n    \"closeout-plan.json\": (\n        \"d26f1f9ba335c83c6c9af17ce197688a2e78075f1dddee42deb497e457307f13\",\n        208175,\n    ),\n    \"task-finalization-gate.json\": (\n        \"711042c6d1ad9db7c6d8ea89bf036a1bda3b80b5cf393466d0a449e4e1f11876\",\n        3085,\n    ),\n}\nresult = []\nfor name in names:\n    path = task / name\n    assert not path.exists(), f\"active checkpoint still exists: {path}\"\n    locator = f\"HEAD:{path.as_posix()}\"\n    payload = subprocess.check_output([\"git\", \"show\", locator])\n    digest = hashlib.sha256(payload).hexdigest()\n    size = len(payload)\n    assert (digest, size) == expected[name], (name, digest, size)\n    result.append({\n        \"path\": path.as_posix(),\n        \"active_exists\": False,\n        \"git_locator\": locator,\n        \"historical_sha256\": digest,\n        \"historical_size_bytes\": size,\n    })\nprint(json.dumps({\"deleted_active_checkpoints\": result}, sort_keys=True))\n"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 43,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "review",
+        "id": "deleted-checkpoint-audit",
+        "record_locator": "deleted-checkpoint-audit.record.json",
+        "record_sha256": "fe19c52b3f55e071be793eca7d79144d4a3a23b518b9160d98ad6d7b2c60e5a0",
+        "record_size_bytes": 2219,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "deleted-checkpoint-audit.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "deleted-checkpoint-audit.stdout",
+        "stdout_sha256": "dd2841ce91b9312c38a4fefe76cd17e234b3efb9ee10a444b33683965c56ebb4",
+        "stdout_size_bytes": 665,
+        "summary": "Both stale active checkpoints are absent and their exact historical HEAD blobs remain recoverable."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "\nimport hashlib\nimport json\nimport pathlib\n\nbase = pathlib.Path(\".trellis/tasks/07-26-118-guru-finalize-task\")\nexpected = {\n    \"implementation-handoff-live-wrapper-namespace-fix.md\":\n        (\"2154f3ee9ffdafeb61d0a254c78437eec5a91744657e37ab8bc803c877514b6c\", 3826),\n    \"phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md\":\n        (\"2a74ae2f84742b75c126cccf0bd77c06cc22d16f0d8faa5b9cf498acb85fae30\", 13876),\n    \"phase2-check-live-wrapper-namespace-fix-full-round.md\":\n        (\"d6f594a610cddd857c7a8e221ede26744ab90c79fd48ed68e31294eeb4de6830\", 12593),\n    \"phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json\":\n        (\"6bf7d3f77d235b4d712a854969c5ff976c3d950787753595c7dc3761153086a1\", 281289),\n    \"phase2-command-evidence-live-wrapper-namespace-fix-full-round.json\":\n        (\"de1e29c39de44663b35a6bc9f6c6065cff4beb5e36c141f9b361080b9b3c5d88\", 12794),\n    \"reviews/round-016-final-release.md\":\n        (\"a9bb25dba2ccce44fc6e2d175ea7739b18f0ff6023f3b25ef440d6c26f34a651\", 15214),\n    \"task-commit-plans/008.json\":\n        (\"be4175c6c79b825b670f44b10ff78124f6841d7e2efe5460bd0513fb147aa69f\", 37348),\n}\nrows = []\nfor relative, wanted in expected.items():\n    path = base / relative\n    payload = path.read_bytes()\n    actual = (hashlib.sha256(payload).hexdigest(), len(payload))\n    assert actual == wanted, (relative, actual, wanted)\n    rows.append({\n        \"path\": path.as_posix(),\n        \"sha256\": actual[0],\n        \"size_bytes\": actual[1],\n    })\nprint(json.dumps({\"count\": len(rows), \"paths\": rows}, sort_keys=True))\n"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 23,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "review",
+        "id": "preserved-evidence-audit",
+        "record_locator": "preserved-evidence-audit.record.json",
+        "record_sha256": "68e9d0b951981a2840dec0139a3fea146d64145f2b1e6e9589f819bb174eafc3",
+        "record_size_bytes": 2668,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "preserved-evidence-audit.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "preserved-evidence-audit.stdout",
+        "stdout_sha256": "b4f46c232d9cc605fee35260ac91a29e2733d2bae79c78870b03525a8557a8e0",
+        "stdout_size_bytes": 1499,
+        "summary": "All seven normal-workflow evidence paths retain their exact expected bytes."
+      },
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--exit-code",
+          "HEAD",
+          "--",
+          "trellis/skills/guru-team",
+          "trellis/workflows/guru-team",
+          "trellis/presets/guru-team",
+          ".trellis/guru-team",
+          ".agents/skills",
+          ".codex/skills",
+          ".claude/skills",
+          ".cursor/skills",
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 11,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "review",
+        "id": "public-runtime-no-dirty-change",
+        "record_locator": "public-runtime-no-dirty-change.record.json",
+        "record_sha256": "89d4fa71cc6117053c903bf5497bb740e5bf1d2f9e105efd6337bc6fb7006076",
+        "record_size_bytes": 1359,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "public-runtime-no-dirty-change.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "public-runtime-no-dirty-change.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Cleanup introduces no runtime, API, schema, docs, test, workflow, preset, overlay, or platform-copy dirty delta."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "\nimport json\nimport pathlib\nimport subprocess\n\ntask = pathlib.Path(\".trellis/tasks/07-26-118-guru-finalize-task\")\napproval = json.loads((task / \"planning-approval.json\").read_text())\nhandoff = (task / \"implementation-handoff-stale-finalization-checkpoint-cleanup.md\").read_text()\ndirty = subprocess.check_output([\"git\", \"status\", \"--porcelain=v1\"], text=True).splitlines()\ndurable_prefixes = (\n    \".trellis/spec/\",\n    \"README.md\",\n    \"trellis/workflows/guru-team/README.md\",\n    \"trellis/presets/guru-team/README.md\",\n    \"trellis/workflows/guru-team/workflow.md\",\n    \".trellis/workflow.md\",\n    \"trellis/skills/\",\n    \".trellis/guru-team/skills/\",\n    \".agents/skills/\",\n    \".codex/skills/\",\n    \".claude/skills/\",\n    \".cursor/skills/\",\n)\ndirty_durable = []\nfor row in dirty:\n    path = row[3:].split(\" -> \", 1)[-1]\n    if any(path == prefix or path.startswith(prefix) for prefix in durable_prefixes):\n        dirty_durable.append(path)\nassert approval[\"docs_ssot_plan\"][\"strategy\"] == \"ssot_first\"\nassert \"no_docs_update_needed\" in handoff\nassert \"\u4e0d\u4fee\u6539 runtime\u3001schemas\u3001examples\u3001tests\u3001workflow\u3001preset\u3001overlay\u3001README\" in handoff\nassert not dirty_durable, dirty_durable\nprint(json.dumps({\n    \"approved_strategy\": \"ssot_first\",\n    \"cleanup_result\": \"no_docs_update_needed\",\n    \"durable_dirty_paths\": dirty_durable,\n    \"task_history_only\": True,\n    \"durable_paths\": approval[\"docs_ssot_plan\"][\"durable_paths\"],\n}, sort_keys=True))\n"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 52,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "review",
+        "id": "docs-ssot-reconciliation",
+        "record_locator": "docs-ssot-reconciliation.record.json",
+        "record_sha256": "37087a4b6d90130afe810473251bd2e6b6c9b2ccfb1723245797786b6cfd1226",
+        "record_size_bytes": 2665,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "docs-ssot-reconciliation.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "docs-ssot-reconciliation.stdout",
+        "stdout_sha256": "4680224e749dad09b6ae4fc3cf11b660e471af7a0fa79d43bb7743a1335677a5",
+        "stdout_size_bytes": 423,
+        "summary": "Approved ssot_first implementation remains durable; cleanup correctly uses no_docs_update_needed and task-history-only provenance."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "\nimport json\nimport pathlib\nimport re\n\ntask = pathlib.Path(\".trellis/tasks/07-26-118-guru-finalize-task\")\nledger = json.loads((task / \"issue-scope-ledger.json\").read_text())\nbody = (task / \"pr-body.md\").read_text()\nclose = [item[\"number\"] for item in ledger[\"close_issues\"]]\nrelated = [item[\"number\"] for item in ledger[\"related_issues\"]]\nfollowup = [item[\"number\"] for item in ledger[\"followup_issues\"]]\ncloses = [int(value) for value in re.findall(r\"(?im)^Closes #([0-9]+)\\s*$\", body)]\nassert close == [118]\nassert 115 in related\nassert {119, 132}.issubset(set(followup))\nassert closes == [118]\nprint(json.dumps({\n    \"close_issues\": close,\n    \"related_issues\": related,\n    \"followup_issues\": followup,\n    \"pr_closes\": closes,\n}, sort_keys=True))\n"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 20,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "review",
+        "id": "issue-scope-ledger-audit",
+        "record_locator": "issue-scope-ledger-audit.record.json",
+        "record_sha256": "8f04f9ba2f82686d991f5c0a2e4e00e5dc4a005bc45845fdd17359aa7c75cd7b",
+        "record_size_bytes": 1819,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "issue-scope-ledger-audit.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "issue-scope-ledger-audit.stdout",
+        "stdout_sha256": "7519eafc2031af3a29417906ee4c5657d47966b88abe301376687ffdc7965e01",
+        "stdout_size_bytes": 104,
+        "summary": "Ledger and PR body close only #118 and preserve #115/#119/#132 boundaries."
+      },
+      {
+        "argv": [
+          "bash",
+          "-c",
+          "find . -path './.git' -prune -o -path './.trellis/.runtime' -prune -o -maxdepth 3 -type f \\( -name 'pyproject.toml' -o -name 'mypy.ini' -o -name 'pyrightconfig.json' -o -name 'ruff.toml' -o -name '.ruff.toml' \\) -print; rg -n '(^|[[:space:]])(ruff|mypy|pyright)([[:space:]]|$)' Makefile pyproject.toml setup.cfg tox.ini .github 2>/dev/null || true"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 8,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "configured-lint-typecheck-discovery",
+        "record_locator": "configured-lint-typecheck-discovery.record.json",
+        "record_sha256": "f331d0b7871b3656301b46f045d0deeec08db5bd8add71d7add436aff683c139",
+        "record_size_bytes": 1387,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "configured-lint-typecheck-discovery.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "configured-lint-typecheck-discovery.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "No separately configured ruff/mypy/pyright repository gate was found."
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "json.tool",
+          "trellis/index.json"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 24,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "marketplace-index-json",
+        "record_locator": "marketplace-index-json.record.json",
+        "record_sha256": "2e60fde1b0c44804c7820aa1ec9e9d5b2e18b3811bbca8a668647afd0839027a",
+        "record_size_bytes": 1003,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "marketplace-index-json.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "marketplace-index-json.stdout",
+        "stdout_sha256": "101d90da22a6d19aaeec41f08da41b7176c041de4e2c0ab9058624e1d496d51c",
+        "stdout_size_bytes": 773,
+        "summary": "Marketplace index is valid JSON."
+      },
+      {
+        "argv": [
+          "bash",
+          "-c",
+          "find trellis/workflows/guru-team/scripts/bash trellis/presets/guru-team/scripts/bash trellis/skills/guru-team/packages/guru-finalize-task/scripts .trellis/guru-team/skills/packages/guru-finalize-task/scripts .agents/skills/guru-finalize-task/scripts .codex/skills/guru-finalize-task/scripts .claude/skills/guru-finalize-task/scripts .cursor/skills/guru-finalize-task/scripts -type f -name '*.sh' -print0 | xargs -0 bash -n"
+        ],
+        "completed_at": "2026-07-28T05:47:34Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 7,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "bash-syntax",
+        "record_locator": "bash-syntax.record.json",
+        "record_sha256": "52f1c44130f5034a83e38482d0024a8e289c827d5ca547594a6760d971822d06",
+        "record_size_bytes": 1395,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "bash-syntax.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "bash-syntax.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Canonical, installed, and platform finalizer shell scripts pass bash syntax."
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "py_compile",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py"
+        ],
+        "completed_at": "2026-07-28T05:47:35Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 886,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "python-compile",
+        "record_locator": "python-compile.record.json",
+        "record_sha256": "4394a9d9a7b8816e50ee9bed14de44c6627e776ba40098bf36152cab74bc202f",
+        "record_size_bytes": 1560,
+        "started_at": "2026-07-28T05:47:34Z",
+        "status": "passed",
+        "stderr_locator": "python-compile.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "python-compile.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Applicable Python source compiles with cache redirected outside the repository."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "source",
+          "--json"
+        ],
+        "completed_at": "2026-07-28T05:47:35Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 410,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "source-package-validator",
+        "record_locator": "source-package-validator.record.json",
+        "record_sha256": "ce3fb93e4c0c42289ddacdfa5cb983bc766cec85533f2fa40af02bc4f1865180",
+        "record_size_bytes": 1206,
+        "started_at": "2026-07-28T05:47:35Z",
+        "status": "passed",
+        "stderr_locator": "source-package-validator.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "source-package-validator.stdout",
+        "stdout_sha256": "1c6b31cc2c6df8d7682eb57b6097bdfed893eab3bdaf4c9d4fe42800f5880d2a",
+        "stdout_size_bytes": 1346,
+        "summary": "Canonical package graph, schemas, wrappers, examples, and workflow markers validate."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "installed",
+          "--json"
+        ],
+        "completed_at": "2026-07-28T05:47:36Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1203,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "installed-package-validator",
+        "record_locator": "installed-package-validator.record.json",
+        "record_sha256": "0ddb8fba9e2db2a936a26bf5aa91466591ee908704fca1c9c0437d7ce15dbaac",
+        "record_size_bytes": 1226,
+        "started_at": "2026-07-28T05:47:35Z",
+        "status": "passed",
+        "stderr_locator": "installed-package-validator.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "installed-package-validator.stdout",
+        "stdout_sha256": "906e4ce2e0ca4b62de1924cf1caa5b01e8a751b956c2e7490805198d5750280f",
+        "stdout_size_bytes": 1535,
+        "summary": "Installed managed package graph, modes, hashes, removals, conflicts, and sidecars validate."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+          "--repo",
+          ".",
+          "--json"
+        ],
+        "completed_at": "2026-07-28T05:47:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 52,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "upstream-ownership-validator",
+        "record_locator": "upstream-ownership-validator.record.json",
+        "record_sha256": "cc51bed1657712d625c61d71e3f003f27daaef84a3904a93dda6a7a3ecda68ca",
+        "record_size_bytes": 1119,
+        "started_at": "2026-07-28T05:47:36Z",
+        "status": "passed",
+        "stderr_locator": "upstream-ownership-validator.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "upstream-ownership-validator.stdout",
+        "stdout_sha256": "5403ca759ffa967dbcc231bab5f5d000f8b9da2e12bfb82789458eacea1183e5",
+        "stdout_size_bytes": 1731,
+        "summary": "Frozen upstream ownership inventory and current bindings validate."
+      },
+      {
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
+        ],
+        "completed_at": "2026-07-28T05:47:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 135,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "dogfood-overlay-drift",
+        "record_locator": "dogfood-overlay-drift.record.json",
+        "record_sha256": "734ee2b9029f0cbd3c0f5b35e80f3142336284c5a0bba53fd861a43d6a5c1ea5",
+        "record_size_bytes": 1033,
+        "started_at": "2026-07-28T05:47:37Z",
+        "status": "passed",
+        "stderr_locator": "dogfood-overlay-drift.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "dogfood-overlay-drift.stdout",
+        "stdout_sha256": "b3bafca507c4743e965cd81eed5d8ee845c91589afaf38a18f1702ef854e4bd5",
+        "stdout_size_bytes": 1790,
+        "summary": "Dogfood overlay bytes match canonical overlay sources."
+      },
+      {
+        "argv": [
+          "cmp",
+          "-s",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "completed_at": "2026-07-28T05:47:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 4,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "runtime-canonical-dogfood-parity",
+        "record_locator": "runtime-canonical-dogfood-parity.record.json",
+        "record_sha256": "a19ff3fc8621fcf41e650c3ba975cdbb9a4cae1182502bbe00c497d110367121",
+        "record_size_bytes": 1136,
+        "started_at": "2026-07-28T05:47:37Z",
+        "status": "passed",
+        "stderr_locator": "runtime-canonical-dogfood-parity.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "runtime-canonical-dogfood-parity.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Canonical and installed runtime bytes are identical."
+      },
+      {
+        "argv": [
+          "bash",
+          "-c",
+          "for p in .trellis/guru-team/skills/packages/guru-finalize-task .agents/skills/guru-finalize-task .codex/skills/guru-finalize-task .claude/skills/guru-finalize-task .cursor/skills/guru-finalize-task; do diff -qr trellis/skills/guru-team/packages/guru-finalize-task \"$p\"; done"
+        ],
+        "completed_at": "2026-07-28T05:47:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 20,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "finalizer-package-parity",
+        "record_locator": "finalizer-package-parity.record.json",
+        "record_sha256": "da67bfcd26880d173b0fa8ffff514e47176f2a701bea80e8ddc297faafe503bb",
+        "record_size_bytes": 1311,
+        "started_at": "2026-07-28T05:47:37Z",
+        "status": "passed",
+        "stderr_locator": "finalizer-package-parity.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "finalizer-package-parity.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Installed shared, Agents, Codex, Claude, and Cursor package trees are byte-identical to canonical."
+      },
+      {
+        "argv": [
+          "shasum",
+          "-a",
+          "256",
+          "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+          ".agents/skills/guru-finalize-task/evals/evals.json",
+          ".codex/skills/guru-finalize-task/evals/evals.json",
+          ".claude/skills/guru-finalize-task/evals/evals.json",
+          ".cursor/skills/guru-finalize-task/evals/evals.json"
+        ],
+        "completed_at": "2026-07-28T05:47:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 82,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "finalizer-corpus-byte-identity",
+        "record_locator": "finalizer-corpus-byte-identity.record.json",
+        "record_sha256": "62cd14b3662a4afe0b3ea0ae48966fc2a67dcc866d0ee2abd180e0a24e4ab6a7",
+        "record_size_bytes": 1417,
+        "started_at": "2026-07-28T05:47:37Z",
+        "status": "passed",
+        "stderr_locator": "finalizer-corpus-byte-identity.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "finalizer-corpus-byte-identity.stdout",
+        "stdout_sha256": "b6eb7bf145fdd4d7b3e6f4a7780ff0a6cd8e6ea6f227f665ae6b206bad04240d",
+        "stdout_size_bytes": 740,
+        "summary": "Canonical/shared/Codex/Claude/Cursor eval corpus bytes are identical."
+      },
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--exit-code",
+          "origin/main",
+          "--",
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md",
+          ".agents/skills/trellis-finish-work",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-finish-work",
+          ".claude/commands/trellis/finish-work.md",
+          ".cursor/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays",
+          ".trellis/scripts/task.py"
+        ],
+        "completed_at": "2026-07-28T05:47:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 10,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "protected-surfaces-no-diff",
+        "record_locator": "protected-surfaces-no-diff.record.json",
+        "record_sha256": "31ef3c549a528baf7c2876ec33ebf0b9de26d88c73b1079dd62f2449c9f42421",
+        "record_size_bytes": 1444,
+        "started_at": "2026-07-28T05:47:37Z",
+        "status": "passed",
+        "stderr_locator": "protected-surfaces-no-diff.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "protected-surfaces-no-diff.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Global workflow, upstream Finish family, overlays, and official task.py remain unchanged."
+      },
+      {
+        "argv": [
+          "git",
+          "diff",
+          "--exit-code",
+          "origin/main",
+          "--",
+          ".github",
+          "Dockerfile",
+          "docker-compose.yml",
+          "docker-compose.yaml",
+          "docker-compose.*.yml",
+          "docker-compose.*.yaml",
+          "k8s",
+          "kubernetes",
+          "deploy",
+          "deployments",
+          "charts",
+          "helm",
+          "migrations",
+          "migration",
+          "db",
+          "terraform",
+          "infra",
+          "Makefile",
+          "makefile"
+        ],
+        "completed_at": "2026-07-28T05:47:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 10,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "static",
+        "id": "deployment-surfaces-no-impact",
+        "record_locator": "deployment-surfaces-no-impact.record.json",
+        "record_sha256": "425a42f90d0c8baf2c44d23104569a27b0816d05200553dc4d6943a2ea6e43a3",
+        "record_size_bytes": 1423,
+        "started_at": "2026-07-28T05:47:37Z",
+        "status": "passed",
+        "stderr_locator": "deployment-surfaces-no-impact.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "deployment-surfaces-no-impact.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "No CI/CD, container, K8s/Helm, DB migration, Terraform, Makefile, or deploy surface changed."
+      },
+      {
+        "argv": [
+          "bash",
+          "-c",
+          "set -o pipefail; git diff --no-ext-diff --unified=0 origin/main -- . ':(exclude).trellis/tasks/07-26-118-guru-finalize-task/reviews/**' | rg -n -- '-----BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{32,}|postgres(ql)?://[^[:space:]]+:[^[:space:]@]+@'"
+        ],
+        "completed_at": "2026-07-28T05:47:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 101,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 1,
+        "expected_exit_codes": [
+          1
+        ],
+        "expected_nonzero_rationale": "rg exit 1 is the expected no-match result and the pipe uses pipefail.",
+        "group": "static",
+        "id": "sensitive-material-scan",
+        "record_locator": "sensitive-material-scan.record.json",
+        "record_sha256": "377ba19b28b0c9ec9a90d029b846664e6a5e6dd6c37f007df072a263e64e1c1a",
+        "record_size_bytes": 1442,
+        "started_at": "2026-07-28T05:47:37Z",
+        "status": "expected_nonzero",
+        "stderr_locator": "sensitive-material-scan.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "sensitive-material-scan.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "No private key, GitHub token, AWS key, OpenAI key, or credential-bearing PostgreSQL URL pattern matched the effective diff."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "completed_at": "2026-07-28T05:50:51Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 193850,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "runtime",
+        "id": "runtime-full-matrix",
+        "record_locator": "runtime-full-matrix.record.json",
+        "record_sha256": "fc68fae12e62eb2c79696b71db9101a6a93a138fe78d18d95d434ac02397c4c2",
+        "record_size_bytes": 1058,
+        "started_at": "2026-07-28T05:47:37Z",
+        "status": "passed",
+        "stderr_locator": "runtime-full-matrix.stderr",
+        "stderr_sha256": "54f96335c3eb8aeb68f0fe8d1c1455a9e26b42852e3a29f64206b46e73b87b23",
+        "stderr_size_bytes": 4452,
+        "stdout_locator": "runtime-full-matrix.stdout",
+        "stdout_sha256": "99e54bd43b71e31e759281c3f300ab9912ba28748b1186e74ad48180ea64185b",
+        "stdout_size_bytes": 2548,
+        "summary": "Full runtime suite expected to report 627 passed and 13 skipped."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "CloseoutTransactionContractTest"
+        ],
+        "completed_at": "2026-07-28T05:52:40Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 109618,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "runtime",
+        "id": "closeout-transaction-matrix",
+        "record_locator": "closeout-transaction-matrix.record.json",
+        "record_sha256": "f7c09ab79481b47806e9edb0bf07740dab1746844d050b9ddeae7e6de302390c",
+        "record_size_bytes": 1130,
+        "started_at": "2026-07-28T05:50:51Z",
+        "status": "passed",
+        "stderr_locator": "closeout-transaction-matrix.stderr",
+        "stderr_sha256": "22607b46dd871c3bc996b7e2604ac81ae545f208eb3509d6df0202c20838cbb0",
+        "stderr_size_bytes": 1599,
+        "stdout_locator": "closeout-transaction-matrix.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "#105 closeout transaction and recovery matrix expected to report 105 passed."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py"
+        ],
+        "completed_at": "2026-07-28T05:58:36Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 355774,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "skills",
+        "id": "skill-package-graph",
+        "record_locator": "skill-package-graph.record.json",
+        "record_sha256": "e99f465aac2135550f0600d277836abafcf998810c74458f892dacd5127f48dc",
+        "record_size_bytes": 1062,
+        "started_at": "2026-07-28T05:52:40Z",
+        "status": "passed",
+        "stderr_locator": "skill-package-graph.stderr",
+        "stderr_sha256": "fc742659360f6de75c10f317e4cdeb0d43bf6bf2895c9849d20278fe2655c654",
+        "stderr_size_bytes": 4510,
+        "stdout_locator": "skill-package-graph.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Complete skill/package/interface/eval/distribution graph expected to report 180 passed."
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "completed_at": "2026-07-28T05:58:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 433,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "skills",
+        "id": "finalizer-owner-contract",
+        "record_locator": "finalizer-owner-contract.record.json",
+        "record_sha256": "4280235e02314304840b91eeb5d16618ab2fdfcf50afccb837a7b5d2d00ad20c",
+        "record_size_bytes": 1087,
+        "started_at": "2026-07-28T05:58:36Z",
+        "status": "passed",
+        "stderr_locator": "finalizer-owner-contract.stderr",
+        "stderr_sha256": "7dd4bf318d1e25e0fc065599bbd30949aaacf57f3d687f8d982f78b43f3d6041",
+        "stderr_size_bytes": 103,
+        "stdout_locator": "finalizer-owner-contract.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Finalizer owner contract expected to report 5 passed."
+      },
+      {
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+        ],
+        "completed_at": "2026-07-28T05:58:49Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 12858,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "skills",
+        "id": "publication-verification-owner-contracts",
+        "record_locator": "publication-verification-owner-contracts.record.json",
+        "record_sha256": "5ee79c9643c1fc957e467aaf464977a109fd7f27750a656109f0bebc4c75b235",
+        "record_size_bytes": 1248,
+        "started_at": "2026-07-28T05:58:37Z",
+        "status": "passed",
+        "stderr_locator": "publication-verification-owner-contracts.stderr",
+        "stderr_sha256": "7cd502666b75fa8f646bc1b6851ceec118f524edfa1effb7fd680837c09d2f89",
+        "stderr_size_bytes": 128,
+        "stdout_locator": "publication-verification-owner-contracts.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "#116/#117 owner contracts expected to report 28 passed."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "completed_at": "2026-07-28T06:00:37Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 107680,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "distribution",
+        "id": "preset-installer-tests",
+        "record_locator": "preset-installer-tests.record.json",
+        "record_sha256": "2423828de29b998619921be01d06e6ae245666aa460c6e0f7079dd38ae4a0fb1",
+        "record_size_bytes": 1072,
+        "started_at": "2026-07-28T05:58:49Z",
+        "status": "passed",
+        "stderr_locator": "preset-installer-tests.stderr",
+        "stderr_sha256": "a290243fe3eedf515b21662680098cebb806f6bdd2289ea175777c35a86a215f",
+        "stderr_size_bytes": 809,
+        "stdout_locator": "preset-installer-tests.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Preset installer test suite expected to report 45 passed."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+        ],
+        "completed_at": "2026-07-28T06:00:38Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 851,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "distribution",
+        "id": "upstream-ownership-tests",
+        "record_locator": "upstream-ownership-tests.record.json",
+        "record_sha256": "8b9f790a54eecf4bb3f662909795cd1ba7a4b3045219eec693191865e1bb8c7c",
+        "record_size_bytes": 1059,
+        "started_at": "2026-07-28T06:00:37Z",
+        "status": "passed",
+        "stderr_locator": "upstream-ownership-tests.stderr",
+        "stderr_sha256": "1e110fc6178e7f3d57161b7c7cfdef935a738500810e70bae75ddd880b93fbdf",
+        "stderr_size_bytes": 107,
+        "stdout_locator": "upstream-ownership-tests.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Upstream ownership suite expected to report 9 passed."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "EvalRunnerTests.test_four_adapters_execute_same_corpus_and_expected_non_success_exits",
+          "EvalRunnerTests.test_adapter_descriptor_drives_native_command",
+          "EvalRunnerTests.test_cursor_authentication_unavailable_is_unsupported",
+          "EvalRunnerTests.test_four_native_platforms_cannot_read_evals_or_private_runtime_from_projection",
+          "EvalRunnerTests.test_four_adapters_share_runner_runtime_target_for_external_exact_comparison"
+        ],
+        "completed_at": "2026-07-28T06:00:49Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 11201,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "skills",
+        "id": "four-platform-corpus-and-parsing",
+        "record_locator": "four-platform-corpus-and-parsing.record.json",
+        "record_sha256": "4f46885c2d6583bfe49732f30983988664220304bb251f111fff6f7118c72df3",
+        "record_size_bytes": 1558,
+        "started_at": "2026-07-28T06:00:38Z",
+        "status": "passed",
+        "stderr_locator": "four-platform-corpus-and-parsing.stderr",
+        "stderr_sha256": "73a8fea5761f17416bc1b619e884f14556f9b3572f0523e4001fd0024bf9750f",
+        "stderr_size_bytes": 104,
+        "stdout_locator": "four-platform-corpus-and-parsing.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Focused shared/Codex/Claude/Cursor corpus, argv, protocol, unsupported, parsing, and isolation coverage."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "Stage0PublicInvocationTests.test_production_shared_adapter_stages_exact_allowlist_and_real_wrappers",
+          "Stage0PublicInvocationTests.test_shared_adapter_executes_checker_passed_semantic_wrapper"
+        ],
+        "completed_at": "2026-07-28T06:01:49Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 59413,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "skills",
+        "id": "shared-adapter-parsing",
+        "record_locator": "shared-adapter-parsing.record.json",
+        "record_sha256": "968ced229b6d48399828ed603d793899266bc70a28b4875c6dcb063773cdd02b",
+        "record_size_bytes": 1265,
+        "started_at": "2026-07-28T06:00:49Z",
+        "status": "passed",
+        "stderr_locator": "shared-adapter-parsing.stderr",
+        "stderr_sha256": "8cbe0ae005555941ec6870c520c150c55d976cf7b4479607ab041cb4804eb85b",
+        "stderr_size_bytes": 319,
+        "stdout_locator": "shared-adapter-parsing.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Shared adapter executes checker-passed real wrappers and exact staged allowlist."
+      },
+      {
+        "argv": [
+          "python3",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "Stage0PublicInvocationTests.test_all_24_stage0_cases_do_not_feed_expected_exit_to_wrappers",
+          "Stage0PublicInvocationTests.test_semantic_owner_recipe_is_independent_of_expected_exit",
+          "Stage0PublicInvocationTests.test_stage0_parser_has_no_caller_selected_exit_argument"
+        ],
+        "completed_at": "2026-07-28T06:02:02Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 13560,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "skills",
+        "id": "expected-exit-boundary",
+        "record_locator": "expected-exit-boundary.record.json",
+        "record_sha256": "43847134265618c72954dee6b551ecbfb76a99889e8fcc738e694d587aca3fab",
+        "record_size_bytes": 1342,
+        "started_at": "2026-07-28T06:01:49Z",
+        "status": "passed",
+        "stderr_locator": "expected-exit-boundary.stderr",
+        "stderr_sha256": "6c40d76acbe5ae3f8aec02e22fc0bd281ec7dc693fa996209db290e3119bc972",
+        "stderr_size_bytes": 1793,
+        "stdout_locator": "expected-exit-boundary.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Expected exit remains grader-only and cannot choose native or wrapper route."
+      },
+      {
+        "argv": [
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "source",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-runs/source-shared",
+          "--json"
+        ],
+        "completed_at": "2026-07-28T06:02:52Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 49808,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "eval",
+        "id": "source-shared-real-wrapper",
+        "record_locator": "source-shared-real-wrapper.record.json",
+        "record_sha256": "66dd40747722343c47a756642d830a8ed33d9f9c7ac01ae539fb67b4b6e9d87c",
+        "record_size_bytes": 1477,
+        "started_at": "2026-07-28T06:02:02Z",
+        "status": "passed",
+        "stderr_locator": "source-shared-real-wrapper.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "source-shared-real-wrapper.stdout",
+        "stdout_sha256": "bcc0c003e19414c1de8255d39b803939b047565c441e60a6651b343f3faa2271",
+        "stdout_size_bytes": 8004,
+        "summary": "Source finalizer corpus executes the real shared public wrapper."
+      },
+      {
+        "argv": [
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/.trellis/guru-team/scripts/bash/run-skill-evals.sh",
+          "--root",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+          "--mode",
+          "installed",
+          "--skill",
+          "guru-finalize-task",
+          "--adapter",
+          "shared",
+          "--run-root",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-runs/installed-shared",
+          "--json"
+        ],
+        "completed_at": "2026-07-28T06:03:17Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 24968,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "eval",
+        "id": "installed-shared-real-wrapper",
+        "record_locator": "installed-shared-real-wrapper.record.json",
+        "record_sha256": "8487b28abff6766e802080ea31903b0fbe90b973bada9ce04e0a0afe1061014a",
+        "record_size_bytes": 1486,
+        "started_at": "2026-07-28T06:02:52Z",
+        "status": "passed",
+        "stderr_locator": "installed-shared-real-wrapper.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "installed-shared-real-wrapper.stdout",
+        "stdout_sha256": "44df2d2da96cc48385bb2817d9d26f244cc2f283d1bfd608d4ce986ae51ed2f2",
+        "stdout_size_bytes": 8031,
+        "summary": "Installed finalizer corpus executes the real shared public wrapper."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "\nimport json\nimport pathlib\nimport sys\n\nrequired = {\n    \"verification_required\",\n    \"publication_review_stale\",\n    \"resume_finalization\",\n    \"reprepare_required\",\n    \"published\",\n    \"blocked\",\n}\nrows = []\nfor locator in sys.argv[1:]:\n    payload = json.loads(pathlib.Path(locator).read_text())\n    assert payload[\"status\"] == \"passed\"\n    assert len(payload[\"cases\"]) == 8\n    assert all(case[\"status\"] == \"passed\" for case in payload[\"cases\"])\n    exits = {case[\"actual_exit\"] for case in payload[\"cases\"]}\n    ids = {case[\"case_id\"] for case in payload[\"cases\"]}\n    assert required.issubset(exits)\n    assert any(\"verified\" in case_id for case_id in ids)\n    assert any(\"not-required\" in case_id for case_id in ids)\n    rows.append({\n        \"locator\": locator,\n        \"case_count\": len(payload[\"cases\"]),\n        \"case_ids\": sorted(ids),\n        \"actual_exits\": sorted(exits),\n    })\nprint(json.dumps({\"runs\": rows}, sort_keys=True))\n",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/source-shared-real-wrapper.stdout",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/installed-shared-real-wrapper.stdout"
+        ],
+        "completed_at": "2026-07-28T06:03:17Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 21,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "audit",
+        "id": "source-installed-wrapper-audit",
+        "record_locator": "source-installed-wrapper-audit.record.json",
+        "record_sha256": "add411141161d29cb12177c6213bd6e4a867b7518a1fe2fc7e7b48f8b2f7c44f",
+        "record_size_bytes": 2374,
+        "started_at": "2026-07-28T06:03:17Z",
+        "status": "passed",
+        "stderr_locator": "source-installed-wrapper-audit.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "source-installed-wrapper-audit.stdout",
+        "stdout_sha256": "f4d475fc788788244877e31b63079b1aef8308de1fdc8552e9e1f28edc044b6c",
+        "stdout_size_bytes": 1084,
+        "summary": "Both source and installed real-wrapper runs contain 8 passing cases, all six exits, and verified/not-required re-entry."
+      },
+      {
+        "argv": [
+          "env",
+          "TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#feat/118-guru-finalize-task",
+          "PYTHONPYCACHEPREFIX=/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache/throwaway",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task/trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-throwaway"
+        ],
+        "completed_at": "2026-07-28T06:16:20Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 783364,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "distribution",
+        "id": "clean-throwaway-full-chain",
+        "record_locator": "clean-throwaway-full-chain.record.json",
+        "record_sha256": "fd5604bfab19184f45065e738f9b45b1ee2ecf4bd4f3d0f7724dab4b6eb2e7e1",
+        "record_size_bytes": 1596,
+        "started_at": "2026-07-28T06:03:17Z",
+        "status": "passed",
+        "stderr_locator": "clean-throwaway-full-chain.stderr",
+        "stderr_sha256": "a8ebead41ba6bbf1f60393ee9424ac17d63372ee03dc5bac2664fd3a4a58ad5b",
+        "stderr_size_bytes": 930,
+        "stdout_locator": "clean-throwaway-full-chain.stdout",
+        "stdout_sha256": "b83e9739594b01a07a99ed7f0fb45c8e8ef962b1990e62aa15aecba39817ec02",
+        "stdout_size_bytes": 4165914,
+        "summary": "Clean throwaway covers marketplace init/preview/switch, initial install, update, reapply, managed hash, .new/.bak paths, platform distribution, wrappers, and OOTB use."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "\nimport pathlib\nimport sys\n\ntarget = pathlib.Path(sys.argv[1])\noutput = pathlib.Path(sys.argv[2]).read_text()\nproject = target / \"project\"\nassert project.is_dir()\nassert f\"Verified throwaway Guru Team Trellis install at {project}\" in output\nassert '\"managed_file_count\": 2659' in output\nassert '\"sidecar_count\": 0' in output\nassert '\"conflict_count\": 0' in output\nsidecars = sorted(\n    str(path) for path in target.rglob(\"*\")\n    if path.is_file() and path.suffix in {\".new\", \".bak\"}\n)\nassert not sidecars, sidecars\nroots = [\n    project / \".trellis/guru-team/skills/packages/guru-finalize-task\",\n    project / \".agents/skills/guru-finalize-task\",\n    project / \".codex/skills/guru-finalize-task\",\n    project / \".claude/skills/guru-finalize-task\",\n    project / \".cursor/skills/guru-finalize-task\",\n]\nassert all(path.is_dir() for path in roots)\nprint(\n    \"status=passed terminal=verified_throwaway \"\n    \"managed=2659 sidecars=0 conflicts=0 \"\n    \"platform_packages=5 update_reapply=true new_bak_paths=true ootb=true\"\n)\n",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-throwaway",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/clean-throwaway-full-chain.stdout"
+        ],
+        "completed_at": "2026-07-28T06:16:24Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 4150,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "audit",
+        "id": "clean-throwaway-structured-audit",
+        "record_locator": "clean-throwaway-structured-audit.record.json",
+        "record_sha256": "bed94ffbb8a4da89786e7a085ab0c75feeabc73ce4277600471efcf6ba976954",
+        "record_size_bytes": 2426,
+        "started_at": "2026-07-28T06:16:20Z",
+        "status": "passed",
+        "stderr_locator": "clean-throwaway-structured-audit.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "clean-throwaway-structured-audit.stdout",
+        "stdout_sha256": "ebcaf1adae455d84479c68c1c2eb6ef5adc01bd1eb77f87ae84ffec363a58107",
+        "stdout_size_bytes": 147,
+        "summary": "Throwaway terminal state has 2659 managed files, zero sidecars/conflicts, five finalizer platform copies, update/reapply, and OOTB success."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-phase2-check.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T06:16:44Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 19521,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 2,
+        "expected_exit_codes": [
+          2
+        ],
+        "expected_nonzero_rationale": "Fresh guru-check-task evidence has not yet been recorded; old Phase 2 evidence must remain stale.",
+        "group": "stale_gate",
+        "id": "stale-phase2-gate",
+        "record_locator": "stale-phase2-gate.record.json",
+        "record_sha256": "07340124307fc8df2b93ce31940e729b462b4d906586033504f6199d6b12a6d3",
+        "record_size_bytes": 1247,
+        "started_at": "2026-07-28T06:16:24Z",
+        "status": "expected_nonzero",
+        "stderr_locator": "stale-phase2-gate.stderr",
+        "stderr_sha256": "5868ea3f906d7fc4050ea5bfa61185d394202ce2ded2f9fa369dfe71561c9304",
+        "stderr_size_bytes": 624,
+        "stdout_locator": "stale-phase2-gate.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Old phase2-check is expected to fail closed after checkpoint cleanup and assignment/dirty snapshot drift."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-review-gate.sh",
+          "--json",
+          "--allow-metadata-after-gate",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T06:17:29Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 44630,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 2,
+        "expected_exit_codes": [
+          2
+        ],
+        "expected_nonzero_rationale": "Current cleanup requires a fresh task commit and independent Branch Review after Phase 2.",
+        "group": "stale_gate",
+        "id": "stale-branch-review-gate",
+        "record_locator": "stale-branch-review-gate.record.json",
+        "record_sha256": "9e5160bac6485f9def736428535591ecb194677f398a92a7cd09ebe3d7f4d8c8",
+        "record_size_bytes": 1301,
+        "started_at": "2026-07-28T06:16:44Z",
+        "status": "expected_nonzero",
+        "stderr_locator": "stale-branch-review-gate.stderr",
+        "stderr_sha256": "178e186bb70defc43ceca55c05e55aefa8d2fa467aa893fc676889d4ec2dbefd",
+        "stderr_size_bytes": 1874,
+        "stdout_locator": "stale-branch-review-gate.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Old Branch Review gate is expected to fail closed against stale Phase 2/task commit/current working-tree facts."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-task-publication-review.sh",
+          "--json",
+          "--expected-exit",
+          "ready",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T06:18:15Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 46633,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 2,
+        "expected_exit_codes": [
+          2
+        ],
+        "expected_nonzero_rationale": "Publication review must be rerun after fresh Phase 2, task commit, and Branch Review.",
+        "group": "stale_gate",
+        "id": "stale-publication-readiness",
+        "record_locator": "stale-publication-readiness.record.json",
+        "record_sha256": "f32a3ac1fb808cef04ad4b53c2473ec9eaa0dac9b43e690e128e242869102ac7",
+        "record_size_bytes": 1295,
+        "started_at": "2026-07-28T06:17:29Z",
+        "status": "expected_nonzero",
+        "stderr_locator": "stale-publication-readiness.stderr",
+        "stderr_sha256": "ff8b6e52ad31aa28b76e8fb4b5e5cdffb77787df6c5a27a6513e0d9f3ebf209d",
+        "stderr_size_bytes": 1936,
+        "stdout_locator": "stale-publication-readiness.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Old publication readiness is expected to fail closed against stale downstream bindings."
+      },
+      {
+        "argv": [
+          "gh",
+          "issue",
+          "view",
+          "118",
+          "--repo",
+          "castbox/guru-trellis",
+          "--json",
+          "number,state,stateReason,title,url,body"
+        ],
+        "completed_at": "2026-07-28T06:18:16Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1019,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "live-issue-118",
+        "record_locator": "live-issue-118.record.json",
+        "record_sha256": "0581e01404dbb99b0042105489f6a5b23edba3f11b0dd1d9803a7cee22c12a77",
+        "record_size_bytes": 1079,
+        "started_at": "2026-07-28T06:18:15Z",
+        "status": "passed",
+        "stderr_locator": "live-issue-118.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "live-issue-118.stdout",
+        "stdout_sha256": "276543721f8834d78b46105aff005a47821d0cfc3ac3984f63d23073f017d8e2",
+        "stdout_size_bytes": 16814,
+        "summary": "Live #118 authority and open state captured."
+      },
+      {
+        "argv": [
+          "gh",
+          "issue",
+          "view",
+          "115",
+          "--repo",
+          "castbox/guru-trellis",
+          "--json",
+          "number,state,stateReason,title,url"
+        ],
+        "completed_at": "2026-07-28T06:18:17Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1016,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "live-issue-115",
+        "record_locator": "live-issue-115.record.json",
+        "record_sha256": "17f276b974a3e296db53b6a5c1a3e4dfa894e7b25124ff5f70861c93dddf632b",
+        "record_size_bytes": 1062,
+        "started_at": "2026-07-28T06:18:16Z",
+        "status": "passed",
+        "stderr_locator": "live-issue-115.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "live-issue-115.stdout",
+        "stdout_sha256": "b7264613b0dbfda27a427126a776e484202e8e1a89f4364a42ba6f5a58b477c7",
+        "stdout_size_bytes": 176,
+        "summary": "Live #115 umbrella state captured."
+      },
+      {
+        "argv": [
+          "gh",
+          "issue",
+          "view",
+          "119",
+          "--repo",
+          "castbox/guru-trellis",
+          "--json",
+          "number,state,stateReason,title,url,body"
+        ],
+        "completed_at": "2026-07-28T06:18:18Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1217,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "live-issue-119",
+        "record_locator": "live-issue-119.record.json",
+        "record_sha256": "f7a0c9bb20f9069bc6bd309149722c1357b70d79851745884e9c2d28b3407a2b",
+        "record_size_bytes": 1100,
+        "started_at": "2026-07-28T06:18:17Z",
+        "status": "passed",
+        "stderr_locator": "live-issue-119.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "live-issue-119.stdout",
+        "stdout_sha256": "ada34a3db39b7514cf1699727db92cdd6cd572798fca388ac5a514ddebbc709f",
+        "stdout_size_bytes": 13529,
+        "summary": "Live #119 Finish-family integration ownership and state captured."
+      },
+      {
+        "argv": [
+          "gh",
+          "issue",
+          "view",
+          "132",
+          "--repo",
+          "castbox/guru-trellis",
+          "--json",
+          "number,state,stateReason,title,url,body"
+        ],
+        "completed_at": "2026-07-28T06:18:20Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1851,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "live-issue-132",
+        "record_locator": "live-issue-132.record.json",
+        "record_sha256": "fc9e492632b2c5647030271448a4141c35f8ea25ba04a7104e8205608ccaa944",
+        "record_size_bytes": 1099,
+        "started_at": "2026-07-28T06:18:18Z",
+        "status": "passed",
+        "stderr_locator": "live-issue-132.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "live-issue-132.stdout",
+        "stdout_sha256": "2314061825f8d3d62a88f923998b7c9ced44975c7eba8cfab71861b9e0334572",
+        "stdout_size_bytes": 11778,
+        "summary": "Live #132 upstream overlay cleanup ownership and state captured."
+      },
+      {
+        "argv": [
+          "gh",
+          "issue",
+          "view",
+          "105",
+          "--repo",
+          "castbox/guru-trellis",
+          "--json",
+          "number,state,stateReason,title,url,body"
+        ],
+        "completed_at": "2026-07-28T06:18:22Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1171,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "live-issue-105",
+        "record_locator": "live-issue-105.record.json",
+        "record_sha256": "4a0c84d72804a767a9292f3cabdf7fd97951f7c723b108b5590ed652a7bb8953",
+        "record_size_bytes": 1096,
+        "started_at": "2026-07-28T06:18:20Z",
+        "status": "passed",
+        "stderr_locator": "live-issue-105.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "live-issue-105.stdout",
+        "stdout_sha256": "7d4ff6b459f2b1ac798b2883f4e8e3d5b8c583402db669fb1a921e0816d93c58",
+        "stdout_size_bytes": 12806,
+        "summary": "Live #105 completed transaction semantics authority captured."
+      },
+      {
+        "argv": [
+          "gh",
+          "api",
+          "repos/castbox/guru-trellis/issues/comments/5045036678"
+        ],
+        "completed_at": "2026-07-28T06:18:23Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1144,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "live-issue-118-authority-comment",
+        "record_locator": "live-issue-118-authority-comment.record.json",
+        "record_sha256": "b4fb31848ba38849fc453314f33fdf98be5008763984f70045f2c4ffc6439172",
+        "record_size_bytes": 1079,
+        "started_at": "2026-07-28T06:18:22Z",
+        "status": "passed",
+        "stderr_locator": "live-issue-118-authority-comment.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "live-issue-118-authority-comment.stdout",
+        "stdout_sha256": "bc7d000bf52743b888ead0dd0045550597c515f7c8ec6ccc3f3968f4861099e8",
+        "stdout_size_bytes": 4755,
+        "summary": "Accepted-current #118 authority comment captured directly."
+      },
+      {
+        "argv": [
+          "gh",
+          "pr",
+          "list",
+          "--repo",
+          "castbox/guru-trellis",
+          "--head",
+          "feat/118-guru-finalize-task",
+          "--state",
+          "open",
+          "--json",
+          "number,state,isDraft,headRefName,headRefOid,baseRefName,url"
+        ],
+        "completed_at": "2026-07-28T06:18:24Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1199,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "live-open-pr-identity",
+        "record_locator": "live-open-pr-identity.record.json",
+        "record_sha256": "e2e98b4cad9d6a229fa9d5979fdaa96a65ec5048ea27f988c795a55c1eb359ef",
+        "record_size_bytes": 1202,
+        "started_at": "2026-07-28T06:18:23Z",
+        "status": "passed",
+        "stderr_locator": "live-open-pr-identity.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "live-open-pr-identity.stdout",
+        "stdout_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "stdout_size_bytes": 3,
+        "summary": "Live open PR identity for the task branch captured without mutation."
+      },
+      {
+        "argv": [
+          "git",
+          "ls-remote",
+          "--heads",
+          "origin",
+          "refs/heads/main",
+          "refs/heads/feat/118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T06:18:25Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1621,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "live-remote-heads",
+        "record_locator": "live-remote-heads.record.json",
+        "record_sha256": "3764c885f9f24f5d19b6f9db0790e20461da3948680332046d0975768fc881e5",
+        "record_size_bytes": 1069,
+        "started_at": "2026-07-28T06:18:24Z",
+        "status": "passed",
+        "stderr_locator": "live-remote-heads.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "live-remote-heads.stdout",
+        "stdout_sha256": "92d58f00b3d336660af33c301056cb784804ceecad39b1f4bcee398f1d7f4f4a",
+        "stdout_size_bytes": 137,
+        "summary": "Live remote base and feature branch refs captured."
+      },
+      {
+        "argv": [
+          "curl",
+          "-fsSL",
+          "https://docs.trytrellis.app/index.md"
+        ],
+        "completed_at": "2026-07-28T06:18:27Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1476,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "official-trellis-index",
+        "record_locator": "official-trellis-index.record.json",
+        "record_sha256": "ff6adef808a2cd46e4c7e16f0dc4aa6fdef0044bb1f5c67e5ec904023c3dd103",
+        "record_size_bytes": 1030,
+        "started_at": "2026-07-28T06:18:25Z",
+        "status": "passed",
+        "stderr_locator": "official-trellis-index.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "official-trellis-index.stdout",
+        "stdout_sha256": "f8ff29b77e59e09f1756450fd99242e4b0a716dac3b03c76b403120916637c1d",
+        "stdout_size_bytes": 6294,
+        "summary": "Fresh official Trellis documentation index captured."
+      },
+      {
+        "argv": [
+          "curl",
+          "-fsSL",
+          "https://docs.trytrellis.app/advanced/custom-workflow.md"
+        ],
+        "completed_at": "2026-07-28T06:18:28Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1169,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "official-custom-workflow",
+        "record_locator": "official-custom-workflow.record.json",
+        "record_sha256": "509f9bb621318aecf2f6abe407e4367d56905304d879bad3a6053ab90ba4fda9",
+        "record_size_bytes": 1052,
+        "started_at": "2026-07-28T06:18:27Z",
+        "status": "passed",
+        "stderr_locator": "official-custom-workflow.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "official-custom-workflow.stdout",
+        "stdout_sha256": "2a8c667e41a3d19ee263e2d0b7c24b03396c83158ffaeb2e4778f1d6dd070b38",
+        "stdout_size_bytes": 8705,
+        "summary": "Fresh official custom workflow contract captured."
+      },
+      {
+        "argv": [
+          "curl",
+          "-fsSL",
+          "https://docs.trytrellis.app/advanced/custom-skills.md"
+        ],
+        "completed_at": "2026-07-28T06:18:29Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1090,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "official-custom-skills",
+        "record_locator": "official-custom-skills.record.json",
+        "record_sha256": "d0260bcfdb1be291a312ad3b7d2b2459dfec543dcc730e6b608cef9f9dd0804b",
+        "record_size_bytes": 1042,
+        "started_at": "2026-07-28T06:18:28Z",
+        "status": "passed",
+        "stderr_locator": "official-custom-skills.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "official-custom-skills.stdout",
+        "stdout_sha256": "d33172f4cf4ffdee63cf1c49d683c08050e4c251bc932956230fc0c2af6919ce",
+        "stdout_size_bytes": 6767,
+        "summary": "Fresh official custom skills contract captured."
+      },
+      {
+        "argv": [
+          "curl",
+          "-fsSL",
+          "https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md"
+        ],
+        "completed_at": "2026-07-28T06:18:31Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 1992,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "authority",
+        "id": "official-spec-marketplace",
+        "record_locator": "official-spec-marketplace.record.json",
+        "record_sha256": "d7f01ca0b51a77d94ac154d4ce921dc7ac64106d1511d2d7d7dd8808fdbfde65",
+        "record_size_bytes": 1073,
+        "started_at": "2026-07-28T06:18:29Z",
+        "status": "passed",
+        "stderr_locator": "official-spec-marketplace.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "official-spec-marketplace.stdout",
+        "stdout_sha256": "93d5a69a829fac508c7a78418dc37d9db296f438242573cedd0dcfcf335d5f91",
+        "stdout_size_bytes": 8611,
+        "summary": "Fresh official spec marketplace contract captured."
+      },
+      {
+        "argv": [
+          "find",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-runs",
+          "-depth",
+          "-delete"
+        ],
+        "completed_at": "2026-07-28T06:18:35Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 3362,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "terminal",
+        "id": "native-run-root-cleanup",
+        "record_locator": "native-run-root-cleanup.record.json",
+        "record_sha256": "fe903223d6c061fc98ea77490a3180f6228daeb73c390713a83d2b47b91d3f9e",
+        "record_size_bytes": 1114,
+        "started_at": "2026-07-28T06:18:31Z",
+        "status": "passed",
+        "stderr_locator": "native-run-root-cleanup.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "native-run-root-cleanup.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Removed repo-external native run root after structured wrapper audit."
+      },
+      {
+        "argv": [
+          "find",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-throwaway",
+          "-depth",
+          "-delete"
+        ],
+        "completed_at": "2026-07-28T06:18:46Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 11208,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "terminal",
+        "id": "throwaway-root-cleanup",
+        "record_locator": "throwaway-root-cleanup.record.json",
+        "record_sha256": "47487bc2a7dfe210342f6c47177f2c69e78851ddf182d7ce51449caa22607040",
+        "record_size_bytes": 1108,
+        "started_at": "2026-07-28T06:18:35Z",
+        "status": "passed",
+        "stderr_locator": "throwaway-root-cleanup.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "throwaway-root-cleanup.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Removed clean throwaway root after structured install audit."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "\nimport json\nimport pathlib\nimport sys\n\npaths = [pathlib.Path(value) for value in sys.argv[1:]]\npresent = [str(path) for path in paths if path.exists()]\nassert not present, present\nprint(json.dumps({\"absent\": [str(path) for path in paths]}, sort_keys=True))\n",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-runs",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-throwaway"
+        ],
+        "completed_at": "2026-07-28T06:18:46Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 35,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "terminal",
+        "id": "external-temp-roots-absent",
+        "record_locator": "external-temp-roots-absent.record.json",
+        "record_sha256": "389c316ee2db01740fd126fb98446ac4a9e94d278e48ab9b64d23181c467545f",
+        "record_size_bytes": 1464,
+        "started_at": "2026-07-28T06:18:46Z",
+        "status": "passed",
+        "stderr_locator": "external-temp-roots-absent.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "external-temp-roots-absent.stdout",
+        "stdout_sha256": "6c52b20cea0e5597f51af45afd8b2eabcfd2b4861b194be032a2ae994c91a35d",
+        "stdout_size_bytes": 202,
+        "summary": "Native and throwaway temporary roots are absent."
+      },
+      {
+        "argv": [
+          "git",
+          "-C",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis",
+          "status",
+          "--porcelain=v1",
+          "--branch"
+        ],
+        "completed_at": "2026-07-28T06:18:46Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 32,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "terminal",
+        "id": "source-checkout-status-after",
+        "record_locator": "source-checkout-status-after.record.json",
+        "record_sha256": "d23210aae87208d6d1729da9b5281eac719f2743ecefc55fcec9c1dd8f578000",
+        "record_size_bytes": 1103,
+        "started_at": "2026-07-28T06:18:46Z",
+        "status": "passed",
+        "stderr_locator": "source-checkout-status-after.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "source-checkout-status-after.stdout",
+        "stdout_sha256": "5fbcb2990ad25e368c12219bf3ddca36e464d044e7acac16696fa8cd54159185",
+        "stdout_size_bytes": 22,
+        "summary": "Source checkout remains unchanged after validation."
+      },
+      {
+        "argv": [
+          "bash",
+          "-c",
+          "find . -path './.git' -prune -o -path './.trellis/.runtime' -prune -o \\( -type d -name __pycache__ -o -type f \\( -name '*.pyc' -o -name '*.pyo' -o -name '*.new' -o -name '*.bak' \\) \\) -print"
+        ],
+        "completed_at": "2026-07-28T06:18:46Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 45,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "terminal",
+        "id": "repository-cache-sidecar-inventory",
+        "record_locator": "repository-cache-sidecar-inventory.record.json",
+        "record_sha256": "1e3d8e6f3a0a6fcb075560022b7f4737be4f1b88f09a0bb7834cbe9c02d064d7",
+        "record_size_bytes": 1234,
+        "started_at": "2026-07-28T06:18:46Z",
+        "status": "passed",
+        "stderr_locator": "repository-cache-sidecar-inventory.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "repository-cache-sidecar-inventory.stdout",
+        "stdout_sha256": "47ed68d583808778390032ed50e803707acc14aff222621abb2c399875108506",
+        "stdout_size_bytes": 1189,
+        "summary": "Repository cache/sidecar inventory outside ignored runtime captured."
+      },
+      {
+        "argv": [
+          "git",
+          "status",
+          "--porcelain=v1",
+          "--branch"
+        ],
+        "completed_at": "2026-07-28T06:18:46Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 38,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "terminal",
+        "id": "repository-status-after",
+        "record_locator": "repository-status-after.record.json",
+        "record_sha256": "7a286a6514c28146ff6d540bc1d6baa4e22f57613dbe7af785495f5d5a2846bc",
+        "record_size_bytes": 1019,
+        "started_at": "2026-07-28T06:18:46Z",
+        "status": "passed",
+        "stderr_locator": "repository-status-after.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "repository-status-after.stdout",
+        "stdout_sha256": "3dbc8ca678e16315892c01bf6ec52b99cb5b1888c4578124ce74eefbb312e78f",
+        "stdout_size_bytes": 1198,
+        "summary": "Task worktree status captured after validation."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T06:18:46Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 295,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "terminal",
+        "id": "workspace-boundary-after",
+        "record_locator": "workspace-boundary-after.record.json",
+        "record_sha256": "06b574a7e2988c96b4eec6611f0b73b43bf38a135db993e62dae478e47dec143",
+        "record_size_bytes": 1111,
+        "started_at": "2026-07-28T06:18:46Z",
+        "status": "passed",
+        "stderr_locator": "workspace-boundary-after.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "workspace-boundary-after.stdout",
+        "stdout_sha256": "e34be8d3a005b668b1db9dbfb29f413071bfa51f328f7d3a0583e1ce2eebe0ac",
+        "stdout_size_bytes": 1852,
+        "summary": "Workspace boundary remains valid after validation."
+      },
+      {
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-planning-approval.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-26-118-guru-finalize-task"
+        ],
+        "completed_at": "2026-07-28T06:19:06Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 19478,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "terminal",
+        "id": "planning-approval-after",
+        "record_locator": "planning-approval-after.record.json",
+        "record_sha256": "fa6709549b7509ece71e64b4a8bdc752fe009f90895ccd2f40ea81cf8ad3485b",
+        "record_size_bytes": 1109,
+        "started_at": "2026-07-28T06:18:46Z",
+        "status": "passed",
+        "stderr_locator": "planning-approval-after.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "planning-approval-after.stdout",
+        "stdout_sha256": "7902e38ff1b07940d1f51f648ea08b7ed3ad52ec99547ec5cc6d44d6f839c06c",
+        "stdout_size_bytes": 738,
+        "summary": "Planning approval remains current after validation."
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "import collections,hashlib,json,pathlib; root=pathlib.Path(\"/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures\"); m=json.loads((root/\"capture-manifest.json\").read_text()); errors=[]; ids=[]; streams=0; statuses=collections.Counter();\nfor c in m[\"commands\"]:\n ids.append(c[\"id\"]); statuses[c[\"status\"]]+=1\n if not isinstance(c[\"argv\"],list) or not c[\"argv\"] or not all(isinstance(x,str) for x in c[\"argv\"]): errors.append(f\"argv:{c[\\\"id\\\"]}\")\n for kind in (\"stdout\",\"stderr\"):\n  p=root/c[f\"{kind}_locator\"]; streams+=1\n  b=p.read_bytes(); h=hashlib.sha256(b).hexdigest()\n  if h!=c[f\"{kind}_sha256\"] or len(b)!=c[f\"{kind}_size_bytes\"]: errors.append(f\"stream:{c[\\\"id\\\"]}:{kind}\")\n rp=root/c[\"record_locator\"]; rb=rp.read_bytes()\n if hashlib.sha256(rb).hexdigest()!=c[\"record_sha256\"] or len(rb)!=c[\"record_size_bytes\"]: errors.append(f\"record:{c[\\\"id\\\"]}\")\n if c[\"exit_code\"]!=0 and not c[\"expected_nonzero_rationale\"]: errors.append(f\"rationale:{c[\\\"id\\\"]}\")\nout={\"manifest_command_count\":m[\"command_count\"],\"recomputed_command_count\":len(m[\"commands\"]),\"unique_id_count\":len(set(ids)),\"duplicate_ids\":sorted(k for k,v in collections.Counter(ids).items() if v>1),\"manifest_stream_count\":m[\"stream_count\"],\"recomputed_stream_count\":streams,\"status_counts\":dict(statuses),\"all_stream_digest_size_match\":not any(e.startswith(\"stream:\") for e in errors),\"all_record_digest_size_match\":not any(e.startswith(\"record:\") for e in errors),\"all_argv_exact_lists\":not any(e.startswith(\"argv:\") for e in errors),\"all_nonzero_have_rationale\":not any(e.startswith(\"rationale:\") for e in errors),\"errors\":errors}; assert out[\"manifest_command_count\"]==70==out[\"recomputed_command_count\"]==out[\"unique_id_count\"]; assert out[\"manifest_stream_count\"]==140==out[\"recomputed_stream_count\"]; assert not errors; print(json.dumps(out,sort_keys=True))"
+        ],
+        "completed_at": "2026-07-28T06:21:47Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 26,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 1,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": "Reviewer setup error; superseded by capture-readback-script using the file-backed verifier.",
+        "group": "integrity",
+        "id": "capture-readback-inline-attempt",
+        "record_locator": "capture-readback-inline-attempt.record.json",
+        "record_sha256": "4a42a2856dd512f156d5149b90fce59257649f06b8fb82868b551944b0b6a6ee",
+        "record_size_bytes": 3144,
+        "started_at": "2026-07-28T06:21:47Z",
+        "status": "setup_error",
+        "stderr_locator": "capture-readback-inline-attempt.stderr",
+        "stderr_sha256": "4f980b78bb09ec93554f402fb0da95bd0f0323e486371a928e6af6a1f1eb89a8",
+        "stderr_size_bytes": 366,
+        "stdout_locator": "capture-readback-inline-attempt.stdout",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "summary": "Initial inline integrity readback failed because reviewer-authored f-string quoting was invalid."
+      },
+      {
+        "argv": [
+          "python3",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/verify_capture.py",
+          "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/capture-manifest.json"
+        ],
+        "completed_at": "2026-07-28T06:21:47Z",
+        "cwd": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+        "duration_ms": 49,
+        "environment_overrides": {
+          "PYTHONPYCACHEPREFIX": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/pycache"
+        },
+        "exit_code": 0,
+        "expected_exit_codes": [
+          0
+        ],
+        "expected_nonzero_rationale": null,
+        "group": "integrity",
+        "id": "capture-readback-script",
+        "record_locator": "capture-readback-script.record.json",
+        "record_sha256": "36bfa221ff9d538d8f1978f7d31d8c15b20da9772564b6818c347be375bcbfe8",
+        "record_size_bytes": 1300,
+        "started_at": "2026-07-28T06:21:47Z",
+        "status": "passed_superseding",
+        "stderr_locator": "capture-readback-script.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "stdout_locator": "capture-readback-script.stdout",
+        "stdout_sha256": "e8f462f18f45a36c34c1288be723a607a447dad8fd7edd387936d403ebc9c262",
+        "stdout_size_bytes": 399,
+        "summary": "File-backed verifier supersedes the inline quoting error and recomputes every retained command/stream identity then present."
+      }
+    ],
+    "intentional_omissions": [
+      {
+        "id": "phase2-recorder",
+        "impact": "Main session must perform the guru-check-task semantic Gate and recorder/checker after this completed event is recorded.",
+        "reason": "The independent trellis-check reviewer is evidence-only and was explicitly prohibited from calling record-phase2-check."
+      },
+      {
+        "id": "current-worktree-preset-apply",
+        "impact": "No validation gap for this cleanup; throwaway exercises apply/reapply/.new/.bak/OOTB.",
+        "reason": "Cleanup has no preset/overlay dirty delta and current-worktree apply would mutate managed files; drift plus clean throwaway initial/update/reapply coverage is stronger and side-effect-free for this worktree."
+      },
+      {
+        "id": "finalization-preview-or-transition",
+        "impact": "A new preview belongs after fresh Phase 2, task commit, Branch Review, and publication review.",
+        "reason": "The current publication/Branch Review/Phase 2 evidence is intentionally stale and this reviewer was prohibited from finalization, gate, publication, PR, push, archive, or Issue mutation."
+      },
+      {
+        "id": "live-external-codex-claude-cursor-semantic-runs",
+        "impact": "No cleanup-specific external-auth claim is made.",
+        "reason": "No platform/runtime delta exists; the complete four-platform fake-native corpus/protocol/parsing/isolation suite ran, package/corpus bytes match, and source/installed shared real wrappers ran all eight cases."
+      },
+      {
+        "id": "standalone-typechecker",
+        "impact": "Applicable static coverage is Python compile plus closed schema/interface validators and full tests.",
+        "reason": "Repository discovery found no configured mypy, pyright, or ruff gate."
+      },
+      {
+        "id": "deployment-or-production-write",
+        "impact": "Deployment impact is no-impact; no production action was needed.",
+        "reason": "No deployment surface changed and reviewer mutation was prohibited."
+      }
+    ]
+  },
+  "command_plan": {
+    "complete": true,
+    "exact_argv_count": 72,
+    "formal_command_count": 72,
+    "group_counts": {
+      "audit": 2,
+      "authority": 12,
+      "distribution": 3,
+      "entry": 10,
+      "eval": 2,
+      "integrity": 2,
+      "review": 5,
+      "runtime": 2,
+      "skills": 6,
+      "stale_gate": 3,
+      "static": 17,
+      "terminal": 8
+    },
+    "nonzero_results": [
+      {
+        "exit_code": 2,
+        "id": "committed-diff-check",
+        "rationale": "The only diagnostic is immutable historical reviews/round-009-finding-closure.md:203; current cleanup does not rewrite raw review evidence.",
+        "status": "expected_nonzero"
+      },
+      {
+        "exit_code": 1,
+        "id": "sensitive-material-scan",
+        "rationale": "rg exit 1 is the expected no-match result and the pipe uses pipefail.",
+        "status": "expected_nonzero"
+      },
+      {
+        "exit_code": 2,
+        "id": "stale-phase2-gate",
+        "rationale": "Fresh guru-check-task evidence has not yet been recorded; old Phase 2 evidence must remain stale.",
+        "status": "expected_nonzero"
+      },
+      {
+        "exit_code": 2,
+        "id": "stale-branch-review-gate",
+        "rationale": "Current cleanup requires a fresh task commit and independent Branch Review after Phase 2.",
+        "status": "expected_nonzero"
+      },
+      {
+        "exit_code": 2,
+        "id": "stale-publication-readiness",
+        "rationale": "Publication review must be rerun after fresh Phase 2, task commit, and Branch Review.",
+        "status": "expected_nonzero"
+      },
+      {
+        "exit_code": 1,
+        "id": "capture-readback-inline-attempt",
+        "rationale": "Reviewer setup error; superseded by capture-readback-script using the file-backed verifier.",
+        "status": "setup_error"
+      }
+    ],
+    "setup_error_count": 1,
+    "setup_error_supersession": {
+      "capture-readback-inline-attempt": "capture-readback-script"
+    },
+    "status_counts": {
+      "expected_nonzero": 5,
+      "passed": 65,
+      "passed_superseding": 1,
+      "setup_error": 1
+    },
+    "stream_count": 144,
+    "unique_command_id_count": 72
+  },
+  "docs_ssot": {
+    "approved_strategy": "ssot_first",
+    "cleanup_result": "no_docs_update_needed",
+    "durable_dirty_paths": [],
+    "durable_paths_checked": [
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/workflows/guru-team/README.md"
+    ],
+    "reason": "Cleanup removes only stale task-local owner-private checkpoints; finalizer behavior, runtime, public I/O, schemas, tests, workflow, preset, overlays, README, and platform copies do not change.",
+    "reconciliation_status": "passed",
+    "task_history_only": true
+  },
+  "expected_stale_gate_results": [
+    {
+      "errors": [
+        "phase2_check_current_facts_invalid:agent_assignment.check_agent_ids must exactly match completed Phase 2 check agents.",
+        "phase2_check_head_stale",
+        "phase2_check_dirty_snapshot_stale",
+        "phase2_check_repository_snapshot_invalid:Reviewed path is missing or invalid: .trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json"
+      ],
+      "exit_code": 2,
+      "id": "stale-phase2-gate",
+      "rationale": "Fresh guru-check-task evidence has not yet been recorded; old Phase 2 evidence must remain stale.",
+      "status": "expected_nonzero"
+    },
+    {
+      "errors": [
+        "review entry: review entry task commit task commit plan evidence.issue_scope_ledger.sha256 is stale or mismatched.",
+        "review entry: review entry task commit task commit plan evidence.issue_scope_ledger.size is stale or mismatched.",
+        "review entry: review entry Phase 2: phase2_check_current_facts_invalid:agent_assignment.check_agent_ids must exactly match completed Phase 2 check agents.",
+        "review entry: review entry working tree has paths outside the exact owner metadata and direct runtime-input allowlist: .trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json, .trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json, .trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json, .trellis/tasks/07-26-118-guru-finalize-task/pr-body.md, .trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json, .trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json, .trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md, .trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-full-round-20260728.md, .trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728.json.",
+        "Branch Review Gate agent_assignment artifact \u5df2\u8fc7\u671f: .trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json \u7684 sha256 \u4e0d\u5339\u914d\u3002",
+        "Branch Review Gate agent_assignment artifact \u5df2\u8fc7\u671f: .trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json \u7684 size_bytes \u4e0d\u5339\u914d\u3002"
+      ],
+      "exit_code": 2,
+      "id": "stale-branch-review-gate",
+      "rationale": "Current cleanup requires a fresh task commit and independent Branch Review after Phase 2.",
+      "status": "expected_nonzero"
+    },
+    {
+      "errors": [
+        "branch_review_evidence:Branch Review Gate agent_assignment artifact \u5df2\u8fc7\u671f: .trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json \u7684 sha256 \u4e0d\u5339\u914d\u3002",
+        "branch_review_evidence:Branch Review Gate agent_assignment artifact \u5df2\u8fc7\u671f: .trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json \u7684 size_bytes \u4e0d\u5339\u914d\u3002",
+        "branch_review_handoff:Branch Review Gate agent_assignment artifact \u5df2\u8fc7\u671f: .trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json \u7684 sha256 \u4e0d\u5339\u914d\u3002",
+        "branch_review_handoff:Branch Review Gate agent_assignment artifact \u5df2\u8fc7\u671f: .trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json \u7684 size_bytes \u4e0d\u5339\u914d\u3002",
+        "phase2_check:phase2_check_current_facts_invalid:agent_assignment.check_agent_ids must exactly match completed Phase 2 check agents.",
+        "review_range_and_working_tree:working tree has paths outside the exact publication task metadata and direct runtime-input allowlist: .trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json, .trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md, .trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-full-round-20260728.md, .trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728.json, .trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json.",
+        "task publication artifact bindings are stale",
+        "task publication entry precondition bindings are stale",
+        "task publication repository binding is stale"
+      ],
+      "exit_code": 2,
+      "id": "stale-publication-readiness",
+      "rationale": "Publication review must be rerun after fresh Phase 2, task commit, and Branch Review.",
+      "status": "expected_nonzero"
+    }
+  ],
+  "generated_at": "2026-07-28T06:24:41Z",
+  "implementation_handoff": {
+    "cleanup_scope": "delete stale active finalizer-owned checkpoint names and preserve normal task-work evidence",
+    "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md",
+    "public_contract_changed": false,
+    "runtime_changed": false,
+    "sha256": "53b5ff3bc58c586036e5eaafed59f00cffccb0ccffc9be5c124a04bf52b890b2",
+    "size_bytes": 5035
+  },
+  "normal_path_reproduction": {
+    "candidate_id": "C-STALE-FINALIZATION-CHECKPOINT-01",
+    "deleted_active_checkpoints": [
+      {
+        "active_exists": false,
+        "git_locator": "HEAD:.trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+        "historical_sha256": "d26f1f9ba335c83c6c9af17ce197688a2e78075f1dddee42deb497e457307f13",
+        "historical_size_bytes": 208175,
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json"
+      },
+      {
+        "active_exists": false,
+        "git_locator": "HEAD:.trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+        "historical_sha256": "711042c6d1ad9db7c6d8ea89bf036a1bda3b80b5cf393466d0a449e4e1f11876",
+        "historical_size_bytes": 3085,
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json"
+      }
+    ],
+    "disposition": "current_scope_resolved_in_current_diff",
+    "implementation_required": false,
+    "old_plan_digest": "59ce5a04a6e9470d7d5e99ab76f8821af0b1ae8cc0448f0ded08b205021d88f6",
+    "old_reviewed_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+    "old_route": "verification_required",
+    "preserved_evidence_count": 7,
+    "preserved_evidence_paths": [
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-live-wrapper-namespace-fix.md",
+        "sha256": "2154f3ee9ffdafeb61d0a254c78437eec5a91744657e37ab8bc803c877514b6c",
+        "size_bytes": 3826
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md",
+        "sha256": "2a74ae2f84742b75c126cccf0bd77c06cc22d16f0d8faa5b9cf498acb85fae30",
+        "size_bytes": 13876
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
+        "sha256": "d6f594a610cddd857c7a8e221ede26744ab90c79fd48ed68e31294eeb4de6830",
+        "size_bytes": 12593
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
+        "sha256": "6bf7d3f77d235b4d712a854969c5ff976c3d950787753595c7dc3761153086a1",
+        "size_bytes": 281289
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json",
+        "sha256": "de1e29c39de44663b35a6bc9f6c6065cff4beb5e36c141f9b361080b9b3c5d88",
+        "size_bytes": 12794
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
+        "sha256": "a9bb25dba2ccce44fc6e2d175ea7739b18f0ff6023f3b25ef440d6c26f34a651",
+        "size_bytes": 15214
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+        "sha256": "be4175c6c79b825b670f44b10ff78124f6841d7e2efe5460bd0513fb147aa69f",
+        "size_bytes": 37348
+      }
+    ],
+    "preview_error": "Persisted closeout plan does not own newly added task artifacts.",
+    "preview_error_code": "unexpected_task_files",
+    "requires_forgery_or_hostile_input": false,
+    "supported_normal_path": true
+  },
+  "objective_identity": {
+    "actual_repo_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+    "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "base_ref": "origin/main",
+    "branch": "feat/118-guru-finalize-task",
+    "expected_workspace": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+    "head": "362f8cd62c62621e892b46e68763ae4323460871",
+    "source_checkout": "/Users/wumengye/Documents/GoProjects/guru-trellis",
+    "source_checkout_status": [],
+    "suspicious_source_artifacts": [],
+    "workspace_mode": "worktree",
+    "workspace_status": "ok",
+    "worktree": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task"
+  },
+  "planning_identity": {
+    "approval_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "artifact_sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+    "docs_ssot_strategy": "ssot_first",
+    "facts_sha256": "9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70",
+    "status": "ok",
+    "typed_exit": "approved"
+  },
+  "recommendation": {
+    "implementation_required": false,
+    "next_step": "Main session records this checker completion, performs the guru-check-task semantic Gate and recorder/checker, then follows fresh commit, independent Branch Review, publication review, and new immutable plan confirmation.",
+    "recorder_ready": true,
+    "typed_exit": "passed"
+  },
+  "requirement_provenance": {
+    "issue_118_authority": {
+      "accepted_current_comment_body_sha256": "19774ec093ce38ed3166134e2a123b7645f43eb2dbfe00b675649e7a02d3720d",
+      "accepted_current_comment_body_size_bytes": 3122,
+      "accepted_current_comment_id": 5045036678,
+      "accepted_current_comment_updated_at": "2026-07-22T11:05:15Z",
+      "accepted_current_comment_url": "https://github.com/castbox/guru-trellis/issues/118#issuecomment-5045036678",
+      "url": "https://github.com/castbox/guru-trellis/issues/118"
+    },
+    "issue_states": {
+      "105": {
+        "body_sha256": "c5080f96d58c24adaf119df31e9659a2c138f2b06bcb72e7876a318ec6dc51bb",
+        "body_size_bytes": 12417,
+        "number": 105,
+        "state": "CLOSED",
+        "state_reason": "COMPLETED",
+        "title": "\u62c6\u5206 #53\uff1a\u91cd\u6784 Guru Team finish-work \u6536\u5c3e\u4e8b\u52a1\uff0c\u6d88\u9664 archive \u540e\u53ef\u9884\u89c1\u5931\u8d25",
+        "url": "https://github.com/castbox/guru-trellis/issues/105"
+      },
+      "115": {
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "body_size_bytes": 0,
+        "number": 115,
+        "state": "OPEN",
+        "state_reason": "",
+        "title": "\u6309 Skill-first \u91cd\u6784 Guru Team task \u6536\u5c3e\u6d41\u7a0b umbrella",
+        "url": "https://github.com/castbox/guru-trellis/issues/115"
+      },
+      "118": {
+        "body_sha256": "1e5e88e88e0cbb5f0fe0a206a690af4abaaade151e62f6b0f2083dcf6453bfef",
+        "body_size_bytes": 16247,
+        "number": 118,
+        "state": "OPEN",
+        "state_reason": "",
+        "title": "\u62c6\u5206 #115\uff1a\u5b9e\u73b0 guru-finalize-task \u4e8b\u52a1\u95ed\u73af Skill",
+        "url": "https://github.com/castbox/guru-trellis/issues/118"
+      },
+      "119": {
+        "body_sha256": "16cda718b58194ee65b8eff2e88c36abce54162b0a81f962e602a78f04ed9d3a",
+        "body_size_bytes": 13112,
+        "number": 119,
+        "state": "OPEN",
+        "state_reason": "",
+        "title": "\u62c6\u5206 #115\uff1a\u96c6\u6210 Task \u6536\u5c3e Skills \u5e76\u8fc1\u79fb trellis-finish-work",
+        "url": "https://github.com/castbox/guru-trellis/issues/119"
+      },
+      "132": {
+        "body_sha256": "9498c39908af274c9e8125c569208e7584b7b7758dd08897bf609c1975eaec94",
+        "body_size_bytes": 11409,
+        "number": 132,
+        "state": "OPEN",
+        "state_reason": "",
+        "title": "\u96c6\u6210 Guru planning/check/review Skills \u5e76\u6536\u655b preset upstream overlays",
+        "url": "https://github.com/castbox/guru-trellis/issues/132"
+      }
+    },
+    "official_docs_commands": [
+      "official-trellis-index",
+      "official-custom-workflow",
+      "official-custom-skills",
+      "official-spec-marketplace"
+    ],
+    "planning_documents": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/prd.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implement.md"
+    ]
+  },
+  "reviewer": {
+    "agent_id": "/root/issue118_phase2_stale_checkpoint_exact_stream",
+    "independent_from_implementation": true,
+    "logical_role": "\u9636\u6bb5\u4e8c\u68c0\u67e5\u4ee3\u7406",
+    "recorder_invoked": false
+  },
+  "schema_version": "1.0",
+  "semantic_review": {
+    "adequacy_dimensions": [
+      {
+        "id": "requirements",
+        "references": [
+          "planning-approval",
+          "live-issue-118",
+          "live-issue-118-authority-comment"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "design",
+        "references": [
+          "planning-approval",
+          "deleted-checkpoint-audit"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "implementation",
+        "references": [
+          "deleted-checkpoint-audit",
+          "preserved-evidence-audit",
+          "public-runtime-no-dirty-change"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "tests",
+        "references": [
+          "runtime-full-matrix",
+          "closeout-transaction-matrix",
+          "skill-package-graph"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "docs_ssot",
+        "references": [
+          "docs-ssot-reconciliation"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "cross_layer_contracts",
+        "references": [
+          "source-package-validator",
+          "installed-package-validator",
+          "source-installed-wrapper-audit"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "compatibility",
+        "references": [
+          "closeout-transaction-matrix",
+          "publication-verification-owner-contracts",
+          "protected-surfaces-no-diff"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "deployment_operations",
+        "references": [
+          "deployment-surfaces-no-impact",
+          "clean-throwaway-full-chain"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "agent_recovery",
+        "references": [
+          "agent-assignment"
+        ],
+        "status": "passed"
+      },
+      {
+        "id": "verification_completeness",
+        "references": [
+          "capture-readback-script",
+          "clean-throwaway-structured-audit",
+          "external-temp-roots-absent"
+        ],
+        "status": "passed"
+      }
+    ],
+    "consumer": {
+      "id": "guru-create-task-commit",
+      "kind": "skill"
+    },
+    "findings": [],
+    "gate_status": "passed",
+    "implementation_required": false,
+    "p0_open": 0,
+    "p1_open": 0,
+    "p2_open": 0,
+    "p3_open": 0,
+    "recommended_exit": "passed",
+    "scope_before_severity": true,
+    "summary": "The stale checkpoint cleanup is a supported normal-path correctness repair; both reserved active checkpoint copies are removed, seven later task-work evidence paths and Git history remain exact, durable/public contracts are unchanged, and no open current-scope finding remains.",
+    "unverified_items": []
+  },
+  "task": ".trellis/tasks/07-26-118-guru-finalize-task",
+  "terminal_hygiene": {
+    "capture_cleanup_deferred_until_json_readback": true,
+    "capture_cleanup_verified_absent": true,
+    "external_native_and_throwaway_roots_absent": true,
+    "source_checkout_unchanged": true
+  },
+  "verification_summary": {
+    "clean_throwaway": {
+      "conflict_count": 0,
+      "managed_file_count": 2659,
+      "new_bak_paths": true,
+      "ootb": true,
+      "platform_package_count": 5,
+      "sidecar_count": 0,
+      "status": "passed",
+      "update_reapply": true
+    },
+    "closeout_transaction_105": {
+      "duration_seconds": 109.444,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 105
+    },
+    "corpus_byte_identity": "passed",
+    "deployment_surfaces": "no impact",
+    "dogfood_overlay_drift": "passed",
+    "expected_exit_boundary": {
+      "duration_seconds": 13.452,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 3
+    },
+    "finalizer_owner_contract": {
+      "duration_seconds": 0.388,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 5
+    },
+    "finalizer_package_platform_parity": "passed",
+    "four_platform_focused": {
+      "duration_seconds": 11.104,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 5
+    },
+    "installed_package_validator": {
+      "errors": [],
+      "facts": {
+        "active_ids": [
+          "guru-approve-task-plan",
+          "guru-check-task",
+          "guru-clarify-requirements",
+          "guru-create-task-commit",
+          "guru-create-task-workspace",
+          "guru-discover-change-context",
+          "guru-finalize-task",
+          "guru-review-branch",
+          "guru-review-change-request",
+          "guru-review-contract-wording",
+          "guru-review-task-publication",
+          "guru-sync-base",
+          "guru-verify-extension-installation"
+        ],
+        "conflict_count": 0,
+        "exit_markers": 46,
+        "invoke_markers": 12,
+        "legacy_ids": [],
+        "managed_file_count": 2659,
+        "minimal_handoff_ids": [
+          "guru-approve-task-plan",
+          "guru-check-task",
+          "guru-clarify-requirements",
+          "guru-create-task-commit",
+          "guru-create-task-workspace",
+          "guru-discover-change-context",
+          "guru-finalize-task",
+          "guru-review-branch",
+          "guru-review-change-request",
+          "guru-review-contract-wording",
+          "guru-review-task-publication",
+          "guru-sync-base",
+          "guru-verify-extension-installation"
+        ],
+        "planned_ids": [],
+        "production_activation_unit": "production-minimal-handoff-v1",
+        "removal_count": 0,
+        "reserved_ids": [
+          "guru-create-work-commit"
+        ],
+        "schema_version": "1.1",
+        "selected_platforms": [
+          "claude",
+          "codex",
+          "cursor"
+        ],
+        "sidecar_count": 0,
+        "stage0_activation_unit": "stage0-minimal-handoff-v1",
+        "target_markers": 27
+      },
+      "mode": "installed",
+      "status": "passed"
+    },
+    "issue_scope": {
+      "close_issues": [
+        118
+      ],
+      "followup_issues": [
+        119,
+        132
+      ],
+      "pr_closes": [
+        118
+      ],
+      "related_issues": [
+        81,
+        115
+      ]
+    },
+    "lint": "passed",
+    "preset_installer": {
+      "duration_seconds": 107.607,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 45
+    },
+    "protected_surfaces": "no diff",
+    "publication_verification_owner_contracts": {
+      "duration_seconds": 12.762,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 28
+    },
+    "runtime_canonical_dogfood_parity": "passed",
+    "runtime_full": {
+      "duration_seconds": 193.6,
+      "skipped": 13,
+      "status": "passed",
+      "tests": 627
+    },
+    "sensitive_material": "no matches",
+    "shared_adapter_parsing": {
+      "duration_seconds": 59.324,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 2
+    },
+    "skill_package_graph": {
+      "duration_seconds": 355.667,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 180
+    },
+    "source_installed_shared_real_wrapper": {
+      "runs": [
+        {
+          "actual_exits": [
+            "blocked",
+            "publication_review_stale",
+            "published",
+            "reprepare_required",
+            "resume_finalization",
+            "verification_required"
+          ],
+          "case_count": 8,
+          "case_ids": [
+            "blocked-private-state",
+            "cross-month-reprepare",
+            "not-required-reentry-published",
+            "publication-review-stale",
+            "publication-verification-required",
+            "published-recovery",
+            "same-plan-resume",
+            "verified-reentry-published"
+          ],
+          "locator": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/source-shared-real-wrapper.stdout"
+        },
+        {
+          "actual_exits": [
+            "blocked",
+            "publication_review_stale",
+            "published",
+            "reprepare_required",
+            "resume_finalization",
+            "verification_required"
+          ],
+          "case_count": 8,
+          "case_ids": [
+            "blocked-private-state",
+            "cross-month-reprepare",
+            "not-required-reentry-published",
+            "publication-review-stale",
+            "publication-verification-required",
+            "published-recovery",
+            "same-plan-resume",
+            "verified-reentry-published"
+          ],
+          "locator": "/tmp/guru118-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728-captures/installed-shared-real-wrapper.stdout"
+        }
+      ]
+    },
+    "source_package_validator": {
+      "errors": [],
+      "facts": {
+        "active_ids": [
+          "guru-approve-task-plan",
+          "guru-check-task",
+          "guru-clarify-requirements",
+          "guru-create-task-commit",
+          "guru-create-task-workspace",
+          "guru-discover-change-context",
+          "guru-finalize-task",
+          "guru-review-branch",
+          "guru-review-change-request",
+          "guru-review-contract-wording",
+          "guru-review-task-publication",
+          "guru-sync-base",
+          "guru-verify-extension-installation"
+        ],
+        "exit_markers": 46,
+        "invoke_markers": 12,
+        "legacy_ids": [],
+        "minimal_handoff_ids": [
+          "guru-approve-task-plan",
+          "guru-check-task",
+          "guru-clarify-requirements",
+          "guru-create-task-commit",
+          "guru-create-task-workspace",
+          "guru-discover-change-context",
+          "guru-finalize-task",
+          "guru-review-branch",
+          "guru-review-change-request",
+          "guru-review-contract-wording",
+          "guru-review-task-publication",
+          "guru-sync-base",
+          "guru-verify-extension-installation"
+        ],
+        "planned_ids": [],
+        "production_activation_unit": "production-minimal-handoff-v1",
+        "reserved_ids": [
+          "guru-create-work-commit"
+        ],
+        "schema_version": "1.1",
+        "stage0_activation_unit": "stage0-minimal-handoff-v1",
+        "target_markers": 27
+      },
+      "mode": "source",
+      "status": "passed"
+    },
+    "task_validate": "passed",
+    "typecheck": "passed applicable checks; no standalone configured checker",
+    "upstream_ownership": {
+      "duration_seconds": 0.795,
+      "skipped": 0,
+      "status": "passed",
+      "tests": 9
+    }
+  }
+}

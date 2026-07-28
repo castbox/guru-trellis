@@ -6,8 +6,8 @@
     "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
     "reason": "当前唯一独立交付单元。",
     "acceptance_evidence": [
-      "Current Phase 2 typed exit=passed：runtime 626 passed/13 skipped、#105 transaction 104、Skill/package/eval 180、finalizer 5、#116/#117 28、preset 45、ownership 9、source/installed shared wrapper 各 8/8；F-FINALIZATION-GATE-REENTRY-01 与 F-CODEX-TRACE-WRITE-01 已由 normal-path evidence closed，P0/P1/P2/P3 open findings 均为 0。",
-      "Branch Review 覆盖 origin/main...d420a6842eca05bd0bf7472bdf06e3b519bace5f 的 541-path committed range；Round 15 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=c9fa52ae6eecaaa8fd717754532a5c6b006b9830517a5b4a67af53c6aadae5c5。",
+      "Current Phase 2 typed exit=passed：runtime 627 passed/13 skipped、#105 transaction 105、Skill/package/eval 180、finalizer 5、focused Namespace 5、preset 45、ownership 9、128 条 exact command records；F-LIVE-WRAPPER-NAMESPACE-01 与既有 current findings 均由 normal-path evidence closed，P0/P1/P2/P3 open findings 均为 0。",
+      "Branch Review 覆盖 origin/main...362f8cd62c62621e892b46e68763ae4323460871 的 549-path committed range；Round 16 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=2e7f1450313431f9f3896b6119be72db9348560b4e37feffc31fd40a2b015ba3。",
       "Full local-source clean throwaway current-candidate chain rc=0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution、ownership、overlay drift 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
       {
         "type": "remote_marketplace_verification",
@@ -15,9 +15,9 @@
         "required": true,
         "artifact_path": "marketplace-verification.json",
         "artifact_sha256": "",
-        "verified_content_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+        "verified_content_head": "362f8cd62c62621e892b46e68763ae4323460871",
         "remote_head": "",
-        "publish_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+        "publish_head": "362f8cd62c62621e892b46e68763ae4323460871",
         "commands_passed": false
       }
     ]
@@ -29,8 +29,8 @@
       "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
       "reason": "#118 的全部 accepted-current acceptance 由本 task 覆盖；这是唯一 close target。",
       "acceptance_evidence": [
-        "Current Phase 2 typed exit=passed：runtime 626 passed/13 skipped、#105 transaction 104、Skill/package/eval 180、finalizer 5、#116/#117 28、preset 45、ownership 9、source/installed shared wrapper 各 8/8；F-FINALIZATION-GATE-REENTRY-01 与 F-CODEX-TRACE-WRITE-01 已由 normal-path evidence closed，P0/P1/P2/P3 open findings 均为 0。",
-        "Branch Review 覆盖 origin/main...d420a6842eca05bd0bf7472bdf06e3b519bace5f 的 541-path committed range；Round 15 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=c9fa52ae6eecaaa8fd717754532a5c6b006b9830517a5b4a67af53c6aadae5c5。",
+        "Current Phase 2 typed exit=passed：runtime 627 passed/13 skipped、#105 transaction 105、Skill/package/eval 180、finalizer 5、focused Namespace 5、preset 45、ownership 9、128 条 exact command records；F-LIVE-WRAPPER-NAMESPACE-01 与既有 current findings 均由 normal-path evidence closed，P0/P1/P2/P3 open findings 均为 0。",
+        "Branch Review 覆盖 origin/main...362f8cd62c62621e892b46e68763ae4323460871 的 549-path committed range；Round 16 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=2e7f1450313431f9f3896b6119be72db9348560b4e37feffc31fd40a2b015ba3。",
         "Full local-source clean throwaway current-candidate chain rc=0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution、ownership、overlay drift 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
         {
           "type": "remote_marketplace_verification",
@@ -38,9 +38,9 @@
           "required": true,
           "artifact_path": "marketplace-verification.json",
           "artifact_sha256": "",
-          "verified_content_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+          "verified_content_head": "362f8cd62c62621e892b46e68763ae4323460871",
           "remote_head": "",
-          "publish_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+          "publish_head": "362f8cd62c62621e892b46e68763ae4323460871",
           "commands_passed": false
         }
       ]

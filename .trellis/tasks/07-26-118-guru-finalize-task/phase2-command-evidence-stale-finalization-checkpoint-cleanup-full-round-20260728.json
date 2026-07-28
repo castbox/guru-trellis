@@ -1,0 +1,344 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728",
+  "task": ".trellis/tasks/07-26-118-guru-finalize-task",
+  "reviewer": {
+    "agent_id": "/root/issue118_phase2_stale_checkpoint_cleanup",
+    "logical_role": "阶段二检查代理",
+    "independent_from_implementation": true,
+    "recorder_invoked": false
+  },
+  "objective_identity": {
+    "branch": "feat/118-guru-finalize-task",
+    "base_ref": "origin/main",
+    "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "head": "362f8cd62c62621e892b46e68763ae4323460871",
+    "deleted_active_checkpoints": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json"
+    ],
+    "implementation_delta_is_task_local_only": true
+  },
+  "planning": {
+    "checker_status": "ok",
+    "typed_exit": "approved",
+    "artifact_sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+    "facts_sha256": "9d0d14bada5d4990a3f62402bdb5b28275fd1c7bf20476cdd01f1145defbeb70",
+    "docs_ssot_strategy": "ssot_first",
+    "cleanup_docs_result": "no_docs_update_needed"
+  },
+  "normal_path_finding": {
+    "candidate_id": "C-STALE-FINALIZATION-CHECKPOINT-01",
+    "classification": "current_scope",
+    "status": "resolved_in_current_diff",
+    "reproduction_requires_artifact_forgery": false,
+    "old_reviewed_head": "d420a6842eca05bd0bf7472bdf06e3b519bace5f",
+    "old_plan_digest": "59ce5a04a6e9470d7d5e99ab76f8821af0b1ae8cc0448f0ded08b205021d88f6",
+    "old_route": "verification_required",
+    "preview_error": "Persisted closeout plan does not own newly added task artifacts.",
+    "preview_error_code": "unexpected_task_files",
+    "remediation": "Delete the stale active owner-private checkpoint copies, rerun the complete task-work gates, and create a new current immutable plan with a new exact digest confirmation.",
+    "public_contract_changed": false,
+    "runtime_changed": false
+  },
+  "historical_checkpoint_recovery": [
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      "git_locator": "HEAD:.trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      "sha256": "d26f1f9ba335c83c6c9af17ce197688a2e78075f1dddee42deb497e457307f13",
+      "size_bytes": 208175
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "git_locator": "HEAD:.trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "sha256": "711042c6d1ad9db7c6d8ea89bf036a1bda3b80b5cf393466d0a449e4e1f11876",
+      "size_bytes": 3085
+    }
+  ],
+  "preserved_evidence_paths": [
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-live-wrapper-namespace-fix.md",
+      "sha256": "2154f3ee9ffdafeb61d0a254c78437eec5a91744657e37ab8bc803c877514b6c",
+      "size_bytes": 3826
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md",
+      "sha256": "2a74ae2f84742b75c126cccf0bd77c06cc22d16f0d8faa5b9cf498acb85fae30",
+      "size_bytes": 13876
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
+      "sha256": "d6f594a610cddd857c7a8e221ede26744ab90c79fd48ed68e31294eeb4de6830",
+      "size_bytes": 12593
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
+      "sha256": "6bf7d3f77d235b4d712a854969c5ff976c3d950787753595c7dc3761153086a1",
+      "size_bytes": 281289
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json",
+      "sha256": "de1e29c39de44663b35a6bc9f6c6065cff4beb5e36c141f9b361080b9b3c5d88",
+      "size_bytes": 12794
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
+      "sha256": "a9bb25dba2ccce44fc6e2d175ea7739b18f0ff6023f3b25ef440d6c26f34a651",
+      "size_bytes": 15214
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+      "sha256": "be4175c6c79b825b670f44b10ff78124f6841d7e2efe5460bd0513fb147aa69f",
+      "size_bytes": 37348
+    }
+  ],
+  "checks": [
+    {
+      "id": "workspace-boundary",
+      "command": "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task .trellis/tasks/07-26-118-guru-finalize-task",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Expected and actual workspace match the issue #118 worktree; source checkout is clean and suspicious source artifacts are empty."
+    },
+    {
+      "id": "planning-approval",
+      "command": "./.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-26-118-guru-finalize-task",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Schema 2.0 planning approval is current with typed_exit=approved."
+    },
+    {
+      "id": "task-validate",
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-26-118-guru-finalize-task",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Task context JSONL validation passed."
+    },
+    {
+      "id": "changed-existing-json",
+      "command": "python3 -m json.tool <each existing changed JSON>",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "All existing changed JSON files parse."
+    },
+    {
+      "id": "current-dirty-diff-check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Current dirty diff has no whitespace error."
+    },
+    {
+      "id": "runtime-full",
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "627 passed, 13 skipped."
+    },
+    {
+      "id": "closeout-transaction-matrix",
+      "command": "PYTHONPYCACHEPREFIX=<absolute-gitignored-path> python3 -m unittest trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.CloseoutTransactionContractTest",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "105 tests passed in 118.606 seconds."
+    },
+    {
+      "id": "skill-package-graph",
+      "command": "python3 trellis/skills/guru-team/tests/test_skill_packages.py",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "180 tests passed."
+    },
+    {
+      "id": "finalizer-contract",
+      "command": "python3 -m unittest trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "5 tests passed."
+    },
+    {
+      "id": "publication-verification-contracts",
+      "command": "python3 -m unittest trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "28 tests passed."
+    },
+    {
+      "id": "preset-installer",
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "45 tests passed."
+    },
+    {
+      "id": "upstream-ownership-tests",
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "9 tests passed."
+    },
+    {
+      "id": "source-package-validator",
+      "command": ".trellis/guru-team/scripts/bash/check-skill-packages.sh --json --mode source",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "13 active minimal-handoff Skills; workflow markers 12/46/27."
+    },
+    {
+      "id": "installed-package-validator",
+      "command": ".trellis/guru-team/scripts/bash/check-skill-packages.sh --json --mode installed",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "2659 managed files with zero sidecars, removals, or conflicts."
+    },
+    {
+      "id": "upstream-ownership-validator",
+      "command": "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Frozen 43-entry inventory and exact five current bindings passed."
+    },
+    {
+      "id": "dogfood-overlay-drift",
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Dogfood overlays match canonical bytes."
+    },
+    {
+      "id": "runtime-canonical-dogfood-parity",
+      "command": "cmp -s trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Canonical and installed runtime bytes match."
+    },
+    {
+      "id": "finalizer-package-parity",
+      "command": "diff -qr canonical guru-finalize-task package against installed/shared/Codex/Claude/Cursor roots",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "All five distributed package trees match canonical bytes."
+    },
+    {
+      "id": "source-installed-shared-real-wrapper",
+      "command": "run-skill-evals --skill guru-finalize-task --adapter shared for source and installed modes",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Each mode passed 8 of 8 cases and covered all six exits plus verified/not_required re-entry."
+    },
+    {
+      "id": "clean-throwaway-full-chain",
+      "command": "verify-throwaway-install.sh <clean temporary target>",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "Initial install, installed recovery, Trellis update, preset reapply, ownership, no-developer paths, and terminal zero-sidecar verification passed."
+    },
+    {
+      "id": "protected-surfaces-no-diff",
+      "command": "git diff --exit-code origin/main -- <global workflow, upstream finish family, overlays, official task.py>",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "No protected surface changed."
+    },
+    {
+      "id": "deployment-surfaces-no-impact",
+      "command": "git diff --exit-code origin/main -- <CI/CD, container, K8s, deploy, DB migration, Terraform, Makefile>",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "No deployment surface changed."
+    },
+    {
+      "id": "sensitive-material-scan",
+      "command": "scan effective diff for private-key, GitHub token, AWS key, OpenAI key, and credential-bearing PostgreSQL URL patterns",
+      "exit_code": 1,
+      "status": "passed_no_matches",
+      "summary": "rg returned 1 because no sensitive pattern matched."
+    },
+    {
+      "id": "issue-scope",
+      "command": "validate issue-scope-ledger.json and PR close keywords",
+      "exit_code": 0,
+      "status": "passed",
+      "summary": "close=[118], related=[81,115], followup=[119,132], PR close keywords=[118]."
+    }
+  ],
+  "expected_stale_gate_checks": [
+    {
+      "id": "phase2-check",
+      "command": ".trellis/guru-team/scripts/bash/check-phase2-check.sh --json --task .trellis/tasks/07-26-118-guru-finalize-task",
+      "exit_code": 2,
+      "status": "expected_stale",
+      "errors": [
+        "phase2_check_agent_assignment_stale",
+        "phase2_check_head_stale",
+        "phase2_check_dirty_snapshot_stale",
+        "phase2_check_repository_snapshot_invalid:Reviewed path is missing or invalid: .trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json"
+      ]
+    },
+    {
+      "id": "branch-review-gate",
+      "command": ".trellis/guru-team/scripts/bash/check-review-gate.sh --json --allow-metadata-after-gate --task .trellis/tasks/07-26-118-guru-finalize-task",
+      "exit_code": 2,
+      "status": "expected_stale",
+      "summary": "Old Phase 2, assignment, task commit/ledger, and working-tree bindings are stale."
+    },
+    {
+      "id": "publication-readiness",
+      "command": ".trellis/guru-team/scripts/bash/check-task-publication-review.sh --json --expected-exit ready --task .trellis/tasks/07-26-118-guru-finalize-task",
+      "exit_code": 2,
+      "status": "expected_stale",
+      "summary": "Branch Review, Phase 2, publication artifact, entry-precondition, and repository bindings are stale."
+    }
+  ],
+  "setup_observations": [
+    {
+      "status": "superseded",
+      "summary": "The initial changed-JSON loop included the two intentionally deleted JSON files; the corrected existing-file loop passed."
+    },
+    {
+      "status": "superseded",
+      "summary": "A relative PYTHONPYCACHEPREFIX polluted temporary Git fixtures; rerunning with an absolute gitignored prefix produced the 105-test pass."
+    }
+  ],
+  "issue_state": {
+    "118": "OPEN",
+    "115": "OPEN",
+    "119": "OPEN",
+    "132": "OPEN",
+    "105": "CLOSED_COMPLETED"
+  },
+  "docs_ssot": {
+    "approved_strategy": "ssot_first",
+    "cleanup_result": "no_docs_update_needed",
+    "durable_contract_changed_by_cleanup": false,
+    "task_history_only_artifacts": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-full-round-20260728.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728.json"
+    ],
+    "reconciliation_status": "passed"
+  },
+  "semantic_review": {
+    "scope_before_severity": true,
+    "p0_open": 0,
+    "p1_open": 0,
+    "p2_open": 0,
+    "p3_open": 0,
+    "gate_status": "passed",
+    "recommended_exit": "passed",
+    "consumer": {
+      "kind": "skill",
+      "id": "guru-create-task-commit"
+    },
+    "summary": "The stale active checkpoint cleanup is a qualified normal-path correctness fix, preserves historical bytes, changes no durable/public contract, and leaves no open current-scope finding."
+  },
+  "required_next_actions": [
+    "Record the current checker completed event in agent-assignment.json.",
+    "Run the guru-check-task recorder/checker to create fresh phase2-check.json.",
+    "Create a fresh task commit after exact plan/digest confirmation.",
+    "Run an independent full Branch Review over origin/main...HEAD.",
+    "Rerun task publication review and obtain a current #116 ready output.",
+    "Generate and present a new immutable closeout plan and exact digest.",
+    "Do not perform push, PR mutation, archive, ready, merge, or issue mutation before the new required confirmation."
+  ]
+}

@@ -1,0 +1,409 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "009",
+  "task": {
+    "id": "118-guru-finalize-task",
+    "path": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "status": "in_progress",
+    "branch": "feat/118-guru-finalize-task"
+  },
+  "issue": {
+    "primary_issue": 118,
+    "ledger_sha256": "d81d737011cd1ac14ac4ddc89c539a5963a97323333bf5182901cd8f6fea7771"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "362f8cd62c62621e892b46e68763ae4323460871"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+      "sha256": "1bcc7712aa1c8a74f72ecfa4a90d8384d77fbd7a6ed95f65714737ffa600c9c6",
+      "size": 38697
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "sha256": "7820c7af35f87ee15738b6d1f74434d5b451a6a108e62e9e09c97095d8d96470",
+      "size": 130027
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "sha256": "d81d737011cd1ac14ac4ddc89c539a5963a97323333bf5182901cd8f6fea7771",
+      "size": 5124
+    },
+    "task": {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
+      "sha256": "44c9c3c6896b30aec2fcd78dd9493959314a533ee929796538d604edc62382b1",
+      "size": 659
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c1cce46828a28802a1d3ba5becf49275388ccb14",
+        "worktree_sha256": "1499f4b8f6cca8b9b733b05cedcae5d443d6a4b82f9e835a6be6fb9ef3625222",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+        "index_status": "",
+        "worktree_status": "D",
+        "untracked": false,
+        "deleted": true,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ff48956d4d6ba7b9a237e5f95d9e7b671a03321f",
+        "worktree_sha256": null,
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "faa8387238d6c17b1487c901d2ff4178a9f17d64",
+        "worktree_sha256": "0055320f0d8d454fc9c3fc808b1f45ccbde080dce1ddb30a9f6567640508e82d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "53b5ff3bc58c586036e5eaafed59f00cffccb0ccffc9be5c124a04bf52b890b2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c49a6773104c6bbff7b2123385f1d1a6740b400f",
+        "worktree_sha256": "d81d737011cd1ac14ac4ddc89c539a5963a97323333bf5182901cd8f6fea7771",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "cdaaf2b8233c4f395e915de0ec873521fd923017157ed908a44a1bd136c4fcdb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-full-round-20260728.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2629ffb2d6b9b51e6189ddb75ada3def36dbdc221798f3b313c4c24b3a7679db",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "eab91347a6a51953ef65fac403072cc09670f20f",
+        "worktree_sha256": "7820c7af35f87ee15738b6d1f74434d5b451a6a108e62e9e09c97095d8d96470",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c69424befc6367c9f10a528e4fcfdb5a46f1956f891edbdd4d7255c5e7e3b948",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ed12bf631238939240cf5052ff6028e73af1207f1a906965c406d7aa0330068f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9b516900429d90b3109b2c737978b515f3f125c8",
+        "worktree_sha256": "3aeb22a3a3ba019e7bd717f3ee5f6319e79ece812fb36c14bb2f23a91e4213c7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ebd0582fb07b441fe8fc9205a5c57af7244117db",
+        "worktree_sha256": "f983b73a753ed3f6f2ece4c04fc868cba1bfb86d629973f8cb0832de6ae79f59",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fac94da64c5d25529cde5acca3a6eb4b9a8ede6c",
+        "worktree_sha256": "2e7f1450313431f9f3896b6119be72db9348560b4e37feffc31fd40a2b015ba3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a99848b626b87fcb24fab872cd7c1fed4e575e24",
+        "worktree_sha256": "17a5c9b6f4b918effe256f694439a9a7c5a13fa92129f7d5f1a896ce473b74f6",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "a9bb25dba2ccce44fc6e2d175ea7739b18f0ff6023f3b25ef440d6c26f34a651",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c430de1012a628f30b17d6d5dc9255c6a5aaa13a",
+        "worktree_sha256": "be4175c6c79b825b670f44b10ff78124f6841d7e2efe5460bd0513fb147aa69f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+        "index_status": "",
+        "worktree_status": "D",
+        "untracked": false,
+        "deleted": true,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4ecb9e0a11710b4b82c83880992f34ff88f0fff5",
+        "worktree_sha256": null,
+        "mode": "100644"
+      }
+    ],
+    "digest": "da02e9760305ca5e33e7d73df28610d2c6d218b38dca1779fc2d6253975d2a70"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.md",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-full-round-20260728.md",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+      "category": "task-reviewed",
+      "reason": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+      "coverage_source": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json",
+      "category": "task-reviewed",
+      "reason": "This invocation owns the exact private candidate evidence.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-full-round-20260728.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json",
+    ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json"
+  ],
+  "message": {
+    "subject": "fix(workflow): #118 清理过期 finalizer 检查点",
+    "body": "背景：\n旧 closeout plan 与 finalization gate 仍绑定 d420a684，导致当前 362f8cd6 上的合法 task-work evidence 被 finalizer 判为不属于 immutable plan。\n\n变更：\n- 删除两个过期的 active owner-private checkpoint，精确旧 bytes 继续由 Git 历史保存。\n- 记录 cleanup implementation handoff 与 fresh 72-command/144-stream exact-stream Phase 2 evidence。\n- 固化 task commit 008 terminal result、Round 16 及既有 review/publication metadata；这些下游 gate 必须在新提交后重新生成，不可复用。\n\n边界：\n仅修改 #118 task-local artifact，不修改 runtime、public Skill I/O、schema、tests、global workflow、preset、overlay 或平台分发；不并入 #119/#132，不关闭 #115，不改变 #105 事务语义。\n\n验证：\nRuntime 627 passed/13 skipped、#105 transaction 105、Skill graph 180、finalizer 5、#116/#117 28、preset 45、ownership 9、source/installed wrapper 各 8/8；clean throwaway install/update/reapply/.new/.bak/OOTB 全链通过。\n\nRefs #118",
+    "bytes": "fix(workflow): #118 清理过期 finalizer 检查点\n\n背景：\n旧 closeout plan 与 finalization gate 仍绑定 d420a684，导致当前 362f8cd6 上的合法 task-work evidence 被 finalizer 判为不属于 immutable plan。\n\n变更：\n- 删除两个过期的 active owner-private checkpoint，精确旧 bytes 继续由 Git 历史保存。\n- 记录 cleanup implementation handoff 与 fresh 72-command/144-stream exact-stream Phase 2 evidence。\n- 固化 task commit 008 terminal result、Round 16 及既有 review/publication metadata；这些下游 gate 必须在新提交后重新生成，不可复用。\n\n边界：\n仅修改 #118 task-local artifact，不修改 runtime、public Skill I/O、schema、tests、global workflow、preset、overlay 或平台分发；不并入 #119/#132，不关闭 #115，不改变 #105 事务语义。\n\n验证：\nRuntime 627 passed/13 skipped、#105 transaction 105、Skill graph 180、finalizer 5、#116/#117 28、preset 45、ownership 9、source/installed wrapper 各 8/8；clean throwaway install/update/reapply/.new/.bak/OOTB 全链通过。\n\nRefs #118\n",
+    "sha256": "1b57c9863e8a20a6a32a6085081f5dcca6e7d6cfe10b8726226390949a32c43e"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "public-skill-caller",
+    "summary": "17 个 current dirty path 全部属于 fresh Phase 2 覆盖的 #118 task-local cleanup、evidence 或明确需在新 HEAD 后重建的下游历史 artifact；009.json 仅作为 Skill 自有候选。提交消息准确描述 stale checkpoint、验证与 issue ownership，未授权任何远端或发布副作用。",
+    "evidence": [
+      "The caller supplied the exact reviewed path authorization set and commit message intent."
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "public-invocation-explicit-confirmation",
+    "evidence": "用户已确认精确本地 task commit 授权 envelope；plan SHA-256=d5ef174eadfb8e1ce7adf0c5e22c89fc5d79ef2c9109a469ebf3ad323b1e4341。授权仅创建并执行该 18-path task commit，不授权 push、PR、archive、Ready、merge 或 Issue mutation。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-28T06:51:46Z",
+    "plan_digest": "0d7c3b4babef29329afd8852d15071a85c9467014da97b052c6e30529dfa58e7"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}
