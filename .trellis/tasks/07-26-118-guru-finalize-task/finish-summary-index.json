@@ -14,7 +14,7 @@
       "Production eval 调用真实 wrapper，先按 actual exit 选 schema，再断言 expected_exit。",
       "Canonical、dogfood、四平台、preset 与 extension inventory 保持 byte/mode/update 一致。",
       "Verified/not_required 经 #117 owner check 后仅放行 exact metadata。",
-      "Private Namespace 仅由 validated plan 重建；no-plan/stale fail closed。"
+      "Private Namespace 依 plan 重建；stale checkpoint 在 fresh gates 前清理。"
     ],
     "affected_surfaces": [
       {

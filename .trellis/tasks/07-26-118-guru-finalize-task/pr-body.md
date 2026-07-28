@@ -17,22 +17,23 @@ Codex production eval 只向 argv 精确授权 repo-external native execution ro
 
 ## 验证结果
 
-- Phase 2：P0/P1/P2/P3=`0/0/0/0`；runtime 627 passed、13 skipped；#105 transaction 105；Skill/package/eval 180；finalizer 5；focused Namespace 5；preset 45、ownership 9；128 条 exact command records 与 256 份 retained stdout/stderr identity 全部重算匹配；source/installed shared wrapper eval 与 clean throwaway current-candidate chain rc=0。
+- Phase 2：P0/P1/P2/P3=`0/0/0/0`；runtime 627 passed、13 skipped；#105 transaction 105；Skill/package/eval 180；finalizer 5；focused Namespace 5；preset 45、ownership 9；72 条 command/144 个 exact stream evidence 全部重算匹配；source/installed shared wrapper eval 与 clean throwaway current-candidate install/update/reapply/`.new`/`.bak`/platform/OOTB chain rc=0。
 - Public-wrapper Namespace closure：content-pushed re-entry 不再因缺少 checker-private fields 抛出 `AttributeError`；private args 仅从 validated task-local immutable plan 重建，initial no-plan 与 stale gate 继续 fail closed，public CLI/DTO/schema/exit 未扩大。
 - Finalization gate re-entry closure：prepared gate recorder-to-checker 正向 1 项与 arbitrary metadata 负向 1 项通过；只放行 exact finalizer-owned gate path。
 - Codex trace write closure：repo-external workspace-enforcing regression 通过，trace 最后事件为真实 public `invoke.sh`，wrapper rc=0；canonical/dogfood adapter SHA-256=`e519f1babbf5b90999f9cc3f64b431d7fc544a2e9fe2f640be482d4372a8fc35`。
 - Verification re-entry：workflow `verified` 与 task-bearing standalone `not_required` 两条真实 recorder-to-finalizer public wrapper 路径通过；arbitrary metadata 与 missing explicit owner binding 继续 fail closed。
-- Final Branch Review Round 16 覆盖完整 `origin/main...362f8cd62c62621e892b46e68763ae4323460871` 的 549-path committed range，并 fresh 运行 runtime 627/13、Skill graph 180、finalizer contract 5、preset 45、ownership 9、parity/overlay/protected-surface checks；P0/P1/P2/P3 与 scope proposals 均为 0。
+- Stale-checkpoint cleanup：task commit 009=`d7308d4aeaa3228d7650b93821ac7b4269ec5b38` 只删除 predecessor plan 绑定的 `closeout-plan.json` 与 `task-finalization-gate.json` active copies；旧 bytes 保留在 parent history，随后 Phase 2、Branch Review、publication review 与 finalization preview 均重新建立 current identity。
+- Final Branch Review Round 17 覆盖完整 `origin/main...d7308d4aeaa3228d7650b93821ac7b4269ec5b38` 的 554-path/9-commit range，并 fresh 运行 runtime 627/13、package/eval 185、preset/ownership 54、parity/overlay/protected-surface checks；P0/P1/P2/P3 与 scope proposals 均为 0。
 - Clean throwaway 覆盖 workflow marketplace discovery、preset initial install/reapply、official update、managed hashes、`.new/.bak` recovery、四平台分发、真实 wrappers/evals、installed recovery、ownership 与 overlay drift。
 - Claude installed native 调用因外部 `401 Invalid API key` 未取得 semantic success；协议、adapter parsing、controlled tests 与 corpus parity 通过，但不把外部 401 描述为 live pass。Cursor 当前环境稳定返回 declared `unsupported`，同样不冒充 semantic pass。
 - 当前通过的是 exact local committed source；feature ref 尚未 push。真实 pushed feature-ref marketplace verification 仍是 `guru-finalize-task` content push 后、Draft PR/archive 前的 mandatory #117 owner gate，不能用 local/main 验证替代。
-- 完整 `git diff --check origin/main...362f8cd6` 仅命中 assignment-bound immutable Round 9 raw report line 203；Round 13/16 将其保留为 `rejected_candidate/out_of_scope` nonblocking observation。Current last-commit 与 metadata tail whitespace check 通过。
+- 完整 `git diff --check origin/main...d7308d4a` 仅命中 assignment-bound immutable Round 9 raw report line 203；Round 13/17 将其保留为 `rejected_candidate/out_of_scope` nonblocking observation。Current last-commit 与 metadata tail whitespace check 通过。
 
 ## Review Gate
 
-Round 16 使用未参与 implementation、Phase 2、finding discovery/closure 或旧 final-release 的全新 reviewer，对 current 549-path range 执行 qualification-first fresh final review。`F-LIVE-WRAPPER-NAMESPACE-01`、`F-FINALIZATION-GATE-REENTRY-01` 与 `F-CODEX-TRACE-WRITE-01` 均由 fresh implementation、完整 Phase 2、task commit 008 与本轮独立 normal-path review 闭环。
+Round 17 使用未参与 implementation、Phase 2、finding discovery/closure 或旧 Round 16 final-release 的全新 reviewer，对 current 554-path/9-commit range 执行 qualification-first fresh final review。它重新验证 stale-checkpoint cleanup、全部历史 finding closure、Interface 1.3/private-state/recovery/distribution contracts、Docs SSOT、安装升级和安全部署边界；Round 17 raw report SHA-256=`56784821f7bc46f9ae679d9ec2344450a50258244e0127319ac0b4eb2abce1cc`。
 
-Current P0/P1/P2/P3=`0/0/0/0`，scope proposals=`0`。正式 Branch Review recorder、checker 与 public wrapper 均返回 `passed`；gate artifact SHA-256 为 `2e7f1450313431f9f3896b6119be72db9348560b4e37feffc31fd40a2b015ba3`。
+Current P0/P1/P2/P3=`0/0/0/0`，scope proposals=`0`。正式 Branch Review recorder、checker 与 public wrapper 均返回 `passed`；gate artifact SHA-256 为 `70452a5858e0787d6502e7a82db998e83c897d3517c8c50e093c0b8d18971d77`。
 
 ## Issue 关闭范围
 
@@ -57,6 +58,6 @@ Public DTO 不携带 closeout plan、readiness、verification、PR/archive/recov
 - Strategy：`ssot_first`。
 - Durable docs：finalizer step-local contract、Skill I/O、workflow ownership、companion scripts、quality、preset installer/upstream ownership、public docs 与 repository/workflow/preset README 已同步。
 - Merged delta：semantic owner、single transaction engine、七个 distinct profiles、六个 `exit_id` outputs、owner-private state、verification/PR/archive/recovery ordering、production eval、distribution 和 update/reapply 规则均已写入对应 durable owners。
-- Current corrections：prepared finalizer gate re-entry、owner-check-first verification re-entry、Codex repo-external execution-root grant 与 public-wrapper private Namespace reconstruction 均恢复 code/test 与既有 durable contract 一致，无新的 durable semantic delta。
+- Current corrections：prepared finalizer gate re-entry、owner-check-first verification re-entry、Codex repo-external execution-root grant 与 public-wrapper private Namespace reconstruction 均恢复 code/test 与既有 durable contract 一致；stale predecessor plan/gate active copies 已在 task commit 009 删除，无新的 durable semantic delta。
 - Task history：planning provenance、实现轮次、Phase 2 command evidence、historical finding lifecycle 与 raw Branch Review reports 仅保留在 task-local artifacts，不承担长期流程定义。
 - Follow-up / limitation：global Finish family activation 与 combined acceptance 由 #119 负责，upstream overlay cleanup 由 #132 负责；exact pushed feature-ref verification 与真实 GitHub/archive side effects 仍是后续 finalization mandatory gates。

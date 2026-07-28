@@ -17328,6 +17328,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         *,
         marketplace_required: bool,
         arbitrary_metadata: bool = False,
+        execute_remaining: bool = False,
     ) -> dict[str, object] | None:
         source_root = Path(__file__).resolve().parents[5]
         package_root = self.root / "trellis/skills/guru-team/packages"
@@ -17527,6 +17528,32 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "passed",
                 selected,
             )
+            for name in (
+                "task-start-context.schema.json",
+                "finish-summary.schema.json",
+                "closeout-plan.schema.json",
+            ):
+                installed_path = f".trellis/guru-team/schemas/{name}"
+                execution["asset_expectations"].append({
+                    "category": "schema",
+                    "platform": None,
+                    "path": installed_path,
+                    "source_path": f"trellis/workflows/guru-team/schemas/{name}",
+                    "expected_sha256": "1" * 64,
+                    "relation": "managed_manifest",
+                })
+                execution["asset_digests"].append({
+                    "category": "schema",
+                    "platform": None,
+                    "path": installed_path,
+                    "sha256": "1" * 64,
+                })
+            execution["asset_inventory"] = (
+                gtt.extension_verification_asset_inventory_summary(
+                    execution["asset_expectations"],
+                    execution["asset_digests"],
+                )
+            )
             review = ExtensionVerificationRuntimeTest.review(
                 self,
                 "verified",
@@ -17642,6 +17669,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             review_input=None,
             dry_run=False,
             owner_result=None,
+            gate=None,
         )
         with (
             mock.patch.dict(
@@ -17676,6 +17704,25 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             preview = gtt.cmd_preview_finalization(runtime_args)
             self.assertEqual(preview["transaction_state"], "content_pushed")
             self.assertEqual(preview["plan_ref"], plan_ref)
+            route = (
+                {
+                    "typed_exit": "published",
+                    "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                    "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+                }
+                if execute_remaining
+                else {
+                    "typed_exit": "resume_finalization",
+                    "consumer": gtt.FINALIZATION_CONSUMERS[
+                        "resume_finalization"
+                    ],
+                    "output": {
+                        "exit_id": "resume_finalization",
+                        "task_ref": task_ref,
+                        "plan_ref": plan_ref,
+                    },
+                }
+            )
             review_input = {
                 "schema_version": "1.0",
                 "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
@@ -17689,17 +17736,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     "confirmed_plan_digest": plan["plan_digest"],
                     "summary": "The current immutable plan remains confirmed.",
                 },
-                "route": {
-                    "typed_exit": "resume_finalization",
-                    "consumer": gtt.FINALIZATION_CONSUMERS[
-                        "resume_finalization"
-                    ],
-                    "output": {
-                        "exit_id": "resume_finalization",
-                        "task_ref": task_ref,
-                        "plan_ref": plan_ref,
-                    },
-                },
+                "route": route,
                 "supersedes_gate_ref": None,
             }
             review_input_path = (
@@ -17711,7 +17748,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 review_input_path,
             )
             recorded = gtt.cmd_record_finalization_gate(runtime_args)
-            self.assertEqual(recorded["typed_exit"], "resume_finalization")
+            self.assertEqual(
+                recorded["typed_exit"],
+                "published" if execute_remaining else "resume_finalization",
+            )
             expected_dirty = set(plan["projection"]["evidence_paths"])
             expected_dirty.update(
                 gtt.finalization_uncommitted_output_paths(self.root, plan)
@@ -17720,6 +17760,96 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.assertEqual(set(gtt.git_status_paths(self.root)), expected_dirty)
             checked_preview = gtt.cmd_preview_finalization(runtime_args)
             self.assertEqual(checked_preview["plan_ref"], plan_ref)
+
+            if execute_remaining:
+                owner_path = self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+                owner_sha256 = hashlib.sha256(owner_path.read_bytes()).hexdigest()
+                archived = self.root / plan["task"]["archive_locator"]
+                recorded_ledger: dict[str, object] = {}
+
+                def finish_remaining(
+                    finish_args: argparse.Namespace,
+                ) -> dict[str, object]:
+                    compatibility = finish_args.external_verification
+                    self.assertEqual(
+                        gtt.marketplace_verification_contract_errors(
+                            compatibility
+                        ),
+                        [],
+                    )
+                    self.assertEqual(compatibility["verified_head"], self.head)
+                    self.assertEqual(compatibility["remote_head"], self.head)
+                    evidence = gtt.closeout_passed_marketplace_evidence(
+                        self.root,
+                        owner_path,
+                        compatibility,
+                    )
+                    self.assertEqual(evidence["artifact_sha256"], owner_sha256)
+                    self.assertEqual(evidence["verified_content_head"], self.head)
+                    self.assertEqual(evidence["remote_head"], self.head)
+                    recorded_ledger.update(
+                        gtt.record_marketplace_machine_evidence(
+                            self.ledger,
+                            evidence,
+                        )
+                    )
+                    archived.mkdir(parents=True)
+                    gtt.write_json(
+                        archived / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+                        gtt.read_json(
+                            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT
+                        ),
+                    )
+                    return {
+                        "archived_task_dir": str(archived),
+                        "publish": {
+                            "pr": {
+                                "number": 118,
+                                "url": (
+                                    "https://github.com/example/"
+                                    "guru-extension/pull/118"
+                                ),
+                            }
+                        },
+                    }
+
+                with mock.patch.object(
+                    gtt,
+                    "cmd_finish_work",
+                    side_effect=finish_remaining,
+                ) as finish:
+                    transition = gtt.cmd_execute_finalization_transition(
+                        runtime_args
+                    )
+                finish.assert_called_once()
+                self.assertEqual(transition["typed_exit"], "published")
+                self.assertEqual(transition["output"]["pr_number"], 118)
+                for issue_key in ("primary_issue", "close_issues"):
+                    issues = recorded_ledger[issue_key]
+                    issue_rows = issues if isinstance(issues, list) else [issues]
+                    machine_evidence = next(
+                        item
+                        for item in issue_rows[0]["acceptance_evidence"]
+                        if isinstance(item, dict)
+                        and item.get("type")
+                        == gtt.REMOTE_MARKETPLACE_EVIDENCE_TYPE
+                    )
+                    self.assertEqual(
+                        machine_evidence["artifact_sha256"],
+                        owner_sha256,
+                    )
+                    self.assertEqual(
+                        machine_evidence["verified_content_head"],
+                        self.head,
+                    )
+                    self.assertEqual(machine_evidence["remote_head"], self.head)
+                return {
+                    "owner": owner,
+                    "verification_output": verification_output,
+                    "preview": preview,
+                    "transition": transition,
+                    "recorded_ledger": recorded_ledger,
+                }
 
             finalizer_package = package_root / gtt.FINALIZE_TASK_SKILL_ID
             wrapper_args = argparse.Namespace(
@@ -17798,6 +17928,17 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         )
         assert result is not None
         self.assertEqual(result["owner"]["typed_exit"], "verified")
+
+    def test_real_workflow_verified_reentry_executes_remaining_finalization(
+        self,
+    ) -> None:
+        result = self.exercise_real_verification_metadata_reentry(
+            marketplace_required=True,
+            execute_remaining=True,
+        )
+        assert result is not None
+        self.assertEqual(result["owner"]["typed_exit"], "verified")
+        self.assertEqual(result["transition"]["typed_exit"], "published")
 
     def test_real_standalone_not_required_recorder_reenters_finalizer_wrapper(
         self,

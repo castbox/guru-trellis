@@ -30639,6 +30639,169 @@ def finalization_current_verification_owner_result(
     return payload, checked
 
 
+def finalization_marketplace_verification_compatibility_projection(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    verification: tuple[dict[str, Any], dict[str, Any]],
+) -> dict[str, Any]:
+    """Project current #117 owner evidence into the private #105 input shape."""
+    owner, checked = verification
+    owner_input = (
+        owner.get("public_input")
+        if isinstance(owner.get("public_input"), dict)
+        else {}
+    )
+    repository = (
+        owner.get("repository")
+        if isinstance(owner.get("repository"), dict)
+        else {}
+    )
+    execution = (
+        owner.get("execution")
+        if isinstance(owner.get("execution"), dict)
+        else {}
+    )
+    identity = (
+        owner.get("identity")
+        if isinstance(owner.get("identity"), dict)
+        else {}
+    )
+    plan_ref = f"closeout-plan:{plan['plan_digest']}"
+    verification_path = marketplace_verification_path(
+        task_dir,
+        load_config(root),
+    )
+    binding_errors: list[str] = []
+    if verification_path.is_symlink() or not verification_path.is_file():
+        binding_errors.append("owner evidence path is unavailable")
+    else:
+        try:
+            if read_json(verification_path) != owner:
+                binding_errors.append("owner evidence bytes do not match the checked payload")
+        except (OSError, json.JSONDecodeError, WorkflowError):
+            binding_errors.append("owner evidence path is unreadable")
+    if (
+        checked.get("status") != "ok"
+        or checked.get("typed_exit") != "verified"
+        or checked.get("mode") != "workflow"
+        or checked.get("verification_ref") != identity.get("verification_ref")
+        or checked.get("artifact_sha256") != context_digest(owner)
+        or (
+            checked.get("finalization_plan_ref") is not None
+            and checked.get("finalization_plan_ref") != plan_ref
+        )
+    ):
+        binding_errors.append("owner checker result is not the current verified result")
+    if (
+        owner.get("typed_exit") != "verified"
+        or owner.get("mode") != "workflow"
+        or owner.get("profile") != "verification_required"
+        or owner_input.get("task_ref") != plan["task"]["active_locator"]
+        or owner_input.get("plan_ref") != plan_ref
+        or normalize_github_repository(owner_input.get("repo_ref"))
+        != plan["git"]["repo"]
+        or owner_input.get("reviewed_head") != plan["git"]["reviewed_work_head"]
+        or normalize_github_repository(repository.get("repo_ref"))
+        != plan["git"]["repo"]
+        or repository.get("remote") != plan["git"]["remote"]
+        or repository.get("ref") != f"refs/heads/{plan['git']['head_branch']}"
+        or repository.get("reviewed_head") != plan["git"]["reviewed_work_head"]
+        or repository.get("remote_head") != plan["git"]["reviewed_work_head"]
+        or execution.get("status") != "passed"
+    ):
+        binding_errors.append("owner evidence does not match the immutable finalization plan")
+    if binding_errors:
+        raise WorkflowError(
+            "Task finalization cannot project stale extension verification evidence.",
+            exit_code=2,
+            payload={"errors": sorted(set(binding_errors))},
+        )
+
+    steps = [
+        {
+            "command": list(item["argv"]),
+            "exit_code": item["exit_code"],
+            "stdout_sha256": item["stdout_sha256"],
+            "stderr_sha256": item["stderr_sha256"],
+            "stdout_size_bytes": item["stdout_size_bytes"],
+            "stderr_size_bytes": item["stderr_size_bytes"],
+            "passed": item["exit_code"] == 0,
+        }
+        for item in execution.get("commands", [])
+        if isinstance(item, dict)
+    ]
+    expectation_paths = {
+        "workflow_sha256": "trellis/workflows/guru-team/workflow.md",
+        "task_start_context_schema_sha256": (
+            "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+        ),
+        "finish_summary_schema_sha256": (
+            "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+        ),
+        "closeout_plan_schema_sha256": (
+            "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+        ),
+    }
+    expectations = execution.get("asset_expectations", [])
+    digests: dict[str, str] = {}
+    projection_errors: list[str] = []
+    for legacy_key, source_path in expectation_paths.items():
+        matches = [
+            item.get("expected_sha256")
+            for item in expectations
+            if isinstance(item, dict) and item.get("source_path") == source_path
+        ]
+        if len(matches) != 1 or not isinstance(matches[0], str):
+            projection_errors.append(
+                f"owner asset expectation is not unique: {source_path}"
+            )
+        else:
+            digests[legacy_key] = matches[0]
+    workflow_digest = digests.get("workflow_sha256", "")
+    projected = {
+        "schema_version": "1.0",
+        "generated_at": owner.get("generated_at"),
+        "status": "passed",
+        "repo": plan["git"]["repo"],
+        "remote": plan["git"]["remote"],
+        "branch": plan["git"]["head_branch"],
+        "marketplace_source": (
+            f"gh:{plan['git']['repo']}/trellis#{plan['git']['head_branch']}"
+        ),
+        "verified_head": plan["git"]["reviewed_work_head"],
+        "remote_head": repository["remote_head"],
+        "task_dir": plan["task"]["active_locator"],
+        "steps": steps,
+        "assets": {
+            "workflow_sha256": workflow_digest,
+            "preview_sha256": workflow_digest,
+            "task_start_context_schema_sha256": digests.get(
+                "task_start_context_schema_sha256", ""
+            ),
+            "finish_summary_schema_sha256": digests.get(
+                "finish_summary_schema_sha256", ""
+            ),
+            "closeout_plan_schema_sha256": digests.get(
+                "closeout_plan_schema_sha256", ""
+            ),
+            "runtime_gitignore_present": True,
+            "workspace_gitignore_present": True,
+            "session_auto_commit_false": True,
+            "legacy_handoff_absent": True,
+            "legacy_intake_schema_absent": True,
+        },
+    }
+    projection_errors.extend(marketplace_verification_contract_errors(projected))
+    if projection_errors:
+        raise WorkflowError(
+            "Task finalization cannot project extension verification evidence.",
+            exit_code=2,
+            payload={"errors": sorted(set(projection_errors))},
+        )
+    return projected
+
+
 def finalization_eval_preview_context(
     root: Path,
     public_input: dict[str, Any],
@@ -31585,8 +31748,21 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         finish_args.body_artifact = None
         finish_args.finalization_gate = gate
         finish_args.include_finalization_gate = True
-        if context["verification"] is not None:
-            finish_args.external_verification = context["verification"][0]
+        if context["plan"]["marketplace"]["required"]:
+            verification = context["verification"]
+            if not isinstance(verification, tuple) or len(verification) != 2:
+                raise WorkflowError(
+                    "Task finalization requires current extension verification evidence.",
+                    exit_code=2,
+                )
+            finish_args.external_verification = (
+                finalization_marketplace_verification_compatibility_projection(
+                    root,
+                    task_dir,
+                    context["plan"],
+                    verification,
+                )
+            )
         result = cmd_finish_work(finish_args)
         archived_gate = Path(result["archived_task_dir"]) / TASK_FINALIZATION_GATE_ARTIFACT
         published_gate = read_json(archived_gate)

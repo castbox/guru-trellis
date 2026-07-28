@@ -1,0 +1,360 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "phase2-command-evidence",
+  "generated_at": "2026-07-28T10:29:37Z",
+  "task": ".trellis/tasks/07-26-118-guru-finalize-task",
+  "reviewer": {
+    "agent_id": "/root/issue118_phase2_owner_projection_fix_check",
+    "logical_role": "阶段二检查代理",
+    "independent_from_implementation": true,
+    "recorder_invoked": false
+  },
+  "objective_identity": {
+    "repo": "castbox/guru-trellis",
+    "worktree": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/118-guru-finalize-task",
+    "branch": "feat/118-guru-finalize-task",
+    "head": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
+    "base_ref": "origin/main",
+    "base_head": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "remote_feature_head": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
+    "source_checkout": "/Users/wumengye/Documents/GoProjects/guru-trellis",
+    "source_checkout_clean": true,
+    "workspace_boundary": "passed",
+    "suspicious_source_artifacts": []
+  },
+  "planning_identity": {
+    "task_path": ".trellis/tasks/07-26-118-guru-finalize-task",
+    "approval_typed_exit": "approved",
+    "approval_provenance": "explicit-post-planning-review",
+    "ambiguity_review": "passed",
+    "fixed_scope_scan": "passed",
+    "unchecked_normative_hits": 0,
+    "docs_ssot_strategy": "ssot_first"
+  },
+  "implementation_scope": {
+    "owned_paths": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "runtime_delta": {
+      "canonical_insertions": 178,
+      "canonical_deletions": 2,
+      "dogfood_insertions": 178,
+      "dogfood_deletions": 2,
+      "test_insertions": 153,
+      "test_deletions": 12
+    },
+    "preexisting_main_session_metadata_paths": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-017-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json"
+    ]
+  },
+  "semantic_review": {
+    "qualified_findings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    },
+    "adequacy": "implementation_and_verification_passed_agent_recovery_pending",
+    "normal_path_result": "The verified #117 owner artifact is strictly rebound to the immutable finalization task, plan, repository, ref, reviewed HEAD, remote HEAD, checker result, execution status, complete asset inventory, and artifact path before a private schema-1.0 projection is passed to the unchanged #105 transaction engine.",
+    "legacy_flag_qualification": "The five legacy boolean flags preserve the existing #105 executor rule: each was derived from the same monolithic verification passed state. Current #117 verified evidence additionally binds the exact capability commands and complete matching installed asset inventory, so the compatibility projection does not weaken the prior accepted normal-path contract.",
+    "artifact_identity_result": "The regression proves ledger artifact_sha256 is computed from the real Interface 1.3 owner artifact, not from the temporary compatibility projection.",
+    "public_contract_result": "No public Skill input, output, typed exit, schema, workflow route, preset inventory, or #117 generic checker contract changed."
+  },
+  "command_representation": {
+    "exact_argv_ids": [
+      "runtime-full",
+      "closeout-transaction",
+      "active-archive-focused",
+      "preset-installer",
+      "ownership-tests",
+      "all-platform-preset-apply",
+      "source-package-validator",
+      "installed-package-validator",
+      "ownership-validator",
+      "dogfood-drift",
+      "clean-throwaway",
+      "current-diff-check",
+      "historical-diff-check",
+      "stale-phase2-gate",
+      "stale-review-gate",
+      "stale-publication-gate",
+      "official-index",
+      "official-custom-workflow",
+      "official-spec-marketplace"
+    ],
+    "logical_group_ids": [
+      "owner-projection-focused",
+      "skill-package-graph",
+      "owner-contracts",
+      "four-platform-focused",
+      "protocol-focused",
+      "source-shared-wrapper",
+      "installed-shared-wrapper",
+      "package-parity",
+      "python-bash-static",
+      "protected-deploy-sensitive-cache"
+    ],
+    "note": "Exact argv is retained only where reconstructable from the executed command. Aggregate suite captures use suite_scope and exact stdout/stderr identities; they are not represented as reconstructed argv."
+  },
+  "commands": [
+    {
+      "id": "runtime-full",
+      "argv": ["python3", "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"],
+      "exit_code": 0,
+      "summary": "628 tests passed; 13 skipped.",
+      "stdout": {"size_bytes": 2548, "sha256": "0697acaecf882fd5baf58e2f481e2a774950b9dfdf51f349a1b3b7d23a57f546"},
+      "stderr": {"size_bytes": 4453, "sha256": "ebd759823c0a91bc7fb8466525e891924c1048ca1bdea46b644756b4ae42d974"}
+    },
+    {
+      "id": "closeout-transaction",
+      "argv": ["python3", "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py", "CloseoutTransactionContractTest"],
+      "exit_code": 0,
+      "summary": "106 #105/finalizer transaction tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 1600, "sha256": "32a008dc29d14909267948d2d9b66961f1940959d67106951299aa4b7cae01fd"}
+    },
+    {
+      "id": "owner-projection-focused",
+      "suite_scope": "Six captured owner-projection positive and negative tests from the current runtime suite.",
+      "exit_code": 0,
+      "summary": "6 verified/not-required/negative projection tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 104, "sha256": "fbdc76082dbc90e9406f9c184916278073345196223564d7c6d733e8d88d0695"}
+    },
+    {
+      "id": "active-archive-focused",
+      "argv": ["python3", "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py", "CloseoutTransactionContractTest.test_real_workflow_verified_reentry_executes_remaining_finalization", "CloseoutTransactionContractTest.test_finalization_verification_augmentation_is_exactly_plan_bound", "CloseoutTransactionContractTest.test_standalone_not_required_owner_binds_task_plan_head_and_ref", "CloseoutTransactionContractTest.test_finalization_task_locator_allows_only_plan_bound_archive_projection", "CloseoutTransactionContractTest.test_archived_finalization_recovery_reads_committed_plan_and_evidence", "ExtensionVerificationRuntimeTest.test_checker_rejects_local_and_remote_head_drift"],
+      "exit_code": 0,
+      "summary": "6 active/archive, immutable binding, and drift tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 104, "sha256": "61023edb343763850d1924c90dc390220480685b04e27a467a9b86202b98684c"}
+    },
+    {
+      "id": "skill-package-graph",
+      "suite_scope": "Current Skill package, interface, production adapter, eval, and graph test aggregate.",
+      "exit_code": 0,
+      "summary": "180 Skill/package/eval tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 4510, "sha256": "732a3b80704cf975a1d414a35323c4a0806e5d91ab7d2de7b1dcbd35cab20e29"}
+    },
+    {
+      "id": "owner-contracts",
+      "suite_scope": "Current guru-finalize-task plus Issue #116/#117 owner package contract aggregate.",
+      "exit_code": 0,
+      "summary": "33 finalizer and producer-owner contract tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 133, "sha256": "29fa450dd710b01a011d094842ef06489c24b33a2b917dc542249bb0a0172949"}
+    },
+    {
+      "id": "preset-installer",
+      "argv": ["python3", "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"],
+      "exit_code": 0,
+      "summary": "45 preset installer tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 809, "sha256": "35cddb337c9993880784958e06c6a4644e19ce69aa2bb39b59f2a6ffa44903f1"}
+    },
+    {
+      "id": "ownership-tests",
+      "argv": ["python3", "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"],
+      "exit_code": 0,
+      "summary": "9 ownership tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 107, "sha256": "fec509025c9d821c125b13a21fdfb17e189c8d09d76f5242289edd983b1566b0"}
+    },
+    {
+      "id": "four-platform-focused",
+      "suite_scope": "Current shared, Codex, Claude, and Cursor protocol test aggregate.",
+      "exit_code": 0,
+      "summary": "5 shared/Codex/Claude/Cursor protocol tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 104, "sha256": "808059672466b5a746542b4c04b561e82c6b80810f957369e5060f51393d9c57"}
+    },
+    {
+      "id": "protocol-focused",
+      "suite_scope": "Current real-wrapper and actual-exit-first boundary test aggregate.",
+      "exit_code": 0,
+      "summary": "5 actual-exit-first and expected-exit boundary tests passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 2014, "sha256": "a1f2d2a899da036bd93a1133373b81789497fa1db1cd3a9fcf2fc85730f5e979"}
+    },
+    {
+      "id": "source-shared-wrapper",
+      "suite_scope": "Eight source shared real-wrapper eval cases.",
+      "exit_code": 0,
+      "summary": "8/8 source shared real-wrapper cases passed.",
+      "stdout": {"size_bytes": 7644, "sha256": "92917e0f8c79053286bc3c2857996201c74e620edb43434973e9a6edc0e4b48a"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "installed-shared-wrapper",
+      "suite_scope": "Eight installed shared real-wrapper eval cases.",
+      "exit_code": 0,
+      "summary": "8/8 installed shared real-wrapper cases passed.",
+      "stdout": {"size_bytes": 7671, "sha256": "31461fec3395ab3f82dcea06efdc63ce70decf7a8371bd3ab86d1fe7e3a1a2b5"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "all-platform-preset-apply",
+      "argv": ["trellis/presets/guru-team/scripts/bash/apply.sh", "--repo", ".", "--all-platforms"],
+      "exit_code": 0,
+      "summary": "All-platform apply passed; only installed_at/source_commit provenance was transiently regenerated and mechanically restored; no implementation drift remained.",
+      "stdout": {"size_bytes": 1032965, "sha256": "5068cba28346493f9b7db93807008b5538599d79f1ee110215f28878dcaf1ddd"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "source-package-validator",
+      "argv": ["trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh", "--root", ".", "--json", "--mode", "source"],
+      "exit_code": 0,
+      "summary": "13 active, 0 planned, 0 legacy; markers 12/46/27.",
+      "stdout": {"size_bytes": 1346, "sha256": "1c6b31cc2c6df8d7682eb57b6097bdfed893eab3bdaf4c9d4fe42800f5880d2a"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "installed-package-validator",
+      "argv": [".trellis/guru-team/scripts/bash/check-skill-packages.sh", "--root", ".", "--json", "--mode", "installed"],
+      "exit_code": 0,
+      "summary": "2659 managed files; sidecar/removal/conflict 0/0/0.",
+      "stdout": {"size_bytes": 1535, "sha256": "906e4ce2e0ca4b62de1924cf1caa5b01e8a751b956c2e7490805198d5750280f"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "ownership-validator",
+      "argv": ["trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh", "--repo", ".", "--json"],
+      "exit_code": 0,
+      "summary": "43 frozen/active/overlay entries; facts b99e67e59cb2e14679917bd31494f5ed32a87c72425f65b4fa41bd27470fc072.",
+      "stdout": {"size_bytes": 1731, "sha256": "5403ca759ffa967dbcc231bab5f5d000f8b9da2e12bfb82789458eacea1183e5"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "dogfood-drift",
+      "argv": ["trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh", "--repo", "."],
+      "exit_code": 0,
+      "summary": "Canonical overlays match dogfood installed copies.",
+      "stdout": {"size_bytes": 1790, "sha256": "b3bafca507c4743e965cd81eed5d8ee845c91589afaf38a18f1702ef854e4bd5"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "package-parity",
+      "suite_scope": "diff -qr with Python-cache exclusions from canonical finalizer package to installed, shared, Codex, Claude, and Cursor copies.",
+      "exit_code": 0,
+      "summary": "Canonical, installed, shared, Codex, Claude, and Cursor package trees are byte-identical after removing one generated canonical test cache."
+    },
+    {
+      "id": "clean-throwaway",
+      "argv": ["env", "TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#feat/118-guru-finalize-task", "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh", "/tmp/guru118-owner-projection-phase2.27HG8c/throwaway"],
+      "exit_code": 0,
+      "summary": "Clean current-candidate install, official update, workflow/preset reapply, no-developer project, installed eval, managed hash, platform distribution, and sidecar recovery passed.",
+      "stdout": {"size_bytes": 4165480, "sha256": "ae42150a8c777bc2e7215a2ed1ef2dc876aef37cf62c2b31bcd6615f65d29537"},
+      "stderr": {"size_bytes": 931, "sha256": "02202472bd4edc76cc3bd38ab7798905969e52b4c3a7cbbb32f042269a3e380c"}
+    },
+    {
+      "id": "python-bash-static",
+      "suite_scope": "Canonical/dogfood Python compile and applicable Bash syntax aggregate.",
+      "exit_code": 0,
+      "summary": "Applicable Python compile and Bash syntax checks passed.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "current-diff-check",
+      "argv": ["git", "diff", "--check"],
+      "exit_code": 0,
+      "summary": "Current dirty implementation and metadata have no whitespace errors.",
+      "stdout": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "historical-diff-check",
+      "argv": ["git", "diff", "--check", "origin/main...HEAD"],
+      "exit_code": 2,
+      "expected_nonzero_rationale": "The only hit is immutable Round 9 raw review evidence line 203, already qualified as a nonblocking historical observation.",
+      "stdout": {"size_bytes": 211, "sha256": "35b2d142684e8b84d7bc4221f8d92ba49b9f2e926c237b702991bfe913b4e14a"},
+      "stderr": {"size_bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+    },
+    {
+      "id": "stale-phase2-gate",
+      "argv": [".trellis/guru-team/skills/packages/guru-check-task/scripts/check-phase2-check.sh", "--root", ".", "--json", "--task", ".trellis/tasks/07-26-118-guru-finalize-task"],
+      "exit_code": 2,
+      "expected_nonzero_rationale": "Old Phase 2 evidence must reject current assignment, HEAD, dirty snapshot, and repository snapshot drift.",
+      "stderr": {"size_bytes": 439, "sha256": "9d12f7e4d51ca66aa32c986a225b371fa8bf4603f3fe4b9e6508a90948da30d7"}
+    },
+    {
+      "id": "stale-review-gate",
+      "argv": [".trellis/guru-team/scripts/bash/check-review-gate.sh", "--root", ".", "--json", "--task", ".trellis/tasks/07-26-118-guru-finalize-task"],
+      "exit_code": 2,
+      "expected_nonzero_rationale": "Old Branch Review evidence must reject stale Phase 2, ledger, assignment, and current implementation paths.",
+      "stderr": {"size_bytes": 1862, "sha256": "0685e0f737eb57bf8c44ff71bd001f3cbf89c8ad5116c908e5018d99f365bff6"}
+    },
+    {
+      "id": "stale-publication-gate",
+      "argv": [".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/check-task-publication-review.sh", "--root", ".", "--json", "--task", ".trellis/tasks/07-26-118-guru-finalize-task", "--expected-exit", "ready"],
+      "exit_code": 2,
+      "expected_nonzero_rationale": "Old publication readiness must reject stale Branch Review, Phase 2, assignment, repository, and non-metadata implementation paths.",
+      "stderr": {"size_bytes": 1901, "sha256": "e3887031e1dd73286b98d1051e019e4b09e70de492aaac83a9bca5a58ad38123"}
+    },
+    {
+      "id": "official-index",
+      "argv": ["curl", "--fail", "--location", "https://docs.trytrellis.app/index.md"],
+      "exit_code": 0,
+      "stdout": {"size_bytes": 6294, "sha256": "f8ff29b77e59e09f1756450fd99242e4b0a716dac3b03c76b403120916637c1d"}
+    },
+    {
+      "id": "official-custom-workflow",
+      "argv": ["curl", "--fail", "--location", "https://docs.trytrellis.app/advanced/custom-workflow.md"],
+      "exit_code": 0,
+      "stdout": {"size_bytes": 8705, "sha256": "2a8c667e41a3d19ee263e2d0b7c24b03396c83158ffaeb2e4778f1d6dd070b38"}
+    },
+    {
+      "id": "official-spec-marketplace",
+      "argv": ["curl", "--fail", "--location", "https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md"],
+      "exit_code": 0,
+      "stdout": {"size_bytes": 8611, "sha256": "93d5a69a829fac508c7a78418dc37d9db296f438242573cedd0dcfcf335d5f91"}
+    },
+    {
+      "id": "protected-deploy-sensitive-cache",
+      "suite_scope": "Current protected-surface, deployment-path, sensitive-material, and managed cache/sidecar inventory aggregate.",
+      "exit_code": 0,
+      "summary": "No protected Finish/workflow/task.py/overlay delta, deploy/CI/container/K8s/DB/Makefile path, sensitive material signature, managed-tree .new/.bak, or generated .pyc remains."
+    }
+  ],
+  "expected_stale_gate_results": {
+    "phase2_check": ["phase2_check_agent_assignment_stale", "phase2_check_head_stale", "phase2_check_dirty_snapshot_stale", "phase2_check_repository_snapshot_stale"],
+    "branch_review": "rejected stale Phase 2, issue-scope ledger, assignment, and current implementation paths",
+    "publication": "rejected stale Branch Review, Phase 2, assignment, repository, and current implementation paths"
+  },
+  "docs_ssot": {
+    "strategy": "ssot_first",
+    "durable_docs_current": true,
+    "task_delta_merged": true,
+    "current_fix_result": "no_docs_update_needed",
+    "reason": "The runtime/test fix restores the already documented finalizer-private compatibility rule and changes no public contract, route, transaction order, install inventory, or distribution behavior.",
+    "task_history_only": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalizer-owner-projection-fix-full-round-20260728.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalizer-owner-projection-fix-full-round-20260728.json"
+    ]
+  },
+  "external_limitations": [
+    "No commit, push, PR, archive, Ready transition, merge, deployment, production write, or Issue mutation was performed.",
+    "The remote feature ref equals d7308d4, so the current dirty runtime fix still requires a fresh commit and then #117 pushed-ref verification.",
+    "Old Phase 2, Branch Review, publication, and finalization evidence is intentionally stale and must not be reused.",
+    "agent-assignment.json currently has only the checker's assigned event and has no /root/issue118_finalizer_owner_projection_fix lineage. Main session must record the implementation assigned/completed facts and this checker's completed event through record-subagent-liveness-event.sh, then rerun current-head linkage validation before Phase 2 recording."
+  ],
+  "recommendation": {
+    "typed_exit": "passed",
+    "consumer": "skill:guru-create-task-commit",
+    "precondition": "Main session records the missing real implementation assigned/completed lineage and this checker's completed event, then fresh assignment/linkage validation passes.",
+    "basis": "Complete semantic review and current validation found no open P0-P3 implementation finding; the remaining block is deterministic agent-recovery evidence, not task work."
+  }
+}

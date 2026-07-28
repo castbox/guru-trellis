@@ -403,7 +403,185 @@
     "plan_digest": "0d7c3b4babef29329afd8852d15071a85c9467014da97b052c6e30529dfa58e7"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-28T06:53:10Z",
+    "commit_sha": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
+    "parent": "362f8cd62c62621e892b46e68763ae4323460871",
+    "message_sha256": "1b57c9863e8a20a6a32a6085081f5dcca6e7d6cfe10b8726226390949a32c43e",
+    "committed_paths": [
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-full-round-20260728.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "497e7e8ab38c37d18e1769da270c350eb208ada7",
+      "actual_tree": "497e7e8ab38c37d18e1769da270c350eb208ada7",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          "expected_blob": "50c8c2f39320343467a7c34d018e708796fae1da",
+          "expected_mode": "100644",
+          "actual_blob": "50c8c2f39320343467a7c34d018e708796fae1da",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+          "expected_blob": null,
+          "expected_mode": null,
+          "actual_blob": null,
+          "actual_mode": null,
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          "expected_blob": "2d605f0064d561aea9e674914bd855294b57ec04",
+          "expected_mode": "100644",
+          "actual_blob": "2d605f0064d561aea9e674914bd855294b57ec04",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-stale-finalization-checkpoint-cleanup.md",
+          "expected_blob": "a91374cff5051dea103034878425f864be0f4f6c",
+          "expected_mode": "100644",
+          "actual_blob": "a91374cff5051dea103034878425f864be0f4f6c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          "expected_blob": "b630bdeecc1127391854288cc9c03e41b7eaedf0",
+          "expected_mode": "100644",
+          "actual_blob": "b630bdeecc1127391854288cc9c03e41b7eaedf0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.md",
+          "expected_blob": "a6613b14a7029d3bcf339609a3715f2c3e5a0a11",
+          "expected_mode": "100644",
+          "actual_blob": "a6613b14a7029d3bcf339609a3715f2c3e5a0a11",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-stale-finalization-checkpoint-cleanup-full-round-20260728.md",
+          "expected_blob": "8730fbc6615d0ca0924424e15a1d740a9fe3efc4",
+          "expected_mode": "100644",
+          "actual_blob": "8730fbc6615d0ca0924424e15a1d740a9fe3efc4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          "expected_blob": "6dad23a0ed443d2a3b316d6a9e4a3c67b7da1ce0",
+          "expected_mode": "100644",
+          "actual_blob": "6dad23a0ed443d2a3b316d6a9e4a3c67b7da1ce0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.json",
+          "expected_blob": "6c0b2ca6b3160ea3ca52386d803f50c351124382",
+          "expected_mode": "100644",
+          "actual_blob": "6c0b2ca6b3160ea3ca52386d803f50c351124382",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-full-round-20260728.json",
+          "expected_blob": "35d4f8f26029b172829431c74d2da940b58beca5",
+          "expected_mode": "100644",
+          "actual_blob": "35d4f8f26029b172829431c74d2da940b58beca5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          "expected_blob": "f433cc9ca0aeec0038e193e391354b985578a10b",
+          "expected_mode": "100644",
+          "actual_blob": "f433cc9ca0aeec0038e193e391354b985578a10b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+          "expected_blob": "68bc35ef550f9735a1c4c432d93949c0537030ac",
+          "expected_mode": "100644",
+          "actual_blob": "68bc35ef550f9735a1c4c432d93949c0537030ac",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          "expected_blob": "3c4ddfbdf5e3d64dc382e9e93d64e6e654ad7fba",
+          "expected_mode": "100644",
+          "actual_blob": "3c4ddfbdf5e3d64dc382e9e93d64e6e654ad7fba",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+          "expected_blob": "8d5774bb1df05b50499977a3a628b947b875a289",
+          "expected_mode": "100644",
+          "actual_blob": "8d5774bb1df05b50499977a3a628b947b875a289",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
+          "expected_blob": "6fa3a78550cc014640e8e54deb17a28934857669",
+          "expected_mode": "100644",
+          "actual_blob": "6fa3a78550cc014640e8e54deb17a28934857669",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
+          "expected_blob": "ce41a105485dc6ef8372e167e0bafd94782ac6ea",
+          "expected_mode": "100644",
+          "actual_blob": "ce41a105485dc6ef8372e167e0bafd94782ac6ea",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json",
+          "expected_blob": "a6c7e2e948f1f51ca2230bfc538cdc6be5465d11",
+          "expected_mode": "100644",
+          "actual_blob": "a6c7e2e948f1f51ca2230bfc538cdc6be5465d11",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-finalization-gate.json",
+          "expected_blob": null,
+          "expected_mode": null,
+          "actual_blob": null,
+          "actual_mode": null,
+          "matches": true
+        }
+      ]
+    }
   }
 }
