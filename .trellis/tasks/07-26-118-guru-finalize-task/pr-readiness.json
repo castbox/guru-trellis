@@ -1,312 +1,259 @@
 {
   "schema_version": "1.0",
   "skill_id": "guru-review-task-publication",
-  "generated_at": "2026-07-28T08:11:23Z",
+  "generated_at": "2026-07-28T12:04:29Z",
   "task_dir": ".trellis/tasks/07-26-118-guru-finalize-task",
   "profile": "publication_review_stale",
   "mode": "workflow",
   "review_intent": "stale_reentry_review",
   "review_identity": {
-    "reviewed_head": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
-    "review_ref": "review-gate:70452a5858e0787d6502e7a82db998e83c897d3517c8c50e093c0b8d18971d77"
+    "reviewed_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+    "review_ref": "review-gate:b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead"
   },
   "semantic_review": {
     "dimensions": [
       {
         "id": "diff_outcome_consistency",
         "status": "passed",
-        "summary": "Current origin/main...d7308d4a contains the reviewed guru-finalize-task package, runtime, Interface 1.3, tests, additive distribution and durable Docs SSOT, plus task commit 009's exact stale-checkpoint cleanup; Round 17 reviewed all 554 paths and 9 commits with zero current findings.",
+        "summary": "PR outcome、finish index 与完整 559-path/10-commit diff一致，latest finalizer-private owner-evidence projection及其边界已准确披露。",
         "evidence_refs": [
-          "review.md",
-          "review-gate.json",
-          "reviews/round-017-final-release.md",
-          "task-commit-plans/009.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review.md"
         ]
       },
       {
         "id": "issue_scope_closure",
         "status": "passed",
-        "summary": "Live GitHub state and the current ledger agree that only #118 closes; #115 stays related, #119 owns Finish-family integration and #115 closure, #132 owns upstream overlay cleanup, and completed #105 semantics remain unchanged.",
+        "summary": "Ledger 和 PR body 只关闭 #118；#115 保持 related，#119/#132 保持 follow-up，#105/#116/#117 既有语义不变。",
         "evidence_refs": [
-          "issue-scope-ledger.json",
-          "pr-body.md",
-          "https://github.com/castbox/guru-trellis/issues/118",
-          "https://github.com/castbox/guru-trellis/issues/118#issuecomment-5045036678"
+          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          "live GitHub #118/#115/#119/#132 state"
         ]
       },
       {
         "id": "pr_body_quality",
         "status": "passed",
-        "summary": "The Chinese PR body is specific and standalone: it describes the semantic owner, distinct profiles, six exit_id outputs, private state, recovery, distribution, current cleanup, exact validation, honest residuals and the sole Closes #118 scope.",
+        "summary": "中文 PR body 具体说明行为、影响、验证、Review Gate、Issue closure、安全/部署和 Docs SSOT，并明确外部 401/unsupported 与 pushed-ref residual。",
         "evidence_refs": [
-          "pr-body.md",
-          "prd.md",
-          "design.md",
-          "review.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          "pr-body sha256 fd550a3a78bf58b02a09d7565e4638d966607fb44e940f2bcc0a7d0ca2f128db"
         ]
       },
       {
         "id": "validation_claims",
         "status": "passed",
-        "summary": "Claims match current owner evidence: Phase 2 binds 72 commands and 144 exact streams with rc=0, Round 17 freshly passed runtime 627/13, package/eval 185 and preset/ownership 54; the partial supplemental throwaway, Claude 401, Cursor unsupported and unpushed remote verification are not represented as passes.",
+        "summary": "Claims 已刷新到 runtime 628/13、#105 106、package/eval 180、finalizer+#116/#117 33、focused 6+6、preset 45、ownership 9 与 clean throwaway/source-installed wrapper evidence。",
         "evidence_refs": [
-          "phase2-check.json",
-          "phase2-check-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.md",
-          "phase2-command-evidence-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.json",
-          "reviews/round-017-final-release.md",
-          "pr-body.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalizer-owner-projection-fix-full-round-20260728.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md"
         ]
       },
       {
         "id": "branch_review_summary",
         "status": "passed",
-        "summary": "PR and ledger wording match the checked Round 17 Branch Review gate for d7308d4a: fresh reviewer, complete 554-path/9-commit range, P0/P1/P2/P3=0/0/0/0, zero scope proposals and actual public exit passed.",
+        "summary": "Round 18 是最后、current、fresh 的独立 final review；P0-P3 和 scope proposals 均为零，public wrapper actual exit=passed。",
         "evidence_refs": [
-          "review.md",
-          "review-gate.json",
-          "reviews/round-017-final-release.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md"
         ]
       },
       {
         "id": "docs_ssot_reconciliation",
         "status": "passed",
-        "summary": "The approved ssot_first plan is complete. Durable package/workflow/runtime/spec/README authorities already own the accepted finalizer semantics; task commit 009 only removes stale task-local owner-private checkpoints and introduces no new durable semantic delta.",
+        "summary": "Approved strategy=ssot_first 已兑现；durable package/workflow/spec/README contracts current，latest correction 仅恢复既有 private compatibility，no_docs_update_needed 成立。",
         "evidence_refs": [
-          "phase2-check.json",
-          "implementation-handoff.md",
-          "implementation-handoff-stale-finalization-checkpoint-cleanup.md",
-          "pr-body.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review.md"
         ]
       },
       {
         "id": "safety_deployment_impact",
         "status": "passed",
-        "summary": "No secret or sensitive data is published. The reviewed diff has no dependency, CI/CD, container, Kubernetes, DB migration, Makefile, Terraform, service deployment or production-write change; the disclosed additive install/update surface has current clean-install evidence.",
+        "summary": "无 secret/data/permission 泄漏或 dependency/config/CI/CD/container/Kubernetes/DB migration/Makefile/deploy/production-write 影响；无需迁移、重启或生产回滚。",
         "evidence_refs": [
-          "pr-body.md",
-          "phase2-check.json",
-          "reviews/round-017-final-release.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json"
         ]
       },
       {
         "id": "finish_summary_semantics",
         "status": "passed",
-        "summary": "The finish summary index preserves the problem, outcome, seven input profiles, six exits, owner-private state, #105 recovery, #117 routing, production wrapper eval and additive distribution, and records stale plan checkpoint cleanup within the supported retrieval-text length without adding Git/GitHub deterministic facts.",
+        "summary": "Finish summary index 在 2569 字符 retrieval 上限内准确表达 semantic owner、七 profiles、六 exits、transaction/recovery/distribution 与 latest owner-evidence compatibility contract，并保留 #119/#132 边界。",
         "evidence_refs": [
-          "finish-summary-index.json",
-          "prd.md",
-          "design.md",
-          "review.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          "finish-summary-index sha256 29d26b531ddfc7492cebd810a26a6798745246e508c4f54b2a519f066ea62440",
+          "derived retrieval_text length 2569; validator range 1..3000"
         ]
       },
       {
         "id": "metadata_tail_integrity",
         "status": "passed",
-        "summary": "The working tree contains only the Branch Review contract allowlist, the sole current task-commit 009 result, registered Round 17 report and the three publication metadata candidates; no source, test, durable docs, spec, workflow, schema, config, preset or deployment surface drifted after review.",
+        "summary": "Post-commit dirty paths 全部属于 publication allowlist：assignment、review rollup/gate/raw report、current commit result、ledger、PR body 与 finish index；无 source/test/spec/workflow/schema/config/preset drift。",
         "evidence_refs": [
-          "agent-assignment.json",
-          "review.md",
-          "review-gate.json",
-          "reviews/round-017-final-release.md",
-          "task-commit-plans/009.json",
-          "issue-scope-ledger.json",
-          "pr-body.md",
-          "finish-summary-index.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          "git status at HEAD 1e5b1479"
         ]
       },
       {
         "id": "artifact_binding_freshness",
         "status": "passed",
-        "summary": "Planning, Phase 2, task commit 009, ledger, Round 17, Branch Review gate, PR body and finish index now bind the current task and d7308d4a/review-gate:70452a58; required remote marketplace verification remains explicitly pending for the post-push #117 owner.",
+        "summary": "Planning、Phase 2、ledger、Round 18、review gate、PR body、精简后的 finish index 与 current HEAD identities 已重读；recorder 将重建十二项 objective bindings 和新 opaque publication ref。",
         "evidence_refs": [
-          "planning-approval.json",
-          "phase2-check.json",
-          "task-commit-plans/009.json",
-          "issue-scope-ledger.json",
-          "review-gate.json",
-          "pr-body.md",
-          "finish-summary-index.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json"
         ]
       }
     ],
     "findings": [
       {
-        "finding_ref": "PUB-R17-PR-BODY-01",
+        "finding_ref": "PUB-META-R18-PRBODY",
         "dimension": "pr_body_quality",
-        "summary": "The prior PR body still bound predecessor HEAD 362f8cd6, Round 16 and the obsolete 128-command wording.",
-        "scope_basis": "Task-local publication metadata revision allowlist",
+        "summary": "旧 PR body 引用 d730/Round 17 与过期测试计数。",
+        "scope_basis": "Publication owner 必须向无 Trellis 上下文的 reviewer 提供 current、具体且可核验的正文。",
         "evidence_refs": [
-          "pr-body.md",
-          "review.md",
-          "reviews/round-017-final-release.md"
+          "pre-revision pr-body committed at 1e5b1479",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json"
         ],
         "affected_artifacts": [
-          "pr-body.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md"
         ],
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "PR body now binds d7308d4a, task commit 009, the 72-command/144-stream Phase 2 evidence, Round 17's current range and gate, and all honestly bounded residuals."
+          "pr-body sha256 fd550a3a78bf58b02a09d7565e4638d966607fb44e940f2bcc0a7d0ca2f128db",
+          "Round 18/1e5b1479/current validation and owner-projection text present"
         ]
       },
       {
-        "finding_ref": "PUB-R17-SCOPE-02",
+        "finding_ref": "PUB-META-R18-FINISH",
+        "dimension": "finish_summary_semantics",
+        "summary": "旧 finish summary index 未记录 latest owner-evidence transaction compatibility。",
+        "scope_basis": "Final archived summary search/index 必须覆盖当前交付行为和可检索 contract symbol。",
+        "evidence_refs": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md"
+        ],
+        "affected_artifacts": [
+          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json"
+        ],
+        "route_class": "metadata_revision",
+        "status": "closed",
+        "closure_evidence": [
+          "finish-summary-index sha256 282c8d1bd0c0ac72835de366ad3458706df1d736ffb76d9f4e4ebda1ba255d79",
+          "compatibility behavior, contract change and symbol added"
+        ]
+      },
+      {
+        "finding_ref": "PUB-META-R18-LEDGER",
         "dimension": "issue_scope_closure",
-        "summary": "The prior ledger acceptance and pending remote identity still referenced predecessor HEAD 362f8cd6 and Round 16.",
-        "scope_basis": "Contract-listed Issue Scope Ledger publication metadata",
+        "summary": "Ledger acceptance evidence 和 pending verification heads 仍引用 d730/Round 17。",
+        "scope_basis": "Issue close evidence 与 verifier pending identity 必须绑定 current reviewed content HEAD 和 current Branch Review。",
         "evidence_refs": [
-          "issue-scope-ledger.json",
-          "review-gate.json",
-          "https://github.com/castbox/guru-trellis/issues/118"
+          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json"
         ],
         "affected_artifacts": [
-          "issue-scope-ledger.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json"
         ],
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "Primary and close acceptance plus required pending remote identity now bind d7308d4a and Round 17; close, related and follow-up sets remain unchanged and match live GitHub state."
+          "primary and close #118 evidence now bind Phase 2 current counts and Round 18 gate",
+          "both pending verified_content_head/publish_head equal 1e5b1479b72e5b253c9755244be87f906cf855f4"
         ]
       },
       {
-        "finding_ref": "PUB-R17-FINISH-03",
+        "finding_ref": "PUB-META-R18-RETRIEVAL-LIMIT",
         "dimension": "finish_summary_semantics",
-        "summary": "The prior finish summary did not retain the current stale predecessor-plan checkpoint cleanup in its future task-history semantics.",
-        "scope_basis": "Task-local finish-summary-index publication metadata revision allowlist",
+        "summary": "首次 finalizer side-effect-free preview 生成的 retrieval_text 超过 3000 字符 validator 上限。",
+        "scope_basis": "Publication owner 必须使 finish summary 同时保留当前交付语义并满足 deterministic archive summary validator。",
         "evidence_refs": [
-          "finish-summary-index.json",
-          "implementation-handoff-stale-finalization-checkpoint-cleanup.md",
-          "reviews/round-017-final-release.md"
+          "preview-finalization pre-side-effect error: index.retrieval_text length must be between 1 and 3000 characters",
+          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json"
         ],
         "affected_artifacts": [
-          "finish-summary-index.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json"
         ],
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "The compact plan-bound Namespace entry records stale checkpoint cleanup before fresh downstream gates without adding deterministic repository or GitHub facts."
-        ]
-      },
-      {
-        "finding_ref": "PUB-R17-FINISH-LENGTH-04",
-        "dimension": "finish_summary_semantics",
-        "summary": "The first Round 17 metadata wording made the deterministically generated retrieval text exceed the supported 3000-character limit.",
-        "scope_basis": "Task-local finish-summary-index publication metadata revision allowlist",
-        "evidence_refs": [
-          "finish-summary-index.json",
-          "pr-readiness.json"
-        ],
-        "affected_artifacts": [
-          "finish-summary-index.json"
-        ],
-        "route_class": "metadata_revision",
-        "status": "closed",
-        "closure_evidence": [
-          "The final sentence was compacted below its predecessor length while retaining plan-bound Namespace and stale-checkpoint cleanup semantics; the finalizer preview validator is rerun after this fresh publication gate."
+          "finish-summary-index sha256 29d26b531ddfc7492cebd810a26a6798745246e508c4f54b2a519f066ea62440",
+          "derived retrieval_text length reduced from 3363 to 2569 without removing accepted contract boundaries"
         ]
       }
     ],
     "conclusions": {
       "issue_scope": {
         "status": "passed",
-        "summary": "#118 accepted-current scope is complete and remains the only close target; #115/#119/#132/#105 ownership and state boundaries are current.",
+        "summary": "Only #118 is fully accepted and closeable; #115 remains related and #119/#132 remain existing follow-ups.",
         "evidence_refs": [
-          "issue-scope-ledger.json",
-          "pr-body.md",
-          "review.md",
-          "https://github.com/castbox/guru-trellis/issues/118"
+          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md"
         ]
       },
       "docs_ssot": {
         "status": "passed",
-        "summary": "The approved Docs SSOT plan is reconciled with current code, tests, durable contracts and Round 17; stale-checkpoint cleanup is task history only.",
+        "summary": "ssot_first durable contracts are reconciled; the latest correction introduces no new durable semantic delta.",
         "evidence_refs": [
-          "phase2-check.json",
-          "implementation-handoff.md",
-          "implementation-handoff-stale-finalization-checkpoint-cleanup.md",
-          "finish-summary-index.json",
-          "review.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review.md"
         ]
       },
       "safety_deployment": {
         "status": "passed",
-        "summary": "Security, additive distribution and deployment impact are fully disclosed; no secret, rollout, migration, service deployment or production-write gap remains.",
+        "summary": "The publication discloses extension install/update impact and has no undisclosed security, deployment, migration or production-write impact.",
         "evidence_refs": [
-          "pr-body.md",
-          "phase2-check.json",
-          "reviews/round-017-final-release.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json"
         ]
       }
     },
     "revision_history": [
       {
-        "revision_ref": "PUB-R17-METADATA-REVISION-01",
+        "revision_ref": "PUB-META-R18-01",
         "kind": "metadata_revision",
-        "summary": "Only pr-body.md, contract-listed Issue Scope Ledger publication metadata and finish-summary-index.json were revised to bind d7308d4a, task commit 009, current Phase 2 and Round 17; no source, test, durable docs, spec, workflow, schema, config, preset, deployment or Branch Review implementation evidence changed, and all ten dimensions were rereviewed.",
+        "summary": "在 Round 18 后同步 PR body、finish summary index 与 Issue ledger publication metadata，并完整重审十个维度。",
         "evidence_refs": [
-          "pr-body.md",
-          "issue-scope-ledger.json",
-          "finish-summary-index.json",
-          "review.md",
-          "review-gate.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json"
         ]
       },
       {
-        "revision_ref": "PUB-R17-STALE-REENTRY-02",
-        "kind": "stale_reentry",
-        "summary": "The prior publication artifact binds predecessor HEAD 362f8cd6 and Round 16. This invocation supersedes publication:457f7a47d92d3de2ef75ead6e78af3ccb2cf2b0617008ebf7af52483c0ddad98 and rebuilds all twelve objective bindings plus all ten semantic dimensions against task commit 009, d7308d4a and Round 17.",
-        "evidence_refs": [
-          "pr-readiness.json",
-          "task-commit-plans/009.json",
-          "review-gate.json",
-          "reviews/round-017-final-release.md"
-        ]
-      },
-      {
-        "revision_ref": "PUB-R17-FINISH-LENGTH-REVISION-03",
+        "revision_ref": "PUB-META-R18-02",
         "kind": "metadata_revision",
-        "summary": "After the first finalization preview rejected an overlong retrieval text before any side effect, only finish-summary-index.json was compacted; all ten publication dimensions were rereviewed and no Branch Review or task-work surface changed.",
+        "summary": "闭合 finalizer preview 暴露的 retrieval_text 长度 finding；仅精简 finish summary 重复措辞，并完整重审十个 publication dimensions。",
         "evidence_refs": [
-          "finish-summary-index.json",
-          "pr-readiness.json",
-          "review-gate.json"
-        ]
-      },
-      {
-        "revision_ref": "PUB-R17-FINISH-LENGTH-REENTRY-04",
-        "kind": "stale_reentry",
-        "summary": "This invocation supersedes publication:aa3c255508c5ab266546c438200cff7a90f8ec549ea8805b28fb845afeadb605 because the finish-summary candidate changed after the prior ready gate; it rebuilds all twelve objective bindings against the same d7308d4a and Round 17 identity.",
-        "evidence_refs": [
-          "pr-readiness.json",
-          "finish-summary-index.json",
-          "review-gate.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          "derived retrieval_text length 2569; sha256 29d26b531ddfc7492cebd810a26a6798745246e508c4f54b2a519f066ea62440"
         ]
       }
     ],
     "reviewer_process": {
-      "reviewer": "Codex primary agent /root",
-      "summary": "The main session reread the current committed range, live Issue #118 and accepted-current comment, live #105/#115/#116/#117/#119/#132 states, approved planning, Phase 2, task commit 009, Round 17 raw evidence and gate, the complete metadata tail, all three publication candidates, the finalizer's side-effect-free length rejection, Docs SSOT and safety/deployment evidence across all ten dimensions. Four metadata-only findings are closed; no task_work or external_blocker finding remains.",
+      "reviewer": "main-session-publication-semantic-owner",
+      "summary": "主会话基于 Branch Review passed DTO、live Issue state、current artifacts、retrieval validator 结果与 status allowlist 完成十维 semantic review；recorder/checker 仅做 objective validation。",
       "evidence_refs": [
-        "phase2-check.json",
-        "task-commit-plans/009.json",
-        "review.md",
-        "review-gate.json",
-        "reviews/round-017-final-release.md",
-        "pr-body.md",
-        "issue-scope-ledger.json",
-        "finish-summary-index.json",
-        "https://github.com/castbox/guru-trellis/issues/118#issuecomment-5045036678"
+        ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md"
       ]
     },
     "human_confirmation": {
       "status": "not_required",
-      "summary": "This publication review and metadata-only revision have no external side effect; guru-finalize-task exclusively owns exact digest confirmation before content push, verification, Draft PR, archive, Ready or Issue mutation.",
+      "summary": "本轮只在 publication Skill 内修订 contract 允许的 task metadata 并记录语义门禁；不执行 push、PR、archive、Ready、merge 或 Issue mutation，外部副作用仍需新的 exact finalization digest confirmation。",
       "confirmed_by": null,
       "confirmed_at": null
     },
     "ai_review_gate": {
       "status": "passed",
-      "summary": "All four allowlisted metadata findings are closed after a fresh ten-dimension rereview; every dimension and all issue-scope, Docs SSOT and safety/deployment conclusions pass, so the sole semantic route is ready."
+      "summary": "四个 metadata_revision findings 已闭合，十个 publication dimensions 与 scope/Docs/safety conclusions 全部 current passed；唯一 typed exit 为 ready。"
     }
   },
   "deterministic_bindings": {
@@ -328,32 +275,32 @@
         "size": 38697
       },
       "phase2-check.json": {
-        "sha256": "7820c7af35f87ee15738b6d1f74434d5b451a6a108e62e9e09c97095d8d96470",
-        "size": 130027
+        "sha256": "cdb8f217ec25d32297eed95fcb488ec279bf0b13baaf4300ab41aa97803e2510",
+        "size": 81484
       },
       "issue-scope-ledger.json": {
-        "sha256": "dd3790a9921ec6ca2e9530c6427440490823fe941fae14c594ce5025447cd62f",
-        "size": 5022
+        "sha256": "c1feb15949b69d82ab7db3c4d1f86720af47dfb4408f2ddd7a6e6a2f492da2ed",
+        "size": 5096
       },
       "agent-assignment.json": {
-        "sha256": "4c41d78a68990013311634516cfabd4ec014e2484db0cc9455113acf4a73e65e",
-        "size": 682725
+        "sha256": "1ad9772fa481727432512e6c159ecb9016d2995cc6bfff91571a8f126fdbf09e",
+        "size": 700455
       },
       "review.md": {
-        "sha256": "97734a4d5e7b7614ad08e6f0ab4cc84bb16fb60bba906949097d4ef61fa7bb45",
-        "size": 10362
+        "sha256": "e8e3dc194f004447a79b4ef1fa1a3ff58b7bd9eedd3ac6990a72ee7cd40209d8",
+        "size": 11247
       },
       "review-gate.json": {
-        "sha256": "70452a5858e0787d6502e7a82db998e83c897d3517c8c50e093c0b8d18971d77",
-        "size": 187077
+        "sha256": "b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead",
+        "size": 190633
       },
       "pr-body.md": {
-        "sha256": "75b71ceca5d0107d472d378b0017326c6c1dfd15c60765c0e450a01f3d549819",
-        "size": 9407
+        "sha256": "fd550a3a78bf58b02a09d7565e4638d966607fb44e940f2bcc0a7d0ca2f128db",
+        "size": 10310
       },
       "finish-summary-index.json": {
-        "sha256": "54416f8d47c9fe76a5308d09c49fae14b0bd7e372bb03f0def4184f14d51ceb7",
-        "size": 7720
+        "sha256": "29d26b531ddfc7492cebd810a26a6798745246e508c4f54b2a519f066ea62440",
+        "size": 7418
       },
       "implementation-handoff.md": {
         "sha256": "dea1ab4217291c3dd4c11b5b72536afed96eea75b6d7c06d261743305f04efe7",
@@ -361,7 +308,7 @@
       }
     },
     "repository": {
-      "head": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
+      "head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
       "branch": "feat/118-guru-finalize-task",
       "base_ref": "origin/main",
       "diff_paths": [
@@ -754,6 +701,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-codex-trace-write-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalization-gate-reentry-fix.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-live-wrapper-namespace-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-not-required-fix.md",
@@ -768,6 +716,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-codex-trace-write-fix-full-round.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalization-gate-reentry-full-round.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalizer-owner-projection-fix-full-round-20260728.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-exact-stream-full-round.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-live-wrapper-namespace-fix-full-round.md",
@@ -777,6 +726,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-codex-trace-write-fix-full-round.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalization-gate-reentry-full-round.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalizer-owner-projection-fix-full-round-20260728.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-full-round.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-stale-finalization-checkpoint-cleanup-exact-stream-full-round-20260728.json",
@@ -812,6 +762,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-014-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-015-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-017-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/published-materialization-locator-probe.py",
         ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/recovery-metadata-tail-probe.py",
         ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
@@ -824,6 +775,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/007.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/010.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
         "README.md",
@@ -927,8 +879,8 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-017-final-release.md",
-        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json"
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/010.json"
       ]
     },
     "entry_preconditions": {
@@ -946,7 +898,7 @@
       },
       "branch_review_handoff": {
         "status": "passed",
-        "facts_sha256": "3eab4a32b5df3cf64fd46f64fea1ea445c02f972cea5613f52c8b7df0cb06e60"
+        "facts_sha256": "93db3a6b1690700656f60480501cecebb48f3cfed9d18b322bcc3a1205d9d584"
       },
       "planning_approval": {
         "status": "passed",
@@ -954,54 +906,54 @@
       },
       "phase2_check": {
         "status": "passed",
-        "facts_sha256": "f435df3cde2391748183e875ec311624ca5840426fc6ebf0c38659d696e3f4ee"
+        "facts_sha256": "45f564c48220984866a5ba3194d5b11763907636619be7ea1e380f6a5ab3f13e"
       },
       "issue_scope_ledger": {
         "status": "passed",
-        "facts_sha256": "aafb1ff244189432f5be0c4243755ae221f588c36ebcbe4c9f381be24e736648"
+        "facts_sha256": "65690f4d310217eea69f95da4158e6743f209de64dba6108462bde208a09d6f3"
       },
       "docs_ssot_reconciliation": {
         "status": "passed",
-        "facts_sha256": "26f092612d4834b831851a0eafbaaf64eb1ae7e9fbfaa487bbc0529e6ab1e360"
+        "facts_sha256": "337e650ddd628e48624eaef8ba8a290179df239db1f189cf80e0297895be2449"
       },
       "branch_review_evidence": {
         "status": "passed",
-        "facts_sha256": "50e2fa2ec48e8a6d9f9d3144d192aead6f6659837b9260fe31d4d72d11da17a8"
+        "facts_sha256": "477a0e6600ba2c593f5209b8fd9d27f6598dd741580d4df1df1eb3f4b709af5d"
       },
       "publication_content": {
         "status": "passed",
-        "facts_sha256": "b3c42d2ae4c8d994e54500d9e6b1cab838081096300350ab88e2c7661e4a42ab"
+        "facts_sha256": "e5271f9b472f51c43d9bb517a13f5edaa9c513e61f38ceea58a39f0263e0510b"
       },
       "review_range_and_working_tree": {
         "status": "passed",
-        "facts_sha256": "e5de406a92f0e9540cb2974abcecc40a45cd7c8e84402e89040e2ac6b7f1e675"
+        "facts_sha256": "43adf62354bd1779538a077688db2fac32c7ee1ad85211fea7214985da9ae206"
       },
       "invocation_freshness": {
         "status": "passed",
-        "facts_sha256": "51277d3c44f9e19d9b60cb8e4016cd35c25ef6185181b85aef0bae49d8728cde"
+        "facts_sha256": "12f44d9a8a602a810cc4a54f87beacd6f7cf1dbc7592099892ec2c20dd21c952"
       }
     },
-    "publication_ref": "publication:3a3f2a53bd38cd10f7e13752d28ac50ccc08d3671af590404660812fe8181d35"
+    "publication_ref": "publication:a7b3c73f58daff0eb900cf86dcec62e0c8c97e3e7652134cd179a1de840bda20"
   },
   "typed_exit": "ready",
   "consumer": {
     "kind": "skill",
     "id": "guru-finalize-task"
   },
-  "supersedes_publication_ref": "publication:aa3c255508c5ab266546c438200cff7a90f8ec549ea8805b28fb845afeadb605",
-  "stale_reason": "publication-content-length-correction",
-  "reentry_context": "Rebuild publication evidence after compacting the finish-summary retrieval text to the supported 3000-character limit.",
-  "facts_sha256": "3ebbe906a614be649ac594a3a74137b71566832784559d640756e266d70c0db2",
+  "supersedes_publication_ref": "publication:58c254257a7ec7f7bdab6d182d7c161fc401b563760ca3928e4803abdcc99490",
+  "stale_reason": "finish-summary-retrieval-text-exceeded-validator-limit",
+  "reentry_context": "Finalizer side-effect-free preview 在任何外部副作用前发现 deterministic retrieval_text 超过 3000 字符；仅精简 finish-summary-index.json 重复措辞并完整重审 publication，保持 current HEAD、Round 18、Issue scope 与交付合同不变。",
+  "facts_sha256": "a6a3629fab9ebdfa6892fc1ba0801b6a3590bd9002a994ce4f1be60bd1469c44",
   "publish_inputs": {
     "repo": "castbox/guru-trellis",
     "base_branch": "main",
     "head_branch": "feat/118-guru-finalize-task",
-    "reviewed_head_sha": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
+    "reviewed_head_sha": "1e5b1479b72e5b253c9755244be87f906cf855f4",
     "title": "完成：#118 实现 guru-finalize-task 事务闭环 Skill",
     "body_source": "pr-body.md",
-    "body_sha256": "75b71ceca5d0107d472d378b0017326c6c1dfd15c60765c0e450a01f3d549819",
+    "body_sha256": "fd550a3a78bf58b02a09d7565e4638d966607fb44e940f2bcc0a7d0ca2f128db",
     "draft": true,
     "reviewed_source": "body-artifact:pr-readiness.json",
-    "closeout_plan_digest": "21d053f5e458f2cf1b8f4cfd492ea668ddb7e651893dd832a927bc6c000a300b"
+    "closeout_plan_digest": "2d1fbc373cd467c813536cffeca2f9a900abc4bae7ecabf7277a853d84c866c4"
   }
 }

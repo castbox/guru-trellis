@@ -1,124 +1,128 @@
 {
   "schema_version": 1,
   "index": {
-    "problem": "Guru Team 缺少独立拥有任务终结判断、精确确认、发布、归档和恢复路由的闭环 Skill，无法用最小 typed handoff 接续 publication 与 verification evidence。",
-    "outcome": "新增 guru-finalize-task semantic Skill，独占 immutable plan、verification、唯一 Draft PR、final projection、单次 archive transaction、三方 HEAD equality、draft-to-ready 和封闭 recovery，并完成 additive distribution。",
+    "problem": "Guru Team 缺少独立拥有任务终结判断、精确确认、发布、归档与恢复路由的闭环 Skill。",
+    "outcome": "新增 guru-finalize-task semantic Skill，独占 immutable plan、verification、唯一 Draft PR、archive transaction、HEAD equality、Ready 与 recovery，并完成 additive distribution。",
     "changed_behavior": [
-      "AI 审查 plan、scope、readiness、recovery route 和 exact confirmation；script 仅执行、校验、记录。",
-      "Publication、verification、resume、reprepare、standalone 使用七个互斥 input profiles。",
-      "六个 exit_id 只输出 named consumer 所需的最小 DTO；private state 不跨 Skill。",
-      "Reprepare seed 仅含 task/reason；fresh intent/context 由目标 authoring。",
-      "Content push 后先做 remote verification，再绑定唯一 Draft PR、projection 与单次 archive transaction。",
-      "Draft-to-ready 前校验 local、remote branch、PR head 三方相等，ready 后不再提交。",
-      "同月 legacy partial plan 只由 exact plan-bound takeover 接续；cross-month 走 reprepare。",
-      "Production eval 调用真实 wrapper，先按 actual exit 选 schema，再断言 expected_exit。",
-      "Canonical、dogfood、四平台、preset 与 extension inventory 保持 byte/mode/update 一致。",
-      "Verified/not_required 经 #117 owner check 后仅放行 exact metadata。",
-      "Private Namespace 依 plan 重建；stale checkpoint 在 fresh gates 前清理。"
+      "AI 审查 plan、scope、readiness、recovery route 与 exact confirmation；script 仅执行、校验、记录。",
+      "Publication、verification、resume、reprepare、standalone 共用七个互斥 input profiles。",
+      "六个 exit_id 只交付 consumer 所需 DTO；transaction facts 保持 owner-private。",
+      "Reprepare seed 仅含 task_ref/reason_code；fresh intent/context 由目标 authoring。",
+      "Content push 后依次完成 remote verification、唯一 Draft PR、projection、单次 archive transaction、三方 HEAD equality 与 Ready。",
+      "同月 legacy partial plan 仅用 plan-bound takeover；跨月走 reprepare。",
+      "Production eval 执行真实 wrapper，按 actual exit 选 schema，返回后断言 expected_exit。",
+      "Canonical、dogfood、Shared/Codex/Claude/Cursor 与 preset corpus 保持 byte-identical。",
+      "#117 verified/not_required 经 owner check 后，仅由 finalizer-private same-plan projection 适配未修改的 #105 validator。"
     ],
     "affected_surfaces": [
       {
         "kind": "skill",
         "name": "Task finalization 公共 Skill package",
         "paths": [],
-        "change": "新增 semantic loop、七 inputs、六 exits、private gate 与 recovery contract。"
+        "change": "新增 semantic loop、七种输入、六个出口、private gate 与 recovery。"
       },
       {
         "kind": "script",
         "name": "Finalization preview、recorder、checker、transition executor 与 public wrapper",
         "paths": [],
-        "change": "新增 plan、HEAD、PR、archive、verification executor/validator/recorder。"
+        "change": "新增 plan、HEAD、PR、archive、verification 执行与校验。"
       },
       {
         "kind": "schema",
         "name": "Public I/O、immutable plan 与 private gate contracts",
         "paths": [],
-        "change": "定义 distinct inputs、per-exit DTO、authoring 分区与 private bindings。"
+        "change": "定义 distinct inputs、per-exit DTO 与 seed/authoring 分区。"
       },
       {
         "kind": "preset",
         "name": "Guru Team additive package distribution",
         "paths": [],
-        "change": "把 package、runtime、schemas、examples、tests、wrappers 纳入安装和 managed hashes。"
+        "change": "将 package/runtime/schema/example/test/wrapper 纳入安装与 managed hashes。"
       },
       {
         "kind": "skill",
         "name": "Shared、Codex、Claude 与 Cursor 平台副本",
         "paths": [],
-        "change": "同步 byte-identical corpus，覆盖 trusted root、input protocol、unsupported 和 parsing。"
+        "change": "同步 byte-identical corpus，并覆盖各平台 adapter contract。"
       },
       {
         "kind": "test",
         "name": "Transaction、package、production eval 与 installation acceptance",
         "paths": [],
-        "change": "覆盖六 exits、re-entry/recovery、真实 wrapper、update/reapply 和 clean throwaway。"
+        "change": "覆盖六出口、re-entry/recovery、真实 wrapper、update/reapply 与 clean throwaway。"
       },
       {
         "kind": "docs",
         "name": "Workflow、Skill、preset 与 public Docs SSOT",
         "paths": [],
-        "change": "回写 ownership、minimal handoff、private state、transaction order 和 #119/#132 边界。"
+        "change": "回写 ownership、minimal handoff、transaction order 与 #119/#132 边界。"
       }
     ],
     "contract_changes": [
       {
         "contract": "Task finalization ownership",
-        "before": "终结判断、发布、归档和恢复没有独立 semantic owner。",
+        "before": "终结、发布、归档与恢复没有 semantic owner。",
         "after": "guru-finalize-task 独占闭环；runtime 不替代 AI judgment。",
         "source_artifact": ""
       },
       {
         "contract": "Immutable closeout plan and confirmation",
-        "before": "副作用计划与确认未绑定同一 immutable identity。",
-        "after": "Preview 生成 immutable plan；首次副作用或 plan 变化前确认 exact digest；prepared re-entry 只接受 exact gate metadata。",
+        "before": "副作用计划与确认未绑定 immutable identity。",
+        "after": "Preview 固化 plan；首次副作用或 plan 变化前确认 exact digest。",
         "source_artifact": ""
       },
       {
         "contract": "Distinct public input profiles",
-        "before": "各 entry 缺少 finalizer-owned closed profile union。",
-        "after": "七 profiles 独立声明 required fields，只消费 minimal seed 与 disjoint authoring。",
+        "before": "各 entry 缺少 closed profile union。",
+        "after": "七 profiles 分别声明 minimal seed 与 disjoint authoring。",
         "source_artifact": ""
       },
       {
         "contract": "Per-exit public outputs",
-        "before": "Finalization route 缺少统一 exit_id 和 minimal DTO。",
-        "after": "六 exits 各有独立 schema、example 与唯一 named consumer。",
+        "before": "Finalization route 缺少统一 exit_id。",
+        "after": "六 exits 各有独立 schema、example 与唯一 consumer。",
         "source_artifact": ""
       },
       {
         "contract": "Owner-private transaction state",
         "before": "Transaction facts 可能进入跨 Skill payload。",
-        "after": "Plan、readiness、PR/archive/recovery 保持 private；DTO 仅携带最小 identity。",
+        "after": "Plan、readiness、PR/archive/recovery 保持 private。",
         "source_artifact": ""
       },
       {
         "contract": "Verification and PR ordering",
-        "before": "Verification 与 Draft PR/archive 顺序无 transaction owner。",
-        "after": "Push 后先验证 remote ref，再绑定唯一 Draft PR 并进入 projection/archive。",
+        "before": "Verification 与 Draft PR/archive 顺序无 owner。",
+        "after": "Push 后先验证 remote ref，再绑定唯一 Draft PR。",
         "source_artifact": ""
       },
       {
         "contract": "Archive transaction and readiness",
-        "before": "Summary、archive commit、ready 缺少单次事务和 HEAD 不变量。",
-        "after": "真实 PR identity 投影后执行单次 archive transaction；三方 HEAD 相等才 ready。",
+        "before": "Archive 与 Ready 缺少单次事务和 HEAD 不变量。",
+        "after": "真实 PR 投影后单次归档；三方 HEAD 相等才 Ready。",
         "source_artifact": ""
       },
       {
         "contract": "Legacy partial-plan recovery",
-        "before": "同月 predecessor plan 无法接纳 finalizer private gate。",
-        "after": "One-time plan-bound takeover 重核 predecessor state、HEAD、digest 和 gate。",
+        "before": "同月 predecessor plan 无法接纳 private gate。",
+        "after": "Plan-bound takeover 重核 state、HEAD、digest 与 gate。",
         "source_artifact": ""
       },
       {
         "contract": "Production eval routing",
-        "before": "Eval 可能预选 expected route 或绕过 public wrapper。",
-        "after": "Eval 调用真实 wrapper，Codex 精确授权 execution root；按 actual exit 选 schema，返回后断言 expected_exit。",
+        "before": "Eval 可能预选 expected route 或绕过 wrapper。",
+        "after": "真实 wrapper 按 actual exit 选 schema，再断言 expected_exit。",
         "source_artifact": ""
       },
       {
         "contract": "Additive installation ownership",
-        "before": "Finalizer 尚未纳入 canonical、dogfood、platform 与 preset。",
-        "after": "Guru assets 完成 additive distribution，不改 upstream finish family/global route。",
+        "before": "Finalizer 未纳入 canonical、dogfood、platform 与 preset。",
+        "after": "完成 additive distribution；不改 upstream finish/global route。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Verified owner evidence transaction compatibility",
+        "before": "Interface 1.3 owner evidence 不匹配 #105 transaction input。",
+        "after": "Private projection 只接受 checker-passed same-plan owner evidence，并交给未修改的 #105 validator。",
         "source_artifact": ""
       }
     ],
@@ -152,7 +156,8 @@
         "build_closeout_finalizer_gate_takeover_plan",
         "apply_active_closeout_finalizer_takeover",
         "prepare_closeout",
-        "task_finalization_gate"
+        "task_finalization_gate",
+        "finalization_marketplace_verification_compatibility_projection"
       ],
       "phrases": [
         "任务终结缺少 semantic owner",

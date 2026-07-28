@@ -388,7 +388,176 @@
     "plan_digest": "4602a2ac6ed43eaac85b1769bb29ed53576214758f6fecf7c32584e613e2f249"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-28T11:13:56Z",
+    "commit_sha": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+    "parent": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
+    "message_sha256": "55d4eaf5b62e6766d3a7d57e61fe973817655d771718697ac0de0d1cf86820b2",
+    "committed_paths": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalizer-owner-projection-fix-full-round-20260728.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalizer-owner-projection-fix-full-round-20260728.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-017-final-release.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/010.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "01acf91d261175a9cb1c3c458fa059ec8bd3ddbd",
+      "actual_tree": "01acf91d261175a9cb1c3c458fa059ec8bd3ddbd",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "978af32aaf69dbae4ecf8cc7af80e58d002b1aeb",
+          "expected_mode": "100755",
+          "actual_blob": "978af32aaf69dbae4ecf8cc7af80e58d002b1aeb",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          "expected_blob": "b718caafc334d728cc4c3d6154a9a6660af6d327",
+          "expected_mode": "100644",
+          "actual_blob": "b718caafc334d728cc4c3d6154a9a6660af6d327",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
+          "expected_blob": "9da3a044c710e9c0bb90617d74a39937a993f495",
+          "expected_mode": "100644",
+          "actual_blob": "9da3a044c710e9c0bb90617d74a39937a993f495",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
+          "expected_blob": "49a300fbf347283183d274a732d5907638ab7883",
+          "expected_mode": "100644",
+          "actual_blob": "49a300fbf347283183d274a732d5907638ab7883",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          "expected_blob": "d92a65186e0948bb67390bef7dbe62adc318863a",
+          "expected_mode": "100644",
+          "actual_blob": "d92a65186e0948bb67390bef7dbe62adc318863a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalizer-owner-projection-fix-full-round-20260728.md",
+          "expected_blob": "e0cfaaad5eb449be06eb0745078e33991708c839",
+          "expected_mode": "100644",
+          "actual_blob": "e0cfaaad5eb449be06eb0745078e33991708c839",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          "expected_blob": "4f46d869af8a6856f827f5a8e8be766d89f7fa6b",
+          "expected_mode": "100644",
+          "actual_blob": "4f46d869af8a6856f827f5a8e8be766d89f7fa6b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalizer-owner-projection-fix-full-round-20260728.json",
+          "expected_blob": "b99e4693bca158f944f87070775e2e264620015b",
+          "expected_mode": "100644",
+          "actual_blob": "b99e4693bca158f944f87070775e2e264620015b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
+          "expected_blob": "8f0d9dd89cea8f5b9c0ddfee93bb033550873654",
+          "expected_mode": "100644",
+          "actual_blob": "8f0d9dd89cea8f5b9c0ddfee93bb033550873654",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/pr-readiness.json",
+          "expected_blob": "0aab1ee0527be36c00b46b0d3a176ad7392b3f24",
+          "expected_mode": "100644",
+          "actual_blob": "0aab1ee0527be36c00b46b0d3a176ad7392b3f24",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
+          "expected_blob": "4337d896e253e223a48a437752e6be573ad417d3",
+          "expected_mode": "100644",
+          "actual_blob": "4337d896e253e223a48a437752e6be573ad417d3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
+          "expected_blob": "e8e872aac498393a8e4506dfba22149b51c35e48",
+          "expected_mode": "100644",
+          "actual_blob": "e8e872aac498393a8e4506dfba22149b51c35e48",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-017-final-release.md",
+          "expected_blob": "8ae41d0b84a52839de936386005d5913ed393825",
+          "expected_mode": "100644",
+          "actual_blob": "8ae41d0b84a52839de936386005d5913ed393825",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json",
+          "expected_blob": "d478afa060b81f585b6ffc56ef577d3dd7969260",
+          "expected_mode": "100644",
+          "actual_blob": "d478afa060b81f585b6ffc56ef577d3dd7969260",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/010.json",
+          "expected_blob": "1e7db798fa90dcb602bcb19820aab7bc4bcdbee3",
+          "expected_mode": "100644",
+          "actual_blob": "1e7db798fa90dcb602bcb19820aab7bc4bcdbee3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "978af32aaf69dbae4ecf8cc7af80e58d002b1aeb",
+          "expected_mode": "100755",
+          "actual_blob": "978af32aaf69dbae4ecf8cc7af80e58d002b1aeb",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "5bc98c1cc58dafb713704d27c812cf97b43ce84b",
+          "expected_mode": "100644",
+          "actual_blob": "5bc98c1cc58dafb713704d27c812cf97b43ce84b",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

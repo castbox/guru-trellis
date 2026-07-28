@@ -6,19 +6,19 @@
     "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
     "reason": "当前唯一独立交付单元。",
     "acceptance_evidence": [
-      "Current Phase 2 typed exit=passed：runtime 627 passed/13 skipped、#105 transaction 105、Skill/package/eval 180、finalizer 5、focused Namespace 5、preset 45、ownership 9；72 条 command/144 个 exact stream evidence 全部重算匹配，current P0/P1/P2/P3 open findings 均为 0。",
-      "Branch Review 覆盖 origin/main...d7308d4aeaa3228d7650b93821ac7b4269ec5b38 的 554-path/9-commit range；Round 17 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=70452a5858e0787d6502e7a82db998e83c897d3517c8c50e093c0b8d18971d77。",
+      "Current Phase 2 typed exit=passed：runtime 628 passed/13 skipped、#105 transaction 106、Skill/package/eval 180、finalizer + #116/#117 33、focused owner projection 6、active/archive 6、preset 45、ownership 9；29 条 retained command evidence identity 全部重算匹配，current P0/P1/P2/P3 open findings 均为 0。",
+      "Branch Review 覆盖 origin/main...1e5b1479b72e5b253c9755244be87f906cf855f4 的 559-path/10-commit range；Round 18 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead。",
       "Full local-source clean throwaway current-candidate chain rc=0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution、ownership、overlay drift 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
       {
         "type": "remote_marketplace_verification",
-        "status": "pending",
+        "status": "passed",
         "required": true,
         "artifact_path": "marketplace-verification.json",
-        "artifact_sha256": "",
-        "verified_content_head": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
-        "remote_head": "",
-        "publish_head": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
-        "commands_passed": false
+        "artifact_sha256": "66625c4de68a8997e4a2c882fa83f6e0a38a85b0debb6025d37f86ac794d7336",
+        "verified_content_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+        "remote_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+        "publish_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+        "commands_passed": true
       }
     ]
   },
@@ -29,19 +29,19 @@
       "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
       "reason": "#118 的全部 accepted-current acceptance 由本 task 覆盖；这是唯一 close target。",
       "acceptance_evidence": [
-        "Current Phase 2 typed exit=passed：runtime 627 passed/13 skipped、#105 transaction 105、Skill/package/eval 180、finalizer 5、focused Namespace 5、preset 45、ownership 9；72 条 command/144 个 exact stream evidence 全部重算匹配，current P0/P1/P2/P3 open findings 均为 0。",
-        "Branch Review 覆盖 origin/main...d7308d4aeaa3228d7650b93821ac7b4269ec5b38 的 554-path/9-commit range；Round 17 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=70452a5858e0787d6502e7a82db998e83c897d3517c8c50e093c0b8d18971d77。",
+        "Current Phase 2 typed exit=passed：runtime 628 passed/13 skipped、#105 transaction 106、Skill/package/eval 180、finalizer + #116/#117 33、focused owner projection 6、active/archive 6、preset 45、ownership 9；29 条 retained command evidence identity 全部重算匹配，current P0/P1/P2/P3 open findings 均为 0。",
+        "Branch Review 覆盖 origin/main...1e5b1479b72e5b253c9755244be87f906cf855f4 的 559-path/10-commit range；Round 18 使用全新独立 reviewer 完成 current zero-finding fresh final review，P0/P1/P2/P3=0/0/0/0、scope proposals=0，typed exit=passed，gate artifact SHA-256=b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead。",
         "Full local-source clean throwaway current-candidate chain rc=0，覆盖 workflow marketplace、preset install/reapply、official update、.new/.bak recovery、all-platform distribution、ownership、overlay drift 和 installed closeout recovery；该证据不替代 pushed feature-ref verification。",
         {
           "type": "remote_marketplace_verification",
-          "status": "pending",
+          "status": "passed",
           "required": true,
           "artifact_path": "marketplace-verification.json",
-          "artifact_sha256": "",
-          "verified_content_head": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
-          "remote_head": "",
-          "publish_head": "d7308d4aeaa3228d7650b93821ac7b4269ec5b38",
-          "commands_passed": false
+          "artifact_sha256": "66625c4de68a8997e4a2c882fa83f6e0a38a85b0debb6025d37f86ac794d7336",
+          "verified_content_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+          "remote_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+          "publish_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+          "commands_passed": true
         }
       ]
     }
