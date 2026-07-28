@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import textwrap
 import threading
 import unittest
 from pathlib import Path
@@ -122,51 +123,34 @@ def assert_branch_review_workflow_is_routing_only(
         testcase.assertNotIn(phrase, section)
 
 
-def assert_continue_entry_routes_only_branch_review(
+def assert_continue_entry_is_thin_workflow_router(
     testcase: unittest.TestCase, path: Path,
 ) -> None:
     text = path.read_text(encoding="utf-8")
-    testcase.assertIn("mandatory invoke the active `guru-review-branch` package", text, path)
-    testcase.assertIn("only Phase 3.5 semantic owner", text, path)
-    testcase.assertIn("Typed-exit route:", text, path)
-    for field in (
-        "`profile`",
-        "`mode`",
-        "`task_ref`",
-        "`base_ref`",
-        "`committed_head`",
-        "`review_intent`",
+    testcase.assertIn("`.trellis/workflow.md` as the global route", text, path)
+    for skill_id in (
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-create-task-commit",
+        "guru-review-branch",
+        "guru-review-task-publication",
     ):
-        testcase.assertIn(field, text, path)
-    for exit_id, consumer in (
-        ("`passed`", "`guru-review-task-publication`"),
-        ("`ready`", "`guru-finalize-task`"),
-        ("`return_to_task_work`", "`guru-task-publication-work-router`"),
-        ("publication `blocked`", "`task-publication-review-blocked`"),
-        ("`implementation_required`", "`guru-branch-review-implementation-router`"),
-        ("`scope_confirmation_required`", "`guru-branch-review-scope-router`"),
-        ("Branch Review `blocked`", "`branch-review-blocked`"),
-    ):
-        testcase.assertIn(exit_id, text, path)
-        testcase.assertIn(consumer, text, path)
+        testcase.assertIn(skill_id, text, path)
     for phrase in (
-        "enters global Phase 3.6",
-        "workflow caller authors the initial task-local `pr-body.md` and "
-        "`finish-summary-index.json` candidates",
-        "entry preparation only",
-        "does not decide PR-body sufficiency",
-        "If either candidate is absent or objectively malformed, stop fail closed",
-        "mandatory invoke the active `guru-review-task-publication` package",
-        "only its declared target-owned authoring fields",
-        "targets planned `guru-finalize-task`",
+        "Automatically consume",
+        "do not create",
+        "implementation-handoff.md",
+        "generic",
+        "确认继续",
     ):
         testcase.assertIn(phrase, text, path)
-    testcase.assertNotIn(
-        "targets planned `guru-review-task-publication`",
-        text,
-        path,
-    )
     for phrase in (
+        "Typed-exit route:",
+        "only Phase 3.5 semantic owner",
+        "`committed_head`",
+        "`review_intent`",
+        "guru-branch-review-implementation-router",
+        "task-publication-review-blocked",
         "review-branch.sh",
         "check-review-gate.sh",
         "agent-assignment.json",
@@ -200,8 +184,10 @@ def assert_current_branch_review_requirement_contract(
         "`publication_review` profile",
         "`profile/mode/review_intent` authoring fields",
         "`task_ref/reviewed_head/review_ref` seed",
-        "publication `ready` -> planned `guru-finalize-task`",
-        "因 target 尚未交付而 fail closed",
+        "publication `ready` 已唯一进入 active `guru-finalize-task`",
+        "stale publication、verification、same-plan resume 与 cross-month reprepare "
+        "均由 mapped consumer 自动承接",
+        "Source/installed closure 为 13 Skills/52 exits",
     ):
         testcase.assertIn(phrase, normalized)
 
@@ -346,14 +332,14 @@ class SourceValidationTests(unittest.TestCase):
         )
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
-        self.assertEqual(result["facts"]["planned_ids"], ["guru-finalize-task"])
+        self.assertEqual(result["facts"]["planned_ids"], [])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"],
+            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 12)
-        self.assertEqual(result["facts"]["exit_markers"], 46)
-        self.assertEqual(result["facts"]["target_markers"], 27)
+        self.assertEqual(result["facts"]["invoke_markers"], 13)
+        self.assertEqual(result["facts"]["exit_markers"], 52)
+        self.assertEqual(result["facts"]["target_markers"], 29)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -514,7 +500,7 @@ class SourceValidationTests(unittest.TestCase):
             "43 inventory-pinned upstream overlay paths",
             "`transitional_legacy` assets whose removal is owned by issue #132",
             "issue #128 path/baseline identity remains immutable",
-            "exact five issue #131 continue bindings",
+            "exact thirteen issue #131/#161 current bindings",
             "`explicit-post-planning-review` implement-agent wording",
             "must not guide current Guru package/runtime behavior",
         ):
@@ -593,8 +579,8 @@ class SourceValidationTests(unittest.TestCase):
         forbidden = ("git add -A", "--cleanup=verbatim", "背景：", "path_classifications")
         for path in entries:
             text = path.read_text(encoding="utf-8")
-            self.assertIn("mandatory invoke `guru-create-task-commit`", text, path)
-            self.assertIn("Typed-exit route:", text, path)
+            self.assertIn("`guru-create-task-commit`", text, path)
+            self.assertIn("This entry never copies", text, path)
             for phrase in forbidden:
                 self.assertNotIn(phrase, text, path)
 
@@ -622,7 +608,7 @@ class SourceValidationTests(unittest.TestCase):
             for phrase in workflow_forbidden:
                 self.assertNotIn(phrase, text, path)
 
-    def test_canonical_continue_entries_only_route_branch_review_skill(self) -> None:
+    def test_canonical_continue_entries_are_thin_workflow_routers(self) -> None:
         entries = [
             REPO / "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
             REPO / "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
@@ -631,7 +617,202 @@ class SourceValidationTests(unittest.TestCase):
             REPO / "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
         ]
         for path in entries:
-            assert_continue_entry_routes_only_branch_review(self, path)
+            assert_continue_entry_is_thin_workflow_router(self, path)
+
+    def test_ai_first_session_replay_contract(self) -> None:
+        replay_path = (
+            SKILLS_ROOT / "tests/fixtures/ai-first-session-replay.json"
+        )
+        raw = replay_path.read_text(encoding="utf-8")
+        replay = json.loads(raw)
+        baseline = replay["source_baseline"]
+        target = replay["target_contract"]
+        cases = replay["cases"]
+
+        self.assertEqual(
+            baseline,
+            {
+                "sessions": 12,
+                "turns": 500,
+                "confirmation_mentions": 163,
+                "session_ids_redacted": True,
+            },
+        )
+        self.assertEqual(len(cases), 12)
+        self.assertEqual(len({item["case_id"] for item in cases}), 12)
+        self.assertIsNone(
+            re.search(r"019[0-9a-f]{5}-[0-9a-f-]{27,}", raw),
+            "the replay fixture must not retain real session identifiers",
+        )
+        self.assertEqual(
+            target["required_semantic_gates"],
+            ["planning", "phase2_check", "branch_review", "publication_review"],
+        )
+
+        forbidden = set(target["forbidden_routine_artifacts"])
+        internal_only = set(target["internal_routes_not_user_choices"])
+        core_long_term = set(runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+        optional_long_term = set(runtime.CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
+        self.assertEqual(len(core_long_term), 11)
+        self.assertEqual(runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS, 12)
+        replacement_cases = 0
+        for item in cases:
+            with self.subTest(case=item["case_id"]):
+                self.assertLessEqual(
+                    len(item["user_confirmation_points"]),
+                    target["max_happy_path_user_confirmations"],
+                )
+                self.assertTrue(
+                    internal_only.isdisjoint(item["user_confirmation_points"])
+                )
+                self.assertTrue(
+                    forbidden.isdisjoint(item["persisted_artifacts"])
+                )
+                expected_long_term = set(core_long_term)
+                if item["case_id"] == "session-09-install-verification":
+                    expected_long_term.update(optional_long_term)
+                self.assertEqual(set(item["long_term_artifacts"]), expected_long_term)
+                self.assertEqual(
+                    len(item["long_term_artifacts"]),
+                    len(set(item["long_term_artifacts"])),
+                )
+                self.assertLessEqual(
+                    len(item["long_term_artifacts"]),
+                    runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS,
+                )
+                self.assertNotIn(
+                    "agent-assignment.json", item["long_term_artifacts"]
+                )
+                if item["unfinished_replacement"]:
+                    replacement_cases += 1
+                    self.assertIn("agent-assignment.json", item["persisted_artifacts"])
+                else:
+                    self.assertNotIn("agent-progress.jsonl", item["persisted_artifacts"])
+        self.assertEqual(replacement_cases, 1)
+
+        known_replays = target["known_finding_replays"]
+        self.assertEqual(
+            {item["replay_id"] for item in known_replays},
+            {"side-invocation-regression", "source-checkpoint-regressions"},
+        )
+        severities = [
+            finding["severity"]
+            for item in known_replays
+            for finding in item["findings"]
+        ]
+        self.assertEqual(severities.count("P1"), 5)
+        self.assertEqual(severities.count("P2"), 1)
+        for item in known_replays:
+            with self.subTest(replay=item["replay_id"]):
+                self.assertIn(item["required_gate"], target["required_semantic_gates"])
+                self.assertEqual(item["expected_route"], "implementation_required")
+                self.assertTrue(item["findings"])
+
+        phase2_contract = (
+            SKILLS_ROOT / "packages/guru-check-task/references/contract.md"
+        ).read_text(encoding="utf-8")
+        branch_contract = (
+            SKILLS_ROOT / "packages/guru-review-branch/references/contract.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Any open current-scope finding returns", phase2_contract)
+        self.assertIn("`implementation_required`", phase2_contract)
+        self.assertIn(
+            "Only the first three may become `qualified_finding`",
+            branch_contract,
+        )
+        self.assertIn("receive P0-P3", branch_contract)
+
+        workflow = (
+            REPO / "trellis/workflows/guru-team/workflow.md"
+        ).read_text(encoding="utf-8")
+        for gate in (
+            "guru-approve-task-plan",
+            "guru-check-task",
+            "guru-review-branch",
+            "guru-review-task-publication",
+        ):
+            self.assertIn(gate, workflow)
+        for route in internal_only:
+            self.assertIn(route, workflow)
+        self.assertIn("Routine dispatch does not start a liveness protocol", workflow)
+        self.assertNotIn(
+            "main session must run the short-lived liveness checker at",
+            workflow,
+        )
+
+    def test_non_file_requests_do_not_create_task_consent_round_trip(self) -> None:
+        forbidden = (
+            "Simple conversation or non-file-changing small task: ask only whether",
+            "If the user says no, skip Trellis for this session.",
+        )
+        expected = (
+            "answer directly without creating a GitHub Issue or Trellis task "
+            "and without asking whether one should be created"
+        )
+        for path in (
+            REPO / "trellis/workflows/guru-team/workflow.md",
+            REPO / ".trellis/workflow.md",
+        ):
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path):
+                self.assertIn(expected, text)
+                for phrase in forbidden:
+                    self.assertNotIn(phrase, text)
+
+    def test_ai_first_agent_entries_use_minimal_terminal_results(self) -> None:
+        overlay_root = REPO / "trellis/presets/guru-team/overlays"
+        relatives = (
+            ".trellis/agents/implement.md",
+            ".trellis/agents/check.md",
+            ".codex/agents/trellis-implement.toml",
+            ".codex/agents/trellis-check.toml",
+            ".claude/agents/trellis-implement.md",
+            ".claude/agents/trellis-check.md",
+            ".cursor/agents/trellis-implement.md",
+            ".cursor/agents/trellis-check.md",
+        )
+        forbidden = (
+            "completion handoff",
+            "implementation handoff",
+            "evidence handoff",
+            "handoff for check",
+            "records that response as liveness evidence",
+        )
+        for relative in relatives:
+            canonical = overlay_root / relative
+            installed = REPO / relative
+            with self.subTest(path=relative):
+                self.assertEqual(canonical.read_bytes(), installed.read_bytes())
+                text = canonical.read_text(encoding="utf-8").lower()
+                self.assertIn("terminal result", text)
+                self.assertIn("real exceptional recovery case", text)
+                for phrase in forbidden:
+                    self.assertNotIn(phrase, text)
+
+        for relative in (
+            ".trellis/agents/implement.md",
+            ".codex/agents/trellis-implement.toml",
+            ".claude/agents/trellis-implement.md",
+            ".cursor/agents/trellis-implement.md",
+        ):
+            text = (overlay_root / relative).read_text(encoding="utf-8")
+            self.assertIn("implementation-handoff.md", text)
+            self.assertRegex(text, r"(?i)(do not create|never create).*implementation-handoff\.md")
+
+    def test_workflow_state_breadcrumbs_fit_per_turn_budget(self) -> None:
+        pattern = re.compile(
+            r"\[workflow-state:([^\]]+)\]\n(.*?)\n\[/workflow-state:\1\]",
+            re.DOTALL,
+        )
+        canonical = REPO / "trellis/workflows/guru-team/workflow.md"
+        dogfood = REPO / ".trellis/workflow.md"
+        for path in (canonical, dogfood):
+            text = path.read_text(encoding="utf-8")
+            blocks = pattern.findall(text)
+            self.assertTrue(blocks, path)
+            for state, body in blocks:
+                with self.subTest(path=path, state=state):
+                    self.assertLessEqual(len(body.encode("utf-8")), 300)
 
     def test_global_publication_content_preparation_precedes_active_owner(self) -> None:
         interface = json.loads(
@@ -650,7 +831,7 @@ class SourceValidationTests(unittest.TestCase):
         ):
             workflow = path.read_text(encoding="utf-8")
             start = workflow.index("#### 3.6 Task publication semantic review")
-            end = workflow.index("#### 3.7 Finish-work archive", start)
+            end = workflow.index("#### 3.7 Finalize and publish", start)
             section = workflow[start:end]
             preparation = section.index(
                 "workflow caller is the explicit owner of initial"
@@ -686,12 +867,7 @@ class SourceValidationTests(unittest.TestCase):
 
             phase37 = workflow[end:]
             self.assertIn(
-                "were already\nauthored before Phase 3.6 invocation",
-                phase37,
-                path,
-            )
-            self.assertIn(
-                "Do not create,\nregenerate, or revise either file after `ready`",
+                "are authored before\npublication review and are not regenerated after `ready`",
                 phase37,
                 path,
             )
@@ -701,7 +877,7 @@ class SourceValidationTests(unittest.TestCase):
                 path,
             )
 
-    def test_public_docs_report_current_branch_review_package_state(self) -> None:
+    def test_public_docs_report_current_finalization_package_state(self) -> None:
         readmes = [
             REPO / "README.md",
             REPO / "trellis/workflows/guru-team/README.md",
@@ -719,7 +895,14 @@ class SourceValidationTests(unittest.TestCase):
         for path in readmes:
             text = path.read_text(encoding="utf-8")
             self.assertIn("guru-review-branch", text, path)
-            self.assertRegex(text, r"(?:12 Skills / 46 exits|12/46|十二个 active packages 共声明\s*46)")
+            self.assertRegex(
+                text,
+                r"(?:13 Skills\s*/\s*52 exits|13/52|十三个 active packages 共声明\s*52)",
+            )
+            self.assertRegex(
+                text,
+                r"(?:13/52/29|13 invokes?\s*/\s*52 exits?\s*/\s*29 targets?)",
+            )
             self.assertRegex(text, r"(?:唯一的|sole) Phase 3\.5 semantic owner")
             self.assertIn("deterministic", text, path)
             self.assertIn("11 exits", text, path)
@@ -732,8 +915,8 @@ class SourceValidationTests(unittest.TestCase):
         ]
         for path in durable_docs:
             text = path.read_text(encoding="utf-8")
-            self.assertIn("twelve active", text, path)
-            self.assertRegex(text, r"46\s+external\s+exits")
+            self.assertIn("thirteen active", text, path)
+            self.assertRegex(text, r"52\s+external\s+exits")
             self.assertIn("guru-review-branch", text, path)
             self.assertRegex(text, r"11\s+exits")
             for phrase in stale_phrases:
@@ -742,6 +925,114 @@ class SourceValidationTests(unittest.TestCase):
             durable_docs[0].read_text(encoding="utf-8"),
             r"three packages and 11\s+exits",
         )
+
+    def test_finalizer_durable_docs_distinguish_package_and_global_closure(self) -> None:
+        durable_docs = [
+            REPO / ".trellis/spec/preset/upstream-ownership.md",
+            REPO / ".trellis/spec/preset/installer.md",
+            REPO / ".trellis/spec/docs/public-docs.md",
+            REPO / ".trellis/spec/workflow/quality-guidelines.md",
+            REPO / ".trellis/spec/workflow/index.md",
+        ]
+        stale_current_claims = (
+            "`guru-finalize-task` remains a planned registry identity only",
+            "Only `guru-finalize-task` remains planned and unavailable",
+            "`guru-finalize-task` remains planned; the installer must reject",
+            "publication `ready` points to planned `guru-finalize-task`",
+            "`ready` targets planned `guru-finalize-task`",
+            "future target bootstrap but does not activate the #118 producer edge",
+            "closure at twelve Skills and 46 exits",
+            "checks assert twelve active Skills and 46 exits",
+            "real-wrapper eval, 12/46 closure",
+        )
+        for path in durable_docs:
+            with self.subTest(path=path):
+                text = path.read_text(encoding="utf-8")
+                normalized = " ".join(text.split())
+                self.assertIn("thirteen active Skills and 52 external exits", normalized)
+                self.assertIn(
+                    "twelve target-owned `skill_input_authoring_seed` handoffs",
+                    normalized,
+                )
+                self.assertIn("13 invokes, 52 exits, and 29 targets", normalized)
+                self.assertIn("guru-finalize-task", text)
+                self.assertIn("#119", text)
+                self.assertIn("#132", text)
+                for claim in stale_current_claims:
+                    self.assertNotIn(claim, normalized, path)
+
+    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
+    def test_finalizer_closeout_schema_matches_runtime_and_installed(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        source_path = (
+            SKILLS_ROOT
+            / "packages/guru-finalize-task/schemas/closeout-plan.schema.json"
+        )
+        runtime_path = (
+            REPO / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+        )
+        installed_paths = [
+            REPO
+            / ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+            REPO / ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            REPO / ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            REPO / ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            REPO / ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+        ]
+        source_bytes = source_path.read_bytes()
+        source_schema = json.loads(source_bytes)
+        runtime_schema = json.loads(runtime_path.read_text(encoding="utf-8"))
+        self.assertEqual(source_schema, runtime_schema)
+        for path in installed_paths:
+            self.assertEqual(path.read_bytes(), source_bytes, path)
+
+        valid_inputs = {
+            f"input_{index}": {
+                "path": f".trellis/tasks/07-26-finalize/artifact-{index}.json",
+                "sha256": f"{index:x}" * 64,
+            }
+            for index in range(1, 7)
+        }
+        malformed_missing = json.loads(json.dumps(valid_inputs))
+        malformed_missing["input_1"].pop("sha256")
+        malformed_extra = json.loads(json.dumps(valid_inputs))
+        malformed_extra["input_1"]["size"] = 1
+        invalid_inputs = [
+            {},
+            dict(list(valid_inputs.items())[:5]),
+            malformed_missing,
+            malformed_extra,
+        ]
+
+        for path in [source_path, runtime_path, *installed_paths]:
+            with self.subTest(path=path):
+                schema = json.loads(path.read_text(encoding="utf-8"))
+                inputs_schema = {
+                    "$schema": schema["$schema"],
+                    "$defs": schema["$defs"],
+                    **schema["properties"]["inputs"],
+                }
+                validator = Draft202012Validator(inputs_schema)
+                self.assertTrue(validator.is_valid(valid_inputs))
+                self.assertEqual(
+                    runtime.skill_json_schema_validation_errors(
+                        valid_inputs,
+                        inputs_schema,
+                        "finalizer closeout inputs",
+                    ),
+                    [],
+                )
+                for invalid in invalid_inputs:
+                    self.assertFalse(validator.is_valid(invalid), (path, invalid))
+                    self.assertTrue(
+                        runtime.skill_json_schema_validation_errors(
+                            invalid,
+                            inputs_schema,
+                            "finalizer closeout inputs",
+                        ),
+                        (path, invalid),
+                    )
 
     def test_public_readmes_share_standalone_runtime_semantics(self) -> None:
         readmes = [
@@ -1250,7 +1541,7 @@ class SourceValidationTests(unittest.TestCase):
                 "patternProperties": {"^result$": {"const": "not the example"}},
             }),
             "nested-unsupported": lambda schema: schema["properties"]["result"].update({
-                "minProperties": 1,
+                "maxProperties": 1,
             }),
             "keyword-type": lambda schema: schema["properties"]["result"].update({
                 "minLength": "1",
@@ -3811,7 +4102,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -3935,26 +4226,24 @@ class Stage0MigrationManifestTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["stage0_activation_unit"], "stage0-minimal-handoff-v1")
-        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 12)
+        self.assertEqual(len(result["facts"]["minimal_handoff_ids"]), 13)
         self.assertEqual(len(result["facts"]["legacy_ids"]), 0)
         self.assertEqual(
             result["facts"]["production_activation_unit"],
             "production-minimal-handoff-v1",
         )
 
-    def test_durable_docs_match_five_authoring_edges_and_three_skill_migration(self) -> None:
+    def test_durable_docs_match_current_authoring_edges_and_three_skill_migration(self) -> None:
         expected_docs = {
-            "README.md": "五条 semantic edge",
+            "README.md": "共十二条 semantic edge",
             "trellis/workflows/guru-team/README.md": (
-                "五条 semantic package handoff"
+                "十二条 semantic package handoff"
             ),
-            "trellis/presets/guru-team/README.md": "五条声明 edge",
-            "docs/requirements/README.md": "五条 edge 使用 target-owned",
-            "docs/requirements/requirement-main.md": (
-                "active Task Publication Review 五条 edge"
-            ),
+            "trellis/presets/guru-team/README.md": "共十二条声明 edge",
+            "docs/requirements/README.md": "当前 13/52 closure",
+            "docs/requirements/requirement-main.md": "Production semantic edges",
             "docs/requirements/guru-team-trellis-flow.md": (
-                "五条 semantic handoff"
+                "13 Skills/52 exits graph"
             ),
             ".trellis/spec/workflow/skill-package-contract.md": (
                 "The five production semantic edges"
@@ -3963,13 +4252,13 @@ class Stage0MigrationManifestTests(unittest.TestCase):
                 "For the five approved production semantic edges"
             ),
             ".trellis/spec/workflow/quality-guidelines.md": (
-                "The five `skill_input_authoring_seed` edges"
+                "The twelve `skill_input_authoring_seed` edges"
             ),
             ".trellis/spec/preset/installer.md": (
-                "five target-owned authoring"
+                "twelve target-owned authoring"
             ),
             ".trellis/spec/preset/upstream-ownership.md": (
-                "the five target-owned"
+                "the twelve target-owned"
             ),
         }
         for relative, expected in expected_docs.items():
@@ -4140,6 +4429,112 @@ class Stage0PublicInvocationTests(unittest.TestCase):
         self.assertEqual(result["status"], "passed", result)
         return result
 
+    def write_workspace_enforcing_fake_codex(self) -> Path:
+        binary = Path(self.temp.name) / "codex-native-bin/codex"
+        binary.parent.mkdir()
+        binary.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                from __future__ import annotations
+
+                import json
+                import os
+                import subprocess
+                import sys
+                from pathlib import Path
+
+
+                def option(arguments: list[str], flag: str) -> str:
+                    index = arguments.index(flag)
+                    return arguments[index + 1]
+
+
+                def main() -> int:
+                    arguments = sys.argv[1:]
+                    request_path = Path(os.environ["GURU_TEAM_NATIVE_REQUEST"]).resolve()
+                    execution_root = request_path.parent
+                    writable_roots = {
+                        Path(arguments[index + 1]).resolve()
+                        for index, value in enumerate(arguments[:-1])
+                        if value == "--add-dir"
+                    }
+                    if execution_root not in writable_roots:
+                        print("repo-external execution root is not writable", file=sys.stderr)
+                        return 73
+
+                    request = json.loads(request_path.read_text(encoding="utf-8"))
+                    protocol = json.loads(
+                        Path(os.environ["GURU_TEAM_NATIVE_PROTOCOL"]).read_text(
+                            encoding="utf-8"
+                        )
+                    )
+                    facts = None
+                    workdir = Path(request["workdir"])
+                    for relative in request["files"]:
+                        payload = json.loads((workdir / relative).read_text(encoding="utf-8"))
+                        if isinstance(payload.get("public_invocation"), dict):
+                            facts = payload
+                            break
+                    if facts is None:
+                        print("public invocation facts are unavailable", file=sys.stderr)
+                        return 74
+
+                    helper = str(protocol["helper_path"])
+                    common = [
+                        "--trace", str(protocol["trace_path"]),
+                        "--request-sha256", str(protocol["request_sha256"]),
+                        "--projection-root", str(protocol["projection_root"]),
+                        "--skill-sha256", str(protocol["skill_sha256"]),
+                        "--wrapper-sha256", str(protocol["wrapper_sha256"]),
+                    ]
+                    read_result = subprocess.run(
+                        [
+                            sys.executable, helper, *common, "read",
+                            "--kind", "skill_contract",
+                            "--path", str(protocol["skill_path"]),
+                        ],
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    if read_result.returncode != 0:
+                        sys.stderr.write(read_result.stderr)
+                        return read_result.returncode
+
+                    invoke_result = subprocess.run(
+                        [
+                            sys.executable, helper, *common, "invoke",
+                            "--wrapper", str(protocol["wrapper_path"]), "--",
+                            *facts["public_invocation"]["arguments"],
+                        ],
+                        cwd=request["public_package_root"],
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    if invoke_result.returncode != 0:
+                        sys.stderr.write(invoke_result.stderr)
+                        return invoke_result.returncode
+                    Path(option(arguments, "--output-last-message")).write_text(
+                        invoke_result.stdout,
+                        encoding="utf-8",
+                    )
+                    print(json.dumps({"type": "turn.completed"}))
+                    return 0
+
+
+                if __name__ == "__main__":
+                    raise SystemExit(main())
+                """
+            ),
+            encoding="utf-8",
+        )
+        binary.chmod(0o755)
+        return binary
+
     def test_installed_task_plan_clarify_scope_router_is_routing_only(self) -> None:
         workflow = (self.repo / ".trellis/workflow.md").read_text(encoding="utf-8")
         assert_task_plan_clarify_scope_router_contract(self, workflow)
@@ -4161,11 +4556,186 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             native_trace["events"][-1]["argv"],
         )
 
+    def test_finalizer_public_wrapper_projects_live_missing_publication_as_stale(
+        self,
+    ) -> None:
+        task_ref = ".trellis/tasks/07-26-finalizer-stale"
+        task_dir = self.repo / task_ref
+        task_dir.mkdir(parents=True)
+        (task_dir / "task.json").write_text(
+            json.dumps(
+                {
+                    "id": "07-26-finalizer-stale",
+                    "name": "07-26-finalizer-stale",
+                    "title": "Finalizer stale publication regression",
+                    "status": "in_progress",
+                    "branch": "main",
+                    "base_branch": "main",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        runtime_dir = self.repo / ".trellis/.runtime/guru-team"
+        runtime_dir.mkdir(parents=True, exist_ok=True)
+        input_relative = ".trellis/.runtime/guru-team/finalizer-stale-input.json"
+        review_relative = ".trellis/.runtime/guru-team/finalizer-stale-review.json"
+        (self.repo / input_relative).write_text(
+            json.dumps(
+                {
+                    "profile": "publication_ready",
+                    "mode": "workflow",
+                    "task_ref": task_ref,
+                    "reviewed_head": "a" * 40,
+                    "publication_ref": "publication:missing-current-owner",
+                    "finalization_intent": (
+                        "Route stale publication evidence through the declared owner."
+                    ),
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (self.repo / review_relative).write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "skill_id": "guru-finalize-task",
+                    "review": {
+                        "status": "reroute",
+                        "summary": (
+                            "The publication owner artifact is missing, so no closeout "
+                            "plan or side effect is authorized."
+                        ),
+                        "evidence_refs": ["publication-owner-check:missing"],
+                    },
+                    "confirmation": {
+                        "status": "not_required",
+                        "confirmed_plan_digest": None,
+                        "summary": "No immutable plan exists and no side effect is authorized.",
+                    },
+                    "route": {
+                        "typed_exit": "publication_review_stale",
+                        "consumer": {
+                            "kind": "skill",
+                            "id": "guru-review-task-publication",
+                        },
+                        "output": {
+                            "exit_id": "publication_review_stale",
+                            "task_ref": task_ref,
+                            "stale_reason": "publication_review_missing",
+                        },
+                    },
+                    "supersedes_gate_ref": None,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        recorder = (
+            self.repo
+            / ".agents/skills/guru-finalize-task/scripts/record-finalization-gate.sh"
+        )
+        recorded = subprocess.run(
+            [
+                str(recorder),
+                "--input",
+                input_relative,
+                "--review-input",
+                review_relative,
+            ],
+            cwd=self.repo,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(recorded.returncode, 0, recorded.stderr)
+        record_payload = json.loads(recorded.stdout)
+        self.assertEqual(record_payload["typed_exit"], "publication_review_stale")
+        self.assertIsNone(record_payload["plan_ref"])
+        self.assertIsNone(record_payload["plan_digest"])
+
+        gate_relative = f"{task_ref}/task-finalization-gate.json"
+        output = self.invoke(
+            "guru-finalize-task",
+            [
+                "--input",
+                input_relative,
+                "--owner-result",
+                gate_relative,
+            ],
+        )
+        self.assertEqual(
+            output,
+            {
+                "exit_id": "publication_review_stale",
+                "task_ref": task_ref,
+                "stale_reason": "publication_review_missing",
+            },
+        )
+        self.assertFalse((task_dir / "closeout-plan.json").exists())
+
+    def test_codex_repo_external_execution_root_runs_real_finalizer_wrapper(
+        self,
+    ) -> None:
+        codex = self.write_workspace_enforcing_fake_codex()
+        run_root = Path(self.temp.name) / "repo-external-codex-finalizer"
+        self.assertFalse(run_root.resolve().is_relative_to(self.repo.resolve()))
+        process = subprocess.run(
+            [
+                str(self.repo / ".trellis/guru-team/scripts/bash/run-skill-evals.sh"),
+                "--root", str(self.repo),
+                "--mode", "installed",
+                "--skill", "guru-finalize-task",
+                "--adapter", "codex",
+                "--case", "publication-review-stale",
+                "--run-root", str(run_root),
+                "--json",
+            ],
+            cwd=self.repo,
+            env={
+                **os.environ,
+                "PATH": f"{codex.parent}{os.pathsep}{os.environ.get('PATH', '')}",
+                "PYTHONDONTWRITEBYTECODE": "1",
+            },
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(process.returncode, 0, process.stderr)
+        payload = json.loads(process.stdout)
+        self.assertEqual(payload["status"], "passed", payload)
+        case = payload["cases"][0]
+        self.assertEqual(case["status"], "passed", case)
+        self.assertEqual(case["actual_exit"], "publication_review_stale")
+
+        transcript = json.loads(
+            Path(case["transcript_locator"]).read_text(encoding="utf-8")
+        )
+        execution_root = Path(transcript["native_request_path"]).resolve().parent
+        writable_roots = {
+            Path(transcript["argv"][index + 1]).resolve()
+            for index, value in enumerate(transcript["argv"][:-1])
+            if value == "--add-dir"
+        }
+        self.assertIn(execution_root, writable_roots)
+        trace = json.loads(
+            Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(trace["events"][-1]["kind"], "invoke")
+        self.assertEqual(
+            Path(trace["events"][-1]["wrapper_path"]).name,
+            "invoke.sh",
+        )
+
     def test_production_shared_adapter_stages_exact_allowlist_and_real_wrappers(self) -> None:
         self.assertEqual(native_adapter.PRODUCTION_SKILLS, {
             "guru-approve-task-plan",
             "guru-check-task",
             "guru-create-task-commit",
+            "guru-finalize-task",
             "guru-review-branch",
             "guru-review-task-publication",
             "guru-verify-extension-installation",
@@ -4174,6 +4744,11 @@ class Stage0PublicInvocationTests(unittest.TestCase):
             ("guru-approve-task-plan", "approved-initial", "approved"),
             ("guru-check-task", "passed-initial", "passed"),
             ("guru-create-task-commit", "revision-required", "revision-required"),
+            (
+                "guru-finalize-task",
+                "publication-verification-required",
+                "verification_required",
+            ),
             ("guru-review-branch", "workflow-passed", "passed"),
             ("guru-review-task-publication", "workflow-initial-ready", "ready"),
             (
@@ -4232,6 +4807,61 @@ class Stage0PublicInvocationTests(unittest.TestCase):
                 )
         finally:
             native_adapter.PRODUCTION_SKILLS = original_allowlist
+
+    def test_not_required_eval_executes_producer_projection_and_finalizer_wrappers(
+        self,
+    ) -> None:
+        result = self.run_shared_eval(
+            "guru-finalize-task",
+            "not-required-reentry-published",
+        )
+        case = result["cases"][0]
+        self.assertEqual(case["actual_exit"], "published")
+        transcript_path = Path(case["transcript_locator"])
+        execution = transcript_path.parent / "execution"
+        owner_repo = execution / "owner-repo"
+        chain = json.loads((
+            owner_repo
+            / ".trellis/.runtime/guru-team/evals/not-required-producer-edge.json"
+        ).read_text(encoding="utf-8"))
+        self.assertEqual(
+            chain["producer_wrapper"],
+            ".trellis/guru-team/skills/packages/"
+            "guru-verify-extension-installation/scripts/invoke.sh",
+        )
+        self.assertEqual(chain["producer_output"]["exit_id"], "not_required")
+        self.assertEqual(chain["producer_output"]["mode"], "standalone")
+        self.assertEqual(chain["projection_id"], "project_not_required")
+        self.assertEqual(
+            set(chain["seed"]),
+            {"repo_ref", "resolved_head", "verification_ref"},
+        )
+        self.assertEqual(
+            set(chain["authoring"]),
+            {"profile", "mode", "task_ref"},
+        )
+        self.assertFalse(set(chain["seed"]) & set(chain["authoring"]))
+        self.assertEqual(
+            chain["target_input"]["profile"],
+            "standalone_verification_not_required",
+        )
+        owner = json.loads((
+            owner_repo
+            / ".trellis/tasks/archive/2026-07/current/"
+            "marketplace-verification.json"
+        ).read_text(encoding="utf-8"))
+        self.assertEqual(owner["typed_exit"], "not_required")
+        self.assertEqual(owner["mode"], "standalone")
+        self.assertEqual(
+            owner["public_input"]["task_ref"],
+            ".trellis/tasks/current",
+        )
+        transcript = json.loads(transcript_path.read_text(encoding="utf-8"))
+        self.assertTrue(
+            transcript["wrapper_path"].endswith(
+                "public-packages/guru-finalize-task/scripts/invoke.sh"
+            )
+        )
 
     def test_publication_shared_eval_executes_all_three_actual_wrappers(self) -> None:
         for case_id, expected_exit in (

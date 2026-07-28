@@ -24,14 +24,27 @@ BASE_COMMIT = "291b57b6c02872320a4dce0626a2f718399b8f56"
 FROZEN_PATH_COUNT = 43
 FROZEN_PATH_SET_SHA256 = "56874019bb93b6669aaeb36b7ca9506aed9127a28ef9f81637ea428a6b0a838b"
 BASELINE_PAYLOAD_AGGREGATE_SHA256 = "c24122c8292ee2e6f7847d69069d5f3536eaa5a66a11434620228fe11cb89658"
-CURRENT_PAYLOAD_AGGREGATE_SHA256 = "88d5c5e7df8130c67304f70475e676d33202eb457d7a5fa332993eaaa455d0a9"
+CURRENT_PAYLOAD_AGGREGATE_SHA256 = "927af986281aea6ca31e5f35c470e9a1c3a17ecd4896dd7b98f2d0900c47292a"
 FROZEN_LEGACY_IDENTITY_SHA256 = "1e1faf9ffa95e1cbb1650c4eb9da1ceac035d045be70132b5c0b92ec5ccfc473"
 REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH = {
-    ".agents/skills/trellis-continue/SKILL.md": "ca34ccf881f558306d40b9478c7c241ac6375a51960303a1b9cf99b339fae859",
-    ".claude/commands/trellis/continue.md": "349e0bbab9619fe2ae1ae66d07d72ea33ce27295657d19bcb80240d4b1ba4a1b",
-    ".codex/prompts/trellis-continue.md": "d42283aeac720454c491678dc6f730c7174326d41e1f6348fed40e2625522085",
-    ".codex/skills/trellis-continue/SKILL.md": "ca34ccf881f558306d40b9478c7c241ac6375a51960303a1b9cf99b339fae859",
-    ".cursor/commands/trellis-continue.md": "59242f5a3cdbe0dd3fb8e20819a98a9e24f16e9fa14cdfcb4a8e48620815f873",
+    ".agents/skills/trellis-continue/SKILL.md": "19d3845cd93f022d7ec6ab365221fccde7f1a086e9cd574b513219b885c532fe",
+    ".agents/skills/trellis-finish-work/SKILL.md": "6fac809870d03d89c730692811b333cf71d553252d9b0e9e094b09a701a306a3",
+    ".claude/agents/trellis-check.md": "70808261fbdfc9cc247f5781d0bbaa63cd776da7d596019605794b6db8af2f51",
+    ".claude/agents/trellis-implement.md": "02b282fbbdf45ee888a4b78e6efa59027458ed50e99245e84f3a093eaf898a80",
+    ".claude/commands/trellis/continue.md": "e4e7f9c8f1c4d660bcf66ed601488588fc6be6b419b8080d16268ab240c58095",
+    ".claude/commands/trellis/finish-work.md": "515b75b637f41cc50a8446b05cad5a35ace3044e29041058a4e3c70d0999c609",
+    ".codex/agents/trellis-check.toml": "37355bfc567ecb0c4e4a94eb8bb4d2f794c3de0b69276add9ee2ddc034b4a616",
+    ".codex/agents/trellis-implement.toml": "42b7075b7a00e94fa9dc1d8f3291aeae6ae4e66bc2350ed3b7c86d1e40be2aba",
+    ".codex/prompts/trellis-continue.md": "e4e7f9c8f1c4d660bcf66ed601488588fc6be6b419b8080d16268ab240c58095",
+    ".codex/prompts/trellis-finish-work.md": "515b75b637f41cc50a8446b05cad5a35ace3044e29041058a4e3c70d0999c609",
+    ".codex/skills/trellis-continue/SKILL.md": "19d3845cd93f022d7ec6ab365221fccde7f1a086e9cd574b513219b885c532fe",
+    ".codex/skills/trellis-finish-work/SKILL.md": "6fac809870d03d89c730692811b333cf71d553252d9b0e9e094b09a701a306a3",
+    ".cursor/agents/trellis-check.md": "70808261fbdfc9cc247f5781d0bbaa63cd776da7d596019605794b6db8af2f51",
+    ".cursor/agents/trellis-implement.md": "02b282fbbdf45ee888a4b78e6efa59027458ed50e99245e84f3a093eaf898a80",
+    ".cursor/commands/trellis-continue.md": "e4e7f9c8f1c4d660bcf66ed601488588fc6be6b419b8080d16268ab240c58095",
+    ".cursor/commands/trellis-finish-work.md": "515b75b637f41cc50a8446b05cad5a35ace3044e29041058a4e3c70d0999c609",
+    ".trellis/agents/check.md": "5827555259a7fb6b7e1cf5eb68c651284e4cb582196dc260f9d1efc14c82acf4",
+    ".trellis/agents/implement.md": "dce3a104d88f8b5d0ff03ca96be2fd3fb519c275422c4219769a06adab39fe55",
 }
 OWNERSHIP_CATEGORIES = {
     "upstream_owned",
@@ -592,7 +605,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
                 ownership_error(
                     "unexpected_current_payload_digest",
                     entry_path,
-                    "current payload binding is allowed only on the five active Issue 131/116 continue entries",
+                    "current payload binding is allowed only on the reviewed Issue 131/161 entry allowlist",
                 )
             )
         if not isinstance(entry.get("generated_in_clean_init"), bool):

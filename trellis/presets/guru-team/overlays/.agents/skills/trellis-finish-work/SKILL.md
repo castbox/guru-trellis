@@ -1,76 +1,52 @@
 ---
 name: trellis-finish-work
-description: "Guru Team Trellis finish entry. Use after task work is committed and Branch Review Gate passed; binds an immutable closeout plan, creates a draft PR, archives once, then marks the PR ready."
+description: "Finalize a reviewed Guru Team task through the canonical publication review and active finalizer, including automatic recovery routing."
 ---
 
 <!-- guru-team-overlay: v1 -->
 
 # Guru Team Trellis Finish Work
 
-`trellis-finish-work` is the only user-facing closeout and recovery entry. Do
-not ask the user to choose a publish command, `--skip-archive`, or
-`--recovery-after-finish-work`.
-
-Before reading or writing task artifacts, resolve the portable worktree identity
-from the current checkout, `.trellis/.runtime/guru-team/**`, and
-`git worktree list`, then require:
+Read live state before choosing a closeout step:
 
 ```bash
-.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+python3 ./.trellis/scripts/get_context.py
+python3 ./.trellis/scripts/get_context.py --mode phase
 ```
 
-Create and AI-review task-local `pr-body.md` and
-`finish-summary-index.json`. The Chinese PR body must contain concrete
-`变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
-`Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步`.
-Only `close_issues` may use `Closes #xx`. The semantic summary index contains
-judgment and non-factual search terms; the companion injects GitHub, Git, path,
-artifact, and time facts.
+Use `.trellis/workflow.md` as the global route and load each mandatory semantic
+owner by stable Skill id. This entry does not copy package schemas, evidence
+recipes, confirmation algorithms, transaction commands, or recovery internals.
 
-Run the side-effect-free prepare pipeline first:
+## Route
 
-```bash
-.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
-  --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
-  --body-file "{TASK_DIR}/pr-body.md" \
-  --dry-run
-```
+- If current Branch Review evidence is not `passed`, return to the workflow step
+  that owns the missing review or task work. Do not manufacture publication
+  readiness in this entry.
+- After Branch Review `passed`, follow Phase 3.6: prepare only the current
+  publication candidates required by the workflow, then invoke
+  `guru-review-task-publication`. Automatically consume its metadata revision
+  route; real task findings return to the complete downstream review sequence.
+- Only `guru-review-task-publication:ready` enters Phase 3.7 and invokes
+  `guru-finalize-task`. That Skill owns plan review, exact side-effect
+  confirmation, the deterministic transaction boundary, and recovery intent.
+- Automatically consume finalizer `verification_required` through
+  `guru-verify-extension-installation`, `publication_review_stale` through
+  `guru-review-task-publication`, and same-plan `resume_finalization` or
+  `reprepare_required` through `guru-finalize-task`. Do not render these internal
+  exits as user choices.
+- Return only the final `published` result. A declared `blocked` result, missing
+  external authority, or a materially changed side-effect plan stops with its
+  concrete reason.
 
-Review the complete `closeout_plan` and save its
-`closeout_plan_digest`. Formal finish must pass that digest unchanged:
+## Interaction Boundary
 
-```bash
-.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
-  --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
-  --body-file "{TASK_DIR}/pr-body.md" \
-  --expected-plan-digest "<closeout_plan_digest>"
-```
+Ask the user only for the exact bounded finalization side-effect plan when the
+semantic owner requires confirmation, for new external authority, or for a
+material scope decision. Never ask for a generic `确认继续` between mapped Skill
+exits and never ask the user to select an internal recovery command.
 
-Dry-run and formal execution share `prepare_closeout()`. Formal finish compares
-the digest before its first side effect, pushes the reviewed content HEAD,
-records deterministic pending/passed marketplace evidence, commits and pushes
-plan/readiness/evidence, creates or reuses one exact draft PR, builds the only
-final summary with canonical PR URL and one `PR #<number>` ref, validates the
-future archive projection, then calls official `task.py archive --no-commit`.
-It creates one exact archive metadata commit, pushes it, requires local/remote/PR
-HEAD equality, and only then runs draft to ready. After archive it must not
-rebuild or rewrite repo artifacts.
-
-Prepare permits only missing/empty official `hooks.after_archive`; it rejects
-non-empty or unparsable config without executing the hook. Immediately before
-official move it rechecks the live archive month, regular-file/mode/blob
-continuity, empty index, and exact planned untracked outputs.
-
-If any ordinary stage fails, rerun this same entry with the same expected digest. The
-state machine resumes from committed plan/readiness, active/archive locators,
-Git/remote facts, and the unique PR identity. Multiple matching PRs, protected
-input drift, unexpected metadata paths, or HEAD mismatch fail closed.
-For `archive-month-preflight`, keep the active task/draft PR, rerun dry-run,
-review its new digest, and formalize that digest. The executor may append a
-plan/readiness-only supersession evidence commit; it never rewrites history or
-migrates an archive directory.
-
-After dry-run, run `resolve-human-artifacts.sh --json --task <task-path>`
-against the active task and show the `Markdown 产物 review 表`. After formal finish, run the same resolver against the archived task and include its archived table. The resolver lists only `prd.md`, `design.md`,
-`implement.md`, `review.md`, and `pr-body.md`. Guru Team never calls
-`add_session.py` and never reads or writes `.trellis/workspace/**`.
+Deterministic closeout scripts are private implementation details of
+`guru-finalize-task`; this entry never invokes them directly. It also does not
+create a handoff artifact or duplicate facts already present in live Git,
+GitHub, task, review, publication, or finalizer evidence.

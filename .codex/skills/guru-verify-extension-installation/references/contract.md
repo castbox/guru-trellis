@@ -3,10 +3,11 @@
 ## Entry
 
 `verification_required` is the workflow target bootstrap owned by this package
-until `guru-finalize-task` is implemented. Its five business seed fields are
+for active `guru-finalize-task`. Its five business seed fields are
 `task_ref`, `plan_ref`, `repo_ref`, `reviewed_head`, and
-`verification_target`; `profile` and `mode` are fixed discriminators. This
-package does not publish or activate the future producer edge.
+`verification_target`; `profile` and `mode` are fixed discriminators. Global
+Finish-family routing automatically consumes this target through the active
+finalizer loop; the verifier result is not exposed as a user continuation gate.
 
 `standalone_verification` carries `repo_ref`, `remote`, `ref`, and
 `caller_intent`. Its closed schema has separate task-bearing and session-only
@@ -116,6 +117,9 @@ traces retain only generic errors or digests and never the credential URL.
 - `not_required`: AI applicability evidence is complete and no execution
   profile or fabricated pass facts exist. A workflow input fixed to
   `verification_target=extension-installation` cannot silently use this exit.
+  The reachable finalizer edge therefore selects the task-bearing standalone
+  `repo_ref/resolved_head/verification_ref` output; the finalizer target authors
+  only `profile/mode/task_ref` and validates the task-local private evidence.
 - `return_to_task_work`: a task-bearing invocation has open code/docs/tests
   findings routed to `phase-2`.
 - `blocked`: auth, network, remote availability, taskless installation failure,

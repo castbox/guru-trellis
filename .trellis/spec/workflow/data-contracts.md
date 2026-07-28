@@ -909,12 +909,17 @@ New active evidence uses closed schema `guru-phase2-check-2.0` and
 `skill_id=guru-check-task`; the basename remains `phase2-check.json` and no
 parallel pass artifact is allowed. The artifact binds current task/workspace,
 checker-validated `guru-planning-approval-2.0`, requirement provenance, Docs
-SSOT Plan, implementation handoff, issue ledger, agent recovery, base/HEAD/diff,
+SSOT Plan, embedded implementation evidence, issue ledger, agent recovery, base/HEAD/diff,
 complete dirty paths and reviewed path digests, executed command facts, worker
 evidence, scope qualification, adequacy dimensions, findings, unverified items,
 AI Gate, one typed exit/consumer, full-round identity, and `facts_sha256`.
 
-Requirement provenance artifacts, implementation handoff artifacts, Docs SSOT
+`implementation_handoff` remains the compatibility field name for this embedded
+evidence collection. The semantic owner assembles it from the implementation
+terminal result, current repository state, tests, and durable paths; it is not
+an independent `implementation-handoff.md` or a second narrative SSOT.
+
+Requirement provenance artifacts, embedded implementation evidence, Docs SSOT
 durable paths, repository reviewed paths, and command facts are non-empty.
 Every adequacy dimension references at least one known current-round source and
 the complete dimension set covers planning, provenance, handoff, Docs SSOT,
@@ -955,8 +960,8 @@ The Branch Review Gate independently validates and digests the complete current
 
 The checker independently derives and exactly compares `execution_sha256`,
 `scope_sha256`, `adequacy_sha256`, Gate planning/snapshot/scope/adequacy
-bindings, `findings_count`, and `full_round_sha256`. When implementation
-handoff artifacts include task-local `agent-assignment.json`, a legal
+bindings, `findings_count`, and `full_round_sha256`. When the embedded
+`implementation_handoff` collection includes task-local `agent-assignment.json`, a legal
 ancestor-HEAD post-commit audit preserves that recorded raw path digest and
 uses the stable agent projection for freshness. This permits only Branch Review
 metadata tail and still rejects implementation/check/recovery drift.
@@ -1325,7 +1330,14 @@ requires `termination_source_event_id` pointing to the same agent's
 `termination_reason=manual_or_platform_terminated_unfinished` requires an
 empty `termination_source_event_id`.
 
-The liveness checker is a short-lived, on-demand, single-sample command:
+Routine execution does not invoke a liveness scan cadence or persist narrative
+progress. Current gate schemas may record minimum assignment/completion identity
+in `agent-assignment.json`; the detailed state below is activated only for a
+real failed, unfinished, interrupted, stale-cutover, resume, or replacement
+case. A wait timeout alone never activates it.
+
+For that exceptional recovery path, the liveness checker is a short-lived,
+on-demand, single-sample command:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-subagent-liveness.sh --json \
@@ -1339,8 +1351,11 @@ The liveness checker is a short-lived, on-demand, single-sample command:
 It returns exactly one decision:
 `workspace_boundary_violation_progress`, `progress_observed`,
 `status_request_required`, `continue_waiting_no_repeat_ping`,
-`stale_allowed`, or `blocked_missing_evidence`. `progress_scan_interval=120s`
-controls scan cadence. `max_progress_silence=180s` is measured from
+`stale_allowed`, or `blocked_missing_evidence`. When exceptional recovery is
+active, `progress_scan_interval=120s` is the minimum elapsed interval used to
+interpret a requested re-sample. It does not create a background scan, fixed
+polling cadence, or obligation to invoke the checker again.
+`max_progress_silence=180s` is measured from
 `progress_anchor_at`; `status-requested` does not refresh that anchor and does
 not extend `max_progress_silence_deadline_at`. If the deadline has already
 passed but there is no pending status request, checker must still return
@@ -1354,7 +1369,7 @@ changes relative to `last_scan_snapshot` refresh `progress_anchor_at`. Existing
 dirty diffs, old progress events, control/bookkeeping events, and
 `agent-assignment.json` writes do not refresh liveness.
 
-`record-subagent-liveness-event.sh` is the active status/liveness writer.
+`record-subagent-liveness-event.sh` is the exceptional-recovery status/liveness writer.
 `record-agent-assignment.sh` remains for review rounds and reuse decisions, and
 its old `--status-event` path must fail closed. `status-requested` and
 `status-request-failed` may be recorded only after checker decision

@@ -43,7 +43,7 @@ Before implementing, read:
 3. **Implement features** - Write code following specs and task artifacts
 4. **Self-check** - Ensure code quality
 5. **Execute Docs SSOT Plan** - Update, merge, repair, or preserve durable docs according to the approved strategy
-6. **Report implementation handoff** - Report completion status, changed files, docs sync result, verification, remaining risks, and focus areas for `trellis-check`
+6. **Report terminal result** - Return only material changed behavior/paths, verification, Docs SSOT outcome, and remaining blockers or risks
 
 ## Forbidden Operations
 
@@ -53,15 +53,15 @@ Before implementing, read:
 - `git push`
 - `git merge`
 
-## Progress And Handoff
+## Progress And Result
 
 - Do not report `Implementation Complete` until the requested scope is actually complete and verification status is known.
 - If the main session interrupts, terminates, replaces, or asks you to stop before completion, explicitly report `Implementation Unfinished` instead. Include files changed, current diff summary, last completed step, commands still running or stuck, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
-- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. If the main session sends an explicit status request, reply in platform-visible output with the current step, last concrete progress, active command/tool if any, changed files or review scope, remaining work, and blockers; the main session records that response as liveness evidence.
-- Do not run `trellis-check`, record `phase2-check.json`, or perform Branch Review Gate work. You own the implementation boundary; later check/review phases need your handoff, not a substitute check.
-- Your completion handoff must include requirement/design carryover, `Docs SSOT Plan` strategy, durable docs/spec/overlay responsibilities handled, docs sync result, task delta merged to durable docs, task-history-only content, verification run or deferred, remaining risks, and concrete `trellis-check` focus areas.
-- If the plan is `no_docs_update_needed`, include the concrete reason and checked durable docs paths. If it is `bootstrap_or_repair_docs`, include the minimum repair completed or the bounded follow-up and current PR limitation. If it is `delta_first`, complete the durable docs merge before final Phase 2 check. If it is `ssot_first`, state which revised durable docs/spec/workflow contracts were primary implementation inputs.
+- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. Only during a real exceptional recovery case, answer an explicit status request with the current step, last concrete progress, active command/tool if any, remaining work, and blockers.
+- Do not run `trellis-check`, record `phase2-check.json`, or perform Branch Review Gate work. The next semantic owner reads task artifacts, live diff, and tests directly.
+- Return one concise terminal result. Do not create `implementation-handoff.md`, reproduce planning, or provide a next-owner checklist.
+- For Docs SSOT, report only a material outcome, changed durable paths, or a bounded follow-up. The check owner reconstructs the complete conclusion from current evidence.
 
 ---
 
@@ -95,42 +95,17 @@ Run project's lint and typecheck commands to verify changes.
 
 ---
 
-## Report Format
+## Terminal Result
 
 ```markdown
-## Implementation Complete
-
-### Files Modified
-
-- `src/components/Feature.tsx` - New component
-- `src/hooks/useFeature.ts` - New hook
-
-### Implementation Summary
-
-1. Created Feature component...
-2. Added useFeature hook...
-
-### Docs SSOT Handoff
-
-- Strategy: `<ssot_first|delta_first|bootstrap_or_repair_docs|no_docs_update_needed>`
-- Durable docs updated or checked:
-- Task artifact delta merged back to durable docs:
-- Task-history-only content:
-- No-update reason or follow-up / current PR limitation:
-- Implementation inputs from durable docs:
-- Implementation inputs from confirmed task delta:
-
-### Verification Results
-
-- Lint: Passed
-- TypeCheck: Passed
-
-### Handoff For Check
-
-- Focus areas:
-- Validation intentionally deferred to `trellis-check`:
-- Remaining risks:
+Status: complete | blocked | unfinished
+Changed: <material behavior and paths only>
+Verified: <commands and outcomes>
+Docs SSOT: <material outcome or "no material docs change">
+Remaining: <blocker/risk/deferred validation, or "none">
 ```
+
+For `blocked` or `unfinished`, add only the state needed to resume safely.
 
 ---
 

@@ -40,8 +40,9 @@ The installer is idempotent:
 - changed managed companion assets are updated with `.bak` backups
 - existing `.trellis/guru-team/config.yml` is preserved
 - only the 43 inventory-pinned transitional Trellis paths may be replaced by
-  Guru Team overlays; 38 use their immutable historical baseline and the exact
-  five issue #131 continue entries use a separately reviewed current binding;
+  Guru Team overlays; 25 use their immutable historical baseline and the exact
+  eighteen issue #131/#161 continue, agent, and finish-router entries use a
+  separately reviewed current binding;
   the frozen set cannot expand and issue #132 removal is not implied
 - unknown local edits receive `.new` copies instead of being overwritten
 

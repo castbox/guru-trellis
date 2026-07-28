@@ -1,0 +1,1 @@
+{"scenario":"The live official archive month differs from the prior plan while the task remains active.","owner_staging":{"recipe":"finalization-cross-month-reprepare"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/tasks/current/task-finalization-gate.json"]}}

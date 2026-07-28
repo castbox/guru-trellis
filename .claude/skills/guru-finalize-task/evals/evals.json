@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-finalize-task",
+  "evals": [
+    {
+      "id": "publication-verification-required",
+      "prompt": "Invoke the finalizer from current publication evidence and return the checker-derived verification boundary.",
+      "expected_exit": "verification_required",
+      "expected_output": "The minimal DTO identifies the same plan, repository, reviewed HEAD and verification target.",
+      "input_profile_id": "publication_ready",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "verification_required"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ]
+      },
+      "files": [
+        "evals/files/publication-ready-input.json",
+        "evals/files/publication-verification-required-facts.json"
+      ]
+    },
+    {
+      "id": "publication-review-stale",
+      "prompt": "Invoke the finalizer from stale publication evidence and return the checked publication-review re-entry.",
+      "expected_exit": "publication_review_stale",
+      "expected_output": "The minimal DTO contains only the task identity and stable stale reason.",
+      "input_profile_id": "publication_ready",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "publication_review_stale"}
+        ]
+      },
+      "files": [
+        "evals/files/publication-ready-input.json",
+        "evals/files/publication-review-stale-facts.json"
+      ]
+    },
+    {
+      "id": "same-plan-resume",
+      "prompt": "Invoke the finalizer for an unchanged plan after a normal interrupted transition.",
+      "expected_exit": "resume_finalization",
+      "expected_output": "The minimal DTO retains only the task and unchanged plan reference.",
+      "input_profile_id": "same_plan_resume",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "resume_finalization"}
+        ]
+      },
+      "files": [
+        "evals/files/same-plan-resume-input.json",
+        "evals/files/same-plan-resume-facts.json"
+      ]
+    },
+    {
+      "id": "cross-month-reprepare",
+      "prompt": "Invoke the finalizer after the official archive month changed while the task remains active.",
+      "expected_exit": "reprepare_required",
+      "expected_output": "The minimal DTO identifies the task and the stable archive-month reason.",
+      "input_profile_id": "reprepare_preview",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "reprepare_required"}
+        ]
+      },
+      "files": [
+        "evals/files/reprepare-preview-input.json",
+        "evals/files/cross-month-reprepare-facts.json"
+      ]
+    },
+    {
+      "id": "published-recovery",
+      "prompt": "Invoke standalone finalization for an already completed ready recovery state.",
+      "expected_exit": "published",
+      "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
+      "input_profile_id": "standalone_finalization",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "published"}
+        ]
+      },
+      "files": [
+        "evals/files/standalone-finalization-input.json",
+        "evals/files/published-recovery-facts.json"
+      ]
+    },
+    {
+      "id": "blocked-private-state",
+      "prompt": "Invoke standalone finalization for an invalid objective state with no unique continuation.",
+      "expected_exit": "blocked",
+      "expected_output": "The terminal DTO contains only the stable blocker code and remediation.",
+      "input_profile_id": "standalone_finalization",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}
+        ]
+      },
+      "files": [
+        "evals/files/standalone-finalization-input.json",
+        "evals/files/blocked-private-state-facts.json"
+      ]
+    },
+    {
+      "id": "verified-reentry-published",
+      "prompt": "Invoke the finalizer from current verified installation evidence for the same plan and reviewed HEAD.",
+      "expected_exit": "published",
+      "expected_output": "The checked terminal DTO contains the exact published pull request identity.",
+      "input_profile_id": "verification_verified",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "published"}
+        ]
+      },
+      "files": [
+        "evals/files/verification-verified-input.json",
+        "evals/files/verified-reentry-published-facts.json"
+      ]
+    },
+    {
+      "id": "not-required-reentry-published",
+      "prompt": "Invoke the standalone verifier, apply its declared not-required projection without overwrite, and invoke the finalizer for the same private plan and resolved HEAD.",
+      "expected_exit": "published",
+      "expected_output": "The checked terminal DTO contains the exact published pull request identity.",
+      "input_profile_id": "standalone_verification_not_required",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "published"}
+        ]
+      },
+      "files": [
+        "evals/files/verification-not-required-input.json",
+        "evals/files/not-required-reentry-published-facts.json"
+      ]
+    }
+  ]
+}

@@ -42,7 +42,8 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
   及其 24 exits 原子迁移到 `1.3+minimal_handoff`；#146 再以独立
   `production-minimal-handoff-v1` 把 planning/check/commit 三包、十个 profiles 与 11 exits
   原子迁移到 1.3；#131 激活 Branch Review，#116 再激活 publication review，#117
-  激活 extension installation verification。当前 live closure 为 12 Skills / 46 exits，
+  激活 extension installation verification，#118 激活 finalizer，#119 完成 Finish-family
+  集成。当前 live closure 为 13 Skills / 52 exits，
   Stage 0 的 6/24 identity 与独立 production manifest 的 3/11 membership 保持不变。
 
 ## 扩展重要性分层
@@ -52,8 +53,8 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 | P0 | Workflow 主合同与日常入口 | #1, #2, #57, #64, #65, #66, #78, #130 | `guru-team` marketplace workflow 定义 Phase 0-3、auto-bootstrap 日常入口、业务项目中文文档默认规则、知识门禁和 Docs SSOT；Phase 1 规划策略后由 active `guru-check-task` 独占 Phase 2 scope/adequacy/finding loop、`guru-phase2-check-2.0` 与四出口，official `trellis-check` 只提供 evidence；Phase 3 final review 只验证不补救、finish-work 不首次 merge docs；Branch Review `reviews/*.md` / `review.md` 也继承中文 human-readable artifact 规则。 |
 | P0 | Intake / base sync / change-context / task workspace / no_task / workspace boundary 副作用边界 | #6, #15, #26, #51, #54, #60, #96, #99, #110, #111, #112 | repo-changing intake mandatory invoke `guru-sync-base -> guru-discover-change-context -> guru-clarify-requirements -> guru-review-contract-wording -> guru-review-change-request -> guru-create-task-workspace`。最后一个 active semantic Skill 是 issue/branch/worktree/task 唯一 mutation owner；reviewed draft 只创建 exact issue 后返回 `refresh_review`，open issue 另行取得 workspace/task confirmation 后才创建 workspace。它固定解析 assignee、通过隔离 adapter 调用 official `common.task_store.cmd_create`，仅在该 handler 调用内禁用 developer accessor，使 `creator=assignee=reviewed login`；同时写四个 portable task-local Intake artifacts，并只把本机 mapping 写到 ignored `.trellis/.runtime/guru-team/**`。Guru preset/executor 不读取、不创建、不恢复 `.trellis/.developer` 或 `.trellis/workspace/**`，existing identity bytes 保持不变；官方 Trellis identity/journal 支持仍保留。 |
 | P0 | Planning / check / task work commit / Branch Review Gate 证据链 | #5, #8, #20, #44, #62, #72, #76, #78, #122, #125, #129 | `guru-approve-task-plan` 独占 Phase 1 planning adequacy、四类 provenance、implementation choice、unusual proposal、AI Gate、confirmation 与 `approved` / `revision_required` / `clarify_scope` / `blocked` 路由，并写 schema 2.0 唯一 `planning-approval.json`；runtime 只验证 deterministic facts、closed union 与 freshness。后续 phase2 check、`guru-create-task-commit`、独立 review、中文 raw/rollup review report、review report digest、任意 finding 阻断、fresh 最终放行审查、sub-agent liveness / status request / stale cutover / completed-only recovery chain 继续形成可审计链路；`workflow` 与 `standalone` 只区分 global routing 与 direct discovery，两者都依赖完整 Guru Team runtime，package wrapper 统一经 `run-skill-command` fail closed；默认 sub-agent mode 下 implement、check、Branch Review 都必须有真实 sub-agent evidence。 |
-| P0 | Finish / publish / PR readiness | #7, #17, #18, #27, #66, #116 | Active `guru-review-task-publication` 在 Branch Review 后独占 publication semantic Gate、双入口、metadata-only revision 与唯一分层 `pr-readiness.json`；legacy deterministic `ready=true` 不能通过。`ready` 只桥接 planned `guru-finalize-task`，本阶段不执行 publish/finalization。 |
-| P0 | Extension installation verification | #117 | Active `guru-verify-extension-installation` 独占 applicability、closed capability profile、adequacy、finding 与四出口；deterministic runtime 只执行 remote-ref clean install、记录 machine facts、校验 schema/identity/freshness/redaction。Package 先拥有 planned #118 的 `verification_required` target bootstrap，但不激活 producer edge。 |
+| P0 | Finish / publish / PR readiness | #7, #17, #18, #27, #66, #116, #118, #119 | Active `guru-review-task-publication` 独占 publication semantic Gate；`ready` 唯一进入 active `guru-finalize-task`。Finalizer 用一次 semantic plan review/confirmation 覆盖 push、条件 verification、Draft PR、archive 与 Ready，并自动消费 stale/resume/reprepare route；五个平台 finish entry 只是 thin router。 |
+| P0 | Extension installation verification | #117, #118, #119 | Active `guru-verify-extension-installation` 独占 applicability、closed capability profile、adequacy、finding 与四出口；finalizer 仅从 `verification_required` 条件调用它，并自动承接 verified/task-bearing not-required。Deterministic runtime 只执行 remote-ref clean install、记录 machine facts、校验 schema/identity/freshness/redaction。 |
 | P1 | Preset installer 与平台 overlay | #9, #11 | preset 安装 companion assets 与平台入口，支持 overlay 选择，并保持 canonical / dogfood 同步。 |
 | P1 | 安装、升级、开箱验证 | #10, #27, #117 | README 非交互安装、throwaway install、update/reapply、production eval 和 Codex 默认 sub-agent 让新项目可开箱使用；真实 pushed-remote clean install 保持独立验收面。 |
 | P2 | Docs / spec / knowledge 协同 | #1, #9, #10, #57 | task artifact、durable docs、`.trellis/spec/`、中台知识引用、业务项目中文语言规则和公开安装文档协同。 |
@@ -117,14 +118,13 @@ unknown 或 mixed 1.2/1.3 Stage 0 graph 均失败关闭。Preset 以一次完整
 
 Production manifest 精确绑定 planning/check/commit 的十个 structured profiles、11 exits、
 per-exit output/example、consumer/projection、private artifact 与 eval cases；两个 manifests
-加后续完整 active rows 形成当前 12/46 closure。`committed` DTO 只含 `exit_id`、`task_ref`、`base_ref`、
+加后续完整 active rows 形成当前 13/52 closure。`committed` DTO 只含 `exit_id`、`task_ref`、`base_ref`、
 `committed_head`；#146 交付时由 placeholder 消费，#131 现切换为 active
 `guru-review-branch`，不改变三包/11 exits activation identity。
 Commit candidate builder 只物化 private plan并复用既有 validator/executor transaction。
 
-Planning revision self-reentry、check passed 到 initial commit、commit revision self-reentry，
-以及 commit `committed` 到 active Branch Review、Branch Review `passed` 到 active
-Task Publication Review 五条 edge 使用 target-owned
+Planning/check/commit/review/publication/finalization 的 mapped self-reentry、revision 与
+recovery edges 使用 target-owned
 `skill_input_authoring_seed`。Producer 只投影 minimal seed，
 caller AI 编写其余 required semantic fields；validator 证明字段分区无交集且完整、merge 无
 覆盖并通过完整 target schema。该 consumer kind 不新增 projection operation，也不允许
@@ -206,7 +206,7 @@ public-wrapper runner、deterministic/external-semantic/human 三边界，以及
 shared/Codex/Claude/Cursor 四个薄 adapter。#147 交付时，九个 production Skills 仍保持
 Interface 1.2 legacy；随后 #145 已迁移六个 Stage 0 production corpora 并完成其 24 exits
 coverage；#146 已完成 planning/check/commit 三包的 11-exit coverage，#131 将总 closure
-扩展为 10/39，#116 激活时扩展为 11/42，#117 当前再扩展为 12/46。
+扩展为 10/39，#116 扩展为 11/42，#117 扩展为 12/46，#118/#119 当前扩展为 13/52。
 四个 descriptor 必须绑定真实可执行 wrapper，并由 wrapper 从 `PATH` 检测 documented native
 command、组装平台 argv、加载 exact Skill/prompt/files、收集 public output/trace；隐藏
 executable 环境变量不能替代该公开安装路径。
@@ -222,19 +222,19 @@ projection、Skill/wrapper digest、wrapper result 和返回 DTO 不匹配或缺
 #131 把 Phase 3.5 分支审查收敛为 active `guru-review-branch` Interface 1.3
 closed-loop package。它拥有 qualification-first、finding/closure/final reviewer lifecycle
 和既有 review artifacts；workflow 只路由四个 typed exits。#131 时 active graph 为
-10 Skills/39 exits；#116 激活时为 11 Skills/42 exits；#117 当前 closure 为
-12 Skills/46 exits。#146 production migration 仍保持 3 Skills/11 exits 与原 activation id。
+10 Skills/39 exits；#116 激活时为 11 Skills/42 exits；#117 为 12 Skills/46 exits；
+当前 closure 为 13 Skills/52 exits。#146 production migration 仍保持 3 Skills/11 exits 与原 activation id。
 `passed` 以 target-owned authoring seed 进入 active #116，producer output bytes 保持不变。
 在 mandatory publication invocation 前，workflow caller 先编写 current task-local
 `pr-body.md` 与 `finish-summary-index.json` 候选；它不判断 publication readiness。
-Active `guru-review-task-publication` 保持唯一 semantic owner，Phase 3.7 不得在
-`ready` 后首次创建或修改这两份内容。只有
-`ready -> guru-finalize-task` 仍是 planned missing-Skill boundary。
+Active `guru-review-task-publication` 保持唯一 publication semantic owner，Phase 3.7
+不得在 `ready` 后首次创建或修改这两份内容。`ready -> guru-finalize-task` 已是唯一
+active finalization route。
 
 ## Publication Review Skill（#116）
 
-`guru-review-task-publication` 是 Branch Review `passed` 与 planned
-finalization 之间唯一 semantic owner。`publication_review` 由 #131 seed
+`guru-review-task-publication` 是 Branch Review `passed` 与 active finalization 之间唯一
+publication semantic owner。`publication_review` 由 #131 seed
 `task_ref/reviewed_head/review_ref` 与 caller-authored
 `profile/mode/review_intent` 合并；`publication_review_stale` 为未来
 finalization handback 预先拥有完整 target contract。
@@ -244,7 +244,7 @@ safety-deployment/finish-summary/metadata tail/freshness 做完整 AI review，
 metadata-only finding 在内部修订后 fresh re-review，其它 drift 返回 task work。
 唯一 `pr-readiness.json` 分离 semantic review、deterministic bindings 与 optional
 finalization `publish_inputs`。三 exits 为 `ready`、`return_to_task_work`、
-`blocked`；`ready` 只指向 planned `guru-finalize-task`。
+`blocked`；`ready` 只指向 active `guru-finalize-task`。
 
 ## Extension Installation Verification Skill（#117）
 
@@ -260,6 +260,6 @@ Skill 选择 closed capability matrix，覆盖 marketplace index、new install�
 preview/switch、preset apply/reapply、`trellis update`、sidecar、Skill contract discovery、
 Shared/Codex/Claude/Cursor byte identity、ownership、README command 与 redaction。
 Package-local real-wrapper production eval 与真实 pushed-remote clean installation 是两个
-独立验收面，任一不能替代另一项。#117 只拥有未来 #118
-`verification_required` target bootstrap；`guru-finalize-task` 仍为 planned，
-producer edge 由 #118/#119 后续 task 激活。
+独立验收面，任一不能替代另一项。Active finalizer 仅从自身
+`verification_required` route 调用 verifier，并自动承接 verified/task-bearing
+not-required；用户不选择 verifier exit 或 recovery command。

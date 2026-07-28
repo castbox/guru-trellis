@@ -160,7 +160,7 @@
         "migration_state": {"enum": ["active", "removed"]},
         "baseline_sha256": {"$ref": "#/$defs/sha256"},
         "current_payload_sha256": {
-          "description": "Reviewed current bytes for the five active Issue #131 continue entries, updated by #116 for the active publication route; baseline_sha256 remains the immutable Issue #128 historical identity.",
+          "description": "Reviewed current bytes for the five active Issue #131 continue entries and eight AI-first agent entries reviewed by Issue #161; baseline_sha256 remains the immutable Issue #128 historical identity.",
           "$ref": "#/$defs/sha256"
         },
         "generated_in_clean_init": {"type": "boolean"},

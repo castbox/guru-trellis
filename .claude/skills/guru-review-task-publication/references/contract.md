@@ -33,14 +33,23 @@ affected artifacts, route, status, and closure evidence. The AI chooses
 
 Only `pr-body.md`, `finish-summary-index.json`, and contract-listed
 Issue-Scope-Ledger publication metadata are eligible for internal revision.
-After revision, reread/rescan and repeat all ten dimensions. Any source, test,
-durable docs, spec, workflow, schema, config, preset, CI/CD, deployment, or
-Branch Review drift returns to task work.
+After revision, reread all twelve objective preconditions, recompute the changed
+artifacts, and re-review only dimensions whose declared evidence dependencies
+changed. The freshness reread is not a demand to repeat unrelated semantic
+analysis. Carry forward an unchanged dimension only after its evidence bindings
+remain byte-identical and current; the gate still contains all ten dimensions.
+Any source, test, durable docs, spec, workflow, schema, config, preset, CI/CD,
+deployment, or Branch Review drift returns to task work.
+
+The Phase 2 result is the publication owner's implementation and Docs SSOT
+evidence. Agent terminal output may be consumed while Phase 2 is authored, but
+publication never requires a separate `implementation-handoff.md` transcription.
 
 The repository status binding uses one closed publication allowlist. It reuses
 Branch Review's exact `agent-assignment.json`, `review.md`, `review-gate.json`,
-assignment-referenced `reviews/*.md`, and sole current-HEAD completed
-`task-commit-plans/NNN.json` entries, then adds only
+assignment-referenced `reviews/*.md`, and every completed
+`task-commit-plans/NNN.json` whose recorded commit is an ancestor of current
+HEAD, then adds only
 `issue-scope-ledger.json`, `pr-body.md`, and `finish-summary-index.json`.
 `pr-readiness.json` is the recorder-owned artifact and is excluded from its own
 repository snapshot. A runtime path is allowed only when it is the current

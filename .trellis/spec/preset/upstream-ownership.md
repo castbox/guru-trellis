@@ -31,9 +31,11 @@ Categories are mutually exclusive. Similar wording, a substring containing
 `transitional_legacy/active`:
 
 - its canonical overlay path must exist;
-- its bytes must match `baseline_sha256`, except for the exact five active
-  `trellis-continue` entries reviewed by issue #131, whose current bytes must
-  match their separately pinned `current_payload_sha256`;
+- its bytes must match `baseline_sha256`, except for the exact reviewed
+  current-payload allowlist: five `trellis-continue` entries from issue #131
+  plus eight AI-first implement/check agent entries and five thin
+  `trellis-finish-work` entries from issue #161, whose current bytes must match
+  their separately pinned `current_payload_sha256`;
 - it must not be renamed, replaced, or supplemented with another upstream
   namespace overlay;
 - its replacement owners, blocking issues, removal issue, clean-init fact, and
@@ -46,14 +48,30 @@ unchanged after the first or any later removal. Validation always compares the
 inventory projection with this identity. The baseline aggregate remains the
 immutable issue #128 historical payload identity.
 
-Issue #131 does not rewrite that history. It adds a reviewed current-payload
-binding only for these five still-active transitional entries:
+Issues #131 and #161 do not rewrite that history. They add reviewed
+current-payload bindings only for eighteen still-active transitional entries:
 
 - `.agents/skills/trellis-continue/SKILL.md`;
 - `.codex/prompts/trellis-continue.md`;
 - `.codex/skills/trellis-continue/SKILL.md`;
 - `.claude/commands/trellis/continue.md`;
 - `.cursor/commands/trellis-continue.md`.
+
+Issue #161 additionally binds the implement/check pair for Claude, Codex,
+Cursor, and channel runtime:
+
+- `.claude/agents/trellis-{implement,check}.md`;
+- `.codex/agents/trellis-{implement,check}.toml`;
+- `.cursor/agents/trellis-{implement,check}.md`;
+- `.trellis/agents/{implement,check}.md`.
+
+Issue #161 also binds the existing finish entry for each supported platform:
+
+- `.agents/skills/trellis-finish-work/SKILL.md`;
+- `.codex/prompts/trellis-finish-work.md`;
+- `.codex/skills/trellis-finish-work/SKILL.md`;
+- `.claude/commands/trellis/finish-work.md`;
+- `.cursor/commands/trellis-finish-work.md`.
 
 The validator pins the exact allowlist and each current digest independently,
 uses those digests when checking current overlay bytes, and reports a separate
@@ -94,7 +112,7 @@ The reviewed replacement families are:
 
 - intake, start, and task-context behavior: `guru-create-task-workspace` / #112;
 - planning artifacts and approval: `guru-approve-task-plan` / #129;
-- Phase 2 implementation handoff and check: `guru-check-task` / #130;
+- Phase 2 embedded implementation evidence and check: `guru-check-task` / #130;
 - post-commit Branch Review: `guru-review-branch` / #131;
 - finish/publication behavior: `guru-review-task-publication`,
   `guru-verify-extension-installation`, and `guru-finalize-task` / #119.
@@ -196,7 +214,7 @@ all semantic ownership and migration judgments.
 ## Update And Upgrade Responsibility
 
 Activating `guru-check-task` must leave the frozen 43-entry transitional
-inventory byte-for-byte unchanged. Its registry/package/platform copies,
+path/baseline identity unchanged. Its registry/package/platform copies,
 schema, wrappers, tests, and manifest entries are Guru-owned additive assets;
 official `trellis-check` assets remain upstream-owned evidence workers and are
 never patched to become the Guru semantic owner.
@@ -205,9 +223,9 @@ Trellis update owns generated files through `.trellis/.template-hashes.json`
 and its overwrite/keep/`.new` conflict choices. The Guru Team preset may keep
 installing only the 43 frozen transitional paths until their reviewed
 replacements and issue #132 removal complete. Current bytes are the historical
-baseline for 38 paths and the issue #131 reviewed current binding for the five
-continue entries. A successful `trellis update` does not authorize changing
-either binding or adding another upstream patch.
+baseline for 25 paths and the issue #131/#161 reviewed current bindings for
+eighteen continue/agent/finish-router entries. A successful `trellis update` does not
+authorize changing either binding or adding another upstream patch.
 
 Unknown target-repository edits continue to receive `.new`; known managed Guru
 Team asset upgrades may produce `.bak`. The ownership validator does not
@@ -225,7 +243,7 @@ Before changing preset ownership facts:
 4. run positive and negative ownership tests;
 5. run installer, dogfood, and throwaway validation;
 6. prove both workflow files and every overlay payload match its reviewed
-   baseline or exact five-path current binding.
+   baseline or exact thirteen-path current binding.
 
 ## Eval Infrastructure Ownership
 
@@ -271,21 +289,25 @@ consumer schemas, public wrappers, canonical corpora, and native owner fixtures
 are Guru-owned additive preset assets. They do not alter the frozen Stage 0
 manifest or the immutable issue #128 path/baseline identity. Registry,
 extension, installed provenance, and platform copies may change only as the
-atomic production activation projection of those canonical assets. Issue #131
-separately binds current bytes for only the five active continue entries.
-The Interface 1.3 `skill_input_authoring_seed` shape, the five target-owned
+atomic production activation projection of those canonical assets. Issues
+#131/#161 separately bind current bytes for only the eighteen reviewed
+continue/agent/finish-router entries.
+The Interface 1.3 `skill_input_authoring_seed` shape, the twelve target-owned
 authoring examples, and their deterministic partition/merge probes are part of
-that same Guru-owned additive package graph. They do not expand the frozen
-overlay set or claim an upstream-managed platform entry.
+the Guru-owned additive package graph. The production/review chain supplied the
+first five handoffs and active `guru-finalize-task` supplies the seven
+finalization-family handoffs. They do not expand the frozen overlay set or claim
+an upstream-managed platform entry.
 
 The `guru-review-branch` package, its public contracts/evals, shared consumers,
-runtime integration, registry and planned publication identity are likewise
+runtime integration, registry and publication consumer identity are likewise
 Guru-owned additive assets. Independent review must dispatch the unchanged
 upstream check/review agent. The package owns the prompt and qualification
 contract; it never overlays or patches upstream `trellis-check` files. The
 ownership validator must continue to report the frozen 43-path set and
 historical identity unchanged while validating the five reviewed current
-continue payloads separately.
+continue payloads and the thirteen issue #161 agent/finish-router payloads
+separately.
 
 The `guru-review-task-publication` package, its public/private schemas,
 consumer schemas, eval corpus, shared runtime commands, registry/extension
@@ -296,10 +318,16 @@ five continue paths so they prepare task-local publication content and invoke
 the active owner; it does not add an overlay path or change any immutable
 baseline digest.
 
-`guru-finalize-task` remains a planned registry identity only. Issue #116 does
-not implement #118 finalization and does not modify or overlay upstream
-`trellis-finish-work` family assets. Their later integration/removal ownership
-remains with #119/#132. Ownership validation must therefore preserve the
-frozen overlay inventory and exact current payload hashes.
-Those current hashes bind the #116 active route; only the later
-`ready -> guru-finalize-task` edge remains a planned missing-Skill boundary.
+`guru-finalize-task` is an active Guru-owned additive package and the semantic
+owner of its seven-profile, six-exit closeout loop. The current package graph is
+thirteen active Skills and 52 external exits, with twelve target-owned
+`skill_input_authoring_seed` handoffs. Global workflow markers are 13 invokes,
+52 exits, and 29 targets. This integration does not claim #119 combined
+acceptance.
+
+Issue #161 revises only the reviewed current bytes of the five existing
+`trellis-finish-work` family entries so they thin-route to the active semantic
+owners. Ownership validation must preserve the frozen overlay inventory,
+historical baseline hashes, and exact reviewed current payload hashes; #132 remains the
+sole owner of physical upstream overlay cleanup. Package activation therefore
+does not authorize #119 closure or #132 removal.

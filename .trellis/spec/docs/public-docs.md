@@ -341,8 +341,9 @@ machine-local hidden state.
 
 All three public README files describe `production-minimal-handoff-v1` as a
 separate atomic unit containing planning, check, and commit with ten profiles
-and 11 exits. They state that all twelve active packages now use Interface 1.3
-`minimal_handoff`, the combined current closure is 12-by-46, and the Stage 0
+and 11 exits. They state that all thirteen active packages use Interface 1.3
+`minimal_handoff`, the current package closure is 13-by-52, the integrated global
+workflow closure is 13 invokes, 52 exits, and 29 targets, and the Stage 0
 manifest remains frozen at 6-by-24. They publish discovery, invocation, eval,
 pre-#146 upgrade, update/reapply, and drift-validation commands.
 
@@ -353,9 +354,9 @@ consumer while keeping the #146 committed seed shape unchanged. They state that
 approval/check/commit/review artifact bodies, and do not present eval
 `expected_exit` as a production input.
 
-The docs also name target-owned `skill_input_authoring_seed` for exactly the
-planning self-reentry, check-to-commit, commit self-reentry, and
-commit-to-review edges. They
+The docs also name target-owned `skill_input_authoring_seed` for the complete
+set of twelve semantic handoffs: the five production/review/publication edges
+and the seven finalization-family edges. They
 explain that producer projection supplies only minimal seed fields, the caller
 AI authors every remaining required semantic field, validation proves a
 disjoint exact required-field partition and a no-overwrite full-schema merge,
@@ -369,7 +370,7 @@ that the existing target must be regular and trackable, a successful
 different-byte replacement records `superseded_snapshot_sha256`, failed
 pre-write validation preserves prior bytes, and same-byte retry is idempotent.
 
-Public READMEs describe twelve active Skills and 46 exits, identify
+Public READMEs describe thirteen active Skills and 52 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -380,10 +381,10 @@ They also state that Branch Review `passed` points to active
 `guru-review-task-publication` through the target-owned authoring seed. The
 workflow caller authors initial task-local `pr-body.md` and
 `finish-summary-index.json` candidates before invocation without deciding
-readiness; only publication `ready` points to planned `guru-finalize-task` and
-fails closed until #118 activates it. The production migration identity and
-three-Skill/11-exit membership remain unchanged even though its
-authoring-seed inventory grows to four.
+readiness; publication `ready` points to active `guru-finalize-task` through the
+integrated global invocation. The production migration identity and three-Skill/11-exit membership
+remain unchanged; the current package graph contains twelve target-owned
+authoring handoffs without rewriting that manifest.
 
 ## Task Publication Review Documentation
 
@@ -391,9 +392,10 @@ All three public README files describe active Interface 1.3 semantic
 `guru-review-task-publication`, its two target-owned input profiles, runtime
 commands `record-task-publication-review` /
 `check-task-publication-review`, public dispatcher invocation, and three
-minimal exits. They state that `ready` targets planned
-`guru-finalize-task`, `return_to_task_work` repeats implementation through
-Branch Review, and `blocked` stops.
+minimal exits. They state that `ready` targets active, globally integrated
+`guru-finalize-task`;
+`return_to_task_work` repeats implementation through Branch Review, and
+`blocked` stops.
 
 Docs identify task-local `pr-readiness.json` as the sole semantic gate under
 schema `guru-task-publication-readiness-1.0`, distinguish AI review,
@@ -402,7 +404,9 @@ deterministic current bindings, and optional finalization-owned
 cannot pass. They do not expose artifact bodies or duplicate the package's
 ten-dimension review and metadata revision procedure.
 
-README closure numbers are twelve active Skills and 46 exits. The separate
+README package closure numbers are thirteen active Skills and 52 external exits;
+global workflow markers remain 13 invokes, 52 exits, and 29 targets.
+The separate
 `production-minimal-handoff-v1` remains three Skills/11 exits; the Stage 0
 manifest remains six Skills/24 exits. The #131 `passed` bytes remain unchanged
 while its target-owned authoring partition is documented.
@@ -414,15 +418,18 @@ All three public README files name active Interface 1.3 semantic
 `standalone_verification` inputs, runtime commands
 `execute-extension-verification`, `record-extension-verification`,
 `check-extension-verification`, and `invoke-extension-verification`, and four
-minimal exits. They state that `verified` / `not_required` target planned
-`guru-finalize-task`, `return_to_task_work` repeats Phase 2 and downstream
+minimal exits. They state that workflow `verified` and reachable task-bearing
+standalone `not_required` target active `guru-finalize-task`, while the
+workflow-shaped not-required schema branch remains compatible but unreachable
+from a workflow applicability conflict. `return_to_task_work` repeats Phase 2 and downstream
 review, and `blocked` stops.
 
 Docs explain that the package owns applicability, capability profile, adequacy,
 findings, and route. Changed paths, successful commands, checker pass, and
 production eval are facts only. A workflow-required target cannot silently
-return `not_required`; an applicability conflict blocks. #117 publishes the
-future target bootstrap but does not activate the #118 producer edge.
+return `not_required`; an applicability conflict blocks. #117 owns the target
+input contract, and active finalizer producer/consumer edges bind it without
+activating the #119 global Finish route.
 
 The READMEs distinguish task-bearing
 `marketplace-verification.json` from taskless session-only owner state, name the
@@ -435,11 +442,33 @@ and redaction.
 Public validation text treats package-local real-wrapper production eval and
 real pushed-remote clean installation as independent acceptance surfaces. It
 must not claim the remote-ref gate passed when only local or public stable
-marketplace sampling ran, and must not imply that #118, #119, or #132 was
-implemented.
+marketplace sampling ran, and must not imply that #119 global integration or
+#132 upstream overlay cleanup was implemented.
 
 Install/update text requires canonical/installed/shared/Codex/Cursor/Claude
 byte identity, source and installed validation, real-wrapper eval, workflow
 consumer uniqueness, preset reapply after `trellis update`, dogfood drift, and
 zero unresolved `.new`/`.bak`. It explicitly leaves remote branch marketplace
-verification to finish-work and does not claim #118, #119, or #132 completion.
+verification to finish-work and does not claim #119 integration or #132 cleanup
+completion.
+
+## Task Finalization Documentation
+
+All three public README files name active Interface 1.3 semantic
+`guru-finalize-task`, its seven distinct public input profiles, six `exit_id`
+outputs, owner-private closeout/gate/recovery facts, exact digest confirmation,
+and reuse of the existing #105 deterministic transaction engine. They state
+that scripts execute, validate, and record only after AI review and any required
+human confirmation; scripts do not choose plan, scope, readiness, recovery
+route, or semantic pass.
+They distinguish the preserved workflow-compatible not-required profile from
+the reachable task-bearing standalone #117 edge. That edge publishes only
+`repo_ref/resolved_head/verification_ref`; the finalizer target authors
+`profile/mode/task_ref`, binds current task-local evidence to the private plan,
+and does not expose plan identity in the producer handoff.
+
+The READMEs describe the current package graph as thirteen active Skills and 52
+external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
+They identify the integrated global workflow projection as 13 invokes, 52 exits,
+and 29 targets. This does not claim #119 combined acceptance or #115 closure;
+#132 owns physical upstream overlay cleanup.

@@ -741,18 +741,20 @@ Neither command classifies scope, authors message semantics, chooses a route,
 pushes, or rewrites history; broad `git add`, automatic reset, stash, amend,
 rebase and force operations are prohibited.
 
-`finish-work.sh` is an internal helper, not the normal user path. It must reject ordinary direct calls before closeout-plan,
-push, draft PR, archive, or publish side effects; only the explicit
-`trellis-finish-work` entrypoint may pass the `--from-trellis-finish-work`
-intent marker. `publish-pr` is retained only as an unconditional compatibility
-blocker: it performs no repo/task resolution or side effect and points callers
-to `trellis-finish-work`. Every interruption is resumed through that same
-state-aware entry.
+`finish-work.sh` is an internal helper, not the normal user path. It must reject
+ordinary direct calls before closeout-plan, push, draft PR, archive, or publish
+side effects; only `guru-finalize-task`'s checked private transition executor
+may pass the `--from-trellis-finish-work` intent marker. `publish-pr` is retained
+only as an unconditional compatibility blocker: it performs no repo/task
+resolution or side effect and points callers to `trellis-finish-work`. Every
+interruption returns through the same finalizer semantic loop and its mapped
+recovery consumer.
 
-Finish-summary separates AI judgment from deterministic facts. The explicit
-finish entry writes task-local `finish-summary-index.json` with reviewed
-problem/outcome/behavior/surface/contract/search-term judgment and passes it via
-`--finish-summary-index-file`. The companion rejects factual issue/PR/branch/path
+Finish-summary separates AI judgment from deterministic facts. Publication
+preparation writes task-local `finish-summary-index.json` with reviewed
+problem/outcome/behavior/surface/contract/search-term judgment; the finalizer's
+private engine passes it via `--finish-summary-index-file`. The companion
+rejects factual issue/PR/branch/path
 fields in that input, injects task/Git/ledger/artifact/time facts, derives
 `retrieval_text`, and validates the strict shared schema. Dry-run and formal
 finish call the same `prepare_closeout()` pipeline. Dry-run returns the
@@ -1198,7 +1200,8 @@ metadata is outside that projection; Phase 2 agent/recovery drift is not. The
 Branch Review Gate still validates and records the complete current assignment.
 Any uncovered non-metadata committed path or current non-metadata dirty path
 must block the gate instead of encouraging a post-commit Phase 2 re-record.
-If the same assignment file is listed in implementation handoff artifacts, the
+If the same assignment file is listed in the embedded
+`implementation_handoff` collection, the
 post-commit audit preserves its recorded raw digest only for that legal
 ancestor-HEAD audit and relies on the stable projection for freshness. This is
 an ordinary metadata-tail compatibility rule, not a hostile-tamper exception.
@@ -1533,3 +1536,26 @@ path, the augmentation revalidates all twelve entries and accepts only the
 corresponding repository binding plus derived
 `review_range_and_working_tree` digest change; all other entries remain exact
 and passed.
+
+## Task Finalization Recorder, Checker, Executor, And Invocation
+
+Stable commands are `preview-finalization`, `record-finalization-gate`,
+`check-finalization-gate`, `execute-finalization-transition`, and the package
+`scripts/invoke.sh`. The recorder and executor may validate a pending transition
+route; public invocation always reruns strict route validation and never calls
+the transition executor implicitly.
+
+The generic extension-verification checker stays unchanged. A separate
+finalizer-owned compatibility checker may consume #117 evidence after a normal
+metadata tail only when the owner task/plan/reviewed-HEAD/repository seed, remote
+ref, immutable evidence allowlist, validated evidence commit, committed archived
+plan/evidence blobs, and exact archive transaction all match. It rejects every
+additional dirty path or identity/commit drift.
+
+`verification_required.repo_ref` must equal the immutable plan repository.
+`resume_finalization` accepts only declared same-plan post-content recovery
+states; `prepared`, reprepare/stale state, and terminal `ready` are invalid. A
+tracked `published` gate stores only the private executor marker. After the
+archive transaction and ready PR are objectively complete, public invocation
+materializes the DTO in memory with the exact archive locator and canonical PR
+identity; it never rewrites the gate with that public DTO.

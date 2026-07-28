@@ -53,7 +53,7 @@
     },
     {
       "id": "stale-reentry-ready",
-      "prompt": "Re-enter through the stale profile, rerun all publication dimensions, and emit a fresh ready handoff.",
+      "prompt": "Re-enter through the stale profile, reread objective preconditions, re-review only directly affected publication dimensions, and emit a fresh ready handoff.",
       "expected_exit": "ready",
       "expected_output": "The stale profile produces a new checked publication identity.",
       "input_profile_id": "publication_review_stale",
@@ -64,7 +64,7 @@
     },
     {
       "id": "metadata-fix-fresh-ready",
-      "prompt": "Revise only task-local publication metadata, rerun the complete semantic review, and emit ready.",
+      "prompt": "Revise only task-local publication metadata, re-review directly affected dimensions while carrying forward unchanged current evidence, and emit ready.",
       "expected_exit": "ready",
       "expected_output": "The closed metadata finding remains private and the public DTO stays minimal.",
       "input_profile_id": "publication_review",

@@ -54,9 +54,10 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request` 与
 `guru-create-task-workspace`、`guru-approve-task-plan`、`guru-check-task`、
-`guru-create-task-commit`、`guru-review-branch`、
-`guru-review-task-publication`、`guru-verify-extension-installation`。这十二个
-active packages 共声明 46 个 external exits。Workflow 不得为
+`guru-create-task-commit`、`guru-finalize-task`、`guru-review-branch`、
+`guru-review-task-publication`、`guru-verify-extension-installation`。这十三个
+active packages 共声明 52 个 external exits；finalizer 的 global integration
+metadata 为 integrated。Workflow 不得为
 reserved/planned id 伪造 invocation route。当前 canonical
 extension version 是待发布的 `0.6.5-guru.23`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
@@ -66,7 +67,8 @@ I/O 的 minimal handoff target。Registry 1.1 的 active row exact 声明
 `interface_schema_id` 与 `io_contract_state`，合法组合只有 `1.2+legacy` 和
 `1.3+minimal_handoff`。`stage0-minimal-handoff-v1` 已原子迁移六个 Stage 0 packages
 与 24 exits；独立 `production-minimal-handoff-v1` 已原子迁移 planning/check/commit
-三包、十个 profiles 与 11 exits。当前 active closure 为 12/46 且 `legacy_skill_ids=[]`；
+三包、十个 profiles 与 11 exits。当前 package closure 为 13/52 且
+`legacy_skill_ids=[]`；global workflow marker closure 为 13/52/29，
 Stage 0 manifest identity 保持 6/24。两版均保留 `workflow` / `standalone` mode id 和必填
 `judgment_mode`，并以
 `routing=global_workflow|direct_discovery` 区分 mandatory route 与平台直接发现。
@@ -79,19 +81,32 @@ global workflow caller 只负责从 current reviewed evidence 编写 task-local
 `pr-body.md` 与 `finish-summary-index.json` 初始候选；它不判断充分性、Issue
 closure、十维结论、finding route 或 ready。Active publication Skill 仍是唯一
 semantic owner，缺失或结构错误先失败关闭。Phase 3.7 只消费 `ready` 已绑定的
-content bytes，不得首次创建或修改；只有
-`ready -> guru-finalize-task` 仍停在 planned missing-Skill boundary。
+content bytes，不得首次创建或修改。`guru-finalize-task` package、public edge 与
+global invocation 已 integrated；`ready` 直接进入同一 closeout loop。
 
-Active `guru-verify-extension-installation` 独立拥有 future
+Active `guru-verify-extension-installation` 独立拥有
 `verification_required` target bootstrap 与 standalone
 `standalone_verification` input。#117 只发布 target schema/example/eval 和四出口
-contract；本 workflow 不激活 #118 producer edge，因此 publication `ready` 仍不能到达
-该 invocation。其 `verified` / `not_required` 指向 planned finalizer，
+contract；active finalizer 已拥有 producer edge，workflow 将
+`verification_required` 自动路由给 verifier。其 workflow `verified` 与可达的 task-bearing standalone
+`not_required` 指向 active finalizer；后者投影 repo/resolved HEAD/verification ref，
+task identity 由 target author，private plan 不进入 DTO。
 `return_to_task_work` 回 Phase 2，`blocked` 停止。Skill 内部 AI 独占
 applicability、closed capability profile、adequacy、finding 和 route；workflow 只拥有
 marker、consumer 和 fail-closed transition。
 
-五条 semantic package handoff 使用 additive target-owned
+Active `guru-finalize-task` 是完整 closeout 的 step-local semantic owner。七个
+distinct profiles 承接 publication、verified/workflow-compatible not-required、
+可达的 task-bearing standalone not-required、same-plan resume、cross-month
+reprepare 与 standalone；六个 outputs 统一使用 `exit_id`。
+Immutable plan、exact confirmation、PR/archive/recovery facts 与内部 transaction
+states 全部 private。Deterministic runtime 只复用 #105 engine 执行 content push、
+verification boundary、唯一 Draft PR、final projection、official archive transaction、
+三方 HEAD equality 与 draft-to-ready。Missing/stale publication evidence由 #116 owner
+checker 形成客观 fact，再由 AI 选择 `publication_review_stale`；runtime 不代替 route
+judgment。该集成不自动关闭或重写 #119；#119 的 combined acceptance 需另行处理。
+
+十二条 semantic package handoff 使用 additive target-owned
 `skill_input_authoring_seed`：planning revision self-reentry、Phase 2 passed 到 initial
 commit、commit revision self-reentry、commit `committed` 到 active Branch Review，
 以及 Branch Review `passed` 到 active Task Publication Review。
@@ -671,22 +686,21 @@ Branch Review Gate、agent assignment recorder 与 publish helper 是内部子�
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
-.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
-  --finish-summary-index-file ".trellis/tasks/<task>/finish-summary-index.json" \
-  --body-file ".trellis/tasks/<task>/pr-body.md" \
-  --dry-run
-.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
-  --finish-summary-index-file ".trellis/tasks/<task>/finish-summary-index.json" \
-  --body-file ".trellis/tasks/<task>/pr-body.md" \
-  --expected-plan-digest "<closeout_plan_digest>"
 ```
 
-Sub-agent wait / stale / termination policy is part of the workflow contract,
-not a hidden script decision. `wait_agent`, `trellis channel wait`, or
+Closeout 不属于这组可手动调用的 recorder/validator 命令。显式
+`trellis-finish-work` entry 必须按 live workflow 进入 publication owner 和 active
+finalizer；只有 finalizer 的 checked private engine 可以执行 finish helper。
+
+Exceptional sub-agent recovery policy is part of the workflow contract, not a
+hidden script decision. Routine dispatch does not start this protocol.
+`wait_agent`, `trellis channel wait`, or
 equivalent timeout only means the current wait window ended without a final
 completion event. It does not prove the agent is stuck, failed, or ready to
-stop. The main session must use `record-subagent-liveness-event.sh` and
-`check-subagent-liveness.sh` as the active status/liveness path.
+stop. When a real failed, unfinished, interrupted, stale-cutover, resume, or
+replacement case activates recovery, the main session uses
+`record-subagent-liveness-event.sh` and `check-subagent-liveness.sh`; routine
+waits do not invoke them.
 
 `agent-assignment.json` schema 1.2 is the single task-local assignment,
 status/liveness, and review ledger. It contains `agents[]`, `status_events[]`,
@@ -695,15 +709,18 @@ append-only `event_corrections[]`, and `recovery_links[]`. Corrections
 digest-bind one existing progress/status-request row and exclude it from the
 effective projection; recovery links connect only same-agent failed-to-manual
 termination events and still require a real replacement `completed` chain.
-Non-machine-readable progress such as explicit messages, tool activity,
-command output, platform progress events, or status responses must be recorded
-to `status_events[]` before checker can use it as evidence. The checker is a
+During exceptional recovery, non-machine-readable progress such as explicit
+messages, tool activity, command output, platform progress events, or status
+responses may be recorded to `status_events[]` when the checker must use it as
+evidence. Routine progress is not transcribed. The checker is a
 short-lived, single-sample command; it reads task/source checkout snapshots and
 progress event digest, returns one decision, and exits. It does not read
 platform UI, send status requests, terminate agents, or judge implementation
 quality.
 
-Default timing: `progress_scan_interval=120s` controls scan cadence.
+Exceptional recovery parameters: `progress_scan_interval=120s` is the minimum
+interval for interpreting an explicitly requested re-sample; it does not start
+a fixed polling cadence or require another invocation.
 `max_progress_silence=180s` is measured from `progress_anchor_at`.
 `status-requested` does not refresh that anchor or extend
 `max_progress_silence_deadline_at`. Only `status_request_required` authorizes
@@ -764,17 +781,18 @@ AI check 的入口；commit 后 Branch Review Gate 会审计后续提交
 匹配当前 HEAD 而在 task work commit 后重录 Phase 2，除非提交后又出现新的非 metadata
 改动或 evidence 已失效。
 
-V2 schema/checker 要求 provenance、handoff、durable paths、reviewed paths、commands
+V2 schema/checker 要求 provenance、embedded implementation evidence、durable paths、reviewed paths、commands
 与 adequacy evidence refs 非空并覆盖全部 known current-round source；current/scope-change
 candidate 必须带 trigger refs。Checker 重算 execution/scope/adequacy、全部 Gate binding、
-finding count 与 full-round digest。若 handoff 包含 task-local assignment，合法 post-commit
+finding count 与 full-round digest。若 embedded evidence 包含 task-local assignment，合法 post-commit
 review assignment/status/completed/round tail 由 stable Phase 2 projection 复核，Phase 2
 implementation/check/recovery drift 仍 fail closed。
 
-Phase 2 必须消费 planning 阶段的 `Docs SSOT Plan`。实现代理需要在 handoff 中说明
-plan strategy、durable docs 同步结果、task delta merge、task-history-only 内容、
-`no_docs_update_needed` 理由或 `bootstrap_or_repair_docs` follow-up / PR 限制，以及哪些实现输入
-来自 durable docs、哪些来自已确认 task delta。`trellis-check` 需要按同一策略复核 durable docs、
+Phase 2 必须消费 planning 阶段的 `Docs SSOT Plan`。实现代理只返回最小 terminal result：
+material changed behavior/paths、验证结果，以及确有必要的 Docs SSOT outcome 或 bounded follow-up；
+不得重写 planning、生成 next-owner checklist 或创建独立 handoff artifact。`guru-check-task`
+由 approved plan、task artifacts、implementation terminal result、embedded evidence、live diff 与测试事实
+重建完整判断，并按同一策略复核 durable docs、
 task artifacts、code/schema/config/deploy/test 和验证/测试覆盖是否一致；`delta_first` 必须在最终
 Phase 2 check 前完成 durable docs merge，`ssot_first` 必须以修订后的 durable docs 为主要输入。
 如果实现发现长期合同变化超出 plan，必须先更新 planning artifacts 和 `Docs SSOT Plan`，必要时重新
@@ -782,8 +800,8 @@ planning approval，再重新 Phase 2 check。
 
 Codex 项目默认使用 `codex.dispatch_mode: sub-agent`，由 main session 调度
 `trellis-implement` / `trellis-check`。默认 sub-agent mode 下，main session 只负责
-规划、调度、等待/恢复/替换、记录 evidence、commit 和运行 recorder/validator；实现必须由
-`trellis-implement` / channel `implement` 完成并输出 handoff，Phase 2 check 必须由
+规划、调度、等待、必要时处理异常恢复/替换、记录 Gate evidence、commit 和运行 recorder/validator；实现必须由
+`trellis-implement` / channel `implement` 完成并输出最小 terminal result，Phase 2 check 必须由
 `trellis-check` / channel `check` 完成并输出可记录到 `phase2-check.json` 的 evidence，
 commit 后 Branch Review 必须由独立 review sub-agent 审查完整 `origin/<base>...HEAD`
 diff 并输出 `reviews/*.md` raw reports 与最终 `review.md` rollup。main session 自己实现、自检、自审或脚本校验通过都不能替代这些
@@ -825,12 +843,13 @@ Phase 2 的官方 `trellis-check` sub-agent 仍只提供 commit 前 raw evidence
 
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
 `finish-work`，也不得提交 `review.md` / `reviews/*.md` / `review-gate.json` 等 Trellis metadata。
-PR 发布只发生在显式 `trellis-finish-work` 入口。dry-run 输出完整 immutable
-`closeout_plan` 与 `closeout_plan_digest`；正式执行必须原样传入该 digest，并在首个副作用前
-重建校验。随后按 reviewed content push、marketplace evidence/readiness commit、draft PR、
-final archive projection、单次 archive metadata commit/push、三方 HEAD 对齐、draft-to-ready
-推进。裸 `finish-work.sh` 默认拒绝普通直接调用，`publish-pr.sh` 无条件作为兼容入口
-阻断；中断只重跑同一个 `trellis-finish-work`，不暴露内部 recovery flag。
+PR 发布只从显式 `trellis-finish-work` 薄入口开始：该入口先按 live workflow 调用
+`guru-review-task-publication`，仅从 `ready` 进入 `guru-finalize-task`。Finalizer 的私有
+preview 生成 immutable `closeout_plan` 与 digest，语义 Gate 完成精确副作用确认后才执行
+reviewed content push、marketplace evidence/readiness commit、draft PR、final archive
+projection、单次 archive metadata commit/push、三方 HEAD 对齐与 draft-to-ready。裸
+`finish-work.sh` 默认拒绝普通直接调用，`publish-pr.sh` 无条件阻断；中断由同一 finalizer
+自动消费 recovery route，不暴露内部 flag 或要求用户选择下一条命令。
 Prepare 使用已安装的官方 config parser，只支持缺失或空 `hooks.after_archive`；
 非空、歧义、不可读、含 NUL 或 symlink 配置在副作用前拒绝，且不会执行 hook。
 official move 前重新核对实时 archive 月份、空 index、精确 untracked 集合、regular-file/mode
@@ -847,8 +866,8 @@ source、tests、schema、config、scripts、preset、overlay、CI/CD、deployme
 Makefile 等 non-metadata drift 必须回到 Phase 2/3。finish-work dry-run 和正式 finish 都不做
 首次 Docs SSOT merge。
 
-`finish-work.sh --dry-run --from-trellis-finish-work` 是无副作用 readiness preview：
-它校验 gate、dirty state、AI-authored `finish-summary-index.json` 和 PR body/readiness，
+Finalizer 的 private preview 是无副作用 readiness step：它校验 gate、dirty state、
+AI-authored `finish-summary-index.json` 和 PR body/readiness，
 并输出 canonical plan、digest、future archive mapping、metadata allowlist 与 transitions，
 不移动或写入文件、不创建 commit、不 push、不创建 PR，且没有 journal/workspace 计划。
 dry-run 回复使用 active task 的 `Markdown 产物 review 表`；正式 archive 后，AI 必须
@@ -861,16 +880,11 @@ AI 在调用 finish helper 前必须生成或审查 body readiness，确认 `变
 diff range / findings 状态、`Issue 关闭范围` 只关闭 ledger 中的 `close_issues`，并且
 `安全说明` / 部署影响与本次 diff 相符。Body 还必须包含 `Docs SSOT` / `文档同步`
 section，说明策略、durable docs 更新或 no-update 理由、已 merge 的 task delta、仅保留
-task history 的内容，以及 follow-up / 当前 PR limitation。finish-work 必须把审阅后的 Markdown
-body 存成当前 task-local `pr-body.md` 并以 `--body-file` 传入；从 repo root 到 task
+task history 的内容，以及 follow-up / 当前 PR limitation。Publication preparation 必须把
+审阅后的 Markdown body 存成当前 task-local `pr-body.md`，finalizer 的 private engine 只消费
+这份 current body；从 repo root 到 task
 目录和最终文件的每个现存 path component 都必须不是 symlink。它拒绝 `--body-artifact`、
-外部/alias 路径、dangling/loop symlink，以及仅在 trim/末尾换行/Markdown hard-break 空格上等价的替代内容：
-
-```bash
-.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
-  --finish-summary-index-file .trellis/tasks/<task>/finish-summary-index.json \
-  --body-file .trellis/tasks/<task>/pr-body.md
-```
+外部/alias 路径、dangling/loop symlink，以及仅在 trim/末尾换行/Markdown hard-break 空格上等价的替代内容。
 
 AI-authored `finish-summary-index.json` accepts at most 19 `contract_changes`;
 the final schema accepts 20 so the recorder can append the fixed filtering fact.
@@ -885,8 +899,17 @@ finish-work 先绑定唯一 draft PR，再在 active task 中一次构建包含 
 只追加固定 snapshot-unavailable fact，并重新派生 retrieval text。schema/validator 对所有 path 字段继续拒绝受保护前缀。final summary 在 active task 中严格
 校验一次，并只随 archive metadata transaction 提交。archive 后不再校验、回写 artifact 或新增
 metadata tail。同一入口在 archive 前根据 plan/readiness、active locator 与 evidence facts 恢复。
-official move 后、精确 archive commit 尚未形成时，仍校验 archived working-tree 完整布局、
-dirty/staged path、blob continuity 与官方 `task.json` delta；commit 缺失或不匹配继续 fail closed。
+official move 后、精确 archive commit 尚未形成时，仍校验 archived working-tree 布局、
+dirty/staged path、blob continuity 与官方 `task.json` delta。closeout plan 1.1 在 move 后先按
+固定 allowlist 幂等裁剪无长期 consumer 的中间文件，再校验 compact layout；进程在 move 与
+裁剪之间中断时，同一 recovery path 会先完成裁剪再提交。正常 finalizer 长期保留
+`task.json`、三份 planning Markdown、scope ledger、planning approval、Phase 2 check、
+`review.md`、closeout plan、finalization gate 与 finish summary 共 11 个文件；只有适用
+marketplace gate 时再保留 `marketplace-verification.json`，总数最多 12。intake/context
+snapshot、assignment/liveness、commit plan、raw review round、review gate、PR body/readiness
+与 finish-summary index 只作为 active-task 或 Git evidence commit 中间证据，不复制进长期
+archive tree。已持久化的 schema 1.0 plan 保持原 full-move 语义，避免改变已开始事务。
+commit 缺失或不匹配继续 fail closed。
 一旦当前 `HEAD` 已是精确 archive commit，普通 archived task 与 plan-only recovery 都从该
 commit blob 读取 plan；immutable plan 与 Git parent/path/tree/blob lineage 成为
 权威事实，本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、remote PR title/body
@@ -920,7 +943,9 @@ archive locator；仅固定 Darwin `/var -> /private/var` 系统映射可重锚�
 `finish-work` 在首次 PR create 前写入并提交 task-local
 `pr-readiness.json.publish_inputs`，固定 repo/base/head、reviewed HEAD、exact title、
 `pr-body.md` SHA-256、`draft=true`、reviewed source 与 `closeout_plan_digest`。
-readiness/body 文件属于 Trellis task metadata；archive transaction 将其与 final summary 原样移动。
+readiness/body 文件属于 active Trellis task metadata，并进入 plan-bound evidence commit；
+schema 1.1 archive transaction 不再把它们复制为长期 archive 文件。`finish-summary.json`
+承担长期检索与结果摘要职责。
 脚本只做客观结构校验、低信息量短语阻塞、close/ref 语义校验和 reviewed source 门禁；
 不能用脚本生成的空泛摘要或 `generated` body 替代 AI 发布判断。
 
@@ -967,7 +992,7 @@ package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十二个 packages 已维护 canonical corpora 并覆盖全部 46 exits/profile；Stage 0 的
+中的十三个 packages 已维护 canonical corpora 并覆盖全部 52 exits/profile；Stage 0 的
 24-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

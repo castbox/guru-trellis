@@ -12,7 +12,11 @@ checker through the shared dispatcher.
 
 Never treat scanner success, empty findings, changed-file classification, a
 legacy `ready=true` snapshot, or script success as semantic pass. Metadata-only
-revision remains inside this Skill and requires a fresh complete review.
+revision remains inside this Skill. Reread every objective precondition, then
+re-review only dimensions whose direct evidence changed. A prior passed
+dimension may be carried forward only when its evidence references remain
+current and byte-identical; source, test, durable-doc, spec, workflow, schema,
+config, or deployment drift returns to task work.
 
 Emit exactly one declared typed exit. Missing, stale, ambiguous, multiple,
 unmapped, or checker-failed evidence fails closed.

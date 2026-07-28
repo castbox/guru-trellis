@@ -1,0 +1,5 @@
+{
+  "profile": "standalone_verification_not_required",
+  "mode": "standalone",
+  "task_ref": ".trellis/tasks/07-26-example"
+}
