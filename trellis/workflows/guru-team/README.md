@@ -30,7 +30,7 @@ spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`�
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 对应。当前已发布
-stable 是 `.2`；本分支 canonical `.23` 在 merge/tag/远端验证完成前不是 stable source。
+stable 是 `.2`；本分支 canonical `.24` 在 merge/tag/远端验证完成前不是 stable source。
 
 已有 Trellis 项目切换 active workflow：
 
@@ -59,7 +59,7 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 active packages 共声明 52 个 external exits；finalizer 的 global integration
 metadata 为 integrated。Workflow 不得为
 reserved/planned id 伪造 invocation route。当前 canonical
-extension version 是待发布的 `0.6.5-guru.23`，已发布 stable source 仍是
+extension version 是待发布的 `0.6.5-guru.24`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
 
 Interface 1.2 保持冻结的 legacy 语义；独立 interface 1.3 是新建或实质修改 public
@@ -104,7 +104,10 @@ states 全部 private。Deterministic runtime 只复用 #105 engine 执行 conte
 verification boundary、唯一 Draft PR、final projection、official archive transaction、
 三方 HEAD equality 与 draft-to-ready。Missing/stale publication evidence由 #116 owner
 checker 形成客观 fact，再由 AI 选择 `publication_review_stale`；runtime 不代替 route
-judgment。该集成不自动关闭或重写 #119；#119 的 combined acceptance 需另行处理。
+judgment。Issue #119 通过 canonical `guru-finish-work` 完成 combined acceptance：
+publication 3、verification 4、finalizer 6 共 13 exits 保持原 id/consumer，八类
+public-only routes 与六条关键 cross-owner edges 全部闭合。#119 与 umbrella #115 是本交付
+close scope；#132 仍只负责后续 frozen legacy overlay physical removal。
 
 十二条 semantic package handoff 使用 additive target-owned
 `skill_input_authoring_seed`：planning revision self-reentry、Phase 2 passed 到 initial
@@ -688,8 +691,8 @@ Branch Review Gate、agent assignment recorder 与 publish helper 是内部子�
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
 ```
 
-Closeout 不属于这组可手动调用的 recorder/validator 命令。显式
-`trellis-finish-work` entry 必须按 live workflow 进入 publication owner 和 active
+Closeout 不属于这组可手动调用的 recorder/validator 命令。显式 canonical
+`guru-finish-work` entry 必须按 live workflow 进入 publication owner 和 active
 finalizer；只有 finalizer 的 checked private engine 可以执行 finish helper。
 
 Exceptional sub-agent recovery policy is part of the workflow contract, not a
@@ -748,7 +751,12 @@ callers to `record-subagent-liveness-event.sh`.
 Trellis 自动注入的 startup context、workflow-state、hook breadcrumb 或 skill
 matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 
-用户常用显式入口保留为 `trellis-continue` 和 `trellis-finish-work`。`trellis-start`
+用户常用显式入口是 `trellis-continue` 和 `guru-finish-work`。Branch Review `passed`
+后两者都只到达同一 global Phase 3.6；前者作为 #132 前 compatibility caller 在
+`ready` 停止，后者是可继续 Phase 3.7 的 canonical closeout 入口。后者在 Codex、Claude、
+Cursor 分别表现为 `guru-finish-work` prompt、`/guru:finish-work`、`/guru-finish-work`；
+Shared 直接执行同一 global workflow，不新增 routing-only Skill。冻结的
+`trellis-finish-work` entries 只作为 #132 前 compatibility router。`trellis-start`
 仍保留为 fallback / explicit orientation 入口，用于无自动注入平台、hook 未启用或
 未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
@@ -843,8 +851,10 @@ Phase 2 的官方 `trellis-check` sub-agent 仍只提供 commit 前 raw evidence
 
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
 `finish-work`，也不得提交 `review.md` / `reviews/*.md` / `review-gate.json` 等 Trellis metadata。
-PR 发布只从显式 `trellis-finish-work` 薄入口开始：该入口先按 live workflow 调用
-`guru-review-task-publication`，仅从 `ready` 进入 `guru-finalize-task`。Finalizer 的私有
+它可从 Branch Review `passed` 兼容到达唯一 global Phase 3.6，并在 `ready` 停止。
+PR 发布只从显式 canonical `guru-finish-work` 薄入口继续：该入口读取 live state，必要时进入
+同一 `guru-review-task-publication` route，并仅从 current `ready` 进入
+`guru-finalize-task`。Finalizer 的私有
 preview 生成 immutable `closeout_plan` 与 digest，语义 Gate 完成精确副作用确认后才执行
 reviewed content push、marketplace evidence/readiness commit、draft PR、final archive
 projection、单次 archive metadata commit/push、三方 HEAD 对齐与 draft-to-ready。裸
@@ -913,7 +923,7 @@ commit 缺失或不匹配继续 fail closed。
 一旦当前 `HEAD` 已是精确 archive commit，普通 archived task 与 plan-only recovery 都从该
 commit blob 读取 plan；immutable plan 与 Git parent/path/tree/blob lineage 成为
 权威事实，本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、remote PR title/body
-digest、三方 HEAD 或 draft-to-ready。plan-only archived directory 只由 `trellis-finish-work` 恢复入口
+digest、三方 HEAD 或 draft-to-ready。plan-only archived directory 只由 `guru-finish-work` 恢复入口
 解析，普通 task 命令仍要求 `task.json`。real-PR final summary 的 deterministic bytes/digest 纳入
 pre-move、incomplete recovery 与 exact recovery continuity：前两者用已绑定 remote PR 重建 expected
 bytes，exact recovery 只从 immutable archive commit 的 `finish-summary.json` blob 恢复原 PR number/URL
@@ -995,10 +1005,11 @@ package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 中的十三个 packages 已维护 canonical corpora 并覆盖全部 52 exits/profile；Stage 0 的
 24-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
-`guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台
-专用非交互 argv。Runner 在 native
-execution 外读取 canonical corpus；native 只加载 repo/package 外 public-only Skill projection、
-prompt/staged files，不接收 canonical package/corpus/private runtime locator。Native CLI 必须通过 repo 外 trace helper
+  `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台
+  专用非交互 argv。Runner 在 native execution 外读取 canonical corpus 与 case files，并解析
+  exact wrapper arguments；native 只加载 repo/package 外 public-only Skill projection、
+  prompt 与 runner-resolved arguments，不接收 case-file 内容/路径、case workdir 或 canonical
+  package/corpus/private runtime locator。Native CLI 必须通过 repo 外 trace helper
 读取 `SKILL.md` 并调用 exact wrapper；`guru-team-skill-eval-native-trace-1.0` receipt 与
 request、projection、Skill/wrapper digest、wrapper argv/return code 和返回 DTO 完整绑定后才产生 trace invariant。合法 DTO
 缺少 receipt 为 `execution_error`。Native argv、output、context 与 receipt locator 收集到

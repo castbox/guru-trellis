@@ -1,0 +1,813 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-29T13:11:06Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-29-119-combined-finish-family-integration",
+    "task_identity_sha256": "8bfe7da8028982cfcde770cf139f0382473fdff07f247e8617b1aa7c9db1181b",
+    "scope_ledger_sha256": "2be4796ee5e15c67a81ade3ca8244e95c995ac916ab8fad98691c0559549dbe2",
+    "status": "in_progress",
+    "branch": "feat/119-combined-finish-family-integration",
+    "issue_numbers": [
+      115,
+      119
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "b034f466755c5c0b4e2e48bf260bb54ef58cb5be",
+    "head": "b034f466755c5c0b4e2e48bf260bb54ef58cb5be",
+    "dirty_paths": [
+      ".claude/commands/guru/finish-work.md",
+      ".codex/prompts/guru-finish-work.md",
+      ".cursor/commands/guru-finish-work.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/guru-team-shared-eval",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/schemas/skill-eval-native-trace.schema.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/check.jsonl",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/context-discovery.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/contract-wording-review.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.jsonl",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-review.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/task-start-context.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+      "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/fake-native-cli.py",
+      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-native-trace.schema.json",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "captured_at": "2026-07-29T13:11:06Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:119",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/119",
+      "sha256": "f44d394244e873c4400fb93ef968ee0278a63e35414a54772b81b174290a21bf",
+      "updated_at": "2026-07-22T11:09:31Z"
+    },
+    {
+      "id": "comment:119:5045074001",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/119#issuecomment-5045074001",
+      "sha256": "583c0b4ee3525729d350c2f3c4ef70dc721f9a3a8a4ee3b0c288bd8c92c09b36",
+      "updated_at": null
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    },
+    {
+      "id": "repo:skill-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "bfb67099678d7ca67317b9354e1b5faad8481d1e0b7a3f98da97a2bdf08d8d52",
+      "updated_at": null
+    },
+    {
+      "id": "repo:workflow-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "30efbbf049304adba48a7409af91ff523e53986e72dcf1193b1f3a56cd63fed4",
+      "updated_at": null
+    },
+    {
+      "id": "repo:companion-scripts",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "15ff961255705f3897512e3782c4b12224cfd3d00a0ac432ab439308b71fafca",
+      "updated_at": null
+    },
+    {
+      "id": "repo:upstream-ownership",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "b1ba3bc40b484a29f657694736c0d7cfdd408aa88514e03586b86dec08cf34bf",
+      "updated_at": null
+    },
+    {
+      "id": "repo:overlay-guidelines",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "0055e13969528acc4de13d2441ace24c66cde4c210a0783c4979fa7b7b818e9b",
+      "updated_at": null
+    },
+    {
+      "id": "task:issue-ledger",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json",
+      "sha256": "2be4796ee5e15c67a81ade3ca8244e95c995ac916ab8fad98691c0559549dbe2",
+      "updated_at": null
+    },
+    {
+      "id": "user:post-planning-approval",
+      "kind": "user_request",
+      "locator": "用户已看到修订后的 #119 prd.md、design.md、implement.md 绝对链接；修订仅校正 frozen legacy trellis-continue 在 Phase 3.6 ready 停止、canonical guru-finish-work 进入 Phase 3.7 的边界，scope/Issue authority 未变，且继续授权不包含 commit、push、PR 或 Issue 操作。随后独立回复‘确认继续’。",
+      "sha256": "98c076fd7761fe3afb470234aeef3efb9a2f266238f75e8711a0c96d3a5d1e7e",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+      "sha256": "f55ce5a648ab4eb9004390d4b40ed27a4f7fb726cac27adedc4d2082f309b210",
+      "size_bytes": 13694,
+      "modified_at": "2026-07-29T07:07:31.152803+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+      "sha256": "c2955f431dff56a9ce7fa5ee026824cb44c2a73021eb15742ccd1e6ded02a8fb",
+      "size_bytes": 12561,
+      "modified_at": "2026-07-29T13:05:21.410028+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+      "sha256": "568ce5530414c02394193761da7e4139ab26147620157db897e7c47da9922d39",
+      "size_bytes": 9211,
+      "modified_at": "2026-07-29T07:12:31.044842+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+      "sha256": "f55ce5a648ab4eb9004390d4b40ed27a4f7fb726cac27adedc4d2082f309b210",
+      "size_bytes": 13694,
+      "modified_at": "2026-07-29T07:07:31.152803+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+      "sha256": "c2955f431dff56a9ce7fa5ee026824cb44c2a73021eb15742ccd1e6ded02a8fb",
+      "size_bytes": 12561,
+      "modified_at": "2026-07-29T13:05:21.410028+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+      "sha256": "568ce5530414c02394193761da7e4139ab26147620157db897e7c47da9922d39",
+      "size_bytes": 9211,
+      "modified_at": "2026-07-29T07:12:31.044842+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+    "locator": "## 9. Docs SSOT Plan",
+    "statement_sha256": "0119abe8bf978ead4fadef72a00e4bc993ae81117699afd07832df861a10c2d0",
+    "durable_paths": [
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      "docs/requirements/requirement-main.md",
+      "README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md"
+    ]
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "ceb6b125c2ab73b93c6344bb87e716319be554bbb5067f64ef71f85ae964f619",
+    "facts_sha256": "4ffb02725effbbe5d5d4cd6f0acd537f806a39be732f5f273ab2f4a9c0a33a3d",
+    "scope_sha256": "87db432779101dbceabd3d0e4544afbebd3f24ac9ac0857c6a8053a3362e4410",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "Codex primary agent /root",
+    "summary": "在 content_changed consumer 完整重入后，再次复核当前三份 planning artifacts；scope、authority、acceptance、implementation path、验证门禁与 Docs SSOT Plan 均一致且确定。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "R1-goal-audit",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "## 1. 目标",
+        "statement_sha256": "4faa9bae4f7c9f09c29a4ff8e491ed76a9d57e1669c6b80fdb728243e31b8806",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "comment:119:5045074001"
+        ],
+        "reason": "Live Issue 与 accepted-current comment 要求只交付 Finish-family combined integration，并先区分 current main 已完成与剩余差额。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R2-scope-ledger",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "### 2.2 Issue Scope Ledger",
+        "statement_sha256": "a9b230df21483af2f6d05d591fdd7d6a0e7c5dc07048e6ba5ba825208f2a0016",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "task:issue-ledger"
+        ],
+        "reason": "Current authority 固定 #119/#115 close、#105/#116/#117/#118 related、#132 follow-up，且禁止提前关闭 #132。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R3-thin-workflow",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "### FR-1 薄 workflow 编排",
+        "statement_sha256": "b67800383741efc0368975c17caf92f71b47976715cd31f2906fb8d489950524",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "repo:agents",
+          "repo:workflow-contract",
+          "repo:skill-contract"
+        ],
+        "reason": "Issue 与仓库合同要求 global workflow 只拥有 mandatory invocation、顺序、typed exit consumers 和 fail-closed stop。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R4-guru-entry",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "### FR-2 Guru namespace 平台入口",
+        "statement_sha256": "b64e43c9afd75ac2ab91d663758967021791501a71ca3eca1a281841c3493b24",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "repo:agents",
+          "repo:workflow-contract"
+        ],
+        "reason": "2026-07-15 authority 与用户边界要求 Guru namespace 显式入口、自动 mapped exits 和 happy path 零新增确认。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R5-bounded-compatibility",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "### FR-3 有界 legacy 兼容",
+        "statement_sha256": "9f9d42117e4d7d25648791305e61f667c927c6a8d41c3424d8284dd493478c7e",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "repo:agents",
+          "repo:upstream-ownership",
+          "repo:overlay-guidelines"
+        ],
+        "reason": "Issue 明确冻结 upstream namespace overlays 与 43-path identity，仅允许 additive Guru entry，并把最终删除留给 #132。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R6-public-combined-evidence",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "### FR-4 Cross-skill evidence integration",
+        "statement_sha256": "e64ea04a462ab74b147151f07859de7c0bfcdbc3245e2c1cfb521168ae52b054",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "comment:119:5045074001",
+          "repo:skill-contract"
+        ],
+        "reason": "Accepted-current Interface 1.3 authority固定六条 edges、八类 transcripts、13 exits、authoring partition 与 private/public boundary。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R7-issue-105-regression",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "### FR-5 #105 完整回归",
+        "statement_sha256": "0d391606eb35b61e36930f82400964f941315e8b26b81d46de0cc64183342bf0",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "repo:companion-scripts"
+        ],
+        "reason": "Issue #119 正文要求完整执行 #105 已有 transaction/failure/recovery matrix，且不改变其唯一 production owner。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R8-install-update-platforms",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "### FR-6 安装、升级与多平台验收",
+        "statement_sha256": "a37d8d5c32e8d07fbd2fe47fd5c2d9493f1c081dfb9f264f4474ea20d983e085",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "comment:119:5045074001",
+          "repo:agents",
+          "repo:upstream-ownership",
+          "repo:overlay-guidelines"
+        ],
+        "reason": "Issue 与开箱门禁要求 clean install、preview/switch、update/reapply、sidecar、dogfood 和 Shared/Codex/Claude/Cursor 验收。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R9-subtraction-docs",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "### FR-7 减法与文档",
+        "statement_sha256": "539df981bdd2835d48704e823b365b1e4e0de1137d223927bc5b31449f569152",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "repo:agents",
+          "repo:workflow-contract",
+          "repo:companion-scripts"
+        ],
+        "reason": "Issue 要求删除 Finish-family duplicate/dead surface，同时保留仍有 production consumer 的 #105 与 compatibility owners。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R10-ai-first",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "## 5. 非功能与 AI-first 约束",
+        "statement_sha256": "bd2bc5e81bf6cb0dc25df9bcfb3fe4440b965cefc73d0ddbaa8d63eb9b1af562",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "repo:agents",
+          "repo:skill-contract"
+        ],
+        "reason": "用户与仓库合同明确要求最小 public DTO、private runtime facts、无 routine handoff 和 scripts 的 executor/validator/recorder 边界。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R11-normal-boundary",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "## 6. 正常运行边界",
+        "statement_sha256": "99f8631548c739eb4adf54af8a19019b810fccbf9e3b79a001ccd9346a7b9d4c",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "repo:agents"
+        ],
+        "reason": "Issue 与用户明确排除 malicious/forgery/race/lock/TOCTOU/extra fault/cross-OS crash 以及 #116/#117/#118 内部重做和 #132 提前实施。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R12-acceptance",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "locator": "## 7. 验收标准",
+        "statement_sha256": "911bdeebe4f3dca09e6406413899130613c60817e4bb85f79972416d83101375",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "comment:119:5045074001",
+          "repo:agents"
+        ],
+        "reason": "验收逐项绑定 audit closure、13 exits、Guru entry、legacy bytes、combined routes、#105 full module、throwaway/update 和 close scope。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C1-entry-shape",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+        "locator": "### 4.1 Canonical Guru entry",
+        "statement_sha256": "80820f578045d6d1a140f418a6ad261caa7873cd27db753cc3b997e8389c5fc2",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:119",
+          "repo:agents",
+          "repo:skill-contract",
+          "repo:workflow-contract"
+        ],
+        "reason": "显式需求需要 Guru namespace launcher，但 routing-only wrapper Skill 被仓库合同禁止，必须选择平台 adapter 加 Shared workflow route 的单一路径。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "platform-adapters-plus-shared-workflow",
+              "tradeoff": "Codex/Claude/Cursor 各有薄入口，Shared 直接执行 global workflow 与三个 active Skills，不新增伪 closed-loop package。"
+            },
+            {
+              "id": "fourth-wrapper-skill",
+              "tradeoff": "Shared 名称统一，但会制造 registry 外 routing-only public Skill 与重复 SSOT。"
+            }
+          ],
+          "selected_id": "platform-adapters-plus-shared-workflow",
+          "selection_reason": "满足 Guru entry、四平台执行与禁止 wrapper 的共同约束。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C2-additive-ownership",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+        "locator": "### 4.2 Additive Guru ownership",
+        "statement_sha256": "ecd852c31cab721871f8d054ad53f173c7988a3f04318c186aa2a2a29e543d51",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:119",
+          "repo:upstream-ownership",
+          "repo:overlay-guidelines"
+        ],
+        "reason": "Current validator 把 overlay root 等同于 frozen legacy set；新增 Guru entry 必须分离 immutable legacy identity 与窄 additive managed claims。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "split-legacy-and-guru-claims",
+              "tradeoff": "43-path digest 保持不变，三条新路径由 exact Guru rules 与 managed claims 验证。"
+            },
+            {
+              "id": "extend-frozen-legacy-set",
+              "tradeoff": "实现较短，但会改变 #128 immutable identity 并把新 Guru API 误归类为 upstream legacy。"
+            }
+          ],
+          "selected_id": "split-legacy-and-guru-claims",
+          "selection_reason": "保持 #128 freeze 并提供 #119 additive install contract。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C3-combined-evidence-model",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+        "locator": "### 5.1 Evidence 模型",
+        "statement_sha256": "d474294220fd53bd8bde0ec0c8a5353a29af6757a1e3b61ccba31bd4fbfbbbc8",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:119",
+          "comment:119:5045074001",
+          "repo:skill-contract"
+        ],
+        "reason": "Combined acceptance 要求真实 public wrapper 组合且禁止 private runtime routing，必须选择 temp transcript 与现有 public schema/example/projection 的组合方案。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "public-only-temp-transcripts",
+              "tradeoff": "测试组合真实 wrapper 和 public contracts，结果只进入 test/Gate evidence。"
+            },
+            {
+              "id": "durable-combined-artifact",
+              "tradeoff": "审计读取方便，但会制造无人消费的长期 artifact 并扩大 handoff DTO。"
+            }
+          ],
+          "selected_id": "public-only-temp-transcripts",
+          "selection_reason": "满足 AI-first、private ownership 和最小 artifact 约束。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C4-docs-strategy",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+        "locator": "## 9. Docs SSOT Plan",
+        "statement_sha256": "0119abe8bf978ead4fadef72a00e4bc993ae81117699afd07832df861a10c2d0",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:119",
+          "repo:agents",
+          "repo:workflow-contract",
+          "repo:overlay-guidelines"
+        ],
+        "reason": "Canonical entry、ownership 和 closure docs 已 stale，必须选择 durable SSOT 先行并同步 canonical/dogfood，避免 task artifact 成为长期来源。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "ssot-first",
+              "tradeoff": "每个 contract group 先更新 durable owner，再实现与同步运行副本。"
+            },
+            {
+              "id": "task-history-only",
+              "tradeoff": "修改较少，但 durable docs 会继续把 legacy entry 当 canonical。"
+            }
+          ],
+          "selected_id": "ssot-first",
+          "selection_reason": "符合仓库 Docs SSOT 与 upgrade/update 抗漂移要求。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R13-validation-plan",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+        "locator": "## 3. 验证命令",
+        "statement_sha256": "0691eaba01a7b66cb76da7720ec5a6f09958d3491a73f32c13e5a79c6b149743",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "comment:119:5045074001",
+          "repo:agents",
+          "repo:upstream-ownership"
+        ],
+        "reason": "验证命令直接承接 source/installed contracts、#105 full module、dogfood drift 与 throwaway update/reapply acceptance。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R14-review-close-scope",
+        "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+        "locator": "## 5. Review Gates",
+        "statement_sha256": "a7990c08668c2bf7bbd2878285d279c38220a89210858c105b3d9bb83698540b",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "task:issue-ledger",
+          "repo:agents"
+        ],
+        "reason": "Phase 2、Branch Review 与 publication readiness 必须覆盖完整 combined scope，并保持 #119/#115 close 与 #132 follow-up。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      }
+    ],
+    "coverage": {
+      "reviewer": "Codex primary agent /root",
+      "summary": "已覆盖 #119 当前目标、scope ledger、七组功能/非功能合同、正常运行边界、完整验收与验证/Review obligations，并将入口形态、ownership 分层、combined evidence 和 Docs SSOT 归类为四个无 scope expansion 的必要实现选择。",
+      "reviewed_entry_ids": [
+        "R1-goal-audit",
+        "R2-scope-ledger",
+        "R3-thin-workflow",
+        "R4-guru-entry",
+        "R5-bounded-compatibility",
+        "R6-public-combined-evidence",
+        "R7-issue-105-regression",
+        "R8-install-update-platforms",
+        "R9-subtraction-docs",
+        "R10-ai-first",
+        "R11-normal-boundary",
+        "R12-acceptance",
+        "C1-entry-shape",
+        "C2-additive-ownership",
+        "C3-combined-evidence-model",
+        "C4-docs-strategy",
+        "R13-validation-plan",
+        "R14-review-close-scope"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "4cd23dd08ceb6bf7409109db6b9760c8307b5681d121137e3e43f6f87697ea49"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "Codex primary agent /root",
+    "summary": "逐项审核六类 unusual scenario；Issue #119、用户边界与 AGENTS.md 明确排除恶意/伪造、竞态/TOCTOU、锁、额外 fault/crash、跨 OS 原子性和 #132 泛化 cleanup，规划中没有保留这些机制或测试提案。",
+    "candidates": [
+      {
+        "id": "US-01-security-threat",
+        "scenario_class": "security_or_threat",
+        "trigger_evidence": "Secret redaction 继续有效，但 Issue 与 AGENTS.md 不把 internal artifact 作为 hostile input。",
+        "scope": "保留 credential/secret 不泄露，不新增 authenticity、anti-tamper 或 threat boundary。",
+        "cost": "新增 threat model 会扩大 contracts、fixtures 和 validator 职责。",
+        "alternatives": [
+          "验证正常 recorder/validator correctness。",
+          "未来以独立 security requirement 定义 threat model。"
+        ],
+        "consequence": "理论攻击面不进入 #119 finding；真实 secret 泄漏仍阻塞。",
+        "source_requirement_refs": [
+          "issue:119",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "1566872dc2703f4e939e844f5d38b9bd6a38c79710c280e4e8cce5902f172da0"
+      },
+      {
+        "id": "US-02-malicious-actor",
+        "scenario_class": "attack_or_malicious_actor",
+        "trigger_evidence": "Current scope 采用 honest-but-fallible 协作前提。",
+        "scope": "不为故意伪造 artifact、digest、state 或 payload 增加防御。",
+        "cost": "需要新的 authenticity contract 与恶意负例矩阵。",
+        "alternatives": [
+          "验证正常 producer 生成错误 payload 的 correctness。",
+          "未来独立 security issue。"
+        ],
+        "consequence": "只能靠人为伪造复现的案例保持 out_of_scope。",
+        "source_requirement_refs": [
+          "issue:119",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "3f74c49b93854bbad1f5e288da0e201228f3202ba7db4745cbcb9b0d0c6dba60"
+      },
+      {
+        "id": "US-03-toctou-race",
+        "scenario_class": "toctou_or_concurrency_race",
+        "trigger_evidence": "Issue 只要求正常 stale/mismatch 与 #105 已列 matrix，不要求并发 executor 压力。",
+        "scope": "不新增锁、lease、TOCTOU protocol 或 race stress test。",
+        "cost": "会扩大 transaction state、recovery 和非功能测试范围。",
+        "alternatives": [
+          "保留 invocation freshness 与 current identity validation。",
+          "未来独立 concurrency requirement。"
+        ],
+        "consequence": "正常 external drift 继续 fail closed，并发加固不进入 #119。",
+        "source_requirement_refs": [
+          "issue:119",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "61f9a166ec429f5adfe51cf4deb46e166458246f149a5a5981b09346e19991f7"
+      },
+      {
+        "id": "US-04-fault-crash",
+        "scenario_class": "fault_injection_or_crash_consistency",
+        "trigger_evidence": "Issue 明确保留 #105 正文 failure/recovery matrix，同时排除额外 fault injection 与偶发 crash consistency。",
+        "scope": "只回归 #105 已列 failure/retry/recovery，不新增 crash protocol。",
+        "cost": "额外 fault model 会创建新状态、新 owner 和测试设施。",
+        "alternatives": [
+          "执行现有 #105 full production module。",
+          "未来独立 reliability issue。"
+        ],
+        "consequence": "正文外 crash/fault 场景不阻塞 current acceptance。",
+        "source_requirement_refs": [
+          "issue:119",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "0f85f1e376e43be32dbd02a2585ce358b0ee31b294d2375c911ab3d8d617c73a"
+      },
+      {
+        "id": "US-05-cross-os",
+        "scenario_class": "cross_os_atomicity",
+        "trigger_evidence": "Issue 要求四 adapter parity，不要求跨 OS filesystem crash atomicity。",
+        "scope": "不新增跨 OS atomic write 或 filesystem guarantee。",
+        "cost": "需要 OS/filesystem failure matrix，超出 Finish integration contract。",
+        "alternatives": [
+          "验证声明支持平台的 adapter 与 package bytes。",
+          "未来独立 portability requirement。"
+        ],
+        "consequence": "跨 OS 原子性不进入 implementation 或 Phase 2 finding。",
+        "source_requirement_refs": [
+          "issue:119",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "c456c750f4a3086f743cf085b40b854e70452c30c23ba1c4dfb7658abb1622f9"
+      },
+      {
+        "id": "US-06-other-nonstandard",
+        "scenario_class": "other_nonstandard",
+        "trigger_evidence": "#132 独占全仓 upstream overlay removal、target cleanup 与后续 combined acceptance。",
+        "scope": "#119 只增加三条 Guru entry 并保留 frozen legacy inventory。",
+        "cost": "提前实施 #132 会扩大路径、迁移和 target repository 风险。",
+        "alternatives": [
+          "保持 #119 bounded compatibility。",
+          "由 #132 独立规划并验收全仓 cleanup。"
+        ],
+        "consequence": "#132 implementation 与 closure 保持 follow-up。",
+        "source_requirement_refs": [
+          "issue:119",
+          "task:issue-ledger",
+          "repo:agents"
+        ],
+        "disposition": "out_of_scope",
+        "confirmation": null,
+        "proposal_sha256": "69f4f37010871adb04fefb8e9ce89db1ac84c00000d85e5766d182a2278df7af"
+      }
+    ],
+    "unresolved_count": 0,
+    "review_sha256": "91a7d8263d1d6373c5551cb10ae26c69c429f3791e24472396ec51f533f6ce2b"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex primary agent /root",
+      "summary": "Fresh complete re-entry reviewed live Issue #119 and accepted-current comment, origin/main b034f466, the corrected frozen trellis-continue Phase 3.6 ready boundary, current wording/provenance/Docs SSOT, and all six excluded unusual scenario classes; no findings, revisions, scope proposals, or blockers remain.",
+      "reviewed_at": "2026-07-29T13:09:15Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-29T13:08:00Z",
+    "confirmed_at": "2026-07-29T13:09:15Z",
+    "evidence_summary": "source=explicit-post-planning-review；用户在看到修订后的三份 planning links、精确 compatibility correction、scope/authority 未变结论及不 commit/push/PR/Issue 的边界后独立回复‘确认继续’。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "Corrected planning remains adequate after full wording, authority, provenance and unusual-scenario re-entry; the change aligns the frozen compatibility route with live workflow and does not expand scope.",
+  "supersedes_facts_sha256": "a5f1aff61c284b1b61b90af90d55376655c4782926136f789abfa7627ea52c01",
+  "facts_sha256": "98d21f41341acb4bebb1f530fa5e3956d5d74e84883a58bffa11a105f4dbdee2"
+}

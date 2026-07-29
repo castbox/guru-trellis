@@ -96,7 +96,7 @@ def main() -> int:
     parser.add_argument("--wrapper-sha256", required=True)
     subparsers = parser.add_subparsers(dest="operation", required=True)
     read_parser = subparsers.add_parser("read")
-    read_parser.add_argument("--kind", required=True, choices=("skill_contract", "case_file"))
+    read_parser.add_argument("--kind", required=True, choices=("skill_contract",))
     read_parser.add_argument("--path", required=True)
     invoke_parser = subparsers.add_parser("invoke")
     invoke_parser.add_argument("--wrapper", required=True)
@@ -311,6 +311,49 @@ def owner_recipe(request: dict[str, Any]) -> tuple[str, Path]:
     if recipe is None or public_input is None:
         raise ValueError("semantic case does not declare one owner staging recipe and public input")
     return recipe, public_input
+
+
+def public_invocation_arguments(
+    request: dict[str, Any],
+) -> tuple[list[str] | None, dict[str, str]]:
+    workdir = Path(request["workdir"]).resolve()
+    declared: list[list[str]] = []
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        if not isinstance(invocation, dict):
+            continue
+        arguments = invocation.get("arguments")
+        if (
+            not isinstance(arguments, list)
+            or not arguments
+            or any(not isinstance(item, str) for item in arguments)
+        ):
+            raise ValueError("case public invocation arguments are invalid")
+        declared.append(arguments)
+    if len(declared) > 1:
+        raise ValueError("multiple case files declare public invocation arguments")
+    if not declared:
+        return None, {}
+    arguments = declared[0]
+    native_arguments: list[str] = []
+    private_bindings: dict[str, str] = {}
+    for index, value in enumerate(arguments):
+        if value.startswith(".trellis/.runtime/"):
+            token = f"__GURU_RUNNER_ARGUMENT_{index}__"
+            if token in arguments or token in private_bindings:
+                raise ValueError("public invocation argument token collides with declared input")
+            private_bindings[token] = value
+            native_arguments.append(token)
+        else:
+            native_arguments.append(value)
+    return native_arguments, private_bindings
 
 
 def stage_clean_installed_owner_repo(
@@ -2496,6 +2539,8 @@ def stage_extension_verification_owner_execution(
     request_package: Path,
     recipe: str,
     public_input_path: Path,
+    *,
+    preserve_existing_task: bool = False,
 ) -> tuple[Path, Path, dict[str, str]]:
     if not recipe.startswith("extension-"):
         raise ValueError("extension owner staging recipe is invalid")
@@ -2512,21 +2557,26 @@ def stage_extension_verification_owner_execution(
     ):
         raise ValueError(
             "extension owner staging package does not match the evaluated contract"
-        )
+    )
     task = fixture / ".trellis/tasks/current"
     task.mkdir(parents=True, exist_ok=True)
     (fixture / ".trellis/guru-team/config.yml").write_text(
         "workspace_mode: current\n",
         encoding="utf-8",
     )
-    runtime.write_json(task / "task.json", {
-        "id": "current",
-        "name": "current",
-        "title": "Extension verification eval",
-        "status": "in_progress",
-        "branch": "main",
-        "base_branch": "main",
-    })
+    if not preserve_existing_task:
+        runtime.write_json(task / "task.json", {
+            "id": "current",
+            "name": "current",
+            "title": "Extension verification eval",
+            "status": "in_progress",
+            "branch": "main",
+            "base_branch": "main",
+        })
+    elif not (task / "task.json").is_file():
+        raise ValueError(
+            "combined extension owner staging requires the existing finalization task"
+        )
     runtime.write_json(task / "task-start-context.json", {
         "schema_version": "1.0",
         "source_issue": {"number": 117},
@@ -2550,8 +2600,9 @@ def stage_extension_verification_owner_execution(
             "confirmation": {},
         },
     })
-    run_git(fixture, "add", ".")
-    run_git(fixture, "commit", "-q", "-m", "stage extension verification owner")
+    if not preserve_existing_task:
+        run_git(fixture, "add", ".")
+        run_git(fixture, "commit", "-q", "-m", "stage extension verification owner")
     head = run_git(fixture, "rev-parse", "HEAD")
     os.environ["TRELLIS_CONTEXT_ID"] = (
         f"extension-eval-{hashlib.sha256(str(fixture).encode()).hexdigest()[:16]}"
@@ -2561,7 +2612,7 @@ def stage_extension_verification_owner_execution(
             sys.executable,
             str(fixture / ".trellis/scripts/task.py"),
             "start",
-            ".trellis/tasks/current",
+            str(task) if preserve_existing_task else ".trellis/tasks/current",
         ],
         cwd=fixture,
         text=True,
@@ -2852,6 +2903,292 @@ def stage_finalization_not_required_edge(
     return merged, producer_output
 
 
+def stage_finalization_verified_edge(
+    runtime: Any,
+    fixture: Path,
+    fixture_runtime_target: Path,
+    finalizer_package: Path,
+    authored_input_path: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    verifier_package = (
+        fixture
+        / ".trellis/guru-team/skills/packages/"
+        "guru-verify-extension-installation"
+    )
+
+    initial_input_path = runtime_dir / "verification-required-finalizer-input.json"
+    runtime.write_json(
+        initial_input_path,
+        json.loads(
+            (
+                finalizer_package
+                / "examples/public-publication-ready-input.json"
+            ).read_text(encoding="utf-8")
+        ),
+    )
+    stage_finalization_owner_execution(
+        runtime,
+        fixture,
+        fixture_runtime_target,
+        finalizer_package,
+        "finalization-publication-verification-required",
+        initial_input_path,
+    )
+    initial_wrapper = finalizer_package / "scripts/invoke.sh"
+    initial = subprocess.run(
+        [
+            str(initial_wrapper),
+            "--input",
+            OWNER_INPUT,
+            "--owner-result",
+            ".trellis/tasks/current/task-finalization-gate.json",
+        ],
+        cwd=fixture,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env={**os.environ, "GURU_TEAM_EVAL_STAGING": "1"},
+    )
+    if initial.returncode != 0:
+        raise ValueError(
+            "verification-required finalizer wrapper failed: "
+            + initial.stderr.strip()
+        )
+    try:
+        initial_output = json.loads(initial.stdout)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            "verification-required finalizer wrapper returned invalid JSON"
+        ) from exc
+    if (
+        not isinstance(initial_output, dict)
+        or initial_output.get("exit_id") != "verification_required"
+    ):
+        raise ValueError(
+            "verification-required finalizer wrapper returned the wrong typed exit"
+        )
+
+    finalizer_interface = json.loads(
+        (finalizer_package / "interface.json").read_text(encoding="utf-8")
+    )
+    verification_projection = next(
+        (
+            item
+            for item in finalizer_interface["public_contracts"]["projections"]
+            if item.get("id") == "project_verification_required"
+        ),
+        None,
+    )
+    verification_consumer = next(
+        (
+            item
+            for item in finalizer_interface["public_contracts"]["consumer_inputs"]
+            if item.get("id") == "verification_required_input"
+        ),
+        None,
+    )
+    if not isinstance(verification_projection, dict) or not isinstance(
+        verification_consumer, dict
+    ):
+        raise ValueError("verification-required declared projection is unavailable")
+    verification_contract = verification_consumer.get("contract")
+    verification_mappings = verification_projection.get("mappings")
+    if not isinstance(verification_contract, dict) or not isinstance(
+        verification_mappings, list
+    ):
+        raise ValueError("verification-required declared projection is malformed")
+    verification_seed = {
+        str(item["target"]): initial_output[str(item["source"])]
+        for item in verification_mappings
+        if isinstance(item, dict)
+        and isinstance(item.get("source"), str)
+        and isinstance(item.get("target"), str)
+    }
+    verification_seed_fields = verification_contract.get("seed_fields")
+    verification_authoring_fields = verification_contract.get("authoring_fields")
+    if (
+        list(verification_seed) != verification_seed_fields
+        or not isinstance(verification_authoring_fields, list)
+        or set(verification_seed_fields) & set(verification_authoring_fields)
+        or verification_contract.get("profile_id") != "verification_required"
+    ):
+        raise ValueError(
+            "verification-required seed and authoring partition is invalid"
+        )
+    verification_authoring = json.loads(
+        (
+            verifier_package
+            / verification_contract["authoring_example"]["path"]
+        ).read_text(encoding="utf-8")
+    )
+    if set(verification_authoring) != set(verification_authoring_fields):
+        raise ValueError(
+            "verification-required target authoring fields are incomplete"
+        )
+    verifier_input = {**verification_seed, **verification_authoring}
+    if len(verifier_input) != len(verification_seed) + len(
+        verification_authoring
+    ):
+        raise ValueError(
+            "verification-required target authoring overwrote producer seed"
+        )
+    verifier_interface = json.loads(
+        (verifier_package / "interface.json").read_text(encoding="utf-8")
+    )
+    verifier_profile = next(
+        item
+        for item in verifier_interface["public_contracts"]["input"]["profiles"]
+        if item.get("id") == verification_contract["profile_id"]
+    )
+    verifier_schema = runtime.skill_read_schema(
+        verifier_package / verifier_profile["schema"]["path"],
+        "verification-required verifier target schema",
+        [],
+    )
+    verifier_errors = runtime.skill_json_schema_validation_errors(
+        verifier_input,
+        verifier_schema,
+        "verification-required verifier target input",
+    )
+    if verifier_errors:
+        raise ValueError(
+            "verification-required projected verifier input is invalid: "
+            + "; ".join(verifier_errors)
+        )
+    verifier_input_path = runtime_dir / "verified-verifier-input.json"
+    runtime.write_json(verifier_input_path, verifier_input)
+
+    stage_extension_verification_owner_execution(
+        runtime,
+        fixture,
+        fixture_runtime_target,
+        verifier_package,
+        "extension-workflow-verified",
+        verifier_input_path,
+        preserve_existing_task=True,
+    )
+    verifier_wrapper = verifier_package / "scripts/invoke.sh"
+    verifier = subprocess.run(
+        [
+            str(verifier_wrapper),
+            "--input",
+            verifier_input_path.relative_to(fixture).as_posix(),
+            "--owner-result",
+            ".trellis/tasks/current/marketplace-verification.json",
+        ],
+        cwd=fixture,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env={**os.environ, "GURU_TEAM_EVAL_STAGING": "1"},
+    )
+    if verifier.returncode != 0:
+        raise ValueError("verified producer wrapper failed: " + verifier.stderr.strip())
+    try:
+        producer_output = json.loads(verifier.stdout)
+    except json.JSONDecodeError as exc:
+        raise ValueError("verified producer wrapper returned invalid JSON") from exc
+    if (
+        not isinstance(producer_output, dict)
+        or producer_output.get("exit_id") != "verified"
+    ):
+        raise ValueError("verified producer wrapper returned the wrong typed exit")
+
+    projection = next(
+        (
+            item
+            for item in verifier_interface["public_contracts"]["projections"]
+            if item.get("id") == "project_verified"
+        ),
+        None,
+    )
+    consumer = next(
+        (
+            item
+            for item in verifier_interface["public_contracts"]["consumer_inputs"]
+            if item.get("id") == "verified_finalization_seed"
+        ),
+        None,
+    )
+    if not isinstance(projection, dict) or not isinstance(consumer, dict):
+        raise ValueError("verified declared projection is unavailable")
+    contract = consumer.get("contract")
+    mappings = projection.get("mappings")
+    if not isinstance(contract, dict) or not isinstance(mappings, list):
+        raise ValueError("verified declared projection is malformed")
+    seed = {
+        str(item["target"]): producer_output[str(item["source"])]
+        for item in mappings
+        if isinstance(item, dict)
+        and isinstance(item.get("source"), str)
+        and isinstance(item.get("target"), str)
+    }
+    seed_fields = contract.get("seed_fields")
+    authoring_fields = contract.get("authoring_fields")
+    if (
+        list(seed) != seed_fields
+        or not isinstance(authoring_fields, list)
+        or set(seed_fields) & set(authoring_fields)
+        or contract.get("profile_id") != "verification_verified"
+    ):
+        raise ValueError("verified seed and authoring partition is invalid")
+    authored = json.loads(authored_input_path.read_text(encoding="utf-8"))
+    authoring = {
+        field: authored[field]
+        for field in authoring_fields
+        if field in authored
+    }
+    if set(authoring) != set(authoring_fields):
+        raise ValueError("verified target authoring fields are incomplete")
+    merged = {**seed, **authoring}
+    if len(merged) != len(seed) + len(authoring):
+        raise ValueError("verified target authoring overwrote producer seed")
+
+    target_profile = next(
+        item
+        for item in finalizer_interface["public_contracts"]["input"]["profiles"]
+        if item.get("id") == contract["profile_id"]
+    )
+    target_schema = runtime.skill_read_schema(
+        finalizer_package / target_profile["schema"]["path"],
+        "verified finalizer target schema",
+        [],
+    )
+    target_errors = runtime.skill_json_schema_validation_errors(
+        merged,
+        target_schema,
+        "verified finalizer target input",
+    )
+    if target_errors:
+        raise ValueError(
+            "verified projected finalizer input is invalid: "
+            + "; ".join(target_errors)
+        )
+    runtime.write_json(fixture / OWNER_INPUT, merged)
+    runtime.write_json(
+        runtime_dir / "verified-producer-edge.json",
+        {
+            "initial_finalizer_wrapper": initial_wrapper.relative_to(
+                fixture
+            ).as_posix(),
+            "initial_finalizer_output": initial_output,
+            "verification_projection_id": verification_projection["id"],
+            "verifier_input": verifier_input,
+            "verifier_wrapper": verifier_wrapper.relative_to(fixture).as_posix(),
+            "producer_output": producer_output,
+            "projection_id": projection["id"],
+            "seed": seed,
+            "authoring": authoring,
+            "target_input": merged,
+        },
+    )
+    return merged, producer_output
+
+
 def stage_finalization_owner_execution(
     runtime: Any,
     fixture: Path,
@@ -2932,6 +3269,15 @@ def stage_finalization_owner_execution(
             public_input_path,
         )
         head = run_git(fixture, "rev-parse", "HEAD")
+    elif recipe == "finalization-verified-published":
+        public_input, producer_output = stage_finalization_verified_edge(
+            runtime,
+            fixture,
+            fixture_runtime_target,
+            package,
+            public_input_path,
+        )
+        head = run_git(fixture, "rev-parse", "HEAD")
     else:
         task.mkdir(parents=True, exist_ok=True)
         runtime.write_json(task / "task.json", {
@@ -2968,7 +3314,10 @@ def stage_finalization_owner_execution(
     if transaction_state == "ready":
         archive_dir = fixture / archive_locator
         archive_dir.mkdir(parents=True, exist_ok=True)
-        if recipe == "finalization-not-required-published":
+        if recipe in {
+            "finalization-not-required-published",
+            "finalization-verified-published",
+        }:
             archived_verification = archive_dir / "marketplace-verification.json"
             shutil.copy2(
                 task / "marketplace-verification.json",
@@ -2985,7 +3334,7 @@ def stage_finalization_owner_execution(
                 "commit",
                 "-q",
                 "-m",
-                "stage archived not-required owner evidence",
+                "stage archived verification owner evidence",
             )
     context_payload = {
         "schema_version": "1.0",
@@ -3537,7 +3886,9 @@ def start_public_runtime_boundary(
     package_root: Path,
     projection_root: Path,
     runtime_environment: dict[str, str],
+    private_argument_bindings: dict[str, str] | None = None,
 ) -> tuple[Path, threading.Thread, threading.Event]:
+    private_argument_bindings = private_argument_bindings or {}
     request_path = execution_root / "public-invocation-request.json"
     response_path = execution_root / "public-invocation-response.json"
     response_draft_path = execution_root / "public-invocation-response.pending.json"
@@ -3559,6 +3910,13 @@ def start_public_runtime_boundary(
                 if arguments[:2] != ["--package-root", str(projection_root)]:
                     raise ValueError("public invocation package projection binding is invalid")
                 arguments = ["--package-root", str(package_root), *arguments[2:]]
+                for token in private_argument_bindings:
+                    if arguments.count(token) != 1:
+                        raise ValueError("private public invocation argument binding is invalid")
+                arguments = [
+                    private_argument_bindings.get(value, value)
+                    for value in arguments
+                ]
                 process = subprocess.run(
                     [str(target), *arguments],
                     cwd=target.parents[4],
@@ -3623,26 +3981,16 @@ def build_context(
     runtime_package_root, execution_runtime_target, runtime_environment = stage_owner_execution(
         request, execution_root, runtime_target
     )
+    invocation_arguments, private_argument_bindings = public_invocation_arguments(request)
     trace_path = execution_root / "native-trace.json"
     helper_path = execution_root / "native-trace-helper.py"
     helper_path.write_text(TRACE_HELPER, encoding="utf-8")
     helper_path.chmod(0o755)
-    file_sections: list[str] = []
-    for relative in request["files"]:
-        staged = workdir / relative
-        if not staged.is_file():
-            raise ValueError("staged case file is unavailable")
-        try:
-            content = staged.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            content = f"<binary sha256={hashlib.sha256(staged.read_bytes()).hexdigest()}>"
-        file_sections.append(f"### {relative}\n{content}")
     context = "\n".join([
         "Execute exactly one Guru Team Skill behavior eval.",
         f"Skill id: {request['skill_id']}",
         f"Exact public Skill projection: {projection_root}",
         f"Public wrapper: {wrapper_path}",
-        f"Isolated workdir: {workdir}",
         f"Native trace helper: {helper_path}",
         f"Native trace receipt: {trace_path}",
         "The projection is the complete execution-visible package. Paths absent from it are outside the native execution contract.",
@@ -3651,9 +3999,14 @@ def build_context(
         "Return only the wrapper's single typed-exit JSON object, with no Markdown fence or explanation.",
         f"Case prompt:\n{request['prompt']}",
         f"Public invocation contract:\n{json.dumps(request['interface']['public_invocation'], separators=(',', ':'))}",
-        "Staged case files:\n" + ("\n".join(file_sections) if file_sections else "<none>"),
+        "Exact public invocation arguments:\n"
+        + (
+            json.dumps(invocation_arguments, separators=(",", ":"))
+            if invocation_arguments is not None
+            else "<author from the public Skill contract and case prompt>"
+        ),
         "The adapter has already completed any declared owner staging and checker validation in the installed fixture.",
-        "Use the exact public_invocation.arguments from the staged case facts; do not recreate or rewrite public input, owner result, or owner plan files.",
+        "Use the exact public invocation arguments supplied by the runner when present; do not recreate or rewrite public input, owner result, or owner plan files.",
         "For this post-owner invocation boundary, run only the exact Skill read command above and then the exact wrapper invocation command above. Do not read linked references, Interface assets, examples, wrapper source, or any other file.",
     ])
     native_request = {
@@ -3661,10 +4014,9 @@ def build_context(
         "skill_id": request["skill_id"],
         "case_id": request["case_id"],
         "prompt": request["prompt"],
-        "files": request["files"],
-        "workdir": str(workdir),
         "public_package_root": str(projection_root),
         "public_invocation": request["interface"]["public_invocation"],
+        "public_invocation_arguments": invocation_arguments,
     }
     native_request_path = execution_root / "native-request.json"
     native_request_path.write_text(json.dumps(native_request, separators=(",", ":")), encoding="utf-8")
@@ -3690,7 +4042,7 @@ def build_context(
     }, separators=(",", ":")), encoding="utf-8")
     boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(
         execution_root, execution_runtime_target, runtime_package_root, projection_root,
-        runtime_environment,
+        runtime_environment, private_argument_bindings,
     )
     return (
         context, context_path, wrapper_path, trace_path, protocol_path,
@@ -3702,7 +4054,7 @@ def build_context(
 def validate_native_trace(
     trace_path: Path,
     request_sha256: str,
-    request: dict[str, Any],
+    invocation_arguments: list[str] | None,
     wrapper_path: Path,
     public_stdout: str,
     protocol_path: Path,
@@ -3716,7 +4068,7 @@ def validate_native_trace(
     if set(payload) != expected_top or payload.get("schema_version") != "1.0" or payload.get("request_sha256") != request_sha256:
         raise ValueError("native trace receipt request binding is invalid")
     events = payload.get("events")
-    if not isinstance(events, list) or len(events) < 2:
+    if not isinstance(events, list) or len(events) != 2:
         raise ValueError("native trace receipt is incomplete")
     projection_root = Path(protocol["projection_root"]).resolve()
     skill_path = Path(protocol["skill_path"]).resolve()
@@ -3728,8 +4080,7 @@ def validate_native_trace(
         or any(path.name == "guru_team_trellis.py" for path in projection_root.rglob("*"))
     ):
         raise ValueError("native trace public projection binding is invalid")
-    workdir = Path(request["workdir"]).resolve()
-    allowed_reads = {skill_path, *(workdir / relative for relative in request["files"])}
+    allowed_reads = {skill_path}
     skill_reads = []
     invocations = []
     for event in events:
@@ -3766,6 +4117,10 @@ def validate_native_trace(
         or not isinstance(argv, list) or not argv
         or Path(str(argv[0])).resolve() != wrapper_path.resolve()
         or any(not isinstance(item, str) for item in argv)
+        or (
+            invocation_arguments is not None
+            and argv[1:] != invocation_arguments
+        )
         or invocation.get("returncode") != 0
         or invocation.get("stdout_sha256") != hashlib.sha256(public_stdout.encode("utf-8")).hexdigest()
         or not isinstance(invocation.get("stderr_sha256"), str)
@@ -3784,7 +4139,7 @@ def native_argv(
     native_request_path: Path,
     projection_root: Path,
 ) -> tuple[list[str], Path | None]:
-    workdir = str(Path(request["workdir"]).resolve())
+    workdir = str(native_request_path.resolve().parent)
     if adapter == "shared":
         return [command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
     if adapter == "codex":
@@ -3794,7 +4149,7 @@ def native_argv(
         return [
             command, "exec", "--ephemeral", "--ignore-user-config", "--sandbox", "workspace-write",
             "--cd", trusted_root, "--add-dir", execution_root,
-            "--add-dir", workdir, "--add-dir", str(projection_root),
+            "--add-dir", str(projection_root),
             "--output-last-message", str(output_path), context,
         ], output_path
     if adapter == "claude":
@@ -3919,7 +4274,15 @@ def main() -> int:
         return emit(response(request, "execution_error", transcript, stderr=process.stderr, timing_ms=timing_ms, native_trace=trace_path))
     try:
         public_stdout = unwrap_native_output(args.adapter, process.stdout, output_path)
-        trace_events = validate_native_trace(trace_path, request_sha256, request, wrapper_path, public_stdout, protocol_path)
+        native_request = json.loads(native_request_path.read_text(encoding="utf-8"))
+        trace_events = validate_native_trace(
+            trace_path,
+            request_sha256,
+            native_request.get("public_invocation_arguments"),
+            wrapper_path,
+            public_stdout,
+            protocol_path,
+        )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         return emit(response(request, "execution_error", transcript, stderr=str(exc), timing_ms=timing_ms, native_trace=trace_path))
     return emit(response(

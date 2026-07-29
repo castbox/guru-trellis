@@ -73,23 +73,13 @@ def public_invocation(
         if denied:
             return subprocess.CompletedProcess([str(package)], 9, "", "\n".join(denied))
         return subprocess.CompletedProcess([str(package)], 10, "", "execution projection unexpectedly exposed a forbidden asset")
-    if str(request["skill_id"]) == "guru-example-action":
-        if "Repeat" in prompt:
-            forwarded = ["--input", "examples/action-reentry-input.json"]
-        elif "Block" in prompt:
-            generated = package / "examples/native-block-input.json"
-            generated.write_text(
-                json.dumps({"profile": "initial", "topic": "blocked example", "mode": "block"}),
-                encoding="utf-8",
-            )
-            forwarded = ["--input", "examples/native-block-input.json"]
-        else:
-            forwarded = ["--input", "examples/action-initial-input.json"]
-    elif str(request["skill_id"]) == "guru-example-sync":
-        exit_id = "blocked" if "blocked" in prompt else "forwarded"
-        forwarded = ["--exit-id", exit_id, "--item", "alpha"]
-    else:
-        raise ValueError("unknown fixture package")
+    forwarded = request.get("public_invocation_arguments")
+    if (
+        not isinstance(forwarded, list)
+        or not forwarded
+        or any(not isinstance(item, str) for item in forwarded)
+    ):
+        raise ValueError("runner-resolved public invocation arguments are unavailable")
     environment = dict(os.environ)
     environment["GURU_TEAM_DISPATCHER"] = os.environ.get("GURU_TEAM_DISPATCHER") or os.environ.get(
         "GURU_TEAM_FAKE_NATIVE_DISPATCHER", str(package.parents[1] / "fixture-dispatcher.py")

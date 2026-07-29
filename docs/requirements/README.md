@@ -11,7 +11,7 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 | 文档 | 内容 |
 | --- | --- |
 | [requirement-main.md](./requirement-main.md) | 基于本 repo 全量 issue / PR 历史整理的已实现 Trellis 扩展总览。 |
-| [guru-team-trellis-flow.md](./guru-team-trellis-flow.md) | 面向演示的 Guru Team Trellis 全流程图：从 Codex prompt hook 触发 pre-task intake 到 `trellis-finish-work` closeout，并用颜色区分官方 Trellis 原生机制、Guru Team 扩展、平台入口和 companion scripts。 |
+| [guru-team-trellis-flow.md](./guru-team-trellis-flow.md) | 面向演示的 Guru Team Trellis 全流程图：从 Codex prompt hook 触发 pre-task intake 到 canonical `guru-finish-work` closeout，并用颜色区分官方 Trellis 原生机制、Guru Team 扩展、平台入口和 companion scripts；旧 `trellis-finish-work` 名称仅表示 #132 前兼容入口。 |
 
 ## 历史扫描范围
 
@@ -208,10 +208,12 @@ Interface 1.2 legacy；随后 #145 已迁移六个 Stage 0 production corpora �
 coverage；#146 已完成 planning/check/commit 三包的 11-exit coverage，#131 将总 closure
 扩展为 10/39，#116 扩展为 11/42，#117 扩展为 12/46，#118/#119 当前扩展为 13/52。
 四个 descriptor 必须绑定真实可执行 wrapper，并由 wrapper 从 `PATH` 检测 documented native
-command、组装平台 argv、加载 exact Skill/prompt/files、收集 public output/trace；隐藏
+command、组装平台 argv、加载 exact Skill/prompt/runner-resolved public invocation arguments、
+收集 public output/trace；隐藏
 executable 环境变量不能替代该公开安装路径。
-Runner 在 native execution 外读取 canonical corpus；CLI 只收到 repo/package 外 public-only
-projection、case workdir 与不含 canonical package/corpus/private runtime locator 的最小 request。
+Runner 在 native execution 外读取 canonical corpus 与 case files；CLI 只收到 repo/package 外
+public-only projection 和不含 case-file 内容/路径、case workdir、canonical
+package/corpus/private runtime locator 的最小 request。
 Native trace 使用 closed `guru-team-skill-eval-native-trace-1.0` receipt：CLI 必须通过
 repo 外 helper 读取 projected exact `SKILL.md` 并调用 exact public wrapper，receipt 与 request、
 projection、Skill/wrapper digest、wrapper result 和返回 DTO 不匹配或缺失时为

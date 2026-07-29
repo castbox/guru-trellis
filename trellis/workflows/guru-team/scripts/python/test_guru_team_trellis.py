@@ -9165,7 +9165,7 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(exit_code, 2)
         rendered = "\n".join(str(call.args[0]) for call in output.call_args_list if call.args)
         self.assertIn("compatibility-only blocked command", rendered)
-        self.assertIn('"required_entrypoint": "trellis-finish-work"', rendered)
+        self.assertIn('"required_entrypoint": "guru-finish-work"', rendered)
 
     def test_pr_body_quality_rejects_incomplete_docs_ssot_keys(self) -> None:
         body = valid_pr_body("验证 Docs SSOT section 固定键 presence。").replace(
@@ -9239,10 +9239,25 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertFalse(any(command[:3] == ["python3", "./.trellis/scripts/add_session.py", "--title"] for command in run_commands))
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertEqual(raised.exception.payload["blocked_step"], "finish-work")
-        self.assertEqual(raised.exception.payload["required_entrypoint"], "trellis-finish-work")
+        self.assertEqual(raised.exception.payload["required_entrypoint"], "guru-finish-work")
         self.assertNotIn("intent_flag", raised.exception.payload)
         self.assertIn("guru-finalize-task", str(raised.exception))
         self.assertNotIn("--from-trellis-finish-work", str(raised.exception))
+
+    def test_finish_work_legacy_recovery_override_routes_to_canonical_entrypoint(self) -> None:
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.validate_finish_work_invocation(finish_args(skip_archive=True))
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertEqual(
+            raised.exception.payload,
+            {"required_entrypoint": "guru-finish-work"},
+        )
+        self.assertIn("guru-finish-work", str(raised.exception))
+
+        gtt.validate_finish_work_invocation(
+            finish_args(from_trellis_finish_work=True, skip_archive=False)
+        )
 
     def test_finish_work_rejects_missing_reviewed_source_before_archive(self) -> None:
         gate = {
@@ -13865,6 +13880,9 @@ class SubagentLivenessStateMachineTest(unittest.TestCase):
 class FinishWorkEntrypointContractTest(unittest.TestCase):
     REPO_ROOT = Path(__file__).resolve().parents[5]
     ENTRYPOINT_FILES = [
+        "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
         "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
         "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
         "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
@@ -13886,10 +13904,11 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
         "README.md": {
             "required": [
                 "`publish-pr` 仅保留为兼容性阻断入口。",
-                "PR 发布只从显式 `trellis-finish-work` 薄入口开始",
-                "仅从 `ready` 进入 `guru-finalize-task`。",
+                "PR 发布只从显式 canonical `guru-finish-work` 薄入口继续",
+                "`trellis-finish-work` 入口在 #132 前只作为 byte-frozen compatibility router",
+                "并仅从 current `ready` 进入 `guru-finalize-task`。",
                 "中断由同一 finalizer 自动消费 recovery route",
-                "唯一 PR body 来源是当前 task-local `pr-body.md`",
+                "`guru-finish-work` route 的唯一 PR body 来源是当前 task-local `pr-body.md`",
                 "`--body-file <current-task>/pr-body.md` 直接传入。",
                 "`--body-artifact`、外部同文文件、脚本生成的 body fallback",
                 "相对解析 `body_file` 均不属于 closeout 合同并 fail closed。",
@@ -13903,10 +13922,11 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
         ".trellis/spec/workflow/workflow-contract.md": {
             "required": [
                 "`guru-finalize-task` owns the single resumable transaction loop",
-                "`trellis-finish-work` is the thin closeout entry.",
+                "`guru-finish-work` is the canonical thin closeout entry.",
+                "`trellis-finish-work` entries are byte-frozen compatibility routers through Issue #132",
                 "`publish-pr` is only a compatibility blocker.",
-                "accepts exactly one reviewed body source: `--body-file`",
-                "must point directly to the current task-local `pr-body.md`.",
+                "The `guru-finish-work` route accepts exactly one reviewed body source",
+                "current task-local `pr-body.md`",
                 "`--body-artifact`, external same-content files, generated body fallbacks",
                 "readiness-relative `body_file` resolution are rejected and do not participate in closeout.",
             ],
@@ -13921,7 +13941,8 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
         ".trellis/spec/workflow/companion-scripts.md": {
             "required": [
                 "`publish-pr` is retained only as an unconditional compatibility blocker",
-                "it performs no repo/task resolution or side effect and points callers to `trellis-finish-work`.",
+                "points callers to canonical `guru-finish-work`.",
+                "The private marker name is an internal compatibility API",
                 "only `guru-finalize-task`'s checked private transition executor",
                 "Every interruption returns through the same finalizer semantic loop",
                 "Formal closeout accepts only `--body-file` pointing directly to the current task-local `pr-body.md`",
@@ -13929,6 +13950,7 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
             ],
             "forbidden": [
                 "only the explicit `trellis-finish-work` entrypoint may pass",
+                "points callers to `trellis-finish-work`.",
                 "Every interruption is resumed through that same state-aware entry.",
                 "`--body-file` or `--body-artifact` inputs that were already reviewed by AI/human;",
                 "`generated` bodies are limited to draft/preview paths.",
@@ -13942,15 +13964,21 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
             with self.subTest(path=relpath):
                 content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
                 for required in (
-                    "`.trellis/workflow.md` as the global route",
-                    "Phase 3.6",
-                    "Phase 3.7",
+                    "`.trellis/workflow.md`",
                     "guru-review-task-publication",
                     "guru-verify-extension-installation",
                     "guru-finalize-task",
-                    "Automatically consume",
                 ):
                     self.assertIn(required, content, f"{relpath} must route through {required!r}")
+                self.assertIn("Phase 3.6", content)
+                self.assertTrue(
+                    "Phase 3.7" in content or "Phase 3.6/3.7" in content,
+                    f"{relpath} must enter the complete Finish route",
+                )
+                self.assertTrue(
+                    "Automatically consume" in content or "Consume only" in content,
+                    f"{relpath} must consume mapped typed exits without redefining owners",
+                )
                 for forbidden in (
                     "finish-work.sh --from-trellis-finish-work",
                     "--body-file",

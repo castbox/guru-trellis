@@ -21,7 +21,7 @@
             "required": ["kind", "target_kind", "path", "sha256", "request_sha256"],
             "properties": {
               "kind": {"const": "read"},
-              "target_kind": {"enum": ["skill_contract", "case_file"]},
+              "target_kind": {"const": "skill_contract"},
               "path": {"type": "string", "minLength": 1},
               "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
               "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}

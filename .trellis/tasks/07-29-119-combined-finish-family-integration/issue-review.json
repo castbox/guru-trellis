@@ -1,0 +1,265 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-07-29T06:42:05Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "castbox/guru-trellis",
+    "issue_number": 119,
+    "url": "https://github.com/castbox/guru-trellis/issues/119",
+    "updated_at": "2026-07-22T11:09:31Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "acfb505a6bb918bb5411fb7a2ccfac164758b22639400e30a79dd6439b060c64",
+    "body_sha256": "16cda718b58194ee65b8eff2e88c36abce54162b0a81f962e602a78f04ed9d3a",
+    "side_effect_free": false,
+    "identity_sha256": "f92863260a7535743de70380762c67d2851239812a7d427d181589e2351584eb",
+    "content_sha256": "15e900c85ff3d87b948f1103230831765d52ba364a4ea3df4b6930e531b022e9"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "7bb6649d61114225217d6b32f68b211af0c1828170766d86f045ab4a115d4702",
+      "snapshot_sha256": "4627ff46c119b65d0814fc366ef7a9bacbee750b7e87e4aa878a797c2cfdf345",
+      "base_sync_facts_sha256": "d7bc06e8a79e3034de670b4de4b27a7ce94025b4315e13fd88050ce7f478cbd7",
+      "base_head": "b034f466755c5c0b4e2e48bf260bb54ef58cb5be",
+      "live_target_sha256": "1a9682a6812343fc11ba00ce5c866d2516ac7c1dc159a170270205559eb62113",
+      "query_sha256": "dc2878bd034b767b2c19b03b1c2dc68ab5420261e898232658634b40294e5b73",
+      "current_state_sha256": "4c48eaffe4d19702e4007a04faed01d6ec78be23611f865fe4319b5dfba3a51c",
+      "history_sha256": "f746295e19f88778b5894bb7fe540752e9919e66603cc04fbd5dc50348539e89",
+      "duplicate_sha256": "6e4e8f7d1cd0ff3ac1cd492225076dec1030a0aeb78818cb98971e5b557d5fbd",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-2.0",
+      "typed_exit": "clear",
+      "payload_sha256": "9c897805a4f72d747a4119b7957066ddb511da8d33e192f9ea5adb264e4178db",
+      "facts_sha256": "5803e7740d2396398393de28e345bc34fca1c44e41a7aad584f5b7b8bcaf33a9",
+      "target_sha256": "f44ba7612a91763d0fc0827965ba17b29f0ba722cfdbe3fe1c2e5ba32eede406",
+      "disposition_sha256": "6c0aed4aa9896eb3021ebb60b19604cd2b56ea5d92f07bc8db06c83cbb6fe8ae",
+      "content_sha256": "2b8a4db7609828ee152f9aa6e6fede9fd2d9db0dca6ddf6d96f53d6debd0fbf7",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "283ce3751f7a197227521daf42b6d84b29882492f46fb15dccb112cb95139bd0",
+      "facts_sha256": "c71f801747852563eafa5c8381d0430e621fbddcd81f4db8f8dd9a6454d3234c",
+      "scope_sha256": "5fd721f8f6582a639fba983f9fe070c13acf97373d8b88dcd35f536d6a71aa7a",
+      "scan_sha256": "a19646e745a475cbf7a9a67e1480320d53bdf5f5e781b70f425bfb969fe9d0f7",
+      "target_content_sha256": "15e900c85ff3d87b948f1103230831765d52ba364a4ea3df4b6930e531b022e9",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "f92863260a7535743de70380762c67d2851239812a7d427d181589e2351584eb",
+    "target_content_sha256": "15e900c85ff3d87b948f1103230831765d52ba364a4ea3df4b6930e531b022e9",
+    "base_head": "b034f466755c5c0b4e2e48bf260bb54ef58cb5be",
+    "current_state_sha256": "4c48eaffe4d19702e4007a04faed01d6ec78be23611f865fe4319b5dfba3a51c",
+    "history_sha256": "f746295e19f88778b5894bb7fe540752e9919e66603cc04fbd5dc50348539e89",
+    "duplicate_sha256": "6e4e8f7d1cd0ff3ac1cd492225076dec1030a0aeb78818cb98971e5b557d5fbd",
+    "clarity_facts_sha256": "5803e7740d2396398393de28e345bc34fca1c44e41a7aad584f5b7b8bcaf33a9",
+    "clarity_disposition_sha256": "6c0aed4aa9896eb3021ebb60b19604cd2b56ea5d92f07bc8db06c83cbb6fe8ae",
+    "wording_facts_sha256": "c71f801747852563eafa5c8381d0430e621fbddcd81f4db8f8dd9a6454d3234c",
+    "linkage_sha256": "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "requirement_completeness",
+        "status": "passed",
+        "summary": "Live #119 body/comment and current user boundary define combined routing、entry migration、evidence、regression、installation and subtraction acceptance without unresolved intent.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "delivery_unit_consistency",
+        "status": "passed",
+        "summary": "The remaining #119 gap is one independently deliverable Finish-family integration unit; #115 closure and #132 follow-up roles remain explicit.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "implementation_target_evidence",
+        "status": "passed",
+        "summary": "Current workflow、registry、interfaces、tests and throwaway verifier identify the exact canonical, installed and platform surfaces to change or validate.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "claimed_behavior_current",
+        "status": "passed",
+        "summary": "PR #162/current main already contains three active Skills、13 exits and most mapped routes; this work does not claim those internals are missing.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "current_implementation_gap",
+        "status": "passed",
+        "summary": "Guru namespace canonical entry、bounded compatibility migration、combined routing corpus/full acceptance and remaining Finish-family dead duplication are not yet closed.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "docs_code_tests_consistency",
+        "status": "passed",
+        "summary": "Durable specs、workflow、registry and tests agree on Interface 1.3 ownership; implementation must thin duplicated workflow prose rather than create another SSOT.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "archived_history_constraints",
+        "status": "passed",
+        "summary": "Selected #117/#131/#146 archives support predecessor contracts and adapter boundaries, while live authority/current main remain controlling.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "duplicate_reuse_validity",
+        "status": "passed",
+        "summary": "No other open issue replaces #119; #115 is umbrella and #132 owns later cleanup.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "target_authority_current",
+        "status": "passed",
+        "summary": "Live #119 is open and title/body/comment bytes match the fixed change-request scope; no GitHub authority mutation occurred.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "prerequisite_hash_linkage",
+        "status": "passed",
+        "summary": "Checker-passed context_ready、clarity clear and wording pass evidence bind the same live #119 and current main HEAD.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af"
+        ],
+        "finding_ids": []
+      }
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "Live Issue #119 body/comment、user request、current main at b034f466 and checker-passed context/clarity/wording evidence define the bounded combined integration.",
+      "delivery_unit_id": "issue-119-combined-finish-family-integration",
+      "close_issues": [
+        119,
+        115
+      ],
+      "related_issues": [
+        105,
+        116,
+        117,
+        118
+      ],
+      "followup_issues": [
+        132
+      ],
+      "duplicate_reuse_decision": "保留 current open #119；#115 是由本 delivery 验收关闭的 umbrella，#132 是独立 follow-up，均不替代 #119 task。",
+      "implementation_target": "完成薄 Finish-family workflow consumers、Guru namespace explicit entry 与 bounded legacy compatibility、cross-skill Interface 1.3 combined transcripts/evidence、#105 transaction/recovery regression、clean install/upgrade/update/preset reapply/multi-platform acceptance，并删除 Finish-family 重复 SSOT 与 dead wrappers/helpers/tests。",
+      "current_gap": "Current main 已有三个 active Finish Skills、13 exits 和大部分 routing，但缺少 Guru-namespaced canonical entry、完整 compatibility migration、routing-only combined corpus/full #119 acceptance，以及残留 Finish-family duplicate/dead surface 收敛。",
+      "archived_constraints": [
+        "复用 #116/#117/#118 current public contracts，不重新实现或重新审核其内部行为。",
+        "不移植 PR #160 task artifacts；cross-skill integration 只消费最小 public DTO。",
+        "完整回归 #105 正文明列 matrix，但不改变 transaction semantics 或扩展 failure model。",
+        "#132 保留全仓 upstream overlay cleanup ownership。"
+      ],
+      "risk_boundary": [
+        "覆盖 AI 与用户诚实协作下的正常路径、常见错误、stale/mismatch 和正文 #105 recovery matrix。",
+        "mapped exits、verification_required、stale/resume/reprepare 自动路由；happy path 不新增确认。",
+        "task artifact 与 public DTO 保持最小，secret/redaction 与副作用确认边界继续有效。"
+      ],
+      "excluded_scope": [
+        "#116/#117/#118 internal Skill reimplementation or re-review。",
+        "PR #160 task artifact migration。",
+        "#132 implementation or closure。",
+        "malicious actor、forgery、concurrency race、lock、TOCTOU、extra fault injection、cross-OS crash consistency。",
+        "commit、push、PR、merge 或 Issue closure during workspace creation。"
+      ]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex primary agent /root",
+      "reviewed_linkage_sha256": "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af",
+      "summary": "Ten readiness dimensions passed with zero findings; #119 is ready for the confirmed workspace/task transaction.",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "37051683a326a253df22fb4666c55718c1fb6940bbbf31f17b323efb1e9c103b"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "Readiness review introduced no new product semantics or scope expansion; workspace/task confirmation is owned by guru-create-task-workspace.",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "Current prerequisites、ten-dimension gate and bounded delivery-unit scope pass; the unique consumer is guru-create-task-workspace.",
+  "affected_evidence": [
+    {
+      "ref": "evidence_linkage",
+      "sha256": "41f2d4f0a90c4188c1f89e9cb25d49b6f52c4b7ce97b158d3cbb009a807d01af",
+      "summary": "Current target/context/clarity/wording linkage for Issue #119."
+    }
+  ],
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-workspace"
+  },
+  "facts_sha256": "3d3a12d35927974ee5509471f62af17c53a650f2e5a68922fa5cd41fc2d3be2d"
+}

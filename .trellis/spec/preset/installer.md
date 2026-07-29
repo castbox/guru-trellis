@@ -28,9 +28,12 @@ defined in [upstream-ownership.md](./upstream-ownership.md). The validator is
 read-only and source-repository scoped; it is not installed into business
 repositories or exposed as a workflow/Skill runtime command. It validates the
 immutable issue #128 path/baseline identity and the exact eighteen issue
-#131/#161 reviewed current-payload bindings before installer staging. Those current
-digests are normal version/drift bindings, not authenticity or anti-tamper
-boundaries, and cannot be added to any other entry.
+#131/#161 reviewed current-payload bindings, then independently validates the
+three exact issue #119 Guru-owned Finish entries before installer staging.
+Those legacy current digests are normal version/drift bindings, not
+authenticity or anti-tamper boundaries, and cannot be added to any other legacy
+entry. The additive Guru entries are managed claims, not additions to
+`legacy_entries` or its digest domain.
 
 ## Managed Assets
 
@@ -288,15 +291,28 @@ unknown document should be translated.
 
 ## Overlay Conflict Handling
 
-The overlay path set is a frozen transitional exception, not a general-purpose
-extension surface. `upstream-ownership.json` retains exactly 43 baseline paths,
-and every active payload must match its binding: `baseline_sha256` for 30
-unchanged paths, or `current_payload_sha256` for the exact thirteen active
-issue #131/#161 continue/agent entries. The historical baseline hashes and identity do not
-change, the current field cannot spread beyond this reviewed allowlist, and issue #132 alone
-owns removal. Do not add another Trellis-owned prompt, command, skill, agent,
-hook, or meta reference to the overlay tree. Reviewed removals keep their
+The overlay root contains two disjoint ownership domains. The transitional
+legacy domain retains exactly 43 issue #128 baseline paths, and every active
+payload must match its binding: `baseline_sha256` for 25 unchanged paths, or
+`current_payload_sha256` for the exact eighteen active issue #131/#161
+continue/agent/finish-router entries. The historical baseline hashes and
+identity do not change, the current field cannot spread beyond this reviewed
+allowlist, and issue #132 alone owns removal. Reviewed removals keep their
 inventory entries as `upstream_owned/removed` audit history.
+
+Issue #119 adds exactly three Guru-owned files outside that legacy digest
+domain:
+
+- `.codex/prompts/guru-finish-work.md`;
+- `.claude/commands/guru/finish-work.md`;
+- `.cursor/commands/guru-finish-work.md`.
+
+Each path has one exact Guru rule and one exact public managed claim. The source
+ownership validator requires the materialized overlay set to equal the frozen
+legacy paths plus these declared additive paths, requires every file to be a
+regular file, and rejects any other overlay. This narrow exception does not
+authorize another Trellis-owned or Guru-owned prompt, command, skill, agent,
+hook, or meta reference under the overlay root.
 
 Use `copy_overlay()` behavior:
 
@@ -330,7 +346,10 @@ content validation, run the initial switch, execute `trellis update --force`,
 then reapply the marketplace workflow before preset reapply. The second workflow
 switch is required because official update may restore the upstream default
 workflow. Successful completion requires a final recursive `.new`/`.bak` scan
-with no remaining sidecars.
+with no remaining sidecars. Initial install and post-update reapply both verify
+the three Guru Finish entries against canonical bytes and regular-file mode,
+verify selected-platform presence and unselected-platform absence, and keep the
+five legacy Finish routers byte-identical to their frozen current bindings.
 
 ## Platform Overlay Selection
 
@@ -540,8 +559,9 @@ Review `passed` through the five continue entries to the active publication
 owner. The finalizer package is directly discoverable, globally invoked after
 publication `ready`, and reached through the five thin finish entries. Internal
 verification and recovery exits are automatically consumed rather than exposed
-as user continuation gates. This integration does not claim #119 combined
-acceptance.
+as user continuation gates. That package activation alone did not claim #119;
+the current combined acceptance additionally requires the three canonical Guru
+entries and their ownership/install/update evidence.
 
 ## Task Publication Package Activation
 
@@ -586,7 +606,8 @@ six-Skill/24-exit identity or the production three-Skill/11-exit membership.
 Its workflow `verified` and reachable task-bearing standalone `not_required`
 producer edges now target active `guru-finalize-task`; the workflow-shaped
 not-required branch remains compatible but cannot be emitted by a workflow
-applicability conflict. Global Finish routing remains deferred to #119.
+applicability conflict. Issue #119 now integrates that route through the
+canonical Guru Finish entries without changing the verifier package contract.
 
 Managed executable companion assets include
 `execute-extension-verification.sh`,
@@ -627,7 +648,9 @@ the existing workflow-shaped compatibility profile.
 
 The current source/installed package graph contains thirteen active Skills and
 52 external exits. The global workflow projection is 13 invokes, 52 exits, and
-29 targets. This integration does not claim #119 combined acceptance or #115
-closure. The preset must not modify
-upstream `trellis-finish-work` Skill/Command/Prompt overlays; #132 remains the
-owner of their physical cleanup.
+29 targets. Issue #119 completes the combined Finish-family integration by
+adding the three canonical `guru-finish-work` platform entries and the
+cross-Skill/install acceptance around this already-active graph. The preset
+does not modify upstream `trellis-finish-work` Skill/Command/Prompt overlays;
+they remain byte-frozen compatibility routers and #132 remains the owner of
+their physical cleanup.

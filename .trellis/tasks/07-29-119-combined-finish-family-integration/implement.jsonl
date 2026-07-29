@@ -1,0 +1,11 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Defines global phase ownership, mandatory invocations, typed-exit consumers, finish entry, and fail-closed routing."}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Defines Interface 1.3 public I/O, target-owned authoring partitions, workflow markers, and private-state boundaries."}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Defines deterministic helper boundaries, direct finish blockers, and finalization runtime ownership."}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Defines task publication, verification, finalization, and closeout evidence contracts referenced by the Finish family."}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Defines focused, combined, upgrade, and distribution validation expectations."}
+{"file":".trellis/spec/preset/installer.md","reason":"Defines installed asset, selected-platform, update, reapply, and sidecar behavior."}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"Defines frozen legacy identity, Guru-owned namespaces, and the bounded Issue #132 removal boundary."}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Defines canonical overlay, cross-platform consistency, and compatibility rules for platform entries."}
+{"file":".trellis/spec/docs/public-docs.md","reason":"Defines README and durable documentation requirements for workflow, install, update, and active Skills."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Guides consistency across canonical workflow, installed copies, platform adapters, and public DTO routes."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Guides removal of duplicated owner behavior while preserving canonical shared contracts."}

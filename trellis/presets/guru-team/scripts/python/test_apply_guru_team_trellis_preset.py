@@ -18,6 +18,13 @@ import sys
 from io import StringIO
 from unittest import mock
 
+
+GURU_FINISH_ENTRIES = (
+    ".codex/prompts/guru-finish-work.md",
+    ".claude/commands/guru/finish-work.md",
+    ".cursor/commands/guru-finish-work.md",
+)
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
 
@@ -102,6 +109,42 @@ def assert_thin_finish_router(testcase: unittest.TestCase, path: Path) -> None:
         "--skip-archive",
         "resolve-human-artifacts.sh",
         "closeout_plan_digest",
+    ):
+        testcase.assertNotIn(forbidden, text, path)
+
+
+def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    testcase.assertIn("<!-- guru-team-overlay: v1 -->", text, path)
+    testcase.assertIn("`.trellis/workflow.md`", text, path)
+    for skill_id in (
+        "guru-review-task-publication",
+        "guru-verify-extension-installation",
+        "guru-finalize-task",
+    ):
+        testcase.assertIn(skill_id, text, path)
+    for exit_id in (
+        "ready",
+        "return_to_task_work",
+        "verification_required",
+        "publication_review_stale",
+        "resume_finalization",
+        "reprepare_required",
+        "verified",
+        "not_required",
+        "published",
+        "blocked",
+    ):
+        testcase.assertIn(exit_id, text, path)
+    testcase.assertIn("not user choices", text, path)
+    testcase.assertIn("Do not add a routine confirmation", text, path)
+    for forbidden in (
+        "finish-work.sh",
+        "publish-pr.sh",
+        "--expected-plan-digest",
+        "--skip-archive",
+        "closeout_plan_digest",
+        "artifact schema field",
     ):
         testcase.assertNotIn(forbidden, text, path)
 
@@ -458,6 +501,31 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             ],
         )
 
+    def test_throwaway_runs_installed_combined_finish_routes_at_both_checkpoints(
+        self,
+    ) -> None:
+        script = (
+            self.guru_root
+            / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'run_installed_finish_family_integration "initial install"',
+            script,
+        )
+        self.assertIn(
+            'run_installed_finish_family_integration "post-update preset reapply"',
+            script,
+        )
+        self.assertEqual(
+            script.count("run_installed_finish_family_integration "),
+            2,
+        )
+        self.assertIn("GURU_FINISH_INTEGRATION_MODE=installed", script)
+        self.assertIn(
+            "GURU_FINISH_INTEGRATION_ADAPTERS=shared,codex,claude,cursor",
+            script,
+        )
+
     def test_default_platforms_install_codex_cursor_and_shared_overlays(self) -> None:
         payload = self.install()
 
@@ -555,6 +623,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
         self.assertIn("实现代理", (self.repo / ".trellis/agents/implement.md").read_text(encoding="utf-8"))
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
+        self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
+        self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
+        assert_thin_guru_finish_entry(self, self.repo / ".codex/prompts/guru-finish-work.md")
+        assert_thin_guru_finish_entry(self, self.repo / ".cursor/commands/guru-finish-work.md")
         self.assertTrue((self.repo / ".codex/agents/trellis-implement.toml").is_file())
         self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
         codex_implement = (self.repo / ".codex/agents/trellis-implement.toml").read_text(encoding="utf-8")
@@ -652,7 +724,40 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         second_payload = self.install()
 
         self.assertEqual(second_payload["platforms"], ["codex", "cursor"])
+        self.assertEqual(second_payload["new_copies"], [])
+        self.assertEqual(
+            (self.repo / ".codex/prompts/guru-finish-work.md").read_bytes(),
+            (self.guru_root / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md").read_bytes(),
+        )
+        self.assertEqual(
+            (self.repo / ".cursor/commands/guru-finish-work.md").read_bytes(),
+            (self.guru_root / "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md").read_bytes(),
+        )
         self.assertFalse((self.repo / ".claude").exists())
+
+    def test_default_reapply_does_not_restore_removed_unselected_claude_guru_entry(self) -> None:
+        self.install({"claude", "codex", "cursor"})
+        claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
+        claude_entry.unlink()
+
+        self.install()
+
+        self.assertFalse(claude_entry.exists())
+
+    def test_unknown_local_guru_finish_edit_gets_new_copy(self) -> None:
+        target = self.repo / ".codex/prompts/guru-finish-work.md"
+        target.parent.mkdir(parents=True)
+        target.write_text("# Local custom finish command\n", encoding="utf-8")
+
+        payload = self.install({"codex"})
+
+        sidecar = target.with_name("guru-finish-work.md.new")
+        self.assertIn(".codex/prompts/guru-finish-work.md.new", payload["new_copies"])
+        self.assertEqual(target.read_text(encoding="utf-8"), "# Local custom finish command\n")
+        self.assertEqual(
+            sidecar.read_bytes(),
+            (self.guru_root / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md").read_bytes(),
+        )
 
     def test_explicit_claude_platform_installs_only_shared_and_claude_overlays(self) -> None:
         payload = self.install({"claude"})
@@ -665,6 +770,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue((self.repo / ".agents/skills/trellis-check/SKILL.md").is_file())
         self.assertTrue((self.repo / ".trellis/agents/check.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
+        self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
+        assert_thin_guru_finish_entry(self, self.repo / ".claude/commands/guru/finish-work.md")
         self.assertTrue((self.repo / ".claude/agents/trellis-implement.md").is_file())
         self.assertTrue((self.repo / ".claude/agents/trellis-check.md").is_file())
         claude_check_agent = (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8")
@@ -704,6 +811,19 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         for relative in finish_paths:
             assert_thin_finish_router(self, overlay_root / relative)
             assert_thin_finish_router(self, self.repo / relative)
+        guru_entry_bytes = []
+        for relative in GURU_FINISH_ENTRIES:
+            canonical = overlay_root / relative
+            installed = self.repo / relative
+            assert_thin_guru_finish_entry(self, canonical)
+            assert_thin_guru_finish_entry(self, installed)
+            self.assertFalse(canonical.is_symlink())
+            self.assertFalse(installed.is_symlink())
+            self.assertEqual(canonical.stat().st_mode & 0o777, 0o644)
+            self.assertEqual(installed.stat().st_mode & 0o777, 0o644)
+            self.assertEqual(installed.read_bytes(), canonical.read_bytes())
+            guru_entry_bytes.append(canonical.read_bytes())
+        self.assertEqual(len(set(guru_entry_bytes)), 1)
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
@@ -747,7 +867,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 102)
+        self.assertEqual(len(managed_assets), 105)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -995,6 +1115,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertLess(preset_reapply, post_reapply_ownership)
         self.assertLess(post_reapply_ownership, final_scan)
         self.assertEqual(verifier.count('ownership_checkpoint "'), 3)
+        self.assertIn('verify_guru_finish_entries "$TARGET" "initial preset apply"', verifier)
+        self.assertIn('verify_guru_finish_entries "$TARGET" "post-update preset reapply"', verifier)
+        self.assertIn("Guru Finish platform entry bytes differ", verifier)
+        self.assertIn("frozen legacy Finish source bytes drifted", verifier)
+        self.assertIn('payload["required_entrypoint"] == "guru-finish-work"', verifier)
+        self.assertNotIn('payload["required_entrypoint"] == "trellis-finish-work"', verifier)
         self.assertIn('WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"', verifier)
         self.assertIn('event not in {"open", "os.listdir", "os.scandir"}', verifier)
         self.assertIn("os._exit(91)", verifier)
@@ -1044,7 +1170,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 102", verifier)
+        self.assertIn("assert len(assets) == 105", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
             self.assertIn(
@@ -1596,7 +1722,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.23")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.24")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(

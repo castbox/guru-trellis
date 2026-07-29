@@ -100,6 +100,68 @@ print(hashlib.sha256(path.read_bytes()).hexdigest())
 PY
 }
 
+verify_guru_finish_entries() {
+  local target="$1"
+  local label="$2"
+  python3 - "$REPO_ROOT" "$target" "$label" <<'PY'
+import hashlib
+import stat
+import sys
+from pathlib import Path
+
+source_root = Path(sys.argv[1]) / "trellis/presets/guru-team/overlays"
+target_root = Path(sys.argv[2])
+label = sys.argv[3]
+guru_entries = (
+    ".codex/prompts/guru-finish-work.md",
+    ".claude/commands/guru/finish-work.md",
+    ".cursor/commands/guru-finish-work.md",
+)
+legacy_entries = {
+    ".agents/skills/trellis-finish-work/SKILL.md": "6fac809870d03d89c730692811b333cf71d553252d9b0e9e094b09a701a306a3",
+    ".codex/prompts/trellis-finish-work.md": "515b75b637f41cc50a8446b05cad5a35ace3044e29041058a4e3c70d0999c609",
+    ".codex/skills/trellis-finish-work/SKILL.md": "6fac809870d03d89c730692811b333cf71d553252d9b0e9e094b09a701a306a3",
+    ".claude/commands/trellis/finish-work.md": "515b75b637f41cc50a8446b05cad5a35ace3044e29041058a4e3c70d0999c609",
+    ".cursor/commands/trellis-finish-work.md": "515b75b637f41cc50a8446b05cad5a35ace3044e29041058a4e3c70d0999c609",
+}
+
+guru_payloads = []
+for relative in guru_entries:
+    source = source_root / relative
+    installed = target_root / relative
+    for kind, path in (("source", source), ("installed", installed)):
+        mode = path.lstat().st_mode
+        if not stat.S_ISREG(mode) or stat.S_IMODE(mode) != 0o644:
+            raise SystemExit(f"{label}: {kind} Guru Finish entry is not regular mode 0644: {relative}")
+    source_bytes = source.read_bytes()
+    if installed.read_bytes() != source_bytes:
+        raise SystemExit(f"{label}: installed Guru Finish entry bytes drifted: {relative}")
+    guru_payloads.append(source_bytes)
+if len(set(guru_payloads)) != 1:
+    raise SystemExit(f"{label}: Guru Finish platform entry bytes differ")
+
+for relative, expected_sha256 in legacy_entries.items():
+    source = source_root / relative
+    installed = target_root / relative
+    source_bytes = source.read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != expected_sha256:
+        raise SystemExit(f"{label}: frozen legacy Finish source bytes drifted: {relative}")
+    if installed.read_bytes() != source_bytes:
+        raise SystemExit(f"{label}: installed legacy Finish bytes drifted: {relative}")
+PY
+}
+
+run_installed_finish_family_integration() {
+  local label="$1"
+  printf 'Installed combined Finish-family integration: %s\n' "$label"
+  GURU_FINISH_INTEGRATION_ROOT="$TARGET" \
+    GURU_FINISH_INTEGRATION_MODE=installed \
+    GURU_FINISH_INTEGRATION_ADAPTERS=shared,codex,claude,cursor \
+    PYTHONDONTWRITEBYTECODE=1 \
+    python3 \
+      "$REPO_ROOT/trellis/skills/guru-team/tests/test_finish_family_integration.py"
+}
+
 assert_official_state_absent() {
   local root="$1"
   local label="$2"
@@ -1399,6 +1461,7 @@ DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256 "$TARGET/.trellis/.developer")"
   --platform claude \
   --platform codex \
   --platform cursor
+verify_guru_finish_entries "$TARGET" "initial preset apply"
 
 test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
@@ -1504,10 +1567,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.23"
+assert extension["version"] == "0.6.5-guru.24"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 102
+assert len(assets) == 105
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -1926,11 +1989,11 @@ FINISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/finish-work.sh" --
 FINISH_STATUS=$?
 set -e
 if [[ "$FINISH_STATUS" -eq 0 ]]; then
-  echo "finish-work direct dry-run unexpectedly succeeded without explicit trellis-finish-work intent" >&2
+  echo "finish-work direct dry-run unexpectedly succeeded outside guru-finish-work" >&2
   exit 2
 fi
 printf '%s\n' "$FINISH_ERROR_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "finish-work"; assert payload["required_entrypoint"] == "trellis-finish-work"; assert "intent_flag" not in payload; assert "guru-finalize-task" in payload["error"]; assert "--from-trellis-finish-work" not in payload["error"]' <<<"$FINISH_ERROR_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "finish-work"; assert payload["required_entrypoint"] == "guru-finish-work"; assert "intent_flag" not in payload; assert "guru-finalize-task" in payload["error"]; assert "--from-trellis-finish-work" not in payload["error"]' <<<"$FINISH_ERROR_JSON"
 
 set +e
 PUBLISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/publish-pr.sh" --root "$TARGET" --json --dry-run 2>&1)"
@@ -1941,7 +2004,7 @@ if [[ "$PUBLISH_STATUS" -eq 0 ]]; then
   exit 2
 fi
 printf '%s\n' "$PUBLISH_ERROR_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "publish-pr"; assert payload["required_entrypoint"] == "trellis-finish-work"' <<<"$PUBLISH_ERROR_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "publish-pr"; assert payload["required_entrypoint"] == "guru-finish-work"' <<<"$PUBLISH_ERROR_JSON"
 
 git -C "$TARGET" config user.name "Installed Task Commit Smoke"
 git -C "$TARGET" config user.email "installed-task-commit@example.invalid"
@@ -3188,6 +3251,7 @@ if [[ "$STALE_PLAN_STATUS" -eq 0 ]]; then
 fi
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "blocked"; assert any("stale" in item or "planned state" in item for item in payload["errors"])' <<<"$STALE_PLAN_JSON"
 
+run_installed_finish_family_integration "initial install"
 INITIAL_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
 printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
@@ -3234,6 +3298,7 @@ apply_local_workflow_sample
   --platform codex \
   --platform cursor
 ownership_checkpoint "post-preset-reapply-before-final-checks"
+verify_guru_finish_entries "$TARGET" "post-update preset reapply"
 verify_task_publication_validator_wrappers "after-preset-reapply"
 
 if [[ "$(workspace_tree_digest "$TARGET/.trellis/workspace")" != "$WORKSPACE_TREE_DIGEST_BEFORE" ]]; then
@@ -3457,6 +3522,7 @@ python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mo
 grep -q '^session_auto_commit: false$' "$TARGET/.trellis/config.yaml"
 grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
 
+run_installed_finish_family_integration "post-update preset reapply"
 UPDATED_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case after-update)"
 printf '%s\n' "$UPDATED_CLOSEOUT_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"

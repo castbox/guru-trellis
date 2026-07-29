@@ -5365,11 +5365,11 @@ def publish_config(config: dict[str, Any]) -> dict[str, Any]:
 def validate_publish_invocation(_args: argparse.Namespace) -> None:
     raise WorkflowError(
         "publish-pr is a compatibility-only blocked command. Run the explicit state-aware "
-        "`trellis-finish-work` entry for both initial closeout and recovery.",
+        "`guru-finish-work` entry for both initial closeout and recovery.",
         exit_code=2,
         payload={
             "blocked_step": "publish-pr",
-            "required_entrypoint": "trellis-finish-work",
+            "required_entrypoint": "guru-finish-work",
         },
     )
 
@@ -5377,9 +5377,9 @@ def validate_publish_invocation(_args: argparse.Namespace) -> None:
 def validate_finish_work_invocation(args: argparse.Namespace) -> None:
     if getattr(args, "skip_archive", False):
         raise WorkflowError(
-            "--skip-archive is no longer a closeout recovery path; rerun the same trellis-finish-work entry.",
+            "--skip-archive is no longer a closeout recovery path; rerun the same guru-finish-work entry.",
             exit_code=2,
-            payload={"required_entrypoint": "trellis-finish-work"},
+            payload={"required_entrypoint": "guru-finish-work"},
         )
     if getattr(args, "draft", None) is not None:
         raise WorkflowError(
@@ -5390,13 +5390,13 @@ def validate_finish_work_invocation(args: argparse.Namespace) -> None:
         return
     raise WorkflowError(
         "finish-work is an internal closeout helper. Re-enter the explicit "
-        "`trellis-finish-work` skill/command so it can route current publication readiness "
+        "`guru-finish-work` entry so it can route current publication readiness "
         "to `guru-finalize-task`; do not invoke this helper or its private intent marker "
         "directly.",
         exit_code=2,
         payload={
             "blocked_step": "finish-work",
-            "required_entrypoint": "trellis-finish-work",
+            "required_entrypoint": "guru-finish-work",
         },
     )
 
@@ -26900,7 +26900,7 @@ def assert_closeout_archive_month_current(plan: dict[str, Any]) -> None:
                 "stage": "archive-month-preflight",
                 "planned_month": planned,
                 "official_month": actual,
-                "next_action": "rerun trellis-finish-work dry-run and review a new digest before formal closeout",
+                "next_action": "rerun guru-finish-work and review the new closeout plan before formal closeout",
             },
         )
 
@@ -39142,7 +39142,7 @@ def build_parser() -> argparse.ArgumentParser:
     finish.add_argument(
         "--from-trellis-finish-work",
         action="store_true",
-        help="Required intent marker set by the explicit trellis-finish-work entrypoint.",
+        help="Private intent marker set by the canonical guru-finish-work entrypoint.",
     )
     finish.add_argument("--skip-archive", action="store_true", help=argparse.SUPPRESS)
     finish.add_argument(

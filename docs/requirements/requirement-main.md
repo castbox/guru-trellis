@@ -125,9 +125,12 @@ closed structure 验证，不扫描整份 payload。
 
 - Workflow 行为写在 Markdown 合同中，不通过修改 Trellis 上游源码、全局 npm 包、
   `node_modules` 或 hook hack 实现分叉。
-- `trellis-continue` 只推进到 publication readiness，不 push、不创建 PR、不调用
-  `finish-work.sh` 或 finalizer。
-- `trellis-finish-work` 是正常 closeout 与 PR publish 的唯一用户入口。
+- Branch Review `passed` 后只存在一条 global Phase 3.6 route；
+  `trellis-continue` 在 #132 前可作为冻结 compatibility caller 到达该 route，但只推进到
+  publication readiness，不 push、不创建 PR、不调用 `finish-work.sh` 或 finalizer。
+- `guru-finish-work` 是正常 closeout 与 PR publish 的 canonical 用户入口；它读取 live
+  state，必要时进入同一 Phase 3.6，并且只有它可从 current `ready` 继续 Phase 3.7。
+  冻结的 `trellis-finish-work` 入口只作为 #132 前的 compatibility alias。
 
 ## 2. P0：Intake / worktree / no_task 副作用边界
 
@@ -248,12 +251,19 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 - Issue #7 / PR #24：publish 前必须有 AI-reviewed body file 或 readiness artifact。
 - Issue #27 / PR #29：`finish-work --dry-run` 成为真正无副作用 readiness preview，同时修正
   Codex 默认 dispatch 为 `sub-agent`。
+- Issue #105：定义 prepare、push、verification、Draft PR、archive、三方 HEAD、Ready 与
+  recovery 的完整事务/failure matrix；#119 只做 current regression，不重写该 engine。
+- Issue #116 / #117 / #118：分别激活 publication review、extension installation
+  verification 与 finalizer 三个 Finish owners。
+- Issue #119：增加 canonical `guru-finish-work`，完成 13-exit combined route 与多平台/安装集成，
+  并与本交付一起关闭 umbrella #115；#132 只负责后续 physical legacy overlay removal。
 
 已实现能力：
 
 | 能力 | 说明 |
 | --- | --- |
-| Publish after finish | `publish-pr` 是兼容性阻断入口；`trellis-finish-work` 只是 live-workflow 薄入口，正常发布与恢复由 active `guru-finalize-task` 在 semantic Gate 和精确 plan confirmation 后私下驱动 deterministic engine。 |
+| Publish after finish | Branch Review `passed` 后只有一条 global Phase 3.6 publication route；冻结 `trellis-continue` 可兼容到达该 route 并停在 `ready`。`publish-pr` 是兼容性阻断入口；canonical `guru-finish-work` 是 live-workflow 薄入口，必要时进入同一 Phase 3.6，并且只有它可从 current `ready` 继续 Phase 3.7。正常发布与恢复由 active `guru-finalize-task` 在 semantic Gate 和精确 plan confirmation 后私下驱动 deterministic engine。既有 `trellis-finish-work` 入口 bytes 冻结保留到 #132，只作为同一路由的 compatibility alias。 |
+| Finish-family combined routing | `guru-review-task-publication` 的 3 exits、`guru-verify-extension-installation` 的 4 exits 与 `guru-finalize-task` 的 6 exits 共 13 个 external exits 均有唯一 consumer/stop。Combined public-only evidence 覆盖 normal non-extension、extension、return-to-task-work、publication stale、same-plan resume、cross-month reprepare、published recovery 与 blocked，并闭合 Branch Review passed、publication ready、publication stale、verification required、verified/not-required 和 reprepare 六条关键 edge；测试不读取 owner-private artifact/runtime。 |
 | Recovery/debug 明确化 | 同一 finalizer loop 从 committed plan/readiness、active/archive locator、Git/remote 与唯一 PR identity 恢复；mapped recovery exits 自动承接，不暴露 publish recovery flag 或下一条命令选择。 |
 | Reviewed body source | closeout 必须传入当前 task-local `pr-body.md`；`--body-artifact` 与 generated fallback 不进入 finish-work 事务。 |
 | PR body 质量门禁 | 变更摘要、影响范围、验证结果、Review Gate、Issue 关闭范围、安全说明必须具体，禁止“当前 Trellis task”“详见 artifact”等低信息量短语作为主要摘要。 |
@@ -267,6 +277,9 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 - `trellis/workflows/guru-team/scripts/bash/finish-work.sh`
 - `trellis/workflows/guru-team/scripts/bash/publish-pr.sh`
 - `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`
+- `trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md`
+- `trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md`
+- `trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md`
 - `trellis/presets/guru-team/overlays/**/trellis-finish-work*`
 - `.trellis/spec/workflow/workflow-contract.md`
 - `.trellis/spec/workflow/companion-scripts.md`
@@ -312,11 +325,11 @@ Canonical 资产：
 
 | 平台/层 | 文件 |
 | --- | --- |
-| Shared skills | `.agents/skills/trellis-start`、`trellis-continue`、`trellis-finish-work` |
+| Shared workflow | `.trellis/workflow.md` 直接编排三个 active Finish Skills；不新增 routing-only `guru-finish-work` wrapper Skill。既有 `.agents/skills/trellis-finish-work` 仅作 #132 前兼容。 |
 | Channel runtime | `.trellis/agents/implement.md`、`.trellis/agents/check.md` |
-| Codex | `.codex/agents/trellis-*.toml`、`.codex/prompts/*` 与 `.codex/skills/*` |
-| Cursor | `.cursor/agents/trellis-*.md`、`.cursor/commands/trellis-continue.md`、`.cursor/commands/trellis-finish-work.md` |
-| Claude | `.claude/agents/trellis-*.md`、`.claude/commands/trellis/continue.md`、`.claude/commands/trellis/finish-work.md` |
+| Codex | `.codex/prompts/guru-finish-work.md` 是 canonical Finish prompt；既有 `trellis-finish-work` prompt/Skill bytes 保留到 #132。 |
+| Cursor | `.cursor/commands/guru-finish-work.md` 是 canonical Finish command；既有 `.cursor/commands/trellis-finish-work.md` bytes 保留到 #132。 |
+| Claude | `.claude/commands/guru/finish-work.md` 是 canonical Finish command；既有 `.claude/commands/trellis/finish-work.md` bytes 保留到 #132。 |
 
 ## 6. P1：安装、升级与开箱验证
 
@@ -451,6 +464,9 @@ discovery、task 或 worktree 创建。
 | #101 | open | 当前任务 | `guru-review-change-request` semantic readiness closed loop、三类 target、current prerequisite linkage、十项 dimensions、五个唯一 consumer、stdout-only record/check、active #112 transition 与旧 readiness route replacement。 |
 | #110 | open | 已实现前置合同 | `guru-sync-base` public deterministic closed loop：ordered-candidate-first 四级 base resolution、digest-bound ff-only sync、三方 equality、stdout facts、typed exits、prepare-task reuse、interface schema 1.2 双 profile与 preset/platform distribution。`synced` 唯一进入 #111。 |
 | #111 | open | 当前任务 | `guru-discover-change-context` public semantic closed loop：workflow/standalone freshness parity、current-state-first、archived finish-summary index preview、AI 1-3 candidate deep-read、mem insufficiency gate、current stale-code/superseded-digest refresh re-entry、Git-trackable same-snapshot task-local persistence 与三个唯一 typed-exit consumers。 |
+| #115 | open | #119 close scope | Finish-family umbrella；由 #119 combined integration 完整验收后关闭。 |
+| #119 | open | 当前任务 | Canonical `guru-finish-work`、薄 global route、13-exit combined evidence、clean install/update/reapply 与 Shared/Codex/Claude/Cursor 一致性；close scope 只含 #119/#115。 |
+| #132 | open | follow-up | 冻结 upstream `trellis-finish-work` / `trellis-continue` compatibility overlays 的 physical removal；不由 #119 提前执行或关闭。 |
 
 ## 9. 当前扩展边界
 
@@ -461,7 +477,7 @@ discovery、task 或 worktree 创建。
 - Platform overlay 是 harness 适配层，不是新的 workflow source。
 - Subagent 技术 `name` 是调度 API，不为了中文 UI 展示改名；中文展示名通过 description、标题和 `agent-assignment.json.logical_role` 表达。Codex 当前 `nickname_candidates` 只能是 ASCII，不能用它承载中文展示名。
 - Task artifact 是任务证据，不是 durable docs 的替代品。
-- PR publish 必须经过 finish-work 与 review/readiness evidence，不能由普通 `publish-pr` 直接触发。
+- PR publish 必须经过 canonical `guru-finish-work` 与 review/readiness evidence，不能由普通 `publish-pr` 直接触发；legacy `trellis-finish-work` 只保留为 #132 前兼容入口。
 
 尚未在本目录展开的内容：
 
@@ -493,11 +509,12 @@ pass 只能来自显式外部 grader，human feedback 独立。结果状态为
 workflow/standalone invocation 不读取任何 eval asset。每个 adapter descriptor 绑定一个
 安装时校验 executable mode 的 wrapper；runner 只从 descriptor path 调用它。Shared
 解析 preset-managed native executor，Codex/Claude/Cursor 从 `PATH` 检测 documented native
-command，传递 exact `SKILL.md`、public wrapper、prompt
-与 staged files，并收集平台 argv、public output 和 trace；native 缺失为 `unsupported`。
-Runner 在 native execution 外读取 canonical corpus，并只向 native 提供 repo/package 外
-public-only projection、case workdir 与最小 request；canonical package/corpus/private runtime
-locator 均不进入 native context。Trace evidence 使用
+  command，传递 exact `SKILL.md`、public wrapper、prompt 与 runner-resolved exact
+  public invocation arguments，并收集平台 argv、public output 和 trace；native 缺失为
+  `unsupported`。Runner 在 native execution 外读取 canonical corpus 与 case files，并只向
+  native 提供 repo/package 外 public-only projection 和最小 request；case-file 内容/路径、
+  case workdir、canonical package/corpus/private runtime locator 均不进入 native context。
+  Trace evidence 使用
 `guru-team-skill-eval-native-trace-1.0`：native CLI 必须经 repo 外 helper 完成 projected exact
 Skill read 与 exact wrapper invocation，receipt 绑定 request、projection、Skill/wrapper digest、
 argv、return code 和 DTO output。合法 DTO 缺 receipt，或 projection 暴露 eval/private runtime，

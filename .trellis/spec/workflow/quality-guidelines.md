@@ -561,8 +561,9 @@ Python or shell.
   run root, platform corpus drift, and malformed public output.
 + Adapter integration injects fake shared/Codex/Claude/Cursor executables to
   exercise the real descriptor-selected adapter wrappers, prove four distinct
-  native argv shapes, exact Skill/prompt/staged-file context, public output and
-  trace collection, and byte-identical corpus without local CLI assumptions;
+  native argv shapes, exact Skill/prompt plus runner-resolved public invocation
+  arguments, public output and trace collection, and byte-identical corpus
+  without local CLI assumptions;
   native absence separately returns `unsupported`. A fake adapter may not
   replace the four real wrappers in this integration test.
 + Four-platform comparison covers a repo current package and a repo-external
@@ -579,11 +580,13 @@ Python or shell.
   reading the Skill and invoking the public wrapper through the trace helper.
   Wrapper-source scanning or unconditional synthetic trace events cannot
   satisfy the three public-invocation trace invariants.
-+ All four native envelopes receive only the public staged projection. Raw
-  reads of projection-relative `evals/evals.json` and private runtime source
-  must produce real filesystem denial evidence and `execution_error`; native
-  request/context must contain no canonical package/corpus/private-runtime
-  locator while the runner grades canonical corpus outside execution.
++ All four native envelopes receive only the public staged projection, case
+  prompt, and runner-resolved public invocation arguments. Raw reads of
+  projection-relative `evals/evals.json` and private runtime source must produce
+  real filesystem denial evidence and `execution_error`; native request/context
+  must contain no eval case-file content/path, case workdir, or canonical
+  package/corpus/private-runtime locator while the runner grades canonical
+  corpus outside execution.
 + Fresh install and post-`trellis update` preset reapply rerun source/installed
   discovery and run smoke, selected-platform byte/mode checks, dogfood drift,
   and recursive zero `.new`/`.bak` scans.
@@ -713,6 +716,48 @@ illegal same-plan resume state including rejection of `prepared` and `ready`.
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The
 package closure is thirteen active Skills and 52 external exits; global markers
-remain 13 invokes, 52 exits, and 29 targets. This does not claim #119 combined
-acceptance. Upstream Finish assets
-remain unchanged, with physical overlay cleanup owned by #132.
+remain 13 invokes, 52 exits, and 29 targets.
+
+## Finish-Family Combined Integration Quality
+
+The combined acceptance layer closes the three active Finish owners without
+reimplementing or semantically re-reviewing their package-local behavior. It
+must derive exactly thirteen external exits from their live `interface.json`
+files: three publication-review exits, four extension-verification exits, and
+six finalization exits. Each exit has exactly one public output schema/example,
+one declared consumer, one projection, and direct consumer uses for every
+public field; missing, duplicate, unknown, multiple, or unmapped routes fail
+closed.
+
+The six key route edges are Branch Review `passed` to publication review,
+finalizer `publication_review_stale` to publication review, publication
+`ready` to finalization, finalizer `verification_required` to extension
+verification, verifier `verified|not_required` to finalization, and finalizer
+`reprepare_required` to finalization. Every target-owned authoring handoff used
+by these routes and same-plan resume independently validates the projected seed
+and authoring example, proves disjointness and exact required-field union,
+merges without overwrite, and validates the complete target input schema.
+
+Temporary combined transcripts cover normal non-extension, extension,
+return-to-task-work, publication stale, same-plan resume, cross-month
+reprepare, published recovery, and blocked routes. Routing evidence may read
+only public Interface 1.3 contracts, per-exit schemas/examples, consumer
+contracts, projections, target-owned authoring examples, and stdout from real
+public wrappers. It must not read or import `guru_team_trellis.py`, owner-private
+artifacts/runtime, eval expectations, or persisted transaction history to
+construct or interpret a route. `expected_exit` is grader-only and never enters
+adapter/native requests.
+
+Shared, Codex, Claude, and Cursor execute the same canonical Finish corpus and
+route expectations through the existing real adapter wrappers. Native-visible
+projections omit the corpus and private runtime; trace invariants prove the
+Skill contract was read and the public wrapper was invoked. Test transcripts
+remain under an external temporary run root and are neither public DTOs nor
+durable repository artifacts. The complete #105 production transaction and
+recovery module remains the separate regression authority and does not expand
+into hostile-input, concurrency, locking, TOCTOU, extra fault-injection,
+crash-consistency, or cross-OS behavior.
+
+This combined evidence closes the current #119 Finish-family integration
+contract. Frozen upstream Finish assets remain unchanged, with their physical
+overlay cleanup owned by #132.

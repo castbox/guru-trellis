@@ -13,11 +13,15 @@ Overlay files are small platform entrypoints. They should point the AI back to
 `.trellis/workflow.md` and the Guru Team companion scripts instead of
 duplicating the full workflow.
 
-The current overlay tree is also a frozen migration surface. Its exact 43 paths
-and immutable issue #128 baseline hashes are recorded in
+The current overlay tree has two disjoint ownership domains. Its exact 43
+transitional paths and immutable issue #128 baseline hashes are recorded in
 `trellis/presets/guru-team/ownership/upstream-ownership.json`; no new
-upstream-owned path may be added. New reusable behavior belongs in Markdown
-workflow contracts or canonical `guru-*` packages. Reviewed removal keeps an
+upstream-owned path may be added. Issue #119 separately owns exactly three
+additive Guru entries: `.codex/prompts/guru-finish-work.md`,
+`.claude/commands/guru/finish-work.md`, and
+`.cursor/commands/guru-finish-work.md`. They do not expand `legacy_entries` or
+its digest identity. Any other reusable behavior belongs in Markdown workflow
+contracts or canonical `guru-*` packages. Reviewed legacy removal keeps an
 `upstream_owned/removed` inventory tombstone instead of deleting audit history.
 Exactly eighteen active entries carry a separately pinned
 `current_payload_sha256`: the five `trellis-continue` entries reviewed by issue
@@ -215,6 +219,15 @@ Finish entries must:
   artifacts except for literal command/path/JSON/HEAD/API/code tokens
 - state that only `close_issues` may use close keywords
 
+The three canonical Guru Finish entries use the same thin route text modulo
+platform command naming. They are the daily/recovery entrypoints named
+`guru-finish-work`, `/guru:finish-work`, and `/guru-finish-work`. The five
+existing `trellis-finish-work` entries remain byte-frozen compatibility routers
+through issue #132; they are validated separately and must not be copied as the
+canonical source for new entry content. Do not add
+`.agents/skills/guru-finish-work`: Shared execution enters the three active
+owners through the global workflow.
+
 Start entries must:
 
 - identify themselves as fallback/explicit orientation
@@ -312,7 +325,9 @@ the shared, Codex, Cursor, and Claude Guru discovery roots through the registry
 and managed-hash installer. Do not add, modify, or claim any upstream-owned
 `trellis-check` Skill, agent, command, prompt, or channel runtime asset.
 
-When changing one overlay, search all copies:
+When changing one overlay, search all copies. For the #119 canonical entries,
+also compare the three Guru entry bytes and verify the five legacy Finish entry
+digests remain unchanged:
 
 ```bash
 find trellis/presets/guru-team/overlays -type f | sort
@@ -332,7 +347,9 @@ The drift check is read-only and only verifies file presence/content equality.
 It does not decide whether an overlay change is semantically correct.
 
 Keep platform-specific command names only where needed, such as
-`/trellis:finish-work` for Claude and `/trellis-finish-work` for Cursor.
+`/guru:finish-work` for Claude and `/guru-finish-work` for Cursor. Legacy
+`/trellis:finish-work` and `/trellis-finish-work` names appear only in the
+bounded compatibility inventory until #132.
 
 ## Anti-Patterns
 
@@ -341,8 +358,8 @@ Keep platform-specific command names only where needed, such as
   `trellis/workflows/guru-team/workflow.md`.
 - Omitting the overlay marker, which makes installer conflict detection weaker.
 - Mentioning publish as a separate user-facing step.
-- Adding an upstream namespace overlay or managed-path claim outside the frozen
-  ownership inventory.
+- Adding an upstream namespace overlay or a managed-path claim outside the
+  frozen legacy inventory plus the three exact #119 Guru Finish claims.
 
 ## Eval Distribution Boundary
 
@@ -412,6 +429,12 @@ Issue #161 separately updates the reviewed current bytes of the five existing
 `trellis-finish-work` entries. They become thin routers through Phase 3.6 and
 the active `guru-finalize-task`; they do not add a path, own semantic review, or
 directly invoke deterministic closeout scripts.
+
+Issue #119 adds the three exact canonical Guru Finish entries described above.
+They route the same three active owners, keep mapped stale/resume/reprepare and
+verification transitions internal, add no routine confirmation or artifact
+schema tutorial, and establish combined entry/install acceptance without
+changing the five issue #161 legacy bytes.
 
 Canonical workflow and dogfood workflow add only the mandatory invocation,
 three typed transitions, re-entry, and fail-closed targets. Platform package

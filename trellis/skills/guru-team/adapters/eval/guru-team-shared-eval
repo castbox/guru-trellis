@@ -52,27 +52,13 @@ def main() -> int:
         print(skill_read.stderr, file=sys.stderr)
         return skill_read.returncode
 
-    invocation_arguments: list[str] | None = None
-    workdir = Path(str(request["workdir"]))
-    for relative in request.get("files", []):
-        target = workdir / str(relative)
-        loaded = helper_call(protocol, "read", "--kind", "case_file", "--path", str(target))
-        if loaded.returncode != 0:
-            print(loaded.stderr, file=sys.stderr)
-            return loaded.returncode
-        try:
-            payload = json.loads(loaded.stdout)
-        except json.JSONDecodeError:
-            continue
-        invocation = payload.get("public_invocation") if isinstance(payload, dict) else None
-        candidate = invocation.get("arguments") if isinstance(invocation, dict) else None
-        if isinstance(candidate, list) and candidate and all(isinstance(item, str) for item in candidate):
-            if invocation_arguments is not None:
-                print("multiple case files declare public invocation arguments", file=sys.stderr)
-                return 2
-            invocation_arguments = candidate
-    if invocation_arguments is None:
-        print("case files do not declare public invocation arguments", file=sys.stderr)
+    invocation_arguments = request.get("public_invocation_arguments")
+    if (
+        not isinstance(invocation_arguments, list)
+        or not invocation_arguments
+        or any(not isinstance(item, str) for item in invocation_arguments)
+    ):
+        print("runner-resolved public invocation arguments are unavailable", file=sys.stderr)
         return 2
 
     invoked = helper_call(

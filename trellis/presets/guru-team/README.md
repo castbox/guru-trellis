@@ -396,7 +396,7 @@ Production skill registry 同时保留 reserved `guru-create-work-commit`，以�
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前
 canonical extension version 是待发布的
-`0.6.5-guru.23`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`0.6.5-guru.24`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -552,6 +552,7 @@ Default Codex overlays are installed when no platform flag is provided, or when
 - `.codex/hooks/session-start.py`
 - `.codex/prompts/trellis-start.md`
 - `.codex/prompts/trellis-continue.md`
+- `.codex/prompts/guru-finish-work.md`
 - `.codex/prompts/trellis-finish-work.md`
 - `.codex/skills/trellis-start/SKILL.md`
 - `.codex/skills/trellis-continue/SKILL.md`
@@ -571,6 +572,7 @@ Default Cursor overlays are installed when no platform flag is provided, or when
 - `.cursor/hooks/session-start.py`
 - `.cursor/hooks/inject-subagent-context.py`
 - `.cursor/commands/trellis-continue.md`
+- `.cursor/commands/guru-finish-work.md`
 - `.cursor/commands/trellis-finish-work.md`
 - `.cursor/skills/trellis-brainstorm/SKILL.md`
 - `.cursor/skills/trellis-before-dev/SKILL.md`
@@ -588,7 +590,14 @@ is used:
 - `.claude/agents/trellis-check.md`
 - `.claude/agents/trellis-research.md`
 - `.claude/commands/trellis/continue.md`
+- `.claude/commands/guru/finish-work.md`
 - `.claude/commands/trellis/finish-work.md`
+
+The three `guru-finish-work` paths above are the canonical explicit Finish
+adapters. The listed `trellis-finish-work` paths remain byte-frozen compatibility
+entries through #132 and do not create a second route or artifact model. Shared
+execution uses the installed global workflow and three active owner packages;
+the preset does not install a routing-only `guru-finish-work` Skill.
 
 The active `.trellis/workflow.md` is installed or switched through the official
 Trellis workflow marketplace:
@@ -619,7 +628,7 @@ Literal commands, paths, config keys, GitHub keywords, external API names, and
 code symbols may remain English.
 
 The daily user-facing entry points are natural-language task requests, issue
-URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`. The
+URLs or issue numbers, `trellis-continue`, and canonical `guru-finish-work`. The
 `trellis-start` overlay remains installed as a fallback / explicit orientation
 entry for platforms without automatic startup injection, disabled or unapproved
 hooks, suspected bootstrap failures, or manual context reloads.
@@ -724,15 +733,21 @@ Gate exists and cannot decide scope, finding qualification, sufficiency, pass,
 or route. Platform entries and this installer do not duplicate those semantic
 rules or expose private artifacts as public handoff data.
 `finish-work.sh` rejects ordinary direct calls, while `publish-pr.sh` is an
-unconditional compatibility blocker, so
-`trellis-continue` cannot chain closeout, commit review metadata, push, or
-create a PR before the explicit `trellis-finish-work` entrypoint. That entry is
-a thin live-workflow router: it runs Phase 3.6 through
-`guru-review-task-publication`, then invokes `guru-finalize-task` only from
-`ready`. The finalizer alone may call the private deterministic closeout engine
+unconditional compatibility blocker. Branch Review `passed` has one global
+Phase 3.6 route: the byte-frozen `trellis-continue` compatibility caller may
+reach it through #132 but stops at `ready` and cannot chain closeout, commit
+review metadata, push, or create a PR. The explicit `guru-finish-work` entry is
+the canonical thin live-workflow router: it uses that same Phase 3.6 route when
+needed, then alone invokes `guru-finalize-task` from current `ready`. The
+finalizer alone may call the private deterministic closeout engine
 after its semantic review and exact plan confirmation. It automatically routes
 verification, stale publication evidence, same-plan recovery, and reprepare;
 every interruption resumes through the same semantic owner loop.
+The combined public-only suite closes the publication 3, verification 4, and
+finalizer 6 external exits across normal, extension, return, stale, resume,
+reprepare, published-recovery, and blocked routes. It does not read owner-private
+artifacts or runtime source. Issue #119 and umbrella #115 are the close scope;
+#132 remains the physical legacy-overlay removal follow-up.
 Shared prepare lexically `lstat`s each existing archive root, month, and final
 destination component, rejects every symlink including dangling and
 repo-internal targets without following it, and requires the final locator to
@@ -962,7 +977,7 @@ from that commit blob; the immutable plan and Git parent/path/tree/blob facts
 are authoritative, so missing or tampered archived working-tree files do not
 block the exact push, remote title/body check, HEAD alignment, or
 draft-to-ready. A plan-only archived directory is resolvable only by the
-`trellis-finish-work` recovery entry; ordinary task commands still require
+`guru-finish-work` recovery entry; ordinary task commands still require
 `task.json`. The real-PR final summary's deterministic bytes/digest participate
 in pre-move, incomplete-recovery, and exact-commit continuity. The first two
 paths rebuild expected bytes against the already-bound remote PR. Exact

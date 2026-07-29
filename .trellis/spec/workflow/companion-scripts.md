@@ -746,7 +746,9 @@ ordinary direct calls before closeout-plan, push, draft PR, archive, or publish
 side effects; only `guru-finalize-task`'s checked private transition executor
 may pass the `--from-trellis-finish-work` intent marker. `publish-pr` is retained
 only as an unconditional compatibility blocker: it performs no repo/task
-resolution or side effect and points callers to `trellis-finish-work`. Every
+resolution or side effect and points callers to canonical `guru-finish-work`.
+The private marker name is an internal compatibility API and is not renamed by
+the public entry migration. Every
 interruption returns through the same finalizer semantic loop and its mapped
 recovery consumer.
 
@@ -932,7 +934,7 @@ is absent from or mismatched with the planned archive transaction,
 recovery falls back to the pre-commit metadata path and keeps all layout,
 dirty/staged path, blob, official `task.json`, and lineage checks fail closed.
 An archived directory containing only `closeout-plan.json` is resolvable only
-by the `trellis-finish-work` recovery entry; ordinary task resolution still
+by the canonical `guru-finish-work` recovery entry; ordinary task resolution still
 requires `task.json`. That plan-only entry reads the plan from the current
 commit blob rather than trusting working-tree bytes, then applies a dedicated
 fail-closed workspace boundary before GitHub access or committed-archive
@@ -988,8 +990,8 @@ structure, required sections, forbidden low-information phrases, non-empty
 validation / impact / safety content, Docs SSOT section/key presence, and Issue
 Scope Ledger close/ref semantics. They must not decide whether the release
 explanation or Docs SSOT rationale is true or sufficient; that judgment belongs
-to the AI readiness review before
-`trellis-finish-work`. Formal closeout accepts only `--body-file` pointing
+to the AI readiness review reached through canonical
+`guru-finish-work`. Formal closeout accepts only `--body-file` pointing
 directly to the current task-local `pr-body.md`; it rejects `--body-artifact`,
 generated body fallbacks, and readiness-relative `body_file` resolution. Formal
 finish binds that reviewed `pr-body.md` into
@@ -1434,15 +1436,19 @@ the closed request. It never selects an adapter through an undocumented
 environment variable. The shared adapter resolves its preset-managed
 `guru-team-shared-eval` executable beside the adapter; Codex, Claude, and Cursor
 resolve their native commands from `PATH`. Shared uses the documented
-request/context/workdir argv, while the other three assemble their native
+request/context/execution-root argv, while the other three assemble their native
 non-interactive argv. Every wrapper materializes a repo-external public-only
 projection with exact `SKILL.md`, Interface, public wrapper, and invocation
-schemas/examples plus a separate case workdir. Canonical package/corpus and
-private runtime locators stay outside native execution. The wrapper records
-case prompt and staged files,
-then records native argv, stdout/stderr, context, output, and trace in the
-transcript locator. Discovery reports deterministic `native_available` facts;
-absence remains `unsupported` without creating run output inside the repo.
+schemas/examples. A separate case workdir remains runner-private. Canonical
+package/corpus and private runtime locators stay outside native execution. The
+adapter resolves declared wrapper arguments from case fixtures outside the
+native boundary. Runtime-private locator values become opaque
+runner argument tokens and are restored only by the repo-external deterministic
+dispatcher before the real runtime call. The wrapper records the case prompt
+and exact native-visible arguments, then records native argv, stdout/stderr,
+context, output, and trace in the transcript locator. Discovery reports
+deterministic `native_available` facts; absence remains `unsupported` without
+creating run output inside the repo.
 The context gives the native CLI a repo-external trace helper and exact
 read/invoke commands instead of inlining `SKILL.md`. The helper receipt is
 validated against `guru-team-skill-eval-native-trace-1.0`, the minimal native

@@ -35,8 +35,8 @@
     },
     "guru_owned_rules": {
       "type": "array",
-      "minItems": 8,
-      "maxItems": 8,
+      "minItems": 11,
+      "maxItems": 11,
       "items": {"$ref": "#/$defs/guruOwnedRule"}
     },
     "managed_path_claims": {

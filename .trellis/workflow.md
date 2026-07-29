@@ -254,13 +254,11 @@ python3 ./.trellis/scripts/task.py set-scope <name> <scope>
 
 Run `python3 ./.trellis/scripts/task.py --help` for the authoritative list.
 
-Before finalization, create or review the task-local PR body at
-`{TASK_DIR}/pr-body.md` and the current `finish-summary-index.json`, then invoke
-the active `guru-review-task-publication` owner. Only its `ready` exit enters
-`guru-finalize-task`. The finalizer privately runs closeout preview, exact plan
-confirmation, gate recording/checking, and deterministic transitions; global
-workflow and platform entries must not invoke `finish-work.sh` or reproduce its
-command flags.
+Canonical explicit closeout enters through `guru-finish-work`. The workflow
+caller prepares the two task-local publication candidates before mandatory
+invoking `guru-review-task-publication`; only `ready` enters
+`guru-finalize-task`. Platform entries only load this live route and must not
+invoke closeout scripts or copy an owner contract.
 
 Before any phase stop or phase completion reply, resolve the human-facing
 Markdown artifacts and include a `Markdown 产物 review 表` in the response:
@@ -280,11 +278,9 @@ without a Markdown link so the response does not create a dead link.
 These are internal workflow helpers. `publish-pr.sh` is intentionally omitted
 from the normal helper sequence because it is an unconditional compatibility
 blocker; ordinary direct `finish-work.sh` calls are blocked. The explicit
-`trellis-finish-work` entrypoint is a thin live-workflow router; the active
-finalizer privately pushes reviewed evidence, binds one immutable draft PR,
-builds the final summary, performs the archive transaction, and marks the same
-PR ready only after its semantic gate and exact plan confirmation. They are not
-new user-facing primary commands.
+`guru-finish-work` entrypoint is the thin live-workflow router. Frozen
+`trellis-finish-work` entries are compatibility aliases through Issue #132;
+neither entry owns a second route or artifact model.
 
 ### Sub-agent Boundary
 
@@ -1025,7 +1021,7 @@ If implementation reveals a requirement defect, return to Phase 1 and update art
 - 3.7 Finalize and publish `[required · once]`
 
 [workflow-state:completed]
-Use `guru-finalize-task`. One approved closeout plan covers push, required verification, Draft PR, archive, and Ready. Auto-route verification and same-plan recovery; stop only for changed side effects, new authority, or a real external blocker.
+Use canonical `guru-finish-work`; auto-route mapped Finish exits and stop on changed authority/side effects or a declared blocker.
 [/workflow-state:completed]
 
 #### 3.2 Debug retrospective `[on demand]`
@@ -1113,26 +1109,12 @@ resolution requirement.
 
 #### 3.6 Task publication semantic review `[required · repeatable]`
 
-After the current Branch Review `passed` exit and before the mandatory
-invocation below, the workflow caller is the explicit owner of initial
-publication-content authoring. Read the current task-local requirements,
-planning approval, Phase 2 result, Issue Scope Ledger, Docs SSOT reconciliation,
-Branch Review evidence, and complete reviewed diff, then author current
-candidates at `{TASK_DIR}/pr-body.md` and
-`{TASK_DIR}/finish-summary-index.json`.
-
-This is producer-side entry preparation, not a second publication review or a
-new workflow exit. The caller authors the candidate content but must not decide
-PR-body sufficiency, Issue closure, the ten publication dimensions, finding
-routes, or readiness. Scripts must not synthesize those semantic conclusions.
-The active `guru-review-task-publication` Skill remains the sole semantic owner;
-its existing recorder/checker later reuses the deterministic PR-body,
-finish-summary-index, artifact, HEAD, and freshness validators after the AI
-Review Gate. Do not call that recorder/checker to manufacture entry evidence.
-If either candidate is absent or objectively malformed, stop fail closed,
-complete this authoring preparation, and do not invoke the Skill.
-
-After both current candidates exist, load and invoke the active public Skill by
+Immediately after Branch Review `passed`, this section is the only global route
+to publication review. The workflow caller authors the current task-local
+`pr-body.md` and `finish-summary-index.json` candidates. This is the
+caller-owned entry preparation required by the target contract, not a
+publication judgment or a workflow exit. Missing or objectively malformed
+candidates stop fail closed. Then load and mandatory invoke the active owner by
 stable id:
 
 <!-- guru-skill-invoke: {"skill":"guru-review-task-publication","required":true} -->
@@ -1143,41 +1125,24 @@ stable id:
 <!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
 <!-- guru-stop-target: {"id":"task-publication-review-blocked"} -->
 
-The caller merges the Branch Review seed with only the target package's fresh
-authoring fields. This workflow owns the invocation and the three routes above;
-the active Skill owns publication judgment, task-local evidence, metadata-only
-revision, recorder/checker, freshness, and re-entry.
+The caller combines the Branch Review seed with fresh target-owned authoring
+fields. `ready` enters `guru-finalize-task`; `return_to_task_work` resumes Phase
+2 and the complete downstream sequence; `blocked` stops. Missing, unknown,
+multiple, stale, consumer-mismatched, or unmapped results fail closed. All
+step-local review, evidence, revision, and re-entry behavior remains Skill-owned.
 
-`ready` enters active `guru-finalize-task`. `return_to_task_work` resumes implementation and must
-then repeat complete Phase 2 check, task commit, Branch Review, and publication
-review. `blocked`, unknown, missing, multiple, stale, consumer-mismatched, or
-unmapped results stop fail closed.
-
-The active extension verifier is independently discoverable for standalone use
-and is conditionally reached from the active finalizer:
-
-<!-- guru-skill-invoke: {"skill":"guru-verify-extension-installation","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"verified","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"not_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-extension-verification-work-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"blocked","consumer":{"kind":"stop","id":"extension-installation-verification-blocked"}} -->
-
-<!-- guru-workflow-target: {"id":"guru-extension-verification-work-router"} -->
-<!-- guru-stop-target: {"id":"extension-installation-verification-blocked"} -->
-
-The `verification_required` DTO is a machine handoff from finalizer to verifier,
-not a user-visible stop. The verifier alone owns applicability, capability
-selection, adequacy, findings, retry and actual exit; the runtime only executes,
-records and checks objective facts.
+The canonical `guru-finish-work` platform entry reads live state and reaches
+this same route when publication review is not yet current. Until #132 removes
+the byte-frozen compatibility overlay, `trellis-continue` may also reach this
+route directly from Branch Review `passed`, but it stops at current `ready` and
+cannot enter Phase 3.7. Neither entry owns a second publication route or copies
+the active Skill behavior.
 
 #### 3.7 Finalize and publish `[required · once]`
 
 After `guru-review-task-publication:ready`, load and mandatory invoke the active
-finalizer. The user confirms one bounded closeout plan before its first Git or
-GitHub side effect. That approval covers the declared content push,
-plan-required installation verification, one Draft PR, the task archive
-transaction, and the Ready transition. A changed side-effect set or changed
-authority requires a new plan; internal checkpoints do not.
+finalizer. Exact plan review and any required confirmation remain owner behavior;
+the workflow only consumes its declared exits.
 
 <!-- guru-skill-invoke: {"skill":"guru-finalize-task","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"verification_required","consumer":{"kind":"skill","id":"guru-verify-extension-installation"}} -->
@@ -1190,40 +1155,31 @@ authority requires a new plan; internal checkpoints do not.
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
 <!-- guru-stop-target: {"id":"task-finalization-blocked"} -->
 
-The finalizer owns plan review, exact confirmation, recovery intent and the six
-exits. Its deterministic engine owns the immutable transaction facts. The
-workflow automatically consumes `verification_required`,
-`publication_review_stale`, `resume_finalization`, and `reprepare_required` in
-the same closeout loop. Never display those exit ids as choices or ask for a
-generic `确认继续`. Stop only for the declared `blocked` result, missing external
-authority, or a materially changed side-effect plan.
+The extension verifier is mandatory only when reached from the finalizer's
+mapped `verification_required` exit:
 
-`guru-verify-extension-installation` is conditional: invoke it only when the
-finalizer emits `verification_required`. Its `verified` and `not_required`
-results return directly to the same finalizer plan. `return_to_task_work`
-resumes implementation and the complete downstream check/review sequence;
-`blocked` stops.
+<!-- guru-skill-invoke: {"skill":"guru-verify-extension-installation","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"verified","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"not_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-extension-verification-work-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"blocked","consumer":{"kind":"stop","id":"extension-installation-verification-blocked"}} -->
 
-The task-local `pr-body.md` and `finish-summary-index.json` are authored before
-publication review and are not regenerated after `ready`. Publication review
-owns reviewer-facing sufficiency and issue close/ref semantics. The finalizer
-validates objective structure and executes push, Draft PR, archive metadata,
-three-way HEAD equality and Ready; scripts never invent release judgments.
+<!-- guru-workflow-target: {"id":"guru-extension-verification-work-router"} -->
+<!-- guru-stop-target: {"id":"extension-installation-verification-blocked"} -->
 
-Active tasks may temporarily contain intake snapshots, raw review rounds,
-commit plans, PR preparation, and recovery checkpoints. Closeout plan 1.1 does
-not turn those working files into permanent handoff paperwork: after the
-official move it retains only `task.json`, `prd.md`, `design.md`, `implement.md`,
-`issue-scope-ledger.json`, `planning-approval.json`, `phase2-check.json`,
-`review.md`, `closeout-plan.json`, `task-finalization-gate.json`, and
-`finish-summary.json`, plus `marketplace-verification.json` only when that gate
-applies. The exact evidence commit and GitHub authority remain the recovery
-source for pruned intermediates. A persisted schema 1.0 plan keeps its original
-full-move behavior.
+Automatically consume finalizer verification, publication-refresh, same-plan
+resume, and reprepare exits through their declared consumers. Verifier
+`verified|not_required` returns to finalization; either owner's
+`return_to_task_work` route resumes Phase 2 and the complete downstream sequence.
+Never display mapped exit ids as choices or ask for a generic confirmation.
+Missing, unknown, multiple, stale, consumer-mismatched, or unmapped handoff
+evidence fails closed; declared `blocked` exits stop at their unique target.
 
-On `published`, resolve human artifacts from the archived task and return the
-canonical PR URL plus the archive locator. Do not expose private plan, gate,
-verification, digest, or checkpoint artifacts in the standard response.
+The three owners expose exactly thirteen Finish-family exits with the marker
+identities above and in Phase 3.6. Their step-local judgments, evidence,
+transaction, recovery, and artifact lifecycle remain package-owned and are not
+repeated here. On `published`, return only the canonical PR URL, archive locator,
+and the globally required human-artifact links.
 
 ### Rules
 
@@ -1237,7 +1193,7 @@ verification, digest, or checkpoint artifacts in the standard response.
    closure.
 4. Planning artifacts must be persisted before implementation.
 5. In business projects, `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**` durable docs, `00-bootstrap-guidelines` generated docs SSOT, and workflow artifact human-readable fields are Chinese by default, with English reserved for literal tokens such as commands, paths, config keys, GitHub keywords, and code symbols.
-6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`; `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
+6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and canonical `guru-finish-work`; frozen `trellis-finish-work` entries remain compatibility aliases through Issue #132, and `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
 7. `review-branch` and `finish-work.sh` are companion script subcommands, not user-facing phases; `publish-pr` is a compatibility-only blocked command. Ordinary direct `finish-work.sh` and every `publish-pr` call are blocked before archive/push/PR.
 8. Branch Review Gate belongs after commit and before finalization; do not put it in a non-blocking hook.
 9. Push, Draft PR, verification, archive and Ready belong to one finalizer plan; do not ask users to run a separate publish flow.

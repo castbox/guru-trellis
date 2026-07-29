@@ -115,7 +115,15 @@ EXPECTED_GURU_RULES = [
     {"id": "codex-skill-discovery", "match_type": "path_glob", "pattern": ".codex/skills/guru-*/**", "category": "guru_owned"},
     {"id": "cursor-skill-discovery", "match_type": "path_glob", "pattern": ".cursor/skills/guru-*/**", "category": "guru_owned"},
     {"id": "claude-skill-discovery", "match_type": "path_glob", "pattern": ".claude/skills/guru-*/**", "category": "guru_owned"},
+    {"id": "codex-finish-entry", "match_type": "path_prefix", "pattern": ".codex/prompts/guru-finish-work.md", "category": "guru_owned"},
+    {"id": "claude-finish-entry", "match_type": "path_prefix", "pattern": ".claude/commands/guru/finish-work.md", "category": "guru_owned"},
+    {"id": "cursor-finish-entry", "match_type": "path_prefix", "pattern": ".cursor/commands/guru-finish-work.md", "category": "guru_owned"},
 ]
+EXPECTED_ADDITIVE_OVERLAY_CLAIMS = {
+    ".codex/prompts/guru-finish-work.md": "codex-finish-entry",
+    ".claude/commands/guru/finish-work.md": "claude-finish-entry",
+    ".cursor/commands/guru-finish-work.md": "cursor-finish-entry",
+}
 EXPECTED_REPLACEMENT_OWNERS = {
     "guru-create-task-workspace",
     "guru-approve-task-plan",
@@ -371,7 +379,7 @@ def classify_guru_path(path: str, rules: list[dict[str, Any]]) -> list[str]:
             continue
         matched = False
         if match_type == "path_prefix":
-            matched = path.startswith(pattern)
+            matched = path.startswith(pattern) if pattern.endswith("/") else path == pattern
         elif match_type == "path_glob":
             matched = fnmatch.fnmatchcase(path, pattern)
         elif match_type == "skill_id_prefix":
@@ -383,7 +391,8 @@ def classify_guru_path(path: str, rules: list[dict[str, Any]]) -> list[str]:
 
 def claim_matches_rule(claim_path: str, rule: dict[str, Any]) -> bool:
     if rule.get("match_type") == "path_prefix":
-        return claim_path.startswith(str(rule.get("pattern") or ""))
+        pattern = str(rule.get("pattern") or "")
+        return claim_path.startswith(pattern) if pattern.endswith("/") else claim_path == pattern
     if rule.get("match_type") == "path_glob":
         pattern = str(rule.get("pattern") or "")
         return pattern.endswith("/**") and claim_path.rstrip("/") + "/**" == pattern
@@ -655,12 +664,16 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
     actual_overlay_paths = sorted(
         path.relative_to(overlay_root).as_posix()
         for path in overlay_root.rglob("*")
-        if path.is_file() and "__pycache__" not in path.parts and path.suffix not in {".pyc", ".pyo"}
+        if (path.is_file() or path.is_symlink())
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
     ) if overlay_root.is_dir() else []
     active_paths = sorted(path for path, entry in entry_by_path.items() if entry.get("migration_state") == "active")
     removed_paths = sorted(path for path, entry in entry_by_path.items() if entry.get("migration_state") == "removed")
-    for path in sorted(set(actual_overlay_paths) - set(entry_by_path)):
-        errors.append(ownership_error("overlay_not_in_frozen_baseline", path, "overlay path is not in the frozen issue 128 inventory"))
+    additive_overlay_paths = sorted(EXPECTED_ADDITIVE_OVERLAY_CLAIMS)
+    expected_overlay_paths = set(entry_by_path) | set(additive_overlay_paths)
+    for path in sorted(set(actual_overlay_paths) - expected_overlay_paths):
+        errors.append(ownership_error("overlay_not_in_frozen_baseline", path, "overlay path is neither frozen legacy nor a declared additive Guru entry"))
     for path in sorted(set(active_paths) - set(actual_overlay_paths)):
         errors.append(ownership_error("active_overlay_missing", path, "active transitional overlay is missing"))
     for path in sorted(set(removed_paths) & set(actual_overlay_paths)):
@@ -677,16 +690,31 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         actual = sha256_file(overlay_path)
         if actual != expected:
             errors.append(ownership_error("active_payload_hash_mismatch", path, f"expected={expected} actual={actual}"))
+    for path in additive_overlay_paths:
+        overlay_path = overlay_root / path
+        if path not in actual_overlay_paths:
+            errors.append(ownership_error("additive_overlay_missing", path, "declared additive Guru entry is missing"))
+        elif overlay_path.is_symlink() or not overlay_path.is_file():
+            errors.append(ownership_error("additive_overlay_not_regular", path, "additive Guru entry must be a regular file, not a symlink"))
     actual_payload_aggregate = None
+    additive_payload_aggregate = None
     materialized_identity_sha256 = None
+    actual_legacy_overlay_paths = set(actual_overlay_paths) & set(entry_by_path)
     if (
         active_paths
-        and set(active_paths) == set(actual_overlay_paths)
+        and set(active_paths) == actual_legacy_overlay_paths
         and all(not (overlay_root / path).is_symlink() and (overlay_root / path).is_file() for path in active_paths)
     ):
         actual_payload_aggregate = payload_aggregate_sha256(overlay_root, active_paths)
         if not removed_paths and actual_payload_aggregate != CURRENT_PAYLOAD_AGGREGATE_SHA256:
             errors.append(ownership_error("active_payload_aggregate_mismatch", OVERLAY_ROOT_RELATIVE.as_posix(), f"actual={actual_payload_aggregate}"))
+    if all(
+        path in actual_overlay_paths
+        and not (overlay_root / path).is_symlink()
+        and (overlay_root / path).is_file()
+        for path in additive_overlay_paths
+    ):
+        additive_payload_aggregate = payload_aggregate_sha256(overlay_root, additive_overlay_paths)
     materialized_identity: list[dict[str, str]] = []
     materialized_identity_complete = len(entry_by_path) == FROZEN_PATH_COUNT
     for path in frozen_paths:
@@ -758,6 +786,19 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
                         errors.append(ownership_error("invalid_legacy_claim_coverage", claim_path, f"{covered_path} is outside the claimed prefix"))
         else:
             errors.append(ownership_error("unclassified_path", claim_path, f"unknown category {category!r}"))
+
+    for path, rule_id in EXPECTED_ADDITIVE_OVERLAY_CLAIMS.items():
+        expected_claim = {
+            "path": path,
+            "category": "guru_owned",
+            "classification_rule": rule_id,
+            "covered_by_legacy_paths": [],
+        }
+        claim = claim_by_path.get(path)
+        if claim is None:
+            errors.append(ownership_error("additive_overlay_claim_missing", path, "exact Guru-owned managed claim is required"))
+        elif claim != expected_claim:
+            errors.append(ownership_error("additive_overlay_claim_mismatch", path, f"expected={expected_claim}"))
 
     manifest_paths: list[str] = []
     manifest_active_ids: list[str] = []
@@ -880,6 +921,10 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         "generated_in_clean_init_count": generated_count,
         "legacy_not_generated_count": len(entries) - generated_count,
         "overlay_count": len(actual_overlay_paths),
+        "legacy_overlay_count": len(actual_legacy_overlay_paths),
+        "additive_overlay_count": len(set(actual_overlay_paths) & set(additive_overlay_paths)),
+        "additive_overlay_paths_sha256": path_set_sha256(additive_overlay_paths),
+        "additive_overlay_payload_aggregate_sha256": additive_payload_aggregate,
         "sorted_path_set_sha256": path_set_sha256(frozen_paths),
         "active_payload_aggregate_sha256": actual_payload_aggregate,
         "reviewed_current_payload_count": len(REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH),

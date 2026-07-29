@@ -263,7 +263,7 @@ confirmation, recorder/checker, and exit judgment must not be copied into the
 workflow or platform entries.
 
 `guru-finalize-task` owns the single resumable transaction loop entered by the
-thin `trellis-finish-work` router. Its mandatory order is: shared
+canonical thin `guru-finish-work` router. Its mandatory order is: shared
 prepare/digest preview, exact plan confirmation, reviewed content push,
 deterministic marketplace evidence and readiness commit/push, unique draft PR
 binding, final archive projection, official task archive move, one exact
@@ -353,9 +353,14 @@ commit, push, PR creation, or issue closure.
 ## User-Facing Entrypoints
 
 Daily user entrypoints are natural-language task requests, issue URLs or issue
-numbers, `trellis-continue`, and `trellis-finish-work`. `trellis-start` is a
+numbers, `trellis-continue`, and canonical `guru-finish-work`. `trellis-start` is a
 fallback orientation entry for disabled hooks, missing startup context, or an
 explicit reload request.
+
+The upstream-namespace `trellis-finish-work` entries are byte-frozen
+compatibility routers through Issue #132. They read the same live workflow and
+reach the same three active Finish owners, but they are not the documented
+canonical entry and do not own a second route or artifact model.
 
 Do not introduce `review-branch`, `check-review-gate`, or `finish-work.sh` as
 new user-facing phases. They are companion script subcommands used by the
@@ -380,8 +385,14 @@ Reference files:
 
 - `trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md`
 - `trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md`
+- `trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md`
+- `trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md`
+- `trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md`
 - `trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md`
 - `trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md`
+- `trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md`
+- `trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md`
+- `trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md`
 - `trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md`
 
 ## Artifact Language
@@ -783,7 +794,7 @@ Passing the gate requires:
 
 ## Publish Boundary
 
-`trellis-finish-work` is the thin closeout entry. It reads live workflow state,
+`guru-finish-work` is the canonical thin closeout entry. It reads live workflow state,
 invokes `guru-review-task-publication`, and enters `guru-finalize-task` only
 from the owner's current `ready` exit. The finalizer owns semantic plan review,
 exact side-effect confirmation, and recovery routing. Only after that gate may
@@ -815,8 +826,9 @@ CI/CD, deployment, migration, Makefile, or other non-metadata assets drift after
 the gate, dry-run and formal finish fail closed and the task returns to Phase
 2/3 for check and review.
 
-`trellis-continue` must stop at publication readiness and must not push, create
-a PR, invoke `publish-pr`, invoke `finish-work.sh`, or enter finalization. The
+`trellis-continue` reaches the same Phase 3.6 route from Branch Review `passed`
+and must stop at publication readiness; it must not push, create a PR, invoke
+`publish-pr`, invoke `finish-work.sh`, or enter finalization. The
 finish helper and publish compatibility command are fail-closed: ordinary
 direct `finish-work.sh` calls are rejected before
 archive/finish-summary/push side effects, and every `publish-pr` call is
@@ -867,7 +879,9 @@ plan template. This narrow runtime-facts check does not invoke the general
 finish-summary artifact validator. The original PR must remain the unique open
 repo/head/base candidate; missing, closed, or same-branch replacement PRs fail
 closed. A plan-only archived directory is resolvable only through
-`trellis-finish-work`; ordinary task commands still require `task.json`.
+`guru-finish-work`; ordinary task commands still require `task.json`. The
+byte-frozen legacy finish entries may reach the same recovery route only as
+compatibility aliases through Issue #132.
 Final projection, incomplete recovery, and exact recovery use one strict PR URL
 parser. GitHub owner/repository comparison is case-insensitive, consistent with
 remote repository identity, while canonical output preserves the exact valid
@@ -912,14 +926,15 @@ Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gat
 `Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步`. The Docs SSOT section
 must state the strategy, durable docs updated or no-update reason, task delta
 merged back, task-history-only content, and follow-up or current PR limitation.
-`trellis-finish-work` accepts exactly one reviewed body source: `--body-file`
-must point directly to the current task-local `pr-body.md`. `--body-artifact`,
+The `guru-finish-work` route accepts exactly one reviewed body source: the
+current task-local `pr-body.md`, which the finalizer's private engine passes as
+`--body-file`. `--body-artifact`,
 external same-content files, generated body fallbacks, and readiness-relative
 `body_file` resolution are rejected and do not participate in closeout.
 `pr-body.md` is task metadata and is fully validated in the active task before
 `finish-work` performs the official archive move. Post-archive ready/recovery
 hashes the remote PR body against the immutable plan and does not reopen the
-task-local body. `trellis-finish-work` validates objective structure, forbidden
+task-local body. The finalizer runtime validates objective structure, forbidden
 low-information phrases, reviewed source presence, Docs SSOT section/key
 presence, archive-path resolution, and close/ref issue semantics, but it must
 not decide whether the business explanation is true or sufficient.
@@ -1018,14 +1033,15 @@ Unknown, multiple, unmapped, stale, or unavailable target routes fail closed.
 
 ## Phase 3.6 Task Publication Review Routing
 
-After `guru-review-branch:passed`, the workflow caller first authors the initial
-task-local `pr-body.md` and `finish-summary-index.json` candidates from current
-reviewed evidence. This producer-side entry preparation has no typed exit and
-does not judge body sufficiency, Issue closure, publication dimensions,
-findings, or readiness. Missing or objectively malformed content stops before
-invocation. The active publication Skill remains the sole semantic owner, and
-its recorder/checker reuse the existing deterministic content and freshness
-validators only after the AI Review Gate.
+After `guru-review-branch:passed`, this is the only global publication-review
+route. The workflow caller first authors the initial task-local `pr-body.md` and
+`finish-summary-index.json` candidates from current reviewed evidence. This
+producer-side entry preparation has no typed exit and does not judge body
+sufficiency, Issue closure, publication dimensions, findings, or readiness.
+Missing or objectively malformed content stops before invocation. The active
+publication Skill remains the sole semantic owner, and its recorder/checker
+reuse the existing deterministic content and freshness validators only after
+the AI Review Gate.
 
 After the candidates exist, the global workflow mandatory invokes active
 `guru-review-task-publication` with the target-owned `publication_review`
@@ -1045,6 +1061,13 @@ unmapped, consumer-mismatched, or stale invocation fails
 closed. Phase 3.7 consumes the already reviewed bytes and must not first create,
 regenerate, or revise either content file after `ready`; a metadata-only change
 re-enters publication review and non-metadata drift returns to task work.
+
+The canonical `guru-finish-work` entry reads live state and uses this route when
+publication review is not current, then alone may continue current `ready` into
+Phase 3.7. The byte-frozen `trellis-continue` compatibility entry may reach the
+same Phase 3.6 route from Branch Review `passed` through #132, but stops at
+`ready`. These are entry-authority differences around one global route, not two
+publication workflows.
 
 ## Phase 3.7 Task Finalization Ownership
 
@@ -1077,7 +1100,24 @@ materializes the DTO in memory and does not run the transition.
 This ownership contract is active, directly discoverable and globally
 integrated. The workflow automatically consumes verification, publication
 refresh, same-plan resume and reprepare exits; only a changed side-effect plan,
-new authority or `blocked` result is user-visible. This integration does not
-claim #119 combined acceptance; #132 still owns upstream overlay cleanup. It
-does not modify upstream `trellis-finish-work` Skill/Command/Prompt assets or
-official `task.py`.
+new authority or `blocked` result is user-visible.
+
+The global Finish route, canonically entered through `guru-finish-work`, closes
+all thirteen Finish-family external exits without changing their ids or
+consumers: publication contributes three, verification contributes four, and
+finalization contributes six. The six
+cross-owner edges are Branch Review `passed` to publication, finalization stale
+to publication, publication `ready` to finalization, finalization verification
+to verifier, verifier `verified|not_required` to finalization, and finalization
+reprepare to finalization. Source/installed validation and the combined public-
+only routing suite cover normal non-extension, extension, return-to-task-work,
+publication stale, same-plan resume, cross-month reprepare, published recovery,
+and blocked routes. They consume only Interface 1.3 public wrappers, DTOs,
+consumer contracts, and target-owned authoring partitions; owner-private
+artifacts and runtime source are not routing inputs.
+
+Issue #119 completes this combined integration and closes umbrella Issue #115
+with it. Issue #132 remains the bounded follow-up for physical removal of the
+byte-frozen upstream `trellis-finish-work` and `trellis-continue` compatibility
+overlays. This contract neither changes those legacy bytes nor modifies official
+`task.py`.

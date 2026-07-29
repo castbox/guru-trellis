@@ -33,7 +33,10 @@
     {"id": "shared-skill-discovery", "match_type": "path_glob", "pattern": ".agents/skills/guru-*/**", "category": "guru_owned"},
     {"id": "codex-skill-discovery", "match_type": "path_glob", "pattern": ".codex/skills/guru-*/**", "category": "guru_owned"},
     {"id": "cursor-skill-discovery", "match_type": "path_glob", "pattern": ".cursor/skills/guru-*/**", "category": "guru_owned"},
-    {"id": "claude-skill-discovery", "match_type": "path_glob", "pattern": ".claude/skills/guru-*/**", "category": "guru_owned"}
+    {"id": "claude-skill-discovery", "match_type": "path_glob", "pattern": ".claude/skills/guru-*/**", "category": "guru_owned"},
+    {"id": "codex-finish-entry", "match_type": "path_prefix", "pattern": ".codex/prompts/guru-finish-work.md", "category": "guru_owned"},
+    {"id": "claude-finish-entry", "match_type": "path_prefix", "pattern": ".claude/commands/guru/finish-work.md", "category": "guru_owned"},
+    {"id": "cursor-finish-entry", "match_type": "path_prefix", "pattern": ".cursor/commands/guru-finish-work.md", "category": "guru_owned"}
   ],
   "managed_path_claims": [
     {"path": ".trellis/guru-team/", "category": "guru_owned", "classification_rule": "installed-runtime", "covered_by_legacy_paths": []},
@@ -42,6 +45,9 @@
     {"path": ".codex/skills/guru-*/", "category": "guru_owned", "classification_rule": "codex-skill-discovery", "covered_by_legacy_paths": []},
     {"path": ".cursor/skills/guru-*/", "category": "guru_owned", "classification_rule": "cursor-skill-discovery", "covered_by_legacy_paths": []},
     {"path": ".claude/skills/guru-*/", "category": "guru_owned", "classification_rule": "claude-skill-discovery", "covered_by_legacy_paths": []},
+    {"path": ".codex/prompts/guru-finish-work.md", "category": "guru_owned", "classification_rule": "codex-finish-entry", "covered_by_legacy_paths": []},
+    {"path": ".claude/commands/guru/finish-work.md", "category": "guru_owned", "classification_rule": "claude-finish-entry", "covered_by_legacy_paths": []},
+    {"path": ".cursor/commands/guru-finish-work.md", "category": "guru_owned", "classification_rule": "cursor-finish-entry", "covered_by_legacy_paths": []},
     {"path": ".agents/skills/trellis-start/", "category": "transitional_legacy", "classification_rule": "frozen-legacy-overlay-coverage", "covered_by_legacy_paths": [".agents/skills/trellis-start/SKILL.md"]},
     {"path": ".agents/skills/trellis-continue/", "category": "transitional_legacy", "classification_rule": "frozen-legacy-overlay-coverage", "covered_by_legacy_paths": [".agents/skills/trellis-continue/SKILL.md"]},
     {"path": ".agents/skills/trellis-finish-work/", "category": "transitional_legacy", "classification_rule": "frozen-legacy-overlay-coverage", "covered_by_legacy_paths": [".agents/skills/trellis-finish-work/SKILL.md"]},

@@ -429,7 +429,7 @@ findings, and route. Changed paths, successful commands, checker pass, and
 production eval are facts only. A workflow-required target cannot silently
 return `not_required`; an applicability conflict blocks. #117 owns the target
 input contract, and active finalizer producer/consumer edges bind it without
-activating the #119 global Finish route.
+changing the active #119 global Finish route or the package's existing contract.
 
 The READMEs distinguish task-bearing
 `marketplace-verification.json` from taskless session-only owner state, name the
@@ -442,17 +442,25 @@ and redaction.
 Public validation text treats package-local real-wrapper production eval and
 real pushed-remote clean installation as independent acceptance surfaces. It
 must not claim the remote-ref gate passed when only local or public stable
-marketplace sampling ran, and must not imply that #119 global integration or
-#132 upstream overlay cleanup was implemented.
+marketplace sampling ran. They must describe #119 global integration as the
+current canonical `guru-finish-work` route while keeping #132 upstream overlay
+cleanup explicitly unfinished.
 
 Install/update text requires canonical/installed/shared/Codex/Cursor/Claude
 byte identity, source and installed validation, real-wrapper eval, workflow
 consumer uniqueness, preset reapply after `trellis update`, dogfood drift, and
 zero unresolved `.new`/`.bak`. It explicitly leaves remote branch marketplace
-verification to finish-work and does not claim #119 integration or #132 cleanup
-completion.
+verification to finalization, names #119 integration as current, and does not
+claim #132 cleanup completion.
 
 ## Task Finalization Documentation
+
+All three public README files name `guru-finish-work` as the canonical explicit
+Finish entry. They describe Codex, Claude, and Cursor Guru-namespace adapters as
+thin live-workflow routers and Shared execution as the same global workflow plus
+three active owner packages, without a fourth routing-only Skill. The frozen
+upstream `trellis-finish-work` entries appear only in a compatibility inventory,
+remain byte-identical through #119, and are removed only by #132.
 
 All three public README files name active Interface 1.3 semantic
 `guru-finalize-task`, its seven distinct public input profiles, six `exit_id`
@@ -470,5 +478,5 @@ and does not expose plan identity in the producer handoff.
 The READMEs describe the current package graph as thirteen active Skills and 52
 external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
 They identify the integrated global workflow projection as 13 invokes, 52 exits,
-and 29 targets. This does not claim #119 combined acceptance or #115 closure;
-#132 owns physical upstream overlay cleanup.
+and 29 targets. Public docs state that #119 combined acceptance closes umbrella
+#115, while #132 owns the later physical upstream overlay cleanup.

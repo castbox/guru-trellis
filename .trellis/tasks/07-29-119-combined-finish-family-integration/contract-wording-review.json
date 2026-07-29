@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-29T13:06:44Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-29-119-combined-finish-family-integration",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        "size_bytes": 13694,
+        "content_sha256": "f55ce5a648ab4eb9004390d4b40ed27a4f7fb726cac27adedc4d2082f309b210"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+        "size_bytes": 12561,
+        "content_sha256": "c2955f431dff56a9ce7fa5ee026824cb44c2a73021eb15742ccd1e6ded02a8fb"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+        "size_bytes": 9211,
+        "content_sha256": "568ce5530414c02394193761da7e4139ab26147620157db897e7c47da9922d39"
+      }
+    ],
+    "scope_sha256": "87db432779101dbceabd3d0e4544afbebd3f24ac9ac0857c6a8053a3362e4410"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex primary agent /root",
+      "summary": "在 content_changed consumer 完整重入后，再次复核当前三份 planning artifacts；scope、authority、acceptance、implementation path、验证门禁与 Docs SSOT Plan 均一致且确定。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "完整同 profile 重入未再产生内容、authority 或 scope 变化。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "4ffb02725effbbe5d5d4cd6f0acd537f806a39be732f5f273ab2f4a9c0a33a3d"
+}

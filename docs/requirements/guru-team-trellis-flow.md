@@ -1,7 +1,7 @@
 # Guru Team Trellis 全流程说明
 
 本文用于对外演示 Guru Team 如何在官方 Trellis 之上扩展研发流程，以及扩展后的完整链路从
-Codex prompt hook 触发 pre-task intake，一直到 `trellis-finish-work` closeout。
+Codex prompt hook 触发 pre-task intake，一直到 `guru-finish-work` closeout。
 
 本文不替代 `trellis/workflows/guru-team/workflow.md` 的执行合同。真正运行时，AI 仍以
 `.trellis/workflow.md`、平台入口、task artifact 和 companion script 输出为准。
@@ -111,7 +111,7 @@ expected-exit route oracle。
 
 ```mermaid
 flowchart TD
-  U["用户输入<br/>自然语言任务 / issue URL / trellis-continue / trellis-finish-work"]:::codex
+  U["用户输入<br/>自然语言任务 / issue URL / trellis-continue / guru-finish-work"]:::codex
   H["Codex UserPromptSubmit hook<br/>.codex/hooks/inject-workflow-state.py"]:::codex
   W["读取 .trellis/workflow.md<br/>匹配 workflow-state block"]:::trellis
   B["注入上下文<br/>trellis-bootstrap / codex-mode / workflow-state"]:::codex
@@ -155,7 +155,7 @@ flowchart TD
   PubContent["workflow caller authoring preparation<br/>pr-body.md + finish-summary-index.json"]:::guru
   PubReview["mandatory guru-review-task-publication<br/>sole semantic owner"]:::guru
   PubReady{"publication exit"}:::guru
-  FWEntry["trellis-finish-work<br/>唯一用户可见 closeout 入口"]:::guru
+  FWEntry["guru-finish-work<br/>canonical 用户可见 closeout 入口"]:::guru
   Finalizer["mandatory guru-finalize-task<br/>semantic closeout owner"]:::guru
   Verifier["guru-verify-extension-installation<br/>conditional semantic owner"]:::guru
   Engine["private deterministic engine<br/>push + draft + archive + ready"]:::script
@@ -168,7 +168,7 @@ flowchart TD
   SB -->|"skipped"| SkipRoute["original non-repo route"]:::guru
   SB -->|"blocked"| StopBase["停止：base sync blocked"]:::artifact
   R -->|"已有 active task 或显式 continue"| P1
-  R -->|"显式 finish-work"| FWEntry
+  R -->|"显式 guru-finish-work"| FWEntry
 
   S0 --> P0
   P0 --> DC --> CR -->|"clear"| CW -->|"pass"| RR -->|"ready"| TW --> TP --> UC
@@ -646,7 +646,7 @@ snapshot，旧 plan 不可复用。Platform continue/launcher 只加载 stable s
 typed exit，不复制 step-local contract。
 
 Branch Review Gate 是 Guru Team 最重的质量门禁。它发生在 task work commit 之后、
-`trellis-finish-work` 之前。
+`guru-finish-work` 之前。
 
 ```mermaid
 flowchart TD
@@ -688,15 +688,19 @@ Gate 必须满足：
 
 ## 8. Finalizer 与 automatic publish
 
-`trellis-finish-work` 是唯一用户可见 closeout 入口，但它只负责读取 live workflow、
-补齐 Phase 3.6 publication review 并从 current `ready` 进入 active
-`guru-finalize-task`。`trellis-continue` 必须停在 publication readiness，不 push、不创建
-PR、不调用 private finish helper。Finalizer 的四个内部 recovery exits 由唯一 consumer
-自动承接，不向用户展示命令选择。
+Branch Review `passed` 后只存在一条 global Phase 3.6 route。
+`guru-finish-work` 是 canonical 用户可见 closeout 入口：它读取 live workflow，必要时进入
+同一 Phase 3.6，并从 current `ready` 进入 active `guru-finalize-task`。
+冻结的 `trellis-continue` compatibility caller 可到达同一 Phase 3.6，但必须停在
+publication readiness，不 push、不创建 PR、不调用 private finish helper。Finalizer 的四个
+内部 recovery exits 由唯一 consumer 自动承接，不向用户展示命令选择。
+
+冻结的 `trellis-finish-work` 平台入口仅作为 compatibility router 保留到 #132；它们读取
+同一 live workflow，不拥有独立 closeout 行为或 artifact。
 
 ```mermaid
 flowchart TD
-  Start["用户/session 显式 invokes<br/>trellis-finish-work"]:::guru
+  Start["用户/session 显式 invokes<br/>guru-finish-work"]:::guru
   Live["读取 live workflow / Branch Review / publication state"]:::guru
   Publication["guru-review-task-publication<br/>semantic readiness"]:::guru
   Finalizer["guru-finalize-task<br/>plan review + exact confirmation"]:::guru
@@ -750,7 +754,7 @@ PR readiness 要求：
 | 低信息阻断 | 禁止把“当前 Trellis task”“已提交实现与文档更新”“详见 artifact”作为主要摘要。 |
 | close/ref 语义 | `Closes #xx` 只能来自 `issue-scope-ledger.json.close_issues`；`related_issues` 只能 refs/related；`followup_issues` 不能关闭。 |
 | dry-run 无副作用 | Finalizer private preview 运行与 formal 相同 prepare/validate，输出完整 plan/digest 供 AI review 和 exact confirmation；不 archive、不写文件、不 commit、不 push、不 PR。 |
-| direct publish 受限 | 普通直接 `finish-work.sh` 与 `publish-pr.sh` 均被阻塞；用户只进入 `trellis-finish-work`，内部 recovery 由 finalizer 自动承接。 |
+| direct publish 受限 | 普通直接 `finish-work.sh` 与 `publish-pr.sh` 均被阻塞；用户只进入 `guru-finish-work`，内部 recovery 由 finalizer 自动承接。 |
 
 ## 9. Artifact 责任图
 
@@ -796,7 +800,7 @@ PR readiness 要求：
    executor 提交；commit 后必须有独立中文 review raw reports、最终中文 `review.md`
    rollup 和 recorder 生成的 `review-gate.json`。脚本校验通过不能替代 AI 判断。
 8. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
-9. `trellis-continue` 到 publication readiness 就停；`trellis-finish-work` 薄入口从 current publication `ready` 进入 active finalizer。Finalizer 用一次 plan confirmation 覆盖 push、条件 verification、Draft PR、archive 与 Ready，并自动承接 stale/resume/reprepare，不让用户选择内部 route。Guru Team 不调用 `add_session.py`。
+9. `trellis-continue` 到 publication readiness 就停；`guru-finish-work` 薄入口从 current publication `ready` 进入 active finalizer。Finalizer 用一次 plan confirmation 覆盖 push、条件 verification、Draft PR、archive 与 Ready，并自动承接 stale/resume/reprepare，不让用户选择内部 route。Guru Team 不调用 `add_session.py`。
 10. shared start 和 Codex/Cursor SessionStart 只组合 phase/packages/task/Git facts，不打开、枚举、读取或输出 workspace journal。
 11. PR create 与 archive 前 recovery 只消费已提交的 plan/readiness；remote identity 先以 NUL value boundary 与 origin 读取全部 raw `url`/可选 `pushurl` 及 rewrite base/pattern，拒绝空/歧义 record、边界空白、control、不可读 origin 和相关 config file NUL；无 `pushurl` 时复用 raw fetch set。effective output 不做 trim，数量必须等于 raw source，Git 完成 rewrite 后每个 fetch/push URL 必须是无 credential 的 `https://github.com/...`、`ssh://git@github.com/...` 或 `git@github.com:...`，并与 `headRepository.nameWithOwner` 一样 normalize 后等于 immutable repo。HTTP、`git://`、`file://`、本地/裸路径、无 scheme、userinfo/token、端口、query/fragment、额外 path 均 fail closed，不允许回退到 repo identifier normalizer；owner 字段必须一致且 `isCrossRepository=false`。同名 fork 在 0/1/>1 前 fail closed，不能写入或替换 summary。archive 前 PR body 逐字匹配 task-local 原始 UTF-8 文本。official move 后、精确 archive commit 形成前仍以 working-tree layout/dirty/staged/blob/task.json 与已绑定 PR 的 deterministic summary bytes 合同 fail closed 恢复；当前 `HEAD` 已是精确 archive commit 后，忽略本地 archived 文件缺失/篡改，从 immutable commit summary blob 恢复原 PR number/URL 并重建 bytes/digest，不读取 working-tree summary、不调用通用 artifact validator，再按 Git parent/path/tree/blob lineage、remote body、原 PR identity 与三方 HEAD facts 完成 push/ready；原 PR missing/closed/replacement 均 fail closed。archived body、readiness、ledger 或 verifier 仍不打开。plan-only archived directory 只允许 finish-work recovery 解析，从commit blob读取plan并专门校验root/repo/branch/base/HEAD/digest/task/locator boundary；raw locator在任何resolve前执行lexical archive containment和逐组件lstat，resolved target再绑定plan canonical locator，禁止任意samefile/用户alias。普通命令的task context合同不变。
 12. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；必须包含 Docs SSOT / 文档同步处理结果，关闭 issue 的语义由 `issue-scope-ledger.json` 控制。
@@ -824,11 +828,15 @@ PR readiness 要求：
 - `.codex/hooks.json`
 - `.codex/prompts/trellis-start.md`
 - `.codex/prompts/trellis-continue.md`
-- `.codex/prompts/trellis-finish-work.md`
+- `.codex/prompts/guru-finish-work.md`
 - `.agents/skills/trellis-start/SKILL.md`
 - `.agents/skills/trellis-continue/SKILL.md`
-- `.agents/skills/trellis-finish-work/SKILL.md`
 - `.trellis/guru-team/scripts/bash/*`
+
+下列 upstream namespace 路径仅作为 compatibility router 保留到 #132：
+
+- `.codex/prompts/trellis-finish-work.md`
+- `.agents/skills/trellis-finish-work/SKILL.md`
 
 
 ## Push 后远端 Marketplace 门禁
@@ -856,8 +864,10 @@ flowchart LR
 
 四个 adapter 节点不是 descriptor-only 标签：runner 从 descriptor 解析并执行
 `shared.sh|codex.sh|claude.sh|cursor.sh`，wrapper 再检测对应 native command，组装不同
-非交互 argv，并将 public-only Skill projection/prompt/files 与 public output/trace 留在 repo 外隔离目录。
-native command 缺失时该侧稳定返回 `unsupported`。
+非交互 argv，并将 public-only Skill projection/prompt/runner-resolved exact arguments 与
+public output/trace 留在 repo 外隔离目录。Case files 只在 native 边界外由 runner 解析，
+其内容、路径和 case workdir 不进入 native request/context。native command 缺失时该侧稳定返回
+`unsupported`。
 每个 native CLI 必须通过 repo 外 trace helper 读取 exact `SKILL.md` 并调用 exact public
 wrapper。Runner 在边界外读取 canonical corpus，native request/context 不包含 canonical
 package/corpus/private runtime locator；wrapper 通过 runner-owned public invocation boundary
@@ -899,6 +909,11 @@ Phase 3.5 workflow 不再内嵌 review dimensions、候选分类、severity、ar
 upstream reviewer，禁止 overlay `trellis-check` 入口。
 
 ## Phase 3.6：`guru-review-task-publication`
+
+Branch Review `passed` 后，以下流程是唯一 global publication-review route。
+`guru-finish-work` 在 publication evidence 尚未 current 时进入该 route；冻结的
+`trellis-continue` compatibility caller 也可在 #132 前进入，但它只停在 `ready`。
+两者不拥有第二套 publication 行为。
 
 ```text
 guru-review-branch:passed

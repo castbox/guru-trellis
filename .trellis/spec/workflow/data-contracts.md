@@ -403,8 +403,8 @@ The source and installed closure algorithm reads the live registry, both
 manifests, Interface public contracts, and package-local corpora. It requires
 the active ids to equal the two manifest sets plus any future complete active
 1.3 rows; requires every active row to be `minimal_handoff`; and requires exact
-profile/exit/current-case set equality. Eleven Skills and 42 exits are the current
-cardinality regression, not a hard-coded future registry allowlist.
+profile/exit/current-case set equality. Thirteen Skills and 52 exits are the
+current cardinality regression, not a hard-coded future registry allowlist.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
@@ -416,6 +416,15 @@ exactly their declared keys, and the no-overwrite merged object to validate
 against the complete target profile schema. This is a consumer contract kind,
 not a projection operation; the operation inventory remains exactly
 `direct|select|rename|normalize`.
+
+The four-edge production-manifest membership remains historical and unchanged.
+The live thirteen-Skill graph has twelve target-owned authoring-seed handoffs:
+the five pre-Finish edges plus seven finalization-family handoffs. Combined
+Finish routing consumes only the producer's public per-exit DTO, its declared
+projection, the target-owned authoring example, and the target public input
+schema. The combined layer may not add fields, recover values from a private
+artifact or runtime source, persist a route transcript, or reinterpret either
+manifest's activation membership.
 
 Test fixture schema ids belong only to the fixture extension manifest and must
 not appear in production extension, installed production inventory, platform
@@ -1678,9 +1687,11 @@ Archived working-tree deletion, content tampering, and the resulting dirty
 paths are ignored; recovery may only push that exact commit when needed, check
 remote PR identity and three-way HEAD alignment, and retry draft-to-ready. An
 archived directory containing only `closeout-plan.json` is resolvable for this
-path only by `trellis-finish-work`; other commands still require `task.json`.
-Neither path parses, rebuilds, validates, or rewrites an archived body, summary,
-ledger, readiness, or marketplace artifact.
+path only through canonical `guru-finish-work`; the frozen
+`trellis-finish-work` compatibility router reaches the same owner until #132,
+while other commands still require `task.json`. Neither route parses, rebuilds,
+validates, or rewrites an archived body, summary, ledger, readiness, or
+marketplace artifact.
 
 Plan-only recovery does not use an empty task context as authorization. It
 loads `closeout-plan.json` from the current commit blob and, before GitHub or
@@ -1759,10 +1770,11 @@ across adapters; platform-specific argv/context and native output envelopes are
 private adapter execution details retained through the transcript locator. The
 native trace locator identifies a repo-external closed receipt whose events are
 bound to the minimal native request digest, public projection root, exact
-Skill/wrapper digests, request-bound reads, and one exact projected wrapper
-invocation. The native request contains only projection/workdir/prompt/files/
-invocation locators; canonical package, corpus, adapter request, and private
-runtime locators stay runner-private. The closed adapter request carries the
+  Skill/wrapper digests, one exact Skill-contract read, and one exact projected
+  wrapper invocation. The native request contains only projection/prompt/public
+  invocation facts plus runner-resolved exact wrapper arguments; eval case-file
+  content/path, case workdir, canonical package, corpus, adapter request, and
+  private runtime locators stay runner-private. The closed adapter request carries the
 runner-resolved public runtime target; every side in one comparison receives
 the same value, and no native request, context, argv, projection, receipt, or
 boundary client contains that locator. The receipt is not public Skill I/O or

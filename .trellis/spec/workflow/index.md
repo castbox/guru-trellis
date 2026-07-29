@@ -81,7 +81,8 @@ Before editing workflow behavior:
   exits, and the owner-private recovery loop. It reuses the existing #105
   deterministic transaction engine. Package discovery, global invocation after
   publication `ready`, five thin finish entries, and automatic machine recovery
-  routing are active. This integration does not claim #119 combined acceptance.
+  routing are active. Issue #119 adds the canonical `guru-finish-work` entry and
+  combined Finish-family route while preserving the package contracts.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 
 ## Required Validation
@@ -154,5 +155,6 @@ recovery facts, real-wrapper eval, and additive distribution.
 
 The current package graph contains thirteen active Skills and 52 external exits
 with twelve target-owned `skill_input_authoring_seed` handoffs. Global workflow
-markers are 13 invokes, 52 exits, and 29 targets. The integration does not claim
-#119 combined acceptance, while #132 owns physical upstream overlay cleanup.
+markers are 13 invokes, 52 exits, and 29 targets. Issue #119 closes combined
+Finish-family acceptance and umbrella Issue #115. Issue #132 remains the
+follow-up owner for physical upstream overlay cleanup.

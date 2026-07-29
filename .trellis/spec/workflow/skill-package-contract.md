@@ -104,7 +104,7 @@ workflow/standalone preconditions before a package command can run.
 
 `guru-team-skill-interface-1.2` is the frozen legacy contract. Its schema file,
 schema id, and field meanings are not reinterpreted by the minimal-handoff
-rollout. All ten active packages now select the independent
+rollout. All thirteen active packages now select the independent
 `guru-team-skill-interface-1.3` contract; archived 1.2 artifacts remain
 historical and are never rewritten as public handoff state.
 
@@ -1310,10 +1310,15 @@ The stable adapter ids are `shared`, `codex`, `claude`, and `cursor`. The runner
 reads the canonical corpus outside native execution. Adapters then create a
 repo/package-external public-only projection containing exact `SKILL.md`,
 `interface.json`, the exact public wrapper, and only the public Interface
-schemas/examples needed for invocation. Native execution receives that
-projection, staged files, prompt, helper, and a minimal native request; it does
-not receive the canonical package root, corpus locator, adapter request, or
-private runtime source. Adapters return stdout/stderr/trace/timing locators.
+schemas/examples needed for invocation. The adapter resolves exact declared
+wrapper arguments from case fixtures outside native execution. Native execution
+receives the projection, prompt, runner-resolved arguments, helper, and a
+minimal native request; it does not receive eval case-file content/path, the
+case workdir, canonical package root, corpus locator, adapter request, private
+runtime locator, or private runtime source. Runtime-private argument values are
+represented by opaque runner tokens and restored only inside the
+repo-external deterministic dispatcher. Adapters return
+stdout/stderr/trace/timing locators.
 They consume the same corpus bytes and do not own schema, grading,
 consumer projection, semantic judgment, or platform-specific corpus. Missing
 native capability returns `unsupported`. Comparison accepts only a pair of
@@ -1339,9 +1344,10 @@ override as an alternate implementation. `shared.sh`, `codex.sh`, `claude.sh`,
 and `cursor.sh` delegate only platform capability detection, native argv,
 isolated context, output unwrapping, and trace collection to the shared adapter
 runtime. The native context includes only projected Skill/public-wrapper
-locators, case prompt, staged files, and helper read/invoke commands, never
-canonical package/corpus locators, inline Skill bytes, private runtime source,
-corpus assertions, grader policy, or the runner-private runtime target.
+locators, case prompt, runner-resolved public invocation arguments, and helper
+read/invoke commands, never eval case-file content/path, case workdir, canonical
+package/corpus locators, inline Skill bytes, private runtime source, corpus
+assertions, grader policy, or the runner-private runtime target.
 Wrappers reach required runtime only through the runner-owned public invocation
 boundary. An explicit compatibility/test dispatcher override may select the
 runner-private target, but normal execution never depends on an environment
@@ -1518,7 +1524,9 @@ The two structured inputs are deliberately distinct:
 The workflow profile is owned by this package and is consumed by active
 `guru-finalize-task:verification_required`. It publishes the target schema,
 example, fixture, real-wrapper eval, and concrete target-owned authoring seed.
-Global Finish routing remains deferred to #119.
+Issue #119 supplies the active global Finish route and canonical
+`guru-finish-work` platform entry without changing this package's input,
+outputs, or semantic ownership.
 Caller input never contains applicability, capability list, remote facts,
 adequacy, expected exit, or command matrix.
 
@@ -1643,5 +1651,6 @@ selects and validates the actual exit schema before the grader compares
 `expected_exit`, which never enters adapter/native input. Canonical, installed,
 shared, Codex, Claude, and Cursor corpus bytes are identical. The active package
 uses `workflow_integration_state=integrated`; the global workflow invokes it and
-maps all six exits. Upstream Finish overlays remain separate cleanup scope
-owned by #132, and this integration does not claim #119 combined acceptance.
+maps all six exits. Issue #119 closes the combined public-route acceptance
+through canonical `guru-finish-work`. Byte-frozen upstream Finish overlays
+remain bounded compatibility surfaces whose physical removal is owned by #132.

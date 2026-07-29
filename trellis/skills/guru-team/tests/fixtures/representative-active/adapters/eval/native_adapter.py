@@ -81,7 +81,7 @@ def main() -> int:
     parser.add_argument("--wrapper-sha256", required=True)
     subparsers = parser.add_subparsers(dest="operation", required=True)
     read_parser = subparsers.add_parser("read")
-    read_parser.add_argument("--kind", required=True, choices=("skill_contract", "case_file"))
+    read_parser.add_argument("--kind", required=True, choices=("skill_contract",))
     read_parser.add_argument("--path", required=True)
     invoke_parser = subparsers.add_parser("invoke")
     invoke_parser.add_argument("--wrapper", required=True)
@@ -226,6 +226,13 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
         raise ValueError("public projection Skill bytes differ from canonical bytes")
     if wrapper_sha256 != hashlib.sha256((canonical_root / wrapper_relative).read_bytes()).hexdigest():
         raise ValueError("public projection wrapper bytes differ from canonical bytes")
+    if request.get("skill_id") == "guru-example-action" and "Block" in str(request.get("prompt")):
+        relative = Path("examples/action-block-input.json")
+        source = canonical_root / relative
+        destination = projection_root / relative
+        if source.is_symlink() or not source.is_file():
+            raise ValueError("representative blocked public input is unavailable")
+        shutil.copy2(source, destination)
     return projection_root, skill_path, wrapper_path, skill_sha256, wrapper_sha256
 
 
@@ -242,12 +249,32 @@ def public_runtime_target(request: dict[str, Any]) -> Path:
     return resolved
 
 
+def public_invocation_arguments(request: dict[str, Any]) -> list[str]:
+    skill_id = str(request["skill_id"])
+    prompt = str(request["prompt"])
+    if skill_id == "guru-example-action":
+        example = (
+            "examples/action-reentry-input.json"
+            if "Repeat" in prompt
+            else "examples/action-block-input.json"
+            if "Block" in prompt
+            else "examples/action-initial-input.json"
+        )
+        return ["--input", example]
+    if skill_id == "guru-example-sync":
+        exit_id = "blocked" if "blocked" in prompt else "forwarded"
+        return ["--exit-id", exit_id, "--item", "alpha"]
+    raise ValueError("representative public invocation arguments are unavailable")
+
+
 def start_public_runtime_boundary(
     execution_root: Path,
     target: Path,
     package_root: Path,
     projection_root: Path,
+    private_argument_bindings: dict[str, str] | None = None,
 ) -> tuple[Path, threading.Thread, threading.Event]:
+    private_argument_bindings = private_argument_bindings or {}
     request_path = execution_root / "public-invocation-request.json"
     response_path = execution_root / "public-invocation-response.json"
     response_draft_path = execution_root / "public-invocation-response.pending.json"
@@ -269,6 +296,13 @@ def start_public_runtime_boundary(
                 if arguments[:2] != ["--package-root", str(projection_root)]:
                     raise ValueError("public invocation package projection binding is invalid")
                 arguments = ["--package-root", str(package_root), *arguments[2:]]
+                for token in private_argument_bindings:
+                    if arguments.count(token) != 1:
+                        raise ValueError("private public invocation argument binding is invalid")
+                arguments = [
+                    private_argument_bindings.get(value, value)
+                    for value in arguments
+                ]
                 process = subprocess.run(
                     [str(target), *arguments],
                     text=True,
@@ -328,26 +362,16 @@ def build_context(
     execution_root = workdir.parent
     projection_root, skill_path, wrapper_path, skill_sha256, wrapper_sha256 = stage_public_projection(request, execution_root)
     runtime_target = public_runtime_target(request)
+    invocation_arguments = public_invocation_arguments(request)
     trace_path = execution_root / "native-trace.json"
     helper_path = execution_root / "native-trace-helper.py"
     helper_path.write_text(TRACE_HELPER, encoding="utf-8")
     helper_path.chmod(0o755)
-    file_sections: list[str] = []
-    for relative in request["files"]:
-        staged = workdir / relative
-        if not staged.is_file():
-            raise ValueError("staged case file is unavailable")
-        try:
-            content = staged.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            content = f"<binary sha256={hashlib.sha256(staged.read_bytes()).hexdigest()}>"
-        file_sections.append(f"### {relative}\n{content}")
     context = "\n".join([
         "Execute exactly one Guru Team Skill behavior eval.",
         f"Skill id: {request['skill_id']}",
         f"Exact public Skill projection: {projection_root}",
         f"Public wrapper: {wrapper_path}",
-        f"Isolated workdir: {workdir}",
         f"Native trace helper: {helper_path}",
         f"Native trace receipt: {trace_path}",
         "The projection is the complete execution-visible package. Paths absent from it are outside the native execution contract.",
@@ -356,9 +380,9 @@ def build_context(
         "Return only the wrapper's single typed-exit JSON object, with no Markdown fence or explanation.",
         f"Case prompt:\n{request['prompt']}",
         f"Public invocation contract:\n{json.dumps(request['interface']['public_invocation'], separators=(',', ':'))}",
-        "Staged case files:\n" + ("\n".join(file_sections) if file_sections else "<none>"),
+        f"Exact public invocation arguments:\n{json.dumps(invocation_arguments, separators=(',', ':'))}",
         "The adapter has already completed any declared owner staging and checker validation in the installed fixture.",
-        "Use the exact public_invocation.arguments from the staged case facts; do not recreate or rewrite public input, owner result, or owner plan files.",
+        "Use the exact public invocation arguments supplied by the runner; do not recreate or rewrite public input, owner result, or owner plan files.",
         "For this post-owner invocation boundary, run only the exact Skill read command above and then the exact wrapper invocation command above. Do not read linked references, Interface assets, examples, wrapper source, or any other file.",
     ])
     native_request = {
@@ -366,10 +390,9 @@ def build_context(
         "skill_id": request["skill_id"],
         "case_id": request["case_id"],
         "prompt": request["prompt"],
-        "files": request["files"],
-        "workdir": str(workdir),
         "public_package_root": str(projection_root),
         "public_invocation": request["interface"]["public_invocation"],
+        "public_invocation_arguments": invocation_arguments,
     }
     native_request_path = execution_root / "native-request.json"
     native_request_path.write_text(json.dumps(native_request, separators=(",", ":")), encoding="utf-8")
@@ -415,7 +438,7 @@ def build_context(
 def validate_native_trace(
     trace_path: Path,
     request_sha256: str,
-    request: dict[str, Any],
+    invocation_arguments: list[str] | None,
     wrapper_path: Path,
     public_stdout: str,
     protocol_path: Path,
@@ -429,7 +452,7 @@ def validate_native_trace(
     if set(payload) != expected_top or payload.get("schema_version") != "1.0" or payload.get("request_sha256") != request_sha256:
         raise ValueError("native trace receipt request binding is invalid")
     events = payload.get("events")
-    if not isinstance(events, list) or len(events) < 2:
+    if not isinstance(events, list) or len(events) != 2:
         raise ValueError("native trace receipt is incomplete")
     projection_root = Path(protocol["projection_root"]).resolve()
     skill_path = Path(protocol["skill_path"]).resolve()
@@ -441,8 +464,7 @@ def validate_native_trace(
         or any(path.name == "guru_team_trellis.py" for path in projection_root.rglob("*"))
     ):
         raise ValueError("native trace public projection binding is invalid")
-    workdir = Path(request["workdir"]).resolve()
-    allowed_reads = {skill_path, *(workdir / relative for relative in request["files"])}
+    allowed_reads = {skill_path}
     skill_reads = []
     invocations = []
     for event in events:
@@ -479,6 +501,10 @@ def validate_native_trace(
         or not isinstance(argv, list) or not argv
         or Path(str(argv[0])).resolve() != wrapper_path.resolve()
         or any(not isinstance(item, str) for item in argv)
+        or (
+            invocation_arguments is not None
+            and argv[1:] != invocation_arguments
+        )
         or invocation.get("returncode") != 0
         or invocation.get("stdout_sha256") != hashlib.sha256(public_stdout.encode("utf-8")).hexdigest()
         or not isinstance(invocation.get("stderr_sha256"), str)
@@ -497,7 +523,7 @@ def native_argv(
     native_request_path: Path,
     projection_root: Path,
 ) -> tuple[list[str], Path | None]:
-    workdir = str(Path(request["workdir"]).resolve())
+    workdir = str(native_request_path.resolve().parent)
     if adapter == "shared":
         return [command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
     if adapter == "codex":
@@ -630,7 +656,15 @@ def main() -> int:
         return emit(response(request, "execution_error", transcript, stderr=process.stderr, timing_ms=timing_ms, native_trace=trace_path))
     try:
         public_stdout = unwrap_native_output(args.adapter, process.stdout, output_path)
-        trace_events = validate_native_trace(trace_path, request_sha256, request, wrapper_path, public_stdout, protocol_path)
+        native_request = json.loads(native_request_path.read_text(encoding="utf-8"))
+        trace_events = validate_native_trace(
+            trace_path,
+            request_sha256,
+            native_request.get("public_invocation_arguments"),
+            wrapper_path,
+            public_stdout,
+            protocol_path,
+        )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         return emit(response(request, "execution_error", transcript, stderr=str(exc), timing_ms=timing_ms, native_trace=trace_path))
     return emit(response(

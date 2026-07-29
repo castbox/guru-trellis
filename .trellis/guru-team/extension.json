@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.23",
+    "version": "0.6.5-guru.24",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -26,6 +26,9 @@
         ".codex/skills/guru-*/",
         ".cursor/skills/guru-*/",
         ".claude/skills/guru-*/",
+        ".codex/prompts/guru-finish-work.md",
+        ".claude/commands/guru/finish-work.md",
+        ".cursor/commands/guru-finish-work.md",
         ".agents/skills/trellis-start/",
         ".agents/skills/trellis-continue/",
         ".agents/skills/trellis-finish-work/",
@@ -319,11 +322,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-28T19:08:47Z",
+  "installed_at": "2026-07-29T12:13:34Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/ai-first-workflow-remediation",
-    "commit": "7820a9eeec2a2a75fb52fba156a7211d9f9fb09c",
+    "ref": "feat/119-combined-finish-family-integration",
+    "commit": "b034f466755c5c0b4e2e48bf260bb54ef58cb5be",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -333,7 +336,7 @@
       "codex",
       "cursor"
     ],
-    "all_platforms": true,
+    "all_platforms": false,
     "managed_assets": [
       ".agents/skills/trellis-before-dev/SKILL.md",
       ".agents/skills/trellis-brainstorm/SKILL.md",
@@ -349,12 +352,14 @@
       ".claude/agents/trellis-check.md",
       ".claude/agents/trellis-implement.md",
       ".claude/agents/trellis-research.md",
+      ".claude/commands/guru/finish-work.md",
       ".claude/commands/trellis/continue.md",
       ".claude/commands/trellis/finish-work.md",
       ".codex/agents/trellis-check.toml",
       ".codex/agents/trellis-implement.toml",
       ".codex/agents/trellis-research.toml",
       ".codex/hooks/session-start.py",
+      ".codex/prompts/guru-finish-work.md",
       ".codex/prompts/trellis-continue.md",
       ".codex/prompts/trellis-finish-work.md",
       ".codex/prompts/trellis-start.md",
@@ -364,6 +369,7 @@
       ".cursor/agents/trellis-check.md",
       ".cursor/agents/trellis-implement.md",
       ".cursor/agents/trellis-research.md",
+      ".cursor/commands/guru-finish-work.md",
       ".cursor/commands/trellis-continue.md",
       ".cursor/commands/trellis-finish-work.md",
       ".cursor/hooks/inject-subagent-context.py",
@@ -577,7 +583,7 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-eval-native-trace.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json",
-        "sha256": "3cb07f30dbd4763bf9bd8df2a1d0a51976174a92784265f63f537d0155b15fc3",
+        "sha256": "4d848658e95a2d133276c952b8fa75c6f3f0b3382039a8132518a337fbbda6f0",
         "executable": false,
         "action": "unchanged"
       },
@@ -675,14 +681,14 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/guru-team-shared-eval",
         "source": "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval",
-        "sha256": "9044b1f96ac3db7d6dbae86b117301794e00f9b2ca9efd82c99eecbe15c630c7",
+        "sha256": "22463f514d0c655acc1df553b43ef68dd7cc6be8605e969b7a9b668b7cd135e2",
         "executable": true,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "fabd9186dbd89fa3937837423282c83c512be84b5d1829c626fc7d02fb3bdc08",
+        "sha256": "12a18da74c5e1ca862fd742d2439378ef3ec012e3e5343d0b274bb89e90a47ab",
         "executable": false,
         "action": "unchanged"
       },

@@ -834,15 +834,15 @@ class SourceValidationTests(unittest.TestCase):
             end = workflow.index("#### 3.7 Finalize and publish", start)
             section = workflow[start:end]
             preparation = section.index(
-                "workflow caller is the explicit owner of initial"
+                "Immediately after Branch Review `passed`"
             )
-            pr_body = section.index("`{TASK_DIR}/pr-body.md`", preparation)
+            pr_body = section.index("`pr-body.md`", preparation)
             summary_index = section.index(
-                "`{TASK_DIR}/finish-summary-index.json`",
+                "`finish-summary-index.json`",
                 preparation,
             )
             fail_closed = section.index(
-                "If either candidate is absent or objectively malformed",
+                "candidates stop fail closed",
                 preparation,
             )
             invocation = section.index(
@@ -854,23 +854,25 @@ class SourceValidationTests(unittest.TestCase):
             self.assertLess(pr_body, invocation, path)
             self.assertLess(summary_index, invocation, path)
             self.assertLess(fail_closed, invocation, path)
-            self.assertIn("producer-side entry preparation", section)
+            normalized = " ".join(section.split())
             self.assertIn(
-                "must not decide\nPR-body sufficiency, Issue closure, the ten "
-                "publication dimensions",
-                section,
+                "caller-owned entry preparation required by the target contract",
+                normalized,
             )
             self.assertIn(
-                "Do not call that recorder/checker to manufacture entry evidence",
+                "not a publication judgment or a workflow exit",
+                normalized,
+            )
+            self.assertIn(
+                "step-local review, evidence, revision, and re-entry behavior "
+                "remains Skill-owned",
                 section,
             )
+            self.assertNotIn("ten publication dimensions", section)
+            self.assertNotIn("recorder/checker", section)
 
             phase37 = workflow[end:]
-            self.assertIn(
-                "are authored before\npublication review and are not regenerated after `ready`",
-                phase37,
-                path,
-            )
+            self.assertNotIn("`pr-body.md`", phase37, path)
             self.assertNotIn(
                 "Then create and AI-review `{TASK_DIR}/finish-summary-index.json`",
                 phase37,
@@ -3127,11 +3129,12 @@ class EvalRunnerTests(unittest.TestCase):
                         "The adapter has already completed any declared owner staging and checker validation",
                         context,
                     )
-                    self.assertIn("Use the exact public_invocation.arguments", context)
+                    self.assertIn("Use the exact public invocation arguments supplied by the runner", context)
                     self.assertIn("Do not read linked references", context)
                     self.assertEqual(set(native_request), {
-                        "schema_version", "skill_id", "case_id", "prompt", "files",
-                        "workdir", "public_package_root", "public_invocation",
+                        "schema_version", "skill_id", "case_id", "prompt",
+                        "public_package_root", "public_invocation",
+                        "public_invocation_arguments",
                     })
                     self.assertEqual(Path(native_request["public_package_root"]), projection_root)
                     self.assertNotIn(str(self.skills.resolve()), context)
@@ -3153,9 +3156,9 @@ class EvalRunnerTests(unittest.TestCase):
                     self.assertEqual(Path(native_trace["events"][0]["path"]).name, "SKILL.md")
                     self.assertEqual(native_trace["events"][-1]["kind"], "invoke")
                     self.assertEqual(Path(native_trace["events"][-1]["wrapper_path"]).name, "invoke.sh")
-                    if case["case_id"] == "complete-normal":
-                        self.assertIn("evals/files/context.txt", context)
-                        self.assertIn("Representative non-sensitive context", context)
+                    self.assertNotIn("evals/files/", context)
+                    self.assertNotIn("Representative non-sensitive context", context)
+                    self.assertNotIn("evals/files/", json.dumps(native_request))
                 argv_transcript = json.loads(
                     Path(payload["cases"][0]["transcript_locator"]).read_text(
                         encoding="utf-8"
@@ -4469,14 +4472,8 @@ class Stage0PublicInvocationTests(unittest.TestCase):
                             encoding="utf-8"
                         )
                     )
-                    facts = None
-                    workdir = Path(request["workdir"])
-                    for relative in request["files"]:
-                        payload = json.loads((workdir / relative).read_text(encoding="utf-8"))
-                        if isinstance(payload.get("public_invocation"), dict):
-                            facts = payload
-                            break
-                    if facts is None:
+                    invocation_arguments = request.get("public_invocation_arguments")
+                    if not isinstance(invocation_arguments, list):
                         print("public invocation facts are unavailable", file=sys.stderr)
                         return 74
 
@@ -4507,7 +4504,7 @@ class Stage0PublicInvocationTests(unittest.TestCase):
                         [
                             sys.executable, helper, *common, "invoke",
                             "--wrapper", str(protocol["wrapper_path"]), "--",
-                            *facts["public_invocation"]["arguments"],
+                            *invocation_arguments,
                         ],
                         cwd=request["public_package_root"],
                         text=True,

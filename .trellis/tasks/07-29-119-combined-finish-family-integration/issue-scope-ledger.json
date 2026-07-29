@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 119,
+    "url": "https://github.com/castbox/guru-trellis/issues/119",
+    "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+    "reason": "当前唯一 combined Finish-family integration delivery unit。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 119,
+      "url": "https://github.com/castbox/guru-trellis/issues/119",
+      "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+      "reason": "本 task 覆盖 #119 全部 accepted-current combined acceptance。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 115,
+      "url": "https://github.com/castbox/guru-trellis/issues/115",
+      "title": "按 Skill-first 重构 Guru Team task 收尾流程 umbrella",
+      "reason": "#119 combined acceptance 完成后按 Issue authority 一并关闭 umbrella。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 105,
+      "url": "https://github.com/castbox/guru-trellis/issues/105",
+      "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+      "reason": "已完成 transaction/recovery baseline；本 task 只完整回归，不重新关闭或改变语义。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 116,
+      "url": "https://github.com/castbox/guru-trellis/issues/116",
+      "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+      "reason": "已完成 publication review owner；本 task 仅消费 public contract。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 117,
+      "url": "https://github.com/castbox/guru-trellis/issues/117",
+      "title": "拆分 #115：实现 guru-verify-extension-installation 闭环 Skill",
+      "reason": "已完成 verification owner；本 task 仅消费 public contract。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 118,
+      "url": "https://github.com/castbox/guru-trellis/issues/118",
+      "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
+      "reason": "已完成 finalization owner；本 task 不重做内部行为。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "保留全仓 upstream overlay cleanup ownership；不得在 #119 提前实现或关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}
