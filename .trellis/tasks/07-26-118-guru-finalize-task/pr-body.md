@@ -17,24 +17,24 @@ Codex production eval 只向 argv 精确授权 repo-external native execution ro
 
 ## 验证结果
 
-- Phase 2：P0/P1/P2/P3=`0/0/0/0`；runtime 628 passed、13 skipped；#105 transaction 106；Skill/package/eval 180；finalizer + #116/#117 33；focused owner projection 6、active/archive 6；preset 45、ownership 9；29 条 retained command evidence 的 exit/stdout/stderr identity 全部重算匹配；source/installed shared wrapper eval 与 clean throwaway current-candidate install/update/reapply/`.new`/`.bak`/platform/OOTB chain rc=0。
+- Phase 2：P0/P1/P2/P3=`0/0/0/0`；runtime 629 passed、13 skipped；#105 transaction 107；Skill/package/eval 180；finalizer/#116/#117 5/18/10；focused final/active/archive/recovery 7、legacy/order 3；preset 45、ownership 9；retained command evidence 的 exit/stdout/stderr identity 全部重算匹配；source/installed shared wrapper eval 与 clean throwaway current-candidate install/update/reapply/`.new`/`.bak`/platform/OOTB chain exit=0。
 - Public-wrapper Namespace closure：content-pushed re-entry 不再因缺少 checker-private fields 抛出 `AttributeError`；private args 仅从 validated task-local immutable plan 重建，initial no-plan 与 stale gate 继续 fail closed，public CLI/DTO/schema/exit 未扩大。
 - Finalization gate re-entry closure：prepared gate recorder-to-checker 正向 1 项与 arbitrary metadata 负向 1 项通过；只放行 exact finalizer-owned gate path。
 - Codex trace write closure：repo-external workspace-enforcing regression 通过，trace 最后事件为真实 public `invoke.sh`，wrapper rc=0；canonical/dogfood adapter SHA-256=`e519f1babbf5b90999f9cc3f64b431d7fc544a2e9fe2f640be482d4372a8fc35`。
 - Verification re-entry：workflow `verified` 与 task-bearing standalone `not_required` 两条真实 recorder-to-finalizer public wrapper 路径通过；arbitrary metadata 与 missing explicit owner binding 继续 fail closed。
 - Owner-evidence transaction compatibility：finalizer-private projection 只接受 checker `status=ok`、`typed_exit=verified`、workflow mode、same task/plan/repo/ref/reviewed HEAD/remote HEAD、真实 regular-file owner bytes 与 `execution.status=passed`；真实 `verified -> published` transition 与负向 binding 回归通过，#105 validator、#117 public DTO/schema/checker 和 ledger owner-bytes identity 均未改变。
-- Stale-checkpoint cleanup：task commit 009=`d7308d4aeaa3228d7650b93821ac7b4269ec5b38` 只删除 predecessor plan 绑定的 `closeout-plan.json` 与 `task-finalization-gate.json` active copies；旧 bytes 保留在 parent history，随后 Phase 2、Branch Review、publication review 与 finalization preview 均重新建立 current identity。
-- Final Branch Review Round 18 覆盖完整 `origin/main...1e5b1479b72e5b253c9755244be87f906cf855f4` 的 559-path/10-commit range，并 fresh 运行 active/archive 6 tests、finalizer contract 5 tests、source/installed validators、canonical/dogfood/platform parity、latest commit diff-check 与 boundary；P0/P1/P2/P3 与 scope proposals 均为 0。
+- Final projection compatibility：finalizer-private projection 贯穿 final projection、active projection、archive transaction 与 supported active recovery；真实 owner artifact bytes 继续作为 ledger SHA authority。Task commit 011=`6dba0452307bebb64720417bf444ec8cbdaa9d2c` 同时删除旧 active `closeout-plan.json` 与 `marketplace-verification.json`，后续 publication/finalization 必须 fresh 建立 current identity。
+- Final Branch Review Round 19 覆盖完整 `origin/main...6dba0452307bebb64720417bf444ec8cbdaa9d2c` 的 564-path/12-commit range，并 fresh 运行 runtime/package/contracts/preset/ownership、focused final/active/archive/recovery、legacy/order、source/installed validators、canonical/dogfood/platform parity、latest commit diff-check、boundary 与 clean throwaway；P0/P1/P2/P3 与 scope proposals 均为 0。
 - Clean throwaway 覆盖 workflow marketplace discovery、preset initial install/reapply、official update、managed hashes、`.new/.bak` recovery、四平台分发、真实 wrappers/evals、installed recovery、ownership 与 overlay drift。
 - Claude installed native 调用因外部 `401 Invalid API key` 未取得 semantic success；协议、adapter parsing、controlled tests 与 corpus parity 通过，但不把外部 401 描述为 live pass。Cursor 当前环境稳定返回 declared `unsupported`，同样不冒充 semantic pass。
 - 当前通过的是 exact local committed source；feature ref 尚未 push。真实 pushed feature-ref marketplace verification 仍是 `guru-finalize-task` content push 后、Draft PR/archive 前的 mandatory #117 owner gate，不能用 local/main 验证替代。
-- 完整 `git diff --check origin/main...1e5b1479` 仅命中 assignment-bound immutable Round 9 raw report line 203；Round 13/18 将其保留为 `rejected_candidate/out_of_scope` nonblocking observation。Current last-commit 与 metadata tail whitespace check 通过。
+- 完整 `git diff --check origin/main...6dba0452` 仅命中 assignment-bound immutable Round 9 raw report line 203；Round 13/19 将其保留为 `observation/out_of_scope`，不携带 severity。Current last-commit 与 metadata tail whitespace check 通过。
 
 ## Review Gate
 
-Round 18 使用未参与 implementation、Phase 2、finding discovery/closure 或 Round 17 final-release 的全新 reviewer，对 current 559-path/10-commit range 执行 qualification-first fresh final review。它重新验证 latest owner-evidence compatibility projection、全部历史 finding closure、Interface 1.3/private-state/recovery/distribution contracts、Docs SSOT、安装升级和安全部署边界；Round 18 raw report SHA-256=`ff942f383c04025e95f0062a35641df1e836f7561e063558dc0acaccd4b685dc`。
+Round 19 使用未参与 implementation、Phase 2、finding discovery/closure、task commit 011 或 Round 18 final-release 的全新 reviewer，对 current 564-path/12-commit range 执行 qualification-first fresh final review。它重新验证 finalizer-private projection chain、真实 owner bytes authority、全部历史 finding closure、Interface 1.3/private-state/recovery/distribution contracts、Docs SSOT、安装升级和安全部署边界；Round 19 raw report SHA-256=`0bcde8950e0406f7ef2d595f25a43f5c09d60ebe91a236921c3c4d4656ac2145`。
 
-Current P0/P1/P2/P3=`0/0/0/0`，scope proposals=`0`。正式 Branch Review recorder、checker 与 public wrapper 均返回 `passed`；gate artifact SHA-256 为 `b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead`。
+Current P0/P1/P2/P3=`0/0/0/0`，scope proposals=`0`。正式 Branch Review recorder、checker 与 public wrapper 均返回 `passed`；gate artifact SHA-256 为 `7119bae0aa0c1d2b7a949db027307e8753af8e55bcf1c58d75f6912fc0a280f8`。
 
 ## Issue 关闭范围
 
@@ -59,6 +59,6 @@ Public DTO 不携带 closeout plan、readiness、verification、PR/archive/recov
 - Strategy：`ssot_first`。
 - Durable docs：finalizer step-local contract、Skill I/O、workflow ownership、companion scripts、quality、preset installer/upstream ownership、public docs 与 repository/workflow/preset README 已同步。
 - Merged delta：semantic owner、single transaction engine、七个 distinct profiles、六个 `exit_id` outputs、owner-private state、verification/PR/archive/recovery ordering、production eval、distribution 和 update/reapply 规则均已写入对应 durable owners。
-- Current corrections：prepared finalizer gate re-entry、owner-check-first verification re-entry、finalizer-private owner-evidence compatibility projection、Codex repo-external execution-root grant 与 public-wrapper private Namespace reconstruction 均恢复 code/test 与既有 durable contract 一致；stale predecessor plan/gate active copies已删除，无新的 durable semantic delta。
+- Current corrections：prepared finalizer gate re-entry、owner-check-first verification re-entry、贯穿 final/active/archive/recovery 的 finalizer-private owner-evidence compatibility projection、Codex repo-external execution-root grant 与 public-wrapper private Namespace reconstruction 均恢复 code/test 与既有 durable contract 一致；stale predecessor plan/verification active copies已删除，无新的 durable semantic delta。
 - Task history：planning provenance、实现轮次、Phase 2 command evidence、historical finding lifecycle 与 raw Branch Review reports 仅保留在 task-local artifacts，不承担长期流程定义。
 - Follow-up / limitation：global Finish family activation 与 combined acceptance 由 #119 负责，upstream overlay cleanup 由 #132 负责；exact pushed feature-ref verification 与真实 GitHub/archive side effects 仍是后续 finalization mandatory gates。

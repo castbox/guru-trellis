@@ -12,7 +12,8 @@
       "同月 legacy partial plan 仅用 plan-bound takeover；跨月走 reprepare。",
       "Production eval 执行真实 wrapper，按 actual exit 选 schema，返回后断言 expected_exit。",
       "Canonical、dogfood、Shared/Codex/Claude/Cursor 与 preset corpus 保持 byte-identical。",
-      "#117 verified/not_required 经 owner check 后，仅由 finalizer-private same-plan projection 适配未修改的 #105 validator。"
+      "#117 verified/not_required 经 owner check 后，仅由 finalizer-private same-plan projection 适配未修改的 #105 validator。",
+      "Verified projection 贯穿 final、active、archive 与 supported recovery consumer；ledger 始终绑定真实 owner artifact bytes。"
     ],
     "affected_surfaces": [
       {
@@ -123,6 +124,12 @@
         "contract": "Verified owner evidence transaction compatibility",
         "before": "Interface 1.3 owner evidence 不匹配 #105 transaction input。",
         "after": "Private projection 只接受 checker-passed same-plan owner evidence，并交给未修改的 #105 validator。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Final projection and recovery continuity",
+        "before": "Verified compatibility projection 未贯穿全部 pre-archive consumer。",
+        "after": "同一 private projection 贯穿 final、active、archive 与 supported recovery，owner bytes 仍是 ledger authority。",
         "source_artifact": ""
       }
     ],

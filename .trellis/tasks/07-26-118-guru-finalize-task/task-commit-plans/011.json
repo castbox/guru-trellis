@@ -289,7 +289,131 @@
     "plan_digest": "07737a7e01bb156e80a58563a5435507fcfc75f513d4dee20dd315c6a7951e7d"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-28T15:52:54Z",
+    "commit_sha": "6dba0452307bebb64720417bf444ec8cbdaa9d2c",
+    "parent": "85ab42837a44968d892f520614ab611becf5b8d5",
+    "message_sha256": "6e3de2766d268e2128b384623e4e1ff913a3eae31590c71f8855bd221efb11c3",
+    "committed_paths": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/marketplace-verification.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-final-projection-chain-fix-full-round.md",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-final-projection-chain-fix-full-round.json",
+      ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/011.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "15f3eccdac336dff55c972d0de5414df1052dd45",
+      "actual_tree": "15f3eccdac336dff55c972d0de5414df1052dd45",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "9a8ca33596503c60ffde8a6368f0f252391478ac",
+          "expected_mode": "100755",
+          "actual_blob": "9a8ca33596503c60ffde8a6368f0f252391478ac",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
+          "expected_blob": "d519b6ce4bea5ae405d11b29f34c653d7a54c999",
+          "expected_mode": "100644",
+          "actual_blob": "d519b6ce4bea5ae405d11b29f34c653d7a54c999",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/closeout-plan.json",
+          "expected_blob": null,
+          "expected_mode": null,
+          "actual_blob": null,
+          "actual_mode": null,
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
+          "expected_blob": "c502c2c4e3d82218acf7d61dbc2a204deb3e62eb",
+          "expected_mode": "100644",
+          "actual_blob": "c502c2c4e3d82218acf7d61dbc2a204deb3e62eb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          "expected_blob": "69f53b8f9decf1d54f129e873d24c77bad0f8846",
+          "expected_mode": "100644",
+          "actual_blob": "69f53b8f9decf1d54f129e873d24c77bad0f8846",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/marketplace-verification.json",
+          "expected_blob": null,
+          "expected_mode": null,
+          "actual_blob": null,
+          "actual_mode": null,
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-final-projection-chain-fix-full-round.md",
+          "expected_blob": "8f8edaae5130c40bab6add52e2c5ddf12aa3650c",
+          "expected_mode": "100644",
+          "actual_blob": "8f8edaae5130c40bab6add52e2c5ddf12aa3650c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
+          "expected_blob": "c945542cbf2b6e8ed9ea696be2801b41e4f6e315",
+          "expected_mode": "100644",
+          "actual_blob": "c945542cbf2b6e8ed9ea696be2801b41e4f6e315",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-final-projection-chain-fix-full-round.json",
+          "expected_blob": "96a9384f81240af02f26165ab261ba82a74c3fa6",
+          "expected_mode": "100644",
+          "actual_blob": "96a9384f81240af02f26165ab261ba82a74c3fa6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/011.json",
+          "expected_blob": "8fb154d4ae61b0459ff6b82d12e5f982edabbe8d",
+          "expected_mode": "100644",
+          "actual_blob": "8fb154d4ae61b0459ff6b82d12e5f982edabbe8d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "9a8ca33596503c60ffde8a6368f0f252391478ac",
+          "expected_mode": "100755",
+          "actual_blob": "9a8ca33596503c60ffde8a6368f0f252391478ac",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "0d9ac36b31dc28ed61cc6f860057606fd10dd090",
+          "expected_mode": "100644",
+          "actual_blob": "0d9ac36b31dc28ed61cc6f860057606fd10dd090",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

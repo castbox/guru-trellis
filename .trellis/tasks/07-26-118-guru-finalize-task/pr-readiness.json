@@ -1,21 +1,21 @@
 {
   "schema_version": "1.0",
   "skill_id": "guru-review-task-publication",
-  "generated_at": "2026-07-28T12:04:29Z",
+  "generated_at": "2026-07-28T17:01:31Z",
   "task_dir": ".trellis/tasks/07-26-118-guru-finalize-task",
   "profile": "publication_review_stale",
   "mode": "workflow",
   "review_intent": "stale_reentry_review",
   "review_identity": {
-    "reviewed_head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
-    "review_ref": "review-gate:b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead"
+    "reviewed_head": "6dba0452307bebb64720417bf444ec8cbdaa9d2c",
+    "review_ref": "review-gate:7119bae0aa0c1d2b7a949db027307e8753af8e55bcf1c58d75f6912fc0a280f8"
   },
   "semantic_review": {
     "dimensions": [
       {
         "id": "diff_outcome_consistency",
         "status": "passed",
-        "summary": "PR outcome、finish index 与完整 559-path/10-commit diff一致，latest finalizer-private owner-evidence projection及其边界已准确披露。",
+        "summary": "PR outcome、finish index 与完整 564-path/12-commit diff一致，finalizer-private projection贯穿 final/active/archive/recovery 且 owner bytes authority 已准确披露。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
           ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
@@ -29,36 +29,36 @@
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
           ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
-          "live GitHub #118/#115/#119/#132 state"
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-019-final-release.md"
         ]
       },
       {
         "id": "pr_body_quality",
         "status": "passed",
-        "summary": "中文 PR body 具体说明行为、影响、验证、Review Gate、Issue closure、安全/部署和 Docs SSOT，并明确外部 401/unsupported 与 pushed-ref residual。",
+        "summary": "中文 PR body 具体说明行为、影响、current 验证、Round 19 Review Gate、Issue closure、安全/部署、Docs SSOT 与 pushed-ref residual。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
-          "pr-body sha256 fd550a3a78bf58b02a09d7565e4638d966607fb44e940f2bcc0a7d0ca2f128db"
+          "pr-body sha256 5acf06515059b0079d519f292c012bb86c862b39bc88d95e91eafbe3157d9dcf"
         ]
       },
       {
         "id": "validation_claims",
         "status": "passed",
-        "summary": "Claims 已刷新到 runtime 628/13、#105 106、package/eval 180、finalizer+#116/#117 33、focused 6+6、preset 45、ownership 9 与 clean throwaway/source-installed wrapper evidence。",
+        "summary": "Claims 已刷新到 runtime 629/13、#105 107、package/eval 180、finalizer/#116/#117 5/18/10、focused 7+3、preset 45、ownership 9 与 clean throwaway/source-installed wrapper evidence。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
-          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalizer-owner-projection-fix-full-round-20260728.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-final-projection-chain-fix-full-round.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-019-final-release.md"
         ]
       },
       {
         "id": "branch_review_summary",
         "status": "passed",
-        "summary": "Round 18 是最后、current、fresh 的独立 final review；P0-P3 和 scope proposals 均为零，public wrapper actual exit=passed。",
+        "summary": "Round 19 是最后、current、fresh 的独立 final review；P0-P3 和 scope proposals 均为零，Branch Review public wrapper actual exit=passed。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
           ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-019-final-release.md"
         ]
       },
       {
@@ -67,7 +67,7 @@
         "summary": "Approved strategy=ssot_first 已兑现；durable package/workflow/spec/README contracts current，latest correction 仅恢复既有 private compatibility，no_docs_update_needed 成立。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/design.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
           ".trellis/tasks/07-26-118-guru-finalize-task/review.md"
         ]
       },
@@ -83,11 +83,10 @@
       {
         "id": "finish_summary_semantics",
         "status": "passed",
-        "summary": "Finish summary index 在 2569 字符 retrieval 上限内准确表达 semantic owner、七 profiles、六 exits、transaction/recovery/distribution 与 latest owner-evidence compatibility contract，并保留 #119/#132 边界。",
+        "summary": "Finish summary index 准确表达 semantic owner、七 profiles、六 exits、transaction/recovery/distribution、owner-evidence compatibility 与完整 projection continuity，并保留 #119/#132 边界。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
-          "finish-summary-index sha256 29d26b531ddfc7492cebd810a26a6798745246e508c4f54b2a519f066ea62440",
-          "derived retrieval_text length 2569; validator range 1..3000"
+          "finish-summary-index sha256 c9ac45dea9e41e4c14847baa7b1aed0e025cd6e6ba199069663a472b3ad36598"
         ]
       },
       {
@@ -97,13 +96,13 @@
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/agent-assignment.json",
           ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
-          "git status at HEAD 1e5b1479"
+          "git status at HEAD 6dba0452307bebb64720417bf444ec8cbdaa9d2c"
         ]
       },
       {
         "id": "artifact_binding_freshness",
         "status": "passed",
-        "summary": "Planning、Phase 2、ledger、Round 18、review gate、PR body、精简后的 finish index 与 current HEAD identities 已重读；recorder 将重建十二项 objective bindings 和新 opaque publication ref。",
+        "summary": "Planning、Phase 2、ledger、Round 19、review gate、PR body、finish index 与 current HEAD identities 已重读；recorder 将重建十二项 objective bindings 和新 opaque publication ref。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/planning-approval.json",
           ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
@@ -113,12 +112,12 @@
     ],
     "findings": [
       {
-        "finding_ref": "PUB-META-R18-PRBODY",
+        "finding_ref": "PUB-META-R19-PRBODY",
         "dimension": "pr_body_quality",
-        "summary": "旧 PR body 引用 d730/Round 17 与过期测试计数。",
+        "summary": "旧 PR body 引用 Round 18、1e5b1479 与过期测试计数。",
         "scope_basis": "Publication owner 必须向无 Trellis 上下文的 reviewer 提供 current、具体且可核验的正文。",
         "evidence_refs": [
-          "pre-revision pr-body committed at 1e5b1479",
+          "pre-revision pr-body at current task",
           ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json"
         ],
         "affected_artifacts": [
@@ -127,18 +126,18 @@
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "pr-body sha256 fd550a3a78bf58b02a09d7565e4638d966607fb44e940f2bcc0a7d0ca2f128db",
-          "Round 18/1e5b1479/current validation and owner-projection text present"
+          "pr-body sha256 5acf06515059b0079d519f292c012bb86c862b39bc88d95e91eafbe3157d9dcf",
+          "Round 19/6dba0452/current validation and final projection continuity text present"
         ]
       },
       {
-        "finding_ref": "PUB-META-R18-FINISH",
+        "finding_ref": "PUB-META-R19-FINISH",
         "dimension": "finish_summary_semantics",
-        "summary": "旧 finish summary index 未记录 latest owner-evidence transaction compatibility。",
-        "scope_basis": "Final archived summary search/index 必须覆盖当前交付行为和可检索 contract symbol。",
+        "summary": "旧 finish summary index 未记录 final/active/archive/recovery projection continuity。",
+        "scope_basis": "Final archived summary search/index 必须覆盖当前交付行为和可检索 contract。",
         "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
-          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md"
+          ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
+          ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-019-final-release.md"
         ],
         "affected_artifacts": [
           ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json"
@@ -146,15 +145,15 @@
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "finish-summary-index sha256 282c8d1bd0c0ac72835de366ad3458706df1d736ffb76d9f4e4ebda1ba255d79",
-          "compatibility behavior, contract change and symbol added"
+          "finish-summary-index sha256 c9ac45dea9e41e4c14847baa7b1aed0e025cd6e6ba199069663a472b3ad36598",
+          "projection continuity behavior and contract change added"
         ]
       },
       {
-        "finding_ref": "PUB-META-R18-LEDGER",
+        "finding_ref": "PUB-META-R19-LEDGER",
         "dimension": "issue_scope_closure",
-        "summary": "Ledger acceptance evidence 和 pending verification heads 仍引用 d730/Round 17。",
-        "scope_basis": "Issue close evidence 与 verifier pending identity 必须绑定 current reviewed content HEAD 和 current Branch Review。",
+        "summary": "Primary/close #118 acceptance evidence 仍引用 Round 18、1e5b1479 与过期验证计数。",
+        "scope_basis": "Issue close evidence 必须绑定 current reviewed content HEAD 和 current Branch Review。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
           ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json"
@@ -165,27 +164,27 @@
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "primary and close #118 evidence now bind Phase 2 current counts and Round 18 gate",
-          "both pending verified_content_head/publish_head equal 1e5b1479b72e5b253c9755244be87f906cf855f4"
+          "issue-scope-ledger sha256 67b1309b19926d178640f6750172d0c82affd8d59e41763c0ec132e0cd306cb9",
+          "primary and close #118 evidence now bind Phase 2 current counts and Round 19 gate"
         ]
       },
       {
-        "finding_ref": "PUB-META-R18-RETRIEVAL-LIMIT",
-        "dimension": "finish_summary_semantics",
-        "summary": "首次 finalizer side-effect-free preview 生成的 retrieval_text 超过 3000 字符 validator 上限。",
-        "scope_basis": "Publication owner 必须使 finish summary 同时保留当前交付语义并满足 deterministic archive summary validator。",
+        "finding_ref": "PUB-META-R19-PENDING-VERIFICATION",
+        "dimension": "issue_scope_closure",
+        "summary": "Commit 011 删除 stale passed verification 后，current ledger 尚未建立 content push 前的 machine pending verification identity。",
+        "scope_basis": "Publication owner 必须为 current reviewed HEAD 建立唯一 pending evidence，并保留 pushed-ref verifier 作为 finalization mandatory gate。",
         "evidence_refs": [
-          "preview-finalization pre-side-effect error: index.retrieval_text length must be between 1 and 3000 characters",
-          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
+          "publication recorder dry-run issue_scope_ledger precondition"
         ],
         "affected_artifacts": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json"
+          ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json"
         ],
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "finish-summary-index sha256 29d26b531ddfc7492cebd810a26a6798745246e508c4f54b2a519f066ea62440",
-          "derived retrieval_text length reduced from 3363 to 2569 without removing accepted contract boundaries"
+          "issue-scope-ledger sha256 67b1309b19926d178640f6750172d0c82affd8d59e41763c0ec132e0cd306cb9",
+          "primary and close #118 each contain one exact pending remote_marketplace_verification object bound to 6dba0452307bebb64720417bf444ec8cbdaa9d2c with empty remote/digest and commands_passed=false"
         ]
       }
     ],
@@ -217,28 +216,19 @@
     },
     "revision_history": [
       {
-        "revision_ref": "PUB-META-R18-01",
+        "revision_ref": "PUB-META-R19-01",
         "kind": "metadata_revision",
-        "summary": "在 Round 18 后同步 PR body、finish summary index 与 Issue ledger publication metadata，并完整重审十个维度。",
+        "summary": "在 Round 19 后同步 PR body、finish summary index 与 Issue ledger publication metadata，并完整重审十个维度。",
         "evidence_refs": [
           ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
           ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
           ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json"
         ]
-      },
-      {
-        "revision_ref": "PUB-META-R18-02",
-        "kind": "metadata_revision",
-        "summary": "闭合 finalizer preview 暴露的 retrieval_text 长度 finding；仅精简 finish summary 重复措辞，并完整重审十个 publication dimensions。",
-        "evidence_refs": [
-          ".trellis/tasks/07-26-118-guru-finalize-task/finish-summary-index.json",
-          "derived retrieval_text length 2569; sha256 29d26b531ddfc7492cebd810a26a6798745246e508c4f54b2a519f066ea62440"
-        ]
       }
     ],
     "reviewer_process": {
       "reviewer": "main-session-publication-semantic-owner",
-      "summary": "主会话基于 Branch Review passed DTO、live Issue state、current artifacts、retrieval validator 结果与 status allowlist 完成十维 semantic review；recorder/checker 仅做 objective validation。",
+      "summary": "主会话基于 current Branch Review passed DTO、current task artifacts、Round 19 evidence 与 closed status allowlist 完成十维 semantic review；recorder/checker 仅做 objective validation。",
       "evidence_refs": [
         ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
@@ -247,7 +237,7 @@
     },
     "human_confirmation": {
       "status": "not_required",
-      "summary": "本轮只在 publication Skill 内修订 contract 允许的 task metadata 并记录语义门禁；不执行 push、PR、archive、Ready、merge 或 Issue mutation，外部副作用仍需新的 exact finalization digest confirmation。",
+      "summary": "本轮只在 publication Skill 内修订 contract 允许的 task metadata并记录语义门禁；不执行 push、PR、archive、Ready、merge 或 Issue mutation，外部副作用仍需新的 exact finalization digest confirmation。",
       "confirmed_by": null,
       "confirmed_at": null
     },
@@ -275,32 +265,32 @@
         "size": 38697
       },
       "phase2-check.json": {
-        "sha256": "cdb8f217ec25d32297eed95fcb488ec279bf0b13baaf4300ab41aa97803e2510",
-        "size": 81484
+        "sha256": "bba4a6833323d906e48c28d9738009a04a89f3f132c4f769acba411d3f8f41bd",
+        "size": 111254
       },
       "issue-scope-ledger.json": {
-        "sha256": "c1feb15949b69d82ab7db3c4d1f86720af47dfb4408f2ddd7a6e6a2f492da2ed",
-        "size": 5096
+        "sha256": "67b1309b19926d178640f6750172d0c82affd8d59e41763c0ec132e0cd306cb9",
+        "size": 5110
       },
       "agent-assignment.json": {
-        "sha256": "1ad9772fa481727432512e6c159ecb9016d2995cc6bfff91571a8f126fdbf09e",
-        "size": 700455
+        "sha256": "a08941c76e396c6db279ac79733f9b2542160374309fcecec35070ed1acb0039",
+        "size": 738577
       },
       "review.md": {
-        "sha256": "e8e3dc194f004447a79b4ef1fa1a3ff58b7bd9eedd3ac6990a72ee7cd40209d8",
-        "size": 11247
+        "sha256": "c7a521bd01608b72467dc6fd93b2887f6344f41f5d0f8050a4b97c5e6253d457",
+        "size": 11618
       },
       "review-gate.json": {
-        "sha256": "b5e5dce7de437d91bafa225edb38d0445a6a109b1aad7bf79a155ce4d7a2bead",
-        "size": 190633
+        "sha256": "7119bae0aa0c1d2b7a949db027307e8753af8e55bcf1c58d75f6912fc0a280f8",
+        "size": 192756
       },
       "pr-body.md": {
-        "sha256": "fd550a3a78bf58b02a09d7565e4638d966607fb44e940f2bcc0a7d0ca2f128db",
-        "size": 10310
+        "sha256": "5acf06515059b0079d519f292c012bb86c862b39bc88d95e91eafbe3157d9dcf",
+        "size": 10552
       },
       "finish-summary-index.json": {
-        "sha256": "29d26b531ddfc7492cebd810a26a6798745246e508c4f54b2a519f066ea62440",
-        "size": 7418
+        "sha256": "c9ac45dea9e41e4c14847baa7b1aed0e025cd6e6ba199069663a472b3ad36598",
+        "size": 7911
       },
       "implementation-handoff.md": {
         "sha256": "dea1ab4217291c3dd4c11b5b72536afed96eea75b6d7c06d261743305f04efe7",
@@ -308,7 +298,7 @@
       }
     },
     "repository": {
-      "head": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+      "head": "6dba0452307bebb64720417bf444ec8cbdaa9d2c",
       "branch": "feat/118-guru-finalize-task",
       "base_ref": "origin/main",
       "diff_paths": [
@@ -700,6 +690,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/implement.jsonl",
         ".trellis/tasks/07-26-118-guru-finalize-task/implement.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-codex-trace-write-fix.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-final-projection-chain-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalization-gate-reentry-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-finalizer-owner-projection-fix.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/implementation-handoff-gate-only-fix.md",
@@ -715,6 +706,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-review.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/issue-scope-ledger.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-codex-trace-write-fix-full-round.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-final-projection-chain-fix-full-round.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalization-gate-reentry-full-round.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-finalizer-owner-projection-fix-full-round-20260728.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-gate-only-fix.md",
@@ -725,6 +717,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check-verification-metadata-reentry.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-check.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-codex-trace-write-fix-full-round.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-final-projection-chain-fix-full-round.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalization-gate-reentry-full-round.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-finalizer-owner-projection-fix-full-round-20260728.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/phase2-command-evidence-live-wrapper-namespace-fix-exact-stream-full-round.json",
@@ -763,6 +756,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-015-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-016-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-017-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/published-materialization-locator-probe.py",
         ".trellis/tasks/07-26-118-guru-finalize-task/round3-evidence/recovery-metadata-tail-probe.py",
         ".trellis/tasks/07-26-118-guru-finalize-task/round4-evidence/verification-summary.md",
@@ -776,6 +770,7 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/008.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/009.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/010.json",
+        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/011.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task-start-context.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/task.json",
         "README.md",
@@ -879,8 +874,8 @@
         ".trellis/tasks/07-26-118-guru-finalize-task/pr-body.md",
         ".trellis/tasks/07-26-118-guru-finalize-task/review-gate.json",
         ".trellis/tasks/07-26-118-guru-finalize-task/review.md",
-        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-018-final-release.md",
-        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/010.json"
+        ".trellis/tasks/07-26-118-guru-finalize-task/reviews/round-019-final-release.md",
+        ".trellis/tasks/07-26-118-guru-finalize-task/task-commit-plans/011.json"
       ]
     },
     "entry_preconditions": {
@@ -898,7 +893,7 @@
       },
       "branch_review_handoff": {
         "status": "passed",
-        "facts_sha256": "93db3a6b1690700656f60480501cecebb48f3cfed9d18b322bcc3a1205d9d584"
+        "facts_sha256": "515058d6f089d7e58cd4f556e02fef99d1c901debc992c79df00358d220f15ea"
       },
       "planning_approval": {
         "status": "passed",
@@ -906,54 +901,54 @@
       },
       "phase2_check": {
         "status": "passed",
-        "facts_sha256": "45f564c48220984866a5ba3194d5b11763907636619be7ea1e380f6a5ab3f13e"
+        "facts_sha256": "93e4f00888fd3320daf894241acd5c6af13231844c045907e33a2607574fcd0b"
       },
       "issue_scope_ledger": {
         "status": "passed",
-        "facts_sha256": "65690f4d310217eea69f95da4158e6743f209de64dba6108462bde208a09d6f3"
+        "facts_sha256": "0c27d9d347f9a065a28b29dab288f1fd845d5d1f2941c4bdf2ccebf6c31f8e39"
       },
       "docs_ssot_reconciliation": {
         "status": "passed",
-        "facts_sha256": "337e650ddd628e48624eaef8ba8a290179df239db1f189cf80e0297895be2449"
+        "facts_sha256": "75e1790f18c5881ec40175ed4b3b408e02c9ccfbc75f0537be8cda275217ae6a"
       },
       "branch_review_evidence": {
         "status": "passed",
-        "facts_sha256": "477a0e6600ba2c593f5209b8fd9d27f6598dd741580d4df1df1eb3f4b709af5d"
+        "facts_sha256": "dfb1275a1c6bb15f0bf3e1feec16cfc7403aa9b724e6136092d6cc734b291ccd"
       },
       "publication_content": {
         "status": "passed",
-        "facts_sha256": "e5271f9b472f51c43d9bb517a13f5edaa9c513e61f38ceea58a39f0263e0510b"
+        "facts_sha256": "5440b68d6523420fe36e00f7b82276637a8a1f9de3b88c536819dc821151dcd9"
       },
       "review_range_and_working_tree": {
         "status": "passed",
-        "facts_sha256": "43adf62354bd1779538a077688db2fac32c7ee1ad85211fea7214985da9ae206"
+        "facts_sha256": "5c8b50a0e72a775129b77b3da48d1dbf6c36b463e24a6db2878e4dacd907f8db"
       },
       "invocation_freshness": {
         "status": "passed",
-        "facts_sha256": "12f44d9a8a602a810cc4a54f87beacd6f7cf1dbc7592099892ec2c20dd21c952"
+        "facts_sha256": "c7b5c60c140685bf6dc275a4f7fa023853ac64e5f6b915f036d2422ba78372d9"
       }
     },
-    "publication_ref": "publication:a7b3c73f58daff0eb900cf86dcec62e0c8c97e3e7652134cd179a1de840bda20"
+    "publication_ref": "publication:04ab43e4652d1363fb520b57371fc44172bc38e690d73c29b05d642996c658e2"
   },
   "typed_exit": "ready",
   "consumer": {
     "kind": "skill",
     "id": "guru-finalize-task"
   },
-  "supersedes_publication_ref": "publication:58c254257a7ec7f7bdab6d182d7c161fc401b563760ca3928e4803abdcc99490",
-  "stale_reason": "finish-summary-retrieval-text-exceeded-validator-limit",
-  "reentry_context": "Finalizer side-effect-free preview 在任何外部副作用前发现 deterministic retrieval_text 超过 3000 字符；仅精简 finish-summary-index.json 重复措辞并完整重审 publication，保持 current HEAD、Round 18、Issue scope 与交付合同不变。",
-  "facts_sha256": "a6a3629fab9ebdfa6892fc1ba0801b6a3590bd9002a994ce4f1be60bd1469c44",
+  "supersedes_publication_ref": "publication:a7b3c73f58daff0eb900cf86dcec62e0c8c97e3e7652134cd179a1de840bda20",
+  "stale_reason": "branch-review-and-content-head-advanced",
+  "reentry_context": "Task commit 011 and Round 19 advanced the reviewed HEAD beyond the prior publication owner artifact. Rebuild current PR body, finish index, Issue ledger pending verification identity, all ten semantic dimensions and all twelve deterministic bindings without external side effects.",
+  "facts_sha256": "9cdbf76043b43897b6d58be4b0f52b1510f30b7473ed45ac221a721fb6e7933e",
   "publish_inputs": {
     "repo": "castbox/guru-trellis",
     "base_branch": "main",
     "head_branch": "feat/118-guru-finalize-task",
-    "reviewed_head_sha": "1e5b1479b72e5b253c9755244be87f906cf855f4",
+    "reviewed_head_sha": "6dba0452307bebb64720417bf444ec8cbdaa9d2c",
     "title": "完成：#118 实现 guru-finalize-task 事务闭环 Skill",
     "body_source": "pr-body.md",
-    "body_sha256": "fd550a3a78bf58b02a09d7565e4638d966607fb44e940f2bcc0a7d0ca2f128db",
+    "body_sha256": "5acf06515059b0079d519f292c012bb86c862b39bc88d95e91eafbe3157d9dcf",
     "draft": true,
     "reviewed_source": "body-artifact:pr-readiness.json",
-    "closeout_plan_digest": "2d1fbc373cd467c813536cffeca2f9a900abc4bae7ecabf7277a853d84c866c4"
+    "closeout_plan_digest": "ecc203cb5946a6321339cea10d4f0a60313390248d593b0609bef01e8dbe283a"
   }
 }
