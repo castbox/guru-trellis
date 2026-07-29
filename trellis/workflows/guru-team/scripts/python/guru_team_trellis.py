@@ -26742,6 +26742,51 @@ def create_pull_request(
         Path(body_file).unlink(missing_ok=True)
 
 
+def update_pull_request_metadata(
+    root: Path,
+    repo: str,
+    number: int,
+    title: str,
+    body: str,
+) -> None:
+    if normalize_github_repository(repo) != repo.casefold():
+        raise WorkflowError("Closeout pull request repository is invalid.", exit_code=2)
+    if isinstance(number, bool) or not isinstance(number, int) or number <= 0:
+        raise WorkflowError("Closeout pull request number is invalid.", exit_code=2)
+    try:
+        body_bytes = body.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise WorkflowError("Closeout pull request body is not valid UTF-8.", exit_code=2) from exc
+    with tempfile.NamedTemporaryFile("wb", delete=False) as tmp:
+        tmp.write(body_bytes)
+        body_file = tmp.name
+    try:
+        proc = run(
+            [
+                "gh",
+                "pr",
+                "edit",
+                str(number),
+                "--repo",
+                repo,
+                "--title",
+                title,
+                "--body-file",
+                body_file,
+            ],
+            cwd=root,
+            check=False,
+        )
+        if proc.returncode != 0:
+            raise WorkflowError(
+                "Could not update closeout pull request metadata.",
+                exit_code=2,
+                payload={"pr_number": number},
+            )
+    finally:
+        Path(body_file).unlink(missing_ok=True)
+
+
 def validate_publish_identity_and_remote_head(
     root: Path,
     task: dict[str, Any],
@@ -28486,7 +28531,7 @@ def closeout_task_dir_from_plan(root: Path, plan: dict[str, Any]) -> Path:
     )
 
 
-def validate_closeout_remote_pull_request_identity(
+def validate_closeout_remote_pull_request_binding(
     plan: dict[str, Any],
     pr: dict[str, Any],
     *,
@@ -28509,17 +28554,6 @@ def validate_closeout_remote_pull_request_identity(
         or pr.get("baseRefName") != plan["git"]["base_branch"]
     ):
         raise WorkflowError("Closeout pull request head/base differs from the immutable plan.", exit_code=2)
-    if pr.get("title") != plan["publish"]["title"]:
-        raise WorkflowError("Closeout pull request title differs from immutable readiness.", exit_code=2)
-    body = pr.get("body")
-    if not isinstance(body, str):
-        raise WorkflowError("Closeout pull request body identity is invalid.", exit_code=2)
-    try:
-        body_digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
-    except UnicodeEncodeError as exc:
-        raise WorkflowError("Closeout pull request body is not valid UTF-8.", exit_code=2) from exc
-    if body_digest != plan["publish"]["body_sha256"]:
-        raise WorkflowError("Closeout pull request body differs from immutable readiness.", exit_code=2)
     if pr.get("isDraft") is not expected_draft:
         state = "draft" if expected_draft else "ready"
         raise WorkflowError(f"Closeout pull request is not in expected {state} state.", exit_code=2)
@@ -28534,6 +28568,47 @@ def validate_closeout_remote_pull_request_identity(
             raise WorkflowError("Closeout pull request number/URL differs from the bound remote identity.", exit_code=2)
 
 
+def validate_closeout_remote_pull_request_identity(
+    plan: dict[str, Any],
+    pr: dict[str, Any],
+    *,
+    expected_draft: bool,
+    expected_head: str | None = None,
+    bound_pr: dict[str, Any] | None = None,
+) -> None:
+    validate_closeout_remote_pull_request_binding(
+        plan,
+        pr,
+        expected_draft=expected_draft,
+        expected_head=expected_head,
+        bound_pr=bound_pr,
+    )
+    if pr.get("title") != plan["publish"]["title"]:
+        raise WorkflowError("Closeout pull request title differs from immutable readiness.", exit_code=2)
+    body = pr.get("body")
+    if not isinstance(body, str):
+        raise WorkflowError("Closeout pull request body identity is invalid.", exit_code=2)
+    try:
+        body_digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    except UnicodeEncodeError as exc:
+        raise WorkflowError("Closeout pull request body is not valid UTF-8.", exit_code=2) from exc
+    if body_digest != plan["publish"]["body_sha256"]:
+        raise WorkflowError("Closeout pull request body differs from immutable readiness.", exit_code=2)
+
+
+def closeout_immutable_pr_body(task_dir: Path, plan: dict[str, Any]) -> str:
+    body_path = task_dir / PR_BODY_ARTIFACT
+    if not body_path.is_file():
+        raise WorkflowError("Closeout immutable PR body artifact is missing.", exit_code=2)
+    body_bytes = body_path.read_bytes()
+    if hashlib.sha256(body_bytes).hexdigest() != plan["publish"]["body_sha256"]:
+        raise WorkflowError("Closeout immutable PR body digest does not match the plan.", exit_code=2)
+    try:
+        return body_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise WorkflowError("Closeout immutable PR body is not valid UTF-8.", exit_code=2) from exc
+
+
 def validate_closeout_pull_request_identity(
     root: Path,
     task_dir: Path,
@@ -28543,26 +28618,19 @@ def validate_closeout_pull_request_identity(
     expected_draft: bool,
     require_summary: bool,
     expected_head: str | None = None,
+    bound_pr: dict[str, Any] | None = None,
 ) -> None:
     validate_closeout_remote_pull_request_identity(
         plan,
         pr,
         expected_draft=expected_draft,
         expected_head=expected_head,
+        bound_pr=bound_pr,
     )
     number = pr["number"]
     canonical_url = canonical_pull_request_url(plan["git"]["repo"], number, pr.get("url"))
 
-    body_path = task_dir / PR_BODY_ARTIFACT
-    if not body_path.is_file():
-        raise WorkflowError("Closeout immutable PR body artifact is missing.", exit_code=2)
-    body_bytes = body_path.read_bytes()
-    if hashlib.sha256(body_bytes).hexdigest() != plan["publish"]["body_sha256"]:
-        raise WorkflowError("Closeout immutable PR body digest does not match the plan.", exit_code=2)
-    try:
-        expected_body = body_bytes.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise WorkflowError("Closeout immutable PR body is not valid UTF-8.", exit_code=2) from exc
+    expected_body = closeout_immutable_pr_body(task_dir, plan)
     if pr.get("body") != expected_body:
         raise WorkflowError("Closeout pull request body differs from immutable readiness.", exit_code=2)
 
@@ -28585,10 +28653,54 @@ def validate_closeout_pull_request_identity(
 def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dict[str, Any]:
     git = plan["git"]
     task_dir = closeout_task_dir_from_plan(root, plan)
+    expected_body = closeout_immutable_pr_body(task_dir, plan)
+    if body != expected_body:
+        raise WorkflowError("Closeout requested PR body differs from the immutable plan.", exit_code=2)
     existing = resolve_closeout_pull_request(
         root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
     )
     if existing is not None:
+        expected_head = current_head(root)
+        validate_closeout_remote_pull_request_binding(
+            plan,
+            existing,
+            expected_draft=True,
+            expected_head=expected_head,
+        )
+        if (
+            existing.get("title") != plan["publish"]["title"]
+            or existing.get("body") != expected_body
+        ):
+            update_pull_request_metadata(
+                root,
+                git["repo"],
+                existing["number"],
+                plan["publish"]["title"],
+                expected_body,
+            )
+            rebound = resolve_closeout_pull_request(
+                root,
+                git["repo"],
+                git["head_branch"],
+                git["base_branch"],
+                git["remote"],
+            )
+            if rebound is None:
+                raise WorkflowError(
+                    "Updated draft PR could not be rebound to one immutable identity.",
+                    exit_code=2,
+                )
+            validate_closeout_pull_request_identity(
+                root,
+                task_dir,
+                plan,
+                rebound,
+                expected_draft=True,
+                require_summary=False,
+                expected_head=expected_head,
+                bound_pr=existing,
+            )
+            return rebound
         validate_closeout_pull_request_identity(
             root,
             task_dir,
@@ -28596,7 +28708,7 @@ def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dic
             existing,
             expected_draft=True,
             require_summary=False,
-            expected_head=current_head(root),
+            expected_head=expected_head,
         )
         return existing
     pr_url = create_pull_request(

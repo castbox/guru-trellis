@@ -20900,17 +20900,136 @@ shutil.move(str(active), str(archived))
         ):
             gtt.resolve_closeout_pull_request(self.root, "owner/repo", "fix/105-closeout", "main")
         ready = dict(entry, isDraft=False)
-        with mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=ready), self.assertRaises(gtt.WorkflowError):
-            gtt.ensure_closeout_draft_pr(self.root, plan, "body")
+        with (
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=ready),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "update_pull_request_metadata") as update,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.ensure_closeout_draft_pr(self.root, plan, body)
+        update.assert_not_called()
 
-        for key, value in [("title", "tampered title"), ("body", "tampered body")]:
-            with self.subTest(key=key):
-                tampered = dict(entry, **{key: value})
-                with (
-                    mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=tampered),
-                    self.assertRaises(gtt.WorkflowError),
-                ):
-                    gtt.ensure_closeout_draft_pr(self.root, plan, body)
+        stable_identity_mismatches = {
+            "head": dict(entry, headRefName="fix/wrong"),
+            "base": dict(entry, baseRefName="wrong"),
+            "head-sha": dict(entry, headRefOid="b" * 40),
+            "number-url": dict(entry, number=106),
+            "url": dict(entry, url="http://github.com/owner/repo/pull/105"),
+        }
+        for name, candidate in stable_identity_mismatches.items():
+            candidate["title"] = "predecessor title"
+            candidate["body"] = "predecessor body\n"
+            with (
+                self.subTest(case=name),
+                mock.patch.object(
+                    gtt, "resolve_closeout_pull_request", return_value=candidate
+                ),
+                mock.patch.object(gtt, "current_head", return_value=self.head),
+                mock.patch.object(gtt, "update_pull_request_metadata") as update,
+                self.assertRaises(gtt.WorkflowError),
+            ):
+                gtt.ensure_closeout_draft_pr(self.root, plan, body)
+            update.assert_not_called()
+
+    def test_existing_draft_metadata_rebinds_same_identity_and_is_idempotent(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        stale = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": "predecessor title",
+            "body": "predecessor body\n",
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        rebound = {
+            **stale,
+            "title": plan["publish"]["title"],
+            "body": body,
+        }
+        edit_commands: list[list[str]] = []
+        edited_body_bytes: list[bytes] = []
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            self.assertEqual(command[:4], ["gh", "pr", "edit", "105"])
+            edit_commands.append(command)
+            body_path = Path(command[command.index("--body-file") + 1])
+            edited_body_bytes.append(body_path.read_bytes())
+            return mock.Mock(returncode=0, stdout="", stderr="")
+
+        with (
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pull_request",
+                side_effect=[stale, rebound, rebound],
+            ) as resolve,
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(gtt, "create_pull_request") as create,
+        ):
+            first = gtt.ensure_closeout_draft_pr(self.root, plan, body)
+            second = gtt.ensure_closeout_draft_pr(self.root, plan, body)
+
+        self.assertEqual(first, rebound)
+        self.assertEqual(second, rebound)
+        self.assertEqual(resolve.call_count, 3)
+        self.assertEqual(len(edit_commands), 1)
+        self.assertEqual(edit_commands[0][edit_commands[0].index("--repo") + 1], "owner/repo")
+        self.assertEqual(
+            edit_commands[0][edit_commands[0].index("--title") + 1],
+            plan["publish"]["title"],
+        )
+        self.assertEqual(edited_body_bytes, [body.encode("utf-8")])
+        self.assertEqual(
+            hashlib.sha256(edited_body_bytes[0]).hexdigest(),
+            plan["publish"]["body_sha256"],
+        )
+        create.assert_not_called()
+
+    def test_metadata_rebind_rejects_replaced_identity_after_edit(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        stale = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": "predecessor title",
+            "body": "predecessor body\n",
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        replacement = {
+            **stale,
+            "number": 106,
+            "url": "https://github.com/owner/repo/pull/106",
+            "title": plan["publish"]["title"],
+            "body": body,
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pull_request",
+                side_effect=[stale, replacement],
+            ),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "update_pull_request_metadata") as update,
+            mock.patch.object(gtt, "create_pull_request") as create,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.ensure_closeout_draft_pr(self.root, plan, body)
+        update.assert_called_once_with(
+            self.root,
+            "owner/repo",
+            105,
+            plan["publish"]["title"],
+            body,
+        )
+        create.assert_not_called()
 
     def test_closeout_repository_identity_normalizes_remote_urls_and_rejects_mismatch(self) -> None:
         for value in ["owner/repo", "Owner/Repo", "OWNER/REPO"]:
@@ -21363,10 +21482,12 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=fork),
             mock.patch.object(gtt, "current_head", return_value=self.head),
             mock.patch.object(gtt, "create_pull_request") as create,
+            mock.patch.object(gtt, "update_pull_request_metadata") as update,
             self.assertRaises(gtt.WorkflowError),
         ):
             gtt.ensure_closeout_draft_pr(self.root, plan, body)
         create.assert_not_called()
+        update.assert_not_called()
 
         gtt.write_json(
             self.task_dir / gtt.PR_READINESS_ARTIFACT,
@@ -21488,6 +21609,16 @@ shutil.move(str(active), str(archived))
                         expected_draft=True,
                         require_summary=False,
                     )
+                with (
+                    mock.patch.object(gtt, "resolve_closeout_pull_request") as resolve,
+                    mock.patch.object(gtt, "create_pull_request") as create,
+                    mock.patch.object(gtt, "update_pull_request_metadata") as update,
+                    self.assertRaises(gtt.WorkflowError),
+                ):
+                    gtt.ensure_closeout_draft_pr(self.root, plan, tampered_body)
+                resolve.assert_not_called()
+                create.assert_not_called()
+                update.assert_not_called()
 
     def test_active_summary_and_bound_remote_identity_reject_pr_replacement(self) -> None:
         plan = self.build_plan()
@@ -22009,6 +22140,7 @@ shutil.move(str(active), str(archived))
         children_case: str | None = None,
         archive_path_symlink: str | None = None,
         archived_pr_replacement: bool = False,
+        predecessor_draft_metadata: bool = False,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -22271,7 +22403,20 @@ shutil.move(str(active), str(archived))
             )
             gtt.write_json(task_dir / gtt.PR_READINESS_ARTIFACT, publication_gate)
 
+            immutable_body_bytes = (task_dir / "pr-body.md").read_bytes()
             pr_store: dict[str, object] = {}
+            draft_rebind_body_bytes: list[bytes] = []
+            if predecessor_draft_metadata:
+                pr_store.update({
+                    **closeout_head_repository_fields(),
+                    "number": 105,
+                    "url": "https://github.com/owner/repo/pull/105",
+                    "title": "predecessor Round title",
+                    "body": "predecessor Round body\n",
+                    "isDraft": True,
+                    "state": "OPEN",
+                    "headRefOid": reviewed_head,
+                })
             original_run = gtt.run
             injected_stage = failed_stage
             active_plan_only_boundary_fault: str | None = None
@@ -22508,6 +22653,22 @@ shutil.move(str(active), str(archived))
                             "baseRefName": "main",
                         }]
                     return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+                if command[:3] == ["gh", "pr", "edit"]:
+                    record_transition("draft-rebind")
+                    self.assertEqual(command[3], str(pr_store["number"]))
+                    self.assertEqual(
+                        command[command.index("--repo") + 1], "owner/repo"
+                    )
+                    if injected_stage == "draft-rebind":
+                        return subprocess.CompletedProcess(
+                            command, 1, "", "injected draft rebind"
+                        )
+                    body_path = Path(command[command.index("--body-file") + 1])
+                    body_bytes = body_path.read_bytes()
+                    draft_rebind_body_bytes.append(body_bytes)
+                    pr_store["title"] = command[command.index("--title") + 1]
+                    pr_store["body"] = body_bytes.decode("utf-8")
+                    return subprocess.CompletedProcess(command, 0, "", "")
                 if command[:3] == ["gh", "pr", "ready"]:
                     record_transition("ready")
                     if injected_stage == "ready":
@@ -23098,6 +23259,8 @@ shutil.move(str(active), str(archived))
                 "evidence_paths": gtt.closeout_commit_paths(root, evidence_head),
                 "archive_sha": local_head,
                 "archive_paths": gtt.closeout_commit_paths(root, local_head),
+                "immutable_body_bytes": immutable_body_bytes,
+                "draft_rebind_body_bytes": draft_rebind_body_bytes,
                 "archived_files": sorted(
                     path.relative_to(archived).as_posix()
                     for path in archived.rglob("*")
@@ -23137,6 +23300,48 @@ shutil.move(str(active), str(archived))
             ],
         )
         self.assertEqual(len(result["archived_files"]), 10)
+
+    def test_production_predecessor_draft_rebinds_same_number_after_evidence_push(self) -> None:
+        result = self.run_production_finish_case(predecessor_draft_metadata=True)
+        final = result["final_state"]
+        events = result["all_transition_attempts"]
+
+        self.assertEqual(final["pr_number"], 105)
+        self.assertEqual(final["pr_is_draft"], False)
+        self.assertNotIn("draft", events)
+        self.assertEqual(events.count("draft-rebind"), 1)
+        self.assertLess(events.index("evidence-push"), events.index("draft-rebind"))
+        self.assertLess(events.index("draft-rebind"), events.index("projection"))
+        self.assertEqual(
+            result["draft_rebind_body_bytes"],
+            [result["immutable_body_bytes"]],
+        )
+        self.assertEqual(
+            hashlib.sha256(result["draft_rebind_body_bytes"][0]).hexdigest(),
+            hashlib.sha256(result["immutable_body_bytes"]).hexdigest(),
+        )
+
+    def test_production_draft_rebind_failure_retries_same_plan_before_archive(self) -> None:
+        result = self.run_production_finish_case(
+            failed_stage="draft-rebind",
+            predecessor_draft_metadata=True,
+        )
+        failed = result["failed_state"]
+        final = result["final_state"]
+
+        self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(failed["archive_locator"])
+        self.assertEqual(failed["task_status"], "in_progress")
+        self.assertEqual(failed["pr_number"], 105)
+        self.assertEqual(failed["pr_is_draft"], True)
+        self.assertEqual(final["pr_number"], 105)
+        self.assertEqual(final["pr_is_draft"], False)
+        self.assertIn("draft-rebind", result["reentry_events"])
+        self.assertNotIn("draft", result["all_transition_attempts"])
+        self.assertEqual(
+            result["draft_rebind_body_bytes"],
+            [result["immutable_body_bytes"]],
+        )
 
     def test_production_finish_recovers_after_move_before_archive_compaction(self) -> None:
         result = self.run_production_finish_case("archive-prune")

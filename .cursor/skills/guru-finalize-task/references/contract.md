@@ -89,7 +89,12 @@ The deterministic order is fixed:
 3. If required, stop before PR/archive and emit `verification_required`.
 4. Consume same-plan verified or not-required evidence and push the exact
    pre-draft evidence allowlist.
-5. Create or reuse the unique open draft for repo/head/base.
+5. Create or reuse the unique open draft for repo/head/base. When that one
+   candidate is an earlier confirmed-plan Draft, first prove its stable
+   repo/head/base/current-HEAD/number/canonical-URL identity, then converge its
+   title and exact body bytes to the current confirmed plan on the same PR,
+   re-query it, and run the complete immutable metadata validation. A matching
+   Draft causes no metadata mutation.
 6. Build the final projection and final summary once using the real PR identity.
 7. Invoke official `task.py archive --no-commit`, commit and push exactly one
    archive metadata transaction.
@@ -125,7 +130,8 @@ original full-move transaction semantics.
   active/archive move, or exact-commit continuation -> `resume_finalization`.
 - Active task with a changed archive month -> `reprepare_required`; author a
   fresh intent/context, preview a new plan, and confirm its exact digest.
-- Missing, closed, replaced, or ambiguous draft identity; unexpected path;
+- Missing, closed, replaced, or ambiguous draft identity; unstable
+  repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.
 - A completed ready recovery -> `published`.
 
