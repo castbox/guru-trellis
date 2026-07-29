@@ -37,6 +37,7 @@
   "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
   "artifacts": [
     {"id": "workflow_input", "path": "examples/public-verification-required-input.json"},
+    {"id": "workflow_input_authoring", "path": "examples/public-verification-required-authoring.json"},
     {"id": "standalone_input", "path": "examples/public-standalone-verification-input.json"},
     {"id": "execution_facts", "path": "examples/execution-facts.json"},
     {"id": "semantic_review_input", "path": "examples/semantic-review-input.json"},
@@ -118,13 +119,35 @@
         "id": "verified_finalization_seed",
         "consumer": {"kind": "skill", "id": "guru-finalize-task"},
         "payload_kind": "structured_json",
-        "contract": {"kind": "planned_skill_input_seed", "seed_fields": ["task_ref", "plan_ref", "reviewed_head", "verification_ref"]}
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-finalize-task/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "verification_verified",
+          "seed_fields": ["task_ref", "plan_ref", "reviewed_head", "verification_ref"],
+          "authoring_fields": ["profile", "mode", "reentry_intent"],
+          "authoring_example": {
+            "id": "finalization_verified_authoring",
+            "path": "examples/public-verification-verified-authoring.json"
+          }
+        }
       },
       {
         "id": "not_required_finalization_seed",
         "consumer": {"kind": "skill", "id": "guru-finalize-task"},
         "payload_kind": "structured_json",
-        "contract": {"kind": "planned_skill_input_seed", "seed_fields": ["task_ref", "plan_ref", "reviewed_head"]}
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-finalize-task/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "standalone_verification_not_required",
+          "seed_fields": ["repo_ref", "resolved_head", "verification_ref"],
+          "authoring_fields": ["profile", "mode", "task_ref"],
+          "authoring_example": {
+            "id": "finalization_not_required_authoring",
+            "path": "examples/public-standalone-verification-not-required-authoring.json"
+          }
+        }
       },
       {
         "id": "return_to_task_work_input",
@@ -158,9 +181,9 @@
         "consumer_input_id": "not_required_finalization_seed",
         "operation": "select",
         "mappings": [
-          {"source": "task_ref", "target": "task_ref"},
-          {"source": "plan_ref", "target": "plan_ref"},
-          {"source": "reviewed_head", "target": "reviewed_head"}
+          {"source": "repo_ref", "target": "repo_ref"},
+          {"source": "resolved_head", "target": "resolved_head"},
+          {"source": "verification_ref", "target": "verification_ref"}
         ]
       },
       {

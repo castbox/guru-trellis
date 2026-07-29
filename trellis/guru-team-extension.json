@@ -52,6 +52,7 @@
       "pr-body.md",
       "review-gate.json",
       "pr-readiness.json",
+      "task-finalization-gate.json",
       "closeout-plan.json",
       "marketplace-verification.json",
       "finish-summary.json"
@@ -70,6 +71,13 @@
       "public_input_schema_ids": [
         "guru-extension-verify-installation-input-standalone-verification-1.0",
         "guru-extension-verify-installation-input-verification-required-1.0",
+        "guru-finalize-task-input-publication-ready-1.0",
+        "guru-finalize-task-input-reprepare-preview-1.0",
+        "guru-finalize-task-input-same-plan-resume-1.0",
+        "guru-finalize-task-input-standalone-finalization-1.0",
+        "guru-finalize-task-input-standalone-verification-not-required-1.0",
+        "guru-finalize-task-input-verification-not-required-1.0",
+        "guru-finalize-task-input-verification-verified-1.0",
         "guru-production-approve-task-plan-input-clarification-reentry-1.0",
         "guru-production-approve-task-plan-input-initial-review-1.0",
         "guru-production-approve-task-plan-input-revision-reentry-1.0",
@@ -104,6 +112,12 @@
         "guru-extension-verify-installation-output-not-required-1.0",
         "guru-extension-verify-installation-output-return-to-task-work-1.0",
         "guru-extension-verify-installation-output-verified-1.0",
+        "guru-finalize-task-output-blocked-1.0",
+        "guru-finalize-task-output-publication-review-stale-1.0",
+        "guru-finalize-task-output-published-1.0",
+        "guru-finalize-task-output-reprepare-required-1.0",
+        "guru-finalize-task-output-resume-finalization-1.0",
+        "guru-finalize-task-output-verification-required-1.0",
         "guru-production-approve-task-plan-output-approved-1.0",
         "guru-production-approve-task-plan-output-blocked-1.0",
         "guru-production-approve-task-plan-output-clarify-scope-1.0",
@@ -158,9 +172,11 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-1.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-1.0.json"
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-1.0.json",
+        "https://github.com/castbox/guru-trellis/trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
       ],
       "artifact_schema_ids": [
         "guru-base-sync-result-1.0",
@@ -173,6 +189,7 @@
         "guru-requirements-clarification-2.0",
         "guru-review-gate-2.0",
         "guru-task-commit-plan-1.0",
+        "guru-task-finalization-gate-1.0",
         "guru-task-publication-readiness-1.0",
         "guru-task-workspace-plan-1.0",
         "guru-task-workspace-result-1.0"
@@ -184,6 +201,7 @@
         "guru-create-task-commit",
         "guru-create-task-workspace",
         "guru-discover-change-context",
+        "guru-finalize-task",
         "guru-review-branch",
         "guru-review-change-request",
         "guru-review-contract-wording",
@@ -191,9 +209,7 @@
         "guru-sync-base",
         "guru-verify-extension-installation"
       ],
-      "planned_skill_ids": [
-        "guru-finalize-task"
-      ],
+      "planned_skill_ids": [],
       "reserved_skill_ids": [
         "guru-create-work-commit"
       ],
@@ -289,6 +305,10 @@
       "record-extension-verification",
       "check-extension-verification",
       "invoke-extension-verification",
+      "preview-finalization",
+      "record-finalization-gate",
+      "check-finalization-gate",
+      "execute-finalization-transition",
       "verify-marketplace",
       "finish-work",
       "backfill-finish-summary",

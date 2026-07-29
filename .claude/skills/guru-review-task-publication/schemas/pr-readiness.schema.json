@@ -639,8 +639,7 @@
             "review.md",
             "review-gate.json",
             "pr-body.md",
-            "finish-summary-index.json",
-            "implementation-handoff.md"
+            "finish-summary-index.json"
           ],
           "properties": {
             "prd.md": {"$ref": "#/$defs/artifact_binding"},
@@ -653,8 +652,7 @@
             "review.md": {"$ref": "#/$defs/artifact_binding"},
             "review-gate.json": {"$ref": "#/$defs/artifact_binding"},
             "pr-body.md": {"$ref": "#/$defs/artifact_binding"},
-            "finish-summary-index.json": {"$ref": "#/$defs/artifact_binding"},
-            "implementation-handoff.md": {"$ref": "#/$defs/artifact_binding"}
+            "finish-summary-index.json": {"$ref": "#/$defs/artifact_binding"}
           }
         },
         "repository": {"$ref": "#/$defs/repository_binding"},

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-input-standalone-verification-not-required-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "repo_ref",
+    "resolved_head",
+    "verification_ref"
+  ],
+  "properties": {
+    "profile": {"const": "standalone_verification_not_required"},
+    "mode": {"const": "standalone"},
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "repo_ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "resolved_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "verification_ref": {"type": "string", "minLength": 1}
+  }
+}

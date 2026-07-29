@@ -17,7 +17,7 @@
       {"id": "pr_body_quality", "status": "passed", "summary": "The PR body is specific and reviewable.", "evidence_refs": ["pr-body.md"]},
       {"id": "validation_claims", "status": "passed", "summary": "Validation claims match current evidence.", "evidence_refs": ["phase2-check.json"]},
       {"id": "branch_review_summary", "status": "passed", "summary": "The branch review summary matches its gate.", "evidence_refs": ["review-gate.json"]},
-      {"id": "docs_ssot_reconciliation", "status": "passed", "summary": "Docs SSOT reconciliation is complete.", "evidence_refs": ["implementation-handoff.md"]},
+      {"id": "docs_ssot_reconciliation", "status": "passed", "summary": "Docs SSOT reconciliation is complete.", "evidence_refs": ["phase2-check.json"]},
       {"id": "safety_deployment_impact", "status": "passed", "summary": "Safety and deployment impact are stated.", "evidence_refs": ["pr-body.md"]},
       {"id": "finish_summary_semantics", "status": "passed", "summary": "The finish summary index is current.", "evidence_refs": ["finish-summary-index.json"]},
       {"id": "metadata_tail_integrity", "status": "passed", "summary": "Only declared task metadata follows review.", "evidence_refs": ["review-gate.json"]},
@@ -58,8 +58,7 @@
       "review.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
       "review-gate.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
       "pr-body.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "finish-summary-index.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "implementation-handoff.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1}
+      "finish-summary-index.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1}
     },
     "repository": {
       "head": "0123456789abcdef0123456789abcdef01234567",

@@ -66,10 +66,10 @@ check, Branch Review, or finish-work.
 
 ## Role Modes
 
-The supervising main-session handoff decides which mode you are in:
+The supervising dispatch request and logical role decide which mode you are in:
 
 - **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, the approved `Docs SSOT Plan`, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Verify durable docs, task artifacts, code/API/schema/config/deploy/test, and test/validation coverage are consistent with the plan strategy. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
-- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, first merge durable docs, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. Verify the approved `Docs SSOT Plan`, implementation handoff, `phase2-check.json`, durable docs, task artifacts, and full diff; if implement/check evidence is missing, stale, incomplete, or current-scope Docs SSOT is inconsistent, report it as a blocking finding. When the main session asks for a raw `{TASK_DIR}/reviews/*.md` report or content for `{TASK_DIR}/review.md`, use Chinese Markdown headings, Chinese field labels, and Chinese review narrative; keep literal diff commands, paths, JSON fields, HEAD values, code symbols, and external API names in English only where needed.
+- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, first merge durable docs, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. Verify the approved `Docs SSOT Plan`, embedded implementation evidence in `phase2-check.json`, durable docs, task artifacts, live repository facts, and full diff; if implement/check evidence is missing, stale, incomplete, or current-scope Docs SSOT is inconsistent, report it as a blocking finding. When the main session asks for a raw `{TASK_DIR}/reviews/*.md` report or content for `{TASK_DIR}/review.md`, use Chinese Markdown headings, Chinese field labels, and Chinese review narrative; keep literal diff commands, paths, JSON fields, HEAD values, code symbols, and external API names in English only where needed.
 
 ## Forbidden Operations
 
@@ -79,12 +79,12 @@ The supervising main-session handoff decides which mode you are in:
 
 The supervising main session owns commits. Report the post-fix state; do not commit on its behalf.
 
-## Progress And Handoff
+## Progress And Result
 
 - Do not report `检查完成` until the requested check/review scope is actually complete and verification status is known.
 - If the supervising main session interrupts, terminates, replaces, or asks you to stop before completion, report `检查未完成`. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A `trellis channel wait` timeout in the main session is only a wait-window result, not your failure signal. Continue working unless the channel sends an explicit stop/interrupt instruction.
-- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. If the main session sends an explicit status request, reply in platform-visible output with the current step, last concrete progress, active command/tool if any, changed files or review scope, remaining work, and blockers; the main session records that response as liveness evidence.
+- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. Only during a real exceptional recovery case, answer an explicit status request with the current step, last concrete progress, active command/tool if any, remaining work, and blockers.
 
 ## Workflow
 
@@ -103,29 +103,19 @@ The supervising main session owns commits. Report the post-fix state; do not com
 5. Run the project's lint and typecheck on the changed scope after self-fixes
 6. Report
 
-## Report Format
+## Terminal Result
 
 ```
-## 检查完成
-
-### 已检查文件
-- <path>
-
-### 已修复问题
-1. `<file>:<line>` — <问题> → <修复内容>
-
-### 未修复问题
-- `<file>:<line>` — <问题> — <为什么交回主会话处理>
-
-### 验证结果
-- TypeCheck: <通过|失败|跳过 + 原因>
-- Lint: <通过|失败|跳过 + 原因>
-
-### 证据交接
-- 阶段二：覆盖范围、验证结果、发现/开放风险，以及本报告是否可支撑 `phase2-check.json`
-- Docs SSOT：plan strategy、durable docs / task artifacts / code / test 一致性、task delta merge 或 follow-up / no-update 复核结论
-- Branch Review：diff 范围、审查的 HEAD、部署/安全影响、Docs SSOT 判断、发现/观察项/后续候选，以及本报告是否可写入任务本地 `review.md`
-
-### 结论
-已检查 <N> 个文件，发现 <X> 个问题，已修复 <Y> 个，仍开放 <X-Y> 个。
+Status: passed | findings | blocked | unfinished
+Scope: <Phase 2 dirty diff or Branch Review base...HEAD>
+Findings: <severity + file:line, or "none">
+Fixed: <Phase 2 mechanical fixes only, or "none">
+Verified: <commands and outcomes>
+Docs SSOT: <material consistency conclusion>
+Remaining: <blocker/risk/unverified item, or "none">
 ```
+
+Do not enumerate every file or restate planning. The semantic owner reads the
+task artifacts, diff, `phase2-check.json`, and live command facts directly.
+Branch Review still writes a requested task-local review report because that
+report is the review Gate evidence, not a routine handoff.

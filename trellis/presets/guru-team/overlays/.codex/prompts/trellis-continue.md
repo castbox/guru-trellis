@@ -1,41 +1,44 @@
 <!-- guru-team-overlay: v1 -->
 # Guru Team Continue Current Task
 
-Resume work through `.trellis/workflow.md`; do not introduce extra user-facing stages.
+Read current state instead of replaying remembered steps:
 
 ```bash
 python3 ./.trellis/scripts/get_context.py
 python3 ./.trellis/scripts/get_context.py --mode phase
 ```
 
-Route by task status:
+Use `.trellis/workflow.md` as the global route and load each mandatory owner by
+stable Skill id. This entry never copies a package schema, evidence recipe,
+review loop, confirmation algorithm, or typed-exit payload.
 
-- planning: apply the business-project Chinese documentation default from `.trellis/workflow.md` across `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, `00-bootstrap-guidelines` docs SSOT, and human-readable artifact fields; create or update the `Docs SSOT Plan` required by `.trellis/workflow.md`, run the Middle-platform Knowledge Gate when relevant, use `trellis-brainstorm` when intake evidence is ambiguous, update GitHub issue comment/body or proposed issue body as appropriate. After `prd.md`, `design.md`, and `implement.md` exist, perform the planning artifact ambiguity review required by `.trellis/workflow.md` before presenting links, then confirm the repo root is the task worktree resolved from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list` with `check-workspace-boundary.sh --json --task <task-path>`, display clickable or absolute links to all three files, and state that implementation, `trellis-implement` dispatch, and `phase2-check.json` recording are blocked until the user confirms after seeing those links. Phase 0 handoff approval is not planning approval. Only after that post-planning confirmation may the main session record/check schema 1.2 `planning-approval.json` with passed `ambiguity_review` evidence, fixed-scope scanner `hits[]`, empty `unchecked_normative_hits[]`, and `user_confirmation.source=explicit-post-planning-review`, then run `task.py start`.
-- in_progress: confirm knowledge-gate and the approved `Docs SSOT Plan` from artifacts; first rerun `check-workspace-boundary.sh --json --task <task-path>` and `check-planning-approval.sh --json`, and stop if either fails; in default `sub-agent` mode dispatch `trellis-implement` / channel `implement` and wait for its implementation handoff, then dispatch `trellis-check` / channel `check`; require the implementation handoff to name plan strategy, docs sync result, task delta merged to durable docs, task-history-only content, no-update or follow-up / PR limits, and durable-docs versus task-delta inputs; require the Phase 2 check report to verify durable docs / task artifacts / code/API/schema/config/deploy/test consistency by strategy before `phase2-check.json`; record `assigned`, progress/status-request, terminal, resume/replacement, and completed evidence for both roles through `record-subagent-liveness-event.sh` / `check-subagent-liveness.sh`; before every recorder/validator call, confirm all task artifact paths are task-worktree local; record/check `phase2-check.json` only after the completed `trellis-check` AI report, with the current pre-commit `dirty_paths`; reconcile specs/docs; then load and mandatory invoke `guru-create-task-commit` and consume only its declared typed exit. The main session coordinates this path and must not directly implement, directly check, or treat validation command output as sub-agent evidence.
-- after `guru-create-task-commit` returns `committed`: load and mandatory invoke the active `guru-review-branch` package with only its declared public input (`profile`, `mode`, `task_ref`, `base_ref`, `committed_head`, `review_intent`). That package is the only Phase 3.5 semantic owner; this prompt supplies only the public invocation and consumes its declared typed route.
+## Route
 
-Typed-exit route: `passed` enters global Phase 3.6. Before invoking the next Skill, the workflow caller authors the initial task-local `pr-body.md` and `finish-summary-index.json` candidates from current reviewed evidence; this is entry preparation only and does not decide PR-body sufficiency, Issue closure, publication dimensions, finding routes, or readiness. If either candidate is absent or objectively malformed, stop fail closed. Once both candidates exist, mandatory invoke the active `guru-review-task-publication` package with the Branch Review seed plus only its declared target-owned authoring fields. Its `ready` exit targets planned `guru-finalize-task` and stops at that missing-Skill boundary until #118 activates it; `return_to_task_work` targets workflow `guru-task-publication-work-router`; publication `blocked` targets stop `task-publication-review-blocked`. Branch Review `implementation_required` targets workflow `guru-branch-review-implementation-router`; `scope_confirmation_required` targets workflow `guru-branch-review-scope-router`; Branch Review `blocked` targets stop `branch-review-blocked`. Missing, unknown, multiple, stale, or unmapped exits stop fail closed.
+- `planning`: complete proportionate planning and invoke
+  `guru-approve-task-plan`. Only `approved` may enter implementation.
+- `in_progress`: validate the workspace and current planning approval,
+  implement, then invoke `guru-check-task`. Use terminal output and the live
+  diff directly; do not create `implementation-handoff.md` or routine liveness
+  prose. Batch qualified findings before another check and commit cycle.
+- after Phase 2: invoke `guru-create-task-commit`, then
+  `guru-review-branch`. Automatically consume declared revision routes; stop
+  only for missing authority, unresolved scope, or a real blocker.
+- after Branch Review `passed`: prepare current publication candidates and
+  invoke `guru-review-task-publication`. Automatically consume internal
+  metadata-revision routes. `ready` enters the explicit finalization entry.
 
-Before any planning, Phase 2, or Branch Review stop/completion reply, run:
+Do not expose internal digests, recorder steps, `verification_required`,
+`resume_finalization`, or other machine routes as user decisions. Ask only for
+missing intent, a material scope/plan choice, new external authority, or the
+bounded publication/finalization side effects. A generic `确认继续` must never be
+required between automatically mapped Skill exits.
+
+Before a planning, review, or publication stop, run:
 
 ```bash
 .trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
 ```
 
-Render a `Markdown 产物 review 表` with only `prd.md`, `design.md`,
-`implement.md`, `review.md`, and `pr-body.md`. Link only resolver rows with
-`exists=true`; for missing files show the status without a Markdown link.
-The `review.md` row is the AI/human review report exposed by the resolver.
-Do not list JSON artifacts in the standard table.
-
-If a user adds requirements, references another issue, or discovers new scope during the task, pause and follow `.trellis/workflow.md` Scope Change Gate before continuing implementation: recommend whether the change belongs in current `close_issues`, `related_issues`, or `followup_issues` / new issue, get user confirmation when classification is not explicit, update planning artifacts and `issue-scope-ledger.json`, and leave GitHub-visible issue evidence.
-
-Sub-agent liveness rule: `wait_agent`, `trellis channel wait`, or equivalent timeout is only a wait-window result, not failure or acceptable partial-completion evidence. Do not stop a still-progressing sub-agent because total runtime is long. After dispatch, record `assigned` with `record-subagent-liveness-event.sh`, then run `check-subagent-liveness.sh` at `progress_scan_interval=120s` or the checker-provided `next_wait_ms`. `max_progress_silence=180s` is measured from `progress_anchor_at`; `status-requested` does not refresh that anchor or extend `max_progress_silence_deadline_at`. Non-machine-readable progress must be written by the main session to `status_events[]` before it becomes checker evidence. Only checker decision `status_request_required` authorizes one status request; after recording `status-requested`, immediately rerun checker and do not repeat the ping while pending. Only checker decision `stale_allowed` authorizes `stale-assessed`. After `stale-assessed`, do not resume or keep waiting for that predecessor; record `terminated-unfinished termination_reason=stale_cutover termination_source_event_id=<stale-assessed.event_id>`, then replacement `assigned` and `replacement-started replacement_reason=max_progress_silence_exceeded` in the same liveness handling turn. Manual/platform unfinished termination uses `termination_reason=manual_or_platform_terminated_unfinished`. Failed, unfinished, stale, or replacement partial output cannot support Phase 2 check or Branch Review Gate pass until a same-agent resume or replacement chain reaches `completed`.
-
-`task.py start` is only a status transition; `planning-approval.json` is the start gate evidence. It must use schema 1.2, passed `ambiguity_review` evidence, fixed-scope scanner `hits[]`, empty `unchecked_normative_hits[]`, `user_confirmation.source=explicit-post-planning-review`, and matching hash/size/mtime metadata for `prd.md`, `design.md`, and `implement.md`; old schema/source, missing ambiguity evidence, or Phase 0 handoff confirmations fail closed. Before any implementation dispatch or `phase2-check.json` recording, rerun `check-planning-approval.sh --json`; freshness is based on the reviewed planning document content digests, so current HEAD or dirty-path drift alone does not require a new user review. `phase2-check.json` is the Guru Team artifact that freezes the completed `trellis-check` AI judgment and validation evidence; validation commands, `record-phase2-check.sh`, or `check-phase2-check.sh` do not replace complete `trellis-check` coverage. Non-metadata changes after the task work commit re-enter implementation and a fresh Phase 2 only through the declared workflow route; do not rewrite evidence merely to align HEAD. Missing mandatory upstream Skill evidence fails closed.
-
-Manual edit rule: all relative task artifact paths are relative to the task worktree. If the editor or patch tool cannot receive an explicit `workdir`, use an absolute path under the task worktree resolved from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`. Do not write task artifacts or patches through source-checkout relative paths.
-
-Do not stage or commit task review metadata, push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`. Stop after consuming the active package's typed route and wait for the user/session to explicitly invoke `/trellis:finish-work`. The explicit finish entry owns publication and archive behavior.
-
-The full contract lives in `.trellis/workflow.md`.
+Show only existing human-authored artifacts. JSON gates remain internal. All
+task paths must resolve inside the task worktree. This entry never stages,
+commits, pushes, creates a PR, archives a task, or invokes finalization itself.

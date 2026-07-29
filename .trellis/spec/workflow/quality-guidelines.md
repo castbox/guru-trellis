@@ -101,8 +101,9 @@ from an example or unchecked executor result, and output examples are not read
 as production serializer input.
 
 Repeat the same matrix for `production-minimal-handoff-v1`: exactly three
-packages, ten profiles, and 11 exits. Then validate the combined live-active
-closure at twelve Skills and 46 exits. Negative tests cover missing, extra,
+packages, ten profiles, and 11 exits. Then validate the current package closure
+at thirteen active Skills and 52 external exits, while the integrated global
+workflow projection is 13 invokes, 52 exits, and 29 targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or legacy entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Stage 0/production
@@ -118,9 +119,9 @@ closed loop. Existing
 commit transaction tests remain mandatory because the new candidate builder is
 not authorization to replace or weaken the executor.
 
-The five `skill_input_authoring_seed` edges have positive partition/projection
+The twelve `skill_input_authoring_seed` edges have positive partition/projection
 probes and negative overlap, overwrite, missing, extra, unknown, private-lookup,
-runtime-semantic-reconstruction, and fifth-operation fixtures. Each positive
+runtime-semantic-reconstruction, and unsupported fifth-operation fixtures. Each positive
 probe independently validates seed and authoring example keys, proves disjoint
 union equals the complete target required set, performs a no-overwrite merge,
 and validates the merged target input before invoking the real consumer wrapper.
@@ -396,11 +397,14 @@ and durable requirement docs when present). A command example can be correct in
 overlays but still mislead users if a README keeps the older copy.
 
 When changing sub-agent liveness, assignment, status request, stale assessment,
-or replacement behavior, add tests or explicit grep checks that new active
-surfaces use `record-subagent-liveness-event.sh`,
+or replacement behavior, add tests or explicit grep checks that exceptional
+recovery surfaces use `record-subagent-liveness-event.sh`,
 `check-subagent-liveness.sh`, `progress_scan_interval=120s`,
 `max_progress_silence=180s`, structured `predecessor_event_id`,
 `replacement_reason`, `termination_reason`, and completed-only recovery gates.
+The tests must also prove routine dispatch starts no checker cadence, progress
+transcription, or liveness artifact and that a wait timeout alone does not
+activate recovery.
 The old `record-agent-assignment.sh --status-event`, `wait-timeout`,
 `progress-observed`, `continue-waiting`, `supersedes_agent_id`,
 periodic heartbeat, daemon/sidecar/long-command wrapper, and
@@ -424,18 +428,19 @@ finding-fix full rerun, failed/unfinished/stale/replacement/completed recovery,
 dirty/reviewed-path/post-commit freshness, legacy migration, and the single
 artifact owner. Distribution validation must compare canonical/shared/Codex/
 Claude/Cursor package bytes, preserve the frozen 43-entry historical
-path/baseline identity, validate the exact five issue #131 current continue
-payload bindings without generalizing them,
+path/baseline identity, validate the exact thirteen issue #131/#161 current
+continue/agent payload bindings without generalizing them,
 run dogfood apply/drift and sidecar checks, and exercise clean marketplace init,
 preview/switch, preset apply, installed invocation, `trellis update --force`,
 and workflow/preset reapply.
 
-Phase 2 regression coverage must also prove that empty provenance/handoff/docs/
+Phase 2 regression coverage must also prove that empty provenance/embedded implementation evidence/docs/
 reviewed-path/command evidence, empty adequacy references, missing current or
 scope-change trigger references, unknown/incomplete evidence-source closure,
 and every incorrect recorder-derived semantic digest fail closed. A real Git
-post-commit fixture must include `agent-assignment.json` in implementation
-handoff and distinguish legal review assignment/status/completed/round metadata
+post-commit fixture must include `agent-assignment.json` in the embedded
+`implementation_handoff` collection and distinguish legal review
+assignment/status/completed/round metadata
 tail from implementation/check/recovery drift.
 
 Publication regression coverage must additionally reject missing stale reason
@@ -457,12 +462,14 @@ cannot pass the gate. Include:
 - Phase 1 `Docs SSOT Plan` contract: docs state, evidence paths, strategy,
   affected durable docs or checked no-update paths, task artifact deltas, and
   merge/repair/follow-up checkpoint when required
-- Phase 2 consumption of that plan: implementation handoff records strategy,
-  docs sync result, task delta merge / task-history-only content, no-update or
-  follow-up limits, and durable-docs versus task-delta inputs; `trellis-check`
+- Phase 2 consumption of that plan: the implementation terminal result and live
+  repository facts feed the embedded `implementation_handoff` collection in
+  `phase2-check.json`; it records strategy, docs sync result, task delta merge /
+  task-history-only content, no-update or follow-up limits, and durable-docs
+  versus task-delta inputs without a separate Markdown handoff; `trellis-check`
   verifies durable docs / task artifacts / code / test consistency by strategy
 - Phase 3 verification of that plan: final review checks the approved plan,
-  implementation handoff, `phase2-check.json`, durable docs, task artifacts,
+  the embedded implementation evidence in `phase2-check.json`, durable docs, task artifacts,
   code/test/schema/config/script/preset/overlay changes, and confirms Docs SSOT
   reconciliation already happened; it must record any current-scope
   inconsistency as a finding and must not perform the first docs merge
@@ -591,9 +598,10 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  11-Skill/42-exit active closure while the production activation unit remains
-  three Skills/11 exits. Update and preset reapply must reproduce that closure
-  with zero unresolved `.new` or `.bak`.
+  thirteen-Skill/52-exit current package closure while the production activation
+  unit remains three Skills/11 exits and global markers remain integrated at
+  13 invokes, 52 exits, and 29 targets. Update and preset reapply must reproduce
+  that closure with zero unresolved `.new` or `.bak`.
 
 ## Task Publication Review Quality
 
@@ -636,14 +644,15 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert twelve active Skills and 46
-exits while `production-minimal-handoff-v1` remains three Skills/11 exits.
+Source/installed/platform/throwaway checks assert thirteen active Skills and 52
+external exits while `production-minimal-handoff-v1` remains three Skills/11
+exits and global workflow markers remain 13 invokes, 52 exits, and 29 targets.
 
 ## Extension Installation Verification Quality
 
 `guru-verify-extension-installation` tests cover both structurally distinct
-inputs, four independent outputs/consumers/projections, workflow target
-bootstrap without a #118 producer edge, task-local and session-only
+inputs, four independent outputs/consumers/projections, the active finalizer
+  producer/consumer edges with active global routing, task-local and session-only
 persistence, and public/private field exclusion.
 
 Runtime coverage includes changed-surface facts without route ownership,
@@ -668,3 +677,42 @@ inventory, platform equality, ownership freeze, managed sidecars, README
 commands, redaction, and final zero unresolved `.new`/`.bak`. Production eval
 and this remote-ref run are recorded independently and neither substitutes for
 the other.
+
+## Task Finalization Quality
+
+`guru-finalize-task` quality coverage exercises all seven distinct public input
+profiles, all six `exit_id` outputs, the seven finalization-family target-owned
+authoring handoffs, semantic Gate/confirmation ordering, and the owner-private
+recovery loop. Together with the five prior handoffs, the active package graph
+contains twelve target-owned `skill_input_authoring_seed` handoffs.
+
+The package-private `closeout-plan.schema.json` and the workflow runtime owner
+schema share one identity and must carry identical `inputs` semantics:
+`minProperties=6`, with every value a closed object requiring exactly `path`
+and `sha256`. Source and installed regressions must prove empty, undersized,
+missing-field, and extra-field inputs are rejected consistently; discovery may
+not publish a weaker private contract than runtime validation.
+
+Package-local production eval executes the real public wrapper, selects the
+per-exit schema from the actual returned `exit_id`, and only then compares
+`expected_exit`. Transaction regressions preserve the complete #105
+prepare/push/verification/draft/projection/archive/HEAD/ready failure and
+recovery matrix without adding hostile-input, concurrency, locking, TOCTOU,
+crash-consistency, or cross-OS mechanisms.
+
+Finalizer regressions also prove that the generic #117 checker remains strict
+while the finalizer-only immutable-plan augmentation accepts only the declared
+metadata tail, validated evidence commit, committed archived plan/evidence, and
+exact archive transaction. Tests reject extra paths, wrong repository identity,
+locator drift, and non-exact archive commits. They require a private published
+marker before terminal completion, forbid early or persisted public DTOs,
+materialize the terminal DTO only through the public wrapper with the archive
+locator, prove the wrapper performs no transition, and cover every legal and
+illegal same-plan resume state including rejection of `prepared` and `ready`.
+
+Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
+script modes must match after fresh install, update, and preset reapply. The
+package closure is thirteen active Skills and 52 external exits; global markers
+remain 13 invokes, 52 exits, and 29 targets. This does not claim #119 combined
+acceptance. Upstream Finish assets
+remain unchanged, with physical overlay cleanup owned by #132.

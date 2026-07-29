@@ -262,13 +262,14 @@ projections, ten dimensions, findings, scope conclusion, AI Gate,
 confirmation, recorder/checker, and exit judgment must not be copied into the
 workflow or platform entries.
 
-`trellis-finish-work` is a single resumable transaction entry. Its mandatory
-order is: shared prepare/digest preview, expected-digest handshake, reviewed
-content push, deterministic marketplace evidence and readiness commit/push,
-unique draft PR binding, final archive projection, official task archive move,
-one exact metadata commit/push, local/remote/PR HEAD equality, then
-draft-to-ready. Archive is the last repository mutation, not the midpoint of
-publish. Normal flow never asks the caller to choose `--skip-archive`,
+`guru-finalize-task` owns the single resumable transaction loop entered by the
+thin `trellis-finish-work` router. Its mandatory order is: shared
+prepare/digest preview, exact plan confirmation, reviewed content push,
+deterministic marketplace evidence and readiness commit/push, unique draft PR
+binding, final archive projection, official task archive move, one exact
+metadata commit/push, local/remote/PR HEAD equality, then draft-to-ready.
+Archive is the last repository mutation, not the midpoint of publish. Normal
+flow never asks the caller to choose `--skip-archive`,
 `--recovery-after-finish-work`, or a separate publish command.
 Before archive, the unique PR remains bound by normalized base repository,
 exact head repository, head/base refs, number/URL/title and the untrimmed
@@ -610,8 +611,8 @@ Gate:
   follow-up candidates. They do not continue implementation, patch missing
   Phase 2 work, or run Guru Team recorder/validator scripts.
 - Branch Review sub-agents verify Docs SSOT reconciliation that Phase 2 already
-  completed. They read the approved `Docs SSOT Plan`, implementation handoff,
-  `phase2-check.json` Docs SSOT coverage, durable docs, task artifacts, code,
+  completed. They read the approved `Docs SSOT Plan`, the embedded implementation
+  evidence and Docs SSOT coverage in `phase2-check.json`, durable docs, task artifacts, code,
   tests, scripts, schemas, presets, and overlays; they do not perform the first
   durable docs merge or patch missing Phase 2 docs work. Any current-scope Docs
   SSOT inconsistency is a blocking finding, not an observation or follow-up.
@@ -679,7 +680,10 @@ but must not decide whether durable docs are semantically complete, stale, or
 adequately repaired.
 
 Phase 2 consumes the approved plan. Implementation must execute the recorded
-strategy and include in its handoff: strategy, durable docs sync result, task
+strategy and report one concise terminal outcome. The semantic check owner
+combines that result with live repository facts in the compatibility
+`implementation_handoff` field of `phase2-check.json`; no independent Markdown
+handoff is created. The embedded collection records strategy, durable docs sync result, task
 artifact deltas merged back into durable docs, task-history-only content,
 `no_docs_update_needed` reason when applicable, `bootstrap_or_repair_docs`
 minimum repair / follow-up / current PR limitation when applicable, and which
@@ -712,8 +716,8 @@ user approval evidence; otherwise it must verify Phase 0 handoff/preflight
 evidence for file-changing work.
 
 For Docs SSOT, the gate must verify the full strategy chain without becoming
-the merge step: the approved plan exists, the implementation handoff records
-strategy execution and durable-docs versus task-delta inputs, and
+the merge step: the approved plan exists, the embedded implementation evidence
+records strategy execution and durable-docs versus task-delta inputs, and
 `phase2-check.json` covers docs consistency. For `ssot_first`, durable docs /
 specs / workflow contracts are the primary implementation input; for
 `delta_first`, task deltas are merged back before final Phase 2 check; for
@@ -779,13 +783,14 @@ Passing the gate requires:
 
 ## Publish Boundary
 
-`trellis-finish-work` is the closeout entry. It calls `finish-work.sh` with the
-required `--from-trellis-finish-work` intent marker. The helper validates the
-passed review gate and its `review_report` digest, allows only Trellis
-metadata after the reviewed HEAD, rejects uncommitted non-metadata changes,
-builds and validates the immutable plan, pushes reviewed content and evidence,
-binds one draft PR, validates the final projection, archives the active task in
-one metadata transaction, and then marks the PR ready.
+`trellis-finish-work` is the thin closeout entry. It reads live workflow state,
+invokes `guru-review-task-publication`, and enters `guru-finalize-task` only
+from the owner's current `ready` exit. The finalizer owns semantic plan review,
+exact side-effect confirmation, and recovery routing. Only after that gate may
+its private deterministic engine call `finish-work.sh` with the internal intent
+marker to validate the passed review evidence, reject non-metadata drift, build
+the immutable plan, push reviewed content and evidence, bind one draft PR,
+archive the active task in one metadata transaction, and mark the PR ready.
 
 The shared prepare stage must construct the full future finish-summary with a
 deterministic sentinel PR and validate its schema, artifact set, archive paths,
@@ -810,13 +815,14 @@ CI/CD, deployment, migration, Makefile, or other non-metadata assets drift after
 the gate, dry-run and formal finish fail closed and the task returns to Phase
 2/3 for check and review.
 
-`trellis-continue` must stop at Branch Review Gate and must not push, create a
-PR, invoke `publish-pr`, or invoke `finish-work`. The finish helper and publish
-compatibility command are fail-closed: ordinary direct `finish-work.sh` calls
-are rejected before archive/finish-summary/push side effects, and every
-`publish-pr` call is rejected before repo/task resolution, `git push`, or
-`gh pr create`. Every closeout interruption is
-resumed through the same state-aware `trellis-finish-work` entry.
+`trellis-continue` must stop at publication readiness and must not push, create
+a PR, invoke `publish-pr`, invoke `finish-work.sh`, or enter finalization. The
+finish helper and publish compatibility command are fail-closed: ordinary
+direct `finish-work.sh` calls are rejected before
+archive/finish-summary/push side effects, and every `publish-pr` call is
+rejected before repo/task resolution, `git push`, or `gh pr create`. Every
+closeout interruption returns through the same `guru-finalize-task` semantic
+loop; platform entries automatically consume its mapped recovery exits.
 
 Before the exact archive commit exists, same-entry archive recovery is bound to
 the plan's complete `move_paths`, `tracked_move_paths`,
@@ -948,17 +954,19 @@ create `verified`.
 The workflow profile `verification_required` contains the fixed business seed
 `task_ref`, `plan_ref`, `repo_ref`, `reviewed_head`, and
 `verification_target`; `profile` and `mode` are fixed discriminators. The
-package owns this future target bootstrap, but the workflow does not activate a
-producer edge from planned `guru-finalize-task`. Until #118 implements that
-producer, its mandatory marker and consumers are contract/discovery
-declarations rather than a reachable transition from publication `ready`.
+package owns this target profile and active `guru-finalize-task` declares the
+concrete producer edge. The global workflow invokes the finalizer after
+publication `ready`; `verification_required` is automatically consumed by this
+verifier and is not rendered as a user-visible stop.
 Standalone direct discovery uses the structurally distinct
 `standalone_verification` profile and supplies only repository, remote, ref,
 caller intent, and optional task identity.
 
 The Skill's unique consumers are:
 
-- `verified` and `not_required` -> planned `guru-finalize-task`;
+- workflow `verified` and reachable task-bearing standalone `not_required` ->
+  active `guru-finalize-task`; the workflow-shaped not-required schema remains
+  compatible but the workflow applicability conflict cannot produce it;
 - `return_to_task_work` -> `guru-extension-verification-work-router`, which
   resumes Phase 2 and the complete downstream review sequence;
 - `blocked` -> `extension-installation-verification-blocked`.
@@ -1023,18 +1031,53 @@ After the candidates exist, the global workflow mandatory invokes active
 `guru-review-task-publication` with the target-owned `publication_review`
 authoring seed. It owns only these transitions:
 
-- `ready` -> planned Skill `guru-finalize-task`, with a fail-closed missing
-  package stop until that Skill is activated;
+- `ready` -> active Skill `guru-finalize-task`;
 - `return_to_task_work` -> `guru-task-publication-work-router`, which resumes
   implementation and requires fresh Phase 2 check, task commit, Branch Review,
   and publication review;
 - `blocked` -> stop `task-publication-review-blocked`.
 
-Future finalization stale handback uses the target-owned
+Finalization stale handback uses the target-owned
 `publication_review_stale` profile and the same complete semantic review.
 Workflow prose never copies the dimensions, findings, metadata revision loop,
 artifact fields, or recorder/checker procedure. Unknown, missing, multiple,
-unmapped, consumer-mismatched, stale, or planned-target invocation fails
+unmapped, consumer-mismatched, or stale invocation fails
 closed. Phase 3.7 consumes the already reviewed bytes and must not first create,
 regenerate, or revise either content file after `ready`; a metadata-only change
 re-enters publication review and non-metadata drift returns to task work.
+
+## Phase 3.7 Task Finalization Ownership
+
+Active `guru-finalize-task` owns the semantic closeout plan, scope/readiness and
+recovery judgments, exact digest confirmation, owner-private gate, six typed
+exits, and the complete normal-path recovery loop. The deterministic runtime
+reuses the existing #105 transaction engine for content push, verification
+boundary, unique draft PR identity, one final projection, official archive
+move, one archive metadata transaction, local/remote/PR HEAD equality, and
+draft-to-ready.
+
+The public profiles are publication entry, verified/not-required verification
+re-entry, same-plan resume, cross-month reprepare, and standalone finalization.
+The exits are exactly `verification_required`, `publication_review_stale`,
+`resume_finalization`, `reprepare_required`, `published`, and `blocked`, all
+using `exit_id`. Closeout plan, readiness, verification, PR/archive/recovery
+facts, internal transition labels, and digests remain finalizer-private.
+Missing/stale publication evidence stays an owner-checker fact that the AI may
+route through `publication_review_stale`; it is not collapsed into a generic
+invocation error or decided by the script.
+
+Verification re-entry keeps the generic #117 checker strict; only the finalizer
+may validate a normal immutable-plan-bound metadata tail and exact archive
+transaction. `verification_required` carries the plan repository, same-plan
+resume starts only from declared post-content recovery states, and `published`
+uses the plan archive locator. The persisted published route remains a private
+marker until exact archive plus ready PR completion; the public wrapper only
+materializes the DTO in memory and does not run the transition.
+
+This ownership contract is active, directly discoverable and globally
+integrated. The workflow automatically consumes verification, publication
+refresh, same-plan resume and reprepare exits; only a changed side-effect plan,
+new authority or `blocked` result is user-visible. This integration does not
+claim #119 combined acceptance; #132 still owns upstream overlay cleanup. It
+does not modify upstream `trellis-finish-work` Skill/Command/Prompt assets or
+official `task.py`.

@@ -5,17 +5,23 @@ description: Check a complete task through scope-first semantic review, full val
 
 # Guru Check Task
 
-Use this Skill after implementation handoff and official unchanged
-`trellis-check` evidence exist, and before `guru-create-task-commit`. Load
+Use this Skill after the implementation agent's concise terminal result and
+official unchanged `trellis-check` evidence exist, and before
+`guru-create-task-commit`. Load
 [references/contract.md](references/contract.md) before acting.
 
 Validate all eleven entry preconditions in workflow or standalone mode. Read
-the complete approved task scope, implementation handoff, current diff,
+the complete approved task scope, implementation terminal result, current diff,
 code/tests/docs/spec, repository-defined commands, worker evidence, Docs SSOT
 Plan, issue ledger, and agent recovery chain. Classify every candidate issue
 before assigning severity, complete all adequacy dimensions, and perform the AI
 Review Gate. Current-scope findings require implementation and a later full
 rerun; scope-changing findings route back to planning or clarification.
+
+The public input id `implementation_handoff` is retained for compatibility. It
+is an embedded evidence collection that this semantic owner assembles from the
+terminal result plus live repository facts; it does not require a separate
+`implementation-handoff.md`.
 
 Call the recorder and checker only after the semantic result exists. They
 validate objective schema, linkage, digests, repository snapshot, recovery,

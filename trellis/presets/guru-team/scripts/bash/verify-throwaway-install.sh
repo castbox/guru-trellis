@@ -1481,6 +1481,10 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/execute-extension-verification.
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-extension-verification.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-extension-verification.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/invoke-extension-verification.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/preview-finalization.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-finalization-gate.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-finalization-gate.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/execute-finalization-transition.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/format-merge-commit.sh"
@@ -1503,7 +1507,7 @@ assert extension["extension_id"] == "guru-team"
 assert extension["version"] == "0.6.5-guru.23"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 98
+assert len(assets) == 102
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -1522,6 +1526,8 @@ for command in (
     "record-task-workspace-plan", "create-task-workspace", "check-task-workspace-result",
     "record-planning-approval", "check-planning-approval",
     "record-phase2-check", "check-phase2-check",
+    "preview-finalization", "record-finalization-gate",
+    "check-finalization-gate", "execute-finalization-transition",
     "record-task-publication-review", "check-task-publication-review",
     "execute-extension-verification", "record-extension-verification",
     "check-extension-verification", "invoke-extension-verification",
@@ -1530,8 +1536,8 @@ for command in (
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"]
-assert api["skill_contracts"]["planned_skill_ids"] == ["guru-finalize-task"]
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"]
+assert api["skill_contracts"]["planned_skill_ids"] == []
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-requirements-clarification-2.0" in api["skill_contracts"]["artifact_schema_ids"]
@@ -1548,9 +1554,9 @@ assert api["skill_contracts"]["registry_schema_id"] == "guru-team-skill-registry
 assert api["skill_contracts"]["supported_interface_schema_ids"] == ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"]
 assert api["skill_contracts"]["current_interface_schema_id"] == "guru-team-skill-interface-1.3"
 assert api["skill_contracts"]["legacy_skill_ids"] == []
-assert len(api["skill_contracts"]["public_input_schema_ids"]) == 30
-assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 46
-assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 13
+assert len(api["skill_contracts"]["public_input_schema_ids"]) == 37
+assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 52
+assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 15
 assert api["skill_contracts"]["migration_manifests"] == [
     {
         "id": "stage0-minimal-handoff-v1",
@@ -1572,7 +1578,7 @@ assert api["skill_runtime"] == {
 }
 assert skills["status"] == "ok"
 assert skills["reserved_ids"] == ["guru-create-work-commit"]
-assert skills["active_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"]
+assert skills["active_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"]
 assert skills["selected_platforms"] == ["claude", "codex", "cursor"]
 assert skills["sidecars"] == []
 skill_paths = [entry["path"] for entry in skills["files"]]
@@ -1580,7 +1586,8 @@ assert len(skill_paths) == len(set(skill_paths))
 assert all((root / path).is_file() for path in skill_paths)
 registry = json.loads((root / ".trellis/guru-team/skills/registry.json").read_text(encoding="utf-8"))
 planned = [entry for entry in registry["skills"] if entry.get("state") == "planned"]
-assert [entry["id"] for entry in planned] == ["guru-finalize-task"]
+assert [entry["id"] for entry in planned] == []
+assert (root / ".trellis/guru-team/skills/packages/guru-finalize-task").is_dir()
 assert (root / ".trellis/guru-team/skills/packages/guru-review-task-publication").is_dir()
 assert (root / ".trellis/guru-team/skills/packages/guru-verify-extension-installation").is_dir()
 PY
@@ -1601,7 +1608,7 @@ test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/claude.sh"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":12,"exit_markers":46,"target_markers":27,"planned_ids":["guru-finalize-task"]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":13,"exit_markers":52,"target_markers":29,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 MINIMAL_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "minimal_handoff"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.3"' <<<"$MINIMAL_CONTRACT_JSON"
 MINIMAL_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
@@ -1615,6 +1622,7 @@ done <<'EOF'
 guru-approve-task-plan|["approved-initial","revision-required","clarify-scope","blocked-initial"]
 guru-check-task|["passed-initial","implementation-required","planning-stale","blocked-initial"]
 guru-create-task-commit|["committed-initial","revision-required","committed-finding-fix","blocked-recovery"]
+guru-finalize-task|["publication-verification-required","publication-review-stale","same-plan-resume","cross-month-reprepare","published-recovery","blocked-private-state","verified-reentry-published","not-required-reentry-published"]
 guru-review-branch|["workflow-passed","standalone-passed","implementation-required","scope-confirmation-required","blocked-stale","finding-fix-passed","fresh-final-passed"]
 guru-review-task-publication|["workflow-initial-ready","standalone-initial-ready","return-to-task-work","blocked-external","stale-reentry-ready","metadata-fix-fresh-ready","metadata-fix-durable-drift-return"]
 guru-verify-extension-installation|["workflow-required-verified","workflow-applicability-conflict-blocked","standalone-not-required","task-install-finding-return","standalone-remote-unavailable","workflow-transient-retry-verified","workflow-stale-plan-reentry-verified"]
@@ -1787,9 +1795,14 @@ grep -q "def prepare_closeout" "$TARGET/.trellis/guru-team/scripts/python/guru_t
 ! grep -q "def resolve_closeout_state" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
 grep -q "publish-pr is a compatibility-only blocked command" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
 grep -q "def ensure_closeout_draft_pr" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
-grep -q "If any ordinary stage fails, rerun this same entry with the same expected digest" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-grep -q "archive-month-preflight" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-grep -q "hooks.after_archive" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+grep -q '\.trellis/workflow.md.*global route' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+grep -q 'guru-review-task-publication' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+grep -q 'guru-verify-extension-installation' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+grep -q 'guru-finalize-task' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+grep -q 'Automatically consume' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+! grep -q 'finish-work.sh --from-trellis-finish-work' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+! grep -q -- '--expected-plan-digest' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+! grep -q 'resolve-human-artifacts.sh' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
 test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 test -d "$TARGET/.agents/skills"
 test -d "$TARGET/.claude/skills"
@@ -1917,7 +1930,7 @@ if [[ "$FINISH_STATUS" -eq 0 ]]; then
   exit 2
 fi
 printf '%s\n' "$FINISH_ERROR_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "finish-work"; assert payload["intent_flag"] == "--from-trellis-finish-work"' <<<"$FINISH_ERROR_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "finish-work"; assert payload["required_entrypoint"] == "trellis-finish-work"; assert "intent_flag" not in payload; assert "guru-finalize-task" in payload["error"]; assert "--from-trellis-finish-work" not in payload["error"]' <<<"$FINISH_ERROR_JSON"
 
 set +e
 PUBLISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/publish-pr.sh" --root "$TARGET" --json --dry-run 2>&1)"
@@ -3257,6 +3270,10 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-evals.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/preview-finalization.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-finalization-gate.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-finalization-gate.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/execute-finalization-transition.sh"
 test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/shared.sh"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/codex.sh"
@@ -3519,6 +3536,7 @@ production_ids = (
     "guru-create-task-commit",
 )
 post_146_skill_ids = {
+    "guru-finalize-task",
     "guru-review-branch",
     "guru-review-task-publication",
     "guru-verify-extension-installation",
@@ -3588,6 +3606,7 @@ for skill_id in production_ids:
 
 shutil.rmtree(skills_root / "consumers/workflow/production", ignore_errors=True)
 for relative in (
+    "consumers/stop/production/finalize-task-blocked.schema.json",
     "consumers/stop/production/verify-extension-installation-blocked.schema.json",
     "migrations/production-minimal-handoff.json",
     "schemas/production-migration-manifest.schema.json",
@@ -3621,25 +3640,28 @@ contracts["artifact_schema_ids"] = [
     if value not in {
         "guru-extension-installation-verification-1.0",
         "guru-review-gate-2.0",
+        "guru-task-finalization-gate-1.0",
         "guru-task-publication-readiness-1.0",
     }
 ]
 contracts["legacy_skill_ids"] = list(production_ids)
 contracts["public_input_schema_ids"] = [
     value for value in contracts["public_input_schema_ids"]
-    if not value.startswith(("guru-extension-", "guru-production-"))
+    if not value.startswith(("guru-extension-", "guru-finalize-", "guru-production-"))
 ]
 contracts["typed_output_schema_ids"] = [
     value for value in contracts["typed_output_schema_ids"]
-    if not value.startswith(("guru-extension-", "guru-production-"))
+    if not value.startswith(("guru-extension-", "guru-finalize-", "guru-production-"))
 ]
 production_private_ids = {
     "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json",
     "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json",
     "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json",
     "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-1.0.json",
     "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.0.json",
     "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.0.json",
+    "https://github.com/castbox/guru-trellis/trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
 }
 contracts["private_artifact_schema_ids"] = [
     value for value in contracts["private_artifact_schema_ids"]
@@ -3650,9 +3672,13 @@ contracts["migration_manifests"] = [
     if value["id"] == "stage0-minimal-handoff-v1"
 ]
 extension_runtime_commands = {
+    "check-finalization-gate",
     "check-extension-verification",
+    "execute-finalization-transition",
     "execute-extension-verification",
     "invoke-extension-verification",
+    "preview-finalization",
+    "record-finalization-gate",
     "record-extension-verification",
 }
 extension["extension"]["public_api"]["companion_scripts"] = [
@@ -3783,7 +3809,7 @@ apply_local_workflow_sample "$ABSENCE_TARGET"
 assert_official_state_absent "$ABSENCE_TARGET" "pre-146 update and reapply"
 PRE146_SOURCE_VALIDATION_JSON="$("$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 PRE146_INSTALLED_VALIDATION_JSON="$("$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$ABSENCE_TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source=json.loads(sys.argv[1]); installed=json.load(sys.stdin); expected={"invoke_markers":12,"exit_markers":46,"target_markers":27,"legacy_ids":[],"planned_ids":["guru-finalize-task"]}; assert source["status"] == installed["status"] == "passed"; assert all(source["facts"][key] == installed["facts"][key] == value for key, value in expected.items())' "$PRE146_SOURCE_VALIDATION_JSON" <<<"$PRE146_INSTALLED_VALIDATION_JSON"
+python3 -c 'import json, sys; source=json.loads(sys.argv[1]); installed=json.load(sys.stdin); expected={"invoke_markers":13,"exit_markers":52,"target_markers":29,"legacy_ids":[],"planned_ids":[]}; assert source["status"] == installed["status"] == "passed"; assert all(source["facts"][key] == installed["facts"][key] == value for key, value in expected.items())' "$PRE146_SOURCE_VALIDATION_JSON" <<<"$PRE146_INSTALLED_VALIDATION_JSON"
 for skill_id in \
   guru-approve-task-plan \
   guru-check-task \
@@ -3791,6 +3817,7 @@ for skill_id in \
   guru-create-task-commit \
   guru-create-task-workspace \
   guru-discover-change-context \
+  guru-finalize-task \
   guru-review-branch \
   guru-review-change-request \
   guru-review-contract-wording \
@@ -3800,7 +3827,7 @@ for skill_id in \
   PRE146_CONTRACT_JSON="$("$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$ABSENCE_TARGET" --mode installed --skill "$skill_id" --json)"
   python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "minimal_handoff"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.3"' <<<"$PRE146_CONTRACT_JSON"
 done
-for skill_id in guru-approve-task-plan guru-check-task guru-create-task-commit guru-review-branch guru-review-task-publication guru-verify-extension-installation; do
+for skill_id in guru-approve-task-plan guru-check-task guru-create-task-commit guru-finalize-task guru-review-branch guru-review-task-publication guru-verify-extension-installation; do
   PRE146_EVAL_JSON="$(
     "$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/run-skill-evals.sh" \
       --root "$ABSENCE_TARGET" \

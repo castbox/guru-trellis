@@ -9240,7 +9240,9 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertEqual(raised.exception.payload["blocked_step"], "finish-work")
         self.assertEqual(raised.exception.payload["required_entrypoint"], "trellis-finish-work")
-        self.assertEqual(raised.exception.payload["intent_flag"], "--from-trellis-finish-work")
+        self.assertNotIn("intent_flag", raised.exception.payload)
+        self.assertIn("guru-finalize-task", str(raised.exception))
+        self.assertNotIn("--from-trellis-finish-work", str(raised.exception))
 
     def test_finish_work_rejects_missing_reviewed_source_before_archive(self) -> None:
         gate = {
@@ -10687,6 +10689,7 @@ class ReviewGateReportTest(unittest.TestCase):
                 ),
             ),
             mock.patch.object(gtt, "git_status_paths", return_value=dirty_paths),
+            mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=0)),
         ):
             errors = gtt.review_branch_entry_precondition_errors(
                 self.root,
@@ -10698,6 +10701,69 @@ class ReviewGateReportTest(unittest.TestCase):
             )
 
         self.assertFalse(any("working tree" in error for error in errors), errors)
+
+    def test_review_branch_metadata_allowlist_accepts_committed_ancestor_plan(self) -> None:
+        plan = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR / "001.json"
+        plan.parent.mkdir()
+        committed_head = "a" * 40
+        current_head = "b" * 40
+        gtt.write_json(
+            plan,
+            {
+                "result": {
+                    "status": "committed",
+                    "commit_sha": committed_head,
+                }
+            },
+        )
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value=current_head),
+            mock.patch.object(
+                gtt,
+                "run",
+                return_value=mock.Mock(returncode=0),
+            ) as run,
+        ):
+            allowed = gtt.review_branch_task_metadata_allowlist(
+                self.root,
+                self.task_dir,
+            )
+
+        self.assertIn(plan.relative_to(self.root).as_posix(), allowed)
+        run.assert_called_once_with(
+            ["git", "merge-base", "--is-ancestor", committed_head, current_head],
+            cwd=self.root,
+            check=False,
+        )
+
+    def test_review_branch_metadata_allowlist_rejects_non_ancestor_plan(self) -> None:
+        plan = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR / "001.json"
+        plan.parent.mkdir()
+        gtt.write_json(
+            plan,
+            {
+                "result": {
+                    "status": "committed",
+                    "commit_sha": "a" * 40,
+                }
+            },
+        )
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="b" * 40),
+            mock.patch.object(
+                gtt,
+                "run",
+                return_value=mock.Mock(returncode=1),
+            ),
+        ):
+            allowed = gtt.review_branch_task_metadata_allowlist(
+                self.root,
+                self.task_dir,
+            )
+
+        self.assertNotIn(plan.relative_to(self.root).as_posix(), allowed)
 
     def test_review_branch_semantic_payload_accepts_current_scope_rejections(self) -> None:
         head = "a" * 40
@@ -13799,8 +13865,6 @@ class SubagentLivenessStateMachineTest(unittest.TestCase):
 class FinishWorkEntrypointContractTest(unittest.TestCase):
     REPO_ROOT = Path(__file__).resolve().parents[5]
     ENTRYPOINT_FILES = [
-        "trellis/workflows/guru-team/workflow.md",
-        ".trellis/workflow.md",
         "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
         "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
         "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
@@ -13822,20 +13886,24 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
         "README.md": {
             "required": [
                 "`publish-pr` 仅保留为兼容性阻断入口。",
-                "PR 发布只发生在显式 `trellis-finish-work` 入口。",
+                "PR 发布只从显式 `trellis-finish-work` 薄入口开始",
+                "仅从 `ready` 进入 `guru-finalize-task`。",
+                "中断由同一 finalizer 自动消费 recovery route",
                 "唯一 PR body 来源是当前 task-local `pr-body.md`",
                 "`--body-file <current-task>/pr-body.md` 直接传入。",
                 "`--body-artifact`、外部同文文件、脚本生成的 body fallback",
                 "相对解析 `body_file` 均不属于 closeout 合同并 fail closed。",
             ],
             "forbidden": [
+                "PR 发布只发生在显式 `trellis-finish-work` 入口。",
                 "或用 `--body-artifact <path>` 传 readiness artifact；",
                 "脚本生成的 `generated` body 只用于 draft/preview 辅助，不能作为 non-draft 发布证据。",
             ],
         },
         ".trellis/spec/workflow/workflow-contract.md": {
             "required": [
-                "`trellis-finish-work` is a single resumable transaction entry.",
+                "`guru-finalize-task` owns the single resumable transaction loop",
+                "`trellis-finish-work` is the thin closeout entry.",
                 "`publish-pr` is only a compatibility blocker.",
                 "accepts exactly one reviewed body source: `--body-file`",
                 "must point directly to the current task-local `pr-body.md`.",
@@ -13843,6 +13911,8 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                 "readiness-relative `body_file` resolution are rejected and do not participate in closeout.",
             ],
             "forbidden": [
+                "`trellis-finish-work` is a single resumable transaction entry.",
+                "It calls `finish-work.sh` with the required",
                 "`--body-file` or `--body-artifact`;",
                 "script-generated `generated` bodies are preview/draft-only",
                 "resolve it relative to the artifact's own directory.",
@@ -13852,11 +13922,14 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
             "required": [
                 "`publish-pr` is retained only as an unconditional compatibility blocker",
                 "it performs no repo/task resolution or side effect and points callers to `trellis-finish-work`.",
-                "Every interruption is resumed through that same state-aware entry.",
+                "only `guru-finalize-task`'s checked private transition executor",
+                "Every interruption returns through the same finalizer semantic loop",
                 "Formal closeout accepts only `--body-file` pointing directly to the current task-local `pr-body.md`",
                 "it rejects `--body-artifact`, generated body fallbacks, and readiness-relative `body_file` resolution.",
             ],
             "forbidden": [
+                "only the explicit `trellis-finish-work` entrypoint may pass",
+                "Every interruption is resumed through that same state-aware entry.",
                 "`--body-file` or `--body-artifact` inputs that were already reviewed by AI/human;",
                 "`generated` bodies are limited to draft/preview paths.",
             ],
@@ -13864,86 +13937,34 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
     }
     BARE_FINISH_COMMAND = ".trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work"
 
-    def finish_work_code_blocks(self, content: str) -> list[str]:
-        blocks: list[str] = []
-        current: list[str] | None = None
-        accepted = False
-        for line in content.splitlines():
-            if current is None:
-                if line.startswith("```"):
-                    language = line.removeprefix("```").strip()
-                    current = []
-                    accepted = language in {"", "bash"}
-                continue
-            if line.strip() == "```":
-                block = "\n".join(current).strip()
-                if accepted and "finish-work.sh" in block:
-                    blocks.append(block)
-                current = None
-                accepted = False
-                continue
-            current.append(line)
-        return blocks
-
-    def finish_work_commands(self, block: str) -> list[str]:
-        commands: list[str] = []
-        current: list[str] = []
-        for line in block.splitlines():
-            if not current and self.BARE_FINISH_COMMAND not in line:
-                continue
-            current.append(line.strip())
-            if not line.rstrip().endswith("\\"):
-                commands.append(" ".join(part.removesuffix("\\").strip() for part in current))
-                current = []
-        return commands
-
-    def test_finish_work_entrypoints_show_reviewed_body_and_dry_run(self) -> None:
+    def test_finish_work_entrypoints_are_thin_semantic_routers(self) -> None:
         for relpath in self.ENTRYPOINT_FILES:
             with self.subTest(path=relpath):
                 content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
-                finish_blocks = self.finish_work_code_blocks(content)
-
-                self.assertTrue(finish_blocks, f"{relpath} must show finish-work command examples")
-                self.assertTrue(
-                    any("--body-file" in block for block in finish_blocks),
-                    f"{relpath} must pass the current task-local pr-body.md",
-                )
-                self.assertFalse(
-                    any("--body-artifact" in block for block in finish_blocks),
-                    f"{relpath} must not show --body-artifact in finish-work commands",
-                )
-                self.assertTrue(
-                    any("--dry-run" in block for block in finish_blocks),
-                    f"{relpath} must show a dry-run readiness preview",
-                )
-                for block in finish_blocks:
-                    normalized = "\n".join(line.rstrip() for line in block.splitlines()).strip()
-                    self.assertFalse(
-                        any(line.strip() == self.BARE_FINISH_COMMAND for line in block.splitlines()),
-                        f"{relpath} must not keep a bare finish-work command line",
+                for required in (
+                    "`.trellis/workflow.md` as the global route",
+                    "Phase 3.6",
+                    "Phase 3.7",
+                    "guru-review-task-publication",
+                    "guru-verify-extension-installation",
+                    "guru-finalize-task",
+                    "Automatically consume",
+                ):
+                    self.assertIn(required, content, f"{relpath} must route through {required!r}")
+                for forbidden in (
+                    "finish-work.sh --from-trellis-finish-work",
+                    "--body-file",
+                    "--finish-summary-index-file",
+                    "--dry-run",
+                    "--expected-plan-digest",
+                    "resolve-human-artifacts.sh",
+                    "Markdown 产物 review 表",
+                ):
+                    self.assertNotIn(
+                        forbidden,
+                        content,
+                        f"{relpath} must leave {forbidden!r} to its semantic owner",
                     )
-                    self.assertNotEqual(
-                        normalized,
-                        self.BARE_FINISH_COMMAND,
-                        f"{relpath} must not keep a bare finish-work main example",
-                    )
-                commands = [
-                    command
-                    for block in finish_blocks
-                    for command in self.finish_work_commands(block)
-                ]
-                dry_commands = [command for command in commands if "--dry-run" in command]
-                formal_commands = [command for command in commands if "--dry-run" not in command]
-                self.assertTrue(dry_commands, f"{relpath} must show a dry-run command")
-                self.assertTrue(formal_commands, f"{relpath} must show a formal command")
-                self.assertTrue(
-                    all("--expected-plan-digest" not in command for command in dry_commands),
-                    f"{relpath} dry-run commands must not require a prior digest",
-                )
-                self.assertTrue(
-                    all("--expected-plan-digest" in command for command in formal_commands),
-                    f"{relpath} formal finish-work commands must pass the reviewed digest",
-                )
 
     def test_public_docs_do_not_show_bare_finish_work_command(self) -> None:
         for relpath in self.PUBLIC_DOC_FILES:
@@ -13971,7 +13992,7 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                     self.assertNotIn("".join(forbidden.split()), content)
 
 
-class HumanArtifactReviewTableContractTest(unittest.TestCase):
+class HumanArtifactResolutionContractTest(unittest.TestCase):
     REPO_ROOT = Path(__file__).resolve().parents[5]
     CONTINUE_ENTRYPOINT_FILES = [
         "trellis/workflows/guru-team/workflow.md",
@@ -13982,9 +14003,11 @@ class HumanArtifactReviewTableContractTest(unittest.TestCase):
         "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
         "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
     ]
-    FINISH_ENTRYPOINT_FILES = [
+    FINISH_WORKFLOW_FILES = [
         "trellis/workflows/guru-team/workflow.md",
         ".trellis/workflow.md",
+    ]
+    FINISH_ENTRYPOINT_FILES = [
         "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
         "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
         "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
@@ -13997,21 +14020,16 @@ class HumanArtifactReviewTableContractTest(unittest.TestCase):
         for snippet in snippets:
             self.assertIn(snippet, content, f"{relpath} must mention {snippet!r}")
 
-    def test_continue_entrypoints_require_markdown_artifact_review_table(self) -> None:
-        snippets = [
-            "resolve-human-artifacts.sh",
-            "Markdown 产物 review 表",
-            "`prd.md`",
-            "`design.md`",
-            "`implement.md`",
-            "`review.md`",
-            "`pr-body.md`",
-        ]
+    def test_continue_entrypoints_delegate_minimal_human_artifact_resolution(self) -> None:
         for relpath in self.CONTINUE_ENTRYPOINT_FILES:
             with self.subTest(path=relpath):
-                self.assert_file_contains(relpath, snippets)
+                self.assert_file_contains(relpath, ["resolve-human-artifacts.sh"])
+                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+                if "trellis-continue" in relpath or relpath.endswith("/continue.md"):
+                    self.assertIn("human-authored artifacts", content)
+                    self.assertNotIn("Markdown 产物 review 表", content)
 
-    def test_finish_entrypoints_resolve_active_then_archive_paths(self) -> None:
+    def test_finish_workflow_resolves_active_then_archive_paths(self) -> None:
         snippets = [
             "resolve-human-artifacts.sh",
             "Markdown 产物 review 表",
@@ -14023,9 +14041,17 @@ class HumanArtifactReviewTableContractTest(unittest.TestCase):
             "`review.md`",
             "`pr-body.md`",
         ]
-        for relpath in self.FINISH_ENTRYPOINT_FILES:
+        for relpath in self.FINISH_WORKFLOW_FILES:
             with self.subTest(path=relpath):
                 self.assert_file_contains(relpath, snippets)
+
+    def test_finish_entrypoints_delegate_human_artifacts_to_semantic_owner(self) -> None:
+        for relpath in self.FINISH_ENTRYPOINT_FILES:
+            with self.subTest(path=relpath):
+                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+                self.assertIn("guru-finalize-task", content)
+                self.assertNotIn("resolve-human-artifacts.sh", content)
+                self.assertNotIn("Markdown 产物 review 表", content)
 
     def test_user_facing_docs_use_pr_body_as_default_body_artifact(self) -> None:
         forbidden = "reviewed-" + "pr-body.md"
@@ -14103,19 +14129,19 @@ class IntakeScopeEvolutionContractTest(unittest.TestCase):
                     ],
                 )
 
-    def test_continue_entrypoints_prompt_scope_change_gate(self) -> None:
+    def test_continue_entrypoints_delegate_scope_change_gate_to_workflow(self) -> None:
         for relpath in self.CONTINUE_ENTRYPOINT_FILES:
             with self.subTest(path=relpath):
-                self.assert_file_contains(
-                    relpath,
-                    [
-                        "Scope Change Gate",
-                        "close_issues",
-                        "related_issues",
-                        "followup_issues",
-                        "GitHub-visible issue evidence",
-                    ],
-                )
+                self.assert_file_contains(relpath, ["`.trellis/workflow.md` as the global route"])
+                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+                for duplicated_detail in (
+                    "Scope Change Gate",
+                    "close_issues",
+                    "related_issues",
+                    "followup_issues",
+                    "GitHub-visible issue evidence",
+                ):
+                    self.assertNotIn(duplicated_detail, content)
 
     def test_public_docs_describe_scope_evolution_contract(self) -> None:
         for relpath in self.PUBLIC_DOC_FILES:
@@ -14406,43 +14432,27 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
                 dogfood = root / dogfood_relative
                 self.assertEqual(canonical.read_bytes(), dogfood.read_bytes())
                 text = canonical.read_text(encoding="utf-8")
-                self.assertIn("mandatory invoke the active `guru-review-branch` package", text)
-                self.assertIn("only Phase 3.5 semantic owner", text)
-                for field in (
-                    "`profile`",
-                    "`mode`",
-                    "`task_ref`",
-                    "`base_ref`",
+                self.assertIn("`.trellis/workflow.md` as the global route", text)
+                for skill_id in (
+                    "guru-approve-task-plan",
+                    "guru-check-task",
+                    "guru-create-task-commit",
+                    "guru-review-branch",
+                    "guru-review-task-publication",
+                ):
+                    self.assertIn(skill_id, text)
+                self.assertIn("Automatically consume", text)
+                self.assertRegex(
+                    text,
+                    r"do not create(?: a separate)?\s+`implementation-handoff\.md`",
+                )
+                for duplicated_detail in (
+                    "Typed-exit route:",
+                    "only Phase 3.5 semantic owner",
                     "`committed_head`",
                     "`review_intent`",
-                ):
-                    self.assertIn(field, text)
-                for route in (
-                    "`passed` enters global Phase 3.6",
-                    "mandatory invoke the active `guru-review-task-publication` package",
-                    "`ready` exit targets planned `guru-finalize-task`",
-                    "`return_to_task_work` targets workflow `guru-task-publication-work-router`",
-                    "publication `blocked` targets stop `task-publication-review-blocked`",
-                    "`implementation_required` targets workflow `guru-branch-review-implementation-router`",
-                    "`scope_confirmation_required` targets workflow `guru-branch-review-scope-router`",
-                    "Branch Review `blocked` targets stop `branch-review-blocked`",
-                ):
-                    self.assertIn(route, text)
-                self.assertIn(
-                    "workflow caller authors the initial task-local `pr-body.md` and "
-                    "`finish-summary-index.json` candidates",
-                    text,
-                )
-                self.assertIn(
-                    "If either candidate is absent or objectively malformed, stop fail closed",
-                    text,
-                )
-                self.assertNotIn(
-                    "`passed` targets planned `guru-review-task-publication`",
-                    text,
-                )
-                self.assertIn("Missing, unknown, multiple, stale, or unmapped exits", text)
-                for duplicated_detail in (
+                    "guru-branch-review-implementation-router",
+                    "task-publication-review-blocked",
                     "review-branch.sh",
                     "check-review-gate.sh",
                     "agent-assignment.json",
@@ -16505,6 +16515,46 @@ class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
+    def test_allowlist_accepts_all_completed_ancestor_commit_plans(self) -> None:
+        first_head = self.head
+        (self.root / "second-change.txt").write_text(
+            "second reviewed change\n",
+            encoding="utf-8",
+        )
+        subprocess.run(
+            ["git", "add", "second-change.txt"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-qm", "second reviewed change"],
+            cwd=self.root,
+            check=True,
+        )
+        second_head = gtt.current_head(self.root)
+        plans = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR
+        gtt.write_json(
+            plans / "001.json",
+            {"result": {"status": "committed", "commit_sha": first_head}},
+        )
+        gtt.write_json(
+            plans / "002.json",
+            {"result": {"status": "committed", "commit_sha": second_head}},
+        )
+        gtt.write_json(
+            plans / "003.json",
+            {"result": {"status": "committed", "commit_sha": "f" * 40}},
+        )
+
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        allowed = gtt.review_branch_task_metadata_allowlist(
+            self.root,
+            self.task_dir,
+        )
+        self.assertIn(f"{task_ref}/task-commit-plans/001.json", allowed)
+        self.assertIn(f"{task_ref}/task-commit-plans/002.json", allowed)
+        self.assertNotIn(f"{task_ref}/task-commit-plans/003.json", allowed)
+
     def test_publication_status_allowlist_rejects_debug_note_and_accepts_contract_metadata(
         self,
     ) -> None:
@@ -16970,7 +17020,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         with self.assertRaises(gtt.WorkflowError):
             gtt.closeout_summary_runtime_pr_facts_from_bytes(plan, wrong_content)
 
-    def build_plan(self, *, repo: str = "owner/repo") -> dict[str, object]:
+    def build_plan(
+        self,
+        *,
+        repo: str = "owner/repo",
+        include_finalization_gate: bool = False,
+        head_branch: str = "fix/105-closeout",
+    ) -> dict[str, object]:
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
             stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
             return mock.Mock(returncode=0, stdout=stdout, stderr="")
@@ -16988,10 +17044,2180 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 repo=repo,
                 remote="origin",
                 base_branch="main",
-                head_branch="fix/105-closeout",
+                head_branch=head_branch,
                 reviewed_head=self.head,
                 title="#105 重构 finish-work 收尾事务",
+                include_finalization_gate=include_finalization_gate,
             )
+
+    def write_legacy_partial_closeout(
+        self,
+    ) -> tuple[dict[str, object], dict[str, object], list[str]]:
+        self.task["status"] = "in_progress"
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        with mock.patch.object(gtt, "current_head", return_value=self.head):
+            plan = self.build_plan()
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        publish_inputs = {
+            "repo": plan["git"]["repo"],
+            "base_branch": plan["git"]["base_branch"],
+            "head_branch": plan["git"]["head_branch"],
+            "reviewed_head_sha": plan["git"]["reviewed_work_head"],
+            "title": plan["publish"]["title"],
+            "body_source": gtt.PR_BODY_ARTIFACT,
+            "body_sha256": plan["publish"]["body_sha256"],
+            "draft": True,
+            "reviewed_source": f"body-artifact:{gtt.PR_READINESS_ARTIFACT}",
+            "closeout_plan_digest": plan["plan_digest"],
+        }
+        gtt.write_json(
+            self.task_dir / gtt.PR_READINESS_ARTIFACT,
+            {
+                "ready": True,
+                "body_file": gtt.PR_BODY_ARTIFACT,
+                "publish_inputs": publish_inputs,
+                "publish_inputs_sha256": gtt.canonical_json_sha256(publish_inputs),
+            },
+        )
+        ledger = gtt.record_marketplace_machine_evidence(
+            self.ledger,
+            plan["marketplace"]["pending_machine"],
+        )
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
+        dirty_paths = sorted(plan["projection"]["evidence_paths"])
+        return plan, ledger, dirty_paths
+
+    def finalizer_takeover_runtime(
+        self,
+        ledger: dict[str, object],
+        dirty_paths: list[str],
+    ) -> tuple[argparse.Namespace, list[object]]:
+        args = argparse.Namespace(
+            root=str(self.root),
+            repo="owner/repo",
+            remote="origin",
+            finish_summary_index_file=None,
+            include_finalization_gate=True,
+        )
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
+            return mock.Mock(returncode=0, stdout=stdout, stderr="")
+
+        return args, [
+            mock.patch.object(
+                gtt,
+                "official_after_archive_hook_state",
+                return_value={"commands": []},
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_review_gate",
+                return_value=(self.task_dir / "review-gate.json", self.gate, []),
+            ),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(
+                gtt,
+                "load_finish_summary_index",
+                return_value=(self.task_dir / "finish-summary-index.json", self.index),
+            ),
+            mock.patch.object(gtt, "load_issue_scope_ledger", return_value=ledger),
+            mock.patch.object(gtt, "validate_ledger_for_publish", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_reviewed_body",
+                return_value=(
+                    (self.task_dir / "pr-body.md").read_text(encoding="utf-8"),
+                    {"kind": "test-owner"},
+                ),
+            ),
+            mock.patch.object(gtt, "validate_pr_body_quality", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "validate_reviewed_body_source_for_publish",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "validate_closeout_task_children"),
+            mock.patch.object(gtt, "validate_github_remote_repository"),
+            mock.patch.object(gtt, "base_branch_from_sources", return_value="main"),
+            mock.patch.object(gtt, "current_branch", return_value="fix/105-closeout"),
+            mock.patch.object(
+                gtt,
+                "pr_title_from_task",
+                return_value="#105 重构 finish-work 收尾事务",
+            ),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "current_archive_month", return_value="2026-07"),
+            mock.patch.object(gtt, "git_status_paths", return_value=dirty_paths),
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+        ]
+
+    def prepare_finalizer_takeover(
+        self,
+        ledger: dict[str, object],
+        dirty_paths: list[str],
+    ) -> dict[str, object]:
+        args, patches = self.finalizer_takeover_runtime(ledger, dirty_paths)
+        with contextlib.ExitStack() as stack:
+            for patcher in patches:
+                stack.enter_context(patcher)
+            return gtt.prepare_closeout(
+                self.root,
+                args,
+                {},
+                self.task_dir,
+                self.context,
+            )
+
+    def exercise_prepared_finalization_gate_reentry(
+        self,
+        *,
+        arbitrary_metadata: bool = False,
+    ) -> dict[str, object] | None:
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        gate_relative = f"{task_ref}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+        unexpected_relative = f"{task_ref}/arbitrary-finalization-note.md"
+        plan = self.build_plan(include_finalization_gate=True)
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+        publication_ref = "publication:prepared-recorder-reentry"
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "reviewed_head": self.head,
+            "publication_ref": publication_ref,
+            "finalization_intent": "Finalize the exact reviewed task plan.",
+        }
+        stored_repository = {
+            "head": self.head,
+            "branch": "fix/105-closeout",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/runtime.py"],
+            "status_paths": [f"{task_ref}/pr-body.md"],
+        }
+        stored_entries = {
+            entry_id: gtt.task_publication_binding(entry_id)
+            for entry_id in (
+                "runtime_dependency",
+                "task_workspace",
+                "task_identity",
+                "branch_review_handoff",
+                "planning_approval",
+                "phase2_check",
+                "issue_scope_ledger",
+                "docs_ssot_reconciliation",
+                "branch_review_evidence",
+                "publication_content",
+                "review_range_and_working_tree",
+                "invocation_freshness",
+            )
+        }
+        publication = {
+            "skill_id": gtt.TASK_PUBLICATION_SKILL_ID,
+            "task_dir": task_ref,
+            "profile": "publication_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+            "supersedes_publication_ref": None,
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:prepared-recorder-reentry",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "entry_preconditions": stored_entries,
+                "publication_ref": publication_ref,
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, publication)
+        prepared = {
+            "plan": plan,
+            "ledger": self.ledger,
+            "gate": self.gate,
+            "finalizer_takeover": None,
+            "month_supersession": None,
+        }
+        review = {
+            "review": {
+                "status": "passed",
+                "summary": "The exact prepared plan is current.",
+                "evidence_refs": [plan_ref, publication_ref],
+            },
+            "confirmation": {
+                "status": "confirmed",
+                "confirmed_plan_digest": plan["plan_digest"],
+                "summary": "The exact prepared plan digest was confirmed.",
+            },
+            "route": {
+                "typed_exit": "verification_required",
+                "consumer": gtt.FINALIZATION_CONSUMERS["verification_required"],
+                "output": {
+                    "exit_id": "verification_required",
+                    "task_ref": task_ref,
+                    "plan_ref": plan_ref,
+                    "repo_ref": plan["git"]["repo"],
+                    "reviewed_head": plan["git"]["reviewed_work_head"],
+                    "verification_target": "extension-installation",
+                },
+            },
+            "supersedes_gate_ref": None,
+        }
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+        runtime_args = argparse.Namespace(
+            root=str(self.root),
+            input="unused-public-input.json",
+            review_input="unused-review-input.json",
+            gate=None,
+            dry_run=False,
+            finish_summary_index_file=None,
+            repo="owner/repo",
+            remote="origin",
+        )
+
+        def current_repository() -> dict[str, object]:
+            paths = list(stored_repository["status_paths"])
+            if (self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT).is_file():
+                paths.append(gate_relative)
+            if (self.task_dir / "arbitrary-finalization-note.md").is_file():
+                paths.append(unexpected_relative)
+            return {**stored_repository, "status_paths": sorted(paths)}
+
+        def current_entries(
+            *_args: object,
+            **_kwargs: object,
+        ) -> tuple[dict[str, object], list[str], dict[str, object], dict[str, object]]:
+            repository = current_repository()
+            entries = copy.deepcopy(stored_entries)
+            entries["review_range_and_working_tree"] = (
+                gtt.task_publication_binding(repository)
+            )
+            return entries, [], {}, repository
+
+        def publication_errors(
+            *_args: object,
+            **_kwargs: object,
+        ) -> list[str]:
+            if not (self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT).is_file():
+                return []
+            return [
+                "task publication repository binding is stale",
+                "task publication entry precondition bindings are stale",
+            ]
+
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "finalization_task_dir", return_value=self.task_dir),
+            mock.patch.object(
+                gtt,
+                "finalization_public_input",
+                return_value=(public_input, "<test>"),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_semantic_review_input",
+                return_value=review,
+            ),
+            mock.patch.object(gtt, "finalization_package_root", return_value=package_root),
+            mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
+            mock.patch.object(gtt, "finalization_verification_owner_result", return_value=None),
+            mock.patch.object(
+                gtt,
+                "finalization_current_verification_owner_result",
+                return_value=None,
+            ),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                side_effect=publication_errors,
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                side_effect=lambda *_args, **_kwargs: current_repository(),
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_entry_precondition_bindings",
+                side_effect=current_entries,
+            ),
+        ):
+            recorded = gtt.cmd_record_finalization_gate(runtime_args)
+            self.assertEqual(recorded["typed_exit"], "verification_required")
+            if arbitrary_metadata:
+                (self.task_dir / "arbitrary-finalization-note.md").write_text(
+                    "ordinary unowned metadata\n",
+                    encoding="utf-8",
+                )
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.cmd_check_finalization_gate(runtime_args)
+                return None
+            return gtt.cmd_check_finalization_gate(runtime_args)
+
+    def test_prepared_finalization_gate_recorder_reenters_checker(self) -> None:
+        checked = self.exercise_prepared_finalization_gate_reentry()
+        assert checked is not None
+        self.assertEqual(checked["transaction_state"], "prepared")
+        self.assertEqual(checked["typed_exit"], "verification_required")
+
+    def test_prepared_finalization_gate_reentry_rejects_arbitrary_metadata(self) -> None:
+        self.assertIsNone(
+            self.exercise_prepared_finalization_gate_reentry(arbitrary_metadata=True)
+        )
+
+    def exercise_real_verification_metadata_reentry(
+        self,
+        *,
+        marketplace_required: bool,
+        arbitrary_metadata: bool = False,
+        execute_remaining: bool = False,
+    ) -> dict[str, object] | None:
+        source_root = Path(__file__).resolve().parents[5]
+        package_root = self.root / "trellis/skills/guru-team/packages"
+        for skill_id in (
+            gtt.EXTENSION_VERIFICATION_SKILL_ID,
+            gtt.FINALIZE_TASK_SKILL_ID,
+        ):
+            shutil.copytree(
+                source_root / "trellis/skills/guru-team/packages" / skill_id,
+                package_root / skill_id,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+            )
+        self.PACKAGE = package_root / gtt.EXTENSION_VERIFICATION_SKILL_ID
+
+        (self.root / ".gitignore").write_text(
+            ".trellis/.runtime/\n",
+            encoding="utf-8",
+        )
+        config_path = self.root / ".trellis/guru-team/config.yml"
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        config_path.write_text(
+            "workspace_mode: current\n"
+            "github_repo: example/guru-extension\n"
+            "publish:\n"
+            "  remote: origin\n",
+            encoding="utf-8",
+        )
+        task_script = self.root / ".trellis/scripts/task.py"
+        task_script.parent.mkdir(parents=True, exist_ok=True)
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        task_script.write_text(
+            "#!/usr/bin/env python3\n"
+            "import sys\n"
+            f"TASK = {task_ref!r}\n"
+            "if sys.argv[1:] in (['current'], ['current', '--source']):\n"
+            "    print(TASK)\n"
+            "    raise SystemExit(0)\n"
+            "raise SystemExit(2)\n",
+            encoding="utf-8",
+        )
+
+        self.task.update({
+            "status": "in_progress",
+            "branch": "main",
+            "base_branch": "main",
+        })
+        self.context.update({
+            "schema_version": "1.0",
+            "source_issue": {"number": 105},
+            "branch_name": "main",
+            "base_branch": "main",
+            "base_ref": "main",
+            "base_head_sha": "0" * 40,
+            "remote_head_sha": "0" * 40,
+            "source_repo": {
+                "repo": "example/guru-extension",
+                "url": "https://github.com/example/guru-extension",
+            },
+            "task_slug": "105-closeout",
+            "task_title": "#105 closeout",
+            "workspace_slug": "105-closeout",
+            "task_workspace_id": "105-closeout",
+            "assignee": "finalization-reentry",
+            "actor": {"login": "finalization-reentry"},
+            "issue_scope_ledger_seed": {},
+            "intake_summary": {
+                "duplicate_decision": {},
+                "naming_quality": {},
+                "confirmation": {},
+            },
+        })
+        self.gate.update({
+            "head": "0" * 40,
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+        })
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        gtt.write_json(self.task_dir / "task-start-context.json", self.context)
+        gtt.write_json(self.task_dir / "review-gate.json", self.gate)
+
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.name", "Finalization Reentry"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "finalization-reentry@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        remote = self.root / ".trellis/.runtime/remote.git"
+        remote.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
+        subprocess.run(
+            ["git", "remote", "add", "origin", str(remote)],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "reviewed finalization fixture"],
+            cwd=self.root,
+            check=True,
+        )
+        self.head = gtt.current_head(self.root)
+        subprocess.run(
+            ["git", "push", "-qu", "origin", "main"],
+            cwd=self.root,
+            check=True,
+        )
+
+        self.gate["head"] = self.head
+        if not marketplace_required:
+            self.gate["changed_files"] = ["docs/internal-note.md"]
+        gtt.write_json(self.task_dir / "review-gate.json", self.gate)
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(
+                gtt,
+                "official_after_archive_hook_state",
+                return_value={"commands": []},
+            ),
+        ):
+            plan = self.build_plan(
+                repo="example/guru-extension",
+                include_finalization_gate=True,
+                head_branch="main",
+            )
+        self.assertEqual(plan["marketplace"]["required"], marketplace_required)
+        if marketplace_required:
+            self.ledger = gtt.record_marketplace_machine_evidence(
+                self.ledger,
+                plan["marketplace"]["pending_machine"],
+            )
+            gtt.write_json(
+                self.task_dir / "issue-scope-ledger.json",
+                self.ledger,
+            )
+        stored_repository = gtt.task_publication_repository_binding(
+            self.root,
+            self.task_dir,
+        )
+        stored_entries = {
+            entry_id: gtt.task_publication_binding(entry_id)
+            for entry_id in (
+                "runtime_dependency",
+                "task_workspace",
+                "task_identity",
+                "branch_review_handoff",
+                "planning_approval",
+                "phase2_check",
+                "issue_scope_ledger",
+                "docs_ssot_reconciliation",
+                "branch_review_evidence",
+                "publication_content",
+                "review_range_and_working_tree",
+                "invocation_freshness",
+            )
+        }
+        publication_ref = "publication:real-recorder-reentry"
+        publication = {
+            "task_dir": task_ref,
+            "profile": "publication_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+            "supersedes_publication_ref": None,
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:real-recorder-reentry",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "entry_preconditions": stored_entries,
+                "publication_ref": publication_ref,
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, publication)
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+
+        if marketplace_required:
+            verification_input = {
+                "profile": "verification_required",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "plan_ref": plan_ref,
+                "repo_ref": "example/guru-extension",
+                "reviewed_head": self.head,
+                "verification_target": "extension-installation",
+            }
+            selected = ["marketplace_index"]
+            execution = ExtensionVerificationRuntimeTest.execution(
+                self,
+                verification_input,
+                "passed",
+                selected,
+            )
+            for name in (
+                "task-start-context.schema.json",
+                "finish-summary.schema.json",
+                "closeout-plan.schema.json",
+            ):
+                installed_path = f".trellis/guru-team/schemas/{name}"
+                execution["asset_expectations"].append({
+                    "category": "schema",
+                    "platform": None,
+                    "path": installed_path,
+                    "source_path": f"trellis/workflows/guru-team/schemas/{name}",
+                    "expected_sha256": "1" * 64,
+                    "relation": "managed_manifest",
+                })
+                execution["asset_digests"].append({
+                    "category": "schema",
+                    "platform": None,
+                    "path": installed_path,
+                    "sha256": "1" * 64,
+                })
+            execution["asset_inventory"] = (
+                gtt.extension_verification_asset_inventory_summary(
+                    execution["asset_expectations"],
+                    execution["asset_digests"],
+                )
+            )
+            review = ExtensionVerificationRuntimeTest.review(
+                self,
+                "verified",
+                selected,
+            )
+        else:
+            verification_input = {
+                "profile": "standalone_verification",
+                "mode": "standalone",
+                "repo_ref": "example/guru-extension",
+                "remote": "origin",
+                "ref": "refs/heads/main",
+                "caller_intent": "verify-extension-installation",
+                "task_ref": task_ref,
+            }
+            execution = ExtensionVerificationRuntimeTest.execution(
+                self,
+                verification_input,
+                "not_run",
+                [],
+            )
+            execution["remote_head"] = self.head
+            review = ExtensionVerificationRuntimeTest.review(
+                self,
+                "not_required",
+                [],
+            )
+        owner = ExtensionVerificationRuntimeTest.record(
+            self,
+            verification_input,
+            execution,
+            review,
+        )
+        verification_input_path = (
+            ".trellis/.runtime/guru-team/tests/public-input.json"
+        )
+        verification_locator = (
+            f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        )
+        verification_output = gtt.cmd_invoke_extension_verification(
+            argparse.Namespace(
+                root=str(self.root),
+                input=verification_input_path,
+                owner_result=verification_locator,
+            )
+        )
+        self.assertEqual(
+            owner["identity"]["verification_ref"],
+            verification_output["verification_ref"],
+        )
+
+        if marketplace_required:
+            finalization_input = {
+                "profile": "verification_verified",
+                "mode": "workflow",
+                "task_ref": verification_output["task_ref"],
+                "plan_ref": verification_output["plan_ref"],
+                "reviewed_head": verification_output["reviewed_head"],
+                "verification_ref": verification_output["verification_ref"],
+                "reentry_intent": "Continue the current owner-verified plan.",
+            }
+        else:
+            finalization_input = {
+                "profile": "standalone_verification_not_required",
+                "mode": "standalone",
+                "task_ref": task_ref,
+                "repo_ref": verification_output["repo_ref"],
+                "resolved_head": verification_output["resolved_head"],
+                "verification_ref": verification_output["verification_ref"],
+            }
+        finalization_input_path = (
+            self.root / ".trellis/.runtime/guru-team/tests/finalization-input.json"
+        )
+        gtt.write_json(finalization_input_path, finalization_input)
+        finalization_input_locator = gtt.repo_relative(
+            self.root,
+            finalization_input_path,
+        )
+        if arbitrary_metadata:
+            (self.task_dir / "arbitrary-finalization-note.md").write_text(
+                "not owner-bound\n",
+                encoding="utf-8",
+            )
+
+        def current_entries(
+            *_args: object,
+            **_kwargs: object,
+        ) -> tuple[dict[str, object], list[str], dict[str, object], dict[str, object]]:
+            repository = gtt.task_publication_repository_binding(
+                self.root,
+                self.task_dir,
+            )
+            entries = copy.deepcopy(stored_entries)
+            entries["review_range_and_working_tree"] = (
+                gtt.task_publication_binding(repository)
+            )
+            return entries, [], {}, repository
+
+        prepared = {
+            "plan": plan,
+            "ledger": self.ledger,
+            "gate": self.gate,
+            "finalizer_takeover": None,
+            "month_supersession": None,
+        }
+        runtime_args = argparse.Namespace(
+            root=str(self.root),
+            input=finalization_input_locator,
+            repo="example/guru-extension",
+            remote="origin",
+            finish_summary_index_file=None,
+            include_finalization_gate=True,
+            review_input=None,
+            dry_run=False,
+            owner_result=None,
+            gate=None,
+        )
+        with (
+            mock.patch.dict(
+                os.environ,
+                {"GURU_TEAM_EVAL_STAGING": "0"},
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                return_value=[
+                    "task publication repository binding is stale",
+                    "task publication entry precondition bindings are stale",
+                ],
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_entry_precondition_bindings",
+                side_effect=current_entries,
+            ),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pre_draft_state",
+                return_value="content_pushed",
+            ),
+        ):
+            if arbitrary_metadata:
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.cmd_preview_finalization(runtime_args)
+                return None
+
+            preview = gtt.cmd_preview_finalization(runtime_args)
+            self.assertEqual(preview["transaction_state"], "content_pushed")
+            self.assertEqual(preview["plan_ref"], plan_ref)
+            route = (
+                {
+                    "typed_exit": "published",
+                    "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                    "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+                }
+                if execute_remaining
+                else {
+                    "typed_exit": "resume_finalization",
+                    "consumer": gtt.FINALIZATION_CONSUMERS[
+                        "resume_finalization"
+                    ],
+                    "output": {
+                        "exit_id": "resume_finalization",
+                        "task_ref": task_ref,
+                        "plan_ref": plan_ref,
+                    },
+                }
+            )
+            review_input = {
+                "schema_version": "1.0",
+                "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
+                "review": {
+                    "status": "passed",
+                    "summary": "Current verification evidence is plan-bound.",
+                    "evidence_refs": [plan_ref, publication_ref],
+                },
+                "confirmation": {
+                    "status": "confirmed",
+                    "confirmed_plan_digest": plan["plan_digest"],
+                    "summary": "The current immutable plan remains confirmed.",
+                },
+                "route": route,
+                "supersedes_gate_ref": None,
+            }
+            review_input_path = (
+                self.root / ".trellis/.runtime/guru-team/tests/finalization-review.json"
+            )
+            gtt.write_json(review_input_path, review_input)
+            runtime_args.review_input = gtt.repo_relative(
+                self.root,
+                review_input_path,
+            )
+            recorded = gtt.cmd_record_finalization_gate(runtime_args)
+            self.assertEqual(
+                recorded["typed_exit"],
+                "published" if execute_remaining else "resume_finalization",
+            )
+            expected_dirty = set(plan["projection"]["evidence_paths"])
+            expected_dirty.update(
+                gtt.finalization_uncommitted_output_paths(self.root, plan)
+            )
+            expected_dirty.add(verification_locator)
+            self.assertEqual(set(gtt.git_status_paths(self.root)), expected_dirty)
+            checked_preview = gtt.cmd_preview_finalization(runtime_args)
+            self.assertEqual(checked_preview["plan_ref"], plan_ref)
+
+            if execute_remaining:
+                owner_path = self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+                owner_sha256 = hashlib.sha256(owner_path.read_bytes()).hexdigest()
+                archived = self.root / plan["task"]["archive_locator"]
+                recorded_ledger: dict[str, object] = {}
+
+                def finish_remaining(
+                    finish_args: argparse.Namespace,
+                ) -> dict[str, object]:
+                    compatibility = finish_args.external_verification
+                    self.assertEqual(
+                        gtt.marketplace_verification_contract_errors(
+                            compatibility
+                        ),
+                        [],
+                    )
+                    self.assertEqual(compatibility["verified_head"], self.head)
+                    self.assertEqual(compatibility["remote_head"], self.head)
+                    evidence = gtt.closeout_passed_marketplace_evidence(
+                        self.root,
+                        owner_path,
+                        compatibility,
+                    )
+                    self.assertEqual(evidence["artifact_sha256"], owner_sha256)
+                    self.assertEqual(evidence["verified_content_head"], self.head)
+                    self.assertEqual(evidence["remote_head"], self.head)
+                    recorded_ledger.update(
+                        gtt.record_marketplace_machine_evidence(
+                            self.ledger,
+                            evidence,
+                        )
+                    )
+                    archived.mkdir(parents=True)
+                    gtt.write_json(
+                        archived / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+                        gtt.read_json(
+                            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT
+                        ),
+                    )
+                    return {
+                        "archived_task_dir": str(archived),
+                        "publish": {
+                            "pr": {
+                                "number": 118,
+                                "url": (
+                                    "https://github.com/example/"
+                                    "guru-extension/pull/118"
+                                ),
+                            }
+                        },
+                    }
+
+                with mock.patch.object(
+                    gtt,
+                    "cmd_finish_work",
+                    side_effect=finish_remaining,
+                ) as finish:
+                    transition = gtt.cmd_execute_finalization_transition(
+                        runtime_args
+                    )
+                finish.assert_called_once()
+                self.assertEqual(transition["typed_exit"], "published")
+                self.assertEqual(transition["output"]["pr_number"], 118)
+                for issue_key in ("primary_issue", "close_issues"):
+                    issues = recorded_ledger[issue_key]
+                    issue_rows = issues if isinstance(issues, list) else [issues]
+                    machine_evidence = next(
+                        item
+                        for item in issue_rows[0]["acceptance_evidence"]
+                        if isinstance(item, dict)
+                        and item.get("type")
+                        == gtt.REMOTE_MARKETPLACE_EVIDENCE_TYPE
+                    )
+                    self.assertEqual(
+                        machine_evidence["artifact_sha256"],
+                        owner_sha256,
+                    )
+                    self.assertEqual(
+                        machine_evidence["verified_content_head"],
+                        self.head,
+                    )
+                    self.assertEqual(machine_evidence["remote_head"], self.head)
+                return {
+                    "owner": owner,
+                    "verification_output": verification_output,
+                    "preview": preview,
+                    "transition": transition,
+                    "recorded_ledger": recorded_ledger,
+                }
+
+            finalizer_package = package_root / gtt.FINALIZE_TASK_SKILL_ID
+            wrapper_args = argparse.Namespace(
+                input=finalization_input_locator,
+                owner_result=None,
+                owner_prerequisites=None,
+                owner_change_request=None,
+                owner_plan=None,
+                source_exit=None,
+                mode=None,
+                repo_root=None,
+                base_branch=None,
+                route=None,
+            )
+
+            def wrapper_prepare(
+                _root: Path,
+                checker_args: argparse.Namespace,
+                _config: dict[str, object],
+                _task_dir: Path,
+                _task_context: dict[str, object],
+            ) -> dict[str, object]:
+                self.assertEqual(
+                    Path(checker_args.finish_summary_index_file).resolve(),
+                    (self.task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT).resolve(),
+                )
+                self.assertEqual(
+                    Path(checker_args.body_file).resolve(),
+                    (self.task_dir / gtt.PR_BODY_ARTIFACT).resolve(),
+                )
+                self.assertEqual(checker_args.repo, plan["git"]["repo"])
+                self.assertEqual(
+                    checker_args.base_branch,
+                    plan["git"]["base_branch"],
+                )
+                self.assertEqual(checker_args.remote, plan["git"]["remote"])
+                self.assertEqual(checker_args.title, plan["publish"]["title"])
+                return prepared
+
+            with (
+                mock.patch.object(
+                    gtt,
+                    "stage0_invocation_identity",
+                    return_value=(gtt.FINALIZE_TASK_SKILL_ID, finalizer_package),
+                ),
+                mock.patch.object(
+                    gtt,
+                    "stage0_repo_root",
+                    return_value=self.root,
+                ),
+                mock.patch.object(
+                    gtt,
+                    "prepare_closeout",
+                    side_effect=wrapper_prepare,
+                ),
+            ):
+                output = gtt.cmd_invoke_stage0_skill(wrapper_args)
+            self.assertEqual(
+                output,
+                {
+                    "exit_id": "resume_finalization",
+                    "task_ref": task_ref,
+                    "plan_ref": plan_ref,
+                },
+            )
+        return {
+            "owner": owner,
+            "verification_output": verification_output,
+            "preview": preview,
+            "wrapper_output": output,
+        }
+
+    def test_real_workflow_verified_recorder_reenters_finalizer_wrapper(self) -> None:
+        result = self.exercise_real_verification_metadata_reentry(
+            marketplace_required=True,
+        )
+        assert result is not None
+        self.assertEqual(result["owner"]["typed_exit"], "verified")
+
+    def test_real_workflow_verified_reentry_executes_remaining_finalization(
+        self,
+    ) -> None:
+        result = self.exercise_real_verification_metadata_reentry(
+            marketplace_required=True,
+            execute_remaining=True,
+        )
+        assert result is not None
+        self.assertEqual(result["owner"]["typed_exit"], "verified")
+        self.assertEqual(result["transition"]["typed_exit"], "published")
+
+    def test_real_standalone_not_required_recorder_reenters_finalizer_wrapper(
+        self,
+    ) -> None:
+        result = self.exercise_real_verification_metadata_reentry(
+            marketplace_required=False,
+        )
+        assert result is not None
+        self.assertEqual(result["owner"]["typed_exit"], "not_required")
+
+    def test_real_verification_reentry_rejects_arbitrary_metadata(self) -> None:
+        self.assertIsNone(
+            self.exercise_real_verification_metadata_reentry(
+                marketplace_required=True,
+                arbitrary_metadata=True,
+            )
+        )
+
+    def test_public_wrapper_does_not_default_initial_preview_sources(self) -> None:
+        wrapper_args = argparse.Namespace(base_branch=None)
+        checker_args = gtt.finalization_public_wrapper_checker_args(
+            self.root,
+            wrapper_args,
+            self.task_dir,
+        )
+        self.assertIsNone(checker_args.finish_summary_index_file)
+        self.assertIsNone(checker_args.body_file)
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "finish-work requires task-local finish-summary-index.json",
+        ):
+            gtt.load_finish_summary_index(
+                self.task_dir,
+                checker_args.finish_summary_index_file,
+            )
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "finish-work requires --body-file",
+        ):
+            gtt.resolve_closeout_reviewed_body(
+                self.root,
+                self.task_dir,
+                checker_args,
+            )
+
+    def test_verification_metadata_path_requires_explicit_owner_binding(self) -> None:
+        verification_path = (
+            f"{gtt.repo_relative(self.root, self.task_dir)}/"
+            f"{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        )
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "finalization metadata path is invalid",
+        ):
+            gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                {},
+                expected_closeout_plan_digest=None,
+                additional_owned_paths=[verification_path],
+                require_plan=False,
+            )
+
+    def test_finalization_eval_context_carries_publication_stale_owner_facts(self) -> None:
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": self.task_dir.relative_to(self.root).as_posix(),
+        }
+        runtime_dir = self.root / ".trellis/.runtime/guru-team/evals"
+        runtime_dir.mkdir(parents=True)
+        gtt.write_json(
+            runtime_dir / "finalization-context.json",
+            {
+                "schema_version": "1.0",
+                "task_ref": public_input["task_ref"],
+                "public_input_sha256": gtt.context_digest(public_input),
+                "plan_ref": f"closeout-plan:{'b' * 64}",
+                "plan_digest": "b" * 64,
+                "reviewed_head": self.head,
+                "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
+                "repo_ref": "owner/repo",
+                "remote": "origin",
+                "head_branch": "main",
+                "publication_ref": "publication:eval-current",
+                "verification_ref": None,
+                "publication_status": "stale",
+                "publication_stale_reason": "publication_review_stale",
+                "marketplace_required": True,
+                "transaction_state": "prepared",
+            },
+        )
+        with mock.patch.dict(os.environ, {"GURU_TEAM_EVAL_STAGING": "1"}):
+            context = gtt.finalization_eval_preview_context(self.root, public_input)
+        self.assertIsNotNone(context)
+        assert context is not None
+        self.assertEqual(context["publication_status"], "stale")
+        self.assertEqual(
+            context["publication_stale_reason"],
+            "publication_review_stale",
+        )
+        with mock.patch.object(
+            gtt,
+            "finalization_output_contract",
+            return_value={"type": "object"},
+        ):
+            gtt.finalization_validate_route(
+                self.root,
+                public_input,
+                context,
+                {
+                    "typed_exit": "publication_review_stale",
+                    "consumer": gtt.FINALIZATION_CONSUMERS[
+                        "publication_review_stale"
+                    ],
+                    "output": {
+                        "exit_id": "publication_review_stale",
+                        "task_ref": public_input["task_ref"],
+                        "stale_reason": "publication_review_stale",
+                    },
+                },
+            )
+
+    def test_published_route_requires_current_verification_before_committed_recovery(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        archive_ref = ".trellis/tasks/archive/2026-07/07-11-closeout"
+        plan_ref = f"closeout-plan:{'b' * 64}"
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+        }
+        marker_route = {
+            "typed_exit": "published",
+            "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+            "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+        }
+
+        def context(
+            state: str,
+            verification: object = None,
+            *,
+            transition_complete: bool = False,
+        ) -> dict[str, object]:
+            return {
+                "transaction_state": state,
+                "published_transition_complete": transition_complete,
+                "publication_status": "current",
+                "publication_stale_reason": None,
+                "plan_ref": plan_ref,
+                "plan": {
+                    "marketplace": {"required": True},
+                    "git": {
+                        "repo": "owner/repo",
+                        "reviewed_work_head": self.head,
+                    },
+                    "task": {
+                        "active_locator": task_ref,
+                        "archive_locator": archive_ref,
+                    },
+                },
+                "verification": verification,
+            }
+
+        checked_evidence = ({}, {"typed_exit": "verified"})
+        not_required_evidence = ({}, {"typed_exit": "not_required"})
+        pre_archive_states = [
+            "prepared",
+            "content_pushed",
+            "evidence_ready",
+            "evidence_pushed",
+            "draft_bound",
+            "projection_validated",
+            "archive_moved",
+            "reprepare_required",
+        ]
+        for state in pre_archive_states:
+            with self.subTest(state=state), self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_validate_route(
+                    self.root,
+                    public_input,
+                    context(state),
+                    marker_route,
+                )
+        for evidence in [checked_evidence, not_required_evidence]:
+            with self.subTest(evidence=evidence[1]["typed_exit"]):
+                gtt.finalization_validate_route(
+                    self.root,
+                    public_input,
+                    context("evidence_pushed", evidence),
+                    marker_route,
+                    allow_pending_transition=True,
+                )
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.finalization_validate_route(
+                self.root,
+                public_input,
+                context("archived"),
+                marker_route,
+            )
+        gtt.finalization_validate_route(
+            self.root,
+            public_input,
+            context("ready", transition_complete=True),
+            marker_route,
+        )
+
+        early_public_route = {
+            **marker_route,
+            "output": {
+                "exit_id": "published",
+                "task_ref": task_ref,
+                "pr_number": 118,
+                "pr_url": "https://github.com/owner/repo/pull/118",
+            },
+        }
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "persisted published route",
+        ):
+            gtt.finalization_validate_route(
+                self.root,
+                public_input,
+                context("evidence_pushed", checked_evidence),
+                early_public_route,
+                allow_pending_transition=True,
+            )
+
+    def test_finalization_route_validates_empty_and_malformed_selected_exit_output(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_ref = f"closeout-plan:{'b' * 64}"
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": task_ref,
+        }
+        context = {
+            "transaction_state": "draft_bound",
+            "published_transition_complete": False,
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "plan_ref": plan_ref,
+            "plan": {
+                "marketplace": {"required": True},
+                "git": {"reviewed_work_head": self.head},
+            },
+            "verification": None,
+        }
+        resume_schema = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["exit_id", "task_ref", "plan_ref"],
+            "properties": {
+                "exit_id": {"const": "resume_finalization"},
+                "task_ref": {"type": "string", "minLength": 1},
+                "plan_ref": {"type": "string", "minLength": 1},
+            },
+        }
+        invalid_outputs = [
+            {},
+            {"exit_id": "resume_finalization", "task_ref": task_ref},
+            {
+                "exit_id": "resume_finalization",
+                "task_ref": task_ref,
+                "plan_ref": plan_ref,
+                "extra": "not-closed",
+            },
+            {
+                "exit_id": "blocked",
+                "task_ref": task_ref,
+                "plan_ref": plan_ref,
+            },
+        ]
+        with mock.patch.object(
+            gtt,
+            "finalization_output_contract",
+            return_value=resume_schema,
+        ):
+            for output in invalid_outputs:
+                with self.subTest(output=output), self.assertRaises(gtt.WorkflowError):
+                    gtt.finalization_validate_route(
+                        self.root,
+                        public_input,
+                        context,
+                        {
+                            "typed_exit": "resume_finalization",
+                            "consumer": gtt.FINALIZATION_CONSUMERS[
+                                "resume_finalization"
+                            ],
+                            "output": output,
+                        },
+                    )
+
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.finalization_validate_route(
+                self.root,
+                public_input,
+                {**context, "transaction_state": "prepared"},
+                {
+                    "typed_exit": "verification_required",
+                    "consumer": gtt.FINALIZATION_CONSUMERS[
+                        "verification_required"
+                    ],
+                    "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+                },
+            )
+
+    def test_published_executor_marker_is_private_and_materialized_to_public_dto(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_ref = f"closeout-plan:{'b' * 64}"
+        public_input = {
+            "profile": "verification_verified",
+            "mode": "workflow",
+            "task_ref": task_ref,
+        }
+        context = {
+            "transaction_state": "evidence_pushed",
+            "published_transition_complete": False,
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "plan_ref": plan_ref,
+            "plan": {
+                "marketplace": {"required": True},
+                "git": {
+                    "repo": "owner/repo",
+                    "reviewed_work_head": self.head,
+                },
+                "task": {
+                    "active_locator": task_ref,
+                    "archive_locator": (
+                        ".trellis/tasks/archive/2026-07/07-11-closeout"
+                    ),
+                },
+            },
+            "verification": ({}, {"typed_exit": "verified"}),
+        }
+        route = {
+            "typed_exit": "published",
+            "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+            "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+        }
+        with mock.patch.object(
+            gtt,
+            "finalization_output_contract",
+            side_effect=AssertionError("pre-materialization must not validate a public DTO"),
+        ):
+            gtt.finalization_validate_route(
+                self.root,
+                public_input,
+                context,
+                route,
+                allow_pending_transition=True,
+            )
+
+        published_schema = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["exit_id", "task_ref", "pr_number", "pr_url"],
+            "properties": {
+                "exit_id": {"const": "published"},
+                "task_ref": {"type": "string", "minLength": 1},
+                "pr_number": {"type": "integer", "minimum": 1},
+                "pr_url": {"type": "string", "minLength": 1},
+            },
+        }
+        gate = {"route": route}
+        archive_ref = ".trellis/tasks/archive/2026-07/07-11-closeout"
+        archive_dir = self.root / archive_ref
+        archive_dir.mkdir(parents=True)
+        plan = {
+            "git": {"repo": "owner/repo"},
+            "task": {"archive_locator": archive_ref},
+        }
+        with mock.patch.object(
+            gtt,
+            "finalization_output_contract",
+            return_value=published_schema,
+        ):
+            materialized = gtt.finalization_gate_with_published_output(
+                self.root,
+                archive_dir,
+                gate,
+                plan,
+                {
+                    "number": 118,
+                    "url": "https://github.com/owner/repo/pull/118",
+                },
+            )
+        self.assertEqual(
+            materialized["route"]["output"],
+            {
+                "exit_id": "published",
+                "task_ref": archive_ref,
+                "pr_number": 118,
+                "pr_url": "https://github.com/owner/repo/pull/118",
+            },
+        )
+
+    def test_public_wrapper_materializes_only_terminal_published_marker(self) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        archive_ref = ".trellis/tasks/archive/2026-07/07-11-closeout"
+        archive_dir = self.root / archive_ref
+        archive_dir.mkdir(parents=True)
+        plan_ref = f"closeout-plan:{'b' * 64}"
+        public_input = {
+            "profile": "verification_verified",
+            "mode": "workflow",
+            "task_ref": task_ref,
+        }
+        plan = {
+            "marketplace": {"required": True},
+            "git": {
+                "repo": "owner/repo",
+                "remote": "origin",
+                "head_branch": "main",
+                "reviewed_work_head": self.head,
+            },
+            "task": {
+                "active_locator": task_ref,
+                "archive_locator": archive_ref,
+            },
+        }
+        gate = {
+            "route": {
+                "typed_exit": "published",
+                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            }
+        }
+        published_schema = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["exit_id", "task_ref", "pr_number", "pr_url"],
+            "properties": {
+                "exit_id": {"const": "published"},
+                "task_ref": {"type": "string", "minLength": 1},
+                "pr_number": {"type": "integer", "minimum": 1},
+                "pr_url": {"type": "string", "minLength": 1},
+            },
+        }
+        pr = {
+            "number": 118,
+            "url": "https://github.com/owner/repo/pull/118",
+        }
+        executor = mock.Mock(
+            side_effect=AssertionError("public wrapper must not execute transitions")
+        )
+
+        def invoke(context: dict[str, object]) -> dict[str, object]:
+            with (
+                mock.patch.object(
+                    gtt,
+                    "stage0_invocation_identity",
+                    return_value=(gtt.FINALIZE_TASK_SKILL_ID, self.root),
+                ),
+                mock.patch.object(gtt, "stage0_public_interface", return_value={}),
+                mock.patch.object(gtt, "stage0_repo_root", return_value=self.root),
+                mock.patch.object(
+                    gtt,
+                    "stage0_structured_input",
+                    return_value=public_input,
+                ),
+                mock.patch.object(
+                    gtt,
+                    "finalization_gate_input",
+                    return_value=(gate, archive_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT),
+                ),
+                mock.patch.object(
+                    gtt,
+                    "check_finalization_gate_result",
+                    return_value=(gate, context),
+                ),
+                mock.patch.object(
+                    gtt,
+                    "stage0_output_contract",
+                    return_value=(published_schema, {}),
+                ),
+                mock.patch.object(
+                    gtt,
+                    "finalization_output_contract",
+                    return_value=published_schema,
+                ),
+                mock.patch.object(
+                    gtt,
+                    "cmd_execute_finalization_transition",
+                    executor,
+                ),
+            ):
+                return gtt.cmd_invoke_stage0_skill(
+                    argparse.Namespace(input="unused.json", owner_result=None)
+                )
+
+        early_context = {
+            "task_dir": self.task_dir,
+            "transaction_state": "evidence_pushed",
+            "published_transition_complete": False,
+            "published_pr": None,
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "plan_ref": plan_ref,
+            "plan": plan,
+            "verification": ({}, {"typed_exit": "verified"}),
+        }
+        with self.assertRaises(gtt.WorkflowError):
+            invoke(early_context)
+
+        terminal_context = {
+            **early_context,
+            "task_dir": archive_dir,
+            "transaction_state": "ready",
+            "published_transition_complete": True,
+            "published_pr": pr,
+        }
+        self.assertEqual(
+            invoke(terminal_context),
+            {
+                "exit_id": "published",
+                "task_ref": archive_ref,
+                "pr_number": 118,
+                "pr_url": pr["url"],
+            },
+        )
+        executor.assert_not_called()
+
+    def test_verification_required_binds_repo_to_immutable_plan(self) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_ref = f"closeout-plan:{'b' * 64}"
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+        }
+        context = {
+            "transaction_state": "prepared",
+            "published_transition_complete": False,
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "plan_ref": plan_ref,
+            "plan": {
+                "marketplace": {"required": True},
+                "git": {
+                    "repo": "owner/repo",
+                    "reviewed_work_head": self.head,
+                },
+            },
+            "verification": None,
+        }
+        route = {
+            "typed_exit": "verification_required",
+            "consumer": gtt.FINALIZATION_CONSUMERS["verification_required"],
+            "output": {
+                "exit_id": "verification_required",
+                "task_ref": task_ref,
+                "plan_ref": plan_ref,
+                "repo_ref": "other/repo",
+                "reviewed_head": self.head,
+                "verification_target": "extension-installation",
+            },
+        }
+        with mock.patch.object(
+            gtt,
+            "finalization_output_contract",
+            return_value={"type": "object"},
+        ):
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_validate_route(
+                    self.root,
+                    public_input,
+                    context,
+                    route,
+                    allow_pending_transition=True,
+                )
+            route["output"]["repo_ref"] = "owner/repo"
+            gtt.finalization_validate_route(
+                self.root,
+                public_input,
+                context,
+                route,
+                allow_pending_transition=True,
+            )
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_validate_route(
+                    self.root,
+                    public_input,
+                    context,
+                    route,
+                )
+
+    def test_resume_finalization_accepts_only_legal_same_plan_recovery_states(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_ref = f"closeout-plan:{'b' * 64}"
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": task_ref,
+        }
+        route = {
+            "typed_exit": "resume_finalization",
+            "consumer": gtt.FINALIZATION_CONSUMERS["resume_finalization"],
+            "output": {
+                "exit_id": "resume_finalization",
+                "task_ref": task_ref,
+                "plan_ref": plan_ref,
+            },
+        }
+
+        def context(state: str, verification: object = None) -> dict[str, object]:
+            return {
+                "transaction_state": state,
+                "published_transition_complete": False,
+                "publication_status": "current",
+                "publication_stale_reason": None,
+                "plan_ref": plan_ref,
+                "plan": {
+                    "marketplace": {"required": True},
+                    "git": {
+                        "repo": "owner/repo",
+                        "reviewed_work_head": self.head,
+                    },
+                },
+                "verification": verification,
+            }
+
+        with mock.patch.object(
+            gtt,
+            "finalization_output_contract",
+            return_value={"type": "object"},
+        ):
+            for state in sorted(gtt.FINALIZATION_RESUME_RECOVERY_STATES):
+                verification = (
+                    ({}, {"typed_exit": "verified"})
+                    if state == "content_pushed"
+                    else None
+                )
+                with self.subTest(legal_state=state):
+                    gtt.finalization_validate_route(
+                        self.root,
+                        public_input,
+                        context(state, verification),
+                        route,
+                    )
+            for state in ["prepared", "reprepare_required", "ready"]:
+                with self.subTest(illegal_state=state), self.assertRaises(
+                    gtt.WorkflowError
+                ):
+                    gtt.finalization_validate_route(
+                        self.root,
+                        public_input,
+                        context(state),
+                        route,
+                    )
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_validate_route(
+                    self.root,
+                    public_input,
+                    context("content_pushed"),
+                    route,
+                )
+
+    def test_finalization_task_locator_allows_only_plan_bound_archive_projection(
+        self,
+    ) -> None:
+        active_ref = self.task_dir.relative_to(self.root).as_posix()
+        archive_ref = ".trellis/tasks/archive/2026-07/07-11-closeout"
+        archive_dir = self.root / archive_ref
+        archive_dir.mkdir(parents=True)
+        plan = {
+            "task": {
+                "active_locator": active_ref,
+                "archive_locator": archive_ref,
+            }
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "resolve_finish_work_task_dir",
+                return_value=archive_dir,
+            ),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=True),
+            mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_plan",
+                return_value=plan,
+            ),
+        ):
+            self.assertEqual(
+                gtt.finalization_task_dir(self.root, {"task_ref": active_ref}),
+                archive_dir,
+            )
+            self.assertEqual(
+                gtt.finalization_task_dir(self.root, {"task_ref": archive_ref}),
+                archive_dir,
+            )
+            with mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_plan",
+                return_value={
+                    "task": {
+                        "active_locator": ".trellis/tasks/other",
+                        "archive_locator": archive_ref,
+                    }
+                },
+            ), self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_task_dir(self.root, {"task_ref": active_ref})
+            with mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_plan",
+                return_value={
+                    "task": {
+                        "active_locator": active_ref,
+                        "archive_locator": ".trellis/tasks/archive/2026-07/other",
+                    }
+                },
+            ), self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_task_dir(self.root, {"task_ref": active_ref})
+
+    def test_finalization_verification_augmentation_is_exactly_plan_bound(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        reviewed_head = self.head
+        evidence_head = "c" * 40
+        plan = {
+            "plan_digest": "b" * 64,
+            "task": {
+                "active_locator": task_ref,
+                "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
+            },
+            "git": {
+                "repo": "owner/repo",
+                "reviewed_work_head": reviewed_head,
+            },
+            "marketplace": {"required": False},
+            "projection": {
+                "evidence_paths": [
+                    f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+                ],
+                "untracked_archive_outputs": [],
+            },
+        }
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+        locator = f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        payload = {
+            "public_input": {
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "plan_ref": plan_ref,
+                "repo_ref": "owner/repo",
+                "reviewed_head": reviewed_head,
+            },
+            "typed_exit": "verified",
+            "mode": "workflow",
+            "identity": {"verification_ref": "extension-verification:current"},
+            "repository": {
+                "remote": "origin",
+                "ref": "refs/heads/feature/118",
+                "remote_head": reviewed_head,
+            },
+        }
+        remote = mock.Mock(
+            returncode=0,
+            stdout=f"{reviewed_head}\trefs/heads/feature/118\n",
+            stderr="",
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "extension_verification_payload_errors",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "run", return_value=remote),
+            mock.patch.object(gtt, "current_head", return_value=reviewed_head),
+            mock.patch.object(gtt, "git_status_paths", return_value=[locator]),
+        ):
+            checked = gtt.check_extension_verification_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                locator,
+                plan=plan,
+                task_ref=task_ref,
+                plan_ref=plan_ref,
+                reviewed_head=reviewed_head,
+            )
+            self.assertEqual(checked["typed_exit"], "verified")
+
+            with mock.patch.object(
+                gtt,
+                "git_status_paths",
+                return_value=[locator, "unexpected-debug-note.md"],
+            ), self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_finalization_augmentation(
+                    self.root,
+                    self.task_dir,
+                    payload,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    reviewed_head=reviewed_head,
+                )
+
+            wrong_repo = copy.deepcopy(payload)
+            wrong_repo["public_input"]["repo_ref"] = "other/repo"
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_finalization_augmentation(
+                    self.root,
+                    self.task_dir,
+                    wrong_repo,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    reviewed_head=reviewed_head,
+                )
+
+        validate_evidence = mock.Mock()
+        with (
+            mock.patch.object(
+                gtt,
+                "extension_verification_payload_errors",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "run", return_value=remote),
+            mock.patch.object(gtt, "current_head", return_value=evidence_head),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "validate_closeout_evidence_commit",
+                validate_evidence,
+            ),
+        ):
+            gtt.check_extension_verification_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                locator,
+                plan=plan,
+                task_ref=task_ref,
+                plan_ref=plan_ref,
+                reviewed_head=reviewed_head,
+            )
+        validate_evidence.assert_called_once_with(self.root, plan, evidence_head)
+
+        archive_dir = self.root / plan["task"]["archive_locator"]
+        archive_dir.mkdir(parents=True)
+        archive_head = "e" * 40
+        archive_locator = (
+            f"{plan['task']['archive_locator']}/"
+            f"{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "extension_verification_payload_errors",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=True),
+            mock.patch.object(gtt, "run", return_value=remote),
+            mock.patch.object(gtt, "current_head", return_value=archive_head),
+            mock.patch.object(
+                gtt,
+                "resolve_committed_closeout_archive_transaction",
+                return_value={"commit": archive_head},
+            ),
+        ):
+            gtt.check_extension_verification_for_finalization_augmentation(
+                self.root,
+                archive_dir,
+                payload,
+                archive_locator,
+                plan=plan,
+                task_ref=task_ref,
+                plan_ref=plan_ref,
+                reviewed_head=reviewed_head,
+            )
+        with (
+            mock.patch.object(
+                gtt,
+                "extension_verification_payload_errors",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=True),
+            mock.patch.object(gtt, "run", return_value=remote),
+            mock.patch.object(gtt, "current_head", return_value=archive_head),
+            mock.patch.object(
+                gtt,
+                "resolve_committed_closeout_archive_transaction",
+                return_value={"commit": "f" * 40},
+            ),
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.check_extension_verification_for_finalization_augmentation(
+                self.root,
+                archive_dir,
+                payload,
+                archive_locator,
+                plan=plan,
+                task_ref=task_ref,
+                plan_ref=plan_ref,
+                reviewed_head=reviewed_head,
+            )
+
+    def test_standalone_not_required_augmentation_accepts_only_private_plan_binding(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        locator = f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        plan = {
+            "plan_digest": "b" * 64,
+            "task": {
+                "active_locator": task_ref,
+                "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
+            },
+            "git": {
+                "repo": "owner/repo",
+                "remote": "origin",
+                "head_branch": "main",
+                "reviewed_work_head": self.head,
+            },
+            "marketplace": {"required": False},
+            "projection": {
+                "evidence_paths": [locator],
+                "untracked_archive_outputs": [],
+            },
+        }
+        payload = {
+            "public_input": {
+                "profile": "standalone_verification",
+                "mode": "standalone",
+                "task_ref": task_ref,
+                "repo_ref": "owner/repo",
+            },
+            "typed_exit": "not_required",
+            "mode": "standalone",
+            "profile": "standalone_verification",
+            "identity": {"verification_ref": "extension-verification:current"},
+            "repository": {
+                "repo_ref": "owner/repo",
+                "remote": "origin",
+                "ref": "refs/heads/main",
+                "reviewed_head": None,
+                "remote_head": self.head,
+            },
+        }
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+        live_remote = mock.Mock(
+            returncode=0,
+            stdout=f"{self.head}\trefs/heads/main\n",
+            stderr="",
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "extension_verification_payload_errors",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "git_status_paths", return_value=[locator]),
+            mock.patch.object(gtt, "run", return_value=live_remote) as run_remote,
+        ):
+            checked = gtt.check_extension_verification_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                locator,
+                plan=plan,
+                task_ref=task_ref,
+                plan_ref=plan_ref,
+                reviewed_head=self.head,
+            )
+            self.assertEqual(checked["typed_exit"], "not_required")
+            run_remote.assert_called_with(
+                [
+                    "git",
+                    "ls-remote",
+                    "origin",
+                    "refs/heads/main",
+                    "refs/heads/main^{}",
+                ],
+                cwd=self.root,
+                check=False,
+            )
+
+            stale = copy.deepcopy(payload)
+            stale["repository"]["remote_head"] = "f" * 40
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_finalization_augmentation(
+                    self.root,
+                    self.task_dir,
+                    stale,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    reviewed_head=self.head,
+                )
+
+            wrong_remote = copy.deepcopy(payload)
+            wrong_remote["repository"]["remote"] = "secondary"
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_finalization_augmentation(
+                    self.root,
+                    self.task_dir,
+                    wrong_remote,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    reviewed_head=self.head,
+                )
+
+            wrong_ref = copy.deepcopy(payload)
+            wrong_ref["repository"]["ref"] = "refs/heads/other"
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_finalization_augmentation(
+                    self.root,
+                    self.task_dir,
+                    wrong_ref,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    reviewed_head=self.head,
+                )
+
+    def test_standalone_not_required_owner_binds_task_plan_head_and_ref(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan = {
+            "plan_digest": "b" * 64,
+            "task": {
+                "active_locator": task_ref,
+                "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
+            },
+            "git": {
+                "repo": "owner/repo",
+                "remote": "origin",
+                "head_branch": "main",
+                "reviewed_work_head": self.head,
+            },
+            "marketplace": {"required": False},
+        }
+        verification_ref = "extension-verification:current"
+        payload = {
+            "mode": "standalone",
+            "profile": "standalone_verification",
+            "typed_exit": "not_required",
+            "public_input": {
+                "profile": "standalone_verification",
+                "mode": "standalone",
+                "task_ref": task_ref,
+                "repo_ref": "owner/repo",
+            },
+            "repository": {
+                "repo_ref": "owner/repo",
+                "remote": "origin",
+                "ref": "refs/heads/main",
+                "remote_head": self.head,
+            },
+            "identity": {"verification_ref": verification_ref},
+        }
+        checked = {
+            "typed_exit": "not_required",
+            "mode": "standalone",
+            "verification_ref": verification_ref,
+        }
+        self.assertTrue(
+            gtt.finalization_standalone_not_required_owner_is_current(
+                payload,
+                checked,
+                plan,
+                task_ref=task_ref,
+            )
+        )
+
+        public_input = {
+            "profile": "standalone_verification_not_required",
+            "mode": "standalone",
+            "task_ref": task_ref,
+            "repo_ref": "owner/repo",
+            "resolved_head": self.head,
+            "verification_ref": verification_ref,
+        }
+        locator = f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_payload",
+                return_value=(payload, locator),
+            ),
+            mock.patch.object(
+                gtt,
+                "check_extension_verification_result",
+                return_value=checked,
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_plan",
+                return_value=plan,
+            ),
+        ):
+            result = gtt.finalization_verification_owner_result(
+                self.root,
+                self.task_dir,
+                public_input,
+            )
+            self.assertEqual(result, (payload, checked))
+            current = gtt.finalization_current_verification_owner_result(
+                self.root,
+                self.task_dir,
+                task_ref=task_ref,
+                plan_ref=f"closeout-plan:{plan['plan_digest']}",
+                reviewed_head=self.head,
+                plan=plan,
+            )
+            self.assertEqual(current, (payload, checked))
+
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_verification_owner_result(
+                    self.root,
+                    self.task_dir,
+                    {**public_input, "resolved_head": "c" * 40},
+                )
+
+        stale = copy.deepcopy(payload)
+        stale["repository"]["remote_head"] = "c" * 40
+        self.assertFalse(
+            gtt.finalization_standalone_not_required_owner_is_current(
+                stale,
+                checked,
+                plan,
+                task_ref=task_ref,
+            )
+        )
+
+        wrong_remote = copy.deepcopy(payload)
+        wrong_remote["repository"]["remote"] = "secondary"
+        self.assertFalse(
+            gtt.finalization_standalone_not_required_owner_is_current(
+                wrong_remote,
+                checked,
+                plan,
+                task_ref=task_ref,
+            )
+        )
+
+        wrong_ref = copy.deepcopy(payload)
+        wrong_ref["repository"]["ref"] = "refs/heads/other"
+        self.assertFalse(
+            gtt.finalization_standalone_not_required_owner_is_current(
+                wrong_ref,
+                checked,
+                plan,
+                task_ref=task_ref,
+            )
+        )
+
+    def test_archived_finalization_recovery_reads_committed_plan_and_evidence(
+        self,
+    ) -> None:
+        archive_ref = ".trellis/tasks/archive/2026-07/07-11-closeout"
+        archive_dir = self.root / archive_ref
+        archive_dir.mkdir(parents=True)
+        gtt.write_json(archive_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, {"working": True})
+        gtt.write_json(
+            archive_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            {"working": True},
+        )
+        committed_plan = {"committed": "plan"}
+        committed_evidence = {"committed": "evidence"}
+        head = "d" * 40
+
+        def committed_blob(_root: Path, commit: str, locator: str) -> bytes | None:
+            self.assertEqual(commit, head)
+            if locator.endswith(gtt.CLOSEOUT_PLAN_ARTIFACT):
+                return json.dumps(committed_plan).encode("utf-8")
+            if locator.endswith(gtt.MARKETPLACE_VERIFICATION_ARTIFACT):
+                return json.dumps(committed_evidence).encode("utf-8")
+            return None
+
+        with (
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=True),
+            mock.patch.object(gtt, "current_head", return_value=head),
+            mock.patch.object(
+                gtt,
+                "closeout_optional_commit_blob_bytes",
+                side_effect=committed_blob,
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_closeout_plan",
+                side_effect=lambda value: value,
+            ),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(
+                gtt,
+                "marketplace_verification_path",
+                return_value=archive_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            ),
+        ):
+            self.assertEqual(
+                gtt.finalization_verification_augmentation_plan(
+                    self.root,
+                    archive_dir,
+                ),
+                committed_plan,
+            )
+            payload, locator = gtt.finalization_verification_augmentation_payload(
+                self.root,
+                archive_dir,
+            )
+        self.assertEqual(payload, committed_evidence)
+        self.assertEqual(
+            locator,
+            f"{archive_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}",
+        )
 
     def install_official_config_parser(self) -> Path:
         source = Path(__file__).resolve().parents[5] / ".trellis/scripts/common"
@@ -17326,7 +19552,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         ]
         for path in continue_surfaces:
             text = path.read_text(encoding="utf-8")
-            self.assertIn("explicit finish entry owns publication and archive behavior", text)
+            self.assertIn("explicit finalization entry", text)
+            self.assertIn("never stages", text)
             self.assertNotIn("finish-work.sh --json --from-trellis-finish-work", text)
             for phrase in required:
                 self.assertNotIn(phrase, text)
@@ -17433,6 +19660,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             archived = self.root / plan["task"]["archive_locator"]
             archived.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(self.task_dir), str(archived))
+            gtt.compact_closeout_archive(archived, plan)
             gtt.validate_closeout_archive_move_layout(self.root, archived, plan)
         archived_ledger = gtt.read_json(archived / "issue-scope-ledger.json")
         archived_evidence = gtt.remote_marketplace_evidence(archived_ledger["primary_issue"])
@@ -17440,6 +19668,62 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(
             archived_evidence["artifact_sha256"],
             gtt.hashlib.sha256((archived / gtt.MARKETPLACE_VERIFICATION_ARTIFACT).read_bytes()).hexdigest(),
+        )
+
+    def test_legacy_closeout_plan_keeps_original_archive_semantics(self) -> None:
+        archived = self.root / ".trellis/tasks/archive/2026-07/legacy"
+        archived.mkdir(parents=True)
+        for name in ("task.json", "review-gate.json"):
+            (archived / name).write_text("legacy\n", encoding="utf-8")
+        plan = {
+            "schema_version": gtt.CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION,
+            "projection": {"move_paths": ["review-gate.json", "task.json"]},
+        }
+        gtt.compact_closeout_archive(archived, plan)
+        self.assertEqual(
+            sorted(path.name for path in archived.iterdir()),
+            ["review-gate.json", "task.json"],
+        )
+
+    def test_schema_1_1_prunes_inapplicable_marketplace_artifact(self) -> None:
+        stale = self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+        gtt.write_json(stale, {"status": "stale"})
+        gate = copy.deepcopy(self.gate)
+        gate["changed_files"] = ["README.md"]
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
+            return mock.Mock(returncode=0, stdout=stdout, stderr="")
+
+        with mock.patch.object(gtt, "run", side_effect=fake_run):
+            plan = gtt.build_closeout_plan(
+                self.root,
+                self.task_dir,
+                self.context,
+                self.task,
+                self.task_dir / "review-gate.json",
+                gate,
+                self.ledger,
+                self.task_dir / "finish-summary-index.json",
+                repo="owner/repo",
+                remote="origin",
+                base_branch="main",
+                head_branch="fix/105-closeout",
+                reviewed_head=self.head,
+                title="#105 重构 finish-work 收尾事务",
+            )
+        self.assertFalse(plan["marketplace"]["required"])
+        self.assertIn(
+            gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            plan["projection"]["move_paths"],
+        )
+        self.assertNotIn(
+            gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            gtt.closeout_archive_retained_paths(plan),
+        )
+        self.assertNotIn(
+            f"{plan['task']['archive_locator']}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}",
+            plan["projection"]["metadata_allowlist"],
         )
 
     def test_archive_recovery_rejects_partial_move_subset_and_evidence_lineage(self) -> None:
@@ -17707,6 +19991,391 @@ shutil.move(str(active), str(archived))
             run_stdout.mock_calls,
         )
 
+    def test_finalizer_evidence_commit_stages_exact_paths_without_private_gate(self) -> None:
+        plan = self.build_plan(include_finalization_gate=True)
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, {"ready": True})
+        gtt.write_json(self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT, {"status": "passed"})
+        gate_path = self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT
+        gtt.write_json(gate_path, {"schema_version": "test-private-gate"})
+        expected = set(plan["projection"]["evidence_paths"])
+        gate_locator = gtt.repo_relative(self.root, gate_path)
+        self.assertIn(
+            gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            plan["projection"]["untracked_archive_outputs"],
+        )
+        dirty = expected | {gate_locator}
+
+        def fake_stdout(command: list[str], **_kwargs: object) -> str:
+            if command[:4] == ["git", "diff", "--cached", "--name-only"]:
+                return "\n".join(sorted(expected))
+            if command[:3] == ["git", "rev-parse", "HEAD"]:
+                return self.head
+            return ""
+
+        with (
+            mock.patch.object(gtt, "git_status_paths", return_value=sorted(dirty)),
+            mock.patch.object(gtt, "run_stdout", side_effect=fake_stdout) as run_stdout,
+            mock.patch.object(gtt, "validate_closeout_evidence_commit"),
+        ):
+            result = gtt.commit_closeout_evidence_metadata(
+                self.root,
+                self.task_dir,
+                plan,
+                finalizer_mode=True,
+            )
+        self.assertEqual(result["paths"], sorted(expected))
+        self.assertIn(
+            mock.call(["git", "add", "--", *sorted(expected)], cwd=self.root),
+            run_stdout.mock_calls,
+        )
+        self.assertNotIn(
+            mock.call(["git", "add", "-A", "--", plan["task"]["active_locator"]], cwd=self.root),
+            run_stdout.mock_calls,
+        )
+
+    def test_same_month_legacy_partial_finalizer_takeover_runs_recorder_checker_and_transition(
+        self,
+    ) -> None:
+        legacy_plan, ledger, dirty_paths = self.write_legacy_partial_closeout()
+        legacy_plan_path = self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT
+        legacy_plan_bytes = legacy_plan_path.read_bytes()
+
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        public_input = {
+            "profile": "standalone_finalization",
+            "mode": "standalone",
+            "task_ref": task_ref,
+        }
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+
+        def enter_command_runtime(
+            stack: contextlib.ExitStack,
+            current_dirty_paths: list[str],
+        ) -> argparse.Namespace:
+            runtime_args, patchers = self.finalizer_takeover_runtime(
+                ledger,
+                current_dirty_paths,
+            )
+            for patcher in patchers:
+                stack.enter_context(patcher)
+            stack.enter_context(mock.patch.object(gtt, "repo_root", return_value=self.root))
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_public_input",
+                    return_value=(public_input, "<test>"),
+                )
+            )
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_publication_owner_result",
+                    return_value={
+                        "owner_status": "current",
+                        "publication_ref": "publication:test-current",
+                    },
+                )
+            )
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_verification_owner_result",
+                    return_value=None,
+                )
+            )
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_current_verification_owner_result",
+                    return_value=None,
+                )
+            )
+            stack.enter_context(mock.patch.object(gtt, "load_config", return_value={}))
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "load_task_start_context",
+                    return_value=self.context,
+                )
+            )
+            stack.enter_context(mock.patch.object(gtt, "assert_workspace_boundary"))
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_package_root",
+                    return_value=package_root,
+                )
+            )
+            runtime_args.input = "unused-public-input.json"
+            return runtime_args
+
+        with contextlib.ExitStack() as stack:
+            preview_args = enter_command_runtime(stack, dirty_paths)
+            preview_result = gtt.cmd_preview_finalization(preview_args)
+            preview_context = gtt.finalization_preview_context(
+                self.root,
+                preview_args,
+                public_input,
+            )
+        preview = preview_context["prepared"]
+        assert isinstance(preview, dict)
+        self.assertEqual(
+            preview_result["closeout_plan_digest"],
+            preview["plan"]["plan_digest"],
+        )
+        takeover = preview["finalizer_takeover"]
+        self.assertIsNotNone(takeover)
+        assert isinstance(takeover, dict)
+        augmented_plan = preview["plan"]
+        self.assertNotEqual(
+            legacy_plan["plan_digest"],
+            augmented_plan["plan_digest"],
+        )
+        self.assertEqual(
+            takeover["previous_plan_digest"],
+            legacy_plan["plan_digest"],
+        )
+        self.assertEqual(
+            takeover["current_plan_digest"],
+            augmented_plan["plan_digest"],
+        )
+        self.assertEqual(legacy_plan_path.read_bytes(), legacy_plan_bytes)
+
+        route = {
+            "typed_exit": "verification_required",
+            "consumer": gtt.FINALIZATION_CONSUMERS["verification_required"],
+            "output": {
+                "exit_id": "verification_required",
+                "task_ref": task_ref,
+                "plan_ref": f"closeout-plan:{augmented_plan['plan_digest']}",
+                "repo_ref": augmented_plan["git"]["repo"],
+                "reviewed_head": augmented_plan["git"]["reviewed_work_head"],
+                "verification_target": "extension-installation",
+            },
+        }
+        reviewed = {
+            "review": {
+                "status": "passed",
+                "summary": "The exact augmented takeover plan is current.",
+                "evidence_refs": [
+                    f"closeout-plan:{augmented_plan['plan_digest']}",
+                    "publication:test-current",
+                ],
+            },
+            "confirmation": {
+                "status": "confirmed",
+                "confirmed_plan_digest": augmented_plan["plan_digest"],
+                "summary": "The augmented candidate digest was confirmed exactly.",
+            },
+            "route": route,
+            "supersedes_gate_ref": None,
+        }
+        with contextlib.ExitStack() as stack:
+            recorder_args = enter_command_runtime(stack, dirty_paths)
+            recorder_args.review_input = "unused-review-input.json"
+            recorder_args.dry_run = False
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalization_semantic_review_input",
+                    return_value=reviewed,
+                )
+            )
+            recorded = gtt.cmd_record_finalization_gate(recorder_args)
+        self.assertEqual(recorded["plan_digest"], augmented_plan["plan_digest"])
+        self.assertEqual(legacy_plan_path.read_bytes(), legacy_plan_bytes)
+
+        gate_path = self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT
+        gate = gtt.read_json(gate_path)
+        dirty_with_gate = sorted(
+            {*dirty_paths, gtt.repo_relative(self.root, gate_path)}
+        )
+        with contextlib.ExitStack() as stack:
+            checker_args = enter_command_runtime(stack, dirty_with_gate)
+            checker_args.gate = None
+            checked_result = gtt.cmd_check_finalization_gate(checker_args)
+            checked_context = gtt.finalization_preview_context(
+                self.root,
+                checker_args,
+                public_input,
+            )
+            execute_args = copy.copy(checker_args)
+            executed = gtt.cmd_execute_finalization_transition(execute_args)
+        rebuilt = checked_context["prepared"]
+        assert isinstance(rebuilt, dict)
+        self.assertEqual(rebuilt["plan"], augmented_plan)
+        self.assertEqual(
+            rebuilt["finalizer_takeover"]["previous_plan_digest"],
+            legacy_plan["plan_digest"],
+        )
+        self.assertEqual(
+            checked_result["plan_digest"],
+            augmented_plan["plan_digest"],
+        )
+        self.assertEqual(checked_context["plan"], augmented_plan)
+        self.assertEqual(executed["stage"], "content_pushed")
+        self.assertEqual(executed["typed_exit"], "verification_required")
+        self.assertEqual(legacy_plan_path.read_bytes(), legacy_plan_bytes)
+        gate = gtt.read_json(gate_path)
+
+        def replacement_readiness(
+            _root: Path,
+            _task_dir: Path,
+            **kwargs: object,
+        ) -> tuple[Path, dict[str, object]]:
+            self.assertTrue(kwargs["allow_closeout_digest_replacement"])
+            self.assertEqual(
+                kwargs["closeout_plan_digest"],
+                augmented_plan["plan_digest"],
+            )
+            readiness_path = self.task_dir / gtt.PR_READINESS_ARTIFACT
+            readiness = gtt.read_json(readiness_path)
+            readiness["publish_inputs"]["closeout_plan_digest"] = augmented_plan[
+                "plan_digest"
+            ]
+            readiness["publish_inputs_sha256"] = gtt.canonical_json_sha256(
+                readiness["publish_inputs"]
+            )
+            return readiness_path, readiness
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "git_status_paths", return_value=dirty_with_gate),
+            mock.patch.object(
+                gtt,
+                "build_pr_readiness_snapshot",
+                side_effect=replacement_readiness,
+            ),
+        ):
+            transition_state = gtt.apply_active_closeout_finalizer_takeover(
+                self.root,
+                self.task_dir,
+                rebuilt,
+                gate,
+            )
+        self.assertEqual(transition_state, "content_pushed")
+        self.assertEqual(gtt.read_json(legacy_plan_path), augmented_plan)
+        self.assertIn(
+            gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            augmented_plan["projection"]["move_paths"],
+        )
+        self.assertIn(
+            gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            augmented_plan["projection"]["untracked_archive_outputs"],
+        )
+        self.assertIn(
+            f"{augmented_plan['task']['archive_locator']}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}",
+            augmented_plan["projection"]["metadata_allowlist"],
+        )
+
+        one_time = self.prepare_finalizer_takeover(ledger, dirty_with_gate)
+        self.assertIsNone(one_time["finalizer_takeover"])
+        self.assertEqual(one_time["plan"], augmented_plan)
+
+        gtt.write_json(
+            self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            {"status": "passed"},
+        )
+        expected_evidence = set(augmented_plan["projection"]["evidence_paths"])
+        exact_dirty = expected_evidence | {gtt.repo_relative(self.root, gate_path)}
+
+        def fake_stdout(command: list[str], **_kwargs: object) -> str:
+            if command[:4] == ["git", "diff", "--cached", "--name-only"]:
+                return "\n".join(sorted(expected_evidence))
+            if command[:3] == ["git", "rev-parse", "HEAD"]:
+                return self.head
+            return ""
+
+        with (
+            mock.patch.object(gtt, "git_status_paths", return_value=sorted(exact_dirty)),
+            mock.patch.object(gtt, "run_stdout", side_effect=fake_stdout) as run_stdout,
+            mock.patch.object(gtt, "validate_closeout_evidence_commit"),
+        ):
+            committed = gtt.commit_closeout_evidence_metadata(
+                self.root,
+                self.task_dir,
+                augmented_plan,
+                finalizer_mode=True,
+            )
+        self.assertEqual(committed["paths"], sorted(expected_evidence))
+        self.assertIn(
+            mock.call(["git", "add", "--", *sorted(expected_evidence)], cwd=self.root),
+            run_stdout.mock_calls,
+        )
+        self.assertNotIn(gtt.repo_relative(self.root, gate_path), committed["paths"])
+
+    def test_same_month_finalizer_takeover_rejects_any_other_new_artifact(self) -> None:
+        self.write_legacy_partial_closeout()
+        (self.task_dir / "unexpected-owner.json").write_text("{}\n", encoding="utf-8")
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            self.build_plan(include_finalization_gate=True)
+        self.assertEqual(
+            raised.exception.payload["unexpected_task_files"],
+            ["unexpected-owner.json"],
+        )
+
+    def test_committed_finalizer_takeover_binds_prior_evidence_head_and_minimal_tail(
+        self,
+    ) -> None:
+        legacy_plan = self.build_plan()
+        evidence_head = "b" * 40
+        current = gtt.build_closeout_finalizer_gate_takeover_plan(
+            legacy_plan,
+            evidence_parent_head=evidence_head,
+            committed=True,
+        )
+        self.assertEqual(current["git"]["evidence_parent_head"], evidence_head)
+        self.assertEqual(
+            current["projection"]["evidence_paths"],
+            sorted(
+                f"{current['task']['active_locator']}/{name}"
+                for name in (gtt.CLOSEOUT_PLAN_ARTIFACT, gtt.PR_READINESS_ARTIFACT)
+            ),
+        )
+        self.assertEqual(
+            gtt.closeout_finalizer_gate_takeover_errors(
+                legacy_plan,
+                current,
+                evidence_parent_head=evidence_head,
+                committed=True,
+            ),
+            [],
+        )
+        changed = copy.deepcopy(current)
+        changed["publish"]["title"] = "unexpected semantic change"
+        changed["plan_digest"] = gtt.closeout_plan_digest(changed)
+        self.assertTrue(
+            gtt.closeout_finalizer_gate_takeover_errors(
+                legacy_plan,
+                changed,
+                evidence_parent_head=evidence_head,
+                committed=True,
+            )
+        )
+
+    def test_generic_closeout_still_rejects_finalizer_gate_on_legacy_plan(self) -> None:
+        self.write_legacy_partial_closeout()
+        gtt.write_json(
+            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            {"schema_version": "test-private-gate"},
+        )
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            self.build_plan(include_finalization_gate=False)
+        self.assertEqual(
+            raised.exception.payload["unexpected_task_files"],
+            [gtt.TASK_FINALIZATION_GATE_ARTIFACT],
+        )
+
     def test_closeout_evidence_commit_rejects_other_task_metadata(self) -> None:
         plan = self.build_plan()
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
@@ -17915,6 +20584,236 @@ shutil.move(str(active), str(archived))
             [plan_relative],
         )
 
+    def test_publication_finalization_gate_only_augmentation_uses_exact_current_paths(
+        self,
+    ) -> None:
+        task_relative = self.task_dir.relative_to(self.root).as_posix()
+        gate_relative = f"{task_relative}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+        stored_repository = {
+            "head": self.head,
+            "branch": "fix/105-closeout",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/runtime.py"],
+            "status_paths": [f"{task_relative}/pr-body.md"],
+        }
+        stored_entries = {
+            entry_id: gtt.task_publication_binding(entry_id)
+            for entry_id in (
+                "runtime_dependency",
+                "task_workspace",
+                "task_identity",
+                "branch_review_handoff",
+                "planning_approval",
+                "phase2_check",
+                "issue_scope_ledger",
+                "docs_ssot_reconciliation",
+                "branch_review_evidence",
+                "publication_content",
+                "review_range_and_working_tree",
+                "invocation_freshness",
+            )
+        }
+        payload = {
+            "task_dir": task_relative,
+            "profile": "publication_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+            "supersedes_publication_ref": None,
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:checked",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "entry_preconditions": stored_entries,
+                "publication_ref": "publication:checked",
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(
+            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            {"schema_version": "test-private-gate"},
+        )
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, payload)
+        current_repository = {
+            **stored_repository,
+            "status_paths": sorted(
+                [*stored_repository["status_paths"], gate_relative]
+            ),
+        }
+        current_entries = json.loads(json.dumps(stored_entries))
+        current_entries["review_range_and_working_tree"] = (
+            gtt.task_publication_binding(current_repository)
+        )
+
+        def entry_preconditions(
+            *_args: object,
+            finalization_owned_paths: list[str] | None = None,
+            **_kwargs: object,
+        ) -> tuple[dict[str, object], list[str], dict[str, str], dict[str, object]]:
+            if finalization_owned_paths != [gate_relative]:
+                return (
+                    {},
+                    ["gate-only finalization paths were not forwarded exactly"],
+                    {"head": self.head},
+                    current_repository,
+                )
+            return current_entries, [], {"head": self.head}, current_repository
+
+        with (
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                return_value=[
+                    "task publication repository binding is stale",
+                    "task publication entry precondition bindings are stale",
+                ],
+            ) as check_errors,
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=current_repository,
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_entry_precondition_bindings",
+                side_effect=entry_preconditions,
+            ) as entry_bindings,
+        ):
+            checked = gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                expected_closeout_plan_digest=None,
+                additional_owned_paths=[gate_relative],
+                require_plan=False,
+            )
+        self.assertEqual(checked["typed_exit"], "ready")
+        self.assertEqual(checked["finalization_owned_delta"], [gate_relative])
+        self.assertEqual(
+            check_errors.call_args.kwargs["finalization_owned_paths"],
+            [gate_relative],
+        )
+        self.assertEqual(
+            entry_bindings.call_args.kwargs["finalization_owned_paths"],
+            [gate_relative],
+        )
+
+    def test_publication_finalization_gate_only_rejects_unexpected_metadata_delta(
+        self,
+    ) -> None:
+        task_relative = self.task_dir.relative_to(self.root).as_posix()
+        gate_relative = f"{task_relative}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+        unexpected = f"{task_relative}/unexpected-finalization-note.md"
+        stored_repository = {
+            "head": self.head,
+            "branch": "fix/105-closeout",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/runtime.py"],
+            "status_paths": [f"{task_relative}/pr-body.md"],
+        }
+        payload = {
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:checked",
+            },
+            "deterministic_bindings": {
+                "repository": stored_repository,
+                "publication_ref": "publication:checked",
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(
+            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            {"schema_version": "test-private-gate"},
+        )
+        current_repository = {
+            **stored_repository,
+            "status_paths": sorted(
+                [*stored_repository["status_paths"], gate_relative, unexpected]
+            ),
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "task_publication_check_errors",
+                return_value=["task publication repository binding is stale"],
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=current_repository,
+            ),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                expected_closeout_plan_digest=None,
+                additional_owned_paths=[gate_relative],
+                require_plan=False,
+            )
+        self.assertIn(
+            "task publication repository binding is stale",
+            raised.exception.payload["errors"],
+        )
+        self.assertEqual(
+            raised.exception.payload["allowed_finalization_paths"],
+            [gate_relative],
+        )
+
+    def test_publication_finalization_plan_required_rejects_gate_only_delta(
+        self,
+    ) -> None:
+        task_relative = self.task_dir.relative_to(self.root).as_posix()
+        gate_relative = f"{task_relative}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+        payload = {
+            "review_identity": {
+                "reviewed_head": self.head,
+                "review_ref": "review-gate:checked",
+            },
+            "deterministic_bindings": {
+                "repository": {
+                    "head": self.head,
+                    "branch": "fix/105-closeout",
+                    "base_ref": "origin/main",
+                    "diff_paths": ["src/runtime.py"],
+                    "status_paths": [f"{task_relative}/pr-body.md"],
+                },
+                "publication_ref": "publication:checked",
+            },
+            "typed_exit": "ready",
+            "facts_sha256": "a" * 64,
+        }
+        gtt.write_json(
+            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+            {"schema_version": "test-private-gate"},
+        )
+        with (
+            mock.patch.object(gtt, "task_publication_check_errors", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=payload["deterministic_bindings"]["repository"],
+            ),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.check_task_publication_for_finalization_augmentation(
+                self.root,
+                self.task_dir,
+                payload,
+                expected_closeout_plan_digest=None,
+                additional_owned_paths=[gate_relative],
+                require_plan=True,
+            )
+        self.assertIn(
+            "task publication finalization augmentation requires the exact closeout plan",
+            raised.exception.payload["errors"],
+        )
+
     def test_publication_finalization_augmentation_rejects_other_metadata_delta(self) -> None:
         digest = "f" * 64
         task_relative = self.task_dir.relative_to(self.root).as_posix()
@@ -18001,17 +20900,136 @@ shutil.move(str(active), str(archived))
         ):
             gtt.resolve_closeout_pull_request(self.root, "owner/repo", "fix/105-closeout", "main")
         ready = dict(entry, isDraft=False)
-        with mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=ready), self.assertRaises(gtt.WorkflowError):
-            gtt.ensure_closeout_draft_pr(self.root, plan, "body")
+        with (
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=ready),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "update_pull_request_metadata") as update,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.ensure_closeout_draft_pr(self.root, plan, body)
+        update.assert_not_called()
 
-        for key, value in [("title", "tampered title"), ("body", "tampered body")]:
-            with self.subTest(key=key):
-                tampered = dict(entry, **{key: value})
-                with (
-                    mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=tampered),
-                    self.assertRaises(gtt.WorkflowError),
-                ):
-                    gtt.ensure_closeout_draft_pr(self.root, plan, body)
+        stable_identity_mismatches = {
+            "head": dict(entry, headRefName="fix/wrong"),
+            "base": dict(entry, baseRefName="wrong"),
+            "head-sha": dict(entry, headRefOid="b" * 40),
+            "number-url": dict(entry, number=106),
+            "url": dict(entry, url="http://github.com/owner/repo/pull/105"),
+        }
+        for name, candidate in stable_identity_mismatches.items():
+            candidate["title"] = "predecessor title"
+            candidate["body"] = "predecessor body\n"
+            with (
+                self.subTest(case=name),
+                mock.patch.object(
+                    gtt, "resolve_closeout_pull_request", return_value=candidate
+                ),
+                mock.patch.object(gtt, "current_head", return_value=self.head),
+                mock.patch.object(gtt, "update_pull_request_metadata") as update,
+                self.assertRaises(gtt.WorkflowError),
+            ):
+                gtt.ensure_closeout_draft_pr(self.root, plan, body)
+            update.assert_not_called()
+
+    def test_existing_draft_metadata_rebinds_same_identity_and_is_idempotent(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        stale = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": "predecessor title",
+            "body": "predecessor body\n",
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        rebound = {
+            **stale,
+            "title": plan["publish"]["title"],
+            "body": body,
+        }
+        edit_commands: list[list[str]] = []
+        edited_body_bytes: list[bytes] = []
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            self.assertEqual(command[:4], ["gh", "pr", "edit", "105"])
+            edit_commands.append(command)
+            body_path = Path(command[command.index("--body-file") + 1])
+            edited_body_bytes.append(body_path.read_bytes())
+            return mock.Mock(returncode=0, stdout="", stderr="")
+
+        with (
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pull_request",
+                side_effect=[stale, rebound, rebound],
+            ) as resolve,
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(gtt, "create_pull_request") as create,
+        ):
+            first = gtt.ensure_closeout_draft_pr(self.root, plan, body)
+            second = gtt.ensure_closeout_draft_pr(self.root, plan, body)
+
+        self.assertEqual(first, rebound)
+        self.assertEqual(second, rebound)
+        self.assertEqual(resolve.call_count, 3)
+        self.assertEqual(len(edit_commands), 1)
+        self.assertEqual(edit_commands[0][edit_commands[0].index("--repo") + 1], "owner/repo")
+        self.assertEqual(
+            edit_commands[0][edit_commands[0].index("--title") + 1],
+            plan["publish"]["title"],
+        )
+        self.assertEqual(edited_body_bytes, [body.encode("utf-8")])
+        self.assertEqual(
+            hashlib.sha256(edited_body_bytes[0]).hexdigest(),
+            plan["publish"]["body_sha256"],
+        )
+        create.assert_not_called()
+
+    def test_metadata_rebind_rejects_replaced_identity_after_edit(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        stale = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": "predecessor title",
+            "body": "predecessor body\n",
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        replacement = {
+            **stale,
+            "number": 106,
+            "url": "https://github.com/owner/repo/pull/106",
+            "title": plan["publish"]["title"],
+            "body": body,
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pull_request",
+                side_effect=[stale, replacement],
+            ),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "update_pull_request_metadata") as update,
+            mock.patch.object(gtt, "create_pull_request") as create,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.ensure_closeout_draft_pr(self.root, plan, body)
+        update.assert_called_once_with(
+            self.root,
+            "owner/repo",
+            105,
+            plan["publish"]["title"],
+            body,
+        )
+        create.assert_not_called()
 
     def test_closeout_repository_identity_normalizes_remote_urls_and_rejects_mismatch(self) -> None:
         for value in ["owner/repo", "Owner/Repo", "OWNER/REPO"]:
@@ -18464,10 +21482,12 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=fork),
             mock.patch.object(gtt, "current_head", return_value=self.head),
             mock.patch.object(gtt, "create_pull_request") as create,
+            mock.patch.object(gtt, "update_pull_request_metadata") as update,
             self.assertRaises(gtt.WorkflowError),
         ):
             gtt.ensure_closeout_draft_pr(self.root, plan, body)
         create.assert_not_called()
+        update.assert_not_called()
 
         gtt.write_json(
             self.task_dir / gtt.PR_READINESS_ARTIFACT,
@@ -18502,7 +21522,6 @@ shutil.move(str(active), str(archived))
             source_root / ".trellis/spec/workflow/companion-scripts.md",
             source_root / ".trellis/spec/workflow/data-contracts.md",
             source_root / ".trellis/spec/workflow/workflow-contract.md",
-            source_root / "trellis/workflows/guru-team/workflow.md",
             source_root / "docs/requirements/guru-team-trellis-flow.md",
         ]
         for path in paths:
@@ -18590,6 +21609,16 @@ shutil.move(str(active), str(archived))
                         expected_draft=True,
                         require_summary=False,
                     )
+                with (
+                    mock.patch.object(gtt, "resolve_closeout_pull_request") as resolve,
+                    mock.patch.object(gtt, "create_pull_request") as create,
+                    mock.patch.object(gtt, "update_pull_request_metadata") as update,
+                    self.assertRaises(gtt.WorkflowError),
+                ):
+                    gtt.ensure_closeout_draft_pr(self.root, plan, tampered_body)
+                resolve.assert_not_called()
+                create.assert_not_called()
+                update.assert_not_called()
 
     def test_active_summary_and_bound_remote_identity_reject_pr_replacement(self) -> None:
         plan = self.build_plan()
@@ -18825,7 +21854,14 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "build_pr_readiness_snapshot", return_value=(self.task_dir / "pr-readiness.json", readiness)),
             mock.patch.object(gtt, "execute_marketplace_verification", side_effect=lambda *a, **k: (order.append("verifier"), verification)[1]),
             mock.patch.object(gtt, "closeout_passed_marketplace_evidence", return_value={"type": "remote_marketplace_verification", "status": "passed"}),
-            mock.patch.object(gtt, "commit_closeout_evidence_metadata", side_effect=lambda *a: (order.append("evidence-commit"), {"commit": self.head})[1]),
+            mock.patch.object(
+                gtt,
+                "commit_closeout_evidence_metadata",
+                side_effect=lambda *a, **k: (
+                    order.append("evidence-commit"),
+                    {"commit": self.head},
+                )[1],
+            ),
             mock.patch.object(gtt, "ensure_closeout_draft_pr", side_effect=lambda *a: (order.append("draft"), pr)[1]),
             mock.patch.object(gtt, "build_final_archive_projection", side_effect=lambda *a: (order.append("projection"), (self.task_dir / "finish-summary.json", {}))[1]),
             mock.patch.object(gtt, "execute_archive_metadata_transaction", side_effect=lambda *a, **k: (order.append("archive"), (archived, {"commit": self.head}))[1]),
@@ -18881,7 +21917,8 @@ shutil.move(str(active), str(archived))
         archived = self.root / plan["task"]["archive_locator"]
         archived.parent.mkdir(parents=True, exist_ok=True)
         self.task_dir.rename(archived)
-        (archived / gtt.PR_BODY_ARTIFACT).write_bytes(b"\xff")
+        gtt.compact_closeout_archive(archived, plan)
+        (archived / "task.json").write_bytes(b"\xff")
         (archived / gtt.FINISH_SUMMARY_ARTIFACT).write_text("invalid summary\n", encoding="utf-8")
 
         draft = {
@@ -19103,6 +22140,7 @@ shutil.move(str(active), str(archived))
         children_case: str | None = None,
         archive_path_symlink: str | None = None,
         archived_pr_replacement: bool = False,
+        predecessor_draft_metadata: bool = False,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -19238,7 +22276,6 @@ shutil.move(str(active), str(archived))
                 "prd.md": "# 需求\n\n验证 production closeout fixture。\n",
                 "design.md": "# 设计\n\n## Docs SSOT Plan\n\nStrategy: no_docs_update_needed。\n",
                 "implement.md": "# 实施\n\n验证 production closeout fixture。\n",
-                "implementation-handoff.md": "# 实现交接\n\ncloseout fixture 已就绪。\n",
             }.items():
                 (task_dir / name).write_text(content, encoding="utf-8")
             for name in (
@@ -19326,7 +22363,7 @@ shutil.move(str(active), str(archived))
                         "docs_ssot": {
                             "status": "passed",
                             "summary": "The closeout fixture Docs SSOT outcome was reviewed.",
-                            "evidence_refs": ["design.md", "implementation-handoff.md"],
+                            "evidence_refs": ["design.md", "phase2-check.json"],
                         },
                         "safety_deployment": {
                             "status": "passed",
@@ -19366,7 +22403,20 @@ shutil.move(str(active), str(archived))
             )
             gtt.write_json(task_dir / gtt.PR_READINESS_ARTIFACT, publication_gate)
 
+            immutable_body_bytes = (task_dir / "pr-body.md").read_bytes()
             pr_store: dict[str, object] = {}
+            draft_rebind_body_bytes: list[bytes] = []
+            if predecessor_draft_metadata:
+                pr_store.update({
+                    **closeout_head_repository_fields(),
+                    "number": 105,
+                    "url": "https://github.com/owner/repo/pull/105",
+                    "title": "predecessor Round title",
+                    "body": "predecessor Round body\n",
+                    "isDraft": True,
+                    "state": "OPEN",
+                    "headRefOid": reviewed_head,
+                })
             original_run = gtt.run
             injected_stage = failed_stage
             active_plan_only_boundary_fault: str | None = None
@@ -19400,6 +22450,19 @@ shutil.move(str(active), str(archived))
 
             def record_transition(stage: str) -> None:
                 transition_attempts.append(stage)
+
+            original_compact_closeout_archive = gtt.compact_closeout_archive
+
+            def compact_closeout_archive_with_failure(
+                archive_dir: Path, plan: dict[str, object]
+            ) -> None:
+                if failed_stage == "archive-prune":
+                    record_transition("archive-prune")
+                if injected_stage == "archive-prune":
+                    raise gtt.WorkflowError(
+                        "injected archive compaction failure", exit_code=2
+                    )
+                original_compact_closeout_archive(archive_dir, plan)
 
             def git_transition_stage(command: list[str]) -> str:
                 archived = root / f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
@@ -19590,6 +22653,22 @@ shutil.move(str(active), str(archived))
                             "baseRefName": "main",
                         }]
                     return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+                if command[:3] == ["gh", "pr", "edit"]:
+                    record_transition("draft-rebind")
+                    self.assertEqual(command[3], str(pr_store["number"]))
+                    self.assertEqual(
+                        command[command.index("--repo") + 1], "owner/repo"
+                    )
+                    if injected_stage == "draft-rebind":
+                        return subprocess.CompletedProcess(
+                            command, 1, "", "injected draft rebind"
+                        )
+                    body_path = Path(command[command.index("--body-file") + 1])
+                    body_bytes = body_path.read_bytes()
+                    draft_rebind_body_bytes.append(body_bytes)
+                    pr_store["title"] = command[command.index("--title") + 1]
+                    pr_store["body"] = body_bytes.decode("utf-8")
+                    return subprocess.CompletedProcess(command, 0, "", "")
                 if command[:3] == ["gh", "pr", "ready"]:
                     record_transition("ready")
                     if injected_stage == "ready":
@@ -19883,6 +22962,11 @@ shutil.move(str(active), str(archived))
                     side_effect=fake_marketplace_verification,
                 ),
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
+                mock.patch.object(
+                    gtt,
+                    "compact_closeout_archive",
+                    side_effect=compact_closeout_archive_with_failure,
+                ),
                 mock.patch.object(gtt, "current_archive_month", side_effect=lambda: archive_month_clock),
             ):
                 if (
@@ -20174,6 +23258,14 @@ shutil.move(str(active), str(archived))
                 "evidence_parent_sha": gtt.closeout_commit_parent(root, evidence_head),
                 "evidence_paths": gtt.closeout_commit_paths(root, evidence_head),
                 "archive_sha": local_head,
+                "archive_paths": gtt.closeout_commit_paths(root, local_head),
+                "immutable_body_bytes": immutable_body_bytes,
+                "draft_rebind_body_bytes": draft_rebind_body_bytes,
+                "archived_files": sorted(
+                    path.relative_to(archived).as_posix()
+                    for path in archived.rglob("*")
+                    if path.is_file()
+                ),
             }
 
     def test_production_finish_entry_uses_real_git_remote_and_fake_github_store(self) -> None:
@@ -20192,6 +23284,77 @@ shutil.move(str(active), str(archived))
         self.assertEqual(final["pr_head_sha"], result["archive_sha"])
         self.assertEqual(final["pr_is_draft"], False)
         self.assertEqual(final["pr_state"], "OPEN")
+        self.assertEqual(
+            result["archived_files"],
+            [
+                "closeout-plan.json",
+                "design.md",
+                "finish-summary.json",
+                "implement.md",
+                "issue-scope-ledger.json",
+                "phase2-check.json",
+                "planning-approval.json",
+                "prd.md",
+                "review.md",
+                "task.json",
+            ],
+        )
+        self.assertEqual(len(result["archived_files"]), 10)
+
+    def test_production_predecessor_draft_rebinds_same_number_after_evidence_push(self) -> None:
+        result = self.run_production_finish_case(predecessor_draft_metadata=True)
+        final = result["final_state"]
+        events = result["all_transition_attempts"]
+
+        self.assertEqual(final["pr_number"], 105)
+        self.assertEqual(final["pr_is_draft"], False)
+        self.assertNotIn("draft", events)
+        self.assertEqual(events.count("draft-rebind"), 1)
+        self.assertLess(events.index("evidence-push"), events.index("draft-rebind"))
+        self.assertLess(events.index("draft-rebind"), events.index("projection"))
+        self.assertEqual(
+            result["draft_rebind_body_bytes"],
+            [result["immutable_body_bytes"]],
+        )
+        self.assertEqual(
+            hashlib.sha256(result["draft_rebind_body_bytes"][0]).hexdigest(),
+            hashlib.sha256(result["immutable_body_bytes"]).hexdigest(),
+        )
+
+    def test_production_draft_rebind_failure_retries_same_plan_before_archive(self) -> None:
+        result = self.run_production_finish_case(
+            failed_stage="draft-rebind",
+            predecessor_draft_metadata=True,
+        )
+        failed = result["failed_state"]
+        final = result["final_state"]
+
+        self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(failed["archive_locator"])
+        self.assertEqual(failed["task_status"], "in_progress")
+        self.assertEqual(failed["pr_number"], 105)
+        self.assertEqual(failed["pr_is_draft"], True)
+        self.assertEqual(final["pr_number"], 105)
+        self.assertEqual(final["pr_is_draft"], False)
+        self.assertIn("draft-rebind", result["reentry_events"])
+        self.assertNotIn("draft", result["all_transition_attempts"])
+        self.assertEqual(
+            result["draft_rebind_body_bytes"],
+            [result["immutable_body_bytes"]],
+        )
+
+    def test_production_finish_recovers_after_move_before_archive_compaction(self) -> None:
+        result = self.run_production_finish_case("archive-prune")
+        failed = result["failed_state"]
+        self.assertIsNone(failed["active_locator"])
+        self.assertIsNotNone(failed["archive_locator"])
+        self.assertIn(
+            f"{failed['archive_locator']}/review-gate.json",
+            failed["dirty_paths"],
+        )
+        self.assertEqual(len(result["archived_files"]), 10)
+        self.assertNotIn("review-gate.json", result["archived_files"])
+        self.assertGreaterEqual(result["all_transition_attempts"].count("archive-prune"), 2)
 
     def test_production_existing_archive_locator_fails_dry_run_and_formal_without_side_effects(self) -> None:
         result = self.run_production_finish_case(archive_locator_conflict=True)
@@ -20601,7 +23764,7 @@ shutil.move(str(active), str(archived))
             f"{active}/{name}"
             for name in [
                 "agent-assignment.json", "closeout-plan.json", "design.md",
-                "finish-summary-index.json", "implement.md", "implementation-handoff.md",
+                "finish-summary-index.json", "implement.md",
                 "issue-scope-ledger.json", "phase2-check.json", "planning-approval.json",
                 "pr-body.md", "pr-readiness.json", "prd.md", "review-gate.json",
                 "review.md", "task-start-context.json", "task.json",
@@ -20609,12 +23772,9 @@ shutil.move(str(active), str(archived))
         } | {
             f"{archive}/{name}"
             for name in [
-                "agent-assignment.json", "closeout-plan.json", "design.md",
-                "finish-summary-index.json", "finish-summary.json", "implement.md",
-                "implementation-handoff.md", "issue-scope-ledger.json",
-                "phase2-check.json", "planning-approval.json", "pr-body.md",
-                "pr-readiness.json", "prd.md", "review-gate.json", "review.md",
-                "task-start-context.json", "task.json",
+                "closeout-plan.json", "design.md", "finish-summary.json",
+                "implement.md", "issue-scope-ledger.json", "phase2-check.json",
+                "planning-approval.json", "prd.md", "review.md", "task.json",
             ]
         }
         expected = {

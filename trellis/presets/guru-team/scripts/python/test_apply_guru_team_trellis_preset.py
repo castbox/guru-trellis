@@ -50,46 +50,26 @@ def assert_required_planning_context(testcase: unittest.TestCase, text: str) -> 
         testcase.assertNotIn(stale_hint, text)
 
 
-def assert_branch_review_route_only(testcase: unittest.TestCase, path: Path) -> None:
+def assert_thin_continue_router(testcase: unittest.TestCase, path: Path) -> None:
     text = path.read_text(encoding="utf-8")
-    testcase.assertIn("mandatory invoke the active `guru-review-branch` package", text, path)
-    testcase.assertIn("only Phase 3.5 semantic owner", text, path)
-    testcase.assertIn("Typed-exit route:", text, path)
-    for field in (
-        "`profile`",
-        "`mode`",
-        "`task_ref`",
-        "`base_ref`",
+    testcase.assertIn("`.trellis/workflow.md` as the global route", text, path)
+    for skill_id in (
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-create-task-commit",
+        "guru-review-branch",
+        "guru-review-task-publication",
+    ):
+        testcase.assertIn(skill_id, text, path)
+    testcase.assertIn("Automatically consume", text, path)
+    testcase.assertIn("implementation-handoff.md", text, path)
+    for forbidden in (
+        "Typed-exit route:",
+        "only Phase 3.5 semantic owner",
         "`committed_head`",
         "`review_intent`",
-    ):
-        testcase.assertIn(field, text, path)
-    for route in (
-        "`passed` enters global Phase 3.6",
-        "mandatory invoke the active `guru-review-task-publication` package",
-        "`ready` exit targets planned `guru-finalize-task`",
-        "`return_to_task_work` targets workflow `guru-task-publication-work-router`",
-        "publication `blocked` targets stop `task-publication-review-blocked`",
-        "`implementation_required` targets workflow `guru-branch-review-implementation-router`",
-        "`scope_confirmation_required` targets workflow `guru-branch-review-scope-router`",
-        "Branch Review `blocked` targets stop `branch-review-blocked`",
-    ):
-        testcase.assertIn(route, text, path)
-    for phrase in (
-        "workflow caller authors the initial task-local `pr-body.md` and "
-        "`finish-summary-index.json` candidates",
-        "entry preparation only",
-        "does not decide PR-body sufficiency",
-        "If either candidate is absent or objectively malformed, stop fail closed",
-        "only its declared target-owned authoring fields",
-    ):
-        testcase.assertIn(phrase, text, path)
-    testcase.assertNotIn(
-        "targets planned `guru-review-task-publication`",
-        text,
-        path,
-    )
-    for forbidden in (
+        "guru-branch-review-implementation-router",
+        "task-publication-review-blocked",
         "review-branch.sh",
         "check-review-gate.sh",
         "agent-assignment.json",
@@ -98,6 +78,30 @@ def assert_branch_review_route_only(testcase: unittest.TestCase, path: Path) -> 
         "finding closure",
         "fresh final review",
         "recorder/checker",
+    ):
+        testcase.assertNotIn(forbidden, text, path)
+
+
+def assert_thin_finish_router(testcase: unittest.TestCase, path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    testcase.assertIn("`.trellis/workflow.md` as the global route", text, path)
+    for skill_id in (
+        "guru-review-task-publication",
+        "guru-verify-extension-installation",
+        "guru-finalize-task",
+    ):
+        testcase.assertIn(skill_id, text, path)
+    testcase.assertIn("Automatically consume", text, path)
+    testcase.assertIn("Phase 3.6", text, path)
+    testcase.assertIn("Phase 3.7", text, path)
+    for forbidden in (
+        "finish-work.sh --from-trellis-finish-work",
+        "--finish-summary-index-file",
+        "--expected-plan-digest",
+        "--recovery-after-finish-work",
+        "--skip-archive",
+        "resolve-human-artifacts.sh",
+        "closeout_plan_digest",
     ):
         testcase.assertNotIn(forbidden, text, path)
 
@@ -418,6 +422,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         fresh_paths = [record["path"] for record in json.loads(outputs[0][0])]
         reapplied_paths = [record["path"] for record in json.loads(outputs[0][1])]
         self.assertEqual(fresh_paths, reapplied_paths)
+        registry = json.loads(
+            (
+                guru_root
+                / "trellis/skills/guru-team/registry.json"
+            ).read_text(encoding="utf-8")
+        )
+        active_package_count = sum(
+            entry.get("state") == "active"
+            for entry in registry["skills"]
+        )
         group_order: list[str] = []
         for path in fresh_paths:
             group = next(
@@ -437,54 +451,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             group_order,
             [
                 "installed",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
-                "shared",
-                "codex",
-                "claude",
-                "cursor",
+                *(
+                    ["shared", "codex", "claude", "cursor"]
+                    * active_package_count
+                ),
             ],
         )
 
@@ -498,6 +468,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/discover-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-command.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/preview-finalization.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-finalization-gate.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-finalization-gate.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/execute-finalization-transition.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/sync-base.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-base-sync.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/preview-change-context-history.sh"), preset.MANAGED_ASSET_PATHS)
@@ -537,6 +511,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh", os.X_OK))
+        for name in (
+            "preview-finalization.sh",
+            "record-finalization-gate.sh",
+            "check-finalization-gate.sh",
+            "execute-finalization-transition.sh",
+        ):
+            self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash" / name).is_file())
+            self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash" / name, os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/sync-base.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-base-sync.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/preview-change-context-history.sh", os.X_OK))
@@ -699,7 +681,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(all_platforms)
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
         ownership_facts = payload["upstream_ownership_validation"]
-        self.assertEqual(ownership_facts["reviewed_current_payload_count"], 5)
+        self.assertEqual(ownership_facts["reviewed_current_payload_count"], 18)
         self.assertRegex(ownership_facts["reviewed_current_payloads_sha256"], r"^[0-9a-f]{64}$")
         continue_paths = (
             ".agents/skills/trellis-continue/SKILL.md",
@@ -710,8 +692,18 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
         for relative in continue_paths:
-            assert_branch_review_route_only(self, overlay_root / relative)
-            assert_branch_review_route_only(self, self.repo / relative)
+            assert_thin_continue_router(self, overlay_root / relative)
+            assert_thin_continue_router(self, self.repo / relative)
+        finish_paths = (
+            ".agents/skills/trellis-finish-work/SKILL.md",
+            ".codex/prompts/trellis-finish-work.md",
+            ".codex/skills/trellis-finish-work/SKILL.md",
+            ".cursor/commands/trellis-finish-work.md",
+            ".claude/commands/trellis/finish-work.md",
+        )
+        for relative in finish_paths:
+            assert_thin_finish_router(self, overlay_root / relative)
+            assert_thin_finish_router(self, self.repo / relative)
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
@@ -755,7 +747,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 98)
+        self.assertEqual(len(managed_assets), 102)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -1021,7 +1013,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('verify_contract_wording_standalone_profiles "after-update"', verifier)
         self.assertIn('verify_change_request_review_package "initial"', verifier)
         self.assertIn('verify_change_request_review_package "after-update"', verifier)
-        self.assertIn('"planned_skill_ids"] == ["guru-finalize-task"]', verifier)
+        self.assertIn('"planned_skill_ids"] == []', verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"', verifier)
         self.assertIn('test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"', verifier)
         self.assertIn('test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
@@ -1052,7 +1044,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 98", verifier)
+        self.assertIn("assert len(assets) == 102", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
             self.assertIn(
@@ -1649,9 +1641,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
         for field, expected_count in (
-            ("public_input_schema_ids", 30),
-            ("typed_output_schema_ids", 46),
-            ("private_artifact_schema_ids", 13),
+            ("public_input_schema_ids", 37),
+            ("typed_output_schema_ids", 52),
+            ("private_artifact_schema_ids", 15),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -1701,6 +1693,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-create-task-commit",
                 "guru-create-task-workspace",
                 "guru-discover-change-context",
+                "guru-finalize-task",
                 "guru-review-branch",
                 "guru-review-change-request",
                 "guru-review-contract-wording",
@@ -1711,7 +1704,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(
             public_api["skill_contracts"]["planned_skill_ids"],
-            ["guru-finalize-task"],
+            [],
         )
         self.assertIn(
             "guru-base-sync-result-1.0",

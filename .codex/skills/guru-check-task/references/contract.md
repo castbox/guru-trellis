@@ -23,7 +23,7 @@ compatible Guru Team preset.
    and dirty drift after activation does not alone stale planning; changes to
    planning documents, Docs SSOT locator, authority, scope categories, task,
    base identity, or branch do.
-2. Read the complete task scope, implementation handoff, code, tests, docs,
+2. Read the complete task scope, implementation terminal result, code, tests, docs,
    specs, current `origin/<base>...HEAD` diff, full dirty state, repository
    validation commands, worker report, and unresolved verification.
 3. Execute every applicable repository-defined check. Record exact argv,
@@ -32,7 +32,7 @@ compatible Guru Team preset.
    Bind the non-empty implementation/check agent id sets exactly to effective
    completed events for those roles, and bind worker evidence to the exact
    completed check agent set.
-   Requirement provenance, implementation handoff, Docs SSOT durable paths,
+   Requirement provenance, embedded implementation evidence, Docs SSOT durable paths,
    repository reviewed paths, and executed commands are non-empty entry
    evidence. Every adequacy dimension carries at least one reference to a
    current-round source, and the complete round covers planning, provenance,
@@ -79,6 +79,11 @@ assignment/status/round/reuse metadata may append. Phase 2 agent or recovery
 drift still fails closed, and Branch Review independently validates and digests
 the complete current assignment artifact.
 
+`implementation_handoff` remains the compatible input id and embedded
+`phase2-check.json` evidence collection. The semantic owner constructs it from
+the concise implementation terminal result, live diff, tests, and durable
+paths. No independent `implementation-handoff.md` is created or consumed.
+
 Recorder/checker may validate schema, paths, references, hashes, sizes, HEAD,
 diff, dirty state, planning/ledger/agent linkage, recovery closure, full-round
 identity and exit/consumer invariants. They never infer scope disposition,
@@ -97,7 +102,7 @@ Post-commit consumers may accept the recorded HEAD as an ancestor only when
 every later committed non-metadata path was covered by recorded dirty paths and
 the current worktree has no unreviewed non-metadata dirty path. They never
 re-record a pass solely to match the commit HEAD.
-When the implementation handoff includes task-local `agent-assignment.json`,
+When the embedded `implementation_handoff` collection includes task-local `agent-assignment.json`,
 post-commit audit preserves its recorded raw path digest only for the legal
 ancestor-HEAD metadata tail. Freshness remains enforced by the Phase-2-stable
 agent projection, so implementation/check/recovery drift still fails closed.

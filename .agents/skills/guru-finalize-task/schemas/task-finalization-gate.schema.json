@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-1.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "generated_at", "invocation", "plan", "review", "confirmation", "route", "freshness"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-finalize-task"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "mode", "task_ref", "input_identity_sha256"],
+      "properties": {
+        "profile": {"enum": ["publication_ready", "verification_verified", "verification_not_required", "standalone_verification_not_required", "same_plan_resume", "reprepare_preview", "standalone_finalization"]},
+        "mode": {"enum": ["workflow", "standalone"]},
+        "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+        "input_identity_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available", "plan_ref", "plan_digest", "reviewed_head"],
+      "properties": {
+        "available": {"type": "boolean"},
+        "plan_ref": {"type": ["string", "null"], "minLength": 1},
+        "plan_digest": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "reviewed_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "summary", "evidence_refs"],
+      "properties": {
+        "status": {"enum": ["passed", "reroute", "blocked"]},
+        "summary": {"type": "string", "minLength": 1},
+        "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "confirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "confirmed_plan_digest", "summary"],
+      "properties": {
+        "status": {"enum": ["confirmed", "not_required"]},
+        "confirmed_plan_digest": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["typed_exit", "consumer", "output"],
+      "properties": {
+        "typed_exit": {"enum": ["verification_required", "publication_review_stale", "resume_finalization", "reprepare_required", "published", "blocked"]},
+        "consumer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": {"enum": ["skill", "workflow", "stop"]},
+            "id": {"type": "string", "minLength": 1}
+          }
+        },
+        "output": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["materialization"],
+              "properties": {
+                "materialization": {"const": "executor"}
+              }
+            },
+            {
+              "type": "object",
+              "minProperties": 1,
+              "not": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["materialization"],
+                "properties": {
+                  "materialization": {"const": "executor"}
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["current_facts_sha256", "supersedes_gate_ref"],
+      "properties": {
+        "current_facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "supersedes_gate_ref": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  }
+}

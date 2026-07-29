@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-input-same-plan-resume-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "mode", "task_ref", "plan_ref", "recovery_intent", "recovery_context"],
+  "properties": {
+    "profile": {"const": "same_plan_resume"},
+    "mode": {"const": "workflow"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "plan_ref": {"type": "string", "minLength": 1},
+    "recovery_intent": {"type": "string", "minLength": 1},
+    "recovery_context": {"type": "string", "minLength": 1}
+  }
+}

@@ -19,11 +19,14 @@ and immutable issue #128 baseline hashes are recorded in
 upstream-owned path may be added. New reusable behavior belongs in Markdown
 workflow contracts or canonical `guru-*` packages. Reviewed removal keeps an
 `upstream_owned/removed` inventory tombstone instead of deleting audit history.
-Only the five active `trellis-continue` entries reviewed by issue #131 carry a
-separate pinned `current_payload_sha256`; that binding validates their thin
-current payload without rewriting the historical baseline. It is normal
-version/drift binding only, is not an authenticity boundary, must not spread to
-other entries, and does not perform issue #132 removal.
+Exactly eighteen active entries carry a separately pinned
+`current_payload_sha256`: the five `trellis-continue` entries reviewed by issue
+#131 plus the eight AI-first implement/check agent entries and five thin
+`trellis-finish-work` entries reviewed by issue #161. These bindings validate
+current payloads without rewriting the historical
+baseline. They are normal version/drift bindings only, are not an authenticity
+boundary, may not spread beyond the reviewed allowlist, and do not perform
+issue #132 removal.
 
 Activating `guru-approve-task-plan` is additive distribution: install its
 canonical package below `.trellis/guru-team/skills/**`, shared runtime/schema
@@ -152,8 +155,9 @@ Continue entries must:
 - in `in_progress`, rerun `check-planning-approval.sh --json` before dispatching
   `trellis-implement` / channel `implement` or recording `phase2-check.json`
 - in `in_progress`, tell the AI to consume the approved `Docs SSOT Plan` during
-  Phase 2: implementation handoff records strategy execution and docs sync
-  outcome, while `trellis-check` verifies durable docs / task artifacts /
+  Phase 2: the implementation terminal result and live repository facts feed
+  the embedded `implementation_handoff` collection in `phase2-check.json`; do
+  not create a separate Markdown handoff. `trellis-check` verifies durable docs / task artifacts /
   code/API/schema/config/deploy/test consistency by strategy
 - after a fresh final Phase 2 pass, load and mandatory invoke the stable
   `guru-create-task-commit` id, then consume only its declared typed exit;
@@ -181,24 +185,23 @@ Continue entries must:
 
 Finish entries must:
 
-- call `.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work`
-- require the AI to create/review task-local `finish-summary-index.json` and pass
-  it through `--finish-summary-index-file` for dry-run and formal finish
-- explain that the `--from-trellis-finish-work` marker belongs only in explicit
-  finish entries and must not be copied into continue entries
-- explain that finish-work binds an immutable plan, creates a draft PR, records
-  final task-local `finish-summary.json` before archive, never calls
-  `add_session.py` or reads/writes `.trellis/workspace/**`, and marks the PR
-  ready only after archive HEAD alignment
-- explain that after finish-work dry-run the AI must run
-  `resolve-human-artifacts.sh` against the active task and output the active
-  `Markdown 产物 review 表`, and after formal archive it must run the resolver
-  again against the archive path/name and output the archive-path table
-- explain that finish-work may commit Trellis metadata-only changes after the
-  reviewed HEAD, but rejects non-metadata changes
-- explain that one exact draft PR is bound before final projection; recovery
-  validates committed plan/readiness and active/archive/Git/remote/PR facts,
-  reuses one draft, creates one for zero, and fails closed for multiple
+- read live context and `.trellis/workflow.md` instead of copying closeout
+  commands or recovery mechanics
+- invoke `guru-review-task-publication` after Branch Review `passed`, and invoke
+  `guru-finalize-task` only from the current `ready` exit
+- automatically consume `verification_required`,
+  `publication_review_stale`, `resume_finalization`, and `reprepare_required`
+  through their declared Skill consumers; never display them as user choices
+- ask only for the finalizer's exact bounded side-effect plan, new external
+  authority, or a material scope decision; never add a generic confirmation
+  between mapped exits
+- return only `published`, or stop on the declared `blocked` result with its
+  concrete reason
+- never call `finish-work.sh` or `publish-pr.sh` directly, reproduce their
+  flags, create a handoff artifact, or duplicate live Git/GitHub/task/gate facts
+- leave immutable-plan construction, verification, draft binding, metadata-only
+  archive transaction, recovery, three-way HEAD alignment, and Ready transition
+  inside `guru-finalize-task` and its private deterministic engine
 - explain that finish-work/archive never performs the first Docs SSOT merge;
   durable docs, `.trellis/spec/`, source, tests, schema, config, scripts,
   preset, overlay, CI/CD, deployment, migration, and Makefile drift after the
@@ -242,7 +245,7 @@ Sub-agent overlay entries must:
 The 43 inventory-pinned upstream overlay paths remain
 `transitional_legacy` assets whose removal is owned by issue #132. Their
 issue #128 path/baseline identity remains immutable; current bytes use that
-baseline except for the exact five issue #131 continue bindings. Historical
+baseline except for the exact thirteen issue #131/#161 current bindings. Historical
 `schema 1.2` and `explicit-post-planning-review` implement-agent wording is
 transitional history; it must not guide current Guru package/runtime behavior
 or be copied into canonical `guru-*` packages, workflow contracts, durable
@@ -262,15 +265,17 @@ docs, or new non-frozen platform sources.
   wording/authority/Docs SSOT/provenance/AI Gate evidence, does not carry
   `user_confirmation.kind=post-planning-approval` with confirmed timestamps,
   or the reviewed planning document content digests no longer match;
-- require implement agents to output a completion handoff with files changed,
-  requirement/design carryover, verification state, remaining risks, completion
-  status, and focus areas for `trellis-check`;
+- require implement agents to return one minimal terminal result with completion
+  status, material changed behavior/paths, verification outcomes, and only
+  remaining blockers, risks, or deferred validation; the next owner rereads
+  task artifacts and live repository facts instead of consuming repeated
+  requirement/design prose;
 - require implement agents to read the task `Docs SSOT Plan`, execute
   `ssot_first` / `delta_first` / `bootstrap_or_repair_docs` /
-  `no_docs_update_needed`, and include strategy, durable docs sync result, task
-  delta merge, task-history-only content, no-update reason or follow-up / PR
-  limitation, and durable-docs versus task-delta implementation inputs in the
-  handoff;
+  `no_docs_update_needed`, and report only material durable docs outcomes,
+  changed paths, or bounded follow-up in the terminal result; complete
+  reconstruction belongs to the semantic check over the approved plan, task
+  artifacts, embedded evidence, and live diff;
 - require check agents to distinguish Phase 2 check from Branch Review: Phase 2
   may self-fix small in-scope mechanical issues and must output evidence that
   can support `phase2-check.json`; Branch Review is review-only over the full
@@ -289,10 +294,10 @@ docs, or new non-frozen platform sources.
   rollup content: Chinese headings, Chinese labels, Chinese review narrative,
   Chinese deployment / safety and Docs SSOT judgment, Chinese observations and
   follow-up candidates, and Chinese conclusion;
-- require unfinished handoff reporting when interrupted/replaced before
-  completion, including current diff, remaining work, validation state, and gate
-  blockers for same-agent resume or replacement;
-- require agents to respond to explicit main-session status requests with
+- require a recovery result when actually interrupted/replaced before
+  completion, including only current diff, remaining work, validation state,
+  and gate blockers needed for same-agent resume or replacement;
+- after exceptional recovery is active, require agents to respond to an explicit main-session status request with
   platform-visible current step, last concrete progress, active command/tool,
   changed files or review scope, remaining work, and blockers; agents must not
   emit periodic heartbeat messages and must not write `agent-assignment.json` or
@@ -402,6 +407,11 @@ bytes of the same five #131 continue-entry payloads so their Branch Review
 content preparation; baseline identities and the frozen 43-path inventory stay
 unchanged. It does not alter any `trellis-finish-work` Skill, command, prompt,
 agent, or launcher.
+
+Issue #161 separately updates the reviewed current bytes of the five existing
+`trellis-finish-work` entries. They become thin routers through Phase 3.6 and
+the active `guru-finalize-task`; they do not add a path, own semantic review, or
+directly invoke deterministic closeout scripts.
 
 Canonical workflow and dogfood workflow add only the mandatory invocation,
 three typed transitions, re-entry, and fail-closed targets. Platform package
