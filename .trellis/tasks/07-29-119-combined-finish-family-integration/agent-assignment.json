@@ -1,9 +1,9 @@
 {
   "schema_version": "1.2",
   "generated_at": "2026-07-29T09:10:22Z",
-  "updated_at": "2026-07-29T15:32:17Z",
+  "updated_at": "2026-07-29T16:55:57Z",
   "task": ".trellis/tasks/07-29-119-combined-finish-family-integration",
-  "head": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
+  "head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
   "agents": [
     {
       "logical_role": "实现代理",
@@ -94,6 +94,15 @@
       "assigned_head": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
       "reason": "BR-FINAL-F1 四处 durable Docs SSOT 与其直接 test consumer 已修复；派发新的独立 trellis-check 代理完整 fresh 覆盖 #119 全 scope、当前 dirty diff、Docs SSOT、13 exits、#105 matrix、安装/update/reapply/四平台，而不是只复用 focused 文档检查。禁止录制 gate、commit、push 或发布。",
       "event_id": "evt-0021-5c0bf427bc"
+    },
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "/root/branch_review_release_final",
+      "platform_nickname": "",
+      "assigned_at": "2026-07-29T16:44:01Z",
+      "assigned_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+      "reason": "Round 4 closed BR-FINAL-F1 with zero findings. Assigned a brand-new final release reviewer that did not participate in any earlier review round to independently cover origin/main@b034f466...HEAD@8e08be3d, complete #119 acceptance, Docs SSOT, issue ledger, installation/update/platform evidence, normal scope boundaries, and publication residual gates. Read-only raw report only; no edit, gate, Git, or remote side effect.",
+      "event_id": "evt-0024-a606009cff"
     }
   ],
   "liveness": {
@@ -296,6 +305,26 @@
       "pending_status_request_at": null,
       "last_checked_at": "",
       "last_decision": ""
+    },
+    "/root/branch_review_release_final": {
+      "progress_anchor_at": "2026-07-29T16:44:01Z",
+      "last_scan_snapshot": {
+        "captured_at": "2026-07-29T16:44:01Z",
+        "task_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+        "task_content_status_digest": "9437b8d3f78f2dce2867c7cadaba9a6460a1e9859454a938b8b2a04817efadca",
+        "task_content_diff_stat_digest": "85a199a4e4b1f6177f7a9fb27be6a4bfbc8fd44ff68ff5bf49770b66cf17af76",
+        "task_content_max_mtime": "2026-07-29T16:42:58Z",
+        "source_head": "b034f466755c5c0b4e2e48bf260bb54ef58cb5be",
+        "source_status_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_diff_stat_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_max_mtime": "2026-07-29T06:47:57Z",
+        "progress_events_count": 0,
+        "progress_events_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "progress_events_newest_event_id": ""
+      },
+      "pending_status_request_at": null,
+      "last_checked_at": "",
+      "last_decision": ""
     }
   },
   "review_rounds": [
@@ -343,9 +372,50 @@
       "review_report_sha256": "bc2708e7c480a9c9bae70284574e832bbd4d71c45a486ae5d90b3aefaefdf203",
       "review_report_size_bytes": 3991,
       "review_report_modified_at": "2026-07-29T14:34:52.379297+00:00"
+    },
+    {
+      "round": 4,
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "/root/branch_review_final",
+      "platform_nickname": "",
+      "reviewed_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+      "findings_count": 0,
+      "reuse_policy": "Finding owner round 3 reviewer 仅复用一次以证明 BR-FINAL-F1 closure continuity；该 reviewer 不得承担最终放行，closure 后另派从未参与更早 rounds 的 fresh reviewer。",
+      "reuse_decision": "reuse-for-closure",
+      "recorded_at": "2026-07-29T16:43:29Z",
+      "review_report_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-closure.md",
+      "review_report_sha256": "949471b03f3808b8820543df78b34ba75f6c440a5f99a4b660ec1e5c1e3e2503",
+      "review_report_size_bytes": 2050,
+      "review_report_modified_at": "2026-07-29T16:42:58.224118+00:00"
+    },
+    {
+      "round": 5,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "/root/branch_review_release_final",
+      "platform_nickname": "",
+      "reviewed_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+      "findings_count": 0,
+      "reuse_policy": "最终放行轮必须使用未参与任何更早 review_rounds、实现或 finding closure 的 fresh reviewer，独立覆盖 current origin/main...HEAD 完整 range，并在零 qualified finding 时才可建议 passed。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-29T16:55:57Z",
+      "review_report_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-release-final.md",
+      "review_report_sha256": "d64c462cfb9eeab9caaf62d20365da3bf8d5fedabd0c1e7dbf3f459694b14080",
+      "review_report_size_bytes": 4091,
+      "review_report_modified_at": "2026-07-29T16:55:36.110600+00:00"
     }
   ],
-  "reuse_decisions": [],
+  "reuse_decisions": [
+    {
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "/root/branch_review_final",
+      "decision": "reuse-for-closure",
+      "reason": "BR-FINAL-F1 由该 reviewer 在 round 3 发现；sequence 002 已提交 exact finding fix，复用同一 reviewer 仅验证其 finding closure continuity。该 agent 不承担 fresh final release decision，closure 后必须另派从未参与更早 rounds 的 reviewer。",
+      "head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+      "recorded_at": "2026-07-29T16:29:08Z",
+      "from_round": 3,
+      "to_round": 4
+    }
+  ],
   "status_events": [
     {
       "event_id": "evt-0001-81e10477fc",
@@ -736,6 +806,60 @@
       "head": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
       "source": "main-session",
       "evidence": "Fresh post-review trellis-check completed over the full #119 scope and current dirty diff with zero qualified findings. It closed BR-FINAL-F1, passed planning/workspace/assignment, source and installed 13/52/29 closure, ownership 43=25+18 and 12/12 tests, installer 48/48, Skill packages 184/184, #105 640 passed/13 skipped, clean marketplace init, update/reapply, and initial/post-update shared/codex/claude/cursor 4/4 integration. Exact pushed remote branch-ref verification remains the later publication gate; no edit, Guru gate, commit, push, PR, or publication action was performed by the check agent.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0023-942a46030d",
+      "event": "completed",
+      "agent_id": "/root/branch_review_final",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-29T16:43:18Z",
+      "recorded_at": "2026-07-29T16:43:18Z",
+      "head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+      "source": "main-session",
+      "evidence": "Round 4 finding-fix closure review completed at HEAD 8e08be3d over origin/main...HEAD. BR-FINAL-F1 is closed, qualified findings are zero, ownership 43=25+18 and 18=5+8+5 matches durable docs and direct test consumer, focused checks passed, and this reviewer will not serve as the fresh final reviewer.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0024-a606009cff",
+      "event": "assigned",
+      "agent_id": "/root/branch_review_release_final",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-29T16:44:01Z",
+      "recorded_at": "2026-07-29T16:44:01Z",
+      "head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+      "source": "main-session",
+      "evidence": "Round 4 closed BR-FINAL-F1 with zero findings. Assigned a brand-new final release reviewer that did not participate in any earlier review round to independently cover origin/main@b034f466...HEAD@8e08be3d, complete #119 acceptance, Docs SSOT, issue ledger, installation/update/platform evidence, normal scope boundaries, and publication residual gates. Read-only raw report only; no edit, gate, Git, or remote side effect.",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0025-9e1890f28e",
+      "event": "completed",
+      "agent_id": "/root/branch_review_release_final",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-29T16:55:46Z",
+      "recorded_at": "2026-07-29T16:55:46Z",
+      "head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+      "source": "main-session",
+      "evidence": "Fresh final release review completed at HEAD 8e08be3d over the complete live origin/main...HEAD range. It found zero qualified findings and zero scope proposals, independently verified BR-FINAL-F1 closure, Finish integration 4/4, ownership 12/12, entry 3/3, source/installed 13/52/29, dogfood and ownership gates, and confirmed remaining pushed-ref/publication actions are later authorization gates.",
       "predecessor_agent_id": "",
       "predecessor_event_id": "",
       "termination_reason": "",

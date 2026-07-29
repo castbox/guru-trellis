@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team task 收尾仍缺少对三个 Finish Skills 的统一薄编排、Guru namespace 平台入口和跨安装场景的 combined acceptance。",
+    "outcome": "Finish-family integration 已完成：workflow 只路由 typed exits，平台入口保持薄适配，#105 recovery 与 clean install/update/reapply/四平台验收均有 current evidence。",
+    "changed_behavior": [
+      "Branch Review passed 后由唯一 publication owner 进入 finalization，不再由 workflow 或平台入口复制 Skill 内部步骤。",
+      "Guru namespace 提供 Shared、Codex、Claude、Cursor 一致的 finish 入口，并保留受控兼容迁移。",
+      "Cross-skill handoff 只传递最小 public DTO，private gate、digest、transaction state 不进入 consumer payload。",
+      "Extension 变更在 finalizer content push 后自动进入 exact remote marketplace verification，happy path 不新增用户确认。",
+      "Ownership SSOT 已修复为 43 条 frozen legacy = 25 historical + 18 reviewed current，并由直接测试 consumer 约束。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "workflow",
+        "name": "Guru Team Finish-family routing",
+        "paths": [
+          ".trellis/workflow.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "Phase 3.6/3.7 仅保留 mandatory Skill invocation、13 个 typed exits、唯一 consumers 与 fail-closed stops。"
+      },
+      {
+        "kind": "prompt",
+        "name": "Guru finish platform entries",
+        "paths": [
+          ".claude/commands/guru/finish-work.md",
+          ".codex/prompts/guru-finish-work.md",
+          ".cursor/commands/guru/finish-work.md"
+        ],
+        "change": "新增 Guru namespace 入口，只做 orientation、Skill load、typed route loop 与最终报告。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team installation and ownership",
+        "paths": [
+          "trellis/presets/guru-team/ownership/upstream-ownership.json",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "安装、update/reapply、managed ownership 与 initial/post-update 四平台验证已覆盖 additive Finish entries。"
+      },
+      {
+        "kind": "skill",
+        "name": "Finish-family public integration",
+        "paths": [
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py"
+        ],
+        "change": "13 exits、consumer projection、target authoring partition 和 private-runtime boundary 在统一 corpus 上闭合。"
+      },
+      {
+        "kind": "docs",
+        "name": "Finish and ownership durable SSOT",
+        "paths": [
+          "README.md",
+          "docs/requirements/requirement-main.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          ".trellis/spec/preset/upstream-ownership.md"
+        ],
+        "change": "长期文档已同步薄 routing、平台入口、安装抗漂移、#105 回归与 25/18 ownership 口径。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Finish-family global routing",
+        "before": "收尾顺序、Skill 内部判断和事务细节在 workflow/entry 中存在重复描述。",
+        "after": "workflow 完成对三个 owner 的薄编排，每个 typed exit 只映射一个 consumer 或 fail-closed stop。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Cross-skill public handoff",
+        "before": "集成描述可能直接引用 pr-readiness、marketplace-verification 或 closeout-plan 的私有结构。",
+        "after": "producer 仅输出 consumer 必需的最小 DTO，target-owned authoring 与 private artifact ownership 保持分离。",
+        "source_artifact": "phase2-check.json"
+      },
+      {
+        "contract": "Extension installation verification",
+        "before": "本地 package 测试不能证明 pushed branch 在 clean install、update 和 preset reapply 后可运行。",
+        "after": "finalizer 在 Draft PR 前自动路由 exact pushed-ref verification，pending 或 stale evidence 均 fail closed。",
+        "source_artifact": "implement.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "guru-finish-work",
+        "verify-throwaway-install.sh",
+        "trellis update --force"
+      ],
+      "config_keys": [
+        "remote_marketplace_verification"
+      ],
+      "schema_fields": [
+        "exit_id",
+        "verification_required",
+        "publication_review_stale",
+        "reprepare_required"
+      ],
+      "symbols": [
+        "guru-review-task-publication",
+        "guru-verify-extension-installation",
+        "guru-finalize-task"
+      ],
+      "phrases": [
+        "Finish-family 薄编排已完成并统一使用 exit_id",
+        "guru-finish-work 四平台入口新增完成",
+        "verify-throwaway-install.sh 安装更新回归已完成",
+        "BR-FINAL-F1 ownership SSOT 修复完成"
+      ]
+    }
+  }
+}

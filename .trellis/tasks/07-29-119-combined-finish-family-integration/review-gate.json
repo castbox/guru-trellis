@@ -1,11 +1,11 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-07-29T14:38:15Z",
+  "generated_at": "2026-07-29T17:02:53Z",
   "task_dir": ".trellis/tasks/07-29-119-combined-finish-family-integration",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "feat/119-combined-finish-family-integration",
-  "head": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
+  "head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".claude/commands/guru/finish-work.md",
@@ -38,7 +38,12 @@
     ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
     ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
     ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+    ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
+    ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+    ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+    ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-initial.md",
     ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/001.json",
+    ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/002.json",
     ".trellis/tasks/07-29-119-combined-finish-family-integration/task-start-context.json",
     ".trellis/tasks/07-29-119-combined-finish-family-integration/task.json",
     ".trellis/workflow.md",
@@ -93,16 +98,9 @@
     ".trellis/tasks/07-29-119-combined-finish-family-integration",
     "--base-branch",
     "main",
-    "--summary",
-    "Fresh reviewer 覆盖完整 origin/main...b6e4d3ba 后确认一个 P2 Docs SSOT finding；当前必须返回实现修复，不得进入 publication。",
-    "--evidence",
-    "Round 1 reviewer /root/branch_review_initial reviewed full range with 0 findings；fresh reviewer /root/branch_review_final independently found BR-FINAL-F1，finding owner lifecycle 绑定 append-only round 3。",
-    "--evidence",
-    "Committed inventory/validator 与 installer SSOT 为 25 baseline / 18 current；README 和三份 durable spec 仍保留旧 38/5 或 exact thirteen。",
-    "--evidence",
-    "影响限于 durable documentation consistency；不改变 runtime、配置、CI/CD、容器、K8s、DB migration 或 Makefile。",
+    "--pass",
     "--reviewer",
-    "/root/branch_review_final",
+    "/root/branch_review_release_final",
     "--review-source",
     "independent-agent",
     "--review-report",
@@ -114,54 +112,35 @@
     "--semantic-review-file",
     ".trellis/.runtime/guru-team/issue-119/review-branch-semantic.json",
     "--typed-exit",
-    "implementation_required"
+    "passed",
+    "--summary",
+    "Round 4 已在 8e08be3d 上关闭 BR-FINAL-F1，Round 5 fresh reviewer 独立覆盖完整 origin/main...HEAD 后确认零 qualified finding、零 scope proposal；#119 当前 Branch Review 通过。",
+    "--evidence",
+    "Round 3 finding owner 与 Round 4 same-agent closure 由 agent-assignment.json、branch-review-final.md 和 branch-review-closure.md 绑定，BR-FINAL-F1 已关闭。",
+    "--evidence",
+    "Round 5 /root/branch_review_release_final 未参与更早 rounds，覆盖 current origin/main@b034f466...HEAD@8e08be3d 完整 66-path range并给出零 finding。",
+    "--evidence",
+    "Fresh Phase 2 记录 184/184、640 passed/13 intentional skips、48/48、source combined 4/4，并覆盖 clean install、update/reapply 与 initial/post-update 四平台 4/4。",
+    "--evidence",
+    "Issue ledger 保持 close #119/#115、related #105/#116/#117/#118、follow-up #132；未重做依赖 Skill 内部或迁移 PR #160 task artifacts。",
+    "--evidence",
+    "部署影响限于 workflow marketplace、preset、平台入口、ownership/manifest、eval 与安装验证；无 CI/CD、容器、Kubernetes、数据库 migration 或 Makefile 变化。"
   ],
   "conclusion": {
-    "passed": false,
-    "summary": "Fresh reviewer 覆盖完整 origin/main...b6e4d3ba 后确认一个 P2 Docs SSOT finding；当前必须返回实现修复，不得进入 publication。",
+    "passed": true,
+    "summary": "Round 4 已在 8e08be3d 上关闭 BR-FINAL-F1，Round 5 fresh reviewer 独立覆盖完整 origin/main...HEAD 后确认零 qualified finding、零 scope proposal；#119 当前 Branch Review 通过。",
     "block_priorities": [
       "P0",
       "P1",
       "P2",
       "P3"
     ],
-    "blocking_findings_count": 1,
-    "findings_count": 1,
+    "blocking_findings_count": 0,
+    "findings_count": 0,
     "observations_count": 0,
     "followup_candidates_count": 0
   },
-  "findings": [
-    {
-      "priority": "P2",
-      "message": "四处 durable Docs SSOT 仍描述旧的 ownership baseline/current 数量，与 committed inventory 和 installer SSOT 的 25 baseline / 18 current 冲突。",
-      "path": "README.md",
-      "candidate_ref": "BR-FINAL-C1",
-      "disposition": "qualified_finding",
-      "scenario_class": "normal_required_behavior",
-      "affected_behavior": "四处 durable Docs SSOT 仍描述旧的 ownership baseline/current 数量，与 committed inventory 和 installer SSOT 的 25 baseline / 18 current 冲突。",
-      "evidence_refs": [
-        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
-        "README.md:96",
-        ".trellis/spec/preset/overlay-guidelines.md:261",
-        ".trellis/spec/workflow/quality-guidelines.md:431",
-        ".trellis/spec/preset/upstream-ownership.md:267",
-        "trellis/presets/guru-team/ownership/upstream-ownership.json"
-      ],
-      "requirement_refs": [
-        ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md FR-7",
-        ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md Docs SSOT Plan",
-        ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md Docs SSOT checkpoint"
-      ],
-      "scope_basis": "#119 明确要求 durable Docs SSOT current，且四个文件均属于本 task 的 durable/check scope。",
-      "qualification_reason": "正常维护路径会读取这些数量合同理解 frozen/current payload binding；旧 38/5 与 exact thirteen 已被 committed 25/18 inventory 事实直接否定。",
-      "finding_ref": "BR-FINAL-F1",
-      "severity": "P2",
-      "owner_round": 3,
-      "reviewed_head": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
-      "status": "open",
-      "closure_evidence": []
-    }
-  ],
+  "findings": [],
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
@@ -223,34 +202,35 @@
     ]
   },
   "verification_evidence": {
-    "base_head": "origin/main...b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
-    "changed_file_count": 61,
-    "reviewer": "/root/branch_review_final",
+    "base_head": "origin/main...8e08be3d716e6f81cde2961831beb14d4deb6801",
+    "changed_file_count": 66,
+    "reviewer": "/root/branch_review_release_final",
     "review_source": "independent-agent",
     "review_report": {
       "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
-      "sha256": "b705810ecfad192d3a4f57b630a4d23d06c5e8a956a56a61ec1b6815ee8eba3c",
-      "size_bytes": 1610,
-      "modified_at": "2026-07-29T14:36:13.527634+00:00"
+      "sha256": "7a58de687a8a876583649bcbbe27d8982b8c96ac0f629c9f215f91e28b4bb918",
+      "size_bytes": 3119,
+      "modified_at": "2026-07-29T17:01:39.230633+00:00"
     },
     "agent_assignment": {
       "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
-      "sha256": "766b4608dab181736649482e7c7dcec82f564349997aaad159acce84f330167c",
-      "size_bytes": 34752,
-      "modified_at": "2026-07-29T14:37:32.529881+00:00",
+      "sha256": "55478b5445f25fa71e1b55265007c55e1702f8ffaf463c17094ede7915eff4a7",
+      "size_bytes": 49285,
+      "modified_at": "2026-07-29T16:55:58.214958+00:00",
       "schema_version": "1.2",
-      "artifact_head": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
+      "artifact_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
       "roles": [
         "实现代理",
         "最终放行审查代理",
         "问题发现审查代理",
+        "问题闭环审查代理",
         "阶段二检查代理"
       ],
-      "agents_count": 8,
-      "review_rounds_count": 3,
-      "reuse_decisions_count": 0,
-      "status_events_count": 18,
-      "effective_status_events_count": 18,
+      "agents_count": 11,
+      "review_rounds_count": 5,
+      "reuse_decisions_count": 1,
+      "status_events_count": 25,
+      "effective_status_events_count": 25,
       "event_corrections_count": 0,
       "recovery_links_count": 0,
       "task": ".trellis/tasks/07-29-119-combined-finish-family-integration",
@@ -289,12 +269,36 @@
         "sha256": "bc2708e7c480a9c9bae70284574e832bbd4d71c45a486ae5d90b3aefaefdf203",
         "size_bytes": 3991,
         "modified_at": "2026-07-29T14:34:52.379297+00:00"
+      },
+      {
+        "round": 4,
+        "logical_role": "问题闭环审查代理",
+        "agent_id": "/root/branch_review_final",
+        "reviewed_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-closure.md",
+        "sha256": "949471b03f3808b8820543df78b34ba75f6c440a5f99a4b660ec1e5c1e3e2503",
+        "size_bytes": 2050,
+        "modified_at": "2026-07-29T16:42:58.224118+00:00"
+      },
+      {
+        "round": 5,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/branch_review_release_final",
+        "reviewed_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-release-final.md",
+        "sha256": "d64c462cfb9eeab9caaf62d20365da3bf8d5fedabd0c1e7dbf3f459694b14080",
+        "size_bytes": 4091,
+        "modified_at": "2026-07-29T16:55:36.110600+00:00"
       }
     ],
     "evidence": [
-      "Round 1 reviewer /root/branch_review_initial reviewed full range with 0 findings；fresh reviewer /root/branch_review_final independently found BR-FINAL-F1，finding owner lifecycle 绑定 append-only round 3。",
-      "Committed inventory/validator 与 installer SSOT 为 25 baseline / 18 current；README 和三份 durable spec 仍保留旧 38/5 或 exact thirteen。",
-      "影响限于 durable documentation consistency；不改变 runtime、配置、CI/CD、容器、K8s、DB migration 或 Makefile。"
+      "Round 3 finding owner 与 Round 4 same-agent closure 由 agent-assignment.json、branch-review-final.md 和 branch-review-closure.md 绑定，BR-FINAL-F1 已关闭。",
+      "Round 5 /root/branch_review_release_final 未参与更早 rounds，覆盖 current origin/main@b034f466...HEAD@8e08be3d 完整 66-path range并给出零 finding。",
+      "Fresh Phase 2 记录 184/184、640 passed/13 intentional skips、48/48、source combined 4/4，并覆盖 clean install、update/reapply 与 initial/post-update 四平台 4/4。",
+      "Issue ledger 保持 close #119/#115、related #105/#116/#117/#118、follow-up #132；未重做依赖 Skill 内部或迁移 PR #160 task artifacts。",
+      "部署影响限于 workflow marketplace、preset、平台入口、ownership/manifest、eval 与安装验证；无 CI/CD、容器、Kubernetes、数据库 migration 或 Makefile 变化。"
     ],
     "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
   },
@@ -317,6 +321,9 @@
         ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-initial.md",
         ".trellis/workflow.md",
         "README.md",
         "docs/requirements/README.md",
@@ -367,7 +374,12 @@
         ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-initial.md",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/001.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/002.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/task-start-context.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/task.json",
         ".trellis/workflow.md",
@@ -405,7 +417,9 @@
         ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/001.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/002.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/task-start-context.json",
         ".trellis/tasks/07-29-119-combined-finish-family-integration/task.json",
         "trellis/guru-team-extension.json",
@@ -463,46 +477,94 @@
   "skill_id": "guru-review-branch",
   "mode": "workflow",
   "review_intent": "fresh_final_review",
-  "typed_exit": "implementation_required",
+  "typed_exit": "passed",
   "semantic_review": {
-    "qualified_findings": [
+    "qualified_findings": [],
+    "scope_proposals": [],
+    "observations": [],
+    "followup_candidates": [],
+    "rejected_candidates": [
       {
-        "candidate_ref": "BR-FINAL-C1",
-        "disposition": "qualified_finding",
+        "candidate_ref": "BR-RELEASE-C1",
+        "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "四处 durable Docs SSOT 仍描述旧的 ownership baseline/current 数量，与 committed inventory 和 installer SSOT 的 25 baseline / 18 current 冲突。",
+        "affected_behavior": "BR-FINAL-F1 修复后，durable ownership 数量仍可能与 canonical inventory 和直接测试 consumer 不一致。",
         "path": "README.md",
         "evidence_refs": [
-          ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-closure.md",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-release-final.md",
           "README.md:96",
-          ".trellis/spec/preset/overlay-guidelines.md:261",
-          ".trellis/spec/workflow/quality-guidelines.md:431",
-          ".trellis/spec/preset/upstream-ownership.md:267",
-          "trellis/presets/guru-team/ownership/upstream-ownership.json"
+          "trellis/presets/guru-team/ownership/upstream-ownership.json",
+          "trellis/skills/guru-team/tests/test_skill_packages.py"
         ],
         "requirement_refs": [
           ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md FR-7",
           ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md Docs SSOT Plan",
           ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md Docs SSOT checkpoint"
         ],
-        "scope_basis": "#119 明确要求 durable Docs SSOT current，且四个文件均属于本 task 的 durable/check scope。",
-        "qualification_reason": "正常维护路径会读取这些数量合同理解 frozen/current payload binding；旧 38/5 与 exact thirteen 已被 committed 25/18 inventory 事实直接否定。",
-        "finding_ref": "BR-FINAL-F1",
-        "severity": "P2",
-        "owner_round": 3,
-        "reviewed_head": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
-        "status": "open",
-        "closure_evidence": []
+        "scope_basis": "#119 明确要求 durable Docs SSOT current；Round 3 的 BR-FINAL-F1 属于当前 acceptance，必须在最终放行前证明已关闭。",
+        "qualification_reason": "Sequence 002、Round 4 closure 与 Round 5 fresh final review 共同证明 43=25+18、18=5+8+5 已在 README、三份 durable spec、inventory 和直接测试 consumer 中一致，当前实现不再违反该 requirement。"
+      },
+      {
+        "candidate_ref": "BR-RELEASE-C2",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Issue Scope Ledger 中 close_issues 的 acceptance_evidence 仍为空，可能被误判为当前 Branch Review implementation defect。",
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json",
+        "evidence_refs": [
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-release-final.md",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json",
+          ".agents/skills/guru-review-task-publication/references/contract.md"
+        ],
+        "requirement_refs": [
+          ".trellis/workflow.md Phase 3.6",
+          ".agents/skills/guru-review-task-publication/references/contract.md"
+        ],
+        "scope_basis": "Ledger acceptance evidence 是后续 publication content authoring 与 readiness 的 fail-closed 输入；Branch Review 负责确认当前实现和 issue 分类，不提前冒充 publication owner。",
+        "qualification_reason": "当前 close/related/follow-up 分类已由完整 review 覆盖且无实现缺陷；空 acceptance_evidence 必须在下一阶段补齐，但按现行 workflow 顺序不是本 Gate 的 implementation finding。"
+      },
+      {
+        "candidate_ref": "BR-RELEASE-C3",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "尚未完成 exact pushed branch-ref marketplace verification，可能被误判为当前 Branch Review implementation defect。",
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "evidence_refs": [
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-release-final.md",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json"
+        ],
+        "requirement_refs": [
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md FR-5",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+          ".trellis/workflow.md Phase 3"
+        ],
+        "scope_basis": "Exact remote marketplace verification 明确依赖获授权后的 pushed reviewed HEAD；本地 Branch Review 不得制造 remote evidence 或越过 push 授权。",
+        "qualification_reason": "Current Phase 2 已覆盖 source、clean install、update/reapply 和 initial/post-update 四平台；缺失的 pushed-ref 证据是后续 publication gate，不是当前代码缺陷，也不能由本地 sample 替代。"
+      },
+      {
+        "candidate_ref": "BR-RELEASE-C4",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Sequence 002 后直接重跑 standalone Phase 2 checker会把 pre-commit repository snapshot 判为 stale，可能被误判为 Branch Review 缺少 current Phase 2。",
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
+        "evidence_refs": [
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/002.json",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-release-final.md"
+        ],
+        "requirement_refs": [
+          ".agents/skills/guru-create-task-commit/references/contract.md",
+          ".agents/skills/guru-review-branch/references/contract.md"
+        ],
+        "scope_basis": "Branch Review entry 消费已由 successful task commit 精确绑定的 fresh Phase 2 handoff；不要求 commit 后制造重复 Phase 2 artifact。",
+        "qualification_reason": "Sequence 002 记录了 Phase 2 SHA、精确 staged paths、expected/actual tree 和最终 commit identity；review entry 已接受该 committed handoff，因此不存在 current evidence 缺口。"
       }
     ],
-    "scope_proposals": [],
-    "observations": [],
-    "followup_candidates": [],
-    "rejected_candidates": [],
     "ai_review_gate": {
-      "status": "implementation_required",
-      "summary": "Fresh final reviewer 覆盖完整 origin/main...HEAD 后发现一个 current-scope P2：四处 ownership 数量 Docs SSOT stale；必须修复并重走 Phase 2、commit 和 Branch Review。"
+      "status": "passed",
+      "summary": "Round 4 在 current commit 上关闭 BR-FINAL-F1，Round 5 fresh reviewer 独立覆盖完整 origin/main...8e08be3d 后确认零 qualified finding、零 scope proposal；#119 当前实现、Docs SSOT、安装/update/reapply、四平台与 #105 recovery 回归满足 Branch Review，pushed-ref verification 和 acceptance evidence 留给后续 publication gate。"
     }
   },
-  "facts_sha256": "77a3dd97b4b412da01851558d8340b9f75f5cfeb6dcbc004e41c0ebfee33274d"
+  "facts_sha256": "979d12c30126d08a3901716a4af4b1a6dbfb8b31ac08e2180cfa89d74269aecf"
 }

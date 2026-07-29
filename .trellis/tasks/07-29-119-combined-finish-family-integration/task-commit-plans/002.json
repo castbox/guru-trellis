@@ -327,7 +327,149 @@
     "plan_digest": "1269cd935eae96d440cb59fba449632cfb33aa388bd0607a7e7e355bd8c78685"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-29T16:27:33Z",
+    "commit_sha": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+    "parent": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
+    "message_sha256": "4f740f65c3fcf78caee0a79b68add8db2bf73189ab604d2cc0f6d22ed3e53df3",
+    "committed_paths": [
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-initial.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/001.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/002.json",
+      "README.md",
+      "trellis/skills/guru-team/tests/test_skill_packages.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "7bcc375152ed527ac51ae213911f41b122d585f0",
+      "actual_tree": "7bcc375152ed527ac51ae213911f41b122d585f0",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/spec/preset/overlay-guidelines.md",
+          "expected_blob": "d52d5a011615a598f06b19b1c63dbd7f217f2891",
+          "expected_mode": "100644",
+          "actual_blob": "d52d5a011615a598f06b19b1c63dbd7f217f2891",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/upstream-ownership.md",
+          "expected_blob": "db3642b93e164e8b2e597322a091318b30d669e3",
+          "expected_mode": "100644",
+          "actual_blob": "db3642b93e164e8b2e597322a091318b30d669e3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "12389fac8a343246a28c0adcaae322d0ac6bddb8",
+          "expected_mode": "100644",
+          "actual_blob": "12389fac8a343246a28c0adcaae322d0ac6bddb8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
+          "expected_blob": "4b096fb7b23e124f84294e6b5f666b2178df3cb6",
+          "expected_mode": "100644",
+          "actual_blob": "4b096fb7b23e124f84294e6b5f666b2178df3cb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
+          "expected_blob": "d43b92ae1efa27315c2f33741e77ab13fe931659",
+          "expected_mode": "100644",
+          "actual_blob": "d43b92ae1efa27315c2f33741e77ab13fe931659",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
+          "expected_blob": "4f9333187b77bae914f2adf091157227d625e1bc",
+          "expected_mode": "100644",
+          "actual_blob": "4f9333187b77bae914f2adf091157227d625e1bc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
+          "expected_blob": "d8313dcf8eaf7e81ce8cd9ad03fe038444de0b76",
+          "expected_mode": "100644",
+          "actual_blob": "d8313dcf8eaf7e81ce8cd9ad03fe038444de0b76",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+          "expected_blob": "15fe4784f0fd33b970d0ca97de17c0648a72f236",
+          "expected_mode": "100644",
+          "actual_blob": "15fe4784f0fd33b970d0ca97de17c0648a72f236",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+          "expected_blob": "b18b52c8dc07d93dd5b624ba61598f8af1a902e0",
+          "expected_mode": "100644",
+          "actual_blob": "b18b52c8dc07d93dd5b624ba61598f8af1a902e0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-initial.md",
+          "expected_blob": "ededb36f7e7e28ecf296251f01bbddb4a85030c0",
+          "expected_mode": "100644",
+          "actual_blob": "ededb36f7e7e28ecf296251f01bbddb4a85030c0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/001.json",
+          "expected_blob": "55139de28bbaf28c835f824bc0bdd919a1b3bfb0",
+          "expected_mode": "100644",
+          "actual_blob": "55139de28bbaf28c835f824bc0bdd919a1b3bfb0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/002.json",
+          "expected_blob": "cdb20fdb4000c4d2ea30b8df56767f4376ff0886",
+          "expected_mode": "100644",
+          "actual_blob": "cdb20fdb4000c4d2ea30b8df56767f4376ff0886",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "README.md",
+          "expected_blob": "8f844fefe015edc8308e74f1672e9d8ea5fcfd88",
+          "expected_mode": "100644",
+          "actual_blob": "8f844fefe015edc8308e74f1672e9d8ea5fcfd88",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "e236a3d492ff752d32ffbd6eb2dff283ddad5c5d",
+          "expected_mode": "100644",
+          "actual_blob": "e236a3d492ff752d32ffbd6eb2dff283ddad5c5d",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

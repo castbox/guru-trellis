@@ -5,7 +5,21 @@
     "url": "https://github.com/castbox/guru-trellis/issues/119",
     "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
     "reason": "当前唯一 combined Finish-family integration delivery unit。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Branch Review Gate review-gate:54bd28f48808c5d727acefbdd33a95f6dbcf3a37c78641615e0e8c6b2ccd8076 在 HEAD 8e08be3d716e6f81cde2961831beb14d4deb6801 上覆盖 #119 全部 accepted-current acceptance，结论为 passed、零 finding、零 scope proposal。",
+      "Fresh Phase 2 覆盖 Finish-family 13 exits、薄 workflow 与 typed consumers、Guru namespace entries、#105 transaction/recovery、clean install、update/reapply 及 initial/post-update 四平台验证。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "a957b26b0b307438850095d7391e2eee6ac70f3af30ed261399c41d61bd9189a",
+        "verified_content_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+        "remote_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+        "publish_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,14 +27,42 @@
       "url": "https://github.com/castbox/guru-trellis/issues/119",
       "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
       "reason": "本 task 覆盖 #119 全部 accepted-current combined acceptance。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Branch Review Gate review-gate:54bd28f48808c5d727acefbdd33a95f6dbcf3a37c78641615e0e8c6b2ccd8076 在 HEAD 8e08be3d716e6f81cde2961831beb14d4deb6801 上覆盖 #119 全部 accepted-current acceptance，结论为 passed、零 finding、零 scope proposal。",
+        "Fresh Phase 2 覆盖 Finish-family 13 exits、薄 workflow 与 typed consumers、Guru namespace entries、#105 transaction/recovery、clean install、update/reapply 及 initial/post-update 四平台验证。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "a957b26b0b307438850095d7391e2eee6ac70f3af30ed261399c41d61bd9189a",
+          "verified_content_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+          "remote_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+          "publish_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+          "commands_passed": true
+        }
+      ]
     },
     {
       "number": 115,
       "url": "https://github.com/castbox/guru-trellis/issues/115",
       "title": "按 Skill-first 重构 Guru Team task 收尾流程 umbrella",
       "reason": "#119 combined acceptance 完成后按 Issue authority 一并关闭 umbrella。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "#116、#117、#118 已分别拥有 publication、extension verification 与 finalization；#119 当前分支只完成其 combined thin integration，未重做三个 Skill 内部。",
+        "Branch Review Gate review-gate:54bd28f48808c5d727acefbdd33a95f6dbcf3a37c78641615e0e8c6b2ccd8076 确认 #115 umbrella 的 Finish-family integration closure 已由 #119 完整覆盖。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "a957b26b0b307438850095d7391e2eee6ac70f3af30ed261399c41d61bd9189a",
+          "verified_content_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+          "remote_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+          "publish_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

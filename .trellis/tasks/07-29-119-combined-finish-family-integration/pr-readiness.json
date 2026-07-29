@@ -1,0 +1,373 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-task-publication",
+  "generated_at": "2026-07-29T17:13:44Z",
+  "task_dir": ".trellis/tasks/07-29-119-combined-finish-family-integration",
+  "profile": "publication_review",
+  "mode": "workflow",
+  "review_intent": "initial_review",
+  "review_identity": {
+    "reviewed_head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+    "review_ref": "review-gate:54bd28f48808c5d727acefbdd33a95f6dbcf3a37c78641615e0e8c6b2ccd8076"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "diff_outcome_consistency",
+        "status": "passed",
+        "summary": "66-path committed diff 与 #119 accepted-current combined outcome 一致；三个 Finish Skill 内部无 product diff，新增范围限于薄 routing、Guru entries、integration evidence、安装验证与 Docs SSOT。",
+        "evidence_refs": [
+          "prd.md",
+          "phase2-check.json",
+          "review.md"
+        ]
+      },
+      {
+        "id": "issue_scope_closure",
+        "status": "passed",
+        "summary": "Live Issue authority 与 ledger 一致：只关闭 #119/#115；#105/#116/#117/#118 仅 related；#132 仅 follow-up 且保持 open。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "review-gate.json",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "pr_body_quality",
+        "status": "passed",
+        "summary": "中文 PR body 具体说明行为、影响、验证、Review Gate、Docs SSOT、关闭范围、安全/部署影响与远端 verification pending，不含占位或虚假完成声明。",
+        "evidence_refs": [
+          "pr-body.md",
+          "issue-scope-ledger.json"
+        ]
+      },
+      {
+        "id": "validation_claims",
+        "status": "passed",
+        "summary": "PR body 的 184/184、640 passed/13 intentional skips、48/48、12/12、3/3 与两轮 installed 四平台 4/4 均来自 current Phase 2 或 fresh final review；exact pushed-ref verification 明确保持 pending。",
+        "evidence_refs": [
+          "phase2-check.json",
+          "reviews/branch-review-release-final.md",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "branch_review_summary",
+        "status": "passed",
+        "summary": "PR body 与 finish index 准确承接 Round 3 finding、Round 4 closure 和 Round 5 fresh final passed，未把旧 implementation_required gate 当作 current 结论。",
+        "evidence_refs": [
+          "review.md",
+          "review-gate.json",
+          "reviews/branch-review-closure.md",
+          "reviews/branch-review-release-final.md"
+        ]
+      },
+      {
+        "id": "docs_ssot_reconciliation",
+        "status": "passed",
+        "summary": "ssot_first 已完成；durable requirements、workflow/preset specs、README 与 ownership inventory 使用同一 Finish routing 和 43=25+18 口径，task-only evidence 未形成第二份长期 SSOT。",
+        "evidence_refs": [
+          "design.md",
+          "phase2-check.json",
+          "pr-body.md"
+        ]
+      },
+      {
+        "id": "safety_deployment_impact",
+        "status": "passed",
+        "summary": "安全说明覆盖 secret redaction 与 honest-but-fallible scope；部署影响限于 marketplace/preset/entry/eval/install，无 CI/CD、容器、K8s、DB migration 或 Makefile 变化。",
+        "evidence_refs": [
+          "pr-body.md",
+          "review-gate.json"
+        ]
+      },
+      {
+        "id": "finish_summary_semantics",
+        "status": "passed",
+        "summary": "最小 finish summary index 描述实际问题、完成结果、五类受影响 surface、三项合同迁移与可检索术语，不包含 runtime 路径、重复 handoff 或未消费字段。",
+        "evidence_refs": [
+          "finish-summary-index.json",
+          "prd.md",
+          "design.md"
+        ]
+      },
+      {
+        "id": "metadata_tail_integrity",
+        "status": "passed",
+        "summary": "Branch Review 后工作树只包含 assignment、review rollup/gate、registered raw reports、completed commit plan 与 publication owner 允许的 ledger/body/index metadata；无 product/source drift。",
+        "evidence_refs": [
+          "agent-assignment.json",
+          "review-gate.json",
+          "task-commit-plans/002.json",
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "finish-summary-index.json"
+        ]
+      },
+      {
+        "id": "artifact_binding_freshness",
+        "status": "passed",
+        "summary": "Publication input 绑定 current HEAD、Branch Review artifact digest 与 task identity；remote branch 也指向同一 reviewed content HEAD，pending verifier identity 将由 finalizer 后续替换。",
+        "evidence_refs": [
+          "review-gate.json",
+          "issue-scope-ledger.json",
+          "task-commit-plans/002.json"
+        ]
+      }
+    ],
+    "findings": [],
+    "conclusions": {
+      "issue_scope": {
+        "status": "passed",
+        "summary": "#119/#115 的 combined closure evidence 充分；related 与 follow-up issue 没有 close keyword，#132 保持 open。",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "pr-body.md",
+          "review-gate.json"
+        ]
+      },
+      "docs_ssot": {
+        "status": "passed",
+        "summary": "批准的 ssot_first 策略已经回写 durable docs；acceptance audit、agent/review lifecycle 与命令 digest 只保留为 task history。",
+        "evidence_refs": [
+          "phase2-check.json",
+          "design.md",
+          "pr-body.md"
+        ]
+      },
+      "safety_deployment": {
+        "status": "passed",
+        "summary": "PR body 真实披露安全、部署和未验证边界；remote marketplace evidence 仍 pending 并在 PR 创建前 fail closed。",
+        "evidence_refs": [
+          "pr-body.md",
+          "issue-scope-ledger.json"
+        ]
+      }
+    },
+    "revision_history": [],
+    "reviewer_process": {
+      "reviewer": "/root",
+      "summary": "主会话基于 current Phase 2、五轮 Branch Review、live GitHub scope、pushed HEAD 与三份 publication candidates 审查全部十维，不以 recorder 或 checker success 替代 semantic judgment。",
+      "evidence_refs": [
+        "phase2-check.json",
+        "review.md",
+        "review-gate.json",
+        "issue-scope-ledger.json",
+        "pr-body.md",
+        "finish-summary-index.json"
+      ]
+    },
+    "human_confirmation": {
+      "status": "not_required",
+      "summary": "本 Gate 只审查已确认 scope 的 publication metadata，不执行 commit、push、PR、merge 或 Issue closure；finalization 副作用仍需独立 exact plan confirmation。",
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "十个 publication dimensions 与 issue scope、Docs SSOT、安全/部署 conclusions 全部通过，零 finding；当前结果可返回 ready 给 guru-finalize-task。"
+    }
+  },
+  "deterministic_bindings": {
+    "artifacts": {
+      "prd.md": {
+        "sha256": "f55ce5a648ab4eb9004390d4b40ed27a4f7fb726cac27adedc4d2082f309b210",
+        "size": 13694
+      },
+      "design.md": {
+        "sha256": "c2955f431dff56a9ce7fa5ee026824cb44c2a73021eb15742ccd1e6ded02a8fb",
+        "size": 12561
+      },
+      "implement.md": {
+        "sha256": "568ce5530414c02394193761da7e4139ab26147620157db897e7c47da9922d39",
+        "size": 9211
+      },
+      "planning-approval.json": {
+        "sha256": "652d7a559ce3e18ddb92b8096b739af8b127a93cbc16e0525b14dd45180abbf9",
+        "size": 34082
+      },
+      "phase2-check.json": {
+        "sha256": "ad22d4105310553dc31b2bbd233c8ff411507430fea84b5768e4409020e47557",
+        "size": 62832
+      },
+      "issue-scope-ledger.json": {
+        "sha256": "5a9bc18366dd12c3dd47d4bfd7caf170fb129ef1323cc6d32701d739e51b14d6",
+        "size": 5575
+      },
+      "agent-assignment.json": {
+        "sha256": "55478b5445f25fa71e1b55265007c55e1702f8ffaf463c17094ede7915eff4a7",
+        "size": 49285
+      },
+      "review.md": {
+        "sha256": "7a58de687a8a876583649bcbbe27d8982b8c96ac0f629c9f215f91e28b4bb918",
+        "size": 3119
+      },
+      "review-gate.json": {
+        "sha256": "54bd28f48808c5d727acefbdd33a95f6dbcf3a37c78641615e0e8c6b2ccd8076",
+        "size": 34187
+      },
+      "pr-body.md": {
+        "sha256": "a5341c958eb5a1b65330c99ab16ce292d290d849289b3f556ee3bab7966f5ce5",
+        "size": 3596
+      },
+      "finish-summary-index.json": {
+        "sha256": "2be3acd48a2398f557f275735212a563c83a9827f9e2f54427398a0ad0c1f3db",
+        "size": 5113
+      }
+    },
+    "repository": {
+      "head": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+      "branch": "feat/119-combined-finish-family-integration",
+      "base_ref": "origin/main",
+      "diff_paths": [
+        ".claude/commands/guru/finish-work.md",
+        ".codex/prompts/guru-finish-work.md",
+        ".cursor/commands/guru-finish-work.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/guru-team/skills/adapters/eval/guru-team-shared-eval",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/schemas/skill-eval-native-trace.schema.json",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/preset/upstream-ownership.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/index.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/skill-package-contract.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/check.jsonl",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/context-discovery.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/contract-wording-review.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.jsonl",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-review.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/phase2-check.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-initial.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/001.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/002.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/task-start-context.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+        "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+        "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json",
+        "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/tests/fixtures/representative-active/fake-native-cli.py",
+        "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-native-trace.schema.json",
+        "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+        "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "status_paths": [
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/finish-summary-index.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/pr-body.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-closure.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-release-final.md",
+        ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/002.json"
+      ]
+    },
+    "entry_preconditions": {
+      "runtime_dependency": {
+        "status": "passed",
+        "facts_sha256": "b07259abb537318774b39f5d5c7c75c5469e6b4072267d97b443aa67e0104222"
+      },
+      "task_workspace": {
+        "status": "passed",
+        "facts_sha256": "49e9d5440d69297144763a89e91d53ac7f9ca4a0ebb52b42ff2c8650d71d65be"
+      },
+      "task_identity": {
+        "status": "passed",
+        "facts_sha256": "b8663e29e56c34d0e1f37090f2e682ab2acee794d8503182e5058d646885350a"
+      },
+      "branch_review_handoff": {
+        "status": "passed",
+        "facts_sha256": "b9ba3281a8538f62d35947e5af33fec83826e61442731fa206013f9a0f95b974"
+      },
+      "planning_approval": {
+        "status": "passed",
+        "facts_sha256": "ca4247ebcbdff1f1882bb11970c67a56b1707f8c0cd83029ff3160dabcbb1904"
+      },
+      "phase2_check": {
+        "status": "passed",
+        "facts_sha256": "d69897949ebae3ebd75fbbc0971e45f43c56a8c4520af1bd735ee78a0f0b42f3"
+      },
+      "issue_scope_ledger": {
+        "status": "passed",
+        "facts_sha256": "b7174b61f3bf353fbb63cbb83f4ba2923968dccf7a11c34a73e1f6244ce16a39"
+      },
+      "docs_ssot_reconciliation": {
+        "status": "passed",
+        "facts_sha256": "6fba8f4e30e1076be75f2cb5554570da7d6b40da4b5fd6720a6c0e4936830101"
+      },
+      "branch_review_evidence": {
+        "status": "passed",
+        "facts_sha256": "07e9ddce98e503e02aa1896b83843a5ea7954c49e5377805e817766806e6b59b"
+      },
+      "publication_content": {
+        "status": "passed",
+        "facts_sha256": "28dd12a507a8f95cd29a2f6160c8783f6c7974de660f3f438ed9bfaac546a745"
+      },
+      "review_range_and_working_tree": {
+        "status": "passed",
+        "facts_sha256": "3474bbd76af0fd5ff7b1191b8b572c4e0899a926dee6663f638cbccc0a815fc2"
+      },
+      "invocation_freshness": {
+        "status": "passed",
+        "facts_sha256": "41946d4110fc5fb235972e0718c7e0e924dbe07ad4fd4e3a474b04efb292a939"
+      }
+    },
+    "publication_ref": "publication:7de894f6053387f1d299c0537d804bc9ec2ec28071d5ced0b946debdc160cbcb"
+  },
+  "typed_exit": "ready",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-finalize-task"
+  },
+  "supersedes_publication_ref": null,
+  "facts_sha256": "e182b506e3502a3401e6f8310fe49baabe8025bcbed98e209354c2d4706bc295",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/119-combined-finish-family-integration",
+    "reviewed_head_sha": "8e08be3d716e6f81cde2961831beb14d4deb6801",
+    "title": "集成 Guru Team Finish-family 收尾链路",
+    "body_source": "pr-body.md",
+    "body_sha256": "a5341c958eb5a1b65330c99ab16ce292d290d849289b3f556ee3bab7966f5ce5",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "4c0a8311c87588885fc41146c20c88e0ee336f0adee55a49e1cba6c154a4ce87"
+  }
+}
