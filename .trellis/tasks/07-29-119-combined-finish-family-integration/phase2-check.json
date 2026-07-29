@@ -1,7 +1,7 @@
 {
   "mode": "workflow",
   "requirement_provenance": {
-    "summary": "已复核 live Issue #119、accepted-current 评论、Issue Scope Ledger 与批准规划；本地权威文件完整承接 combined Finish-family integration、#105 回归、#119/#115 close 及 #132 follow-up 边界。",
+    "summary": "Fresh Phase 2 reread the approved Issue #119 scope, accepted-current authority projection, Issue Scope Ledger, and current repository facts; the combined Finish-family integration, Issue #105 regression, #119/#115 close candidates, and #132 follow-up boundary remain exact.",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
@@ -44,7 +44,7 @@
         "size_bytes": 99434
       }
     ],
-    "facts_sha256": "eb7a4bdc39823095ef9e9b77e3899fbcd2b668f35e442473b58bf98a9918063e"
+    "facts_sha256": "a8fa2133ee5998d4540f20bd3018c65910094f0c48cf109e60e5ea7e367a56e9"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
@@ -61,8 +61,8 @@
       },
       {
         "path": ".trellis/spec/preset/overlay-guidelines.md",
-        "sha256": "0055e13969528acc4de13d2441ace24c66cde4c210a0783c4979fa7b7b818e9b",
-        "size_bytes": 26328
+        "sha256": "9e298d7559aef5922d6e1e30f033d03cb7ed62ee3ab9c4c31413061ea4c805a9",
+        "size_bytes": 26468
       },
       {
         "path": "docs/requirements/requirement-main.md",
@@ -71,8 +71,8 @@
       },
       {
         "path": "README.md",
-        "sha256": "a69d714c42453a7b3ac8fc1a1ab062d5190058c2f31a90c47c282f835eced8a3",
-        "size_bytes": 83211
+        "sha256": "78f4024d0100d1b62675350c12835a0cee777275ad3168c8c4ab8493f9f00d3a",
+        "size_bytes": 83346
       },
       {
         "path": "trellis/workflows/guru-team/README.md",
@@ -83,21 +83,31 @@
         "path": "trellis/presets/guru-team/README.md",
         "sha256": "65f6d54ebdf4f1f70002a9346679b3827814f5ad76620c894fcf6b8535b6c61c",
         "size_bytes": 68801
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "a3081c44aa9f9c07d6903e6c08ecab46a0904ff1fe3f7a902935b56dc86b41d0",
+        "size_bytes": 18744
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "74e0b02fa37a9f3421a8310c5e6fa5877b76c740bd1c8765b527d406d764b1bc",
+        "size_bytes": 49335
       }
     ],
-    "sync_result": "stale_docs 已按 ssot_first 回写 canonical guru-finish-work、frozen trellis-continue 的 Phase 3.6 ready 边界、public-only combined evidence、clean install/update/reapply 与 #119/#115/#132 语义；canonical 与 dogfood bytes 已验证一致。",
+    "sync_result": "BR-FINAL-F1 is closed: all durable ownership SSOT now states 43 frozen legacy paths = 25 historical baseline + 18 reviewed current bindings, partitioned as #131 continue 5, #161 implement/check agent 8, and #161 finish-router 5. Canonical/dogfood Finish workflow, public-only evidence, install/update/reapply, and issue closure boundaries remain synchronized.",
     "task_delta_merged": true,
     "task_history_only": [
-      "acceptance 差额审计与 planning provenance",
-      "agent assignment/recovery 与 Phase 2 command evidence",
-      "throwaway 临时日志、digest 与 resolved finding 历史"
+      "acceptance gap audit and planning provenance",
+      "agent assignment, recovery, Phase 2 and Branch Review evidence",
+      "throwaway logs, digests, and resolved finding history"
     ],
     "no_update_reason": null,
     "followup_or_pr_limit": null,
-    "facts_sha256": "0844123c5e18c15605bc769cf86087b6baf58346e5d5926c3fead710b69f9cd5"
+    "facts_sha256": "e251daa23ed36787ab5739234a0f15081c27a213c637f6f5a4af164797e12786"
   },
   "implementation_handoff": {
-    "summary": "实现终态包含薄 global workflow、Guru namespace 三平台入口、additive ownership、public-only cross-skill runner、四 adapter throwaway、#105 回归与 durable Docs SSOT；未修改三个 Finish Skill 的内部行为或 #105 transaction owner。",
+    "summary": "The current implementation includes the thin Finish workflow, Guru namespace entry compatibility, additive ownership, public-only cross-skill evidence, four-adapter throwaway and Issue #105 regressions. The post-commit BR-FINAL-F1 fix updates only four durable ownership descriptions and their direct test consumer; it does not alter #116/#117/#118 internals or transaction ownership.",
     "artifacts": [
       {
         "path": "trellis/workflows/guru-team/workflow.md",
@@ -163,89 +173,69 @@
         "path": "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
         "sha256": "103e957f84e52045205fcf813295f6b0b45a6b2b318622374fc934ddf16898b7",
         "size_bytes": 1580
+      },
+      {
+        "path": "README.md",
+        "sha256": "78f4024d0100d1b62675350c12835a0cee777275ad3168c8c4ab8493f9f00d3a",
+        "size_bytes": 83346
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "9e298d7559aef5922d6e1e30f033d03cb7ed62ee3ab9c4c31413061ea4c805a9",
+        "size_bytes": 26468
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "a3081c44aa9f9c07d6903e6c08ecab46a0904ff1fe3f7a902935b56dc86b41d0",
+        "size_bytes": 18744
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "74e0b02fa37a9f3421a8310c5e6fa5877b76c740bd1c8765b527d406d764b1bc",
+        "size_bytes": 49335
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "c0a1282faeb3d0d382c7d0a8ac69dbb2820916a48739e95780ce83b8e878f945",
+        "size_bytes": 271585
       }
     ],
-    "facts_sha256": "b336b0d6417832132ce19086dc0a7817f0ae6db62881bf8d25a5e1894834ccd3"
+    "facts_sha256": "b8721e503a7bd1beb1ed0b5e92fda55128f4b9a3a8993d2bac5806c381dbab54"
   },
   "agent_assignment": {
     "artifact_path": ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
     "implementation_agent_ids": [
-      "/root/entry_ownership"
+      "/root/entry_ownership",
+      "/root/fix_ssot_counts"
     ],
     "check_agent_ids": [
       "/root/phase2_check",
       "/root/phase2_final_check",
+      "/root/phase2_post_review",
       "/root/phase2_recheck"
     ],
     "recovery_complete": true,
-    "phase2_state_sha256": "691b0aaa35533117540ed43c499ec5aec29bc00788021c2b0db1074ab157028b",
-    "facts_sha256": "e400b939e95310eb06b3911390482c42764c9bfc1432682ec439d8bbef854be0"
+    "phase2_state_sha256": "e2a9f8234bc15216e451b48ea29fb499be294a4ae4b3041ea9b72ec8c17f51aa",
+    "facts_sha256": "a88e3f98e18797390447ea6434d8f7fea629156e5b80fca502e880924cc48240"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "b034f466755c5c0b4e2e48bf260bb54ef58cb5be",
-    "head": "b034f466755c5c0b4e2e48bf260bb54ef58cb5be",
+    "head": "b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
-      ".claude/commands/guru/finish-work.md",
-      ".codex/prompts/guru-finish-work.md",
-      ".cursor/commands/guru-finish-work.md",
-      ".trellis/guru-team/extension.json",
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/guru-team/skills/adapters/eval/guru-team-shared-eval",
-      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
-      ".trellis/guru-team/skills/schemas/skill-eval-native-trace.schema.json",
-      ".trellis/spec/docs/public-docs.md",
-      ".trellis/spec/preset/installer.md",
       ".trellis/spec/preset/overlay-guidelines.md",
       ".trellis/spec/preset/upstream-ownership.md",
-      ".trellis/spec/workflow/companion-scripts.md",
-      ".trellis/spec/workflow/data-contracts.md",
-      ".trellis/spec/workflow/index.md",
       ".trellis/spec/workflow/quality-guidelines.md",
-      ".trellis/spec/workflow/skill-package-contract.md",
-      ".trellis/spec/workflow/workflow-contract.md",
       ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/check.jsonl",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/context-discovery.json",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/contract-wording-review.json",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/design.md",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.jsonl",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/implement.md",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-review.json",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/issue-scope-ledger.json",
       ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/task-start-context.json",
-      ".trellis/tasks/07-29-119-combined-finish-family-integration/task.json",
-      ".trellis/workflow.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-initial.md",
+      ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/001.json",
       "README.md",
-      "docs/requirements/README.md",
-      "docs/requirements/guru-team-trellis-flow.md",
-      "docs/requirements/requirement-main.md",
-      "trellis/guru-team-extension.json",
-      "trellis/presets/guru-team/README.md",
-      "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
-      "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
-      "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
-      "trellis/presets/guru-team/ownership/upstream-ownership.json",
-      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
-      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
-      "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
-      "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval",
-      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "trellis/skills/guru-team/schemas/skill-eval-native-trace.schema.json",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/adapters/eval/native_adapter.py",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/fake-native-cli.py",
-      "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-eval-native-trace.schema.json",
-      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-      "trellis/skills/guru-team/tests/test_skill_packages.py",
-      "trellis/workflows/guru-team/README.md",
-      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "trellis/workflows/guru-team/workflow.md"
+      "trellis/skills/guru-team/tests/test_skill_packages.py"
     ],
     "reviewed_paths": [
       {
@@ -300,13 +290,13 @@
       },
       {
         "path": ".trellis/spec/preset/overlay-guidelines.md",
-        "sha256": "0055e13969528acc4de13d2441ace24c66cde4c210a0783c4979fa7b7b818e9b",
-        "size_bytes": 26328
+        "sha256": "9e298d7559aef5922d6e1e30f033d03cb7ed62ee3ab9c4c31413061ea4c805a9",
+        "size_bytes": 26468
       },
       {
         "path": ".trellis/spec/preset/upstream-ownership.md",
-        "sha256": "b1ba3bc40b484a29f657694736c0d7cfdd408aa88514e03586b86dec08cf34bf",
-        "size_bytes": 18549
+        "sha256": "a3081c44aa9f9c07d6903e6c08ecab46a0904ff1fe3f7a902935b56dc86b41d0",
+        "size_bytes": 18744
       },
       {
         "path": ".trellis/spec/workflow/companion-scripts.md",
@@ -325,8 +315,8 @@
       },
       {
         "path": ".trellis/spec/workflow/quality-guidelines.md",
-        "sha256": "909ae239cfc9e76a4526b4ec7aa20c8e2025042a358dfb364aaa2801f4a8df08",
-        "size_bytes": 49228
+        "sha256": "74e0b02fa37a9f3421a8310c5e6fa5877b76c740bd1c8765b527d406d764b1bc",
+        "size_bytes": 49335
       },
       {
         "path": ".trellis/spec/workflow/skill-package-contract.md",
@@ -340,8 +330,8 @@
       },
       {
         "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/agent-assignment.json",
-        "sha256": "b5365ff1e22097addbac407f186300f64c9a562cf114fcb306e794cf7ffd627e",
-        "size_bytes": 25393
+        "sha256": "df3d2010397cf87da74284014083c997a86494b63df847f713865e33aa7b3ada",
+        "size_bytes": 42030
       },
       {
         "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/check.jsonl",
@@ -385,13 +375,38 @@
       },
       {
         "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
-        "sha256": "4ea12d35f7da41af04483755185b49cf0f9b749bdfbb8657a577bc5f30f3f8f5",
-        "size_bytes": 37236
+        "sha256": "652d7a559ce3e18ddb92b8096b739af8b127a93cbc16e0525b14dd45180abbf9",
+        "size_bytes": 34082
       },
       {
         "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/prd.md",
         "sha256": "f55ce5a648ab4eb9004390d4b40ed27a4f7fb726cac27adedc4d2082f309b210",
         "size_bytes": 13694
+      },
+      {
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/review-gate.json",
+        "sha256": "26ad99c668c3efd2a45d279702b170e3ed165f3652f19070d75ace18dad43168",
+        "size_bytes": 28460
+      },
+      {
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/review.md",
+        "sha256": "b705810ecfad192d3a4f57b630a4d23d06c5e8a956a56a61ec1b6815ee8eba3c",
+        "size_bytes": 1610
+      },
+      {
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-final.md",
+        "sha256": "bc2708e7c480a9c9bae70284574e832bbd4d71c45a486ae5d90b3aefaefdf203",
+        "size_bytes": 3991
+      },
+      {
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/reviews/branch-review-initial.md",
+        "sha256": "f22db1f27593e6bbdc3a7892dc685c5d732cf3cafc5b4b481ba8634c7a1be8d6",
+        "size_bytes": 2182
+      },
+      {
+        "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/task-commit-plans/001.json",
+        "sha256": "2272f7bb372f0ad7fb933829d3e9f3d744705f9d9b8acbb9cde648e29d78a778",
+        "size_bytes": 80176
       },
       {
         "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/task-start-context.json",
@@ -410,8 +425,8 @@
       },
       {
         "path": "README.md",
-        "sha256": "a69d714c42453a7b3ac8fc1a1ab062d5190058c2f31a90c47c282f835eced8a3",
-        "size_bytes": 83211
+        "sha256": "78f4024d0100d1b62675350c12835a0cee777275ad3168c8c4ab8493f9f00d3a",
+        "size_bytes": 83346
       },
       {
         "path": "docs/requirements/README.md",
@@ -520,8 +535,8 @@
       },
       {
         "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
-        "sha256": "b1ea8ab0e4acd34057b27b73380c65ce4c086f2d28a131ab1d46d5883dc89bf9",
-        "size_bytes": 271387
+        "sha256": "c0a1282faeb3d0d382c7d0a8ac69dbb2820916a48739e95780ce83b8e878f945",
+        "size_bytes": 271585
       },
       {
         "path": "trellis/workflows/guru-team/README.md",
@@ -544,66 +559,86 @@
         "size_bytes": 81422
       }
     ],
-    "snapshot_sha256": "3f8242ba4a4dc778e6a7ee480f1856c62f9ff67338c8f1b0eca3cd33fc26ade7"
+    "snapshot_sha256": "cec79ca46ff0bd4ce542bb5cdbde98d1b6f9c4983b2d972efa49a82fde96059f"
   },
   "check_execution": {
     "commands": [
       {
+        "id": "prereq-pwd",
+        "argv": [
+          "pwd"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "067e5d246b8ca783a998d0cba88fb9110992cbaf1daaa5c53225bb1a0c5741ac",
+        "stdout_size_bytes": 99,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Current execution directory is the dedicated Issue #119 worktree."
+      },
+      {
+        "id": "prereq-repo-root",
+        "argv": [
+          "git",
+          "rev-parse",
+          "--show-toplevel"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "067e5d246b8ca783a998d0cba88fb9110992cbaf1daaa5c53225bb1a0c5741ac",
+        "stdout_size_bytes": 99,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Git repository root exactly matches the expected Issue #119 worktree."
+      },
+      {
         "id": "workspace-boundary",
         "argv": [
-          ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
           "--json",
-          "--root",
-          ".",
           "--task",
           ".trellis/tasks/07-29-119-combined-finish-family-integration"
         ],
         "exit_code": 0,
-        "stdout_sha256": "db7551b284bc22797a242968fc4226da35f0ef321678aa3effb433a05d4ba40d",
-        "stdout_size_bytes": 4613,
+        "stdout_sha256": "7dd9bb409ea9dfe855d18769dca9b3fc57bd939717d0bc99f0b2e1e62b277e09",
+        "stdout_size_bytes": 1618,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "专用 #119 worktree boundary 通过，source checkout 无并行改动污染。"
+        "summary": "Workspace boundary passed; source checkout is clean and no suspicious artifact is present."
       },
       {
         "id": "planning-approval",
         "argv": [
-          ".agents/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
-          "--root",
-          ".",
+          "./.trellis/guru-team/scripts/bash/check-planning-approval.sh",
           "--json",
           "--task",
           ".trellis/tasks/07-29-119-combined-finish-family-integration"
         ],
         "exit_code": 0,
-        "stdout_sha256": "6241ce8ca4b29b96ec3dc116a2f85ab0b3a40e38c6c10d44157f582e30646da3",
+        "stdout_sha256": "fbb8fc550c7e1198ea20d99ce93263dc36d935e023e2f881eb138d4b5a1e392d",
         "stdout_size_bytes": 802,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "fresh schema 2.0 planning approval 与修订后的三份 planning artifacts 当前有效。"
+        "summary": "Fresh schema 2.0 planning approval is current after durable authority refresh."
       },
       {
         "id": "agent-assignment",
         "argv": [
-          ".trellis/guru-team/scripts/bash/check-agent-assignment.sh",
-          "--root",
-          ".",
+          "./.trellis/guru-team/scripts/bash/check-agent-assignment.sh",
           "--json",
           "--task",
           ".trellis/tasks/07-29-119-combined-finish-family-integration",
           "--require-current-head"
         ],
         "exit_code": 0,
-        "stdout_sha256": "7fd8e3c250de7412bdb8fbdd624bd5e6b769b3049d39d710db64c59cb2907ec6",
-        "stdout_size_bytes": 1320,
+        "stdout_sha256": "e8e079dd9448fbb4cb1a9fd59fb439584dfc696607e207899e3f10e48799ef0f",
+        "stdout_size_bytes": 1390,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "实现与三轮 Phase 2 check agents 的有效终态、finding closure 与 recovery chain 完整。"
+        "summary": "Implementation, Phase 2 check, findings, and recovery events are structurally complete at current HEAD."
       },
       {
         "id": "source-skill-closure",
         "argv": [
-          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "./.trellis/guru-team/scripts/bash/check-skill-packages.sh",
           "--root",
           ".",
           "--json",
@@ -615,12 +650,12 @@
         "stdout_size_bytes": 1346,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "source packages closure 为 13 invokes、52 exits、29 targets。"
+        "summary": "Source packages close 13 invokes, 52 exits, and 29 unique targets."
       },
       {
         "id": "installed-skill-closure",
         "argv": [
-          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "./.trellis/guru-team/scripts/bash/check-skill-packages.sh",
           "--root",
           ".",
           "--json",
@@ -632,7 +667,7 @@
         "stdout_size_bytes": 1535,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "dogfood installed packages closure 为 13 invokes、52 exits、29 targets。"
+        "summary": "Installed packages close 13 invokes, 52 exits, and 29 unique targets with zero sidecars, conflicts, or removals."
       },
       {
         "id": "dogfood-drift",
@@ -644,7 +679,22 @@
         "stdout_size_bytes": 2070,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "canonical preset overlays 与 dogfood runtime copies 无漂移。"
+        "summary": "Canonical preset overlays and dogfood copies have no drift."
+      },
+      {
+        "id": "upstream-ownership-gate",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+          "--repo",
+          ".",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "fc863fc16d0249d5f47291e04254b2f5d89989240cdbfa3160577a9cb22bdda6",
+        "stdout_size_bytes": 2011,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Ownership gate passed with 43 frozen legacy paths, 18 reviewed-current bindings, and 3 additive Guru entries."
       },
       {
         "id": "task-validation",
@@ -659,10 +709,10 @@
         "stdout_size_bytes": 345,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Trellis task structure、status 与 artifact layout 有效。"
+        "summary": "Trellis task structure and artifact layout are valid."
       },
       {
-        "id": "diff-check",
+        "id": "working-diff-check",
         "argv": [
           "git",
           "diff",
@@ -673,7 +723,37 @@
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "完整未提交 diff 无 whitespace error。"
+        "summary": "Current uncommitted finding fix and metadata tail contain no whitespace errors."
+      },
+      {
+        "id": "committed-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check",
+          "origin/main...HEAD"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The complete committed Issue #119 range contains no whitespace errors."
+      },
+      {
+        "id": "workflow-byte-identity",
+        "argv": [
+          "cmp",
+          "-s",
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Canonical and dogfood workflow bytes are identical."
       },
       {
         "id": "shell-syntax",
@@ -689,11 +769,13 @@
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "本 task 修改的 shell/eval entry 语法有效。"
+        "summary": "Modified shell and shared eval entrypoints parse successfully."
       },
       {
         "id": "python-compile",
         "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=/tmp/guru119-phase2-post-review/pycache",
           "python3",
           "-m",
           "py_compile",
@@ -715,35 +797,35 @@
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "本 task 涉及的 canonical/dogfood Python files 全部可编译。"
+        "summary": "All current canonical, installed, fixture, and test Python paths compile."
       },
       {
         "id": "json-parse",
         "argv": [
           "bash",
           "-lc",
-          "{ git diff --name-only -- '*.json'; git ls-files --others --exclude-standard -- '*.json'; } | LC_ALL=C sort -u | while IFS= read -r json_path; do test -z \"$json_path\" || jq empty \"$json_path\"; done"
+          "{ git diff --name-only origin/main...HEAD -- \"*.json\"; git diff --name-only -- \"*.json\"; git ls-files --others --exclude-standard -- \"*.json\"; } | LC_ALL=C sort -u | while IFS= read -r json_path; do test -z \"$json_path\" || jq empty \"$json_path\"; done"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "全部 modified/untracked JSON 均可解析。"
+        "summary": "Every committed, dirty, or untracked JSON path in the current round parses."
       },
       {
         "id": "sidecar-scan",
         "argv": [
           "bash",
           "-lc",
-          "find . -path ./.git -prune -o -type f \\( -name '*.new' -o -name '*.bak' \\) -print; test ! -s /tmp/guru119-phase2-evidence-r4/sidecar-scan.stdout"
+          "test -z \"$(find . -path ./.git -prune -o -type f \\( -name \"*.new\" -o -name \"*.bak\" \\) -print -quit)\""
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "当前 worktree 不存在 unresolved .new/.bak sidecar。"
+        "summary": "No unresolved .new or .bak sidecar exists."
       },
       {
         "id": "ownership-tests",
@@ -754,9 +836,9 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "ebff2d81c78851f298dd7095a70470b57addcbf31bf1fbcaa71557242a06fe2e",
+        "stderr_sha256": "5f554ece34fc7f260eaf2c683fc8e33e9f286ab6e9be4a37cad887fc4e6a6b96",
         "stderr_size_bytes": 111,
-        "summary": "ownership 12/12 通过；43 frozen legacy 与 3 additive Guru claims 分层成立。"
+        "summary": "Ownership suite passed 12/12, including the 43 = 25 + 18 partition."
       },
       {
         "id": "installer-tests",
@@ -767,9 +849,9 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "6c8cc9af124c92a66f5bd1d97c674becf61c5d1b1b5da251374523f2e1fe64bd",
+        "stderr_sha256": "ada99668432e88f242b814399d7aec2a25db0e20ee2e669e59ae382310dcddbf",
         "stderr_size_bytes": 812,
-        "summary": "preset installer 48/48 通过；stderr 中 argparse 文本来自预期负例。"
+        "summary": "Preset installer suite passed 48/48; stderr contains expected argparse negative-case text."
       },
       {
         "id": "skill-package-tests",
@@ -780,9 +862,9 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "2391c78613250bdfd0504cff6f2048d22ab86ab7c58dcbe0cbbede69cbba809e",
+        "stderr_sha256": "8d68b9b5be2565be356facb1c096b8ad42fec230efb1e5b0951695df2e123a34",
         "stderr_size_bytes": 4514,
-        "summary": "全部 Guru Skill packages 184/184 通过。"
+        "summary": "Guru Skill package suite passed 184/184, including current ownership SSOT wording."
       },
       {
         "id": "issue-105-regression",
@@ -791,11 +873,26 @@
           "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
         ],
         "exit_code": 0,
-        "stdout_sha256": "cb22e9e7b11e7bedaa15483f58863aef005051439edaae19d7e956f4499fba63",
+        "stdout_sha256": "ce7e1e082a903ab3b654e68dc62056e3ea8bbb9fa34b54ccb69d5bc2bd09b3e3",
         "stdout_size_bytes": 2548,
-        "stderr_sha256": "97aac8149d19b41eb4f1bcb17889e454ac98832f4eb9e9e9c316eb048c8cc8c2",
+        "stderr_sha256": "c12a27d6ffbd8d962c9ad52bab382aa9b3e12b0153b6946463c0e66bd675b704",
         "stderr_size_bytes": 4465,
-        "summary": "#105 production transaction/failure/recovery module 640 passed、13 skipped；预期 CLI 负例保留。"
+        "summary": "Issue #105 transaction, failure, and recovery regression passed 640 tests with 13 intentional skips."
+      },
+      {
+        "id": "finish-entry-contract",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.FinishWorkEntrypointContractTest"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "5279d1fc9a1ced44f9c96da1414ef59e4676f963fbad52e7a1a2903538819b0d",
+        "stderr_size_bytes": 101,
+        "summary": "Finish-work entry contract passed 3/3."
       },
       {
         "id": "finish-family-integration",
@@ -811,9 +908,23 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "1163fa475e04546d91cdf31c45f4569fc83b5782db6710bbe6bb25a48d94160a",
+        "stderr_sha256": "4a16c4a84487ac90869a98082c1d0d96498bab532e9b405d334883513c7ae50f",
         "stderr_size_bytes": 104,
-        "summary": "source combined Finish-family routes 在 shared/codex/claude/cursor 上 4/4 通过。"
+        "summary": "Source combined Finish-family public routes passed 4/4 for shared, Codex, Claude, and Cursor."
+      },
+      {
+        "id": "docs-ssot-stale-wording-scan",
+        "argv": [
+          "bash",
+          "-lc",
+          "! rg -n \"exact thirteen issue #131/#161|38 条使用 baseline|38 baseline\" README.md .trellis/spec/preset/overlay-guidelines.md .trellis/spec/preset/upstream-ownership.md .trellis/spec/workflow/quality-guidelines.md"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "No stale 38/5 or exact-thirteen ownership wording remains."
       },
       {
         "id": "throwaway-install-update",
@@ -824,38 +935,132 @@
           "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
         ],
         "exit_code": 0,
-        "stdout_sha256": "c4558341f4f172fe05a8f9eea5e0493800b35f7ce3592721be365de14ec90cae",
+        "stdout_sha256": "5bbebea6c1b22f77d3f3d15050dd87e9c08efc5f4f181c7398c887ae8c5a9e4b",
         "stdout_size_bytes": 4168627,
-        "stderr_sha256": "00e7769867bc4d99560f5c6d9baacee831f7521abeb9df326359270c3e965c3f",
+        "stderr_sha256": "b9d669c64d3ebb395288be0e1633e19ee9ca4573d15f5cb5199d999013d0ceaa",
         "stderr_size_bytes": 1138,
-        "summary": "clean install、marketplace discovery、preview/switch、official update、preset reapply、developer identity、zero sidecars 与 initial/post-update 四 adapter combined routes 全部通过；因 branch 未 push，使用 public marketplace discovery 加 local unpublished workflow sample，exact remote ref 留到 publication gate。"
+        "summary": "Clean marketplace discovery/init, preview/switch, preset apply, initial installed 4/4, Issue #105 closeout, official update, workflow reselect, preset reapply, post-update installed 4/4, preservation, and zero sidecars all passed."
+      },
+      {
+        "id": "final-workspace-boundary",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-29-119-combined-finish-family-integration"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "7dd9bb409ea9dfe855d18769dca9b3fc57bd939717d0bc99f0b2e1e62b277e09",
+        "stdout_size_bytes": 1618,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Final workspace boundary remained valid after the throwaway round."
+      },
+      {
+        "id": "final-head",
+        "argv": [
+          "git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "2cbd5b6723daa177934c2300707202cae84e3a252211c595924d934f3c020ec2",
+        "stdout_size_bytes": 41,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Final checked HEAD remained b6e4d3ba5cb85ab7c10fea03fdb97a74dcffd699."
+      },
+      {
+        "id": "final-origin-main",
+        "argv": [
+          "git",
+          "rev-parse",
+          "origin/main"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "765bda4677f3138e946264a727ce31159c49d75ebeef1f9708e62529bfdf005c",
+        "stdout_size_bytes": 41,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Final checked base remained b034f466755c5c0b4e2e48bf260bb54ef58cb5be."
+      },
+      {
+        "id": "final-worktree-status",
+        "argv": [
+          "git",
+          "status",
+          "--short"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "86d263cfe0ecf9e30c3eba14af6001ca27ba2f65174733a42e3ef64dc352c684",
+        "stdout_size_bytes": 696,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Final worktree status contains only the five reviewed product fixes and permitted task-local evidence."
+      },
+      {
+        "id": "final-source-status",
+        "argv": [
+          "git",
+          "-C",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis",
+          "status",
+          "--short"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Source checkout is clean."
+      },
+      {
+        "id": "final-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Final current diff still contains no whitespace errors."
       }
     ],
     "worker_evidence": [
       {
         "source": "official_trellis_check",
         "agent_id": "/root/phase2_check",
-        "summary": "第一轮只读 check 发现 installed clean throwaway 未执行真实 combined public route；该 P1 已由 installed runner 在 initial/update 两个 checkpoint 补齐并经最终全量复验关闭。",
+        "summary": "Initial full check found the missing installed combined public route; the resolved P1 remains covered by the final complete rerun.",
         "evidence_only": true,
-        "facts_sha256": "20fa488788727a7755347528c7790b9f63caaa8c2a8dc82927ff73065821cc96"
+        "facts_sha256": "3dfd5aad910fcc6ef5d5c28e4914a9e74cb8ea17f8f6942e1b621ec64893bf3b"
       },
       {
         "source": "official_trellis_check",
         "agent_id": "/root/phase2_recheck",
-        "summary": "第二轮只读 check 发现 native corpus/public boundary 与 trellis-continue Phase 3.6 entry contract 冲突；实现和 planning 均已修订，最终全量复验关闭。",
+        "summary": "Second full check found native corpus exposure and the trellis-continue Phase 3.6 planning conflict; both resolved P1 findings remain covered by the final complete rerun.",
         "evidence_only": true,
-        "facts_sha256": "da4395fe7c37523be52cf325c43f462bd55c46079f3ca245650ce6f1f11a11eb"
+        "facts_sha256": "bb073e2408bea0338917ccdc6cc79f2cb22092e4a7bbddc8f98392ac54083b78"
       },
       {
         "source": "official_trellis_check",
         "agent_id": "/root/phase2_final_check",
-        "summary": "fresh 最终只读 check 覆盖完整 #119 scope、当前 59-path diff、Docs SSOT、四项 P1 closure 与全部命令证据，结论为零 open findings；remote pushed-ref marketplace verification 明确属于后续 publication gate。",
+        "summary": "Pre-commit fresh full check covered all Issue #119 scope and closed the four earlier P1 findings with zero open finding.",
         "evidence_only": true,
-        "facts_sha256": "a6c1266b89e95628b601aa66e040aa01e28bd88a3efad5dc3bc12908f6ecda41"
+        "facts_sha256": "666e007e64dba414feb24b5dc3592a6fa8f929f4fcb5503fa84f605f88f3c609"
+      },
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/phase2_post_review",
+        "summary": "Post-review fresh full check covered current HEAD plus five BR-FINAL-F1 product fixes, all 64 reviewed paths, Docs SSOT, 13/52/29 closure, Issue #105, clean install, update/reapply, and both four-platform installed checkpoints with zero qualified finding.",
+        "evidence_only": true,
+        "facts_sha256": "a3f51c1af8df8e64fce909ae2b117319b4416453872d268691fcaa34de543628"
       }
     ],
     "unverified_items": [],
-    "execution_sha256": "47b162ecbf01d6e96ab7af3a7e3df12c49457535610259e543a4c9fd269a27ef"
+    "execution_sha256": "cc3636ad084d685686af99d25ba17e8d7d3882a994449b5ee73d9770d8b5c030"
   },
   "scope_qualification": {
     "candidates": [
@@ -945,9 +1150,23 @@
         "route_basis": "#132 独占该 cleanup；本 task 只保持 follow-up 分类，不提前实现或关闭。",
         "severity": null,
         "finding_id": null
+      },
+      {
+        "id": "P2-C8-ownership-docs-current",
+        "summary": "Durable ownership SSOT and its direct test consumer retained stale 38/5 or exact-thirteen counts after the initial commit.",
+        "trigger_refs": [
+          "Issue #119 FR-7",
+          "approved Docs SSOT strategy ssot_first",
+          "Branch Review BR-FINAL-F1"
+        ],
+        "normal_path_reproduction": "A normal maintainer reading the committed README and durable preset/workflow specs sees counts that conflict with the committed 43-path ownership inventory, and the direct package test encoded the stale wording.",
+        "disposition": "current_scope",
+        "route_basis": "Current durable SSOT is explicit Issue #119 acceptance. Four documents and their directly consuming assertion now use the validated 25 historical plus 18 reviewed-current partition.",
+        "severity": "P2",
+        "finding_id": "P2-F5-ownership-docs-current"
       }
     ],
-    "scope_sha256": "df59834802160036b0c5277c60185877ab04a9d230f614df77e520a27b46883a"
+    "scope_sha256": "fa1d3df4afb36ac105379298841aef946b5a3597327865c2d53cff8821a42e8a"
   },
   "semantic_review": {
     "adequacy_dimensions": [
@@ -993,28 +1212,31 @@
       {
         "id": "tests",
         "status": "passed",
-        "summary": "四项历史 P1 均有 current full rerun closure；184、640/13、48、12、source/installed closure 与两轮 throwaway 全部通过。",
+        "summary": "All prior P1 findings and BR-FINAL-F1 have a current complete rerun: ownership 12/12, installer 48/48, packages 184/184, Issue #105 640/13, source four-adapter 4/4, and initial/post-update installed four-adapter 4/4.",
         "evidence_refs": [
           "check_execution",
           "implementation_handoff"
         ],
-        "affected_sha256": "c4558341f4f172fe05a8f9eea5e0493800b35f7ce3592721be365de14ec90cae",
+        "affected_sha256": "5bbebea6c1b22f77d3f3d15050dd87e9c08efc5f4f181c7398c887ae8c5a9e4b",
         "finding_ids": [
           "P2-F1-installed-combined-route",
-          "P2-F4-throwaway-four-adapters"
+          "P2-F4-throwaway-four-adapters",
+          "P2-F5-ownership-docs-current"
         ],
         "unverified_ids": []
       },
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "stale_docs 已按 ssot_first 回写 requirements/spec/README；task audit 与临时日志保持 task history，不进入长期 DTO。",
+        "summary": "The ssot_first plan is current after BR-FINAL-F1: README and durable preset/workflow ownership contracts agree with the 43-path inventory and its 25 historical / 18 reviewed-current partition.",
         "evidence_refs": [
           "docs_ssot_plan",
           "requirement_provenance"
         ],
-        "affected_sha256": "7bed8f5000a42d3294f5ef8ef06826751935a16ff1b03df05ca5ef973f10c04a",
-        "finding_ids": [],
+        "affected_sha256": "78f4024d0100d1b62675350c12835a0cee777275ad3168c8c4ab8493f9f00d3a",
+        "finding_ids": [
+          "P2-F5-ownership-docs-current"
+        ],
         "unverified_ids": []
       },
       {
@@ -1061,24 +1283,24 @@
       {
         "id": "agent_recovery",
         "status": "passed",
-        "summary": "failed implementation agents、replacement implementation、三名 completed check agents 与最终零 finding closure 均由 schema 1.2 assignment state machine 闭合。",
+        "summary": "Completed replacement implementation, four completed Phase 2 check agents, the BR-FINAL-F1 implementation agent, and the fresh post-review check are closed by the task-local assignment state machine.",
         "evidence_refs": [
           "agent_assignment"
         ],
-        "affected_sha256": "b5365ff1e22097addbac407f186300f64c9a562cf114fcb306e794cf7ffd627e",
+        "affected_sha256": "df3d2010397cf87da74284014083c997a86494b63df847f713865e33aa7b3ada",
         "finding_ids": [],
         "unverified_ids": []
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "全部 Phase 2 适用命令均有 exit 0 与分离日志 digest；zero sidecars/conflicts/removals，唯一远端门禁按 workflow 时序留待 push 后验证。",
+        "summary": "Every applicable repository-defined check has current exit-0 evidence with separate stdout/stderr digests; exact remote branch-ref verification remains correctly deferred until push authorization.",
         "evidence_refs": [
           "check_execution",
           "agent_assignment",
           "repository_snapshot"
         ],
-        "affected_sha256": "2391c78613250bdfd0504cff6f2048d22ab86ab7c58dcbe0cbbede69cbba809e",
+        "affected_sha256": "8d68b9b5be2565be356facb1c096b8ad42fec230efb1e5b0951695df2e123a34",
         "finding_ids": [],
         "unverified_ids": []
       }
@@ -1119,37 +1341,46 @@
         "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
         "blocking": true,
         "status": "resolved"
+      },
+      {
+        "id": "P2-F5-ownership-docs-current",
+        "candidate_id": "P2-C8-ownership-docs-current",
+        "severity": "P2",
+        "summary": "BR-FINAL-F1 is resolved: README, three durable specs, and the direct test consumer now agree on 43 = 25 + 18 and the 5 + 8 + 5 reviewed-current partition.",
+        "path": "README.md",
+        "blocking": true,
+        "status": "resolved"
       }
     ],
     "ai_review_gate": {
       "status": "passed",
-      "summary": "完整当前轮覆盖 live authority、批准 planning、59 个 repository paths、全部适用命令、Docs SSOT、agent recovery 和四项 resolved P1；零 open current-scope finding、零 blocking unverified item，#119 Phase 2 通过。",
+      "summary": "Fresh full-round review covers approved Issue #119 authority, all 64 current repository paths, five BR-FINAL-F1 product fixes, every applicable command, Docs SSOT, agent recovery, five resolved current-scope findings, and zero blocking unverified item. Phase 2 passes.",
       "full_rerun": true,
-      "planning_facts_sha256": "98d21f41341acb4bebb1f530fa5e3956d5d74e84883a58bffa11a105f4dbdee2",
-      "snapshot_sha256": "3f8242ba4a4dc778e6a7ee480f1856c62f9ff67338c8f1b0eca3cd33fc26ade7",
-      "scope_sha256": "df59834802160036b0c5277c60185877ab04a9d230f614df77e520a27b46883a",
-      "adequacy_sha256": "05f1405621c3d23530f9db5a95468a021d58ca69c67a261422984aa8662550c3",
-      "findings_count": 4,
-      "full_round_sha256": "f0d70ca2c22db0f7c8c66df7a5db3aa7172913ec29797c81f7e62fa85a95b85d"
+      "planning_facts_sha256": "9c5c5cdaa3006b5389af91036a751cfdb192b483f783d5cff711c33f75da2a97",
+      "snapshot_sha256": "cec79ca46ff0bd4ce542bb5cdbde98d1b6f9c4983b2d972efa49a82fde96059f",
+      "scope_sha256": "fa1d3df4afb36ac105379298841aef946b5a3597327865c2d53cff8821a42e8a",
+      "adequacy_sha256": "1b204a444345c4633a95f4739b79e2a43acc3ee3960f26b41de8141c4dd0bf9c",
+      "findings_count": 5,
+      "full_round_sha256": "2c4b9b40d4a56c328aec593163c436ac12b20c357c340e3a0a2da321401afa62"
     },
-    "adequacy_sha256": "05f1405621c3d23530f9db5a95468a021d58ca69c67a261422984aa8662550c3"
+    "adequacy_sha256": "1b204a444345c4633a95f4739b79e2a43acc3ee3960f26b41de8141c4dd0bf9c"
   },
   "human_confirmation": {
     "kind": "not-required",
     "status": "not_required",
-    "summary": "Phase 2 semantic check 不产生外部副作用，不需要额外用户确认；commit 仍是下一独立授权边界。",
+    "summary": "Phase 2 semantic checking has no external side effect; a new local commit remains a separate explicit authorization boundary.",
     "confirmed_at": null
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "Issue #119 current acceptance、Docs SSOT、combined routes、#105 matrix、clean install/update/reapply 与多平台验证均通过；四项 P1 已在完整 fresh rerun 中关闭。",
+  "reason": "Issue #119 current acceptance, AI-first thin Finish integration, Docs SSOT, public-only combined routes, Issue #105 recovery matrix, clean install, update/reapply, and four-platform verification all pass after BR-FINAL-F1 closure.",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
   "schema_version": "2.0",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-29T13:47:38Z",
+  "generated_at": "2026-07-29T15:40:12Z",
   "task": {
     "task_dir": ".trellis/tasks/07-29-119-combined-finish-family-integration",
     "task_id": "119-combined-finish-family-integration",
@@ -1166,8 +1397,8 @@
     "typed_exit": "approved",
     "artifact": {
       "path": ".trellis/tasks/07-29-119-combined-finish-family-integration/planning-approval.json",
-      "sha256": "4ea12d35f7da41af04483755185b49cf0f9b749bdfbb8657a577bc5f30f3f8f5",
-      "size_bytes": 37236
+      "sha256": "652d7a559ce3e18ddb92b8096b739af8b127a93cbc16e0525b14dd45180abbf9",
+      "size_bytes": 34082
     },
     "reviewed_artifacts": [
       {
@@ -1186,7 +1417,7 @@
         "size_bytes": 9211
       }
     ],
-    "facts_sha256": "98d21f41341acb4bebb1f530fa5e3956d5d74e84883a58bffa11a105f4dbdee2"
+    "facts_sha256": "9c5c5cdaa3006b5389af91036a751cfdb192b483f783d5cff711c33f75da2a97"
   },
-  "facts_sha256": "2aa92d954a9eee46fd9a8e8c47bea3a5839a604ad14e17611d708fc16d3a3409"
+  "facts_sha256": "cffc69c16acd4bb8784f2c42a2dabd796895e8dff384d030810b2df967d85a9e"
 }

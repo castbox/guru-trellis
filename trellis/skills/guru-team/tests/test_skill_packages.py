@@ -500,7 +500,10 @@ class SourceValidationTests(unittest.TestCase):
             "43 inventory-pinned upstream overlay paths",
             "`transitional_legacy` assets whose removal is owned by issue #132",
             "issue #128 path/baseline identity remains immutable",
-            "exact thirteen issue #131/#161 current bindings",
+            "baseline for exactly 25 paths",
+            "Exactly eighteen paths use reviewed current",
+            "five issue #131 continue entries plus eight issue #161 implement/check",
+            "agent entries and five issue #161 finish-router entries",
             "`explicit-post-planning-review` implement-agent wording",
             "must not guide current Guru package/runtime behavior",
         ):

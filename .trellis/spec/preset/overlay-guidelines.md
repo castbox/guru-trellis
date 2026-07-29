@@ -258,7 +258,9 @@ Sub-agent overlay entries must:
 The 43 inventory-pinned upstream overlay paths remain
 `transitional_legacy` assets whose removal is owned by issue #132. Their
 issue #128 path/baseline identity remains immutable; current bytes use that
-baseline except for the exact thirteen issue #131/#161 current bindings. Historical
+baseline for exactly 25 paths. Exactly eighteen paths use reviewed current
+bindings: five issue #131 continue entries plus eight issue #161 implement/check
+agent entries and five issue #161 finish-router entries. Historical
 `schema 1.2` and `explicit-post-planning-review` implement-agent wording is
 transitional history; it must not guide current Guru package/runtime behavior
 or be copied into canonical `guru-*` packages, workflow contracts, durable

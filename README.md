@@ -93,9 +93,11 @@ trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --js
 
 该 gate 以 Trellis CLI `0.6.5` 为基线，冻结 43 条 legacy overlay path 与 issue #128
 历史 baseline identity；其中 37 条由 clean init 生成，6 条历史 Codex prompt/skill path
-已不再由 `0.6.5` 初装生成。当前 payload 对 38 条使用 baseline，对 issue #131 审核的
-五条 active continue entry 使用独立 `current_payload_sha256`。该字段只用于正常版本绑定和
-漂移检测，不是 authenticity/anti-tamper 边界，也不允许泛化或提前执行 #132 removal。
+已不再由 `0.6.5` 初装生成。当前 payload 对 25 条使用历史 baseline；对 issue #131
+审核的五条 active continue entry，以及 issue #161 审核的八条 AI-first
+implement/check agent entry 和五条 thin finish-router entry（合计十八条），使用独立
+`current_payload_sha256`。该字段只用于正常版本绑定和漂移检测，不是
+authenticity/anti-tamper 边界，也不允许泛化或提前执行 #132 removal。
 新增 upstream namespace patch、扩张/替换冻结集合、active payload 漂移、缺失
 replacement/removal owner、`unclassified` 或新增 upstream-owned managed claim 都会阻止
 preset mutation。它只校验结构化事实，不替代 AI ownership、scope 或迁移充分性判断。

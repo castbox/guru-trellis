@@ -264,7 +264,10 @@ Before changing preset ownership facts:
 4. run positive and negative ownership tests;
 5. run installer, dogfood, and throwaway validation;
 6. prove both workflow files and every overlay payload match its reviewed
-   baseline or exact thirteen-path current binding.
+   historical baseline for the exact 25 baseline-bound paths or the exact
+   eighteen reviewed current bindings: five issue #131 continue entries plus
+   eight issue #161 implement/check agent entries and five issue #161
+   finish-router entries.
 
 ## Eval Infrastructure Ownership
 
