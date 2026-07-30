@@ -168,17 +168,21 @@ CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = [
 ]
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 PHASE2_CHECK_SKILL_ID = "guru-check-task"
-PHASE2_CHECK_SCHEMA_VERSION = "2.0"
-PHASE2_CHECK_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json"
+PHASE2_CHECK_SCHEMA_VERSION = "2.1"
+PHASE2_CHECK_LEGACY_SCHEMA_VERSION = "2.0"
+PHASE2_CHECK_SCHEMA_VERSIONS = {
+    PHASE2_CHECK_LEGACY_SCHEMA_VERSION,
+    PHASE2_CHECK_SCHEMA_VERSION,
+}
+PHASE2_CHECK_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.1.json"
 PHASE2_CHECK_DIMENSIONS = [
     "requirements", "design", "implementation", "tests", "docs_ssot",
     "cross_layer", "compatibility", "deployment_and_operations",
-    "agent_recovery", "verification_completeness",
+    "verification_completeness",
 ]
 PHASE2_CHECK_EVIDENCE_REFS = {
     "planning", "requirement_provenance", "implementation_handoff",
     "docs_ssot_plan", "repository_snapshot", "check_execution",
-    "agent_assignment",
 }
 PHASE2_CHECK_CONSUMERS = {
     "passed": {"kind": "skill", "id": "guru-create-task-commit"},
@@ -390,6 +394,8 @@ TASK_WORKSPACE_CONSUMERS = {
 TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
 TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
+TASK_COMMIT_RUNTIME_DIR = ".trellis/.runtime/guru-team/task-commit-plans"
+AGENT_RECOVERY_RUNTIME_DIR = ".trellis/.runtime/guru-team/agent-recovery"
 TASK_COMMIT_PLAN_CATEGORIES = {
     "task-reviewed",
     "unrelated-preserved",
@@ -427,7 +433,7 @@ CLOSEOUT_ARCHIVE_CORE_ARTIFACTS = {
     "issue-scope-ledger.json",
     "planning-approval.json",
     PHASE2_CHECK_ARTIFACT,
-    REVIEW_REPORT_ARTIFACT,
+    "review-gate.json",
     CLOSEOUT_PLAN_ARTIFACT,
     TASK_FINALIZATION_GATE_ARTIFACT,
     FINISH_SUMMARY_ARTIFACT,
@@ -513,8 +519,10 @@ FINISH_SUMMARY_BACKFILL_SOURCE_FILES = (
     "prd.md",
     "design.md",
     "implement.md",
-    "review.md",
     "review-gate.json",
+    # Historical archives may predate a usable compact review gate. This is a
+    # backfill-only source and is not part of the new human-artifact resolver.
+    "review.md",
     "phase2-check.json",
     "pr-body.md",
     "pr-readiness.json",
@@ -564,12 +572,6 @@ HUMAN_MARKDOWN_ARTIFACTS = [
         "filename": "implement.md",
         "purpose": "执行计划与验证计划",
         "missing_status": "未生成",
-    },
-    {
-        "label": "Review Report",
-        "filename": REVIEW_REPORT_ARTIFACT,
-        "purpose": "AI/human review 报告",
-        "missing_status": "未执行",
     },
     {
         "label": "PR Body",
@@ -726,18 +728,12 @@ SELF_REVIEWER_PATTERNS = [
 ]
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/.runtime/")
 METADATA_ONLY_FILES: set[str] = set()
-BRANCH_REVIEW_TASK_METADATA_FILES = {
-    AGENT_ASSIGNMENT_ARTIFACT,
-    REVIEW_REPORT_ARTIFACT,
-    "review-gate.json",
-}
+BRANCH_REVIEW_TASK_METADATA_FILES = {"review-gate.json"}
 BRANCH_REVIEW_RUNTIME_INPUT_PREFIX = ".trellis/.runtime/guru-team/"
 PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     "issue-scope-ledger.json",
     "pr-body.md",
     "pr-readiness.json",
-    AGENT_ASSIGNMENT_ARTIFACT,
-    REVIEW_REPORT_ARTIFACT,
     "review-gate.json",
     MARKETPLACE_VERIFICATION_ARTIFACT,
 }
@@ -1050,12 +1046,9 @@ def finish_summary_backfill_pr_body_list_outcome(
     if source_errors:
         return False
     review_gate = sources.get("review-gate.json") if isinstance(sources.get("review-gate.json"), dict) else {}
-    review = sources.get("review.md") if isinstance(sources.get("review.md"), str) else ""
     pr_body = sources.get("pr-body.md") if isinstance(sources.get("pr-body.md"), str) else ""
     higher_priority = [
         backfill_clean_text(review_gate.get("summary") or review_gate.get("conclusion"), 500),
-        backfill_first_paragraph(backfill_markdown_section(review, ("结论",)), 500),
-        backfill_first_paragraph(backfill_markdown_section(review, ("变更摘要",)), 500),
     ]
     pr_body_section = backfill_markdown_section(pr_body, ("变更摘要",))
     if any(higher_priority) or backfill_first_paragraph(pr_body_section, 500):
@@ -1578,12 +1571,12 @@ def build_finish_summary_backfill(
     task = sources.get("task.json") if isinstance(sources.get("task.json"), dict) else {}
     ledger = sources.get("issue-scope-ledger.json") if isinstance(sources.get("issue-scope-ledger.json"), dict) else {}
     review_gate = sources.get("review-gate.json") if isinstance(sources.get("review-gate.json"), dict) else {}
+    legacy_review = sources.get("review.md") if isinstance(sources.get("review.md"), str) else ""
     phase2 = sources.get("phase2-check.json") if isinstance(sources.get("phase2-check.json"), dict) else {}
     readiness = sources.get("pr-readiness.json") if isinstance(sources.get("pr-readiness.json"), dict) else {}
     prd = sources.get("prd.md") if isinstance(sources.get("prd.md"), str) else ""
     design = sources.get("design.md") if isinstance(sources.get("design.md"), str) else ""
     implement = sources.get("implement.md") if isinstance(sources.get("implement.md"), str) else ""
-    review = sources.get("review.md") if isinstance(sources.get("review.md"), str) else ""
     pr_body = sources.get("pr-body.md") if isinstance(sources.get("pr-body.md"), str) else ""
     missing: list[str] = []
 
@@ -1609,14 +1602,12 @@ def build_finish_summary_backfill(
     outcome_fallback = f"{title}；非目标：历史 artifact 未记录。"
     outcome = next((value for value in [
         backfill_clean_text(review_gate.get("summary") or review_gate.get("conclusion"), 500),
-        backfill_first_paragraph(backfill_markdown_section(review, ("结论",)), 500),
-        backfill_first_paragraph(backfill_markdown_section(review, ("变更摘要",)), 500),
+        backfill_first_paragraph(backfill_markdown_section(legacy_review, ("结论",)), 500),
         pr_body_paragraph,
         pr_body_list_outcome,
     ] if backfill_text_is_safe(value)), outcome_fallback)
     behavior_sources = [
         backfill_list_items(backfill_markdown_section(pr_body, ("变更摘要",))),
-        backfill_list_items(backfill_markdown_section(review, ("变更摘要", "结论"))),
         backfill_completed_checklist(implement),
     ]
     changed_behavior = next(
@@ -4347,88 +4338,6 @@ def classify_changed_files(files: list[str]) -> dict[str, list[str]]:
     return {key: sorted(set(value)) for key, value in categories.items() if value}
 
 
-def detect_deployment_impact(files: list[str]) -> dict[str, Any]:
-    changed_categories = classify_changed_files(files)
-    deployment_categories = {
-        key: changed_categories[key]
-        for key in DEPLOYMENT_ASSET_CATEGORIES
-        if key in changed_categories
-    }
-    changed_deployment_assets = sorted(
-        {path for paths in deployment_categories.values() for path in paths}
-    )
-    probable_runtime_changes = sorted(
-        {
-            path
-            for path in files
-            if any(keyword in path.lower() for keyword in DEPLOYMENT_IMPACT_KEYWORDS)
-            and path not in changed_deployment_assets
-        }
-    )
-    needs_deployment_review = bool(changed_deployment_assets or probable_runtime_changes)
-    return {
-        "changed_file_categories": changed_categories,
-        "deployment_asset_categories": deployment_categories,
-        "changed_deployment_assets": changed_deployment_assets,
-        "probable_runtime_changes_without_deployment_asset_change": probable_runtime_changes,
-        "needs_deployment_impact_review": needs_deployment_review,
-        "review_instruction": (
-            "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，"
-            "review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；"
-            "如果不需要，必须给出不需要的理由。"
-        ),
-    }
-
-
-def evidence_mentions_category(evidence: list[str], category: str) -> bool:
-    text = "\n".join(evidence).lower()
-    aliases = {
-        "ci_cd": ["ci", "cd", "github actions", ".github/workflows", "workflow", "发布自动化"],
-        "container": ["docker", "compose", "container", "容器", "entrypoint", "startup"],
-        "kubernetes": ["k8s", "kubernetes", "kustomize", "helm", "yaml", "部署"],
-        "database": ["migration", "schema", "seed", "backfill", "数据库", "迁移"],
-        "makefile": ["makefile", "make "],
-        "runtime_impact": [
-            "部署",
-            "runtime",
-            "运行",
-            "api",
-            "cli",
-            "worker",
-            "服务",
-            "后台",
-            "ci",
-            "cd",
-            "docker",
-            "compose",
-            "k8s",
-            "kubernetes",
-            "kustomize",
-            "migration",
-            "makefile",
-        ],
-    }
-    return any(alias in text for alias in aliases.get(category, [category]))
-
-
-def deployment_evidence_errors(impact: dict[str, Any], evidence: list[str], findings: list[dict[str, Any]]) -> list[str]:
-    if review_gate_blocking_findings(findings):
-        return []
-    errors: list[str] = []
-    if not evidence_mentions_category(evidence, "runtime_impact"):
-        errors.append("Gate evidence 未说明本次变更的部署影响，或未说明 Docker/Compose/CI/CD/K8s/migration/Makefile 是否需要同步调整。")
-    if not impact.get("needs_deployment_impact_review"):
-        return errors
-    deployment_categories = impact.get("deployment_asset_categories")
-    if isinstance(deployment_categories, dict):
-        for category, paths in deployment_categories.items():
-            if paths and not evidence_mentions_category(evidence, category):
-                errors.append(f"Gate evidence 未点名已变更的部署资产类别 {category}。")
-    runtime_changes = impact.get("probable_runtime_changes_without_deployment_asset_change")
-    if isinstance(runtime_changes, list) and runtime_changes and not evidence_mentions_category(evidence, "runtime_impact"):
-        errors.append("本次 diff 可能改变 API/CLI/worker/runtime 形态，但 evidence 未说明部署资产是否需要同步调整。")
-    return errors
-
 
 def is_ancestor(root: Path, ancestor: str, descendant: str = "HEAD") -> bool:
     return run(["git", "merge-base", "--is-ancestor", ancestor, descendant], cwd=root, check=False).returncode == 0
@@ -5328,7 +5237,10 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *,
         close_issues = []
     related_numbers = set(issue_numbers(ledger.get("related_issues")))
     followup_numbers = set(issue_numbers(ledger.get("followup_issues")))
-    gate_reviewed = set(issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed")))
+    compact_review_gate = gate.get("schema_version") == "2.1"
+    gate_reviewed = set(
+        issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed"))
+    )
     for issue in close_issues:
         if not isinstance(issue, dict):
             errors.append("close_issues 中存在非对象条目。")
@@ -5347,7 +5259,10 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *,
                 f"close_issues 中 issue #{number}：{error}"
                 for error in remote_marketplace_evidence_errors(issue, allow_pending=allow_pending_remote_marketplace)
             )
-        if number not in gate_reviewed:
+        # Schema 2.1 deliberately leaves issue-closure judgment to the
+        # Publication Gate. Older review gates retain their compatibility
+        # check while active tasks migrate.
+        if not compact_review_gate and number not in gate_reviewed:
             errors.append(f"Branch Review Gate 未记录对 close issue #{number} 的覆盖结论。")
     return errors
 
@@ -5407,128 +5322,6 @@ def configured_review_gate_path(task_dir: Path, config: dict[str, Any]) -> Path:
     return configured if configured.is_absolute() else task_dir / configured
 
 
-def parse_finding_arg(value: str) -> dict[str, Any]:
-    parts = [part.strip() for part in value.split("|")]
-    if len(parts) < 2:
-        raise WorkflowError("Invalid --finding format. Use PRIORITY|message[|path].")
-    priority = parts[0].upper()
-    if priority not in VALID_PRIORITIES:
-        raise WorkflowError(f"Invalid finding priority: {priority}")
-    return {
-        "priority": priority,
-        "message": parts[1],
-        "path": parts[2] if len(parts) >= 3 else "",
-    }
-
-
-def parse_review_note_arg(value: str, kind: str) -> dict[str, Any]:
-    parts = [part.strip() for part in value.split("|")]
-    message = parts[0] if parts else ""
-    if not message:
-        raise WorkflowError(f"Invalid --{kind.replace('_', '-')} format. Use message[|path].")
-    return {
-        "kind": kind,
-        "message": message,
-        "path": parts[1] if len(parts) >= 2 else "",
-    }
-
-
-def load_findings(args: argparse.Namespace) -> list[dict[str, Any]]:
-    findings: list[dict[str, Any]] = []
-    if getattr(args, "findings_file", None):
-        raw = json.loads(Path(args.findings_file).read_text(encoding="utf-8"))
-        if isinstance(raw, dict):
-            raw = raw.get("findings", [])
-        if not isinstance(raw, list):
-            raise WorkflowError("--findings-file must contain a JSON list or an object with findings[].")
-        for item in raw:
-            if not isinstance(item, dict):
-                raise WorkflowError("Each finding must be an object.")
-            priority = str(item.get("priority") or "").upper()
-            if priority not in VALID_PRIORITIES:
-                raise WorkflowError(f"Invalid finding priority: {priority}")
-            normalized = dict(item)
-            normalized["priority"] = priority
-            findings.append(normalized)
-    for value in getattr(args, "finding", []) or []:
-        findings.append(parse_finding_arg(value))
-    return findings
-
-
-def load_review_notes(
-    file_arg: str | None,
-    inline_values: list[str] | None,
-    key: str,
-    kind: str,
-) -> list[dict[str, Any]]:
-    notes: list[dict[str, Any]] = []
-    if file_arg:
-        raw = json.loads(Path(file_arg).read_text(encoding="utf-8"))
-        if isinstance(raw, dict):
-            raw = raw.get(key, [])
-        if not isinstance(raw, list):
-            raise WorkflowError(f"--{key.replace('_', '-')}-file must contain a JSON list or an object with {key}[].")
-        for item in raw:
-            if isinstance(item, str):
-                notes.append(parse_review_note_arg(item, kind))
-                continue
-            if not isinstance(item, dict):
-                raise WorkflowError(f"Each {kind} must be an object or string.")
-            message = str(item.get("message") or "").strip()
-            if not message:
-                raise WorkflowError(f"Each {kind} needs a non-empty message.")
-            normalized = dict(item)
-            normalized["kind"] = kind
-            normalized["message"] = message
-            normalized["path"] = str(normalized.get("path") or "").strip()
-            notes.append(normalized)
-    for value in inline_values or []:
-        notes.append(parse_review_note_arg(value, kind))
-    return notes
-
-
-def load_observations(args: argparse.Namespace) -> list[dict[str, Any]]:
-    return load_review_notes(
-        getattr(args, "observations_file", None),
-        getattr(args, "observation", []) or [],
-        "observations",
-        "observation",
-    )
-
-
-def load_followup_candidates(args: argparse.Namespace) -> list[dict[str, Any]]:
-    return load_review_notes(
-        getattr(args, "followup_candidates_file", None),
-        getattr(args, "followup_candidate", []) or [],
-        "followup_candidates",
-        "followup_candidate",
-    )
-
-
-def load_review_report(root: Path, task_dir: Path, report_arg: str | None) -> dict[str, Any] | None:
-    if not report_arg:
-        return None
-    raw_path = Path(report_arg).expanduser()
-    path = raw_path if raw_path.is_absolute() else root / raw_path
-    if not path.exists():
-        raise WorkflowError(f"--review-report not found: {path}")
-    if not path.is_file():
-        raise WorkflowError(f"--review-report must point to a file: {path}")
-    if task_dir.resolve() not in [path.resolve(), *path.resolve().parents]:
-        raise WorkflowError("--review-report must point to a task-local review.md inside the current task directory.")
-    if path.name != REVIEW_REPORT_ARTIFACT:
-        raise WorkflowError("--review-report must point to the task-local review.md file, not another task artifact.")
-    content = path.read_bytes()
-    if not content.strip():
-        raise WorkflowError("--review-report must not be empty.")
-    stat = path.stat()
-    return {
-        "path": repo_relative(root, path),
-        "sha256": hashlib.sha256(content).hexdigest(),
-        "size_bytes": stat.st_size,
-        "modified_at": datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
-    }
-
 
 def raw_review_report_path_errors(root: Path, task_dir: Path, path: Path, label: str) -> list[str]:
     errors: list[str] = []
@@ -5544,22 +5337,6 @@ def raw_review_report_path_errors(root: Path, task_dir: Path, path: Path, label:
         errors.append(f"{label} must stay inside the current task directory.")
     return errors
 
-
-def load_review_round_report(root: Path, task_dir: Path, report_arg: str | None) -> dict[str, Any]:
-    if not report_arg:
-        raise WorkflowError(
-            "record-agent-assignment --review-round requires --review-round-report pointing to task-local reviews/*.md.",
-            exit_code=2,
-        )
-    path = resolve_task_local_path(root, task_dir, report_arg)
-    errors = raw_review_report_path_errors(root, task_dir, path, "--review-round-report")
-    if errors:
-        raise WorkflowError(
-            "Invalid --review-round-report.",
-            exit_code=2,
-            payload={"errors": errors},
-        )
-    return file_digest(root, path)
 
 
 def review_round_report_digest_entry(item: dict[str, Any]) -> dict[str, Any]:
@@ -5625,82 +5402,6 @@ def file_digest(root: Path, path: Path) -> dict[str, Any]:
 def agent_assignment_path(task_dir: Path) -> Path:
     return task_dir / AGENT_ASSIGNMENT_ARTIFACT
 
-
-def default_agent_assignment_payload(root: Path, task_dir: Path) -> dict[str, Any]:
-    return {
-        "schema_version": AGENT_ASSIGNMENT_SCHEMA_VERSION,
-        "generated_at": now_iso(),
-        "updated_at": now_iso(),
-        "task": repo_relative(root, task_dir),
-        "head": current_head(root),
-        "agents": [],
-        "liveness": {},
-        "review_rounds": [],
-        "reuse_decisions": [],
-        "status_events": [],
-        "event_corrections": [],
-        "recovery_links": [],
-        "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用、更换或状态处理；脚本只记录和校验客观字段、HEAD、digest 与枚举值。",
-    }
-
-
-def load_agent_assignment(root: Path, task_dir: Path) -> dict[str, Any]:
-    path = agent_assignment_path(task_dir)
-    if not path.exists():
-        return default_agent_assignment_payload(root, task_dir)
-    payload = read_json(path)
-    if not isinstance(payload.get("agents"), list):
-        payload["agents"] = []
-    if not isinstance(payload.get("liveness"), dict):
-        payload["liveness"] = {}
-    if not isinstance(payload.get("review_rounds"), list):
-        payload["review_rounds"] = []
-    if not isinstance(payload.get("reuse_decisions"), list):
-        payload["reuse_decisions"] = []
-    if not isinstance(payload.get("status_events"), list):
-        payload["status_events"] = []
-    if not isinstance(payload.get("event_corrections"), list):
-        payload["event_corrections"] = []
-    if not isinstance(payload.get("recovery_links"), list):
-        payload["recovery_links"] = []
-    payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
-    payload.setdefault("task", repo_relative(root, task_dir))
-    payload.setdefault("head", current_head(root))
-    return payload
-
-
-def clean_optional_text(value: Any) -> str:
-    return str(value or "").strip()
-
-
-def validate_logical_role(value: str) -> str:
-    role = value.strip()
-    if role not in ALLOWED_LOGICAL_ROLES:
-        raise WorkflowError(
-            f"Invalid logical role: {role or '(empty)'}. Valid roles: {', '.join(ALLOWED_LOGICAL_ROLES)}",
-            exit_code=2,
-        )
-    return role
-
-
-def validate_reuse_decision_value(value: str) -> str:
-    decision = value.strip()
-    if decision not in ALLOWED_REUSE_DECISIONS:
-        raise WorkflowError(
-            f"Invalid reuse decision: {decision or '(empty)'}. Valid decisions: {', '.join(sorted(ALLOWED_REUSE_DECISIONS))}",
-            exit_code=2,
-        )
-    return decision
-
-
-def validate_agent_status_event_value(value: str) -> str:
-    event = value.strip()
-    if event not in ALLOWED_AGENT_STATUS_EVENTS:
-        raise WorkflowError(
-            f"Invalid agent status event: {event or '(empty)'}. Valid events: {', '.join(sorted(ALLOWED_AGENT_STATUS_EVENTS))}",
-            exit_code=2,
-        )
-    return event
 
 
 def parse_iso_datetime(value: Any, label: str = "timestamp") -> datetime:
@@ -5843,54 +5544,6 @@ def rebuild_corrected_agent_liveness_projection(payload: dict[str, Any], agent_i
         snapshot.update(progress_events_digest(payload, agent_id))
 
 
-def digest_lines(lines: list[str]) -> str:
-    return digest_text("\n".join(lines))
-
-
-def relative_to_repo_for_git(root: Path, path: Path) -> str:
-    try:
-        return path.resolve().relative_to(root.resolve()).as_posix()
-    except ValueError:
-        return path.name
-
-
-def filtered_git_lines(root: Path, cmd: list[str], excluded_paths: set[str]) -> list[str]:
-    proc = run(cmd, cwd=root, check=False)
-    text = (proc.stdout or "") if proc.returncode == 0 else (proc.stdout or "") + "\n" + (proc.stderr or "")
-    excluded = {path.strip("/") for path in excluded_paths if path.strip("/")}
-    lines: list[str] = []
-    for raw in text.splitlines():
-        line = raw.rstrip()
-        if not line:
-            continue
-        if any(path and path in line for path in excluded):
-            continue
-        lines.append(line)
-    return sorted(lines)
-
-
-def max_file_mtime_iso(root: Path, excluded_paths: set[str]) -> str:
-    excluded = {(root / path).resolve() for path in excluded_paths if path}
-    max_mtime = 0.0
-    for current, dirs, files in os.walk(root):
-        current_path = Path(current)
-        dirs[:] = [name for name in dirs if name != ".git"]
-        for name in files:
-            path = (current_path / name).resolve()
-            if path in excluded:
-                continue
-            if any(parent.name == ".git" for parent in path.parents):
-                continue
-            try:
-                mtime = path.stat().st_mtime
-            except OSError:
-                continue
-            if mtime > max_mtime:
-                max_mtime = mtime
-    if max_mtime <= 0:
-        return ""
-    return datetime.fromtimestamp(max_mtime, timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
 
 def progress_events_for_agent(payload: dict[str, Any], agent_id: str) -> list[dict[str, Any]]:
     return [
@@ -5923,43 +5576,6 @@ def progress_events_digest(payload: dict[str, Any], agent_id: str) -> dict[str, 
     }
 
 
-def resolve_source_repo(source_repo: str | None) -> Path:
-    value = clean_optional_text(source_repo)
-    if not value:
-        raise WorkflowError("subagent liveness recorder/checker requires --source-repo.", exit_code=2)
-    path = Path(value).expanduser()
-    if not path.exists():
-        raise WorkflowError(f"source repo does not exist: {path}", exit_code=2)
-    return repo_root(path)
-
-
-def collect_liveness_snapshot(root: Path, task_dir: Path, source_repo: Path, payload: dict[str, Any], agent_id: str, captured_at: str | None = None) -> dict[str, Any]:
-    captured = captured_at or now_iso()
-    artifact_relative = relative_to_repo_for_git(root, agent_assignment_path(task_dir))
-    task_status_lines = filtered_git_lines(root, ["git", "status", "--porcelain"], {artifact_relative})
-    task_diff_lines = filtered_git_lines(root, ["git", "diff", "--stat"], {artifact_relative})
-    task_diff_lines.extend(filtered_git_lines(root, ["git", "diff", "--cached", "--stat"], {artifact_relative}))
-    source_status_lines = filtered_git_lines(source_repo, ["git", "status", "--porcelain"], set())
-    source_diff_lines = filtered_git_lines(source_repo, ["git", "diff", "--stat"], set())
-    source_diff_lines.extend(filtered_git_lines(source_repo, ["git", "diff", "--cached", "--stat"], set()))
-    return {
-        "captured_at": captured,
-        "task_head": current_head(root),
-        "task_content_status_digest": digest_lines(task_status_lines),
-        "task_content_diff_stat_digest": digest_lines(sorted(task_diff_lines)),
-        "task_content_max_mtime": max_file_mtime_iso(root, {artifact_relative}),
-        "source_head": current_head(source_repo),
-        "source_status_digest": digest_lines(source_status_lines),
-        "source_diff_stat_digest": digest_lines(sorted(source_diff_lines)),
-        "source_max_mtime": max_file_mtime_iso(source_repo, set()),
-        **progress_events_digest(payload, agent_id),
-    }
-
-
-def source_repo_from_task_context(root: Path, task_context: dict[str, Any]) -> Path:
-    source = task_context.get("source_repo_path") or str(root)
-    return repo_root(Path(str(source)).expanduser())
-
 
 def agent_record(payload: dict[str, Any], agent_id: str) -> dict[str, Any] | None:
     agents = payload.get("agents")
@@ -5971,12 +5587,6 @@ def agent_record(payload: dict[str, Any], agent_id: str) -> dict[str, Any] | Non
     return None
 
 
-def next_event_id(payload: dict[str, Any], event: str, agent_id: str) -> str:
-    events = payload.get("status_events")
-    count = len(events) + 1 if isinstance(events, list) else 1
-    seed = f"{event}|{agent_id}|{now_iso()}|{count}"
-    return f"evt-{count:04d}-{hashlib.sha1(seed.encode('utf-8')).hexdigest()[:10]}"
-
 
 def ensure_liveness_entry(payload: dict[str, Any], agent_id: str) -> dict[str, Any]:
     liveness = payload.setdefault("liveness", {})
@@ -5987,172 +5597,6 @@ def ensure_liveness_entry(payload: dict[str, Any], agent_id: str) -> dict[str, A
         raise WorkflowError(f"agent-assignment.json liveness[{agent_id}] must be an object.", exit_code=2)
     return entry
 
-
-def append_agent_assignment_event(
-    payload: dict[str, Any],
-    root: Path,
-    task_dir: Path,
-    logical_role: str,
-    agent_id: str,
-    platform_nickname: str,
-    reason: str,
-    source_repo: Path | None = None,
-    observed_at: str | None = None,
-) -> dict[str, Any]:
-    if not reason:
-        raise WorkflowError("record-agent-assignment requires --reason explaining the AI/human assignment decision.", exit_code=2)
-    if not agent_id:
-        raise WorkflowError("assigned liveness event requires --agent-id.", exit_code=2)
-    if agent_record(payload, agent_id):
-        raise WorkflowError(f"agent already assigned: {agent_id}", exit_code=2)
-    observed = normalize_utc_iso(observed_at or now_iso(), "assigned.observed_at")
-    role = validate_logical_role(logical_role)
-    event = {
-        "logical_role": role,
-        "agent_id": agent_id,
-        "platform_nickname": platform_nickname,
-        "assigned_at": observed,
-        "assigned_head": current_head(root),
-        "reason": reason,
-    }
-    payload["agents"].append(event)
-    status_event = build_liveness_event(
-        payload=payload,
-        root=root,
-        logical_role=role,
-        agent_id=agent_id,
-        platform_nickname=platform_nickname,
-        event_name="assigned",
-        observed_at=observed,
-        evidence=reason,
-        source="main-session",
-    )
-    event["event_id"] = status_event["event_id"]
-    payload.setdefault("status_events", []).append(status_event)
-    source = source_repo or root
-    snapshot = collect_liveness_snapshot(root, task_dir, source, payload, agent_id, captured_at=observed)
-    liveness = ensure_liveness_entry(payload, agent_id)
-    liveness.update(
-        {
-            "progress_anchor_at": observed,
-            "last_scan_snapshot": snapshot,
-            "pending_status_request_at": None,
-            "last_checked_at": "",
-            "last_decision": "",
-        }
-    )
-    return event
-
-
-def append_agent_review_round(
-    payload: dict[str, Any],
-    root: Path,
-    task_dir: Path,
-    logical_role: str,
-    agent_id: str,
-    platform_nickname: str,
-    round_value: int,
-    findings_count: int,
-    reuse_policy: str,
-    reuse_decision: str,
-    reviewed_head: str | None,
-    review_round_report: str | None,
-) -> dict[str, Any]:
-    if round_value <= 0:
-        raise WorkflowError("review round must be a positive integer.", exit_code=2)
-    if findings_count < 0:
-        raise WorkflowError("findings count must be a non-negative integer.", exit_code=2)
-    if not reuse_policy:
-        raise WorkflowError("review round requires --reuse-policy with the AI/human review reuse rule.", exit_code=2)
-    event = {
-        "round": round_value,
-        "logical_role": validate_logical_role(logical_role),
-        "agent_id": agent_id,
-        "platform_nickname": platform_nickname,
-        "reviewed_head": reviewed_head or current_head(root),
-        "findings_count": findings_count,
-        "reuse_policy": reuse_policy,
-        "reuse_decision": validate_reuse_decision_value(reuse_decision),
-        "recorded_at": now_iso(),
-    }
-    add_review_round_report_digest_fields(event, load_review_round_report(root, task_dir, review_round_report))
-    payload["review_rounds"].append(event)
-    return event
-
-
-def append_agent_reuse_decision(
-    payload: dict[str, Any],
-    root: Path,
-    logical_role: str,
-    agent_id: str,
-    decision: str,
-    reason: str,
-    from_round: int | None,
-    to_round: int | None,
-    head: str | None,
-) -> dict[str, Any]:
-    if not reason:
-        raise WorkflowError("reuse decision requires --reuse-reason with the AI/human decision rationale.", exit_code=2)
-    if from_round is not None and from_round <= 0:
-        raise WorkflowError("--from-round must be a positive integer.", exit_code=2)
-    if to_round is not None and to_round <= 0:
-        raise WorkflowError("--to-round must be a positive integer.", exit_code=2)
-    event = {
-        "logical_role": validate_logical_role(logical_role),
-        "agent_id": agent_id,
-        "decision": validate_reuse_decision_value(decision),
-        "reason": reason,
-        "head": head or current_head(root),
-        "recorded_at": now_iso(),
-    }
-    if from_round is not None:
-        event["from_round"] = from_round
-    if to_round is not None:
-        event["to_round"] = to_round
-    payload["reuse_decisions"].append(event)
-    return event
-
-
-def build_liveness_event(
-    *,
-    payload: dict[str, Any],
-    root: Path,
-    logical_role: str,
-    agent_id: str,
-    platform_nickname: str,
-    event_name: str,
-    observed_at: str,
-    evidence: str,
-    source: str,
-    predecessor_agent_id: str = "",
-    predecessor_event_id: str = "",
-    termination_reason: str = "",
-    termination_source_event_id: str = "",
-    replacement_reason: str = "",
-    handoff_summary: str = "",
-) -> dict[str, Any]:
-    event = validate_agent_status_event_value(event_name)
-    if source not in AGENT_STATUS_EVENT_SOURCES:
-        raise WorkflowError(f"Invalid liveness event source: {source}", exit_code=2)
-    observed = normalize_utc_iso(observed_at or now_iso(), "observed_at")
-    return {
-        "event_id": next_event_id(payload, event, agent_id),
-        "event": event,
-        "agent_id": agent_id,
-        "logical_role": validate_logical_role(logical_role),
-        "platform_nickname": platform_nickname,
-        "observed_at": observed,
-        "recorded_at": now_iso(),
-        "head": current_head(root),
-        "source": source,
-        "evidence": validate_event_evidence(evidence),
-        "predecessor_agent_id": predecessor_agent_id,
-        "predecessor_event_id": predecessor_event_id,
-        "termination_reason": termination_reason,
-        "termination_source_event_id": termination_source_event_id,
-        "replacement_reason": replacement_reason,
-        "handoff_summary": handoff_summary,
-    }
 
 
 def event_by_id(payload: dict[str, Any], event_id: str) -> dict[str, Any] | None:
@@ -6167,120 +5611,6 @@ def event_by_id(payload: dict[str, Any], event_id: str) -> dict[str, Any] | None
     return None
 
 
-def next_agent_repair_id(payload: dict[str, Any], collection: str, prefix: str) -> str:
-    items = payload.get(collection)
-    count = len(items) + 1 if isinstance(items, list) else 1
-    seed = f"{collection}|{now_iso()}|{count}"
-    return f"{prefix}-{count:04d}-{hashlib.sha1(seed.encode('utf-8')).hexdigest()[:10]}"
-
-
-def append_agent_event_correction(
-    payload: dict[str, Any],
-    root: Path,
-    *,
-    target_event_id: str,
-    reason: str,
-    evidence: str,
-) -> dict[str, Any]:
-    target = event_by_id(payload, target_event_id)
-    if not isinstance(target, dict):
-        raise WorkflowError("event correction target_event_id must reference an existing status event.", exit_code=2)
-    target_kind = str(target.get("event") or "").strip()
-    if target_kind not in AGENT_CORRECTABLE_EVENTS:
-        raise WorkflowError(
-            "event correction may invalidate only progress or status-request evidence.",
-            exit_code=2,
-        )
-    corrections = payload.setdefault("event_corrections", [])
-    if not isinstance(corrections, list):
-        raise WorkflowError("agent-assignment.json event_corrections must be an array.", exit_code=2)
-    if any(
-        isinstance(item, dict)
-        and str(item.get("target_event_id") or "").strip() == target_event_id
-        for item in corrections
-    ):
-        raise WorkflowError("event correction target_event_id is already invalidated.", exit_code=2)
-    correction = {
-        "correction_id": next_agent_repair_id(payload, "event_corrections", "cor"),
-        "kind": AGENT_CORRECTION_KIND,
-        "target_event_id": target_event_id,
-        "target_event_sha256": agent_status_event_sha256(target),
-        "agent_id": str(target.get("agent_id") or "").strip(),
-        "recorded_at": now_iso(),
-        "head": current_head(root),
-        "source": "main-session",
-        "reason": validate_event_evidence(reason),
-        "evidence": validate_event_evidence(evidence),
-    }
-    corrections.append(correction)
-    rebuild_corrected_agent_liveness_projection(payload, correction["agent_id"])
-    return correction
-
-
-def append_agent_recovery_link(
-    payload: dict[str, Any],
-    root: Path,
-    *,
-    failed_event_id: str,
-    termination_event_id: str,
-    reason: str,
-    evidence: str,
-) -> dict[str, Any]:
-    failed = event_by_id(payload, failed_event_id)
-    termination = event_by_id(payload, termination_event_id)
-    if not isinstance(failed, dict) or not isinstance(termination, dict):
-        raise WorkflowError("recovery link must reference existing failed and termination events.", exit_code=2)
-    failed_agent = str(failed.get("agent_id") or "").strip()
-    termination_agent = str(termination.get("agent_id") or "").strip()
-    if failed_agent != termination_agent:
-        raise WorkflowError("recovery link events must belong to the same agent.", exit_code=2)
-    if str(failed.get("event") or "").strip() != "failed":
-        raise WorkflowError("recovery link failed_event_id must reference failed.", exit_code=2)
-    if (
-        str(termination.get("event") or "").strip() != "terminated-unfinished"
-        or str(termination.get("termination_reason") or "").strip()
-        != "manual_or_platform_terminated_unfinished"
-    ):
-        raise WorkflowError(
-            "recovery link termination_event_id must reference manual_or_platform_terminated_unfinished.",
-            exit_code=2,
-        )
-    events = payload.get("status_events")
-    if not isinstance(events, list) or events.index(failed) >= events.index(termination):
-        raise WorkflowError("recovery link must point forward from failed to termination.", exit_code=2)
-    links = payload.setdefault("recovery_links", [])
-    if not isinstance(links, list):
-        raise WorkflowError("agent-assignment.json recovery_links must be an array.", exit_code=2)
-    if any(
-        isinstance(item, dict)
-        and str(item.get("failed_event_id") or "").strip() == failed_event_id
-        for item in links
-    ):
-        raise WorkflowError("recovery link failed_event_id already has a link.", exit_code=2)
-    link = {
-        "recovery_id": next_agent_repair_id(payload, "recovery_links", "rec"),
-        "kind": AGENT_RECOVERY_LINK_KIND,
-        "failed_event_id": failed_event_id,
-        "failed_event_sha256": agent_status_event_sha256(failed),
-        "termination_event_id": termination_event_id,
-        "termination_event_sha256": agent_status_event_sha256(termination),
-        "agent_id": failed_agent,
-        "recorded_at": now_iso(),
-        "head": current_head(root),
-        "source": "main-session",
-        "reason": validate_event_evidence(reason),
-        "evidence": validate_event_evidence(evidence),
-    }
-    links.append(link)
-    return link
-
-
-def latest_progress_observed_at(payload: dict[str, Any], agent_id: str) -> str:
-    events = progress_events_for_agent(payload, agent_id)
-    if not events:
-        return ""
-    newest = max(events, key=lambda item: parse_iso_datetime(item.get("observed_at"), "progress observed_at"))
-    return str(newest.get("observed_at") or "")
 
 
 def validate_resume_reference(payload: dict[str, Any], agent_id: str, predecessor_event_id: str) -> None:
@@ -6350,300 +5680,6 @@ def validate_termination_reference(payload: dict[str, Any], agent_id: str, termi
     elif termination_source_event_id:
         raise WorkflowError("manual_or_platform_terminated_unfinished must not set termination_source_event_id.", exit_code=2)
 
-
-def require_status_request_decision(payload: dict[str, Any], agent_id: str, event: str) -> None:
-    liveness = payload.get("liveness") if isinstance(payload.get("liveness"), dict) else {}
-    entry = liveness.get(agent_id) if isinstance(liveness, dict) else None
-    if not isinstance(entry, dict):
-        raise WorkflowError(f"{event} requires liveness entry for agent.", exit_code=2)
-    if str(entry.get("last_decision") or "") != "status_request_required":
-        raise WorkflowError(
-            f"{event} requires last_decision == status_request_required; run check-subagent-liveness and send status request only after that decision.",
-            exit_code=2,
-        )
-
-
-def verify_stale_assessed_freshness(root: Path, task_dir: Path, source_repo: Path, payload: dict[str, Any], agent_id: str) -> None:
-    liveness = payload.get("liveness") if isinstance(payload.get("liveness"), dict) else {}
-    entry = liveness.get(agent_id) if isinstance(liveness, dict) else None
-    if not isinstance(entry, dict):
-        raise WorkflowError("stale-assessed requires liveness entry for agent.", exit_code=2)
-    if str(entry.get("last_decision") or "") != "stale_allowed":
-        raise WorkflowError("stale-assessed requires last_decision == stale_allowed; rerun check-subagent-liveness first.", exit_code=2)
-    previous = entry.get("last_scan_snapshot")
-    if not isinstance(previous, dict):
-        raise WorkflowError("stale-assessed requires last_scan_snapshot evidence.", exit_code=2)
-    current = collect_liveness_snapshot(root, task_dir, source_repo, payload, agent_id, captured_at=str(previous.get("captured_at") or now_iso()))
-    changed = [
-        field
-        for field in AGENT_LIVENESS_SNAPSHOT_FIELDS
-        if str(current.get(field) or "") != str(previous.get(field) or "")
-    ]
-    if changed:
-        raise WorkflowError(
-            "stale-assessed refused because new progress or snapshot drift appeared; rerun check-subagent-liveness.",
-            exit_code=2,
-            payload={"changed_snapshot_fields": changed},
-        )
-
-
-def append_subagent_liveness_event(
-    payload: dict[str, Any],
-    root: Path,
-    task_dir: Path,
-    source_repo: Path,
-    *,
-    agent_id: str,
-    event_name: str,
-    observed_at: str,
-    evidence: str,
-    logical_role: str = "",
-    platform_nickname: str = "",
-    source: str = "main-session",
-    predecessor_agent_id: str = "",
-    predecessor_event_id: str = "",
-    termination_reason: str = "",
-    termination_source_event_id: str = "",
-    replacement_reason: str = "",
-    handoff_summary: str = "",
-) -> dict[str, Any]:
-    event = validate_agent_status_event_value(event_name)
-    if event == "assigned":
-        return append_agent_assignment_event(
-            payload,
-            root,
-            task_dir,
-            logical_role,
-            agent_id,
-            platform_nickname,
-            validate_event_evidence(evidence),
-            source_repo=source_repo,
-            observed_at=observed_at,
-        )
-    assigned_agent = agent_record(payload, agent_id)
-    if not assigned_agent:
-        raise WorkflowError(f"liveness event requires existing assigned agent: {agent_id}", exit_code=2)
-    role = str(assigned_agent.get("logical_role") or "")
-    nickname = str(assigned_agent.get("platform_nickname") or "")
-    if event == "resume-same-agent":
-        if not predecessor_event_id or not handoff_summary:
-            raise WorkflowError("resume-same-agent requires --predecessor-event-id and --handoff-summary.", exit_code=2)
-        validate_resume_reference(payload, agent_id, predecessor_event_id)
-    elif event == "replacement-started":
-        if not predecessor_agent_id or not predecessor_event_id or not replacement_reason or not handoff_summary:
-            raise WorkflowError("replacement-started requires --predecessor-agent-id, --predecessor-event-id, --replacement-reason, and --handoff-summary.", exit_code=2)
-        if replacement_reason not in AGENT_REPLACEMENT_REASONS:
-            raise WorkflowError(f"Invalid replacement_reason: {replacement_reason}", exit_code=2)
-        validate_replacement_reference(payload, agent_id, predecessor_agent_id, predecessor_event_id, replacement_reason)
-    elif event == "terminated-unfinished":
-        if not termination_reason or not handoff_summary:
-            raise WorkflowError("terminated-unfinished requires --termination-reason and --handoff-summary.", exit_code=2)
-        validate_termination_reference(payload, agent_id, termination_reason, termination_source_event_id)
-    elif event == "stale-assessed":
-        verify_stale_assessed_freshness(root, task_dir, source_repo, payload, agent_id)
-    elif event in {"status-requested", "status-request-failed"}:
-        require_status_request_decision(payload, agent_id, event)
-    else:
-        forbidden_values = {
-            "predecessor_agent_id": predecessor_agent_id,
-            "predecessor_event_id": predecessor_event_id,
-            "termination_reason": termination_reason,
-            "termination_source_event_id": termination_source_event_id,
-            "replacement_reason": replacement_reason,
-            "handoff_summary": handoff_summary,
-        }
-        present = [name for name, value in forbidden_values.items() if value]
-        if present:
-            raise WorkflowError(f"{event} does not accept fields: {', '.join(present)}", exit_code=2)
-
-    status_event = build_liveness_event(
-        payload=payload,
-        root=root,
-        logical_role=role,
-        agent_id=agent_id,
-        platform_nickname=nickname,
-        event_name=event,
-        observed_at=observed_at or now_iso(),
-        evidence=evidence,
-        source=source,
-        predecessor_agent_id=predecessor_agent_id,
-        predecessor_event_id=predecessor_event_id,
-        termination_reason=termination_reason,
-        termination_source_event_id=termination_source_event_id,
-        replacement_reason=replacement_reason,
-        handoff_summary=handoff_summary,
-    )
-    payload.setdefault("status_events", []).append(status_event)
-    liveness = ensure_liveness_entry(payload, agent_id)
-    if event == "status-requested":
-        if liveness.get("pending_status_request_at"):
-            raise WorkflowError("status-requested already pending; run checker and do not repeat ping.", exit_code=2)
-        liveness["pending_status_request_at"] = status_event["observed_at"]
-    elif event in AGENT_TERMINAL_EVENTS or event == "terminated-unfinished":
-        liveness["pending_status_request_at"] = None
-    return status_event
-
-
-def changed_snapshot_sources(previous: dict[str, Any], current: dict[str, Any], prefix: str) -> list[dict[str, Any]]:
-    mapping = {
-        "task": [
-            ("task_head", "task_head"),
-            ("task_content_status_digest", "task_status"),
-            ("task_content_diff_stat_digest", "task_diff_stat"),
-            ("task_content_max_mtime", "task_mtime"),
-        ],
-        "source": [
-            ("source_head", "source_head"),
-            ("source_status_digest", "source_status"),
-            ("source_diff_stat_digest", "source_diff_stat"),
-            ("source_max_mtime", "source_mtime"),
-        ],
-    }[prefix]
-    sources: list[dict[str, Any]] = []
-    for field, source_kind in mapping:
-        if str(previous.get(field) or "") != str(current.get(field) or ""):
-            sources.append(
-                {
-                    "source": source_kind,
-                    "observed_at": current.get("captured_at"),
-                    "evidence": f"{field} changed",
-                }
-            )
-    return sources
-
-
-def new_progress_event_sources(payload: dict[str, Any], agent_id: str, previous: dict[str, Any], current: dict[str, Any]) -> list[dict[str, Any]]:
-    if (
-        previous.get("progress_events_count") == current.get("progress_events_count")
-        and previous.get("progress_events_digest") == current.get("progress_events_digest")
-        and previous.get("progress_events_newest_event_id") == current.get("progress_events_newest_event_id")
-    ):
-        return []
-    # last_scan_snapshot stores digest/count/newest rather than the full id set;
-    # report the newest current progress event as the auditable trigger.
-    events = progress_events_for_agent(payload, agent_id)
-    if not events:
-        return []
-    newest = max(events, key=lambda item: parse_iso_datetime(item.get("observed_at"), "progress observed_at"))
-    return [
-        {
-            "source": "status_event",
-            "event_id": newest.get("event_id"),
-            "event": newest.get("event"),
-            "observed_at": newest.get("observed_at"),
-            "evidence": newest.get("evidence"),
-        }
-    ]
-
-
-def deadline_for_anchor(progress_anchor_at: str, max_progress_silence: int) -> str:
-    anchor = parse_iso_datetime(progress_anchor_at, "progress_anchor_at")
-    return iso_from_datetime(anchor + timedelta(seconds=max_progress_silence))
-
-
-def calculate_next_wait_ms(checked_at: str, deadline_at: str, progress_scan_interval: int, immediate: bool = False) -> int:
-    if immediate:
-        return 0
-    checked = parse_iso_datetime(checked_at, "checked_at")
-    deadline = parse_iso_datetime(deadline_at, "max_progress_silence_deadline_at")
-    remaining_ms = int((deadline - checked).total_seconds() * 1000)
-    if remaining_ms <= 0:
-        return 0
-    return min(progress_scan_interval * 1000, remaining_ms)
-
-
-def latest_progress_anchor(payload: dict[str, Any], agent_id: str, current_anchor: str, source_decision: str, snapshot: dict[str, Any], progress_sources: list[dict[str, Any]]) -> str:
-    anchor = current_anchor
-    if source_decision == "workspace_boundary_violation_progress":
-        return max_iso(anchor, str(snapshot.get("captured_at") or ""))
-    task_machine_sources = {"task_head", "task_status", "task_diff_stat", "task_mtime"}
-    if any(source.get("source") in task_machine_sources for source in progress_sources):
-        anchor = max_iso(anchor, str(snapshot.get("captured_at") or ""))
-    progress_times = [
-        str(source.get("observed_at") or "")
-        for source in progress_sources
-        if source.get("source") == "status_event" and source.get("observed_at")
-    ]
-    for observed_at in progress_times:
-        anchor = max_iso(anchor, observed_at)
-    return anchor
-
-
-def evaluate_subagent_liveness(
-    root: Path,
-    task_dir: Path,
-    source_repo: Path,
-    payload: dict[str, Any],
-    agent_id: str,
-    progress_scan_interval: int,
-    max_progress_silence: int,
-    checked_at: str | None = None,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    if progress_scan_interval <= 0 or max_progress_silence <= progress_scan_interval:
-        raise WorkflowError("max-progress-silence must be greater than progress-scan-interval.", exit_code=2)
-    if not agent_record(payload, agent_id):
-        raise WorkflowError(f"agent is not assigned: {agent_id}", exit_code=2)
-    liveness = ensure_liveness_entry(payload, agent_id)
-    previous = liveness.get("last_scan_snapshot")
-    if not isinstance(previous, dict):
-        raise WorkflowError("liveness last_scan_snapshot is missing; record assigned baseline first.", exit_code=2)
-    checked = normalize_utc_iso(checked_at or now_iso(), "checked_at")
-    snapshot = collect_liveness_snapshot(root, task_dir, source_repo, payload, agent_id, captured_at=checked)
-    source_progress = changed_snapshot_sources(previous, snapshot, "source")
-    task_progress = changed_snapshot_sources(previous, snapshot, "task")
-    event_progress = new_progress_event_sources(payload, agent_id, previous, snapshot)
-    progress_sources = source_progress + task_progress + event_progress
-    current_anchor = str(liveness.get("progress_anchor_at") or "")
-    if not current_anchor:
-        assigned = agent_record(payload, agent_id) or {}
-        current_anchor = str(assigned.get("assigned_at") or checked)
-    decision = ""
-    reason = ""
-    if source_progress:
-        decision = "workspace_boundary_violation_progress"
-        reason = "source checkout snapshot changed; treat as workspace boundary progress."
-    elif task_progress or event_progress:
-        decision = "progress_observed"
-        reason = "task snapshot or recorded progress event changed."
-    if decision:
-        anchor = latest_progress_anchor(payload, agent_id, current_anchor, decision, snapshot, progress_sources)
-        liveness["progress_anchor_at"] = anchor
-        liveness["pending_status_request_at"] = None
-        deadline = deadline_for_anchor(anchor, max_progress_silence)
-        next_wait_ms = calculate_next_wait_ms(checked, deadline, progress_scan_interval)
-    else:
-        anchor = current_anchor
-        deadline = deadline_for_anchor(anchor, max_progress_silence)
-        pending = clean_optional_text(liveness.get("pending_status_request_at"))
-        if not pending:
-            decision = "status_request_required"
-            reason = "no new progress and no pending status request."
-            next_wait_ms = 0
-        elif parse_iso_datetime(checked, "checked_at") >= parse_iso_datetime(deadline, "max_progress_silence_deadline_at"):
-            decision = "stale_allowed"
-            reason = "pending status request exists, no progress response appeared, and max progress silence deadline has passed."
-            next_wait_ms = 0
-        else:
-            decision = "continue_waiting_no_repeat_ping"
-            reason = "pending status request exists and deadline has not passed."
-            next_wait_ms = calculate_next_wait_ms(checked, deadline, progress_scan_interval)
-    liveness["last_scan_snapshot"] = snapshot
-    liveness["last_checked_at"] = checked
-    liveness["last_decision"] = decision
-    payload["updated_at"] = now_iso()
-    result = {
-        "decision": decision,
-        "agent_id": agent_id,
-        "checked_at": checked,
-        "progress_anchor_at": liveness.get("progress_anchor_at") or anchor,
-        "pending_status_request_at": liveness.get("pending_status_request_at"),
-        "max_progress_silence_deadline_at": deadline,
-        "next_wait_ms": next_wait_ms,
-        "progress_sources": progress_sources,
-        "artifact": str(agent_assignment_path(task_dir)),
-        "reason": reason,
-    }
-    return result, snapshot
 
 
 def git_object_exists(root: Path, ref: str) -> bool:
@@ -7125,45 +6161,6 @@ def review_reports_from_assignment(root: Path, task_dir: Path, payload: dict[str
         )
     return reports
 
-
-def current_findings_review_round_errors(root: Path, payload: dict[str, Any], expected_findings_count: int) -> list[str]:
-    rounds = payload.get("review_rounds")
-    if not isinstance(rounds, list):
-        return ["agent-assignment.json review_rounds 必须是数组。"]
-    current = current_head(root)
-    for item in rounds:
-        if not isinstance(item, dict):
-            continue
-        if str(item.get("reviewed_head") or "").strip() == current and item.get("findings_count") == expected_findings_count:
-            return []
-    return [
-        "Branch Review Gate findings artifact 需要 agent-assignment.json 中存在一轮 reviewed_head="
-        f"{current} 且 findings_count={expected_findings_count} 的 review_rounds[] raw report evidence。"
-    ]
-
-
-def review_rollup_link_errors(root: Path, task_dir: Path, review_report: dict[str, Any], review_reports: list[dict[str, Any]]) -> list[str]:
-    path_value = str(review_report.get("path") or "").strip()
-    if not path_value:
-        return ["task-local review.md 缺少 path，无法校验 raw report 链接。"]
-    report_path = resolve_repo_path(root, path_value)
-    try:
-        content = report_path.read_text(encoding="utf-8")
-    except OSError as exc:
-        return [f"无法读取 task-local review.md 校验 raw report 链接: {exc}。"]
-    errors: list[str] = []
-    for item in review_reports:
-        raw_path_value = str(item.get("path") or "").strip()
-        if not raw_path_value:
-            continue
-        raw_path = resolve_repo_path(root, raw_path_value)
-        try:
-            task_relative = raw_path.resolve().relative_to(task_dir.resolve()).as_posix()
-        except ValueError:
-            task_relative = ""
-        if raw_path_value not in content and (not task_relative or task_relative not in content):
-            errors.append(f"task-local review.md 必须链接 raw review report: {task_relative or raw_path_value}。")
-    return errors
 
 
 def normalized_review_report_template_line(line: str) -> str:
@@ -10157,7 +9154,12 @@ def phase2_semantic_errors(payload: dict[str, Any]) -> list[str]:
             errors.append("phase2_check_current_scope_candidate_finding_link_missing")
     dimensions = review.get("adequacy_dimensions") if isinstance(review.get("adequacy_dimensions"), list) else []
     dimension_ids = [item.get("id") for item in dimensions if isinstance(item, dict)]
-    if dimension_ids != PHASE2_CHECK_DIMENSIONS:
+    expected_dimensions = list(PHASE2_CHECK_DIMENSIONS)
+    allowed_evidence_refs = set(PHASE2_CHECK_EVIDENCE_REFS)
+    if payload.get("schema_version") == PHASE2_CHECK_LEGACY_SCHEMA_VERSION:
+        expected_dimensions.insert(-1, "agent_recovery")
+        allowed_evidence_refs.add("agent_assignment")
+    if dimension_ids != expected_dimensions:
         errors.append("phase2_check_adequacy_dimension_order_mismatch")
     evidence_refs = {
         str(ref)
@@ -10171,7 +9173,7 @@ def phase2_semantic_errors(payload: dict[str, Any]) -> list[str]:
         if isinstance(dimension, dict)
     ):
         errors.append("phase2_check_adequacy_evidence_refs_missing")
-    if not evidence_refs.issubset(PHASE2_CHECK_EVIDENCE_REFS):
+    if not evidence_refs.issubset(allowed_evidence_refs):
         errors.append("phase2_check_adequacy_evidence_ref_unknown")
     if not PHASE2_CHECK_EVIDENCE_REFS.issubset(evidence_refs):
         errors.append("phase2_check_adequacy_evidence_source_uncovered")
@@ -10179,14 +9181,13 @@ def phase2_semantic_errors(payload: dict[str, Any]) -> list[str]:
     if not execution.get("commands"):
         errors.append("phase2_check_execution_commands_missing")
     worker_evidence = execution.get("worker_evidence") if isinstance(execution.get("worker_evidence"), list) else []
-    check_agent_ids = set(payload.get("agent_assignment", {}).get("check_agent_ids") or [])
     worker_agent_ids = {
         str(item.get("agent_id") or "").strip()
         for item in worker_evidence
         if isinstance(item, dict) and str(item.get("agent_id") or "").strip()
     }
-    if worker_agent_ids != check_agent_ids:
-        errors.append("phase2_check_worker_agent_not_completed_check_agent")
+    if any(not item for item in worker_agent_ids):
+        errors.append("phase2_check_worker_evidence_agent_id_missing")
     unverified = execution.get("unverified_items") if isinstance(execution.get("unverified_items"), list) else []
     unverified_ids = [str(item.get("id") or "") for item in unverified if isinstance(item, dict)]
     if any(not item for item in unverified_ids) or len(unverified_ids) != len(set(unverified_ids)):
@@ -10226,8 +9227,6 @@ def phase2_semantic_errors(payload: dict[str, Any]) -> list[str]:
             errors.append("phase2_check_pass_has_blocker")
         if gate.get("full_rerun") is not True:
             errors.append("phase2_check_pass_requires_full_rerun")
-        if payload.get("agent_assignment", {}).get("recovery_complete") is not True:
-            errors.append("phase2_check_pass_requires_complete_agent_recovery")
     if open_findings and typed_exit != "implementation_required":
         errors.append("phase2_check_open_finding_requires_implementation")
     if typed_exit == "implementation_required" and not open_findings:
@@ -10282,7 +9281,30 @@ def materialize_phase2_check_payload(
     payload["requirement_provenance"] = phase2_evidence_projection(root, payload.get("requirement_provenance"), "requirement_provenance")
     payload["docs_ssot_plan"] = phase2_docs_projection(root, payload.get("docs_ssot_plan"))
     payload["implementation_handoff"] = phase2_evidence_projection(root, payload.get("implementation_handoff"), "implementation_handoff")
-    payload["agent_assignment"] = phase2_agent_projection(root, task_dir, payload.get("agent_assignment"))
+    semantic_review = payload.get("semantic_review")
+    if isinstance(semantic_review, dict) and isinstance(
+        semantic_review.get("adequacy_dimensions"), list
+    ):
+        semantic_review["adequacy_dimensions"] = [
+            dimension
+            for dimension in semantic_review["adequacy_dimensions"]
+            if not (
+                isinstance(dimension, dict)
+                and dimension.get("id") == "agent_recovery"
+            )
+        ]
+        for dimension in semantic_review["adequacy_dimensions"]:
+            if isinstance(dimension, dict) and isinstance(
+                dimension.get("evidence_refs"), list
+            ):
+                dimension["evidence_refs"] = [
+                    ref
+                    for ref in dimension["evidence_refs"]
+                    if ref != "agent_assignment"
+                ]
+    # Schema 2.1 deliberately drops routine assignment/liveness bookkeeping.
+    # A legacy 2.0 artifact may still carry agent_assignment and is read-only.
+    payload.pop("agent_assignment", None)
     payload["repository_snapshot"] = phase2_repository_projection(root, task_dir, task_context, payload.get("repository_snapshot"))
     phase2_semantic_projection(payload)
     payload["facts_sha256"] = context_digest({key: value for key, value in payload.items() if key not in {"generated_at", "facts_sha256"}})
@@ -10446,7 +9468,7 @@ def validate_phase2_check(
         raise WorkflowError(f"Phase 2 check artifact not found: {path}", exit_code=2)
     payload = read_json(path)
     errors: list[str] = []
-    if payload.get("schema_version") != PHASE2_CHECK_SCHEMA_VERSION or payload.get("skill_id") != PHASE2_CHECK_SKILL_ID:
+    if payload.get("schema_version") not in PHASE2_CHECK_SCHEMA_VERSIONS or payload.get("skill_id") != PHASE2_CHECK_SKILL_ID:
         return path, payload, [
             "phase2_check_legacy_requires_complete_guru_check_task_reentry"
         ]
@@ -10480,11 +9502,7 @@ def validate_phase2_check(
             current_docs = phase2_docs_projection(root, payload.get("docs_ssot_plan"))
             if payload.get("docs_ssot_plan") != current_docs:
                 errors.append("phase2_check_docs_ssot_stale")
-            preserved_handoff_paths = (
-                {repo_relative(root, agent_assignment_path(task_dir))}
-                if post_commit_audit_candidate
-                else set()
-            )
+            preserved_handoff_paths: set[str] = set()
             current_handoff = phase2_evidence_projection(
                 root,
                 payload.get("implementation_handoff"),
@@ -10493,9 +9511,10 @@ def validate_phase2_check(
             )
             if payload.get("implementation_handoff") != current_handoff:
                 errors.append("phase2_check_implementation_handoff_stale")
-            current_agent = phase2_agent_projection(root, task_dir, payload.get("agent_assignment"))
-            if payload.get("agent_assignment") != current_agent:
-                errors.append("phase2_check_agent_assignment_stale")
+            if payload.get("schema_version") == PHASE2_CHECK_LEGACY_SCHEMA_VERSION and "agent_assignment" in payload:
+                current_agent = phase2_agent_projection(root, task_dir, payload.get("agent_assignment"))
+                if payload.get("agent_assignment") != current_agent:
+                    errors.append("phase2_check_agent_assignment_stale")
         except WorkflowError as exc:
             errors.append(f"phase2_check_current_facts_invalid:{exc}")
 
@@ -10552,89 +9571,6 @@ def validate_phase2_check(
         errors.append("phase2_check_facts_sha256_mismatch")
     return path, payload, errors
 
-
-def build_review_gate_payload(
-    root: Path,
-    task_dir: Path,
-    config: dict[str, Any],
-    task_context: dict[str, Any],
-    base_branch: str,
-    pass_gate: bool,
-    findings: list[dict[str, Any]],
-    observations: list[dict[str, Any]],
-    followup_candidates: list[dict[str, Any]],
-    command: list[str],
-    summary: str,
-    evidence: list[str],
-    reviewer: str,
-    review_source: str,
-    review_report: dict[str, Any] | None,
-    agent_assignment: dict[str, Any] | None,
-    review_reports: list[dict[str, Any]],
-) -> dict[str, Any]:
-    diff_spec = diff_range(root, base_branch)
-    files = changed_files(root, diff_spec)
-    deployment_impact = detect_deployment_impact(files)
-    blockers = review_gate_blocking_findings(findings)
-    ledger = load_issue_scope_ledger(task_dir, task_context)
-    close_issues = ledger.get("close_issues") if isinstance(ledger.get("close_issues"), list) else []
-    return {
-        "schema_version": "1.0",
-        "generated_at": now_iso(),
-        "task_dir": repo_relative(root, task_dir),
-        "base_branch": base_branch,
-        "base_ref": diff_base_ref(root, base_branch),
-        "head_branch": current_branch(root),
-        "head": current_head(root),
-        "diff_range": diff_spec,
-        "changed_files": files,
-        "review_scope": [
-            "文档",
-            "代码",
-            "测试",
-            "Trellis artifacts",
-            "配置",
-            "脚本",
-            "schema",
-            "CI/CD workflow 与发布自动化",
-            "Dockerfile / Docker Compose / 容器启动脚本",
-            "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
-            "数据库 schema / migration / seed / backfill 脚本",
-            "各目录下本次变更涉及的 Makefile",
-            "preset installer",
-        ],
-        "command": command,
-        "conclusion": {
-            "passed": bool(pass_gate and not blockers),
-            "summary": summary or ("Branch Review Gate 通过。" if pass_gate and not blockers else "Branch Review Gate 未通过。"),
-            "block_priorities": review_gate_config(config).get("block_priorities", ["P0", "P1", "P2", "P3"]),
-            "blocking_findings_count": len(blockers),
-            "findings_count": len(findings),
-            "observations_count": len(observations),
-            "followup_candidates_count": len(followup_candidates),
-        },
-        "findings": findings,
-        "observations": observations,
-        "followup_candidates": followup_candidates,
-        "issue_scope": {
-            "ledger_path": repo_relative(root, issue_scope_ledger_path(task_dir)),
-            "close_issues_reviewed": close_issues,
-            "related_issues": ledger.get("related_issues", []),
-            "followup_issues": ledger.get("followup_issues", []),
-        },
-        "verification_evidence": {
-            "base_head": f"{diff_base_ref(root, base_branch)}...{current_head(root)}",
-            "changed_file_count": len(files),
-            "reviewer": reviewer,
-            "review_source": review_source,
-            "review_report": review_report,
-            "agent_assignment": agent_assignment,
-            "review_reports": review_reports,
-            "evidence": evidence,
-            "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。",
-        },
-        "deployment_impact": deployment_impact,
-    }
 
 
 def repo_relative(root: Path, path: Path) -> str:
@@ -10748,6 +9684,17 @@ def review_branch_owner_evidence_precondition_errors(
     reviewer = str(verification.get("reviewer") or "").strip()
     review_source = str(verification.get("review_source") or "").strip()
     errors.extend(independent_review_source_errors(review_source, reviewer))
+    if gate.get("schema_version") == "2.1":
+        semantic = gate.get("semantic_review")
+        if isinstance(semantic, dict):
+            errors.extend(
+                review_branch_finding_lifecycle_errors(
+                    root, task_dir, semantic, None
+                )
+            )
+        else:
+            errors.append("Branch Review Gate 缺少 semantic_review。")
+        return errors
     review_report = (
         verification.get("review_report")
         if isinstance(verification.get("review_report"), dict)
@@ -10842,16 +9789,45 @@ def validate_review_gate(
 ) -> tuple[Path, dict[str, Any], list[str]]:
     path, gate = load_review_gate(task_dir, config)
     errors: list[str] = []
-    conclusion = gate.get("conclusion") if isinstance(gate.get("conclusion"), dict) else {}
+    schema_v21 = gate.get("schema_version") == "2.1"
+    semantic = gate.get("semantic_review") if isinstance(gate.get("semantic_review"), dict) else {}
+    semantic_gate = (
+        semantic.get("ai_review_gate")
+        if isinstance(semantic.get("ai_review_gate"), dict)
+        else {}
+    )
+    qualified = (
+        semantic.get("qualified_findings")
+        if isinstance(semantic.get("qualified_findings"), list)
+        else []
+    )
+    open_qualified = [
+        item
+        for item in qualified
+        if isinstance(item, dict) and item.get("status") == "open"
+    ]
+    if schema_v21:
+        typed_exit = str(gate.get("typed_exit") or "")
+        conclusion = {
+            "passed": typed_exit == "passed",
+            "summary": semantic_gate.get("summary"),
+            "findings_count": len(open_qualified),
+            "blocking_findings_count": len(open_qualified),
+        }
+        findings_raw: Any = open_qualified
+        if semantic_gate.get("status") != typed_exit:
+            errors.append("Branch Review Gate semantic status 与 typed_exit 不一致。")
+    else:
+        conclusion = gate.get("conclusion") if isinstance(gate.get("conclusion"), dict) else {}
+        findings_raw = gate.get("findings", [])
     if require_pass and conclusion.get("passed") is not True:
         errors.append("Branch Review Gate 结论不是 passed=true。")
     if not require_pass and not isinstance(conclusion.get("passed"), bool):
         errors.append("Branch Review Gate conclusion.passed 必须是 boolean。")
     if not str(conclusion.get("summary") or "").strip():
         errors.append("Branch Review Gate 缺少中文 summary。")
-    findings_raw = gate.get("findings", [])
     findings = findings_raw if isinstance(findings_raw, list) else []
-    if "findings" in gate and not isinstance(findings_raw, list):
+    if not schema_v21 and "findings" in gate and not isinstance(findings_raw, list):
         errors.append("Branch Review Gate findings 必须是数组。")
     if require_pass and findings:
         errors.append("Branch Review Gate passed=true 但 findings[] 非空；任意 finding 均阻断。")
@@ -10894,7 +9870,7 @@ def validate_review_gate(
                 )
         if not accepted_metadata_tail:
             errors.append(f"Branch Review Gate 记录的 HEAD {reviewed_head or '(missing)'} 与当前 HEAD {head} 不一致。")
-    if gate.get("schema_version") == "2.0":
+    if gate.get("schema_version") in {"2.0", "2.1"}:
         try:
             errors.extend(skill_json_schema_validation_errors(
                 gate,
@@ -10959,7 +9935,7 @@ def validate_review_gate(
         if gate.get("facts_sha256") != expected_facts:
             errors.append("guru-review-branch facts_sha256 mismatch.")
     elif not require_pass:
-        errors.append("guru-review-branch non-pass checking requires schema 2.0 owner evidence.")
+        errors.append("guru-review-branch non-pass checking requires schema 2.x owner evidence.")
     return path, gate, errors
 
 
@@ -12533,6 +11509,74 @@ def review_branch_task_commit_evidence_errors(
     public_input: dict[str, Any] | None = None,
 ) -> list[str]:
     errors: list[str] = []
+    if public_input is not None:
+        current = current_head(root)
+        try:
+            _phase2_path, phase2, phase2_errors = validate_phase2_check(
+                root,
+                task_dir,
+                allow_committed_head=True,
+            )
+            if phase2_errors:
+                raise WorkflowError(
+                    "current Phase 2 evidence is invalid",
+                    exit_code=2,
+                    payload={"errors": phase2_errors},
+                )
+            checked_head = str(
+                (phase2.get("repository_snapshot") or {}).get("head") or ""
+            )
+            base_branch = base_branch_from_sources(
+                argparse.Namespace(base_branch=None),
+                task,
+                task_context,
+            )
+            expected_task = repo_relative(root, task_dir)
+            expected_base_ref = diff_base_ref(root, base_branch)
+            if (
+                public_input.get("task_ref") != expected_task
+                or public_input.get("base_ref") != expected_base_ref
+                or public_input.get("committed_head") != current
+            ):
+                errors.append(
+                    "review entry public task/base/committed HEAD identity is stale."
+                )
+            parents = run_stdout(
+                ["git", "show", "-s", "--format=%P", current], cwd=root
+            ).split()
+            raw_message = task_commit_raw_message(root, current)
+            subject, body = task_commit_message_parts(
+                raw_message.decode("utf-8", "strict")
+            )
+            primary_issue = primary_issue_number_from_ledger(
+                load_issue_scope_ledger(task_dir, task_context)
+            )
+            _kind, message_errors = validate_commit_message(
+                subject, body, primary_issue=primary_issue
+            )
+            committed_paths = git_nul_path_set(
+                root,
+                [
+                    "diff-tree", "--root", "--no-commit-id", "--name-only",
+                    "--no-renames", "-r", "-z", current,
+                ],
+            )
+            if parents != [checked_head]:
+                errors.append(
+                    "review entry current commit parent does not equal the checked HEAD."
+                )
+            if not committed_paths:
+                errors.append("review entry current commit has no changed paths.")
+            errors.extend(
+                "review entry current commit message: " + item
+                for item in message_errors
+            )
+        except (UnicodeDecodeError, WorkflowError) as exc:
+            errors.append(f"review entry live commit validation failed: {exc}")
+        return errors
+
+    # Compatibility only: pre-2.1 active tasks may identify the committed
+    # result through their tracked terminal plan. New calls use live Git above.
     plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
     candidates = (
         sorted(plan_dir.glob("[0-9][0-9][0-9].json"))
@@ -12849,6 +11893,17 @@ def review_branch_task_metadata_allowlist(
     }
 
     assignment_path = task_dir / AGENT_ASSIGNMENT_ARTIFACT
+    legacy_gate = task_dir / "review-gate.json"
+    legacy_artifacts = not legacy_gate.is_file()
+    if legacy_gate.is_file():
+        try:
+            legacy_artifacts = read_json(legacy_gate).get("schema_version") != "2.1"
+        except WorkflowError:
+            legacy_artifacts = True
+    if legacy_artifacts:
+        for filename in (AGENT_ASSIGNMENT_ARTIFACT, REVIEW_REPORT_ARTIFACT):
+            if (task_dir / filename).exists():
+                allowed.add(f"{task_ref}/{filename}")
     try:
         assignment = read_json(assignment_path)
     except WorkflowError:
@@ -12935,6 +11990,35 @@ def review_branch_finding_lifecycle_errors(
     )
     if not findings:
         return []
+    if any(isinstance(item, dict) and "introduced_head" in item for item in findings):
+        current = current_head(root)
+        errors: list[str] = []
+        for finding in findings:
+            if not isinstance(finding, dict):
+                continue
+            finding_ref = str(finding.get("finding_ref") or "(missing)")
+            introduced = str(finding.get("introduced_head") or "")
+            resolved_at = finding.get("resolved_at_head")
+            closure = finding.get("closure_evidence")
+            if not re.fullmatch(r"[0-9a-f]{40}", introduced) or not is_ancestor(
+                root, introduced, current
+            ):
+                errors.append(
+                    f"qualified finding {finding_ref} introduced_head is not a current-history commit."
+                )
+            if finding.get("status") == "open":
+                if introduced != current or resolved_at is not None or closure:
+                    errors.append(
+                        f"open qualified finding {finding_ref} has contradictory closure state."
+                    )
+            elif finding.get("status") == "resolved":
+                if resolved_at != current or not isinstance(closure, list) or not closure:
+                    errors.append(
+                        f"resolved finding {finding_ref} must bind closure evidence to the current HEAD."
+                    )
+            else:
+                errors.append(f"qualified finding {finding_ref} has an invalid status.")
+        return errors
     if not isinstance(assignment_payload, dict):
         return [
             "qualified findings require current agent-assignment.json review_rounds evidence."
@@ -13217,8 +12301,8 @@ def review_branch_semantic_payload(
         item = copy.deepcopy(raw)
         if disposition == "qualified_finding":
             allowed = common_fields | {
-                "finding_ref", "severity", "owner_round", "reviewed_head",
-                "status", "closure_evidence",
+                "finding_ref", "severity", "introduced_head",
+                "resolved_at_head", "status", "closure_evidence",
             }
             finding_ref = str(raw.get("finding_ref") or "").strip()
             severity = str(raw.get("severity") or "")
@@ -13230,13 +12314,24 @@ def review_branch_semantic_payload(
                 or not finding_ref
                 or finding_ref in finding_refs
                 or severity not in VALID_PRIORITIES
-                or isinstance(raw.get("owner_round"), bool)
-                or not isinstance(raw.get("owner_round"), int)
-                or raw.get("owner_round", 0) < 1
-                or raw.get("reviewed_head") != reviewed_head
+                or not re.fullmatch(r"[0-9a-f]{40}", str(raw.get("introduced_head") or ""))
                 or status not in {"open", "resolved"}
                 or not isinstance(raw.get("closure_evidence"), list)
-                or (status == "resolved" and not raw.get("closure_evidence"))
+                or (
+                    status == "open"
+                    and (
+                        raw.get("introduced_head") != reviewed_head
+                        or raw.get("resolved_at_head") is not None
+                        or raw.get("closure_evidence")
+                    )
+                )
+                or (
+                    status == "resolved"
+                    and (
+                        raw.get("resolved_at_head") != reviewed_head
+                        or not raw.get("closure_evidence")
+                    )
+                )
             ):
                 raise WorkflowError(
                     f"qualified finding {finding_ref or candidate_ref} is incomplete or contradictory.",
@@ -13319,10 +12414,25 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
     base_branch = base_branch_from_sources(args, task, task_context)
+    public_input = contract_wording_read_input(
+        root, args.skill_input, "guru-review-branch public input"
+    )
+    input_errors = skill_json_schema_validation_errors(
+        public_input,
+        review_branch_public_input_schema(root),
+        "guru-review-branch public input",
+    )
+    if input_errors:
+        raise WorkflowError(
+            "guru-review-branch public input is invalid.",
+            exit_code=2,
+            payload={"errors": input_errors},
+        )
     entry_errors = review_branch_entry_precondition_errors(
         root,
         task_dir,
         config,
+        public_input=public_input,
         direct_runtime_inputs=[
             str(getattr(args, "skill_input", "") or ""),
             str(getattr(args, "semantic_review_file", "") or ""),
@@ -13354,95 +12464,34 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             payload={"artifact_path": str(phase2_path), "errors": phase2_errors},
         )
 
-    public_input: dict[str, Any] | None = None
-    semantic_review: dict[str, Any] | None = None
-    typed_exit = str(getattr(args, "typed_exit", "") or "")
-    skill_contract_requested = any(
-        getattr(args, field, None)
-        for field in ("skill_input", "semantic_review_file", "typed_exit")
+    typed_exit = str(args.typed_exit)
+    if (
+        public_input.get("task_ref") != repo_relative(root, task_dir)
+        or public_input.get("base_ref") != diff_base_ref(root, base_branch)
+        or public_input.get("committed_head") != current_head(root)
+    ):
+        raise WorkflowError(
+            "guru-review-branch public task/base/HEAD identity is stale.",
+            exit_code=2,
+        )
+    semantic_review = review_branch_semantic_payload(
+        root, args.semantic_review_file, typed_exit, current_head(root)
     )
-    if skill_contract_requested:
-        if not all(
-            getattr(args, field, None)
-            for field in ("skill_input", "semantic_review_file", "typed_exit")
-        ):
-            raise WorkflowError(
-                "guru-review-branch recording requires --skill-input, --semantic-review-file and --typed-exit together.",
-                exit_code=2,
-            )
-        public_input = contract_wording_read_input(
-            root, args.skill_input, "guru-review-branch public input"
-        )
-        input_errors = skill_json_schema_validation_errors(
-            public_input,
-            review_branch_public_input_schema(root),
-            "guru-review-branch public input",
-        )
-        if input_errors:
-            raise WorkflowError(
-                "guru-review-branch public input is invalid.",
-                exit_code=2,
-                payload={"errors": input_errors},
-            )
-        if (
-            public_input.get("task_ref") != repo_relative(root, task_dir)
-            or public_input.get("base_ref") != diff_base_ref(root, base_branch)
-            or public_input.get("committed_head") != current_head(root)
-        ):
-            raise WorkflowError(
-                "guru-review-branch public task/base/HEAD identity is stale.",
-                exit_code=2,
-            )
-        semantic_review = review_branch_semantic_payload(
-            root, args.semantic_review_file, typed_exit, current_head(root)
-        )
-        findings = [
-            {
-                "priority": item["severity"],
-                "message": item["affected_behavior"],
-                "path": item["path"],
-                **copy.deepcopy(item),
-            }
-            for item in semantic_review["qualified_findings"]
-            if item["status"] == "open"
-        ]
-        observations = [
-            {
-                "kind": "observation",
-                "message": item["affected_behavior"],
-                "path": item["path"],
-                **copy.deepcopy(item),
-            }
-            for item in semantic_review["observations"]
-        ]
-        followup_candidates = [
-            {
-                "kind": "followup_candidate",
-                "message": item["affected_behavior"],
-                "path": item["path"],
-                **copy.deepcopy(item),
-            }
-            for item in semantic_review["followup_candidates"]
-        ]
-    else:
-        findings = load_findings(args)
-        observations = load_observations(args)
-        followup_candidates = load_followup_candidates(args)
+    findings = [
+        {
+            "priority": item["severity"],
+            "message": item["affected_behavior"],
+            "path": item["path"],
+            **copy.deepcopy(item),
+        }
+        for item in semantic_review["qualified_findings"]
+        if item["status"] == "open"
+    ]
     evidence = [str(item).strip() for item in (args.evidence or []) if str(item).strip()]
-    summary = str(args.summary or "").strip()
     blockers = review_gate_blocking_findings(findings)
-    if args.pass_gate and blockers:
-        raise WorkflowError("--pass cannot be used when any findings are present.", exit_code=2)
-    if args.pass_gate and not summary:
-        raise WorkflowError(
-            "Branch Review Gate pass needs --summary with a human-readable Chinese review conclusion.",
-            exit_code=2,
-        )
-    if args.pass_gate and not evidence:
-        raise WorkflowError(
-            "Branch Review Gate pass needs at least one --evidence line from the actual review.",
-            exit_code=2,
-        )
+    pass_gate = typed_exit == "passed"
+    if pass_gate and blockers:
+        raise WorkflowError("passed cannot retain open findings.", exit_code=2)
     reviewer = str(args.reviewer or "").strip()
     review_source = str(getattr(args, "review_source", "") or "").strip()
     source_errors = independent_review_source_errors(review_source, reviewer)
@@ -13452,128 +12501,67 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"errors": source_errors},
         )
-    review_report = load_review_report(root, task_dir, args.review_report)
-    if not blockers and not evidence:
+    if not evidence:
         raise WorkflowError(
-            "Branch Review Gate passing result needs at least one --evidence line from the actual review.",
+            "Branch Review Gate needs at least one --evidence line from the actual review.",
             exit_code=2,
         )
-    if review_report is None:
-        raise WorkflowError(
-            "Branch Review Gate needs --review-report pointing to the task-local review.md from the prior AI/human review. "
-            "--reviewer is identity metadata only and cannot satisfy independent review evidence.",
-            exit_code=2,
-        )
-    if not getattr(args, "agent_assignment", None):
-        raise WorkflowError(
-            "Branch Review Gate pass/findings records need --agent-assignment pointing to task-local agent-assignment.json "
-            "so raw review round report evidence and fresh 最终放行审查代理 metadata can be validated.",
-            exit_code=2,
-        )
-    agent_assignment_summary: dict[str, Any] | None = None
-    review_reports: list[dict[str, Any]] = []
-    assignment_path, assignment_payload, assignment_errors, assignment_summary = validate_agent_assignment(
+    lifecycle_errors = review_branch_finding_lifecycle_errors(
         root,
         task_dir,
-        args.agent_assignment,
-        require_current_head=False,
+        semantic_review,
+        None,
     )
-    if args.pass_gate and not assignment_errors:
-        assignment_errors.extend(final_review_round_errors(root, assignment_payload))
-        assignment_errors.extend(status_event_completion_errors(assignment_payload))
-    if not args.pass_gate and findings and not assignment_errors:
-        assignment_errors.extend(current_findings_review_round_errors(root, assignment_payload, len(findings)))
-    if assignment_errors:
+    if lifecycle_errors:
         raise WorkflowError(
-            "Branch Review Gate blocked because agent assignment evidence is invalid.",
+            "Branch Review Gate blocked because finding lifecycle evidence is invalid.",
             exit_code=2,
-            payload={"artifact_path": str(assignment_path), "errors": assignment_errors},
+            payload={"errors": lifecycle_errors},
         )
-    if semantic_review is not None:
-        lifecycle_errors = review_branch_finding_lifecycle_errors(
-            root,
-            task_dir,
-            semantic_review,
-            assignment_payload,
-        )
-        if lifecycle_errors:
-            raise WorkflowError(
-                "Branch Review Gate blocked because finding lifecycle evidence is invalid.",
-                exit_code=2,
-                payload={"errors": lifecycle_errors},
-            )
-    agent_assignment_summary = assignment_summary
-    review_reports = review_reports_from_assignment(root, task_dir, assignment_payload)
-    template_errors = review_report_language_template_errors(root, task_dir, review_report, review_reports)
-    if template_errors:
-        raise WorkflowError(
-            "Branch Review Gate blocked because review reports contain English template headings.",
-            exit_code=2,
-            payload={"errors": template_errors},
-        )
-    if args.pass_gate:
-        link_errors = review_rollup_link_errors(root, task_dir, review_report, review_reports)
-        if link_errors:
-            raise WorkflowError(
-                "Branch Review Gate pass blocked because review.md does not link every raw review report.",
-                exit_code=2,
-                payload={"errors": link_errors},
-            )
     if (
-        not args.pass_gate
+        typed_exit == "passed"
+        and any(
+            item.get("status") == "resolved"
+            for item in semantic_review["qualified_findings"]
+            if isinstance(item, dict)
+        )
+        and public_input.get("review_intent") != "fresh_final_review"
+    ):
+        raise WorkflowError(
+            "Resolved findings require one fresh_final_review before Branch Review may pass.",
+            exit_code=2,
+        )
+    if (
+        not pass_gate
         and not findings
         and typed_exit not in {"scope_confirmation_required", "blocked"}
     ):
         raise WorkflowError(
-            "Branch Review Gate needs an explicit result. Use --pass after review found no findings, or provide --finding/--findings-file.",
+            "Branch Review Gate needs an explicit structured semantic result.",
             exit_code=2,
         )
-
-    payload = build_review_gate_payload(
-        root=root,
-        task_dir=task_dir,
-        config=config,
-        task_context=task_context,
-        base_branch=base_branch,
-        pass_gate=bool(args.pass_gate),
-        findings=findings,
-        observations=observations,
-        followup_candidates=followup_candidates,
-        command=sys.argv[:],
-        summary=summary,
-        evidence=evidence,
-        reviewer=reviewer,
-        review_source=review_source,
-        review_report=review_report,
-        agent_assignment=agent_assignment_summary,
-        review_reports=review_reports,
-    )
-    if public_input is not None and semantic_review is not None:
-        if typed_exit == "passed" and not args.pass_gate:
-            raise WorkflowError("guru-review-branch passed requires --pass.", exit_code=2)
-        if typed_exit != "passed" and args.pass_gate:
-            raise WorkflowError("Only guru-review-branch passed may use --pass.", exit_code=2)
-        payload.update({
-            "schema_version": "2.0",
-            "skill_id": BRANCH_REVIEW_SKILL_ID,
-            "mode": public_input["mode"],
-            "review_intent": public_input["review_intent"],
-            "typed_exit": typed_exit,
-            "semantic_review": semantic_review,
-        })
-        payload["facts_sha256"] = context_digest({
-            key: value
-            for key, value in payload.items()
-            if key not in {"generated_at", "facts_sha256"}
-        })
-    if args.pass_gate and bool(review_gate_config(config).get("require_deployment_impact_evidence", True)):
-        deployment_errors = deployment_evidence_errors(payload.get("deployment_impact", {}), evidence, findings)
-        if deployment_errors:
-            raise WorkflowError(
-                "Branch Review Gate pass needs deployment impact evidence.",
-                exit_code=2,
-                payload={"errors": deployment_errors, "deployment_impact": payload.get("deployment_impact", {})},
-            )
+    payload = {
+        "schema_version": "2.1",
+        "skill_id": BRANCH_REVIEW_SKILL_ID,
+        "generated_at": now_iso(),
+        "task_dir": repo_relative(root, task_dir),
+        "mode": public_input["mode"],
+        "review_intent": public_input["review_intent"],
+        "typed_exit": typed_exit,
+        "head": current_head(root),
+        "base_ref": diff_base_ref(root, base_branch),
+        "semantic_review": semantic_review,
+        "verification_evidence": {
+            "reviewer": reviewer,
+            "review_source": review_source,
+            "evidence": evidence,
+        },
+    }
+    payload["facts_sha256"] = context_digest({
+        key: value
+        for key, value in payload.items()
+        if key not in {"generated_at", "facts_sha256"}
+    })
     path = configured_review_gate_path(task_dir, config)
     if not args.dry_run:
         write_json(path, payload)
@@ -13582,286 +12570,209 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
-def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
+
+def agent_recovery_path(root: Path, task_dir: Path) -> Path:
+    task_ref = repo_relative(root, task_dir)
+    task_key = hashlib.sha256(task_ref.encode("utf-8")).hexdigest()[:16]
+    return root / AGENT_RECOVERY_RUNTIME_DIR / f"{task_key}.json"
+
+
+def agent_recovery_facts(payload: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: copy.deepcopy(value)
+        for key, value in payload.items()
+        if key not in {"updated_at", "facts_sha256"}
+    }
+
+
+def agent_recovery_errors(
+    root: Path,
+    task_dir: Path,
+    payload: Any,
+) -> list[str]:
+    if not isinstance(payload, dict):
+        return ["agent recovery checkpoint must be an object"]
+    expected_keys = {
+        "schema_version", "task_ref", "events", "updated_at", "facts_sha256",
+    }
+    errors: list[str] = []
+
+    def valid_timestamp(value: Any, label: str) -> bool:
+        try:
+            parse_iso_datetime(value, label)
+        except WorkflowError:
+            return False
+        return True
+
+    if set(payload) != expected_keys:
+        errors.append("agent recovery checkpoint keys are invalid")
+    if payload.get("schema_version") != "1.0":
+        errors.append("agent recovery checkpoint schema_version must be 1.0")
+    if payload.get("task_ref") != repo_relative(root, task_dir):
+        errors.append("agent recovery checkpoint task identity mismatch")
+    if not valid_timestamp(payload.get("updated_at"), "agent recovery updated_at"):
+        errors.append("agent recovery checkpoint updated_at must be ISO-8601")
+    events = payload.get("events")
+    if not isinstance(events, list) or not events:
+        errors.append("agent recovery checkpoint requires at least one recovery event")
+        events = []
+    event_by_id: dict[str, dict[str, Any]] = {}
+    open_unfinished_by_role: dict[str, str] = {}
+    for index, event in enumerate(events, start=1):
+        label = f"agent recovery event {index}"
+        if not isinstance(event, dict):
+            errors.append(f"{label} must be an object")
+            continue
+        required = {
+            "event_id", "event", "logical_role", "agent_id", "reason",
+            "handoff_summary", "observed_head", "recorded_at",
+            "predecessor_event_id",
+        }
+        if set(event) != required:
+            errors.append(f"{label} keys are invalid")
+            continue
+        event_id = str(event.get("event_id") or "")
+        if event_id != f"recovery-{index:03d}" or event_id in event_by_id:
+            errors.append(f"{label} event_id is not the next stable sequence")
+        event_name = str(event.get("event") or "")
+        role = str(event.get("logical_role") or "").strip()
+        agent_id = str(event.get("agent_id") or "").strip()
+        reason = str(event.get("reason") or "").strip()
+        summary = str(event.get("handoff_summary") or "").strip()
+        observed_head = str(event.get("observed_head") or "")
+        predecessor = event.get("predecessor_event_id")
+        if event_name not in {"unfinished", "replacement"}:
+            errors.append(f"{label} event must be unfinished or replacement")
+        if not role or not agent_id or not reason or not summary:
+            errors.append(f"{label} requires role, agent, reason and handoff summary")
+        if not re.fullmatch(r"[0-9a-f]{40}", observed_head) or not is_ancestor(
+            root, observed_head, "HEAD"
+        ):
+            errors.append(f"{label} observed_head is not current branch history")
+        if not valid_timestamp(event.get("recorded_at"), f"{label} recorded_at"):
+            errors.append(f"{label} recorded_at must be ISO-8601")
+        if event_name == "unfinished":
+            if predecessor is not None:
+                errors.append(f"{label} unfinished must not name a predecessor")
+            if role in open_unfinished_by_role:
+                errors.append(f"{label} duplicates an open unfinished role")
+            open_unfinished_by_role[role] = event_id
+        elif event_name == "replacement":
+            predecessor_id = str(predecessor or "")
+            predecessor_event = event_by_id.get(predecessor_id)
+            if (
+                predecessor_event is None
+                or predecessor_event.get("event") != "unfinished"
+                or predecessor_event.get("logical_role") != role
+                or open_unfinished_by_role.get(role) != predecessor_id
+            ):
+                errors.append(f"{label} replacement must close the open unfinished role")
+            else:
+                open_unfinished_by_role.pop(role, None)
+        event_by_id[event_id] = event
+    expected_facts = context_digest(agent_recovery_facts(payload))
+    if payload.get("facts_sha256") != expected_facts:
+        errors.append("agent recovery checkpoint facts_sha256 mismatch")
+    return sorted(set(errors))
+
+
+def cmd_record_agent_recovery(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
-    payload = load_agent_assignment(root, task_dir)
-    payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
-    payload["task"] = repo_relative(root, task_dir)
-    payload["head"] = current_head(root)
-    payload["updated_at"] = now_iso()
-
-    logical_role = clean_optional_text(args.logical_role)
-    agent_id = clean_optional_text(args.agent_id)
-    platform_nickname = clean_optional_text(args.platform_nickname)
-    recorded: dict[str, Any] | None = None
-    status_event = clean_optional_text(getattr(args, "status_event", None))
-    invalidate_event_id = clean_optional_text(getattr(args, "invalidate_event_id", None))
-    link_failed_event_id = clean_optional_text(getattr(args, "link_failed_event_id", None))
-    link_termination_event_id = clean_optional_text(getattr(args, "link_termination_event_id", None))
-    if bool(link_failed_event_id) != bool(link_termination_event_id):
-        raise WorkflowError(
-            "recovery link requires both --link-failed-event-id and --link-termination-event-id.",
-            exit_code=2,
-        )
-    repair_modes = int(bool(invalidate_event_id)) + int(bool(link_failed_event_id))
-    if repair_modes > 1:
-        raise WorkflowError("record one correction or recovery link per invocation.", exit_code=2)
-    if repair_modes and (status_event or args.review_round is not None or args.reuse_decision):
-        raise WorkflowError(
-            "correction/recovery mode cannot be combined with status, review-round, or reuse-decision mode.",
-            exit_code=2,
-        )
-    if status_event and args.review_round is not None:
-        raise WorkflowError("--status-event cannot be combined with --review-round.", exit_code=2)
-    if status_event and getattr(args, "reuse_decision", None):
-        raise WorkflowError("--status-event cannot be combined with --reuse-decision.", exit_code=2)
-    if status_event:
-        raise WorkflowError(
-            "record-agent-assignment.sh --status-event is deprecated and fails closed. "
-            "Use record-subagent-liveness-event.sh for assigned/progress/status/stale/resume/replacement/terminal events.",
-            exit_code=2,
-        )
-    elif invalidate_event_id:
-        recorded = append_agent_event_correction(
-            payload,
-            root,
-            target_event_id=invalidate_event_id,
-            reason=clean_optional_text(getattr(args, "correction_reason", None)),
-            evidence=clean_optional_text(getattr(args, "correction_evidence", None)),
-        )
-    elif link_failed_event_id:
-        recorded = append_agent_recovery_link(
-            payload,
-            root,
-            failed_event_id=link_failed_event_id,
-            termination_event_id=link_termination_event_id,
-            reason=clean_optional_text(getattr(args, "recovery_reason", None)),
-            evidence=clean_optional_text(getattr(args, "recovery_evidence", None)),
-        )
-    elif args.review_round is not None:
-        recorded = append_agent_review_round(
-            payload,
-            root,
-            task_dir,
-            logical_role,
-            agent_id,
-            platform_nickname,
-            int(args.review_round),
-            int(args.findings_count or 0),
-            clean_optional_text(args.reuse_policy),
-            clean_optional_text(args.reuse_decision or "not-applicable"),
-            clean_optional_text(args.reviewed_head) or None,
-            clean_optional_text(getattr(args, "review_round_report", None)) or None,
-        )
-    elif args.reuse_decision:
-        recorded = append_agent_reuse_decision(
-            payload,
-            root,
-            logical_role,
-            agent_id,
-            clean_optional_text(args.reuse_decision),
-            clean_optional_text(args.reuse_reason),
-            args.from_round,
-            args.to_round,
-            clean_optional_text(args.decision_head) or None,
-        )
+    path = agent_recovery_path(root, task_dir)
+    if path.is_file() and not path.is_symlink():
+        payload = read_json(path)
+        existing_errors = agent_recovery_errors(root, task_dir, payload)
+        if existing_errors:
+            raise WorkflowError(
+                "Existing agent recovery checkpoint is invalid.",
+                exit_code=2,
+                payload={"errors": existing_errors},
+            )
     else:
-        source_repo = source_repo_from_task_context(root, task_context)
-        recorded = append_agent_assignment_event(
-            payload,
-            root,
-            task_dir,
-            logical_role,
-            agent_id,
-            platform_nickname,
-            clean_optional_text(args.reason),
-            source_repo=source_repo,
-        )
-
-    errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=True, enforce_recovery_chains=False)
+        payload = {
+            "schema_version": "1.0",
+            "task_ref": repo_relative(root, task_dir),
+            "events": [],
+            "updated_at": now_iso(),
+            "facts_sha256": "",
+        }
+    events = payload["events"]
+    event_name = str(args.event)
+    predecessor = str(getattr(args, "predecessor_event_id", "") or "").strip()
+    if event_name == "unfinished" and predecessor:
+        raise WorkflowError("unfinished recovery event must not name a predecessor", exit_code=2)
+    if event_name == "replacement" and not predecessor:
+        raise WorkflowError("replacement recovery event requires --predecessor-event-id", exit_code=2)
+    recorded_at = now_iso()
+    events.append({
+        "event_id": f"recovery-{len(events) + 1:03d}",
+        "event": event_name,
+        "logical_role": str(args.logical_role).strip(),
+        "agent_id": str(args.agent_id).strip(),
+        "reason": str(args.reason).strip(),
+        "handoff_summary": str(args.handoff_summary).strip(),
+        "observed_head": current_head(root),
+        "recorded_at": recorded_at,
+        "predecessor_event_id": predecessor or None,
+    })
+    payload["updated_at"] = recorded_at
+    payload["facts_sha256"] = context_digest(agent_recovery_facts(payload))
+    errors = agent_recovery_errors(root, task_dir, payload)
     if errors:
         raise WorkflowError(
-            "agent-assignment.json validation failed before write.",
+            "Agent recovery event is invalid.",
             exit_code=2,
             payload={"errors": errors},
         )
-    path = agent_assignment_path(task_dir)
     if not args.dry_run:
+        path.parent.mkdir(parents=True, exist_ok=True)
         write_json(path, payload)
-    summary = summarize_agent_assignment(root, task_dir, path, payload) if path.exists() else {
-        "path": repo_relative(root, path),
-        "roles": sorted(
-            {
-                str(item.get("logical_role") or "")
-                for collection in [payload.get("agents", []), payload.get("review_rounds", []), payload.get("reuse_decisions", [])]
-                for item in collection
-                if isinstance(item, dict) and str(item.get("logical_role") or "")
-            }
-            | {
-                str(item.get("logical_role") or "")
-                for item in payload.get("status_events", [])
-                if isinstance(item, dict) and str(item.get("logical_role") or "")
-            }
-        ),
-    }
     return {
-        "status": "dry-run" if args.dry_run else "ok",
-        "artifact_path": str(path),
-        "recorded": recorded,
-        "summary": summary,
-        "notes": "record-agent-assignment 只记录 AI/human 已做出的分配、复用或 append-only correction/recovery 判断，不决定应使用哪个 sub-agent、是否 stale 或是否应终止。",
-    }
-
-
-def cmd_record_subagent_liveness_event(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or os.getcwd()))
-    config = load_config(root)
-    task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
-    assert_workspace_boundary(root, config, task_context, task_dir)
-    source_repo = resolve_source_repo(args.source_repo)
-    payload = load_agent_assignment(root, task_dir)
-    payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
-    payload["task"] = repo_relative(root, task_dir)
-    payload["head"] = current_head(root)
-    payload["updated_at"] = now_iso()
-    if clean_optional_text(args.event) == "assigned" and getattr(args, "platform_nickname", None) is None:
-        raise WorkflowError("assigned requires --platform-nickname; pass an empty string explicitly when the platform has no nickname.", exit_code=2)
-    recorded = append_subagent_liveness_event(
-        payload,
-        root,
-        task_dir,
-        source_repo,
-        agent_id=clean_optional_text(args.agent_id),
-        event_name=clean_optional_text(args.event),
-        observed_at=clean_optional_text(args.observed_at) or now_iso(),
-        evidence=clean_optional_text(args.evidence),
-        logical_role=clean_optional_text(getattr(args, "logical_role", "")),
-        platform_nickname=clean_optional_text(getattr(args, "platform_nickname", "")),
-        source=clean_optional_text(getattr(args, "source", "")) or "main-session",
-        predecessor_agent_id=clean_optional_text(getattr(args, "predecessor_agent_id", "")),
-        predecessor_event_id=clean_optional_text(getattr(args, "predecessor_event_id", "")),
-        termination_reason=clean_optional_text(getattr(args, "termination_reason", "")),
-        termination_source_event_id=clean_optional_text(getattr(args, "termination_source_event_id", "")),
-        replacement_reason=clean_optional_text(getattr(args, "replacement_reason", "")),
-        handoff_summary=clean_optional_text(getattr(args, "handoff_summary", "")),
-    )
-    errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=True, enforce_recovery_chains=False)
-    if errors:
-        raise WorkflowError(
-            "agent-assignment.json validation failed before write.",
-            exit_code=2,
-            payload={"errors": errors},
-        )
-    path = agent_assignment_path(task_dir)
-    if not args.dry_run:
-        write_json(path, payload)
-    event_id = recorded.get("event_id") if isinstance(recorded, dict) else ""
-    return {
-        "recorded": True,
-        "event_id": event_id,
-        "event": clean_optional_text(args.event),
-        "agent_id": clean_optional_text(args.agent_id),
-        "artifact": str(path),
-        "head": current_head(root),
-        "updated_liveness": True,
+        "status": "recorded",
+        "task_ref": payload["task_ref"],
+        "event": copy.deepcopy(events[-1]),
+        "checkpoint": repo_relative(root, path),
         "dry_run": bool(args.dry_run),
     }
 
 
-def cmd_check_subagent_liveness(args: argparse.Namespace) -> dict[str, Any]:
+def cmd_check_agent_recovery(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
-    path = agent_assignment_path(task_dir)
-    if not path.exists():
-        return {
-            "decision": AGENT_LIVENESS_BLOCKED_DECISION,
-            "agent_id": clean_optional_text(args.agent_id),
-            "checked_at": clean_optional_text(getattr(args, "checked_at", "")) or now_iso(),
-            "progress_anchor_at": "",
-            "pending_status_request_at": None,
-            "max_progress_silence_deadline_at": "",
-            "next_wait_ms": 0,
-            "progress_sources": [],
-            "artifact": str(path),
-            "reason": "agent-assignment.json missing",
-        }
-    try:
-        source_repo = resolve_source_repo(args.source_repo)
-        payload = load_agent_assignment(root, task_dir)
-        decision, _snapshot = evaluate_subagent_liveness(
-            root,
-            task_dir,
-            source_repo,
-            payload,
-            clean_optional_text(args.agent_id),
-            int(args.progress_scan_interval),
-            int(args.max_progress_silence),
-            checked_at=clean_optional_text(getattr(args, "checked_at", "")) or None,
-        )
-        errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=False, enforce_recovery_chains=False)
-        if errors:
-            raise WorkflowError("agent-assignment.json validation failed after liveness check.", exit_code=2, payload={"errors": errors})
-        if not args.dry_run:
-            write_json(path, payload)
-        decision["dry_run"] = bool(args.dry_run)
-        return decision
-    except WorkflowError as exc:
-        if exc.exit_code != 2:
-            raise
-        checked = clean_optional_text(getattr(args, "checked_at", "")) or now_iso()
-        return {
-            "decision": AGENT_LIVENESS_BLOCKED_DECISION,
-            "agent_id": clean_optional_text(args.agent_id),
-            "checked_at": checked,
-            "progress_anchor_at": "",
-            "pending_status_request_at": None,
-            "max_progress_silence_deadline_at": "",
-            "next_wait_ms": 0,
-            "progress_sources": [],
-            "artifact": str(path),
-            "reason": str(exc),
-            "errors": exc.payload.get("errors", []) if isinstance(exc.payload, dict) else [],
-            "dry_run": bool(args.dry_run),
-        }
-
-
-def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or os.getcwd()))
-    config = load_config(root)
-    task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
-    assert_workspace_boundary(root, config, task_context, task_dir)
-    path, payload, errors, summary = validate_agent_assignment(
-        root,
-        task_dir,
-        args.agent_assignment,
-        require_current_head=bool(args.require_current_head),
-    )
+    path = agent_recovery_path(root, task_dir)
+    if not path.is_file() or path.is_symlink():
+        raise WorkflowError("Agent recovery checkpoint is missing or unsafe.", exit_code=2)
+    payload = read_json(path)
+    errors = agent_recovery_errors(root, task_dir, payload)
     if errors:
         raise WorkflowError(
-            "agent-assignment.json validation failed.",
+            "Agent recovery checkpoint is invalid.",
             exit_code=2,
-            payload={"artifact_path": str(path), "errors": errors},
+            payload={"errors": errors},
         )
+    open_unfinished: dict[str, str] = {}
+    replacements = 0
+    for event in payload["events"]:
+        role = str(event["logical_role"])
+        if event["event"] == "unfinished":
+            open_unfinished[role] = str(event["event_id"])
+        else:
+            open_unfinished.pop(role, None)
+            replacements += 1
     return {
         "status": "ok",
-        "artifact_path": str(path),
-        "summary": summary,
-        "agents_count": len(payload.get("agents", [])) if isinstance(payload.get("agents"), list) else 0,
-        "review_rounds_count": len(payload.get("review_rounds", [])) if isinstance(payload.get("review_rounds"), list) else 0,
-        "reuse_decisions_count": len(payload.get("reuse_decisions", [])) if isinstance(payload.get("reuse_decisions"), list) else 0,
-        "status_events_count": len(payload.get("status_events", [])) if isinstance(payload.get("status_events"), list) else 0,
-        "effective_status_events_count": len(effective_status_events(payload)),
-        "event_corrections_count": len(payload.get("event_corrections", [])) if isinstance(payload.get("event_corrections"), list) else 0,
-        "recovery_links_count": len(payload.get("recovery_links", [])) if isinstance(payload.get("recovery_links"), list) else 0,
+        "task_ref": payload["task_ref"],
+        "checkpoint": repo_relative(root, path),
+        "events_count": len(payload["events"]),
+        "replacement_count": replacements,
+        "open_unfinished": open_unfinished,
     }
 
 
@@ -14027,17 +12938,28 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     task_context = load_task_start_context(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     allow_nonpass = bool(getattr(args, "allow_nonpass", False))
-    entry_errors = review_branch_entry_precondition_errors(
-        root,
-        task_dir,
-        config,
-    )
     path, gate, errors = validate_review_gate(
         root,
         task_dir,
         config,
         bool(getattr(args, "allow_metadata_after_gate", False)),
         require_pass=not allow_nonpass,
+    )
+    entry_input = None
+    if gate.get("schema_version") == "2.1":
+        entry_input = {
+            "profile": "branch_review",
+            "mode": gate.get("mode"),
+            "task_ref": gate.get("task_dir"),
+            "base_ref": gate.get("base_ref"),
+            "committed_head": gate.get("head"),
+            "review_intent": gate.get("review_intent"),
+        }
+    entry_errors = review_branch_entry_precondition_errors(
+        root,
+        task_dir,
+        config,
+        public_input=entry_input,
     )
     errors = [
         *("review entry: " + item for item in entry_errors),
@@ -14091,8 +13013,6 @@ TASK_PUBLICATION_EVIDENCE_FILES = (
     "planning-approval.json",
     "phase2-check.json",
     "issue-scope-ledger.json",
-    "agent-assignment.json",
-    "review.md",
     "review-gate.json",
     "pr-body.md",
     "finish-summary-index.json",
@@ -14491,19 +13411,12 @@ def task_publication_entry_precondition_bindings(
     else:
         bindings["docs_ssot_reconciliation"] = task_publication_binding(docs)
 
-    branch_evidence_paths = (
-        task_dir / "agent-assignment.json",
-        task_dir / "review.md",
-        review_path,
-    )
+    branch_evidence_paths = (review_path,)
     branch_evidence_errors = [
         f"missing or unsafe {path.name}"
         for path in branch_evidence_paths
         if not path.is_file() or path.is_symlink()
     ]
-    review_reports = sorted((task_dir / "reviews").glob("*.md"))
-    if not review_reports:
-        branch_evidence_errors.append("missing raw Branch Review reports")
     if branch_evidence_errors or review_errors:
         errors.extend(
             f"branch_review_evidence:{item}"
@@ -14513,7 +13426,7 @@ def task_publication_entry_precondition_bindings(
         bindings["branch_review_evidence"] = task_publication_binding({
             "artifacts": {
                 repo_relative(root, path): hashlib.sha256(path.read_bytes()).hexdigest()
-                for path in (*branch_evidence_paths, *review_reports)
+                for path in branch_evidence_paths
             },
             "reviewed_head": reviewed_head,
         })
@@ -15200,7 +14113,7 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
     }
     publication_ref = f"publication:{context_digest({'task': repo_relative(root, task_dir), 'invocation': invocation_identity, 'head': reviewed_head, 'review_ref': review_ref, 'artifacts': artifacts, 'repository': repository, 'entry_preconditions': entry_bindings})}"
     payload: dict[str, Any] = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "skill_id": TASK_PUBLICATION_SKILL_ID,
         "generated_at": now_iso(),
         "task_dir": repo_relative(root, task_dir),
@@ -15924,11 +14837,12 @@ def task_commit_planned_index_bindings(
                 )
             bindings[renamed_from] = (None, None)
 
-    candidate_bytes = json_document_bytes(plan)
-    bindings[candidate_relative] = (
-        task_commit_persist_blob(root, candidate_bytes),
-        "100644",
-    )
+    if candidate_relative in exact_paths:
+        candidate_bytes = json_document_bytes(plan)
+        bindings[candidate_relative] = (
+            task_commit_persist_blob(root, candidate_bytes),
+            "100644",
+        )
     if set(bindings) != exact_paths:
         raise WorkflowError(
             "Task commit plan cannot authorize every exact index path.",
@@ -15938,7 +14852,7 @@ def task_commit_planned_index_bindings(
                 "authorized": sorted(bindings),
             },
         )
-    return bindings, candidate_bytes
+    return bindings, json_document_bytes(plan)
 
 
 def stage_task_commit_index_bindings(
@@ -16104,13 +15018,37 @@ def resolve_task_commit_candidate(root: Path, value: str) -> tuple[Path, Path]:
     path = raw if raw.is_absolute() else root / raw
     path = path.resolve()
     tasks = (root / ".trellis/tasks").resolve()
+    runtime = (root / TASK_COMMIT_RUNTIME_DIR).resolve()
+    if path.suffix != ".json" or not re.fullmatch(r"[0-9]{3}", path.stem):
+        raise WorkflowError("--candidate-artifact must end with a three-digit JSON sequence.", exit_code=2)
     try:
-        path.relative_to(tasks)
+        path.relative_to(runtime)
+    except ValueError:
+        try:
+            path.relative_to(tasks)
+        except ValueError as exc:
+            raise WorkflowError(
+                "--candidate-artifact must stay inside the private task-commit runtime or a legacy task-commit-plans directory.",
+                exit_code=2,
+            ) from exc
+        if path.parent.name != TASK_COMMIT_PLAN_DIR:
+            raise WorkflowError(
+                "Legacy --candidate-artifact must match task-commit-plans/<sequence>.json.",
+                exit_code=2,
+            )
+        return path, path.parent.parent
+    plan = read_json(path)
+    task_value = (
+        str((plan.get("task") or {}).get("path") or "").strip()
+        if isinstance(plan.get("task"), dict)
+        else ""
+    )
+    task_dir = resolve_repo_path(root, task_value).resolve() if task_value else root / ".missing"
+    try:
+        task_dir.relative_to(tasks)
     except ValueError as exc:
-        raise WorkflowError("--candidate-artifact must stay inside .trellis/tasks/.", exit_code=2) from exc
-    if path.parent.name != TASK_COMMIT_PLAN_DIR or path.suffix != ".json" or not re.fullmatch(r"[0-9]{3}", path.stem):
-        raise WorkflowError("--candidate-artifact must match task-commit-plans/<three-digit-sequence>.json.", exit_code=2)
-    return path, path.parent.parent
+        raise WorkflowError("Private task commit candidate has an invalid task locator.", exit_code=2) from exc
+    return path, task_dir
 
 
 def validate_task_commit_candidate(
@@ -16119,7 +15057,13 @@ def validate_task_commit_candidate(
     task_dir: Path,
 ) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
     errors: list[str] = []
-    candidate_raw_bytes = candidate_path.read_bytes()
+    try:
+        candidate_raw_bytes = candidate_path.read_bytes()
+    except FileNotFoundError as exc:
+        raise WorkflowError(
+            "Task commit candidate is unavailable; a successful private runtime candidate is single-use.",
+            exit_code=2,
+        ) from exc
     try:
         plan = json.loads(candidate_raw_bytes.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -16179,13 +15123,14 @@ def validate_task_commit_candidate(
         expected_prior = set(range(1, sequence_number))
         if sequence_number < 1 or occupied_sequences != expected_prior:
             errors.append("task commit plan sequence must be the next unused contiguous sequence.")
-        try:
-            tracked_candidate_blob, _ = task_commit_tree_path_identity(root, "HEAD", candidate_relative)
-        except WorkflowError:
-            errors.append("task commit plan could not verify sequence history at pre_commit_head.")
-            tracked_candidate_blob = None
-        if tracked_candidate_blob is not None:
-            errors.append("task commit plan candidate already exists at pre_commit_head; use the next unused sequence.")
+        if candidate_relative.startswith(".trellis/tasks/"):
+            try:
+                tracked_candidate_blob, _ = task_commit_tree_path_identity(root, "HEAD", candidate_relative)
+            except WorkflowError:
+                errors.append("legacy task commit plan could not verify sequence history at pre_commit_head.")
+                tracked_candidate_blob = None
+            if tracked_candidate_blob is not None:
+                errors.append("legacy task commit plan candidate already exists at pre_commit_head; use the next unused sequence.")
 
     task_plan = plan.get("task") if isinstance(plan.get("task"), dict) else {}
     if task_plan.get("id") != task.get("id") or task_plan.get("path") != task_relative:
@@ -16294,15 +15239,18 @@ def validate_task_commit_candidate(
                 errors.append(
                     f"task commit snapshot entry {path_value} has a self-referential {field_name}."
                 )
-    expected_classified_paths = snapshot_paths | {candidate_relative}
+    legacy_tracked_candidate = candidate_relative.startswith(".trellis/tasks/")
+    expected_classified_paths = snapshot_paths | (
+        {candidate_relative} if legacy_tracked_candidate else set()
+    )
     if set(classification_by_path) != expected_classified_paths:
-        errors.append("task commit plan classifications do not exactly cover the dirty snapshot and candidate artifact.")
+        errors.append("task commit plan classifications do not exactly cover its owned dirty paths.")
     self_classification = classification_by_path.get(candidate_relative, {})
-    if (
+    if legacy_tracked_candidate and (
         self_classification.get("category") != "task-reviewed"
         or self_classification.get("coverage_source") != "skill-artifact"
     ):
-        errors.append("task commit plan candidate self path must use task-reviewed/skill-artifact coverage.")
+        errors.append("legacy task commit plan candidate self path must use task-reviewed/skill-artifact coverage.")
     if any(item.get("category") in TASK_COMMIT_BLOCKING_CATEGORIES for item in classification_by_path.values()):
         errors.append("task commit plan contains a blocking path classification.")
 
@@ -16408,7 +15356,8 @@ def task_commit_next_candidate_path(
     root: Path,
     task_dir: Path,
 ) -> tuple[Path, str]:
-    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
+    task_key = hashlib.sha256(repo_relative(root, task_dir).encode("utf-8")).hexdigest()[:16]
+    plan_dir = root / TASK_COMMIT_RUNTIME_DIR / task_key
     if plan_dir.exists() and not plan_dir.is_dir():
         raise WorkflowError("Task commit plan path is not a directory.", exit_code=2)
     plan_dir.mkdir(parents=True, exist_ok=True)
@@ -16507,7 +15456,7 @@ def build_task_commit_candidate_from_public_input(
         or not str(authorization.get("summary") or "").strip()
     ):
         raise WorkflowError(
-            "Committed route requires a passed semantic review and exact confirmation.",
+            "Committed route requires a passed semantic review and plan-bound confirmation.",
             exit_code=2,
         )
 
@@ -16541,14 +15490,6 @@ def build_task_commit_candidate_from_public_input(
         })
         if reviewed and isinstance(entry.get("renamed_from"), str):
             exact_stage_paths.add(str(entry["renamed_from"]))
-    classifications.append({
-        "path": candidate_relative,
-        "category": "task-reviewed",
-        "reason": "This invocation owns the exact private candidate evidence.",
-        "coverage_source": "skill-artifact",
-    })
-    exact_stage_paths.add(candidate_relative)
-
     ledger_path = issue_scope_ledger_path(task_dir)
     ledger = load_issue_scope_ledger(task_dir, task_context)
     base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
@@ -16597,7 +15538,7 @@ def build_task_commit_candidate_from_public_input(
         },
         "authorization": {
             "authorized": True,
-            "source": "public-invocation-explicit-confirmation",
+            "source": "explicit-plan-bound-confirmation",
             "evidence": str(authorization["summary"]),
         },
         "freshness": {"captured_at": now_iso(), "plan_digest": ""},
@@ -17372,6 +16313,14 @@ def execute_task_commit_candidate(
     candidate_path: Path,
     task_dir: Path,
 ) -> dict[str, Any]:
+    runtime = (root / TASK_COMMIT_RUNTIME_DIR).resolve()
+    try:
+        candidate_path.resolve().relative_to(runtime)
+    except ValueError as exc:
+        raise WorkflowError(
+            "Legacy tracked task commit plans are read-only compatibility evidence and cannot be executed.",
+            exit_code=2,
+        ) from exc
     plan, facts, errors = validate_task_commit_candidate(root, candidate_path, task_dir)
     if errors:
         raise WorkflowError(
@@ -17557,41 +16506,16 @@ def execute_task_commit_candidate(
                     payload={"status": "blocked", "errors": post_errors},
                 )
 
-            final_plan = copy.deepcopy(plan)
-            final_plan["result"] = {
-                "status": "committed",
-                "exit": "committed",
-                "recorded_at": now_iso(),
-                "commit_sha": commit_sha,
-                "parent": pre_commit_head,
-                "message_sha256": hashlib.sha256(raw_message).hexdigest(),
-                "committed_paths": sorted(committed_paths),
-                "unrelated_preserved": True,
-                "hook_mutation": False,
-                "tree_evidence": tree_evidence,
-            }
-            result_errors = task_commit_result_validation_errors(root, final_plan)
-            if result_errors:
-                raise WorkflowError(
-                    "Task commit committed result does not satisfy the public schema.",
-                    exit_code=2,
-                    payload={"status": "blocked", "errors": result_errors},
-                )
-            candidate_result_bytes = json_document_bytes(final_plan)
+            # The private candidate remains the immutable planned preimage while
+            # the transaction publishes Git state. Successful Git facts are
+            # returned to the caller and are not copied back into an artifact.
+            candidate_result_bytes = candidate_preimage
             final_index_bytes = transaction_index.read_bytes()
             committed_payload = {
                 "status": "committed",
                 "exit": "committed",
-                "candidate_artifact": repo_relative(root, candidate_path),
-                "sequence": plan["sequence"],
                 "pre_commit_head": pre_commit_head,
                 "commit_sha": commit_sha,
-                "message_sha256": hashlib.sha256(raw_message).hexdigest(),
-                "candidate_result_sha256": hashlib.sha256(candidate_result_bytes).hexdigest(),
-                "committed_paths": sorted(committed_paths),
-                "unrelated_preserved_paths": sorted(unrelated_before),
-                "tree_evidence": tree_evidence,
-                "hook_mutation": False,
             }
 
             require_ordinary_task_commit_git_state(root)
@@ -17629,6 +16553,13 @@ def execute_task_commit_candidate(
                 )
             finally:
                 index_lock_fd = -1
+            try:
+                candidate_path.unlink(missing_ok=True)
+                candidate_path.parent.rmdir()
+            except OSError:
+                # Runtime cleanup is best effort after the commit has reached
+                # its success linearization point. It never dirties Git.
+                pass
             return committed_payload
     finally:
         if index_lock_fd >= 0:
@@ -24477,13 +23408,38 @@ def production_verify_committed_candidate(
     task_dir: Path,
     public_input: dict[str, Any],
 ) -> dict[str, Any]:
+    phase2_path = phase2_check_path(task_dir)
+    current = current_head(root)
+    checked_head = str(public_input.get("checked_head") or "")
+    expected_check_ref = task_commit_public_check_ref(
+        hashlib.sha256(phase2_path.read_bytes()).hexdigest()
+    )
+    parents = run_stdout(
+        ["git", "show", "-s", "--format=%P", current], cwd=root
+    ).split()
+    if (
+        parents == [checked_head]
+        and public_input.get("check_ref") == expected_check_ref
+    ):
+        task = task_json(task_dir)
+        task_context = load_task_start_context(task_dir, load_config(root))
+        base_branch = base_branch_from_sources(
+            argparse.Namespace(base_branch=None), task, task_context
+        )
+        return {
+            "status": "committed",
+            "commit_sha": current,
+            "base_ref": diff_base_ref(root, base_branch),
+        }
+
+    # Compatibility only: old active tasks may still carry a tracked terminal
+    # plan. New successful commits never create or update this directory.
     candidates = sorted((task_dir / TASK_COMMIT_PLAN_DIR).glob("[0-9][0-9][0-9].json"))
     if not candidates:
         raise WorkflowError("No committed task candidate is available for recovery.", exit_code=2)
     candidate = candidates[-1]
     plan = read_json(candidate)
     result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
-    phase2_path = phase2_check_path(task_dir)
     if (
         result.get("status") != "committed"
         or task_commit_result_validation_errors(root, plan)
@@ -24497,7 +23453,6 @@ def production_verify_committed_candidate(
         "status": "committed",
         "commit_sha": result["commit_sha"],
         "base_ref": plan["git"]["base_ref"],
-        "candidate_artifact": repo_relative(root, candidate),
     }
 
 
@@ -38907,25 +37862,16 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--json", action="store_true")
     review.add_argument("--task")
     review.add_argument("--base-branch")
-    review.add_argument("--pass", dest="pass_gate", action="store_true")
-    review.add_argument("--summary")
-    review.add_argument("--evidence", action="append", help="Chinese review evidence line. Required with --pass.")
-    review.add_argument("--reviewer", help="Reviewer name or AI/human review channel.")
-    review.add_argument("--review-source", help="Review source metadata. Pass and findings records require independent-agent.")
-    review.add_argument("--review-report", help="Path to the prior AI/human review report recorded before gate artifact creation.")
-    review.add_argument("--agent-assignment", help="Task-local agent-assignment.json. Required with --pass to validate closure-before-final and fresh final reviewer evidence.")
-    review.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path].")
-    review.add_argument("--findings-file", help="JSON list or object with findings[].")
-    review.add_argument("--observation", action="append", help="Non-blocking observation as message[|path].")
-    review.add_argument("--observations-file", help="JSON list or object with observations[].")
-    review.add_argument("--followup-candidate", action="append", help="Out-of-scope follow-up candidate as message[|path].")
-    review.add_argument("--followup-candidates-file", help="JSON list or object with followup_candidates[].")
-    review.add_argument("--skill-input", help="Repo-relative guru-review-branch public input used to bind mode, task, base, committed HEAD and review intent.")
-    review.add_argument("--semantic-review-file", help="Repo-relative AI-authored qualification-first semantic review payload.")
+    review.add_argument("--evidence", action="append", required=True, help="Evidence line from the completed independent semantic review.")
+    review.add_argument("--reviewer", required=True, help="Independent reviewer identity.")
+    review.add_argument("--review-source", required=True, choices=["independent-agent"], help="Independent review source.")
+    review.add_argument("--skill-input", required=True, help="Repo-relative guru-review-branch public input used to bind mode, task, base, committed HEAD and review intent.")
+    review.add_argument("--semantic-review-file", required=True, help="Repo-relative AI-authored qualification-first semantic review payload.")
     review.add_argument(
         "--typed-exit",
+        required=True,
         choices=["passed", "implementation_required", "scope_confirmation_required", "blocked"],
-        help="AI-selected guru-review-branch exit. Requires --skill-input and --semantic-review-file.",
+        help="AI-selected guru-review-branch exit bound by the structured semantic review.",
     )
     review.add_argument("--dry-run", action="store_true")
 
@@ -38963,7 +37909,7 @@ def build_parser() -> argparse.ArgumentParser:
     phase2.add_argument(
         "--input",
         required=True,
-        help="AI-authored guru-phase2-check-2.0 input JSON file, or - for stdin. Legacy --pass/--coverage invocation is rejected.",
+        help="AI-authored guru-phase2-check-2.1 input JSON file, or - for stdin. Legacy --pass/--coverage invocation is rejected.",
     )
     phase2.add_argument("--dry-run", action="store_true")
 
@@ -38992,78 +37938,22 @@ def build_parser() -> argparse.ArgumentParser:
         choices=sorted(TASK_PUBLICATION_CONSUMERS),
     )
 
-    assignment = sub.add_parser("record-agent-assignment")
-    assignment.add_argument("--root")
-    assignment.add_argument("--json", action="store_true")
-    assignment.add_argument("--task")
-    assignment.add_argument("--logical-role", choices=ALLOWED_LOGICAL_ROLES, help="Required for assignment, review-round, and reuse-decision modes; omitted for correction/recovery mode.")
-    assignment.add_argument("--agent-id", default="", help="Technical platform agent id. Use empty string when unavailable and explain in --reason.")
-    assignment.add_argument("--platform-nickname", default="", help="Display-only platform nickname; never used for gate decisions.")
-    assignment.add_argument("--reason", help="Chinese AI/human assignment rationale for agents[].")
-    assignment.add_argument("--review-round", type=int, help="Record a review_rounds[] entry instead of an agents[] entry.")
-    assignment.add_argument("--review-round-report", help="Task-local reviews/*.md raw report for this review round. Required with --review-round.")
-    assignment.add_argument("--reviewed-head", help="Reviewed HEAD for a review round. Defaults to current HEAD.")
-    assignment.add_argument("--findings-count", type=int, default=0)
-    assignment.add_argument("--reuse-policy", help="Chinese review reuse policy used for this review round.")
-    assignment.add_argument("--reuse-decision", choices=sorted(ALLOWED_REUSE_DECISIONS), help="Record reuse/replacement decision.")
-    assignment.add_argument("--reuse-reason", help="Chinese AI/human reason for reuse_decisions[].")
-    assignment.add_argument("--from-round", type=int)
-    assignment.add_argument("--to-round", type=int)
-    assignment.add_argument("--decision-head", help="HEAD for reuse_decisions[]. Defaults to current HEAD.")
-    assignment.add_argument("--status-event", help="Deprecated. Fails closed; use record-subagent-liveness-event.sh.")
-    assignment.add_argument("--decision", help="Deprecated with --status-event.")
-    assignment.add_argument("--observed-at", help="Deprecated with --status-event.")
-    assignment.add_argument("--last-observed-progress-at", help="Deprecated with --status-event.")
-    assignment.add_argument("--workspace-evidence", help="Deprecated with --status-event.")
-    assignment.add_argument("--running-command-evidence", help="Deprecated with --status-event.")
-    assignment.add_argument("--supersedes-agent-id", help="Deprecated with --status-event.")
-    assignment.add_argument("--handoff-summary", help="Deprecated with --status-event.")
-    assignment.add_argument("--invalidate-event-id", help="Append schema 1.2 provenance invalidation for one existing progress/status-request event.")
-    assignment.add_argument("--correction-reason", help="AI/main-session rationale for --invalidate-event-id.")
-    assignment.add_argument("--correction-evidence", help="Concrete evidence proving the target provenance is invalid.")
-    assignment.add_argument("--link-failed-event-id", help="Append schema 1.2 recovery link from this failed event.")
-    assignment.add_argument("--link-termination-event-id", help="Same-agent later manual/platform terminated-unfinished target for the recovery link.")
-    assignment.add_argument("--recovery-reason", help="AI/main-session rationale for the recovery link.")
-    assignment.add_argument("--recovery-evidence", help="Concrete evidence that the historical failed-to-termination transition occurred.")
-    assignment.add_argument("--dry-run", action="store_true")
+    recovery_record = sub.add_parser("record-agent-recovery")
+    recovery_record.add_argument("--root")
+    recovery_record.add_argument("--json", action="store_true")
+    recovery_record.add_argument("--task")
+    recovery_record.add_argument("--event", required=True, choices=["unfinished", "replacement"])
+    recovery_record.add_argument("--logical-role", required=True)
+    recovery_record.add_argument("--agent-id", required=True)
+    recovery_record.add_argument("--reason", required=True)
+    recovery_record.add_argument("--handoff-summary", required=True)
+    recovery_record.add_argument("--predecessor-event-id")
+    recovery_record.add_argument("--dry-run", action="store_true")
 
-    check_assignment = sub.add_parser("check-agent-assignment")
-    check_assignment.add_argument("--root")
-    check_assignment.add_argument("--json", action="store_true")
-    check_assignment.add_argument("--task")
-    check_assignment.add_argument("--agent-assignment", help="Task-local assignment artifact path. Defaults to agent-assignment.json.")
-    check_assignment.add_argument("--require-current-head", action="store_true")
-
-    liveness_record = sub.add_parser("record-subagent-liveness-event")
-    liveness_record.add_argument("--root")
-    liveness_record.add_argument("--json", action="store_true")
-    liveness_record.add_argument("--task")
-    liveness_record.add_argument("--source-repo", required=True)
-    liveness_record.add_argument("--agent-id", required=True)
-    liveness_record.add_argument("--event", required=True, choices=sorted(ALLOWED_AGENT_STATUS_EVENTS))
-    liveness_record.add_argument("--observed-at", help="UTC ISO-8601 observation time. Defaults to now.")
-    liveness_record.add_argument("--evidence", required=True)
-    liveness_record.add_argument("--logical-role", choices=ALLOWED_LOGICAL_ROLES, help="Required for assigned.")
-    liveness_record.add_argument("--platform-nickname", help="Required for assigned; empty string is accepted when the platform has no nickname.")
-    liveness_record.add_argument("--source", default="main-session", choices=sorted(AGENT_STATUS_EVENT_SOURCES))
-    liveness_record.add_argument("--predecessor-agent-id")
-    liveness_record.add_argument("--predecessor-event-id")
-    liveness_record.add_argument("--termination-reason", choices=sorted(AGENT_TERMINATION_REASONS))
-    liveness_record.add_argument("--termination-source-event-id")
-    liveness_record.add_argument("--replacement-reason", choices=sorted(AGENT_REPLACEMENT_REASONS))
-    liveness_record.add_argument("--handoff-summary")
-    liveness_record.add_argument("--dry-run", action="store_true")
-
-    liveness_check = sub.add_parser("check-subagent-liveness")
-    liveness_check.add_argument("--root")
-    liveness_check.add_argument("--json", action="store_true")
-    liveness_check.add_argument("--task")
-    liveness_check.add_argument("--source-repo", required=True)
-    liveness_check.add_argument("--agent-id", required=True)
-    liveness_check.add_argument("--progress-scan-interval", type=int, default=AGENT_LIVENESS_DEFAULT_SCAN_INTERVAL_SECONDS)
-    liveness_check.add_argument("--max-progress-silence", type=int, default=AGENT_LIVENESS_DEFAULT_MAX_SILENCE_SECONDS)
-    liveness_check.add_argument("--checked-at", help=argparse.SUPPRESS)
-    liveness_check.add_argument("--dry-run", action="store_true")
+    recovery_check = sub.add_parser("check-agent-recovery")
+    recovery_check.add_argument("--root")
+    recovery_check.add_argument("--json", action="store_true")
+    recovery_check.add_argument("--task")
 
     check_gate = sub.add_parser("check-review-gate")
     check_gate.add_argument("--root")
@@ -39085,7 +37975,7 @@ def build_parser() -> argparse.ArgumentParser:
     check_commits.add_argument("--base-ref", help="Git ref used as the start of the checked range. Defaults to the task base branch.")
     check_commit_mode = check_commits.add_mutually_exclusive_group()
     check_commit_mode.add_argument("--range", help="Explicit git log range, for example origin/main..HEAD.")
-    check_commit_mode.add_argument("--candidate-artifact", help="Task-local task-commit-plans/<sequence>.json to validate independently of branch history.")
+    check_commit_mode.add_argument("--candidate-artifact", help="Ignored runtime task-commit-plans/<task-key>/<sequence>.json, or a legacy tracked plan for read-only compatibility.")
 
     create_commit = sub.add_parser("create-task-commit")
     create_commit.add_argument("--root")
@@ -39252,14 +38142,10 @@ def main() -> int:
             payload = cmd_record_task_publication_review(args)
         elif args.command == "check-task-publication-review":
             payload = cmd_check_task_publication_review(args)
-        elif args.command == "record-agent-assignment":
-            payload = cmd_record_agent_assignment(args)
-        elif args.command == "check-agent-assignment":
-            payload = cmd_check_agent_assignment(args)
-        elif args.command == "record-subagent-liveness-event":
-            payload = cmd_record_subagent_liveness_event(args)
-        elif args.command == "check-subagent-liveness":
-            payload = cmd_check_subagent_liveness(args)
+        elif args.command == "record-agent-recovery":
+            payload = cmd_record_agent_recovery(args)
+        elif args.command == "check-agent-recovery":
+            payload = cmd_check_agent_recovery(args)
         elif args.command == "check-review-gate":
             payload = cmd_check_review_gate(args)
         elif args.command == "check-commit-messages":

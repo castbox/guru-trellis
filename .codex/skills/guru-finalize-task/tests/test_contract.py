@@ -98,6 +98,28 @@ class FinalizeTaskContractTests(unittest.TestCase):
             ],
         )
 
+    def test_archive_contract_matches_runtime_eleven_plus_optional_twelfth(self) -> None:
+        contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
+        self.assertIn("retains these 11 files", contract)
+        self.assertIn("`review-gate.json`", contract)
+        self.assertIn("twelfth and final permitted file", contract)
+        self.assertNotIn("retains these 10 files", contract)
+
+        runtime_path = (
+            REPO / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+        )
+        spec = importlib.util.spec_from_file_location(
+            "guru_team_trellis_archive_contract_test",
+            runtime_path,
+        )
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        runtime = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(runtime)
+        self.assertEqual(len(runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS), 11)
+        self.assertEqual(runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS, 12)
+        self.assertIn("review-gate.json", runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+
     def test_reprepare_seed_is_exact_and_target_owned(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
         consumer = next(

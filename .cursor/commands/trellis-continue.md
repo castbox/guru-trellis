@@ -32,6 +32,10 @@ Do not expose internal digests, recorder steps, `verification_required`,
 missing intent, a material scope/plan choice, new external authority, or the
 bounded publication/finalization side effects. A generic `确认继续` must never be
 required between automatically mapped Skill exits.
+When one current, unique side effect has been fully displayed, use `确认继续` as
+the prompt and accept any clear affirmative reply; never require the user to
+repeat a SHA, digest, or prescribed sentence. Reconfirm only after plan, HEAD,
+target, scope, or authority changes.
 
 Before a planning, review, or publication stop, run:
 

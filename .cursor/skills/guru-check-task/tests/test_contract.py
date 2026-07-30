@@ -25,8 +25,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
             "runtime_dependency", "task_workspace", "approved_planning",
             "requirement_provenance", "implementation_handoff",
             "repository_check_inputs", "docs_ssot_plan", "issue_scope_ledger",
-            "agent_assignment_recovery", "repository_snapshot",
-            "invocation_freshness",
+            "repository_snapshot", "invocation_freshness",
         ]
         self.assertEqual(self.interface["modes"]["workflow"]["entry_precondition_ids"], expected)
         self.assertEqual(self.interface["modes"]["standalone"]["entry_precondition_ids"], expected)
@@ -47,9 +46,9 @@ class CheckTaskPackageContractTests(unittest.TestCase):
     def test_skill_and_contract_keep_semantic_boundary(self) -> None:
         text = (self.package / "SKILL.md").read_text(encoding="utf-8") + (self.package / "references/contract.md").read_text(encoding="utf-8")
         for phrase in (
-            "all eleven entry preconditions", "Classify every candidate issue",
-            "official unchanged", "full\nrerun", "scope disposition", "never infer",
-            "Legacy `--pass --coverage`", "not self-contained or portable",
+            "all ten entry preconditions", "Classify every candidate issue",
+            "ephemeral evidence", "one full new round", "never decide scope",
+            "schema 2.0 artifacts remain", "not self-contained or portable",
         ):
             self.assertIn(phrase, text)
         for excluded in ("script decides scope", "worker produces Guru pass", "trellis/presets/guru-team/overlays/"):
@@ -140,13 +139,11 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         ambiguous["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
         self.assertNotEqual(list(validator.iter_errors(ambiguous)), [])
 
-        missing_assignment = copy.deepcopy(self.example)
-        missing_assignment["agent_assignment"]["artifact_path"] = None
-        self.assertNotEqual(list(validator.iter_errors(missing_assignment)), [])
-
-        empty_check_agents = copy.deepcopy(self.example)
-        empty_check_agents["agent_assignment"]["check_agent_ids"] = []
-        self.assertNotEqual(list(validator.iter_errors(empty_check_agents)), [])
+        self.assertNotIn("agent_assignment", self.example)
+        self.assertNotIn(
+            "agent_recovery",
+            [item["id"] for item in self.example["semantic_review"]["adequacy_dimensions"]],
+        )
 
         nonblocking_finding = copy.deepcopy(self.example)
         nonblocking_finding["scope_qualification"]["candidates"] = [{
@@ -210,7 +207,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         encoded = json.dumps(self.example)
         self.assertNotIn("/Users/", encoded)
         self.assertNotIn("07-19-130", encoded)
-        self.assertEqual(self.example["schema_version"], "2.0")
+        self.assertEqual(self.example["schema_version"], "2.1")
         self.assertEqual(self.example["skill_id"], "guru-check-task")
 
     @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")

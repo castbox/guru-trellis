@@ -1091,40 +1091,19 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   `guru-check-task` result, including unchanged official `trellis-check`
   evidence; it must not replace semantic judgment with worker output or command
   exit codes.
-- `check-phase2-check.sh` validates the v2 closed schema, objective linkage,
-  scope/finding references, exit/consumer union, hashes, and stale state before
-  commit.
-- `record-subagent-liveness-event.sh` records prior AI/human sub-agent
-  assignment, public progress observation, status request outcome, stale
-  assessment, resume/replacement, unfinished termination, completion, or failure
-  decisions in task-local `agent-assignment.json`; it must not decide which
-  sub-agent to use, whether implementation is sufficient, whether to send a
-  status request, or whether to start a replacement. It must fail closed unless
-  `status-requested` / `status-request-failed` follows checker decision
-  `status_request_required`, and unless `stale-assessed` follows checker
-  decision `stale_allowed` with unchanged snapshot/progress evidence.
-- `check-subagent-liveness.sh` is an on-demand, single-sample, immediate-exit
-  checker. It reads task/source git snapshots and recorded progress event
-  digests, writes liveness bookkeeping, returns one decision JSON, and never
-  watches, sleeps, reads platform UI, sends status requests, terminates agents,
-  or judges implementation quality.
-- `record-agent-assignment.sh` remains for non-liveness review round and reuse
-  decision evidence. It also owns the two append-only schema 1.2 repair records:
-  `--invalidate-event-id` appends one digest-bound provenance invalidation, and
-  `--link-failed-event-id` plus `--link-termination-event-id` appends one
-  digest-bound same-agent failed-to-termination recovery edge. The AI/main
-  session supplies reason/evidence after making the correction judgment; the
-  recorder only verifies target identity and writes it. Its old `--status-event`
-  path must fail closed and point callers to
-  `record-subagent-liveness-event.sh`; it must not maintain a second active
-  status event enum.
-- `check-agent-assignment.sh` validates JSON structure, Chinese logical-role
-  enum values, required fields, HEAD resolvability, optional current-HEAD
-  freshness, liveness snapshot fields, status event enum/evidence fields,
-  correction/link unique ids and target digests, forward same-agent recovery
-  graph, recovery-chain completion, and digest metadata. Its effective
-  projection excludes invalidated progress/status-request rows; raw history is
-  never deleted. It must not judge semantic reuse quality or review sufficiency.
+- `check-phase2-check.sh` validates closed schema 2.1, the nine adequacy
+  dimensions, objective linkage, finding lifecycle, exit/consumer union,
+  hashes, and stale state before commit. Routine assignment, handoff, liveness,
+  raw worker payload, and review rounds are absent.
+- `record-agent-recovery.sh` writes ignored
+  `.trellis/.runtime/guru-team/agent-recovery/<task-key>.json` only after an
+  agent explicitly returns unfinished and a replacement must inherit the work.
+  It records one minimal `unfinished` event followed by one linked
+  `replacement` event; routine dispatch/wait/progress/completion never invokes
+  it.
+- `check-agent-recovery.sh` validates that exceptional two-event chain and
+  returns objective recovery facts. The checkpoint is owner-private runtime and
+  never enters a task artifact, public DTO, commit, or archive.
 
 Workspace boundary helpers are deterministic validators and fact snapshots:
 
@@ -1137,16 +1116,14 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
   `task_workspace_id`, and `task_artifact_dir`, derive the machine-local task
   worktree from the current checkout, `.trellis/.runtime/guru-team/**`, and
   `git worktree list`, then confirm the actual repo root equals that derived
-  worktree before touching `planning-approval.json`,
-  `phase2-check.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`,
+  worktree before touching `planning-approval.json`, `phase2-check.json`,
   `review-gate.json`, or equivalent task-local artifacts.
 - In `workspace_mode: worktree`, a missing task-local `task-start-context.json` is
   also a boundary failure for these recorder/validator commands, because the
   script cannot validate portable identifiers before local runtime/Git worktree
   resolution and must not fall back to
   a same-named task directory in the source checkout.
-- Task artifact arguments such as `--review-report`, `--agent-assignment`,
-  `--review-round-report`, and `--checked-artifact` must resolve inside the
+- Task artifact arguments such as `--checked-artifact` must resolve inside the
   current task directory under the selected task worktree. Absolute paths are
   allowed only when they stay under that task directory.
 - Source checkout current-task artifacts, review metadata, or current-task dirty
@@ -1160,29 +1137,23 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
 `resolve-human-artifacts.sh --json --task <task-path-or-name>` is a
 deterministic resolver for user-facing Markdown task artifacts. It may resolve
 the active task directory or archived task directory and report path/existence
-facts for only `prd.md`, `design.md`, `implement.md`, `review.md`, and
-`pr-body.md`. It must not read planning/check/review gate JSON artifacts, must
+facts for only `prd.md`, `design.md`, `implement.md`, and `pr-body.md`. It must
+not read planning/check/review gate JSON artifacts, must
 not decide phase sufficiency, and must not create links for missing files.
 
-`review-branch.sh --pass` must fail before writing Branch Review Gate when
-`phase2-check.json` is missing, stale, incomplete, or contains unresolved
-current-scope findings at any P0/P1/P2/P3 severity. It must also fail when the
-Phase 3 review result contains any finding, including P3. A passed gate must include zero findings,
-`--review-source independent-agent` and a reviewer identity that is not a
-main-session/self-review identity, and `--review-report` must point to the
-task-local file named `review.md`. The script validates those objective
-metadata fields; it still does not judge review quality. It may also validate
-objective review-report template traces: task-local `review.md` and every raw
-`reviews/*.md` report recorded through `review_reports[]` must not contain known
-English template headings such as `Review Rounds`, `Findings Lifecycle`,
-`Evidence Handoff`, `Deployment / safety impact`, or `Follow-up Candidates`.
-This is fixed-string/template-heading validation only and must not become a
-Chinese semantic sufficiency reviewer.
-Failed findings artifacts are also Branch Review Gate records. They must include
-`--review-source independent-agent` and a task-local `--review-report review.md`
-so the artifact records a prior independent review instead of only reviewer
-identity metadata. They do not require the final-pass `agent-assignment`
-closure checks unless the user is trying to pass the gate.
+`review-branch.sh` records only schema 2.1 after an independent AI semantic
+review exists. It requires the six-field public input, one semantic review
+payload, the selected typed exit, reviewer identity/source, and concise evidence.
+It writes one compact `review-gate.json`; no `review.md`, `reviews/*.md`,
+assignment ledger, report digest, rollup, command argv, changed-file copy, or
+deployment projection is generated.
+
+The recorder fails before writing when Phase 2 is missing/stale/incomplete, the
+working tree has non-metadata drift, the public task/base/HEAD identity is stale,
+or semantic finding/exit invariants contradict. Open P0-P3 findings route to
+`implementation_required`; unconfirmed scope routes to
+`scope_confirmation_required`; passed requires zero open findings and one
+`fresh_final_review` over the complete current range.
 For post-commit Phase 2 audit, the script may accept a `phase2-check.json`
 recorded at an ancestor HEAD only when every later non-metadata committed path
 is covered by the artifact's `dirty_paths`, or when the later tail is Trellis
@@ -1190,80 +1161,23 @@ metadata only. The validator may ignore stale Phase 2 digest metadata for
 task-local Branch Review Gate / publish readiness metadata during this
 post-commit audit because final review and release readiness are produced after
 the work commit. The allowed mutable task-local digest entries are
-`issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`, `marketplace-verification.json`,
-`review.md`, and `review-gate.json`; Branch Review
+`issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`,
+`marketplace-verification.json`, and `review-gate.json`; Branch Review
 Gate or publish validators must revalidate the current files before passing.
-`agent-assignment.json` instead uses a Phase-2-stable projection of the
-implementation/check agents, events, liveness, corrections, recovery links,
-completed id sets, and recovery closure. Legal post-commit Branch Review
-metadata is outside that projection; Phase 2 agent/recovery drift is not. The
-Branch Review Gate still validates and records the complete current assignment.
 Any uncovered non-metadata committed path or current non-metadata dirty path
 must block the gate instead of encouraging a post-commit Phase 2 re-record.
-If the same assignment file is listed in the embedded
-`implementation_handoff` collection, the
-post-commit audit preserves its recorded raw digest only for that legal
-ancestor-HEAD audit and relies on the stable projection for freshness. This is
-an ordinary metadata-tail compatibility rule, not a hostile-tamper exception.
 
-`review-branch.sh --pass` must receive `--agent-assignment <task-local
-agent-assignment.json>`. It validates that artifact and records its digest,
-roles, assignment count, review round count, and reuse decision count under
-`review-gate.json.verification_evidence.agent_assignment`. Missing assignment
-evidence blocks a passed gate because the recorder cannot verify closure-before-
-final or fresh final reviewer metadata.
-
-When `agent-assignment.json.status_events[]` contains `failed`,
-`stale-assessed`, or `terminated-unfinished`, `review-branch.sh --pass` must
-fail closed unless the ledger has later objective evidence that the same
-technical agent resumed or a replacement started, and that active recovery chain
-later reached `completed`. A replacement `failed` requires further recovery and
-cannot close the chain. This is only ledger-completeness validation. The script
-must not decide whether a `wait_agent` timeout means stale, whether a running
-agent should be stopped, or whether a failed/stale/unfinished partial output is
-acceptable.
-
-When an append-only ledger already contains an incorrect observational
-provenance row, natural-language correction text is disclosure only. A main
-session must append a schema 1.2 `event_corrections[]` record bound to the exact
-target event digest before the machine gate can exclude it. When a historical
-`failed` row resumed, failed again, was terminated, and then handed to a
-replacement, but the failed-to-termination edge was not recorded, the main
-session may append one schema 1.2 `recovery_links[]` edge. The validator must
-still traverse the existing resume/replacement predecessors through a real
-later `completed`; correction/link rows cannot invent, rewrite, or delete any
-status event.
-
-When a review round has findings, including a previous final-review round that
-found a new issue, it must later be closed by one of three explicit forms: the
-same technical `agent_id` recorded as `问题闭环审查代理` with
-`findings_count: 0` and `reuse_decision: reuse-for-closure`; a different fresh
-`问题闭环审查代理` whose technical `agent_id` has not appeared in any earlier
-`review_rounds[]` and whose `reuse_decisions[]` entry records
-`decision=new-agent` with exact `from_round`, `to_round`, closure `agent_id`,
-reviewed `head`, and non-empty `reason`; or, when the finding owner objectively
-failed, was interrupted, or became stale and cannot continue, a replacement
-closure reviewer that may close only that finding when
-`reuse_decisions[]` records `decision=replace` with `from_round` / `to_round`
-and `status_events[]` records the predecessor evidence plus
-`replacement-started` with `predecessor_agent_id`, `predecessor_event_id`,
-`replacement_reason`, `handoff_summary`, and replacement `completed` evidence.
-A passing gate must validate that every finding owner has one of those three
-closure forms. A closure round that still reports findings becomes a new
-finding owner and must itself have a later explicit closure before the gate can
-pass. The gate then validates a fresh
-`最终放行审查代理` review round: `review_rounds[].round` values are unique and
-strictly increasing in recorded order, it is the unambiguous last round,
-`reviewed_head` equals the reviewed code HEAD, `findings_count` is 0,
-`reuse_decision` is `new-agent`, and the final reviewer technical `agent_id` has
-not appeared in any earlier `review_rounds[]`. This is an objective
-metadata check only; the AI/human review still owns the judgment that the
-review covered the full diff.
+For finding closure, schema 2.1 retains the original `introduced_head` and
+records the fix commit as `resolved_at_head`; those heads intentionally differ.
+The semantic normalizer and lifecycle validator both accept this normal
+finding -> fix -> closure path. Schema 2.0 gates and their assignment/report
+files are read-only compatibility evidence; re-entry writes a fresh 2.1 gate
+without copying legacy prose.
 
 Independent review agents do not run Guru Team recorder/validator extension
 scripts as part of their review. They may inspect docs, code, tests, diffs, and
 ordinary validation evidence, but `review-branch.sh`, `check-review-gate.sh`,
-`record-agent-assignment.sh`, and `record-*` calls belong to the main session
+and `record-*` calls belong to the main session
 after the review result exists. Those calls record and validate objective
 artifact evidence; they are not review work.
 
@@ -1466,15 +1380,15 @@ input, and missing Cursor authentication returns deterministic `unsupported`.
 
 `review-branch` records only an already completed AI semantic review. It may
 rebuild task/worktree/base/HEAD/range, planning, Phase 2, issue-ledger,
-commit-evidence, Docs SSOT, assignment, report, working-tree, hash, schema and
-freshness facts, then write the existing `review-gate.json`. It must not decide
+commit-evidence, Docs SSOT, working-tree, hash, schema and freshness facts, then
+write compact schema 2.1 `review-gate.json`. It must not decide
 scope, scenario class, qualification, severity, reviewer sufficiency, route, or
 pass.
 
-`check-review-gate` revalidates the same objective facts, raw report retention,
-round ordering, finding closure, final-review freshness, `review.md` links and
-the selected typed exit. Existing CLI names remain compatibility entrypoints to
-the same owner runtime. The public package wrapper accepts a closed public input
+`check-review-gate` revalidates the same objective facts, finding lifecycle,
+`introduced_head`/`resolved_at_head`, final-review freshness and the selected
+typed exit. Schema 2.0 is read-only compatibility input; no legacy recorder is
+public. The public package wrapper accepts a closed public input
 and repo-local owner-result locator, reruns the checker, reads the actual exit,
 and emits exactly one declared DTO. `expected_exit` is never a wrapper input,
 owner-result field, or route selector.

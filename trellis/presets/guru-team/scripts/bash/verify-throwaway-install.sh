@@ -1215,7 +1215,8 @@ sys.modules[spec.name] = gtt
 spec.loader.exec_module(gtt)
 
 task_dir = root / task_rel
-candidate = task_dir / gtt.TASK_COMMIT_PLAN_DIR / f"{sequence:03d}.json"
+task_key = hashlib.sha256(task_rel.encode("utf-8")).hexdigest()[:16]
+candidate = root / gtt.TASK_COMMIT_RUNTIME_DIR / task_key / f"{sequence:03d}.json"
 candidate_rel = candidate.relative_to(root).as_posix()
 snapshot = gtt.capture_task_commit_snapshot(root, {candidate_rel})
 unrelated = "unrelated-preserved.log"
@@ -1232,13 +1233,6 @@ for entry in snapshot["entries"]:
     })
     if not is_unrelated:
         reviewed_paths.add(path)
-classifications.append({
-    "path": candidate_rel,
-    "category": "task-reviewed",
-    "reason": "Current throwaway skill invocation evidence.",
-    "coverage_source": "skill-artifact",
-})
-reviewed_paths.add(candidate_rel)
 snapshot_by_path = {str(item["path"]): item for item in snapshot["entries"]}
 exact_paths = set(reviewed_paths)
 for path in list(reviewed_paths):
@@ -1405,8 +1399,10 @@ grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md"
 ! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`' "$TARGET/.trellis/workflow.md"
-grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
-grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
+grep -q "record-agent-recovery.sh" "$TARGET/.trellis/workflow.md"
+grep -q "check-agent-recovery.sh" "$TARGET/.trellis/workflow.md"
+! grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
+! grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-sync-base","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-discover-change-context","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-discover-change-context","exit":"context_ready","consumer":{"kind":"skill","id":"guru-clarify-requirements"}}' "$TARGET/.trellis/workflow.md"
@@ -1475,8 +1471,10 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-change-request-review.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-task-workspace-plan.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-workspace.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-task-workspace-result.sh"
-test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
-test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-agent-recovery.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-agent-recovery.sh"
+test ! -e "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
+test ! -e "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/execute-extension-verification.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-extension-verification.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-extension-verification.sh"
@@ -1504,20 +1502,22 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.23"
+assert extension["version"] == "0.6.5-guru.24"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 102
+assert len(assets) == 100
 assert all((root / path).is_file() for path in assets)
 for artifact in (
-    "agent-assignment.json", "pr-body.md", "closeout-plan.json",
-    "finish-summary.json", "task-commit-plans/*.json",
-    "context-discovery.json", "issue-review.json",
+    "pr-body.md", "review-gate.json", "pr-readiness.json",
+    "closeout-plan.json", "finish-summary.json", "context-discovery.json",
+    "issue-review.json",
 ):
     assert artifact in api["artifact_contracts"]
+for artifact in ("agent-assignment.json", "review.md", "task-commit-plans/*.json"):
+    assert artifact not in api["artifact_contracts"]
 for command in (
-    "resolve-human-artifacts", "record-subagent-liveness-event",
-    "check-subagent-liveness", "check-commit-messages",
+    "resolve-human-artifacts", "record-agent-recovery",
+    "check-agent-recovery", "check-commit-messages",
     "create-task-commit", "discover-skill-contract", "discover-skill-evals", "run-skill-evals", "run-skill-command", "sync-base", "check-base-sync",
     "preview-change-context-history", "record-context-discovery", "check-context-discovery",
     "record-requirements-clarification", "check-requirements-clarification",
@@ -1542,11 +1542,12 @@ assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_id
 assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-requirements-clarification-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-contract-wording-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-phase2-check-2.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-phase2-check-2.1" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-planning-approval-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-extension-installation-verification-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-task-publication-readiness-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-review-gate-2.1" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-task-publication-readiness-1.1" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-workspace-plan-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-workspace-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.3"
@@ -3006,33 +3007,6 @@ PY
 record_planning_contract_wording "$TASK_REL"
 record_and_check_planning_approval "$TASK_REL" "initial"
 
-record_throwaway_completed_agent() {
-  local role="$1"
-  local agent_id="$2"
-  local nickname="$3"
-  "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh" \
-    --root "$TARGET" \
-    --task "$TASK_REL" \
-    --source-repo "$TARGET" \
-    --agent-id "$agent_id" \
-    --event assigned \
-    --logical-role "$role" \
-    --platform-nickname "$nickname" \
-    --evidence "Throwaway assigned $role for installed guru-check-task verification." \
-    --json >/dev/null
-  "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh" \
-    --root "$TARGET" \
-    --task "$TASK_REL" \
-    --source-repo "$TARGET" \
-    --agent-id "$agent_id" \
-    --event completed \
-    --evidence "Throwaway $role completed its full assigned scope." \
-    --json >/dev/null
-}
-
-record_throwaway_completed_agent "实现代理" "throwaway-implement" "Throwaway Implement"
-record_throwaway_completed_agent "阶段二检查代理" "throwaway-check" "Throwaway Check"
-
 record_throwaway_phase2() {
   local summary="$1"
   local input_path
@@ -3071,10 +3045,6 @@ payload["implementation_handoff"] = {
     "artifacts": [{"path": f"{task_rel}/implement.md"}],
     "facts_sha256": "0" * 64,
 }
-payload["agent_assignment"].update({
-    "implementation_agent_ids": ["throwaway-implement"],
-    "check_agent_ids": ["throwaway-check"],
-})
 payload["repository_snapshot"]["reviewed_paths"] = [
     {"path": "src/task-commit-smoke.txt"},
 ]
@@ -3108,7 +3078,7 @@ PY
     --task "$TASK_REL" \
     --json)"
   rm -f "$input_path"
-  python3 -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "2.0"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json"
+  python3 -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "2.1"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json"
 }
 
 record_throwaway_phase2 "已检查初次提交的需求、设计、代码、测试、文档与安装边界。"
@@ -3128,16 +3098,18 @@ INITIAL_COMMIT_JSON="$(
     --json \
     --candidate-artifact "$INITIAL_PLAN"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == payload["exit"] == "committed"; assert payload["sequence"] == "001"; assert "unrelated-preserved.log" in payload["unrelated_preserved_paths"]' <<<"$INITIAL_COMMIT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert set(payload) == {"status", "exit", "pre_commit_head", "commit_sha"}; assert payload["status"] == payload["exit"] == "committed"' <<<"$INITIAL_COMMIT_JSON"
 INITIAL_COMMIT="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["commit_sha"])' <<<"$INITIAL_COMMIT_JSON")"
 test "$(git -C "$TARGET" show -s --format=%P "$INITIAL_COMMIT")" = "$BASELINE_HEAD"
 test "$(git -C "$TARGET" show -s --format=%s "$INITIAL_COMMIT")" = "feat(trellis): #122 验证安装后任务提交"
+test ! -e "$TARGET/$INITIAL_PLAN"
+test -z "$(git -C "$TARGET" status --short --untracked-files=no)"
 test "$(git -C "$TARGET" status --short -- unrelated-preserved.log)" = "?? unrelated-preserved.log"
 test "$(cat "$TARGET/unrelated-preserved.log")" = "preserve this exact state"
 
 printf '%s\n' "finding fix task change" >"$TARGET/src/task-commit-smoke.txt"
 record_throwaway_phase2 "已在 finding fix 后重新检查全部范围并绑定新的 HEAD 与 dirty state。"
-REVISION_PLAN="$(create_task_commit_plan 2 "fix(trellis): #122 验证 finding 修订提交")"
+REVISION_PLAN="$(create_task_commit_plan 1 "fix(trellis): #122 验证 finding 修订提交")"
 REVISION_CANDIDATE_JSON="$(
   "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" \
     --root "$TARGET" \
@@ -3145,7 +3117,7 @@ REVISION_CANDIDATE_JSON="$(
     --json \
     --candidate-artifact "$REVISION_PLAN"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["candidate_validation"]["sequence"] == "002"; assert payload["candidate_validation"]["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_CANDIDATE_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["candidate_validation"]["sequence"] == "001"; assert payload["candidate_validation"]["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_CANDIDATE_JSON"
 REVISION_COMMIT_JSON="$(
   "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh" \
     --root "$TARGET" \
@@ -3153,40 +3125,19 @@ REVISION_COMMIT_JSON="$(
     --json \
     --candidate-artifact "$REVISION_PLAN"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == payload["exit"] == "committed"; assert payload["sequence"] == "002"; assert payload["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_COMMIT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert set(payload) == {"status", "exit", "pre_commit_head", "commit_sha"}; assert payload["status"] == payload["exit"] == "committed"; assert payload["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_COMMIT_JSON"
 REVISION_COMMIT="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["commit_sha"])' <<<"$REVISION_COMMIT_JSON")"
 test "$(git -C "$TARGET" show -s --format=%P "$REVISION_COMMIT")" = "$INITIAL_COMMIT"
 test "$(git -C "$TARGET" show -s --format=%s "$REVISION_COMMIT")" = "fix(trellis): #122 验证 finding 修订提交"
 test "$(git -C "$TARGET" rev-list --count main..HEAD)" = "2"
+test ! -e "$TARGET/$REVISION_PLAN"
+test -z "$(git -C "$TARGET" status --short --untracked-files=no)"
 test "$(git -C "$TARGET" status --short -- unrelated-preserved.log)" = "?? unrelated-preserved.log"
 test "$(cat "$TARGET/unrelated-preserved.log")" = "preserve this exact state"
-python3 - "$TARGET/$INITIAL_PLAN" "$TARGET/$REVISION_PLAN" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-first = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-second = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-assert first["result"]["status"] == first["result"]["exit"] == "committed"
-assert second["result"]["status"] == second["result"]["exit"] == "committed"
-assert first["result"]["commit_sha"] != second["result"]["commit_sha"]
-PY
-set +e
-STALE_PLAN_JSON="$(
-  "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" \
-    --root "$TARGET" \
-    --task "$TASK_REL" \
-    --json \
-    --candidate-artifact "$INITIAL_PLAN" \
-    2>&1
-)"
-STALE_PLAN_STATUS=$?
-set -e
-if [[ "$STALE_PLAN_STATUS" -eq 0 ]]; then
-  echo "Old task commit plan unexpectedly passed after the revision commit" >&2
+if git -C "$TARGET" ls-tree -r --name-only HEAD | grep -Eq '(^|/)task-commit-plans/|^\.trellis/\.runtime/'; then
+  echo "Task commit runtime evidence unexpectedly entered the committed tree" >&2
   exit 2
 fi
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "blocked"; assert any("stale" in item or "planned state" in item for item in payload["errors"])' <<<"$STALE_PLAN_JSON"
 
 INITIAL_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
 printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
@@ -3639,9 +3590,9 @@ contracts["artifact_schema_ids"] = [
     value for value in contracts["artifact_schema_ids"]
     if value not in {
         "guru-extension-installation-verification-1.0",
-        "guru-review-gate-2.0",
+        "guru-review-gate-2.1",
         "guru-task-finalization-gate-1.0",
-        "guru-task-publication-readiness-1.0",
+        "guru-task-publication-readiness-1.1",
     }
 ]
 contracts["legacy_skill_ids"] = list(production_ids)
@@ -3656,11 +3607,11 @@ contracts["typed_output_schema_ids"] = [
 production_private_ids = {
     "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json",
     "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.1.json",
     "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
     "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-1.0.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.0.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.1.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.1.json",
     "https://github.com/castbox/guru-trellis/trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
 }
 contracts["private_artifact_schema_ids"] = [

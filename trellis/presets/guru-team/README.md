@@ -361,10 +361,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/record-phase2-check.sh`
 - `.trellis/guru-team/scripts/bash/check-phase2-check.sh`
-- `.trellis/guru-team/scripts/bash/record-agent-assignment.sh`
-- `.trellis/guru-team/scripts/bash/check-agent-assignment.sh`
-- `.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh`
-- `.trellis/guru-team/scripts/bash/check-subagent-liveness.sh`
+- `.trellis/guru-team/scripts/bash/record-agent-recovery.sh`
+- `.trellis/guru-team/scripts/bash/check-agent-recovery.sh`
 - `.trellis/guru-team/scripts/bash/check-commit-messages.sh`
 - `.trellis/guru-team/scripts/bash/create-task-commit.sh`
 - `.trellis/guru-team/scripts/bash/format-merge-commit.sh`
@@ -396,7 +394,7 @@ Production skill registry 同时保留 reserved `guru-create-work-commit`，以�
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前
 canonical extension version 是待发布的
-`0.6.5-guru.23`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`0.6.5-guru.24`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -650,14 +648,12 @@ only a status transition.
 before a planning stop, Phase 2 completion, Branch Review Gate result,
 finish-work dry-run reply, or final archive/publish reply, the AI runs it and
 renders a `Markdown 产物 review 表` with only `prd.md`, `design.md`,
-`implement.md`, `review.md`, and `pr-body.md`. Missing files are shown without
-Markdown links, and JSON evidence such as `phase2-check.json`,
-`review-gate.json`, or `agent-assignment.json` is not part of the standard
-table.
+`implement.md`, and `pr-body.md`. Missing files are shown without Markdown
+links, and JSON gate/evidence is not part of the standard table.
 `record-phase2-check.sh` records the AI-authored closed `guru-check-task`
 result before commit, including the pre-commit `dirty_paths`; validation
 commands are evidence inside that report, not a substitute for the semantic
-check. `phase2-check.json` is the single `guru-phase2-check-2.0` artifact owned
+check. `phase2-check.json` is the single `guru-phase2-check-2.1` artifact owned
 by active `guru-check-task`. Official unchanged `trellis-check` is evidence-only;
 the Skill owns scope-before-severity, adequacy, findings, full rerun, Docs SSOT
 review, its AI Gate, and four typed exits. Coverage flags, worker output, or
@@ -665,50 +661,21 @@ script recorder/validator success cannot replace that loop. The preset
 distributes the additive Guru package to shared/Codex/Cursor/Claude roots
 without modifying any upstream-owned `trellis-check` overlay; the frozen
 43-entry ownership inventory remains fixed.
-V2 input requires non-empty provenance/embedded implementation evidence/durable/reviewed-path/command
-evidence and non-empty adequacy refs covering every known current-round source;
-current/scope-change candidates require trigger refs. The checker recomputes
-all semantic child digests, Gate bindings, finding count, and full-round digest.
-When embedded implementation evidence includes task-local assignment, legal post-commit review metadata
-tail uses the stable Phase 2 projection while implementation/check/recovery
-drift remains stale.
-`record-subagent-liveness-event.sh` / `check-subagent-liveness.sh` /
-`check-agent-assignment.sh` manage exceptional recovery facts in task-local
-`agent-assignment.json`:
-Chinese `logical_role` is the Trellis process identity, `agent_id` is the
-technical platform id, and `platform_nickname` is display-only. `agent-assignment.json`
-schema 1.1 is the single assignment/status/liveness/review ledger with
-`agents[]`, `status_events[]`, `liveness[agent_id].last_scan_snapshot`, review
-rounds, and reuse decisions. Routine execution records only the minimum
-assignment/completion identity required by current gates; it does not poll,
-transcribe progress, or start a liveness protocol. When a real unfinished,
-interrupted, failed, or replacement case exists, the liveness recorder can
-write progress, status request, stale, resume/replacement, terminal, and
-workspace-boundary audit events already observed by AI/human. The checker is short-lived and
-single-sample: it reads task/source checkout snapshots plus recorded progress
-event digests, returns one decision, and exits. It never reads platform UI,
-sends status requests, terminates agents, or judges implementation quality.
-`progress_scan_interval=120s` is the minimum interval for interpreting an
-explicitly requested exceptional-recovery re-sample; it does not start polling
-or require another sample. `max_progress_silence=180s` starts at
-`progress_anchor_at`. Only `status_request_required` authorizes one
-status request, and only `stale_allowed` authorizes `stale-assessed`.
-`status-requested` does not refresh anchor or extend deadline. Stale cutover
-must record `termination_reason=stale_cutover`, `termination_source_event_id`,
-and `replacement_reason=max_progress_silence_exceeded`; manual/platform
-unfinished termination uses
-`termination_reason=manual_or_platform_terminated_unfinished`. Failed, stale,
-unfinished, or replacement partial output cannot pass Phase 2 / Branch Review
-until a recovery chain reaches `completed`. `record-agent-assignment.sh` remains
-for review rounds and reuse decisions; its old `--status-event` path fails
-closed.
+Schema 2.1 keeps only nine adequacy dimensions, finding lifecycle, Docs SSOT
+judgment, and actual validation evidence with direct Gate consumers. Routine
+assignment, handoff, liveness, raw worker payload, and review rounds are not
+persisted. Only a real unfinished-to-replacement event uses
+`record-agent-recovery.sh` / `check-agent-recovery.sh` and the ignored
+`.trellis/.runtime/guru-team/agent-recovery/<task-key>.json` checkpoint. That
+checkpoint stores one minimal `unfinished`/`replacement` chain and never enters
+the task tree, public DTO, commit, or archive.
 
 Active `guru-review-branch` is the sole Phase 3.5 semantic owner. Global
 workflow and platform `trellis-continue` entries only mandatory invoke its
 six-field public input (`profile`, `mode`, `task_ref`, `base_ref`,
 `committed_head`, `review_intent`) and consume its four typed exits (`passed`,
 `implementation_required`, `scope_confirmation_required`, `blocked`).
-Reviewer lifecycle, finding qualification, Docs SSOT Gate, liveness/recovery,
+Reviewer lifecycle, finding qualification, Docs SSOT Gate, recovery checkpoint,
 private artifacts and re-entry remain package-owned step-local contracts.
 
 Its `passed` exit proceeds through the same entries to active
@@ -884,8 +851,7 @@ The tracked `task-start-context.json` provides only portable `workspace_slug`,
 absolute `workspace_path`. In worktree mode, derive and validate the machine-local
 task worktree from the current checkout, `.trellis/.runtime/guru-team/**`,
 `git worktree list`, and `check-workspace-boundary.sh --task`. Before writing or validating
-`planning-approval.json`, `phase2-check.json`, `agent-assignment.json`,
-`reviews/*.md`, `review.md`, or `review-gate.json`, run:
+`planning-approval.json`, `phase2-check.json`, or `review-gate.json`, run:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
@@ -896,9 +862,8 @@ status, task worktree status, and suspicious current-task artifacts or review
 metadata in the source checkout. It is a deterministic validator/fact snapshot,
 not stale judgment, cleanup, or patch migration. Editing tools without an
 explicit `workdir` must use absolute paths under the task worktree confirmed by the
-boundary helper. The #76 liveness checker uses this source/task fact
-layer: source checkout `HEAD`, dirty status, diff stat, or mtime changes are
-`workspace_boundary_violation_progress`, not stale evidence.
+boundary helper. The boundary is a deterministic source/task fact layer; it
+does not decide sub-agent progress, liveness, or stale state.
 
 `create-task-workspace` reruns the shared core before GitHub or worktree/task mutation.
 Each run keeps `preflight.base_freshness` in the current result only and requires
@@ -951,9 +916,10 @@ plus an additive plan/readiness supersession commit; no history rewrite or
 directory migration is used. After the official move but before the exact archive commit exists,
 schema 1.1 first completes idempotent compact-archive pruning, then requires the exact retained
 working-tree layout, dirty/staged paths, blob continuity, and official `task.json`
-delta. Normal finalizer archives retain 11 long-term files and conditionally the
-marketplace verification artifact as the twelfth; intake snapshots, assignments,
-commit plans, raw review rounds, review gates, PR preparation, and other reconstructible
+delta. Normal finalizer archives retain 11 long-term files, including the compact
+`review-gate.json`, and conditionally retain marketplace verification as the twelfth;
+intake snapshots, legacy assignments, commit plans, raw review rounds and rollups,
+PR preparation, and other reconstructible
 checkpoints remain only in the evidence commit/GitHub authority. Persisted schema 1.0
 plans retain their original full-move behavior. An absent
 or mismatched commit remains fail closed. Once current `HEAD` is the exact

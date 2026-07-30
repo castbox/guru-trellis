@@ -1130,8 +1130,7 @@ check and of the single task-local `phase2-check.json` artifact. It declares
 workflow/standalone preconditions in this order: `runtime_dependency`,
 `task_workspace`, `approved_planning`, `requirement_provenance`,
 `implementation_handoff`, `repository_check_inputs`, `docs_ssot_plan`,
-`issue_scope_ledger`, `agent_assignment_recovery`, `repository_snapshot`, and
-`invocation_freshness`.
+`issue_scope_ledger`, `repository_snapshot`, and `invocation_freshness`.
 
 The Skill owns repository check selection, scope qualification before severity,
 complete adequacy and Docs SSOT review, current-scope findings, full-rerun
@@ -1148,15 +1147,15 @@ cannot own the Guru Gate, artifact, finding severity, or route. The package
 publishes closed schema `guru-phase2-check-2.0`; active legacy schema 1.0
 requires complete semantic re-entry, while archived artifacts remain historical.
 Recorder/checker runtime commands accept AI-authored closed input and validate
-only objective schema, linkage, digest, HEAD/diff/dirty, agent recovery,
-full-round, and exit/consumer invariants. Legacy `--pass --coverage` calls must
+only objective schema, linkage, digest, HEAD/diff/dirty, full-round, and
+exit/consumer invariants. Legacy `--pass --coverage` calls must
 fail closed rather than synthesize a semantic result.
 
 The entry evidence collections for requirement provenance, implementation
-handoff, Docs SSOT durable paths, repository reviewed paths, and executed
+result, Docs SSOT durable paths, repository reviewed paths, and executed
 commands are non-empty. Every adequacy dimension has a non-empty reference to
-a known current-round evidence source, the round covers planning, provenance,
-handoff, Docs SSOT, repository, execution, and agent evidence, and
+a known current-round evidence source, and the round covers planning,
+provenance, Docs SSOT, repository, execution, and semantic review evidence. The
 `current_scope` / `scope_change_required` candidates carry non-empty trigger
 references. These are objective existence and reference-closure checks; AI
 still owns semantic sufficiency.
@@ -1168,21 +1167,10 @@ paths; it does not require or authorize a separate `implementation-handoff.md`.
 
 The checker recomputes execution/scope/adequacy digests, every Gate binding,
 finding count, and full-round digest from source fields and requires exact
-equality. If the embedded `implementation_handoff` collection lists task-local
-`agent-assignment.json`, a legal post-commit Branch Review metadata tail may
-retain the recorded raw file digest only while the independent Phase-2-stable
-agent projection remains equal; implementation/check/recovery drift fails
-closed.
-
-The objective agent projection requires task-local assignment evidence. Its
-non-empty implementation/check id sets exactly equal the effective completed
-events for those roles, and worker evidence covers exactly the completed check
-agent set. Missing, partial, failed, unfinished, stale, or replacement-only
-agent evidence fails entry before any typed exit can be recorded. The projection
-digests only Phase-2-stable implementation/check agents, status/liveness,
-corrections, recovery links, exact completed sets, and recovery closure. It
-excludes later Branch Review role/round/reuse metadata, while the Branch Review
-Gate separately validates the complete current assignment artifact and digest.
+equality. Routine assignment, handoff, liveness, raw worker payload, recovery
+transcript, and review-round evidence are absent from schema 2.1. The compatible
+`implementation_handoff` field id contains only the semantic owner's compact
+implementation-result evidence and does not authorize a separate artifact.
 
 ## Distribution And Managed Hashes
 
@@ -1377,8 +1365,9 @@ Its single `branch_review` input profile requires exactly `profile`, `mode`,
 `task_ref`, `base_ref`, `committed_head`, and `review_intent`. The committed
 producer supplies the three identity fields; the caller AI freshly authors
 `profile`, `mode`, and `review_intent`. Planning, Phase 2, issue ledger, Docs
-SSOT outcome, assignment/recovery, raw reports, findings, range and freshness
-remain task-local private evidence.
+SSOT outcome, exceptional recovery checkpoint, findings, range and freshness
+remain owner-private evidence. Schema 2.0 assignment/raw-report artifacts are
+read-only migration inputs, never current requirements.
 
 The four outputs are independent minimal DTOs:
 
@@ -1482,11 +1471,7 @@ and never decide sufficiency, issue closure, dimension status, finding route,
 or `ready`.
 
 The publication repository binding uses a closed task-metadata and direct
-runtime-input allowlist. It reuses Branch Review's exact
-`agent-assignment.json`, `review.md`, `review-gate.json`,
-assignment-referenced `reviews/*.md`, and every completed
-`task-commit-plans/NNN.json` whose recorded commit is an ancestor of current
-HEAD, then adds only
+`review-gate.json`, then adds only
 `issue-scope-ledger.json`, `pr-body.md`, and `finish-summary-index.json`.
 The recorder-owned `pr-readiness.json` is excluded from its own snapshot.
 Runtime input is allowed only when the current command explicitly names that
@@ -1597,8 +1582,10 @@ may materialize the public DTO in memory. The wrapper never executes the
 transition and never persists that DTO back into the gate.
 
 The five-stage semantic profile is preview/current-state discovery, AI review,
-conditional exact plan-digest confirmation, task-local gate recorder/checker,
-and one typed exit. The existing #105 closeout engine is the sole deterministic
+confirmation of one displayed side-effect plan when required, task-local gate
+recorder/checker, and one typed exit. Any clear affirmative response accepts an
+unchanged unambiguous plan; the user never has to repeat its digest or prescribed
+text. The existing #105 closeout engine is the sole deterministic
 executor for content push, verification boundary, unique draft identity, final
 projection, official `task.py archive --no-commit`, exact archive metadata
 transaction, three-way HEAD equality, and draft-to-ready. Legacy finish-work
@@ -1610,11 +1597,12 @@ Active-task evidence and long-term archive evidence have different lifecycles.
 Closeout plan 1.1 may move all plan-bound recovery inputs through official
 `task.py archive`, but before the archive commit it idempotently retains only
 the 11 files with direct history/recovery consumers: task identity, three
-planning documents, scope ledger, planning approval, Phase 2 check, final
-review, closeout plan, finalization gate, and finish summary. Applicable
-marketplace verification is the only conditional twelfth file. Intake/context
-snapshots, assignment/liveness state, commit plans, raw review rounds, review
-gate, PR body/readiness, and finish-summary index stay in the exact evidence
+planning documents, scope ledger, planning approval, Phase 2 check, closeout
+plan, compact Branch Review gate, finalization gate, and finish summary.
+Applicable marketplace verification is the only conditional twelfth file.
+Intake/context snapshots, legacy
+assignment/liveness state, commit plans, raw review rounds, review
+rollups, PR body/readiness, and finish-summary index stay in the exact evidence
 commit or GitHub authority instead of being duplicated into the archive tree.
 Move-before-prune interruption is recoverable by the same idempotent step.
 Persisted schema 1.0 plans retain their original full-move semantics.

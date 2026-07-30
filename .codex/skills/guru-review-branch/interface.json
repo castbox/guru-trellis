@@ -3,7 +3,7 @@
   "schema_version": "1.3",
   "id": "guru-review-branch",
   "name": "guru-review-branch",
-  "description": "Review a committed task branch through independent review, qualification-first findings, closure, fresh final review, and four typed exits.",
+  "description": "Review a committed task branch through independent review, an internal closure-then-fresh-final loop, and four typed exits.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -20,8 +20,6 @@
         "docs_ssot_outcome",
         "review_range",
         "working_tree",
-        "reviewer_assignment",
-        "review_evidence",
         "invocation_freshness"
       ]
     },
@@ -38,8 +36,6 @@
         "docs_ssot_outcome",
         "review_range",
         "working_tree",
-        "reviewer_assignment",
-        "review_evidence",
         "invocation_freshness"
       ]
     }
@@ -48,15 +44,13 @@
     {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and review commands", "binding": "complete compatible Guru Team preset", "freshness": "validated before each command"},
     {"id": "workspace_boundary", "evidence": "task-local context and worktree mapping", "binding": "actual root equals expected task worktree", "freshness": "rebuilt before record and check"},
     {"id": "task_identity", "evidence": "task.json and active locator", "binding": "task, branch and in_progress status", "freshness": "current task reread"},
-    {"id": "commit_handoff", "evidence": "guru-create-task-commit committed DTO and task commit plan", "binding": "task, base and committed HEAD", "freshness": "HEAD and commit evidence current"},
+    {"id": "commit_handoff", "evidence": "guru-create-task-commit minimal committed DTO plus live Git", "binding": "task, base and committed HEAD", "freshness": "HEAD, parent, message and changed paths reread"},
     {"id": "planning_approval", "evidence": "checker-passed planning-approval.json", "binding": "exact approved planning documents", "freshness": "planning checker rerun"},
     {"id": "phase2_check", "evidence": "checker-passed phase2-check.json", "binding": "complete implementation scope and post-commit metadata audit", "freshness": "Phase 2 checker rerun"},
     {"id": "issue_scope_ledger", "evidence": "current issue-scope-ledger.json", "binding": "primary, close, related and follow-up scope", "freshness": "current semantic projection"},
     {"id": "docs_ssot_outcome", "evidence": "approved Docs SSOT Plan and implementation handoff", "binding": "durable docs reconciliation", "freshness": "reviewed against current diff"},
     {"id": "review_range", "evidence": "origin base, committed HEAD and complete diff", "binding": "origin/<base>...<head>", "freshness": "rebuilt for every round"},
-    {"id": "working_tree", "evidence": "complete status snapshot", "binding": "clean or exact current-task assignment/rollup/gate/registered raw reports/current committed task-commit plan plus invocation-declared Guru runtime inputs only", "freshness": "checked before record and check"},
-    {"id": "reviewer_assignment", "evidence": "agent-assignment.json and liveness/recovery chain", "binding": "independent finding, closure and fresh final roles", "freshness": "assignment checker rerun"},
-    {"id": "review_evidence", "evidence": "reviews/*.md, review.md and report digests", "binding": "ordered current-head lifecycle", "freshness": "raw reports reread"},
+    {"id": "working_tree", "evidence": "complete status snapshot", "binding": "clean or exact current task gate plus invocation-declared private runtime inputs; legacy artifacts are read-only compatible", "freshness": "checked before record and check"},
     {"id": "invocation_freshness", "evidence": "public input, AI Gate, artifact and actual exit", "binding": "one complete owner invocation", "freshness": "checker rejects drift or ambiguity"}
   ],
   "runtime_dependency": {
@@ -95,8 +89,8 @@
     {"id": "public_output_blocked", "path": "schemas/public-blocked-output.schema.json"}
   ],
   "validators": [
-    {"id": "review_gate_recorder", "command": "scripts/review-branch.sh", "runtime_command": "review-branch", "objective_scope": "Record an already completed AI review while rebuilding objective task, range, HEAD, report, assignment, artifact and freshness facts"},
-    {"id": "review_gate_checker", "command": "scripts/check-review-gate.sh", "runtime_command": "check-review-gate", "objective_scope": "Validate current review artifact schema, complete range, raw report retention, finding lifecycle, final reviewer freshness and exact typed exit"},
+    {"id": "review_gate_recorder", "command": "scripts/review-branch.sh", "runtime_command": "review-branch", "objective_scope": "Record an already completed AI review while rebuilding objective task, range, HEAD and freshness facts"},
+    {"id": "review_gate_checker", "command": "scripts/check-review-gate.sh", "runtime_command": "check-review-gate", "objective_scope": "Validate the compact gate, complete range, finding closure, fresh final review and exact typed exit"},
     {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate the public input, rerun the owner checker, derive actual exit and serialize one declared minimal DTO"}
   ],
   "external_exits": [
@@ -106,8 +100,8 @@
     {"id": "blocked", "evidence": "required evidence, lifecycle, dependency or objective freshness is unavailable", "consumer": {"kind": "stop", "id": "branch-review-blocked"}}
   ],
   "reentry": {
-    "identity": "mode, task, base, committed HEAD, review intent, planning, Phase 2, ledger, Docs SSOT, assignment, reports, findings, range, Gate and actual exit",
-    "freshness": "every implementation, scope decision, commit, report, assignment or HEAD change reruns all 13 preconditions and the complete review lifecycle",
+    "identity": "mode, task, base, committed HEAD, review intent, planning, Phase 2, ledger, Docs SSOT, findings, range, Gate and actual exit",
+    "freshness": "every implementation, scope decision, commit or HEAD change reruns the 11 preconditions and current semantic review",
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py"],
@@ -115,11 +109,11 @@
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-production-review-branch-input-aggregate-1.0", "path": "schemas/public-input.schema.json"},
+      "aggregate_schema": {"schema_id": "guru-production-review-branch-input-aggregate-1.1", "path": "schemas/public-input.schema.json"},
       "profiles": [
         {
           "id": "branch_review",
-          "schema": {"schema_id": "guru-production-review-branch-input-branch-review-1.0", "path": "schemas/public-branch-review-input.schema.json"},
+          "schema": {"schema_id": "guru-production-review-branch-input-branch-review-1.1", "path": "schemas/public-branch-review-input.schema.json"},
           "example": {"id": "branch_review_input", "path": "examples/public-branch-review-input.json"},
           "discriminator": {"field": "profile", "value": "branch_review"}
         }
@@ -196,7 +190,7 @@
       {
         "id": "review_gate",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.0.json", "path": "schemas/review-gate.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.1.json", "path": "schemas/review-gate.schema.json"},
         "persistence": "task_local_tracked"
       }
     ]

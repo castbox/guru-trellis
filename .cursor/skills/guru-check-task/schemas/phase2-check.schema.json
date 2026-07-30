@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json",
-  "title": "Guru Phase 2 Check 2.0",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.1.json",
+  "title": "Guru Phase 2 Check 2.1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "skill_id", "generated_at", "mode", "task", "planning", "requirement_provenance", "docs_ssot_plan", "implementation_handoff", "agent_assignment", "repository_snapshot", "check_execution", "scope_qualification", "semantic_review", "human_confirmation", "typed_exit", "route", "reason", "consumer", "facts_sha256"],
+  "required": ["schema_version", "skill_id", "generated_at", "mode", "task", "planning", "requirement_provenance", "docs_ssot_plan", "implementation_handoff", "repository_snapshot", "check_execution", "scope_qualification", "semantic_review", "human_confirmation", "typed_exit", "route", "reason", "consumer", "facts_sha256"],
   "properties": {
-    "schema_version": {"const": "2.0"},
+    "schema_version": {"enum": ["2.0", "2.1"]},
     "skill_id": {"const": "guru-check-task"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
@@ -28,6 +28,33 @@
     "facts_sha256": {"$ref": "#/$defs/sha256"}
   },
   "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "2.1"}}, "required": ["schema_version"]},
+      "then": {
+        "not": {"required": ["agent_assignment"]},
+        "properties": {
+          "semantic_review": {
+            "properties": {
+              "adequacy_dimensions": {
+                "minItems": 9,
+                "maxItems": 9,
+                "items": {
+                  "allOf": [
+                    {"$ref": "#/$defs/dimension"},
+                    {
+                      "properties": {
+                        "id": {"not": {"const": "agent_recovery"}},
+                        "evidence_refs": {"items": {"not": {"const": "agent_assignment"}}}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     {
       "if": {"properties": {"typed_exit": {"const": "passed"}}, "required": ["typed_exit"]},
       "then": {"properties": {"route": {"const": null}, "consumer": {"const": {"kind": "skill", "id": "guru-create-task-commit"}}, "check_execution": {"properties": {"unverified_items": {"not": {"contains": {"properties": {"blocking": {"const": true}}, "required": ["blocking"]}}}}}, "semantic_review": {"properties": {"findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "adequacy_dimensions": {"items": {"properties": {"status": {"const": "passed"}}, "required": ["status"]}}, "ai_review_gate": {"properties": {"status": {"const": "passed"}, "full_rerun": {"const": true}}, "required": ["status", "full_rerun"]}}}}}
@@ -79,7 +106,7 @@
     "finding": {"type": "object", "additionalProperties": false, "required": ["id", "candidate_id", "severity", "summary", "path", "blocking", "status"], "properties": {"id": {"type": "string", "minLength": 1}, "candidate_id": {"type": "string", "minLength": 1}, "severity": {"enum": ["P0", "P1", "P2", "P3"]}, "summary": {"type": "string", "minLength": 1}, "path": {"type": ["string", "null"]}, "blocking": {"const": true}, "status": {"enum": ["open", "resolved"]}}},
     "dimension": {"type": "object", "additionalProperties": false, "required": ["id", "status", "summary", "evidence_refs", "affected_sha256", "finding_ids", "unverified_ids"], "properties": {"id": {"enum": ["requirements", "design", "implementation", "tests", "docs_ssot", "cross_layer", "compatibility", "deployment_and_operations", "agent_recovery", "verification_completeness"]}, "status": {"enum": ["passed", "failed", "blocked"]}, "summary": {"type": "string", "minLength": 1}, "evidence_refs": {"type": "array", "minItems": 1, "items": {"enum": ["planning", "requirement_provenance", "implementation_handoff", "docs_ssot_plan", "repository_snapshot", "check_execution", "agent_assignment"]}, "uniqueItems": true}, "affected_sha256": {"$ref": "#/$defs/sha256"}, "finding_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}, "unverified_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}}},
     "gate": {"type": "object", "additionalProperties": false, "required": ["status", "summary", "planning_facts_sha256", "snapshot_sha256", "scope_sha256", "adequacy_sha256", "findings_count", "full_rerun", "full_round_sha256"], "properties": {"status": {"enum": ["passed", "implementation_required", "planning_stale", "blocked"]}, "summary": {"type": "string", "minLength": 1}, "planning_facts_sha256": {"$ref": "#/$defs/sha256"}, "snapshot_sha256": {"$ref": "#/$defs/sha256"}, "scope_sha256": {"$ref": "#/$defs/sha256"}, "adequacy_sha256": {"$ref": "#/$defs/sha256"}, "findings_count": {"type": "integer", "minimum": 0}, "full_rerun": {"type": "boolean"}, "full_round_sha256": {"$ref": "#/$defs/sha256"}}},
-    "review": {"type": "object", "additionalProperties": false, "required": ["adequacy_dimensions", "findings", "adequacy_sha256", "ai_review_gate"], "properties": {"adequacy_dimensions": {"type": "array", "minItems": 10, "maxItems": 10, "items": {"$ref": "#/$defs/dimension"}, "uniqueItems": true}, "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}, "uniqueItems": true}, "adequacy_sha256": {"$ref": "#/$defs/sha256"}, "ai_review_gate": {"$ref": "#/$defs/gate"}}},
+    "review": {"type": "object", "additionalProperties": false, "required": ["adequacy_dimensions", "findings", "adequacy_sha256", "ai_review_gate"], "properties": {"adequacy_dimensions": {"type": "array", "minItems": 9, "maxItems": 10, "items": {"$ref": "#/$defs/dimension"}, "uniqueItems": true}, "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}, "uniqueItems": true}, "adequacy_sha256": {"$ref": "#/$defs/sha256"}, "ai_review_gate": {"$ref": "#/$defs/gate"}}},
     "confirmation": {"type": "object", "additionalProperties": false, "required": ["kind", "status", "summary", "confirmed_at"], "properties": {"kind": {"const": "not-required"}, "status": {"const": "not_required"}, "summary": {"type": "string", "minLength": 1}, "confirmed_at": {"const": null}}},
     "consumer": {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"enum": ["skill", "workflow", "stop"]}, "id": {"type": "string", "minLength": 1}}}
   }

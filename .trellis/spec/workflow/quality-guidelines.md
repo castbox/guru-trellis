@@ -247,7 +247,9 @@ comment/body/draft/new-task/active-task actions; exact action and proposal
 confirmation; five-class active-task task-update rejection when the proposal
 is confirmed but `confirmed_actions[]` is empty, the task action is absent, or
 the confirmation action digest is null/wrong; normal combined proposal/action
-confirmation re-entry; generic-confirmation rejection; optional-mechanism removal or
+confirmation re-entry; rejection of an ambiguous continuation when multiple
+actions or proposals remain (while any clear affirmative response accepts one
+fully displayed unchanged action); optional-mechanism removal or
 replacement; active-task ledger/planning/stale-gate/re-entry bindings; all five
 typed exits and unique consumers; pre-task zero-write; live mutation freshness;
 caller-aware clear resume targets; confirmed payload/mutation/live body equality;
@@ -259,12 +261,13 @@ and source/installed/discovery/throwaway update-reapply distribution. Static
 and runtime tests must also prove the package/runtime contain no GitHub write or
 issue-create executor and that recorder/checker do not generate semantic
 decisions.
-When changing Branch Review report generation or gate validation, add or update
-tests that reject obvious English template headings in task-local `review.md`
-and `reviews/*.md`, including `Review Rounds`, `Findings Lifecycle`,
-`Evidence Handoff`, `Deployment / safety impact`, and `Follow-up Candidates`.
-This validator is objective template-heading detection only; it must not judge
-whether the Chinese review narrative is semantically sufficient.
+When changing Branch Review recording or gate validation, add or update tests
+that prove the semantic owner records only the compact task-local
+`review-gate.json`. Routine independent-agent assignment, liveness, per-round
+raw reports, final rollups, reviewer metadata, and Git-derived facts must not be
+persisted. Schema 2.0 `agent-assignment.json`, `reviews/*.md`, and `review.md`
+may be read only while migrating an existing active task; no current recorder,
+wrapper, platform entry, or test fixture may generate them.
 When changing planning approval behavior, also run
 `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-dir>`
 against a current `guru-planning-approval-2.0` artifact bound to
@@ -288,7 +291,7 @@ normal planning-artifact locator source, a canonical unusual-candidate source,
 both sources coexisting without digest confusion, workflow/standalone parity,
 and a non-approved exit carrying an otherwise complete binding. Negative cases
 must reject caller-only/wrong proposal digest, stale or invalid content locator,
-missing/wrong candidate, generic/wrong-kind or digest-mismatched confirmation,
+missing/wrong candidate, ambiguous/wrong-kind or digest-mismatched confirmation,
 unknown/stale authority digest, authority absent from entry refs, and an
 authority-to-proposal digest mismatch. The checker must reread content and
 authority facts rather than accepting recorder-time shape alone.
@@ -313,9 +316,9 @@ workspace-creation generator.
 When changing workspace boundary behavior, also run
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-dir>` from the selected task worktree and add regression tests for wrong
-cwd, worktree mode without current handoff, source checkout same-task artifacts, wrong `--review-report`,
-`--agent-assignment`, `--review-round-report`, `--checked-artifact`,
-planner-only prepare no-write behavior, and controlled `create_task` cwd.
+cwd, worktree mode without current handoff, source checkout same-task artifacts,
+wrong task-local gate/check artifact locators, planner-only prepare no-write
+behavior, and controlled `create_task` cwd.
 
 For `guru-create-task-workspace`, tests must cover workflow/standalone
 precondition parity; every missing/stale/wrong-exit/target-mismatched
@@ -396,37 +399,30 @@ runtime entrypoints and public docs (`README.md`, workflow README, preset README
 and durable requirement docs when present). A command example can be correct in
 overlays but still mislead users if a README keeps the older copy.
 
-When changing sub-agent liveness, assignment, status request, stale assessment,
-or replacement behavior, add tests or explicit grep checks that exceptional
-recovery surfaces use `record-subagent-liveness-event.sh`,
-`check-subagent-liveness.sh`, `progress_scan_interval=120s`,
-`max_progress_silence=180s`, structured `predecessor_event_id`,
-`replacement_reason`, `termination_reason`, and completed-only recovery gates.
-The tests must also prove routine dispatch starts no checker cadence, progress
-transcription, or liveness artifact and that a wait timeout alone does not
-activate recovery.
-The old `record-agent-assignment.sh --status-event`, `wait-timeout`,
-`progress-observed`, `continue-waiting`, `supersedes_agent_id`,
-periodic heartbeat, daemon/sidecar/long-command wrapper, and
-`agent-progress.jsonl` contracts must not appear as active workflow paths.
-Schema 1.2 correction/recovery tests must cover a positive corrected ledger and
-reject unknown targets, duplicate correction/link ids or targets, cycles or
-backward links, cross-agent links, immutable target digest tampering,
-invalidated pass evidence, and a link whose replacement chain never reaches
-`completed`.
+When changing agent replacement behavior, add tests or explicit grep checks
+that routine dispatch, completion, mapped exits, stale re-entry, and wait
+timeouts create no assignment, liveness, status, progress, or handoff artifact.
+Only a real unfinished agent followed by a replacement may use
+`record-agent-recovery.sh` and `check-agent-recovery.sh`; the minimal ignored
+checkpoint under `.trellis/.runtime/guru-team/agent-recovery/` records the task,
+role, predecessor/replacement agents, HEADs, reasons, and handoff summary needed
+by that recovery consumer. Tests must reject replacement without a matching
+unfinished event and prove the checkpoint is never tracked or required after
+the recovery closes. Schema 2.0 assignment/liveness ledgers remain read-only
+migration input and have no active recorder or checker command.
 
 ## Review Focus
 
 Phase 2 package regressions must cover source and installed package validation,
 workflow/standalone precondition parity, missing/legacy/stale planning and
-repository evidence, unchanged worker evidence isolation, scope-before-severity,
-exact completed implementation/check role binding and complete worker-agent
-coverage,
-the four scope dispositions, all ten adequacy dimensions, blocking/non-blocking
-unverified items, four exit/consumer invariants, planning discriminator closure,
-finding-fix full rerun, failed/unfinished/stale/replacement/completed recovery,
-dirty/reviewed-path/post-commit freshness, legacy migration, and the single
-artifact owner. Distribution validation must compare canonical/shared/Codex/
+repository evidence, scope-before-severity, the four scope dispositions, all
+nine adequacy dimensions, blocking/non-blocking unverified items, four
+exit/consumer invariants, planning discriminator closure, finding-fix full
+rerun, exceptional unfinished/replacement recovery, dirty/reviewed-path and
+post-commit freshness, schema 2.0 read-only migration, and the single compact
+artifact owner. Routine implementation/check identity remains live semantic
+context and must not become persisted assignment or liveness evidence.
+Distribution validation must compare canonical/shared/Codex/
 Claude/Cursor package bytes, preserve the frozen 43-entry historical
 path/baseline identity, validate the exact thirteen issue #131/#161 current
 continue/agent payload bindings without generalizing them,
@@ -434,14 +430,13 @@ run dogfood apply/drift and sidecar checks, and exercise clean marketplace init,
 preview/switch, preset apply, installed invocation, `trellis update --force`,
 and workflow/preset reapply.
 
-Phase 2 regression coverage must also prove that empty provenance/embedded implementation evidence/docs/
+Phase 2 regression coverage must also prove that empty provenance/docs/
 reviewed-path/command evidence, empty adequacy references, missing current or
 scope-change trigger references, unknown/incomplete evidence-source closure,
 and every incorrect recorder-derived semantic digest fail closed. A real Git
-post-commit fixture must include `agent-assignment.json` in the embedded
-`implementation_handoff` collection and distinguish legal review
-assignment/status/completed/round metadata
-tail from implementation/check/recovery drift.
+post-commit fixture must prove the current Phase 2 artifact remains valid after
+the reviewed commit without adding assignment, status, liveness, review-round,
+or implementation-handoff metadata.
 
 Publication regression coverage must additionally reject missing stale reason
 or re-entry context, a missing/mismatched prior publication identity, any
@@ -514,17 +509,16 @@ cannot pass the gate. Include:
 - generated or installed-copy expectations
 - Phase 0 handoff/preflight evidence, or explicit no-task direct-edit override
   evidence when the branch intentionally skipped issue/task/worktree/branch
-- task artifact write location: `review.md`, `review-gate.json`, and similar
+- task artifact write location: `review-gate.json` and similar current gate
   files must be written under the task worktree derived from the current
   checkout, `.trellis/.runtime/guru-team/**`, `git worktree list`, and portable
   task-start-context identifiers; the committed context must not provide or be
   treated as an absolute `workspace_path`. When a manual editing tool has no explicit working
   directory, use a worktree-local absolute path
-- Branch Review raw reports `reviews/*.md` and final rollup `review.md` must be
-  Chinese human-readable task artifacts: Chinese headings, Chinese labels,
-  Chinese findings/observations/follow-up candidates, Chinese deployment /
-  safety and Docs SSOT judgments, and Chinese conclusion, with literal tokens
-  kept as-is only where required.
+- Branch Review persists only the compact `review-gate.json` consumed by
+  publication. Raw reports, per-round review files, assignment/liveness logs,
+  and final Markdown rollups are routine conversation/runtime context and must
+  not be created as task artifacts.
 - PR body readiness must include reviewer-readable Docs SSOT / 文档同步 result
   text: plan strategy, durable docs updated or no-update reason, merged task
   deltas, task-history-only content, and follow-up/current PR limitation.

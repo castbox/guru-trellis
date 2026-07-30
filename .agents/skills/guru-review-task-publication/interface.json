@@ -25,7 +25,7 @@
     {"id": "phase2_check", "evidence": "checker-passed phase2-check.json", "binding": "complete task scope and Docs SSOT outcome", "freshness": "Phase 2 checker rerun"},
     {"id": "issue_scope_ledger", "evidence": "current issue-scope-ledger.json", "binding": "primary, close, related and follow-up scope", "freshness": "current semantic projection"},
     {"id": "docs_ssot_reconciliation", "evidence": "approved Docs SSOT Plan and checker-passed Phase 2 result", "binding": "durable docs versus task-delta outcome", "freshness": "reviewed against current diff"},
-    {"id": "branch_review_evidence", "evidence": "agent assignment, raw reports, review.md and review-gate.json", "binding": "fresh final review and zero findings", "freshness": "current checker rerun"},
+    {"id": "branch_review_evidence", "evidence": "checker-passed compact review-gate.json", "binding": "fresh final review and zero open findings", "freshness": "current checker rerun"},
     {"id": "publication_content", "evidence": "task-local pr-body.md and finish-summary-index.json", "binding": "current reviewer-facing content and semantic history index", "freshness": "reread after every metadata revision"},
     {"id": "review_range_and_working_tree", "evidence": "current base-to-HEAD diff, status and metadata tail", "binding": "reviewed HEAD plus contract allowlist only", "freshness": "rebuilt before record and check"},
     {"id": "invocation_freshness", "evidence": "public input, prior readiness identity, semantic Gate and actual exit", "binding": "one complete current owner invocation", "freshness": "checker rejects drift or ambiguity"}
@@ -160,7 +160,7 @@
       {
         "id": "publication_readiness",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.0.json", "path": "schemas/pr-readiness.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.1.json", "path": "schemas/pr-readiness.schema.json"},
         "persistence": "task_local_tracked"
       }
     ]

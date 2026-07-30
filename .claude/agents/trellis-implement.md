@@ -58,7 +58,7 @@ Before implementing, read:
 - Do not report `Implementation Complete` until the requested scope is actually complete and verification status is known.
 - If the main session interrupts, terminates, replaces, or asks you to stop before completion, explicitly report `Implementation Unfinished` instead. Include files changed, current diff summary, last completed step, commands still running or stuck, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
-- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. Only during a real exceptional recovery case, answer an explicit status request with the current step, last concrete progress, active command/tool if any, remaining work, and blockers.
+- Do not emit periodic heartbeat messages or write assignment/liveness artifacts. Only during a real exceptional recovery case, answer an explicit status request with the current step, last concrete progress, active command/tool if any, remaining work, and blockers.
 - Do not run `trellis-check`, record `phase2-check.json`, or perform Branch Review Gate work. The next semantic owner reads task artifacts, live diff, and tests directly.
 - Return one concise terminal result. Do not create `implementation-handoff.md`, reproduce planning, or provide a next-owner checklist.
 - For Docs SSOT, report only a material outcome, changed durable paths, or a bounded follow-up. The check owner reconstructs the complete conclusion from current evidence.

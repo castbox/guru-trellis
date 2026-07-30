@@ -59,7 +59,7 @@
       "id": "phase2_check",
       "evidence": "phase2-check.json",
       "binding": "passed check, checked artifact digests, dirty paths and pre-commit HEAD",
-      "freshness": "candidate self artifact is the only permitted post-check delta"
+      "freshness": "private runtime candidate is ignored and excluded from the repository snapshot"
     },
     {
       "id": "issue_scope_ledger",
@@ -83,7 +83,7 @@
       "id": "dirty_snapshot",
       "evidence": "NUL-delimited Git status and content identities",
       "binding": "complete staged, unstaged, untracked, delete and explicit rename/copy facts; ordinary SHA-256/mode/delete and initialized clean gitlink HEAD are exact index authorities, while only rename sources inherit deletion/exact-stage authority",
-      "freshness": "current snapshot, candidate raw bytes, complete live index preimage and operation state still match through isolated validation; index.lock remains a sentinel and ref/index/candidate guards remain owned through the final candidate identity-read linearization point"
+      "freshness": "current snapshot, private candidate bytes, complete live index preimage and operation state still match through isolated validation"
     },
     {
       "id": "commit_authorization",
@@ -206,7 +206,7 @@
       "id": "exact_executor",
       "command": "scripts/create-task-commit.sh",
       "runtime_command": "create-task-commit",
-      "objective_scope": "artifact-authorized ordinary/gitlink/candidate bindings with deletion inheritance limited to rename sources, isolated index and detached commit validation, guarded conditional ref/candidate rollback under an index.lock sentinel, independent final-index publication, final candidate identity-read linearization, immutable commit blob/result digest evidence, and raw commit postconditions"
+      "objective_scope": "artifact-authorized ordinary/gitlink bindings with deletion inheritance limited to rename sources, isolated index and detached commit validation, guarded conditional ref/index publication, raw commit postconditions, and private runtime cleanup"
     },
     {
       "id": "public_invocation",
@@ -218,7 +218,7 @@
   "external_exits": [
     {
       "id": "committed",
-      "evidence": "task commit plan result and current Git HEAD",
+      "evidence": "minimal committed DTO and current live Git HEAD",
       "consumer": {
         "kind": "skill",
         "id": "guru-review-branch"
@@ -515,7 +515,7 @@
           "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
           "path": "schemas/task-commit-plan.schema.json"
         },
-        "persistence": "task_local_tracked"
+        "persistence": "ignored_runtime"
       }
     ]
   }

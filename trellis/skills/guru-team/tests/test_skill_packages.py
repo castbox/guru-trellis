@@ -163,42 +163,6 @@ def assert_continue_entry_is_thin_workflow_router(
         testcase.assertNotIn(phrase, text, path)
 
 
-def assert_current_branch_review_requirement_contract(
-    testcase: unittest.TestCase, requirement: str,
-) -> str:
-    heading = "## Post-commit Branch Review closed-loop Skill"
-    testcase.assertEqual(requirement.count(heading), 1)
-    start = requirement.index(heading)
-    end = requirement.find("\n## ", start + len(heading))
-    section = requirement[start:] if end == -1 else requirement[start:end]
-    normalized = re.sub(r"\s+", " ", section)
-
-    for phrase in (
-        "#131 交付时",
-        "当时尚未激活、仍为 planned `guru-review-task-publication`",
-        "target package 当时缺失时按 planned bridge fail closed",
-        "#116 激活后，此历史边界已由 current active contract 替代",
-        "`guru-review-task-publication` 现为 active target",
-        "target-owned authoring-seed contract",
-        "target-owned package/interface",
-        "`publication_review` profile",
-        "`profile/mode/review_intent` authoring fields",
-        "`task_ref/reviewed_head/review_ref` seed",
-        "publication `ready` 已唯一进入 active `guru-finalize-task`",
-        "stale publication、verification、same-plan resume 与 cross-month reprepare "
-        "均由 mapped consumer 自动承接",
-        "Source/installed closure 为 13 Skills/52 exits",
-    ):
-        testcase.assertIn(phrase, normalized)
-
-    for stale_current_claim in (
-        "`passed` 只生成给 planned `guru-review-task-publication` 的三字段 seed",
-        "#131 不定义其 schema/profile/authoring fields，目标缺失时 fail closed",
-    ):
-        testcase.assertNotIn(stale_current_claim, normalized)
-    return section
-
-
 class SourceValidationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
@@ -457,7 +421,12 @@ class SourceValidationTests(unittest.TestCase):
         )
         for phrase in ("creating a task commit", "committing Phase 2 changes", "finding fix", "revision commit"):
             self.assertIn(phrase, skill)
-        self.assertIn("validate_commit_message()", contract)
+        self.assertIn("check-task-commit-plan.sh", contract)
+        normalized_contract = " ".join(contract.split())
+        self.assertIn(
+            "verifies parent, raw message, committed path set and complete tree",
+            normalized_contract,
+        )
         self.assertNotIn("def validate_commit_message", contract)
         self.assertEqual(workflow.count('guru-skill-invoke: {"skill":"guru-create-task-commit"'), 1)
         self.assertEqual(workflow.count('guru-skill-exit: {"skill":"guru-create-task-commit"'), 3)
@@ -513,13 +482,12 @@ class SourceValidationTests(unittest.TestCase):
             REPO / "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
             REPO / "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
         ]
-        entry_paths = [
+        workflow_paths = [
             REPO / ".trellis/workflow.md",
             REPO / "trellis/workflows/guru-team/workflow.md",
-            *start_paths,
         ]
         command = ".trellis/guru-team/scripts/bash/prepare-task.sh --json"
-        for path in entry_paths:
+        for path in workflow_paths:
             text = path.read_text(encoding="utf-8")
             offsets = []
             start = 0
@@ -539,23 +507,14 @@ class SourceValidationTests(unittest.TestCase):
             self.assertGreaterEqual(route_offset, 0, path)
             self.assertGreaterEqual(context_offset, 0, path)
             self.assertLess(route_offset, context_offset, path)
+            self.assertNotIn(command, text, path)
+            self.assertIn("thin fallback loader", text, path)
+            self.assertIn("Do not call `prepare-task`", text, path)
 
         flow = (REPO / "docs/requirements/guru-team-trellis-flow.md").read_text(encoding="utf-8")
-        self.assertIn("guru-review-change-request -> guru-create-task-workspace", flow)
-        result_offset = flow.index(
-            "Script-->>AI: base-sync result + post_sync_resolution_sha256 + facts_sha256"
-        )
-        validator_offset = flow.index(
-            "AI->>Script: check-base-sync --result-json ...",
-            result_offset,
-        )
-        self.assertLess(result_offset, validator_offset)
-        self.assertNotIn("mandatory post-execution AI Review Gate", flow)
-        self.assertIn(
-            "`guru-sync-base:synced` 后按 mandatory marker 进入完整六 Skill Intake chain",
-            flow,
-        )
-        self.assertIn('SB -->|"skipped"| SkipRoute["original non-repo route"]', flow)
+        self.assertIn("Global workflow 只决定顺序和 consumer", flow)
+        self.assertIn("Step-local Skill owner", flow)
+        self.assertNotIn("prepare-task", flow)
 
         workflow_contract = (REPO / ".trellis/spec/workflow/workflow-contract.md").read_text(
             encoding="utf-8"
@@ -683,10 +642,12 @@ class SourceValidationTests(unittest.TestCase):
                 self.assertNotIn(
                     "agent-assignment.json", item["long_term_artifacts"]
                 )
+                self.assertNotIn("agent-assignment.json", item["persisted_artifacts"])
                 if item["unfinished_replacement"]:
                     replacement_cases += 1
-                    self.assertIn("agent-assignment.json", item["persisted_artifacts"])
+                    self.assertIn("agent-recovery.json", item["persisted_artifacts"])
                 else:
+                    self.assertNotIn("agent-recovery.json", item["persisted_artifacts"])
                     self.assertNotIn("agent-progress.jsonl", item["persisted_artifacts"])
         self.assertEqual(replacement_cases, 1)
 
@@ -711,16 +672,25 @@ class SourceValidationTests(unittest.TestCase):
         phase2_contract = (
             SKILLS_ROOT / "packages/guru-check-task/references/contract.md"
         ).read_text(encoding="utf-8")
-        branch_contract = (
-            SKILLS_ROOT / "packages/guru-review-branch/references/contract.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("Any open current-scope finding returns", phase2_contract)
+        branch_contract = " ".join(
+            (
+                SKILLS_ROOT / "packages/guru-review-branch/references/contract.md"
+            ).read_text(encoding="utf-8").split()
+        )
+        self.assertIn("A current-scope finding returns", phase2_contract)
         self.assertIn("`implementation_required`", phase2_contract)
         self.assertIn(
-            "Only the first three may become `qualified_finding`",
+            "Qualify every candidate before assigning severity",
             branch_contract,
         )
-        self.assertIn("receive P0-P3", branch_contract)
+        self.assertIn(
+            "Only supported current-scope scenarios may become a P0-P3 finding",
+            branch_contract,
+        )
+        self.assertIn(
+            "Closure has no public exit, recorder call, or artifact",
+            branch_contract,
+        )
 
         workflow = (
             REPO / "trellis/workflows/guru-team/workflow.md"
@@ -4233,18 +4203,16 @@ class Stage0MigrationManifestTests(unittest.TestCase):
             "production-minimal-handoff-v1",
         )
 
-    def test_durable_docs_match_current_authoring_edges_and_three_skill_migration(self) -> None:
+    def test_durable_docs_match_current_architecture_and_three_skill_migration(self) -> None:
         expected_docs = {
             "README.md": "共十二条 semantic edge",
             "trellis/workflows/guru-team/README.md": (
                 "十二条 semantic package handoff"
             ),
             "trellis/presets/guru-team/README.md": "共十二条声明 edge",
-            "docs/requirements/README.md": "当前 13/52 closure",
-            "docs/requirements/requirement-main.md": "Production semantic edges",
-            "docs/requirements/guru-team-trellis-flow.md": (
-                "13 Skills/52 exits graph"
-            ),
+            "docs/requirements/README.md": "不是运行时流程 SSOT",
+            "docs/requirements/requirement-main.md": "AI-first Workflow 验收要求",
+            "docs/requirements/guru-team-trellis-flow.md": "非 SSOT 的维护者视图",
             ".trellis/spec/workflow/skill-package-contract.md": (
                 "The five production semantic edges"
             ),
@@ -4268,33 +4236,24 @@ class Stage0MigrationManifestTests(unittest.TestCase):
                     (REPO / relative).read_text(encoding="utf-8"),
                 )
 
-        requirement = (
-            REPO / "docs/requirements/requirement-main.md"
-        ).read_text(encoding="utf-8")
-        current_section = assert_current_branch_review_requirement_contract(
-            self,
-            requirement,
+        requirement = (REPO / "docs/requirements/requirement-main.md").read_text(
+            encoding="utf-8"
         )
-        assert_current_branch_review_requirement_contract(
-            self,
-            requirement
-            + "\n\n## Historical task archive\n\n"
-            + "`passed` 只生成给 planned `guru-review-task-publication` 的三字段 seed；"
-            + "#131 不定义其 schema/profile/authoring fields，目标缺失时 fail closed。\n",
-        )
-        with self.assertRaises(AssertionError):
-            assert_current_branch_review_requirement_contract(
-                self,
-                requirement.replace(
-                    current_section,
-                    current_section
-                    + "\n\n`passed` 只生成给 planned "
-                    + "`guru-review-task-publication` 的三字段 seed；"
-                    + "#131 不定义其 schema/profile/authoring fields，"
-                    + "目标缺失时 fail closed。\n",
-                    1,
-                ),
-            )
+        for phrase in (
+            "public input schema 1.1",
+            "`initial_review|fresh_final_review`",
+            "Closure 不产生 public exit 或 artifact",
+            "11 个有直接 history/recovery consumer",
+            "适用 verifier 时 `marketplace-verification.json` 是第 12 个",
+        ):
+            self.assertIn(phrase, requirement)
+        for stale_claim in (
+            "agent-assignment.json.review_rounds",
+            "record-subagent-liveness-event.sh",
+            "task-commit-plans/<sequence>.json",
+            "13 Skills/52 exits graph",
+        ):
+            self.assertNotIn(stale_claim, requirement)
 
         manifest = json.loads((
             SKILLS_ROOT / "migrations/production-minimal-handoff.json"

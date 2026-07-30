@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "skill_id": "guru-review-task-publication",
   "generated_at": "2026-07-24T00:00:00Z",
   "task_dir": ".trellis/tasks/07-24-example-publication",
@@ -12,7 +12,7 @@
   },
   "semantic_review": {
     "dimensions": [
-      {"id": "diff_outcome_consistency", "status": "passed", "summary": "The diff matches the reviewed outcome.", "evidence_refs": ["review.md"]},
+      {"id": "diff_outcome_consistency", "status": "passed", "summary": "The diff matches the reviewed outcome.", "evidence_refs": ["review-gate.json"]},
       {"id": "issue_scope_closure", "status": "passed", "summary": "Issue closure matches the current ledger.", "evidence_refs": ["issue-scope-ledger.json"]},
       {"id": "pr_body_quality", "status": "passed", "summary": "The PR body is specific and reviewable.", "evidence_refs": ["pr-body.md"]},
       {"id": "validation_claims", "status": "passed", "summary": "Validation claims match current evidence.", "evidence_refs": ["phase2-check.json"]},
@@ -33,7 +33,7 @@
     "reviewer_process": {
       "reviewer": "publication-review-owner",
       "summary": "The semantic owner reviewed all ten current dimensions.",
-      "evidence_refs": ["review.md", "review-gate.json"]
+      "evidence_refs": ["review-gate.json"]
     },
     "human_confirmation": {
       "status": "not_required",
@@ -54,8 +54,6 @@
       "planning-approval.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
       "phase2-check.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
       "issue-scope-ledger.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "agent-assignment.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "review.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
       "review-gate.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
       "pr-body.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
       "finish-summary-index.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1}

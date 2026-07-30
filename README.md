@@ -552,7 +552,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.23`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.24`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -684,8 +684,7 @@ executor 完成后，tracked `task-start-context.json` 只提供 portable
 `workspace_slug`、`task_workspace_id` 和 `task_artifact_dir`，不得包含或读取 absolute
 `workspace_path`。`workspace_mode: worktree` 下的 task artifact 写入边界由当前 checkout、
 `.trellis/.runtime/guru-team/**`、`git worktree list` 和 boundary helper 共同推导/校验。AI 或 main session 在写入/校验
-`planning-approval.json`、`phase2-check.json`、`agent-assignment.json`、`reviews/*.md`、
-`review.md`、`review-gate.json` 等 task-local artifact 前，应从目标 worktree 运行：
+`planning-approval.json`、`phase2-check.json`、`review-gate.json` 等 task-local artifact 前，应从目标 worktree 运行：
 
 ```bash
 .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
@@ -696,9 +695,8 @@ worktree status 和 source checkout 中可疑同名 task artifact/review metadat
 sub-agent 是否 stale，不迁移误写 patch，也不清理 source checkout。若编辑工具不能显式传入
 `workdir`，必须使用 boundary helper 已确认的当前 task worktree 下的绝对路径，不能从
 committed task context 拼出本机路径。
-这层 workspace boundary 是 #76 liveness checker 的 source/task 双侧事实层；source
-checkout 出现新的 `HEAD`、dirty status、diff stat 或 mtime 变化时，checker 输出
-`workspace_boundary_violation_progress`，不把它当作 stale 证据。
+这层 workspace boundary 只提供当前 checkout/task worktree 的确定性事实，不承担
+sub-agent 存活、进展或 stale 判断。
 
 `no_task` 下不是绝对禁止当前 checkout 直接修改，但这只能作为用户显式批准的 override：
 用户必须明确表示本轮跳过创建或复用 GitHub issue、Trellis task、worktree 和 branch。
@@ -715,8 +713,8 @@ session/startup 注入、hook 未启用或未审批、怀疑自动注入没有�
 上下文报告和重新加载 Trellis 上下文的场景。
 
 `check-workspace-boundary`、`resolve-human-artifacts`、`record-planning-approval`、`check-planning-approval`、`record-phase2-check`、
-`check-phase2-check`、`record-agent-assignment`、`record-subagent-liveness-event`、`check-subagent-liveness`、`check-agent-assignment`、
-`review-branch`、`check-review-gate` 是 workflow 内部 companion script；
+`check-phase2-check`、`record-agent-recovery`、`check-agent-recovery`、`review-branch`、
+`check-review-gate` 是 workflow 内部 companion script；
 `publish-pr` 仅保留为兼容性阻断入口。它们都不是需要用户日常手动记忆的新主流程。
 `guru-approve-task-plan` 是 Phase 1 planning approval 与唯一
 `planning-approval.json` 的 semantic owner；global workflow 只 mandatory invoke stable id、
@@ -737,30 +735,28 @@ primary/close/related/follow-up issue 分类投影，decision/acceptance metadat
 `resolve-human-artifacts.sh` 为阶段回复提供确定性路径事实：规划停止、Phase 2 完成、
 Branch Review Gate 结果、finish-work dry-run 和最终 archive/publish 回复都应先运行它，
 然后输出 `Markdown 产物 review 表`。标准表只列 `prd.md`、`design.md`、
-`implement.md`、`review.md`、`pr-body.md` 五个 Markdown；缺失文件不生成 Markdown
-链接，`phase2-check.json`、`review-gate.json`、`agent-assignment.json` 等 JSON
-证据不进入默认表。
+`implement.md`、`pr-body.md` 四个 Markdown；缺失文件不生成 Markdown 链接，JSON
+gate/evidence 不进入默认表。
 Phase 2 在 unchanged official `trellis-check` / channel `check` 收集 raw evidence
 后 mandatory invoke active semantic Skill `guru-check-task`。该 Skill 是 scope
 qualification、adequacy、finding/full-rerun loop、Docs SSOT review、四出口和唯一
 `phase2-check.json` 的 owner；新 artifact 使用 closed schema
-`guru-phase2-check-2.0`。`record-phase2-check.sh` / `check-phase2-check.sh` 只记录和
+`guru-phase2-check-2.1`。`record-phase2-check.sh` / `check-phase2-check.sh` 只记录和
 校验 AI-authored closed result 的确定性事实；worker 输出、coverage flags、验证命令
 或脚本成功都不能生成 Guru pass。
-V2 evidence 的 provenance/handoff/durable/reviewed-path/command collections 与
-每个 adequacy evidence refs 均非空，并闭合全部 known current-round source；current/scope-change
-candidate 必须有 trigger refs。Checker 从源字段重算全部 semantic 子 digest、Gate bindings、
-finding count 和 full-round digest。Handoff 内 task-local assignment 的合法 post-commit review
-metadata tail 使用 stable Phase 2 projection，不放宽 implementation/check/recovery freshness。
+2.1 只保留九个有直接 Gate consumer 的 adequacy 维度、finding lifecycle、Docs SSOT
+结论和实际验证证据；routine assignment、handoff、recovery transcript 与 raw worker
+payload 不进入 artifact。Checker 从源字段重算 semantic bindings、finding count 和
+full-round digest。
 Codex 项目默认使用 `codex.dispatch_mode: sub-agent`，由 main session 调度
 `trellis-implement` / `trellis-check`；sub-agent 通过 dispatch prompt 首行
 `Active task: <task path>` 或 `task.py current --source` 加载上下文。默认 sub-agent
 mode 下有三个强制执行边界：实现由 `trellis-implement` / channel `implement`
 完成并返回 concise terminal result，不创建独立 handoff artifact；Phase 2 check 由 `trellis-check` / channel `check`
-完成并输出可支撑 `phase2-check.json` 的 evidence；commit 后 Branch Review 由独立
-review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出 task-local
-`reviews/*.md` raw reports 与最终 `review.md` rollup。main session 只协调、等待/恢复/替换、记录 evidence、commit 和运行
-recorder/validator；不能把自己的实现、自检、自审或脚本校验通过冒充上述 sub-agent
+完成并输出可支撑 `phase2-check.json` 的 terminal evidence；commit 后 Branch Review
+由独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff，并把最小 terminal
+findings/evidence 返回 semantic owner。main session 只协调、在真实 unfinished 时恢复/
+替换、记录 compact gate、commit 和运行 recorder/validator；不能把自己的实现、自检、自审或脚本校验通过冒充上述 sub-agent
 边界。只有显式配置 `codex.dispatch_mode: inline` 或已有明确 artifact evidence 的
 self-exemption 时，Codex 才降级为 main session 直接实现和检查；缺少 implement/check/review
 sub-agent evidence 时默认 fail closed。
@@ -769,33 +765,13 @@ Guru Team preset 会安装项目级 agent 定义：Codex agent 保持 `trellis-i
 官方 `nickname_candidates` 只能使用 ASCII 字符；中文候选会让 Codex 忽略 agent 文件，
 因此 Codex nickname 候选保持 ASCII。Cursor / Claude / channel runtime agent 保持技术
 `name`，用中文 description 和标题展示。不要为了中文 UI 改掉这些调度 id。
-sub-agent 流程身份使用 task-local `agent-assignment.json` 记录：`logical_role`
-是中文 Trellis 逻辑角色，`agent_id` 是技术身份，`platform_nickname` 只是 UI 展示名，
-优先记录中文 UI 昵称；平台只给随机/自动昵称或受 ASCII 限制时记录原始值。无论哪种都不参与 gate 判断。
-实现、阶段二检查、问题发现审查、问题闭环审查和最终放行审查都应按中文角色留痕；
-review round 还必须通过 `--review-round-report <task-local reviews/*.md>`
-记录本轮 raw report 的 path、sha256、size 和 modified_at。脚本只校验 JSON、枚举、HEAD 和 digest，不决定该复用哪个 agent。
-`wait_agent`、`trellis channel wait` 或等价等待命令 timeout 只表示本次等待窗口没有拿到
-最终完成事件，不代表 sub-agent 卡死、失败或应该收口。主会话必须用
-`record-subagent-liveness-event.sh` 记录 `assigned` 和非机器可读公开 progress，再按
-`check-subagent-liveness.sh` 的唯一 decision 推进。默认 `progress_scan_interval=120s`
-只是扫描间隔；`max_progress_silence=180s` 从 `progress_anchor_at` 起算。只有
-`status_request_required` 授权发送一次 status request；成功后记录 `status-requested`
-并立即重跑 checker，该事件不刷新 anchor、不延长 deadline。已有 pending request 时不重复
-ping。只有 `stale_allowed` 授权记录 `stale-assessed`；stale cutover 后必须结构化记录
-`terminated-unfinished termination_reason=stale_cutover
-termination_source_event_id=<stale-assessed.event_id>`，再记录 replacement `assigned`
-和 `replacement-started replacement_reason=max_progress_silence_exceeded`。人工/平台
-unfinished termination 使用 `termination_reason=manual_or_platform_terminated_unfinished`。
-failed、stale、unfinished 或 replacement partial output 未恢复到后续 `completed` 前，不能
-作为实现完成、Phase 2 check pass 或 Branch Review Gate pass 证据。旧
-`record-agent-assignment.sh --status-event` 状态路径 fail closed。
-`agent-assignment.json` schema 1.2 额外提供 append-only
-`event_corrections[]` 与 `recovery_links[]`：前者用目标 event canonical digest 显式失效
-错误 provenance 的 progress/status-request 记录，后者只补同 agent `failed` 到后续
-manual/platform `terminated-unfinished` 的结构边。Validator 拒绝 unknown、duplicate、
-cross-agent、cycle/backward 和 tampered target，并且仍要求 replacement 链真实到达
-`completed`；自然语言说明本身不能修复 machine gate。
+routine sub-agent dispatch、等待、进展和每轮 review 不持久化。`wait_agent`、
+`trellis channel wait` 或等价等待命令 timeout 只表示本次等待窗口未返回结果，AI 在
+workflow 内继续观察或重入，不向用户索要“确认继续”。只有 agent 明确 unfinished 且必须
+由 replacement 接手时，main session 才通过 `record-agent-recovery.sh` 写 ignored
+`.trellis/.runtime/guru-team/agent-recovery/<task-key>.json`，记录一次 `unfinished` 和一次
+`replacement` 的最小 reason/handoff；`check-agent-recovery.sh` 验证这条真实 recovery 链。
+该 checkpoint 不进入 task artifact、commit、public DTO 或长期 archive。
 `phase2-check.json` 是 Guru Team 固化 `guru-check-task` semantic check 结论、
 official worker/command evidence、scope qualification、adequacy、findings、unverified
 items 和 `dirty_paths` 的 artifact；脚本成功不能替代 Skill 的 AI Review Gate。
@@ -804,14 +780,14 @@ Active `guru-review-branch` 是唯一的 Phase 3.5 semantic owner。Global workf
 `base_ref`、`committed_head`、`review_intent` 六字段 public input，并消费
 `passed`、`implementation_required`、`scope_confirmation_required`、`blocked`
 四个 typed exits；它们不复制 finding qualification、reviewer lifecycle、Docs SSOT
-Gate、liveness/recovery 或 revision 规则。
+Gate、recovery checkpoint 或 revision 规则。
 
 `review-branch.sh` 与 `check-review-gate.sh` 是该 package 拥有的 deterministic
 recorder/validator implementation details：只在 AI Review Gate 已完成后记录或验证
 task-local private evidence，不能判断 scope、finding、充分性、pass 或 route。完整 lifecycle、
 private artifact 与 re-entry 合同只在 canonical package/spec 中维护。
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
-`finish-work`，也不得提交 `review.md` / `reviews/*.md` / `review-gate.json` 等 Trellis metadata。
+`finish-work`，也不得提交 `review-gate.json` 等 Trellis metadata。
 PR 发布只从显式 `trellis-finish-work` 薄入口开始：该入口先按 live workflow 调用
 `guru-review-task-publication`，仅从 `ready` 进入 `guru-finalize-task`。Finalizer 的私有
 preview 生成 immutable `closeout_plan` 与 digest，语义 Gate 完成精确副作用确认后才执行
@@ -839,10 +815,11 @@ future archive mapping、metadata allowlist 与 transitions；
 不会移动或写入文件、创建 commit、push 或创建 PR，也不存在 journal/workspace 计划。
 Schema 1.1 将 active recovery evidence 与长期 history 分层：正常 finalizer archive
 只保留 `task.json`、三份 planning 文档、scope ledger、planning approval、Phase 2 check、
-最终 `review.md`、closeout plan、finalization gate 与 finish summary 共 11 个文件；仅在
-marketplace verification 适用时保留第 12 个 verifier artifact。其它 intake/context、
-assignment/liveness、commit plan、raw review、review gate、PR preparation/checkpoint 由
-exact evidence commit 或 GitHub authority 承接，不复制进 archive tree。已持久化 schema
+compact review gate、closeout plan、finalization gate 与 finish summary 共 11 个文件；
+仅在 marketplace verification 适用时保留第 12 个 verifier artifact。其它
+intake/context、legacy assignment/liveness、commit plan、raw review、PR
+preparation/checkpoint 由 exact evidence commit 或 GitHub authority 承接，不复制进
+archive tree。已持久化 schema
 1.0 plan 继续使用原 full-move 语义。
 dry-run 回复使用 active task 路径表；正式 finish archive 后，AI 必须重新运行
 `resolve-human-artifacts.sh` 解析 archive 后 task 路径，并在最终回复输出 archive-path
@@ -904,31 +881,14 @@ issue close 语义只在 PR body 中根据
 执行 objective subject/body 校验。
 
 Task work commit 不再由 Phase 3.4 直接 stage/commit。Fresh final Phase 2 check
-通过后，workflow mandatory invoke `guru-create-task-commit`；该 skill 写入独立
-`task-commit-plans/<sequence>.json`，由 AI 审查 scope、exact paths、消息与授权，再由
-candidate validator 复用统一 parser，最后由 `create-task-commit` exact executor 仅提交
-计划路径并验证 parent、raw message bytes、path set、unrelated preservation 与 hook
-mutation。Candidate、stage 与 commit 边界会拒绝 merge/cherry-pick/revert/rebase/
-sequencer/am 等非普通 Git state；mode `160000` 的 snapshot 会绑定 initialized、clean
-submodule 的 worktree HEAD。Executor 在 exact stage 前重验该 HEAD，并将 artifact
-OID 直接写入 mode `160000` index entry，而不是由 `git add` 从可变 worktree 重新
-读取；普通文件、symlink、delete 也只从 artifact SHA-256/mode/delete
-identity 构造 isolated exact index。Snapshot 以 `renamed_from` 和 `copied_from`
-分开 rename/copy；只有 rename source 继承 destination 的删除/exact-stage
-authority，copy source 不会因 relation 自动入 stage，自身 dirty 时必须独立
-分类。Candidate self 只使用 validated in-memory plan 的 deterministic bytes。
-真实 hook chain 在 detached transaction HEAD 上完成，全部
-commit/postcondition 与 live preimage 校验通过后才发布 branch/index/result。Executor
-持有真实 `index.lock` sentinel 穿过 conditional ref、candidate/live-index publication
-和 rollback；final index bytes 通过独立 temp 在 sentinel 仍存在时发布，真实 `git add`
-持续被阻断。CAS 后立即持有/复核 loose-ref guard，并用 candidate guard/精确 result
-identity 做条件恢复；ref/index/result 已发布且 guards 仍持有时，最后一次 candidate
-inode/content identity read 才是线性化点。该 read 前写入 C 会触发 ref/index rollback
-并保留 C；read 后写入 C 是独立 later operation，executor 仍以 immutable commit blob
-与 returned result digest 返回 `committed`，且不覆盖 C。
-并发 ref/candidate ownership 丢失时保留第三方状态，不覆盖后再声称 exact restore。
-因此未审查 C 不会进入真实 index/commit。`committed` 进入 Branch Review，`revision-required` 重入 skill，`blocked`
-fail closed；finding fix 必须先重跑完整 Phase 2，并使用新的 plan sequence。
+通过后，workflow mandatory invoke `guru-create-task-commit`；该 skill 在 ignored
+`.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json` 写临时
+candidate，由 AI 审查 scope、exact paths、消息与授权，再由 exact executor 验证并提交
+计划路径。candidate 永不 stage，commit 成功后删除；executor 只返回 Git 可推导的
+`pre_commit_head` 与 `commit_sha`，不再把 `committed/result/tree_evidence` 回写 tracked
+handoff，因此成功提交不会主动制造 post-commit dirty。失败时 private candidate 可用于
+同一未完成操作的 bounded recovery。既有 tracked plan 仅作只读迁移证据；finding fix
+必须先重跑完整 Phase 2，并使用新的 plan sequence。
 
 发布前 AI 必须生成或审查 PR body readiness。PR body 面向不了解 Trellis task 的
 GitHub reviewer，而不是 Trellis session 内部摘要；应包含具体的 `变更摘要`、

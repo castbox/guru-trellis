@@ -254,7 +254,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             "dimension": dimension,
             "summary": "The current publication review cannot complete.",
             "scope_basis": "The approved publication contract owns this route.",
-            "evidence_refs": ["review.md"],
+            "evidence_refs": ["review-gate.json"],
             "affected_artifacts": ["pr-body.md"],
             "route_class": route_class,
             "status": "open",
