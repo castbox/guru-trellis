@@ -281,8 +281,10 @@ semantic gate。新增 active `guru-finalize-task` 以七个 distinct input prof
 transaction engine 负责完整 semantic closeout。当前 package closure 为 13 Skills /
 52 exits，
 `legacy_skill_ids=[]`，Stage 0 manifest
-仍保持 6 Skills / 24 exits；global workflow markers 为 13/52/29。该映射不自动
-关闭或重写 #119 的 combined acceptance 范围。
+仍保持 6 Skills / 24 exits；global workflow production markers 为 13/52/29。
+Finish-family combined integration 由 canonical `guru-finish-work` 入口、两个 terminal
+eval、checked #117 private projection bridge 与安装验收共同覆盖；#132 仍独占五个
+legacy overlay 的物理删除。
 
 `guru-verify-extension-installation` 的 workflow input
 `verification_required` 只携带 `task_ref/plan_ref/repo_ref/reviewed_head/
@@ -305,10 +307,10 @@ invoke active `guru-review-task-publication`。该 preparation 不判断内容�
 closure、十维结论、finding route 或 ready；这些 semantic judgment 仍只属于
 publication Skill。缺失或结构错误在 invocation 前失败关闭，Phase 3.7 不得在
 `ready` 后首次创建、重写或修改这两份已绑定内容。Finalizer package 与 public edge
-已 active，global `ready -> guru-finalize-task` invocation/order 与五个平台
-`trellis-finish-work` 薄路由均已 integrated。入口只读取 live workflow 并调用 semantic
-owner，不直接调用 closeout engine；四类 machine recovery exit 自动消费。该集成不自动
-关闭或重写 #119 的 combined acceptance。
+已 active，global `ready -> guru-finalize-task` invocation/order 与 Codex、Claude、Cursor
+的 Guru-owned `guru-finish-work` 薄入口均已 integrated。入口只读取 live workflow 并调用
+semantic owner，不直接调用 closeout engine；四类 machine recovery exit 自动消费。五个
+`trellis-finish-work` 文件仅保留为 #132 前的 byte-pinned compatibility router。
 
 Planning self-reentry、`guru-check-task:passed` 到 initial commit、commit
 self-reentry、`guru-create-task-commit:committed` 到 active
@@ -552,7 +554,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.24`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.25`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -706,7 +708,11 @@ AI 在改文件前要说明将跳过哪些 artifact、当前 checkout / branch /
 用户仍然需要记住的常用显式入口是：
 
 - `trellis-continue`
-- `trellis-finish-work`
+- `guru-finish-work`（Claude 使用 `/guru:finish-work`，Cursor 使用
+  `/guru-finish-work`；Codex 使用同名 prompt）
+
+冻结的 `trellis-finish-work` entries 只保留为 Issue #132 前的 compatibility
+router，不再是日常入口。
 
 `trellis-start` 仍保留为 fallback / explicit orientation 入口，用于平台没有自动
 session/startup 注入、hook 未启用或未审批、怀疑自动注入没有运行，或用户需要完整
@@ -788,7 +794,7 @@ task-local private evidence，不能判断 scope、finding、充分性、pass �
 private artifact 与 re-entry 合同只在 canonical package/spec 中维护。
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
 `finish-work`，也不得提交 `review-gate.json` 等 Trellis metadata。
-PR 发布只从显式 `trellis-finish-work` 薄入口开始：该入口先按 live workflow 调用
+PR 发布只从显式 canonical `guru-finish-work` 薄入口开始：该入口先按 live workflow 调用
 `guru-review-task-publication`，仅从 `ready` 进入 `guru-finalize-task`。Finalizer 的私有
 preview 生成 immutable `closeout_plan` 与 digest，语义 Gate 完成精确副作用确认后才执行
 reviewed content push、marketplace evidence/readiness commit、draft PR、final archive
@@ -840,7 +846,7 @@ retained working-tree 布局、dirty/staged path、blob continuity、pruned-path
 `HEAD` 已是精确 archive commit，普通 archived task 和 plan-only recovery 都从该 commit blob
 读取 plan，只以 immutable plan 和 Git parent/path/tree/blob lineage 为准，
 本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、远端 title/body digest、三方 HEAD
-或 draft-to-ready。plan-only archived directory 只允许 `trellis-finish-work` 恢复入口解析，普通 task
+或 draft-to-ready。plan-only archived directory 只允许 `guru-finish-work` 恢复入口解析，普通 task
 命令仍要求 `task.json`。readiness、body、ledger 与 verifier 不再打开；但 final summary 的 real-PR
 deterministic bytes/digest 属于 pre-move、incomplete recovery 与 exact recovery continuity。
 pre-move/incomplete 路径用已绑定远端 PR 重建 expected bytes，exact 路径只从 immutable archive
@@ -894,8 +900,9 @@ handoff，因此成功提交不会主动制造 post-commit dirty。失败时 pri
 GitHub reviewer，而不是 Trellis session 内部摘要；应包含具体的 `变更摘要`、
 `影响范围`、`验证结果`、`Review Gate`、`Issue 关闭范围` 和 `安全说明`。禁止用
 “当前 Trellis task”“已提交实现与文档更新”“详见 artifact”作为主要摘要。
-`trellis-finish-work` 的唯一 PR body 来源是当前 task-local `pr-body.md`；dry-run 与 formal
-都必须通过 `--body-file <current-task>/pr-body.md` 直接传入。`--body-artifact`、外部同文文件、
+canonical `guru-finish-work` route 与冻结 compatibility routers 共用同一合同：唯一 PR body
+来源是当前 task-local `pr-body.md`；dry-run 与 formal 都必须通过
+`--body-file <current-task>/pr-body.md` 直接传入。`--body-artifact`、外部同文文件、
 脚本生成的 body fallback，以及从 readiness artifact 相对解析 `body_file` 均不属于 closeout
 合同并 fail closed。脚本只校验客观结构、低信息量短语、close/ref 语义和 reviewed source
 是否存在，不替代 AI 判断内容是否真实充分。`pr-body.md` 属于 task metadata，必须在 archive
@@ -972,7 +979,8 @@ Workflow-required target 若 AI 判断 `not_required` 会以 applicability confl
 Package-local seven-case real-wrapper production eval 与真实 pushed-remote clean
 installation 是两份独立验收。只有 exact remote ref/HEAD 的后者完成后才能声明远端门禁
 通过；local/dogfood 或 public stable sampling 不能替代。该 gate 不创建 tag，也不表示
-#118、#119 或 #132 已完成。
+#118 或 #132 已完成；#119 的 local candidate/installed acceptance 也不能替代 exact
+pushed-remote verification。
 
 ### Skill 行为评测（#147）
 

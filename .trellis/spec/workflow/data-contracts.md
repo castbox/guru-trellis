@@ -1327,9 +1327,11 @@ Archived working-tree deletion, content tampering, and the resulting dirty
 paths are ignored; recovery may only push that exact commit when needed, check
 remote PR identity and three-way HEAD alignment, and retry draft-to-ready. An
 archived directory containing only `closeout-plan.json` is resolvable for this
-path only by `trellis-finish-work`; other commands still require `task.json`.
-Neither path parses, rebuilds, validates, or rewrites an archived body, summary,
-ledger, readiness, or marketplace artifact.
+path only by the canonical `guru-finish-work` recovery entry; the frozen
+`trellis-finish-work` entries may route there as compatibility assets through
+Issue #132, while other commands still require `task.json`. Neither path
+parses, rebuilds, validates, or rewrites an archived body, summary, ledger,
+readiness, or marketplace artifact.
 
 Plan-only recovery does not use an empty task context as authorization. It
 loads `closeout-plan.json` from the current commit blob and, before GitHub or

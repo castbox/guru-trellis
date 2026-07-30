@@ -746,9 +746,10 @@ ordinary direct calls before closeout-plan, push, draft PR, archive, or publish
 side effects; only `guru-finalize-task`'s checked private transition executor
 may pass the `--from-trellis-finish-work` intent marker. `publish-pr` is retained
 only as an unconditional compatibility blocker: it performs no repo/task
-resolution or side effect and points callers to `trellis-finish-work`. Every
-interruption returns through the same finalizer semantic loop and its mapped
-recovery consumer.
+resolution or side effect. Its legacy `required_entrypoint=trellis-finish-work`
+error value remains a compatibility identifier for the frozen routers; the
+canonical user route is `guru-finish-work`. Every interruption returns through
+the same finalizer semantic loop and its mapped recovery consumer.
 
 Finish-summary separates AI judgment from deterministic facts. Publication
 preparation writes task-local `finish-summary-index.json` with reviewed
@@ -932,8 +933,9 @@ is absent from or mismatched with the planned archive transaction,
 recovery falls back to the pre-commit metadata path and keeps all layout,
 dirty/staged path, blob, official `task.json`, and lineage checks fail closed.
 An archived directory containing only `closeout-plan.json` is resolvable only
-by the `trellis-finish-work` recovery entry; ordinary task resolution still
-requires `task.json`. That plan-only entry reads the plan from the current
+by the canonical `guru-finish-work` recovery route or a frozen compatibility
+router; ordinary task resolution still requires `task.json`. That plan-only
+entry reads the plan from the current
 commit blob rather than trusting working-tree bytes, then applies a dedicated
 fail-closed workspace boundary before GitHub access or committed-archive
 recovery. The boundary requires the actual Git toplevel, configured and remote
@@ -989,7 +991,7 @@ validation / impact / safety content, Docs SSOT section/key presence, and Issue
 Scope Ledger close/ref semantics. They must not decide whether the release
 explanation or Docs SSOT rationale is true or sufficient; that judgment belongs
 to the AI readiness review before
-`trellis-finish-work`. Formal closeout accepts only `--body-file` pointing
+`guru-finish-work`. Formal closeout accepts only `--body-file` pointing
 directly to the current task-local `pr-body.md`; it rejects `--body-artifact`,
 generated body fallbacks, and readiness-relative `body_file` resolution. Formal
 finish binds that reviewed `pr-body.md` into
@@ -1465,6 +1467,19 @@ metadata tail only when the owner task/plan/reviewed-HEAD/repository seed, remot
 ref, immutable evidence allowlist, validated evidence commit, committed archived
 plan/evidence blobs, and exact archive transaction all match. It rejects every
 additional dirty path or identity/commit drift.
+
+When the current closeout plan requires extension verification, finalization
+builds the legacy transaction validator's marketplace object only from a
+checker-passed current `guru-verify-extension-installation` owner result. This
+compatibility projection is private and in-memory: it is passed unchanged
+through preview and retry pre-draft resolution, final archive projection,
+active projection validation, normal archive execution, and active-completed
+archive recovery. It never rewrites the #117 owner result, never creates a
+second `marketplace-verification.json`, and never enters a public DTO. A
+missing, stale, consumer-mismatched, or otherwise invalid projection stops
+before archive mutation. Closeout plans that do not require marketplace
+verification continue to pass no projection, while the legacy executor profile
+without an external owner result retains its deterministic verifier path.
 
 `verification_required.repo_ref` must equal the immutable plan repository.
 `resume_finalization` accepts only declared same-plan post-content recovery

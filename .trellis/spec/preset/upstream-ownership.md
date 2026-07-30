@@ -118,8 +118,10 @@ The reviewed replacement families are:
   `guru-verify-extension-installation`, and `guru-finalize-task` / #119.
 
 An entry may name multiple families when its current overlay spans those
-responsibilities. Every recorded owner must retain its corresponding blocking
-issue, and all physical removals remain blocked on #132.
+responsibilities. A blocking issue remains until that replacement family is
+fully integrated. The five finish-router entries retain their replacement
+owners but have an empty `blocking_issues` list after #119 combined integration;
+all physical removals remain blocked on #132.
 
 ## Guru-Owned Namespaces
 
@@ -134,6 +136,9 @@ The following anchored forms are Guru-owned:
 - installed `.codex/skills/guru-*/**`;
 - installed `.cursor/skills/guru-*/**`;
 - installed `.claude/skills/guru-*/**`.
+- installed `.codex/prompts/guru-finish-work.md`;
+- installed `.claude/commands/guru/finish-work.md`;
+- installed `.cursor/commands/guru-finish-work.md`.
 
 The canonical, installed, and discovery paths for
 `guru-discover-change-context`, `guru-clarify-requirements`,
@@ -243,7 +248,8 @@ Before changing preset ownership facts:
 4. run positive and negative ownership tests;
 5. run installer, dogfood, and throwaway validation;
 6. prove both workflow files and every overlay payload match its reviewed
-   baseline or exact thirteen-path current binding.
+   baseline, exact eighteen-path current binding, or explicit Guru-owned
+   canonical entry.
 
 ## Eval Infrastructure Ownership
 
@@ -322,12 +328,18 @@ baseline digest.
 owner of its seven-profile, six-exit closeout loop. The current package graph is
 thirteen active Skills and 52 external exits, with twelve target-owned
 `skill_input_authoring_seed` handoffs. Global workflow markers are 13 invokes,
-52 exits, and 29 targets. This integration does not claim #119 combined
-acceptance.
+52 exits, and 29 targets. Issue #119 completes the combined layer with three
+Guru-owned `guru-finish-work` platform entries, two terminal published eval
+cases, and the private checked-verification projection through normal and
+active-completed archive paths. These additive assets do not change the frozen
+legacy identity or public Skill I/O.
 
 Issue #161 revises only the reviewed current bytes of the five existing
 `trellis-finish-work` family entries so they thin-route to the active semantic
 owners. Ownership validation must preserve the frozen overlay inventory,
 historical baseline hashes, and exact reviewed current payload hashes; #132 remains the
 sole owner of physical upstream overlay cleanup. Package activation therefore
-does not authorize #119 closure or #132 removal.
+does not authorize #132 removal. After #119 combined integration these five
+entries retain their pinned bytes and replacement owners with no remaining
+#119 blocker; the three canonical Guru entries are separate `guru_owned`
+claims rather than transitional legacy additions.

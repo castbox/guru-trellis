@@ -706,7 +706,9 @@ illegal same-plan resume state including rejection of `prepared` and `ready`.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The
-package closure is thirteen active Skills and 52 external exits; global markers
-remain 13 invokes, 52 exits, and 29 targets. This does not claim #119 combined
-acceptance. Upstream Finish assets
-remain unchanged, with physical overlay cleanup owned by #132.
+  package closure is thirteen active Skills and 52 external exits; global markers
+  remain 13 invokes, 52 exits, and 29 targets. Issue #119 combined acceptance
+  additionally requires the three Guru-owned daily entries, two terminal
+  published evals, checked-verification projection bridge, and installed
+  integration coverage. Upstream Finish assets remain unchanged, with physical
+  overlay cleanup owned by #132.

@@ -1631,5 +1631,7 @@ selects and validates the actual exit schema before the grader compares
 `expected_exit`, which never enters adapter/native input. Canonical, installed,
 shared, Codex, Claude, and Cursor corpus bytes are identical. The active package
 uses `workflow_integration_state=integrated`; the global workflow invokes it and
-maps all six exits. Upstream Finish overlays remain separate cleanup scope
-owned by #132, and this integration does not claim #119 combined acceptance.
+  maps all six exits. Issue #119 combined integration adds three Guru-owned
+  daily entries, two terminal published evals, and the checked-verification
+  projection bridge without changing public Skill I/O. Upstream Finish overlays
+  remain separate physical cleanup scope owned by #132.

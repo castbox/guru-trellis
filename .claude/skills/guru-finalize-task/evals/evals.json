@@ -88,6 +88,50 @@
       ]
     },
     {
+      "id": "publication-ready-published",
+      "prompt": "Invoke workflow finalization for a normal non-extension task whose exact transaction is already ready.",
+      "expected_exit": "published",
+      "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
+      "input_profile_id": "publication_ready",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "published"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/publication-ready-input.json",
+        "evals/files/publication-ready-published-facts.json"
+      ]
+    },
+    {
+      "id": "same-plan-published",
+      "prompt": "Invoke workflow finalization after the unchanged plan has reached its terminal ready state.",
+      "expected_exit": "published",
+      "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
+      "input_profile_id": "same_plan_resume",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "published"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/same-plan-resume-input.json",
+        "evals/files/same-plan-published-facts.json"
+      ]
+    },
+    {
       "id": "blocked-private-state",
       "prompt": "Invoke standalone finalization for an invalid objective state with no unique continuation.",
       "expected_exit": "blocked",

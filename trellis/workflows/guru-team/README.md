@@ -30,7 +30,7 @@ spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`�
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 对应。当前已发布
-stable 是 `.2`；本分支 canonical `.24` 在 merge/tag/远端验证完成前不是 stable source。
+stable 是 `.2`；本分支 canonical `.25` 在 merge/tag/远端验证完成前不是 stable source。
 
 已有 Trellis 项目切换 active workflow：
 
@@ -59,7 +59,7 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 active packages 共声明 52 个 external exits；finalizer 的 global integration
 metadata 为 integrated。Workflow 不得为
 reserved/planned id 伪造 invocation route。当前 canonical
-extension version 是待发布的 `0.6.5-guru.24`，已发布 stable source 仍是
+extension version 是待发布的 `0.6.5-guru.25`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
 
 Interface 1.2 保持冻结的 legacy 语义；独立 interface 1.3 是新建或实质修改 public
@@ -104,7 +104,9 @@ states 全部 private。Deterministic runtime 只复用 #105 engine 执行 conte
 verification boundary、唯一 Draft PR、final projection、official archive transaction、
 三方 HEAD equality 与 draft-to-ready。Missing/stale publication evidence由 #116 owner
 checker 形成客观 fact，再由 AI 选择 `publication_review_stale`；runtime 不代替 route
-judgment。该集成不自动关闭或重写 #119；#119 的 combined acceptance 需另行处理。
+judgment。Combined integration 由 canonical `guru-finish-work`、两个 terminal eval、
+checked #117 private projection bridge 与 installed acceptance 共同覆盖；#132 仍独占
+legacy overlay 物理删除。
 
 十二条 semantic package handoff 使用 additive target-owned
 `skill_input_authoring_seed`：planning revision self-reentry、Phase 2 passed 到 initial
@@ -649,8 +651,8 @@ dispatch/wait/review 不调用 recovery recorder：
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
 ```
 
-Closeout 不属于这组可手动调用的 recorder/validator 命令。显式
-`trellis-finish-work` entry 必须按 live workflow 进入 publication owner 和 active
+Closeout 不属于这组可手动调用的 recorder/validator 命令。显式 canonical
+`guru-finish-work` entry 必须按 live workflow 进入 publication owner 和 active
 finalizer；只有 finalizer 的 checked private engine 可以执行 finish helper。
 
 Exceptional sub-agent recovery is activated only after an agent explicitly
@@ -665,7 +667,9 @@ AI workflow and never become a generic user confirmation prompt.
 Trellis 自动注入的 startup context、workflow-state、hook breadcrumb 或 skill
 matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 
-用户常用显式入口保留为 `trellis-continue` 和 `trellis-finish-work`。`trellis-start`
+用户常用显式入口是 `trellis-continue` 和 `guru-finish-work`。后者在 Codex、Claude、
+Cursor 分别表现为同名 prompt、`/guru:finish-work`、`/guru-finish-work`；五个冻结的
+`trellis-finish-work` entries 只保留为 Issue #132 前的 compatibility router。`trellis-start`
 仍保留为 fallback / explicit orientation 入口，用于无自动注入平台、hook 未启用或
 未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
@@ -752,7 +756,7 @@ Phase 2 的官方 `trellis-check` sub-agent 仍只提供 commit 前 raw evidence
 
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
 `finish-work`，也不得提交 `review-gate.json` 等 Trellis metadata。
-PR 发布只从显式 `trellis-finish-work` 薄入口开始：该入口先按 live workflow 调用
+PR 发布只从显式 canonical `guru-finish-work` 薄入口开始：该入口先按 live workflow 调用
 `guru-review-task-publication`，仅从 `ready` 进入 `guru-finalize-task`。Finalizer 的私有
 preview 生成 immutable `closeout_plan` 与 digest，语义 Gate 完成精确副作用确认后才执行
 reviewed content push、marketplace evidence/readiness commit、draft PR、final archive
@@ -822,7 +826,7 @@ commit 缺失或不匹配继续 fail closed。
 一旦当前 `HEAD` 已是精确 archive commit，普通 archived task 与 plan-only recovery 都从该
 commit blob 读取 plan；immutable plan 与 Git parent/path/tree/blob lineage 成为
 权威事实，本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、remote PR title/body
-digest、三方 HEAD 或 draft-to-ready。plan-only archived directory 只由 `trellis-finish-work` 恢复入口
+digest、三方 HEAD 或 draft-to-ready。plan-only archived directory 只由 `guru-finish-work` 恢复入口
 解析，普通 task 命令仍要求 `task.json`。real-PR final summary 的 deterministic bytes/digest 纳入
 pre-move、incomplete recovery 与 exact recovery continuity：前两者用已绑定 remote PR 重建 expected
 bytes，exact recovery 只从 immutable archive commit 的 `finish-summary.json` blob 恢复原 PR number/URL

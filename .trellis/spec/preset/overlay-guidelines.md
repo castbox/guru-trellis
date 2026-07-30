@@ -13,11 +13,16 @@ Overlay files are small platform entrypoints. They should point the AI back to
 `.trellis/workflow.md` and the Guru Team companion scripts instead of
 duplicating the full workflow.
 
-The current overlay tree is also a frozen migration surface. Its exact 43 paths
-and immutable issue #128 baseline hashes are recorded in
+The current overlay tree contains two ownership classes. Its exact 43
+transitional paths and immutable issue #128 baseline hashes are recorded in
 `trellis/presets/guru-team/ownership/upstream-ownership.json`; no new
 upstream-owned path may be added. New reusable behavior belongs in Markdown
-workflow contracts or canonical `guru-*` packages. Reviewed removal keeps an
+workflow contracts, canonical `guru-*` packages, or an explicitly reviewed
+Guru-owned platform entry. The additive
+`.codex/prompts/guru-finish-work.md`,
+`.claude/commands/guru/finish-work.md`, and
+`.cursor/commands/guru-finish-work.md` paths are Guru-owned and are not part of
+the frozen 43-path baseline. Reviewed legacy removal keeps an
 `upstream_owned/removed` inventory tombstone instead of deleting audit history.
 Exactly eighteen active entries carry a separately pinned
 `current_payload_sha256`: the five `trellis-continue` entries reviewed by issue
@@ -58,6 +63,9 @@ Reference overlay groups:
 - `.codex/skills/trellis-continue/SKILL.md`
 - `.claude/commands/trellis/continue.md`
 - `.cursor/commands/trellis-finish-work.md`
+- `.codex/prompts/guru-finish-work.md`
+- `.claude/commands/guru/finish-work.md`
+- `.cursor/commands/guru-finish-work.md`
 - `.agents/skills/trellis-meta/references/local-architecture/task-system.md`
 - `.agents/skills/trellis-meta/references/local-architecture/context-injection.md`
 - `.agents/skills/trellis-meta/references/customize-local/change-context-loading.md`
@@ -139,11 +147,12 @@ Continue entries must:
   contract into every overlay
 - before any planning, Phase 2, or Branch Review stop/completion reply, run
   `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task
-  <task-path>` and output a `Markdown 产物 review 表` with only `prd.md`,
-  `design.md`, `implement.md`, `review.md`, and `pr-body.md`; rows with
-  `exists=false` must not be rendered as Markdown links, `review.md` is the
-  AI/human review report after Branch Review, raw `reviews/*.md` are reached
-  through `review.md`, and JSON artifacts stay out of the standard table
+  <task-path>` and output a `Markdown 产物 review 表` with only existing
+  `prd.md`, `design.md`, `implement.md`, and `pr-body.md`; rows with
+  `exists=false` must not be rendered as Markdown links, and JSON gate
+  artifacts stay out of the standard table. Current Branch Review writes only
+  compact `review-gate.json`; it does not create `review.md` or
+  `reviews/*.md`
 - state that Phase 1 mandatory invokes `guru-approve-task-plan`, whose single
   `planning-approval.json` uses schema `guru-planning-approval-2.0`, current
   wording/authority/planning/Docs SSOT bindings, four-class provenance,
@@ -185,6 +194,9 @@ Continue entries must:
 
 Finish entries must:
 
+- use the Guru-owned `guru-finish-work` Codex/Claude/Cursor entries as the
+  canonical daily route; the five `trellis-finish-work` entries remain
+  byte-pinned compatibility routers until issue #132 removes them
 - read live context and `.trellis/workflow.md` instead of copying closeout
   commands or recovery mechanics
 - invoke `guru-review-task-publication` after Branch Review `passed`, and invoke
@@ -209,10 +221,10 @@ Finish entries must:
 - require the reviewed PR body to include a `Docs SSOT` / `文档同步` result with
   strategy, durable docs update or no-update reason, merged task delta,
   task-history-only content, and follow-up/current PR limitation
-- explain that the gate must already contain task-local `review.md`
-  `review_report` digest evidence and raw `review_reports[]` digest evidence,
-  and that those Markdown reports are already Chinese human-readable task
-  artifacts except for literal command/path/JSON/HEAD/API/code tokens
+- explain that the gate must already contain the compact task-local
+  `review-gate.json` semantic result and minimum verification evidence; do not
+  require legacy `review_report` / `review_reports[]` digest fields or generate
+  Markdown review artifacts
 - state that only `close_issues` may use close keywords
 
 Start entries must:
@@ -289,11 +301,10 @@ docs, or new non-frozen platform sources.
   code/schema/config/deploy/test, and validation/test coverage against the
   approved `Docs SSOT Plan`, including final checks for `delta_first`,
   `ssot_first`, `bootstrap_or_repair_docs`, and `no_docs_update_needed`;
-- require check agents in Branch Review mode to use Chinese report templates for
-  raw `{TASK_DIR}/reviews/*.md` reports and final `{TASK_DIR}/review.md`
-  rollup content: Chinese headings, Chinese labels, Chinese review narrative,
-  Chinese deployment / safety and Docs SSOT judgment, Chinese observations and
-  follow-up candidates, and Chinese conclusion;
+- require check agents in Branch Review mode to return concise Chinese terminal
+  findings and evidence to the semantic owner; the semantic owner records only
+  the compact `review-gate.json`, with no raw report or Markdown rollup
+  artifacts;
 - require a recovery result when actually interrupted/replaced before
   completion, including only current diff, remaining work, validation state,
   and gate blockers needed for same-agent resume or replacement;
@@ -331,8 +342,10 @@ trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 The drift check is read-only and only verifies file presence/content equality.
 It does not decide whether an overlay change is semantically correct.
 
-Keep platform-specific command names only where needed, such as
-`/trellis:finish-work` for Claude and `/trellis-finish-work` for Cursor.
+Keep platform-specific command names only where needed. The canonical entry is
+the Codex `guru-finish-work` prompt, Claude `/guru:finish-work`, and Cursor
+`/guru-finish-work`; `/trellis:finish-work` and `/trellis-finish-work` remain
+compatibility spellings only until issue #132.
 
 ## Anti-Patterns
 
@@ -412,6 +425,12 @@ Issue #161 separately updates the reviewed current bytes of the five existing
 `trellis-finish-work` entries. They become thin routers through Phase 3.6 and
 the active `guru-finalize-task`; they do not add a path, own semantic review, or
 directly invoke deterministic closeout scripts.
+
+Issue #119 adds only the three exact Guru-owned finish entry paths above. Their
+payload is one thin live-workflow route with the same mandatory owners and
+typed-exit consumers across platforms. The five issue #161 payloads stay
+byte-identical, their #119 blockers are cleared, and issue #132 remains their
+physical removal owner.
 
 Canonical workflow and dogfood workflow add only the mandatory invocation,
 three typed transitions, re-entry, and fail-closed targets. Platform package

@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-30T16:46:56.664Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-31-119-combined-finish-family-integration",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "size_bytes": 9026,
+        "content_sha256": "3bf0f8520193af1dd8d058c5ad83229cbd1511ae80ed91799579635fbb7ea986"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "size_bytes": 14042,
+        "content_sha256": "05607677ac2172e8b3166795bf8007ef47b2f5ee88f9517ca47b353c436fb020"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "size_bytes": 8630,
+        "content_sha256": "3daca243e63109d6545270093b59f9bf24d3bb35dbc0b6d2a89fe183ea65de70"
+      }
+    ],
+    "scope_sha256": "d3a225626a7bb00275bf8c752faa3a5130dded7b7bc9be82ca6cf423e1b1734a"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex primary agent /root",
+      "summary": "Reviewed the complete fixed prd/design/implement scope against live Issue #119, accepted-current comment, Issue #105, PR #162/#165 current contracts, repository specs and user boundaries. The zero-hit scan was not used as a substitute for semantic review; every conditional path, owner, gate, acceptance item, compatibility rule and exclusion is explicit and deterministic.",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "The fresh task-local planning rewrite is within the already authorized planning scope and changes no product authority."
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "5636c563217984052b196615cba3dd837c232d73243d15ca823e306c396781d9"
+}

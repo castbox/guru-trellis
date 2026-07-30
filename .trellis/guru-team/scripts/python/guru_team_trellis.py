@@ -22334,6 +22334,22 @@ def _validate_skill_installed(
         )
 
     add_expected(skills_root / "registry.json", Path("registry.json"), skills_root / "registry.json")
+    finish_integration_test = (
+        skills_root / "tests/test_finish_family_integration.py"
+    )
+    finish_integration_stat = skill_lstat_path(
+        root,
+        finish_integration_test,
+        "installed Finish family integration test",
+        errors,
+        kind="file",
+    )
+    if finish_integration_stat is not None:
+        add_expected(
+            finish_integration_test,
+            Path("tests/test_finish_family_integration.py"),
+            finish_integration_test,
+        )
     for shared_root_name in ("schemas", "adapters", "migrations"):
         shared_root = skills_root / shared_root_name
         shared_files = skill_collect_tree_files(
@@ -26935,6 +26951,8 @@ def prepare_closeout(
     config: dict[str, Any],
     task_dir: Path,
     task_context: dict[str, Any],
+    *,
+    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     official_after_archive_hook_state(root)
     gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
@@ -27021,6 +27039,26 @@ def prepare_closeout(
     if existing.is_file():
         persisted = validate_closeout_plan(read_json(existing))
         if persisted != plan:
+            persisted_marketplace_verification = None
+            checked_verification = (
+                verification_owner_result[1]
+                if isinstance(verification_owner_result, tuple)
+                and len(verification_owner_result) == 2
+                and isinstance(verification_owner_result[1], dict)
+                else {}
+            )
+            if (
+                persisted["marketplace"]["required"]
+                and checked_verification.get("typed_exit") == "verified"
+            ):
+                persisted_marketplace_verification = (
+                    finalization_marketplace_verification_compatibility_projection(
+                        root,
+                        task_dir,
+                        persisted,
+                        verification_owner_result,
+                    )
+                )
             previous_month = closeout_archive_month(persisted)
             next_month = closeout_archive_month(plan)
             committed = current_head(root) != reviewed_head
@@ -27041,7 +27079,12 @@ def prepare_closeout(
                 and not (root / persisted["task"]["archive_locator"]).exists()
             ):
                 prior_state = resolve_closeout_pre_draft_state(
-                    root, task_dir, persisted, ledger, gate
+                    root,
+                    task_dir,
+                    persisted,
+                    ledger,
+                    gate,
+                    marketplace_verification=persisted_marketplace_verification,
                 )
                 legal_states = (
                     {"evidence_pushed"}
@@ -27096,7 +27139,12 @@ def prepare_closeout(
                     prior_state = "evidence_pushed"
                 else:
                     prior_state = resolve_closeout_pre_draft_state(
-                        root, task_dir, persisted, ledger, gate
+                        root,
+                        task_dir,
+                        persisted,
+                        ledger,
+                        gate,
+                        marketplace_verification=persisted_marketplace_verification,
                     )
                     if prior_state not in {"content_pushed", "evidence_ready"}:
                         raise WorkflowError(
@@ -27281,6 +27329,8 @@ def resolve_closeout_pre_draft_state(
     plan: dict[str, Any],
     ledger: dict[str, Any],
     gate: dict[str, Any],
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> str:
     if closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
         return "evidence_pushed"
@@ -27357,7 +27407,11 @@ def resolve_closeout_pre_draft_state(
 
     verification_path = marketplace_verification_path(task_dir)
     if verification_path.is_file():
-        verification = read_json(verification_path)
+        verification = (
+            marketplace_verification
+            if isinstance(marketplace_verification, dict)
+            else read_json(verification_path)
+        )
         if verification.get("status") == "passed" and not marketplace_verification_contract_errors(verification):
             passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
             if evidence and all(item == passed for item in evidence):
@@ -27691,7 +27745,11 @@ def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dic
 
 
 def validate_closeout_marketplace_artifact(
-    root: Path, task_dir: Path, plan: dict[str, Any], ledger: dict[str, Any]
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    ledger: dict[str, Any],
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> None:
     if not plan["marketplace"]["required"]:
         return
@@ -27701,7 +27759,11 @@ def validate_closeout_marketplace_artifact(
     artifact = task_dir / locator
     if not artifact.is_file():
         raise WorkflowError("Marketplace verifier artifact is missing from the task.", exit_code=2)
-    verification = read_json(artifact)
+    verification = (
+        marketplace_verification
+        if isinstance(marketplace_verification, dict)
+        else read_json(artifact)
+    )
     if verification.get("status") != "passed" or marketplace_verification_contract_errors(verification):
         raise WorkflowError("Marketplace verifier artifact is not a passed canonical artifact.", exit_code=2)
     expected = closeout_passed_marketplace_evidence(root, artifact, verification)
@@ -27727,6 +27789,8 @@ def build_final_archive_projection(
     task_dir: Path,
     prepared: dict[str, Any],
     pr: dict[str, Any],
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     plan = prepared["plan"]
     ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
@@ -27746,7 +27810,13 @@ def build_final_archive_projection(
         require_summary=False,
         expected_head=current_head(root),
     )
-    validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+    validate_closeout_marketplace_artifact(
+        root,
+        task_dir,
+        plan,
+        ledger,
+        marketplace_verification,
+    )
     summary = closeout_summary_for_pr(plan, pr)
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
         raise WorkflowError("Final projection must contain one canonical PR ref.", exit_code=2)
@@ -27883,7 +27953,13 @@ def validate_closeout_evidence_commit(
         validate_closeout_evidence_commit(root, previous, expected_parent, _seen=seen)
 
 
-def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[str, Any]) -> None:
+def validate_closeout_active_projection(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
+) -> None:
     if repo_relative(root, task_dir) != plan["task"]["active_locator"] or not task_dir.is_dir():
         raise WorkflowError("Closeout active projection locator is invalid.", exit_code=2)
     actual_files = sorted(path.relative_to(task_dir).as_posix() for path in task_dir.rglob("*") if path.is_file())
@@ -27896,7 +27972,13 @@ def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[s
         )
     read_and_validate_closeout_final_summary(task_dir / FINISH_SUMMARY_ARTIFACT, plan)
     ledger = read_json(task_dir / "issue-scope-ledger.json")
-    validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+    validate_closeout_marketplace_artifact(
+        root,
+        task_dir,
+        plan,
+        ledger,
+        marketplace_verification,
+    )
 
 
 def closeout_commit_tree_entry(root: Path, commit: str, path: str) -> tuple[str, str, str]:
@@ -28445,13 +28527,19 @@ def execute_archive_metadata_transaction(
     plan: dict[str, Any],
     *,
     bound_pr: dict[str, Any] | None = None,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     archive_script = root / ".trellis/scripts/task.py"
     if not archive_script.is_file():
         raise WorkflowError(f"Trellis task.py not found: {archive_script}")
     evidence_commit = current_head(root)
     validate_closeout_evidence_commit(root, plan, evidence_commit)
-    validate_closeout_active_projection(root, task_dir, plan)
+    validate_closeout_active_projection(
+        root,
+        task_dir,
+        plan,
+        marketplace_verification=marketplace_verification,
+    )
     assert_closeout_archive_path_preflight(root, plan["task"]["archive_locator"])
     validate_closeout_pre_move_continuity(
         root,
@@ -28843,7 +28931,13 @@ def resume_active_archive_move(
     summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if not summary_path.is_file():
         raise WorkflowError("Archive-move recovery requires the validated final summary.", exit_code=2)
-    validate_closeout_active_projection(root, task_dir, plan)
+    marketplace_verification = getattr(args, "external_verification", None)
+    validate_closeout_active_projection(
+        root,
+        task_dir,
+        plan,
+        marketplace_verification=marketplace_verification,
+    )
     validate_closeout_evidence_commit(root, plan, current_head(root))
     assert_closeout_archive_month_current(plan)
     official_after_archive_hook_state(root)
@@ -28871,6 +28965,7 @@ def resume_active_archive_move(
         task_dir,
         plan,
         bound_pr=pr,
+        marketplace_verification=marketplace_verification,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
@@ -29000,6 +29095,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     require_gh_auth(root)
     ledger = load_issue_scope_ledger(task_dir, task_context)
     evidence_commit: dict[str, Any] | None = None
+    marketplace_verification = getattr(args, "external_verification", None)
     if prepared.get("month_supersession") is not None:
         supersession = prepared["month_supersession"]
         if supersession.get("committed") is True:
@@ -29018,7 +29114,12 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         )
     else:
         entry_state = resolve_closeout_pre_draft_state(
-            root, task_dir, plan, ledger, prepared["gate"]
+            root,
+            task_dir,
+            plan,
+            ledger,
+            prepared["gate"],
+            marketplace_verification=marketplace_verification,
         )
     if entry_state == "prepared":
         content_push = execute_closeout_content_push(
@@ -29037,9 +29138,8 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
 
     if entry_state in {"prepared", "content_pushed"}:
         if plan["marketplace"]["required"]:
-            verification = getattr(args, "external_verification", None)
-            if not isinstance(verification, dict):
-                verification = execute_marketplace_verification(
+            if not isinstance(marketplace_verification, dict):
+                marketplace_verification = execute_marketplace_verification(
                     root,
                     task_dir,
                     plan["git"]["repo"],
@@ -29049,7 +29149,11 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
                     config,
                 )
             verification_path = marketplace_verification_path(task_dir, config)
-            passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
+            passed = closeout_passed_marketplace_evidence(
+                root,
+                verification_path,
+                marketplace_verification,
+            )
             write_json(issue_scope_ledger_path(task_dir), record_marketplace_machine_evidence(ledger, passed))
 
     if entry_state in {"prepared", "content_pushed", "evidence_ready"}:
@@ -29074,7 +29178,12 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
     finish_summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if finish_summary_path.is_file():
-        validate_closeout_active_projection(root, task_dir, plan)
+        validate_closeout_active_projection(
+            root,
+            task_dir,
+            plan,
+            marketplace_verification=marketplace_verification,
+        )
         validate_closeout_pull_request_identity(
             root,
             task_dir,
@@ -29085,7 +29194,13 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             expected_head=current_head(root),
         )
     else:
-        finish_summary_path, _summary = build_final_archive_projection(root, task_dir, prepared, pr)
+        finish_summary_path, _summary = build_final_archive_projection(
+            root,
+            task_dir,
+            prepared,
+            pr,
+            marketplace_verification=marketplace_verification,
+        )
     finalization_gate = getattr(args, "finalization_gate", None)
     if isinstance(finalization_gate, dict):
         if (
@@ -29102,6 +29217,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         plan,
         bound_pr=pr,
+        marketplace_verification=marketplace_verification,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
@@ -30333,19 +30449,56 @@ def finalization_preview_context(
             prepared = None
         else:
             setattr(args, "include_finalization_gate", True)
-            prepared = prepare_closeout(root, args, config, task_dir, task_context)
+            prepared = prepare_closeout(
+                root,
+                args,
+                config,
+                task_dir,
+                task_context,
+                verification_owner_result=verification,
+            )
             plan = prepared["plan"]
             if prepared.get("finalizer_takeover") is not None:
                 state = prepared["finalizer_takeover"]["prior_state"]
             elif prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
             else:
+                if verification is None:
+                    verification = finalization_current_verification_owner_result(
+                        root,
+                        task_dir,
+                        task_ref=public_input["task_ref"],
+                        plan_ref=f"closeout-plan:{plan['plan_digest']}",
+                        reviewed_head=plan["git"]["reviewed_work_head"],
+                        plan=plan,
+                    )
+                marketplace_verification = None
+                checked_verification = (
+                    verification[1]
+                    if isinstance(verification, tuple)
+                    and len(verification) == 2
+                    and isinstance(verification[1], dict)
+                    else {}
+                )
+                if (
+                    plan["marketplace"]["required"]
+                    and checked_verification.get("typed_exit") == "verified"
+                ):
+                    marketplace_verification = (
+                        finalization_marketplace_verification_compatibility_projection(
+                            root,
+                            task_dir,
+                            plan,
+                            verification,
+                        )
+                    )
                 state = resolve_closeout_pre_draft_state(
                     root,
                     task_dir,
                     plan,
                     prepared["ledger"],
                     prepared["gate"],
+                    marketplace_verification=marketplace_verification,
                 )
     plan_ref = f"closeout-plan:{plan['plan_digest']}"
     input_plan_ref = public_input.get("plan_ref")

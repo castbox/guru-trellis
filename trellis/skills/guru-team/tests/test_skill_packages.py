@@ -21,6 +21,15 @@ SKILLS_ROOT = REPO / "trellis/skills/guru-team"
 FIXTURE = SKILLS_ROOT / "tests/fixtures/representative-active"
 
 
+def install_finish_integration_fixture(canonical_root: Path) -> None:
+    tests_root = canonical_root / "tests"
+    tests_root.mkdir(exist_ok=True)
+    shutil.copyfile(
+        SKILLS_ROOT / "tests/test_finish_family_integration.py",
+        tests_root / "test_finish_family_integration.py",
+    )
+
+
 def load_module(name: str, path: Path):
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
@@ -2933,6 +2942,7 @@ class EvalRunnerTests(unittest.TestCase):
         self.workflow = self.repo / "trellis/workflows/guru-team/workflow.md"
         self.workflow.parent.mkdir(parents=True)
         shutil.copytree(FIXTURE, self.skills)
+        install_finish_integration_fixture(self.skills)
         shutil.copyfile(FIXTURE / "workflow.md", self.workflow)
         self.runtime_target = self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
         self.runtime_target.parent.mkdir(parents=True)
@@ -3545,6 +3555,7 @@ class DistributionTests(unittest.TestCase):
         self.guru_root = Path(self.temp.name) / "source"
         canonical = self.guru_root / "trellis/skills/guru-team"
         shutil.copytree(FIXTURE, canonical)
+        install_finish_integration_fixture(canonical)
         self.dst = self.repo / ".trellis/guru-team"
 
     def tearDown(self) -> None:
