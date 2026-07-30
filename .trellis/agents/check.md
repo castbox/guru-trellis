@@ -69,7 +69,7 @@ check, Branch Review, or finish-work.
 The supervising dispatch request and logical role decide which mode you are in:
 
 - **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, the approved `Docs SSOT Plan`, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Verify durable docs, task artifacts, code/API/schema/config/deploy/test, and test/validation coverage are consistent with the plan strategy. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
-- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, first merge durable docs, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. Verify the approved `Docs SSOT Plan`, embedded implementation evidence in `phase2-check.json`, durable docs, task artifacts, live repository facts, and full diff; if implement/check evidence is missing, stale, incomplete, or current-scope Docs SSOT is inconsistent, report it as a blocking finding. When the main session asks for a raw `{TASK_DIR}/reviews/*.md` report or content for `{TASK_DIR}/review.md`, use Chinese Markdown headings, Chinese field labels, and Chinese review narrative; keep literal diff commands, paths, JSON fields, HEAD values, code symbols, and external API names in English only where needed.
+- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, first merge durable docs, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, or `record-*`. Verify the approved `Docs SSOT Plan`, embedded implementation evidence in `phase2-check.json`, durable docs, task artifacts, live repository facts, and full diff; if implement/check evidence is missing, stale, incomplete, or current-scope Docs SSOT is inconsistent, report it as a blocking finding. Return concise terminal findings/evidence to the semantic owner; do not write per-round or rollup review artifacts.
 
 ## Forbidden Operations
 
@@ -84,7 +84,7 @@ The supervising main session owns commits. Report the post-fix state; do not com
 - Do not report `检查完成` until the requested check/review scope is actually complete and verification status is known.
 - If the supervising main session interrupts, terminates, replaces, or asks you to stop before completion, report `检查未完成`. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A `trellis channel wait` timeout in the main session is only a wait-window result, not your failure signal. Continue working unless the channel sends an explicit stop/interrupt instruction.
-- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. Only during a real exceptional recovery case, answer an explicit status request with the current step, last concrete progress, active command/tool if any, remaining work, and blockers.
+- Do not emit periodic heartbeat messages or write assignment/liveness artifacts. Only during a real exceptional recovery case, answer an explicit status request with the current step, last concrete progress, active command/tool if any, remaining work, and blockers.
 
 ## Workflow
 
@@ -116,6 +116,5 @@ Remaining: <blocker/risk/unverified item, or "none">
 ```
 
 Do not enumerate every file or restate planning. The semantic owner reads the
-task artifacts, diff, `phase2-check.json`, and live command facts directly.
-Branch Review still writes a requested task-local review report because that
-report is the review Gate evidence, not a routine handoff.
+task artifacts, diff, `phase2-check.json`, and live command facts directly and
+records only the compact `review-gate.json` after completing semantic judgment.

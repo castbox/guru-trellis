@@ -1,66 +1,39 @@
 ---
 name: trellis-start
-description: "Guru Team Trellis fallback orientation entry. Use when automatic startup context is unavailable, hooks did not run, or the user explicitly asks to reload full Trellis context."
+description: "Guru Team Trellis fallback orientation entry. Use when automatic startup context is unavailable, hooks did not run, or the user explicitly asks to reload current Trellis context."
 ---
 
 <!-- guru-team-overlay: v1 -->
 
 # Guru Team Trellis Start Fallback
 
-Use this entry as fallback / explicit orientation. In normal auto-bootstrap platforms, users can describe the task, paste an issue URL, or say "handle issue #123"; the AI should classify that request from injected Trellis context, workflow-state, startup context, hook breadcrumbs, or skill matching.
+This is a thin fallback loader, not an intake or task-mutation workflow.
 
-Run this start entry when the platform has no automatic session/startup injection, hooks are disabled or unapproved, bootstrap appears not to have run, or the user asks for a full context report / reload.
-
-1. Before any context command, classify from the user's request and already
-   injected control-plane state only. If the request clearly opens new
-   issue-backed, task-like, or file-changing work and no injected state proves
-   that an active task already owns it, read `.trellis/workflow.md` and
-   mandatory invoke `guru-sync-base` by its stable id. Do not use
-   `get_context.py`, task, Git, issue, Docs, code, test, or history reads to make
-   this route decision. Consume exactly one declared workflow exit: `synced`
-   enters `guru-discover-change-context`, `skipped` returns to
-   `original-request-route`, and `blocked` stops fail closed. Missing, unknown,
-   multiple, or unmapped exits also stop.
-
-2. Only after that new-work route returns `synced`, or when the tool-free route
-   proves this invocation is only active-task orientation or a non-new-work
-   route, run:
+1. Read `.trellis/workflow.md` and use it as the only global route contract.
+2. Before repository, GitHub, Docs, code, test, history, or task reads, classify
+   the request from already injected state. A new repo-changing route performs
+   the mandatory invoke `guru-sync-base`; consume only its declared workflow
+   exit. Let the
+   workflow invoke every later owner Skill. Do not call `prepare-task` or copy
+   any Skill's review, confirmation, recorder, recovery, or mutation steps here.
+3. For active-task orientation or a non-new-work route, load the fixed Guru Team
+   no-workspace context set:
 
 ```bash
-python3 ./.trellis/scripts/get_context.py
 python3 ./.trellis/scripts/get_context.py --mode phase
+python3 ./.trellis/scripts/get_context.py --mode packages
+python3 ./.trellis/scripts/task.py current --source
+git branch --show-current
+git status --short --branch
 ```
 
-If the route entered new work, do not silently edit the current checkout.
-After `synced` and change-context discovery, run:
+Do not open, enumerate, read, summarize, or infer from `.trellis/workspace/`.
 
-```bash
-.trellis/guru-team/scripts/bash/check-env.sh --json
-.trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --expected-resolution-sha256 <resolution-sha256> \
-  "<user request, issue number, or issue URL>"
-```
+4. Report the current task/status, the next workflow-owned Skill or the real
+   blocker. Apply the workflow's global interaction contract: automatically
+   consume mapped exits and ask `确认继续` only for one fully displayed current,
+   unique, unambiguous proposal or side effect. Never require a SHA, digest, or
+   fixed reply text.
 
-3. Treat default `prepare-task` as intake/preflight planning only. Show duplicate candidates, proposed title/body when present, naming quality result, base branch, branch name, workspace path, and the confirmed command. If `naming_quality.ok=false` or `requires_semantic_name=true`, read the issue and choose a semantic English short-name, then pass it explicitly with `--short-name`, `--workspace-slug`, `--task-slug`, and `--branch`; do not rely on Chinese transliteration or low-information names such as `issue-52`. If prepare returns `proposed_issue` / `requires_confirmation`, stop until the user approves GitHub issue creation. Only then rerun with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
-
-4. After reading the request or issue body/comments, perform the `.trellis/workflow.md` intake clarity check. If scope, acceptance criteria, close/ref semantics, or implementation target is ambiguous, enter `trellis-brainstorm` before task start; inspect repository evidence before asking user questions. Clarification results must be reflected in a reviewed proposed issue body, an issue comment, or a deliberate issue body update when appropriate.
-
-5. Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect. `--create-worktree` and `--create-task` are executor flags for after intake plan review, not default intake commands, and they fail closed when naming quality requires semantic overrides. In `workspace_mode: worktree`, use `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor to create the execution worktree and task; do not run bare `python3 ./.trellis/scripts/task.py create ...` in the source checkout.
-
-6. After an executor path writes `.trellis/tasks/<task-slug>/task-start-context.json`, treat its portable `workspace_slug`, `task_workspace_id`, and `task_artifact_dir` as identifiers only; resolve the machine-local task worktree from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`, then use that resolved checkout as the write boundary for all task artifact writes. Before writing or validating `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`, `reviews/*.md`, `review.md`, or `review-gate.json`, run `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>` from the target worktree. If an edit tool cannot receive an explicit `workdir`, use an absolute path under the task worktree, never a source-checkout relative task path.
-
-7. Task creation consent is not current-checkout direct-edit consent. A
-   current-checkout direct-edit override is allowed only after explicit user
-   approval. The approval must state that the user wants to skip creating or
-   reusing a GitHub issue, Trellis task, worktree, and branch for this turn.
-   Before editing, summarize the skipped artifacts, current checkout, current
-   branch, dirty state, expected side effects, changed-file scope, and that
-   commit/push/PR still require separate approval.
-
-8. In target business repositories, keep human-readable documentation in Chinese by default: `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, docs SSOT created or completed by `00-bootstrap-guidelines`, and workflow artifact fields such as summaries, evidence, findings, observations, follow-up candidates, PR titles, and PR bodies. Literal commands, paths, config keys, GitHub keywords, external API names, and code symbols may stay in English.
-
-9. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
-
-10. Treat `.trellis/tasks/<task-slug>/task-start-context.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`; sub-agent assignment and reuse evidence belongs in task-local `agent-assignment.json`.
-
-Full contract lives in `.trellis/workflow.md`.
+This entry does not create or update an Issue, task, worktree, branch, runtime
+checkpoint, handoff, commit, push, PR, archive, or cleanup resource.

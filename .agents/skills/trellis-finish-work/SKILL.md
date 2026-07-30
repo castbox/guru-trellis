@@ -45,6 +45,8 @@ Ask the user only for the exact bounded finalization side-effect plan when the
 semantic owner requires confirmation, for new external authority, or for a
 material scope decision. Never ask for a generic `确认继续` between mapped Skill
 exits and never ask the user to select an internal recovery command.
+For one fully displayed current side-effect plan, prompt `确认继续` and accept any
+clear affirmative reply without requiring a SHA, digest, or fixed sentence.
 
 Deterministic closeout scripts are private implementation details of
 `guru-finalize-task`; this entry never invokes them directly. It also does not

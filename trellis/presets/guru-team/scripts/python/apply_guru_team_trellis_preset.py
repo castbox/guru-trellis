@@ -96,10 +96,8 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/record-finalization-gate.sh"),
     Path("scripts/bash/check-finalization-gate.sh"),
     Path("scripts/bash/execute-finalization-transition.sh"),
-    Path("scripts/bash/record-agent-assignment.sh"),
-    Path("scripts/bash/check-agent-assignment.sh"),
-    Path("scripts/bash/record-subagent-liveness-event.sh"),
-    Path("scripts/bash/check-subagent-liveness.sh"),
+    Path("scripts/bash/record-agent-recovery.sh"),
+    Path("scripts/bash/check-agent-recovery.sh"),
     Path("scripts/bash/check-commit-messages.sh"),
     Path("scripts/bash/create-task-commit.sh"),
     Path("scripts/bash/format-merge-commit.sh"),
@@ -114,6 +112,18 @@ OBSOLETE_MANAGED_ASSETS = {
     Path("handoff.json"): set(),
     Path("schemas/intake-handoff.schema.json"): {
         "6d9484b82ea7e71b4661035f370d8b21240aa1af844dfa131c1131bba1c3dcfc"
+    },
+    Path("scripts/bash/record-agent-assignment.sh"): {
+        "66152aacbf2ee12f7dba6cd09baeb2f3d7829d3ee2ef914542b2dbfb365de9ae"
+    },
+    Path("scripts/bash/check-agent-assignment.sh"): {
+        "6e400bd3f00f8ba635811c983f6d2119d068dc98b41d0fab401b2d45b210500c"
+    },
+    Path("scripts/bash/record-subagent-liveness-event.sh"): {
+        "9a64334664ffd53a84ce32c626b99c6238af8576cc3739f3be31e9cc9b1f9237"
+    },
+    Path("scripts/bash/check-subagent-liveness.sh"): {
+        "279c0f123514f0425951be69d3ec3a73585336ccffc71b9e8f701e176b8953ac"
     },
 }
 ENGLISH_LANGUAGE_RULES = (
@@ -1611,10 +1621,8 @@ def _install_assets_in_place(
         dst / "scripts/bash/record-finalization-gate.sh",
         dst / "scripts/bash/check-finalization-gate.sh",
         dst / "scripts/bash/execute-finalization-transition.sh",
-        dst / "scripts/bash/record-agent-assignment.sh",
-        dst / "scripts/bash/check-agent-assignment.sh",
-        dst / "scripts/bash/record-subagent-liveness-event.sh",
-        dst / "scripts/bash/check-subagent-liveness.sh",
+        dst / "scripts/bash/record-agent-recovery.sh",
+        dst / "scripts/bash/check-agent-recovery.sh",
         dst / "scripts/bash/check-commit-messages.sh",
         dst / "scripts/bash/create-task-commit.sh",
         dst / "scripts/bash/format-merge-commit.sh",

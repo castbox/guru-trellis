@@ -33,6 +33,21 @@ The workflow has four durable phases:
 - Phase 2: implementation and quality check.
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
 
+## Interaction Budget
+
+One fully displayed, current, unique, unambiguous proposal or side effect uses
+the prompt `确认继续`, and any clear affirmative reply accepts it. The owning Skill
+still records the dedicated semantic purpose and binds the exact action digest;
+the user does not repeat hashes, proposal bytes, or fixed wording. Dedicated
+scope, planning, Git, GitHub, publication, and cleanup approvals remain distinct
+authority boundaries even though they share the same acceptance prompt.
+
+Choices or ambiguity require a real question. A changed target, HEAD, scope,
+authority, option set, or side-effect plan requires a fresh display and
+confirmation. Stable typed exits, stale/re-entry/reprepare, recorder/checker
+steps, and same-plan recovery are internal routes and never consume interaction
+budget.
+
 Phase 1 planning approval mandatory invokes `guru-approve-task-plan`. The
 global workflow contains no adequacy checklist, provenance classification,
 unusual-scenario review, confirmation algorithm, recorder/checker command, or
@@ -390,10 +405,9 @@ Target business repositories that install `guru-team` use Chinese by default
 for human-readable documentation and workflow evidence:
 
 - `.trellis/spec/**` project conventions and bootstrap outputs
-- `.trellis/tasks/**`, including `prd.md`, `design.md`, `implement.md`,
-  per-round Branch Review raw reports `reviews/*.md`, final rollup
-  `review.md`, and human-readable JSON fields in `planning-approval.json`,
-  `phase2-check.json`, `agent-assignment.json`, and `review-gate.json`
+- `.trellis/tasks/**`, including `prd.md`, `design.md`, `implement.md`, and
+  human-readable JSON fields in `planning-approval.json`, `phase2-check.json`,
+  and `review-gate.json`
 - `docs/**` durable requirements, design, test, deploy, operations, and
   versioned docs
 - docs SSOT files created or completed by `00-bootstrap-guidelines`
@@ -404,14 +418,13 @@ Keep literal command names, file paths, GitHub keywords, configuration keys,
 external API names, code symbols, and other required tokens in English when
 needed, but write the surrounding explanation in Chinese.
 
-Branch Review `reviews/*.md` raw reports and the final `review.md` rollup are
-human-readable task artifacts. Their Markdown headings, field labels, summaries,
-evidence, findings, observations, follow-up candidates, deployment / safety
-impact judgments, Docs SSOT judgments, and final conclusions must be Chinese by
-default. Recommended `review.md` rollup sections include `审查轮次`,
-`问题生命周期`, `最终审查`, `证据`, `观察项`, `后续候选`, and `结论`. Literal
-commands, paths, JSON field names, HEAD values, GitHub keywords, code symbols,
-external API names, and technical platform identifiers may remain English.
+New Branch Review rounds do not create Markdown rollups or per-round reports.
+The compact `review-gate.json` keeps only the semantic result and minimum
+verification evidence consumed by the next gate. Its human-readable summary,
+affected behavior, scope basis, qualification reason, evidence descriptions,
+and closure evidence use Chinese by default. Literal commands, paths, JSON
+field names, HEAD values, GitHub keywords, code symbols, external API names,
+and technical platform identifiers may remain English.
 
 This source repository, `guru-trellis`, is a public extension repository rather
 than a target business project. Its public README, source comments, script help,
@@ -545,9 +558,9 @@ current-scope defects.
 Independent review agents must inspect docs, code, tests, artifacts, and diff
 evidence from an AI reviewer perspective. They must not run Guru Team
 recorder/validator extension scripts such as `review-branch.sh`,
-`check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*` as part of
-their review. The main session runs recorder/validator scripts only after the
-review result exists, to persist objective gate evidence.
+`check-review-gate.sh`, or `record-*` as part of their review. The main session
+runs recorder/validator scripts only after the review result exists, to persist
+objective gate evidence.
 
 Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
 Gate:
@@ -576,10 +589,6 @@ Gate:
   and deployment impact were checked. It also records the pre-commit
   `dirty_paths` that the later post-commit audit may accept as the task work
   commit.
-- `agent-assignment.json` records Chinese logical roles, technical `agent_id`,
-  display-only platform nickname, HEAD evidence, review rounds, and
-  reuse/replacement decisions for sub-agent-dispatch tasks. It is assignment
-  evidence, not a script-owned decision about who should review or implement.
 - Sub-agent technical identifiers remain stable and usually English
   (`trellis-implement`, `trellis-check`, `trellis-research`, channel runtime
   `implement` / `check`). User-facing labels should be Chinese where the
@@ -588,16 +597,16 @@ Gate:
   `nickname_candidates`, so use Chinese `description` plus assignment
   `logical_role` for Chinese UI semantics there. Never change dispatch
   identifiers just for display.
-- Default `sub-agent` mode has three mandatory execution boundaries:
+- Default `sub-agent` mode has three execution boundaries:
   implementation is performed by `trellis-implement` / channel `implement`,
   Phase 2 check is performed by `trellis-check` / channel `check`, and
   Branch Review is performed by an independent review sub-agent after the task
-  work commit. The main session coordinates dispatch, waiting, recovery,
-  evidence recording, commit, and recorder/validator calls. It must not present
+  work commit. The main session coordinates dispatch, waiting, exceptional
+  replacement recovery, commit, and recorder/validator calls. It must not present
   its own implementation, its own Phase 2 check, its own self-review, or script
-  validation output as any of those sub-agent results. Inline/self-exemption is
-  valid only with explicit artifact evidence; otherwise missing sub-agent
-  evidence fails closed. Before dispatching implementation or recording
+  validation output as any of those sub-agent results. Agent terminal output is
+  ephemeral evidence consumed by the semantic owner, not a new handoff
+  artifact. Before dispatching implementation or recording
   `phase2-check.json`, the main session must rerun
   `check-planning-approval.sh --json`; implement agents must also stop if that
   validator fails for the active task.
@@ -616,13 +625,10 @@ Gate:
   tests, scripts, schemas, presets, and overlays; they do not perform the first
   durable docs merge or patch missing Phase 2 docs work. Any current-scope Docs
   SSOT inconsistency is a blocking finding, not an observation or follow-up.
-- Branch Review raw reports and the final rollup must use Chinese Markdown
-  headings and Chinese field labels. Raw reports should record checked diff
-  range, reviewed HEAD, evidence, findings, observations, follow-up candidates,
-  deployment / safety impact, Docs SSOT judgment, sub-agent status/reuse
-  evidence, and conclusion in Chinese narrative. The final `review.md` rollup
-  should use sections such as `审查轮次`, `问题生命周期`, `最终审查`, `证据`,
-  `观察项`, `后续候选`, and `结论`, while linking every raw report.
+- Branch Review records only one compact schema 2.1 gate after the semantic
+  judgment exists. It does not persist assignment continuity, routine
+  liveness, per-round reports, a rollup document, duplicated changed-file lists,
+  or Git facts that the next consumer can read directly.
 
 `review-branch.sh` must verify Phase 2 check evidence before writing
 `review-gate.json` so Branch Review Gate cannot bypass Phase 2. When
@@ -633,8 +639,7 @@ non-metadata dirty paths. Branch Review Gate / publish readiness metadata may
 change after Phase 2 because final review and release readiness are produced
 after the work commit. The post-commit audit may ignore stale Phase 2 digest
 entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
-`pr-readiness.json`, `agent-assignment.json`, `review.md`, and
-`review-gate.json`; Branch Review Gate or publish validators must revalidate
+  `pr-readiness.json` and `review-gate.json`; Branch Review Gate or publish validators must revalidate
 the current files before pass or publish. Source, config, script, schema, docs,
 preset, overlay, and non-gate task artifact drift still blocks the gate. Do not
 re-record Phase 2 after the task work commit just to make HEAD match.
@@ -726,7 +731,7 @@ limitations and follow-up are bounded; for `no_docs_update_needed`, the reason
 still holds for the final diff. Missing or inconsistent current-scope docs
 sync blocks the gate.
 
-Before writing `review.md`, `review-gate.json`, or any task artifact during the
+Before writing `review-gate.json` or any task artifact during the
 gate, the AI must verify the shell/editor working directory is the task
 worktree selected by local runtime and Git worktree facts. Manual edits must use a
 worktree-local absolute path when the editing tool cannot receive an explicit
@@ -745,41 +750,29 @@ Passing the gate requires:
 - `--review-source independent-agent`
 - a Chinese `--summary`
 - at least one concrete `--evidence` line
-- task-local `review.md`
-- `--review-report <task-local review.md>`
 - `--reviewer` only as optional identity metadata for the independent reviewer;
   `*-main-session` and `self-review` identities are rejected for passed gates
-- `--review-report` must point to the task-local file named `review.md`, not
-  another task artifact, and the recorded digest must still match the current
-  file
-- `--agent-assignment` must point to the task-local `agent-assignment.json` so
-  the gate records its digest and Chinese logical-role summary
-- `review_rounds[].round` values must be unique and strictly increasing in
-  recorded order, so the final pass round is unambiguous
-- every review round with `findings_count > 0` must have a later same-agent
-  `问题闭环审查代理` round with `findings_count: 0` and
-  `reuse_decision: reuse-for-closure`, or a replacement closure chain when the
-  finding owner objectively failed, was interrupted, or became stale and cannot
-  continue; replacement closure requires predecessor liveness evidence in
-  `status_events[]`, `replacement-started` with `predecessor_agent_id`,
-  `predecessor_event_id`, `replacement_reason`, and `handoff_summary`,
-  `reuse_decisions[]` `decision=replace` with `from_round` / `to_round`, and a
-  replacement `问题闭环审查代理` round with `findings_count: 0` and
-  `reuse_decision: replace` before any fresh final round can pass. This closure
-  proves the finding is closed and does not need to be repeated for every later
-  HEAD
-- schema 1.2 append-only provenance corrections must digest-bind an existing
-  same-agent correctable event; invalidated events remain in raw history but
-  are excluded from liveness/gate projection. Recovery links may only connect
-  an earlier same-agent `failed` event to a later manual/platform
-  `terminated-unfinished`; the validator must then traverse the existing
-  replacement chain to a real `completed`
-- the final `最终放行审查代理` review round must be fresh and last: reviewed code
-  HEAD, `findings_count: 0`, `reuse_decision: new-agent`, and a technical
-  `agent_id` that did not own any earlier finding round
+- every qualified finding preserves its original `introduced_head`; a resolved
+  finding records the fix commit as `resolved_at_head` plus concrete closure
+  evidence, so the two HEADs may legitimately differ
+- after all findings close, one `fresh_final_review` covers the complete current
+  `origin/<base>...HEAD` range before `passed`
+- the persisted gate validates as schema 2.1 and contains no assignment,
+  per-round raw review, rollup, or duplicated Git-derived fields
 - deployment impact evidence, even when the conclusion is that no deployment
   asset needs a change
-- no findings of any priority
+- no open finding of any priority
+
+## Legacy Gate Migration
+
+Existing active tasks may retain schema 2.0 `review-gate.json`,
+`agent-assignment.json`, `reviews/*.md`, and `review.md` bytes as read-only
+compatibility evidence. New and re-entered reviews write one schema 2.1 compact
+gate and do not update or copy those files. Existing schema 2.0 Phase 2 evidence
+is likewise read-only; full re-entry records schema 2.1 without assignment or
+recovery fields. Existing tracked `task-commit-plans/*.json` may prove an
+already-created commit, but planned legacy candidates are rebuilt under ignored
+runtime and the tracked file is never executed or rewritten.
 
 ## Publish Boundary
 

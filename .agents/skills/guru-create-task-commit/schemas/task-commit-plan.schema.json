@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
   "title": "Guru Team task work commit plan",
-  "description": "The planned/terminal evidence shape; publication keeps index.lock as a sentinel through conditional ref/index/candidate rollback, publishes final index bytes from an independent temporary, and linearizes success at the final candidate inode/content identity read.",
+  "description": "Owner-private planned candidate plus legacy terminal evidence shape. New success is derived from immutable Git and deletes this runtime candidate instead of persisting terminal result fields.",
   "type": "object",
   "additionalProperties": false,
   "required": ["$schema", "schema_version", "skill_id", "sequence", "task", "issue", "git", "evidence", "dirty_snapshot", "path_classifications", "exact_stage_paths", "message", "ai_review", "authorization", "freshness", "result"],

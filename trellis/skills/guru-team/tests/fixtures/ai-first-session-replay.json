@@ -54,7 +54,7 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": [],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
@@ -62,7 +62,7 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["refresh_review"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
@@ -70,7 +70,7 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["refresh_review"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
@@ -78,7 +78,7 @@
       "user_confirmation_points": ["workspace_mutation", "material_plan_change", "closeout_plan"],
       "internal_routes": ["revision_required"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
@@ -86,7 +86,7 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["implementation_required"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
@@ -94,7 +94,7 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["implementation_required"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
@@ -102,7 +102,7 @@
       "user_confirmation_points": ["workspace_mutation", "scope_change", "closeout_plan"],
       "internal_routes": ["scope_confirmation_required"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
@@ -110,7 +110,7 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["publication_review_stale"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
@@ -118,7 +118,7 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["verification_required"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json", "marketplace-verification.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json", "marketplace-verification.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json", "marketplace-verification.json"],
       "unfinished_replacement": false
     },
     {
@@ -126,15 +126,15 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["resume_finalization", "reprepare_required"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     },
     {
       "case_id": "session-11-unfinished-replacement",
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["replacement_started"],
-      "persisted_artifacts": ["planning-approval.json", "agent-assignment.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "persisted_artifacts": ["planning-approval.json", "agent-recovery.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": true
     },
     {
@@ -142,7 +142,7 @@
       "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
       "internal_routes": ["verification_not_required"],
       "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review.md", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
+      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
       "unfinished_replacement": false
     }
   ]

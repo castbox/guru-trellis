@@ -57,7 +57,9 @@ The exact stage order is:
 2. AI Review Gate: judge plan sufficiency, scope, readiness, recovery route,
    findings, and revision action.
 3. Conditional human confirmation: before the first side effect or a changed
-   plan, confirm the exact `closeout_plan_digest`.
+   plan, present the one current action and ask `确认继续`; bind any clear
+   affirmative reply to the exact internal `closeout_plan_digest` without
+   requiring the user to repeat it.
 4. Recorder/validator: persist and check `task-finalization-gate.json` against
    current objective facts.
 5. Typed exit: perform at most the deterministic transition authorized by the
@@ -110,12 +112,13 @@ prunes every moved file outside the long-term allowlist before staging the
 archive commit. Normal workflow finalization retains these 11 files:
 `task.json`, `prd.md`, `design.md`, `implement.md`,
 `issue-scope-ledger.json`, `planning-approval.json`, `phase2-check.json`,
-`review.md`, `closeout-plan.json`, `task-finalization-gate.json`, and
-`finish-summary.json`. When marketplace verification applies,
-`marketplace-verification.json` is the twelfth and final permitted file.
+`review-gate.json`, `closeout-plan.json`, `task-finalization-gate.json`, and
+`finish-summary.json`.
+When marketplace verification applies, `marketplace-verification.json` is the
+twelfth and final permitted file.
 
 Intake/context snapshots, assignment or liveness state, commit plans, raw
-review rounds, `review-gate.json`, `pr-body.md`, `pr-readiness.json`, and
+review rounds, legacy `review.md`, `pr-body.md`, `pr-readiness.json`, and
 `finish-summary-index.json` remain recoverable from the exact evidence commit
 or GitHub authority and are not copied into the long-term archive tree. A crash
 after move and before or during pruning re-enters the same idempotent pruning
@@ -129,7 +132,8 @@ original full-move transaction semantics.
 - Same-plan transient executor failure, draft-to-ready retry, interrupted
   active/archive move, or exact-commit continuation -> `resume_finalization`.
 - Active task with a changed archive month -> `reprepare_required`; author a
-  fresh intent/context, preview a new plan, and confirm its exact digest.
+  fresh intent/context, preview a new plan, and obtain fresh plan-bound
+  confirmation through the same generic prompt.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
   repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.

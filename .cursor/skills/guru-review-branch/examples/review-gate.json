@@ -1,6 +1,10 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "2.1",
   "skill_id": "guru-review-branch",
+  "generated_at": "2026-07-30T00:00:00Z",
+  "task_dir": ".trellis/tasks/example-task",
+  "mode": "workflow",
+  "review_intent": "fresh_final_review",
   "typed_exit": "passed",
   "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "base_ref": "origin/main",
@@ -48,6 +52,11 @@
       "status": "passed",
       "summary": "The complete fresh final review passed."
     }
+  },
+  "verification_evidence": {
+    "reviewer": "independent-reviewer",
+    "review_source": "independent-agent",
+    "evidence": ["Reviewed the complete origin/main...HEAD diff and current validation evidence."]
   },
   "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 }

@@ -1528,53 +1528,6 @@ def production_record_planning(
     ))
 
 
-def production_agent_assignment(runtime: Any, fixture: Path, task: Path) -> None:
-    head = run_git(fixture, "rev-parse", "HEAD")
-    task_ref = task.relative_to(fixture).as_posix()
-    roles = (("实现代理", "implement-1"), ("阶段二检查代理", "check-1"))
-    agents = [{
-        "logical_role": role,
-        "agent_id": agent_id,
-        "platform_nickname": agent_id,
-        "assigned_at": "2026-07-23T00:04:00Z",
-        "assigned_head": head,
-        "reason": f"Assign {role} for the complete eval round.",
-        "event_id": f"evt-{agent_id}-assigned",
-    } for role, agent_id in roles]
-    events = [{
-        "event_id": f"evt-{agent_id}-completed",
-        "event": "completed",
-        "agent_id": agent_id,
-        "logical_role": role,
-        "platform_nickname": agent_id,
-        "observed_at": "2026-07-23T00:05:00Z",
-        "recorded_at": "2026-07-23T00:05:00Z",
-        "head": head,
-        "source": "main-session",
-        "evidence": f"{role} completed the production eval round.",
-        "predecessor_agent_id": "",
-        "predecessor_event_id": "",
-        "termination_reason": "",
-        "termination_source_event_id": "",
-        "replacement_reason": "",
-        "handoff_summary": "",
-    } for role, agent_id in roles]
-    runtime.write_json(task / "agent-assignment.json", {
-        "schema_version": runtime.AGENT_ASSIGNMENT_SCHEMA_VERSION,
-        "generated_at": "2026-07-23T00:04:00Z",
-        "updated_at": "2026-07-23T00:05:00Z",
-        "task": task_ref,
-        "head": head,
-        "agents": agents,
-        "liveness": {},
-        "review_rounds": [],
-        "reuse_decisions": [],
-        "status_events": events,
-        "event_corrections": [],
-        "recovery_links": [],
-    })
-
-
 def production_phase2_input(
     runtime: Any, fixture: Path, task: Path, package: Path, exit_id: str,
 ) -> Path:
@@ -1603,10 +1556,6 @@ def production_phase2_input(
         "artifacts": [{"path": f"{task_ref}implement.md"}],
         "facts_sha256": "0" * 64,
     }
-    payload["agent_assignment"] = {
-        "implementation_agent_ids": ["implement-1"],
-        "check_agent_ids": ["check-1"],
-    }
     task_payload = runtime.read_json(task / "task.json")
     base_ref = runtime.diff_base_ref(
         fixture,
@@ -1622,10 +1571,7 @@ def production_phase2_input(
     payload["repository_snapshot"] = {
         "reviewed_paths": [
             {"path": path}
-            for path in sorted({
-                *implementation_paths,
-                f"{task_ref}agent-assignment.json",
-            })
+            for path in sorted(implementation_paths)
         ],
     }
     payload["check_execution"]["worker_evidence"] = [{
@@ -1681,7 +1627,11 @@ def production_phase2_input(
             "impact": "A complete reliable check cannot be claimed.",
             "blocking": True,
         }]
-        payload["semantic_review"]["adequacy_dimensions"][9]["unverified_ids"] = ["U1"]
+        next(
+            item
+            for item in payload["semantic_review"]["adequacy_dimensions"]
+            if item["id"] == "verification_completeness"
+        )["unverified_ids"] = ["U1"]
     payload["typed_exit"] = exit_id
     payload["route"] = route
     payload["reason"] = f"Production Phase 2 eval selected {exit_id}."
@@ -1768,12 +1718,13 @@ def production_review_candidate(
     head: str,
     *,
     resolved: bool = False,
+    introduced_head: str | None = None,
 ) -> list[dict[str, Any]]:
     common = {
         "candidate_ref": "candidate-001",
         "affected_behavior": "The public Branch Review route must preserve the reviewed task behavior.",
         "path": "src/production-eval.txt",
-        "evidence_refs": ["reviews/round-001-problem.md"],
+        "evidence_refs": ["phase2-check.json", "src/production-eval.txt"],
         "requirement_refs": ["PRD R1"],
         "scope_basis": "The approved production eval requirement owns this behavior.",
         "qualification_reason": "The candidate was classified before any severity was assigned.",
@@ -1812,11 +1763,11 @@ def production_review_candidate(
             "scenario_class": "normal_required_behavior",
             "finding_ref": "F-001",
             "severity": "P2",
-            "owner_round": 1,
-            "reviewed_head": head,
+            "introduced_head": introduced_head or head,
+            "resolved_at_head": head if resolved else None,
             "status": "resolved" if resolved else "open",
             "closure_evidence": (
-                ["reviews/round-002-closure.md"]
+                [f"commit:{head}", "test:production-eval"]
                 if resolved else []
             ),
         }]
@@ -1834,75 +1785,6 @@ def production_review_candidate(
     return current_scope_rejections
 
 
-def production_review_rounds(
-    exit_id: str,
-    head: str,
-    *,
-    resolved: bool,
-) -> list[dict[str, Any]]:
-    if resolved:
-        return [
-            {
-                "round": 1,
-                "logical_role": "问题发现审查代理",
-                "agent_id": "review-finding-1",
-                "platform_nickname": "review-finding-1",
-                "reviewed_head": head,
-                "findings_count": 1,
-                "reuse_policy": "Finding owners may return only for closure review.",
-                "reuse_decision": "new-agent",
-                "report_name": "round-001-problem.md",
-            },
-            {
-                "round": 2,
-                "logical_role": "问题闭环审查代理",
-                "agent_id": "review-closure-replacement-1",
-                "platform_nickname": "review-closure-replacement-1",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "A replacement reviewer closes the failed finding owner through the complete recovery chain.",
-                "reuse_decision": "replace",
-                "report_name": "round-002-closure.md",
-            },
-            {
-                "round": 3,
-                "logical_role": "最终放行审查代理",
-                "agent_id": "review-final-1",
-                "platform_nickname": "review-final-1",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "Final review uses a fresh agent across the complete range.",
-                "reuse_decision": "new-agent",
-                "report_name": "round-003-final.md",
-            },
-        ]
-    if exit_id == "passed":
-        role = "最终放行审查代理"
-        findings_count = 0
-        report_name = "round-001-final.md"
-        agent_id = "review-final-1"
-    else:
-        role = "问题发现审查代理"
-        findings_count = 1 if exit_id == "implementation_required" else 0
-        report_name = "round-001-problem.md"
-        agent_id = "review-finding-1"
-    return [{
-        "round": 1,
-        "logical_role": role,
-        "agent_id": agent_id,
-        "platform_nickname": agent_id,
-        "reviewed_head": head,
-        "findings_count": findings_count,
-        "reuse_policy": (
-            "Final review uses a fresh agent across the complete range."
-            if exit_id == "passed"
-            else "The owner records only the current qualification-first review round."
-        ),
-        "reuse_decision": "new-agent",
-        "report_name": report_name,
-    }]
-
-
 def production_record_review(
     runtime: Any,
     fixture: Path,
@@ -1917,153 +1799,19 @@ def production_record_review(
     elif exit_id == "fresh-final-passed":
         exit_id = "passed"
     head = runtime.current_head(fixture)
-    rounds = production_review_rounds(exit_id, head, resolved=resolved)
-    assignment_path = task / "agent-assignment.json"
-    assignment = runtime.read_json(assignment_path)
-    assignment["head"] = head
-    assignment["updated_at"] = "2026-07-23T00:12:00Z"
-    reports: list[str] = []
-    known_agents = {
-        str(item.get("agent_id") or "")
-        for item in assignment.get("agents", [])
-        if isinstance(item, dict)
-    }
-    for index, round_item in enumerate(rounds, start=1):
-        report_name = str(round_item.pop("report_name"))
-        report = task / "reviews" / report_name
-        report.parent.mkdir(parents=True, exist_ok=True)
-        report.write_text(
-            "# 分支审查原始报告\n\n"
-            f"第 {index} 轮对完整当前范围完成语义审查；"
-            f"findings_count={round_item['findings_count']}。\n",
-            encoding="utf-8",
-        )
-        digest = runtime.file_digest(fixture, report)
-        round_item.update({
-            "recorded_at": f"2026-07-23T00:{12 + index:02d}:00Z",
-            "review_report_path": digest["path"],
-            "review_report_sha256": digest["sha256"],
-            "review_report_size_bytes": digest["size_bytes"],
-            "review_report_modified_at": digest["modified_at"],
-        })
-        assignment.setdefault("review_rounds", []).append(round_item)
-        reports.append(digest["path"])
-        agent_id = str(round_item["agent_id"])
-        if agent_id not in known_agents:
-            assignment.setdefault("agents", []).append({
-                "logical_role": round_item["logical_role"],
-                "agent_id": agent_id,
-                "platform_nickname": round_item["platform_nickname"],
-                "assigned_at": f"2026-07-23T00:{10 + index:02d}:00Z",
-                "assigned_head": head,
-                "reason": "Assign the exact production Branch Review eval role.",
-                "event_id": f"evt-{agent_id}-assigned",
-            })
-            known_agents.add(agent_id)
-        if not resolved:
-            assignment.setdefault("status_events", []).append({
-                "event_id": f"evt-{agent_id}-round-{index}-completed",
-                "event": "completed",
-                "agent_id": agent_id,
-                "logical_role": round_item["logical_role"],
-                "platform_nickname": round_item["platform_nickname"],
-                "observed_at": f"2026-07-23T00:{20 + index:02d}:00Z",
-                "recorded_at": f"2026-07-23T00:{20 + index:02d}:00Z",
-                "head": head,
-                "source": "main-session",
-                "evidence": "The production Branch Review eval round completed.",
-                "predecessor_agent_id": "",
-                "predecessor_event_id": "",
-                "termination_reason": "",
-                "termination_source_event_id": "",
-                "replacement_reason": "",
-                "handoff_summary": "",
-            })
-    if resolved:
-        failed = runtime.build_liveness_event(
-            payload=assignment,
-            root=fixture,
-            logical_role="问题发现审查代理",
-            agent_id="review-finding-1",
-            platform_nickname="review-finding-1",
-            event_name="failed",
-            observed_at="2026-07-23T00:21:00Z",
-            evidence=(
-                "The finding report is retained, but the original owner "
-                "cannot continue the closure round."
-            ),
-            source="main-session",
-        )
-        assignment.setdefault("status_events", []).append(failed)
-        replacement = runtime.build_liveness_event(
-            payload=assignment,
-            root=fixture,
-            logical_role="问题闭环审查代理",
-            agent_id="review-closure-replacement-1",
-            platform_nickname="review-closure-replacement-1",
-            event_name="replacement-started",
-            observed_at="2026-07-23T00:22:00Z",
-            evidence="The replacement closure reviewer accepted the exact finding handoff.",
-            source="main-session",
-            predecessor_agent_id="review-finding-1",
-            predecessor_event_id=failed["event_id"],
-            replacement_reason="terminal_failed_incomplete",
-            handoff_summary="Close F-001 against the current committed review range.",
-        )
-        assignment["status_events"].append(replacement)
-        for event_index, (logical_role, agent_id, observed_at) in enumerate(
-            (
-                (
-                    "问题闭环审查代理",
-                    "review-closure-replacement-1",
-                    "2026-07-23T00:23:00Z",
-                ),
-                (
-                    "最终放行审查代理",
-                    "review-final-1",
-                    "2026-07-23T00:24:00Z",
-                ),
-            ),
-            start=1,
-        ):
-            assignment["status_events"].append(
-                runtime.build_liveness_event(
-                    payload=assignment,
-                    root=fixture,
-                    logical_role=logical_role,
-                    agent_id=agent_id,
-                    platform_nickname=agent_id,
-                    event_name="completed",
-                    observed_at=observed_at,
-                    evidence=(
-                        "The replacement closure completed."
-                        if event_index == 1
-                        else "The fresh final review completed."
-                    ),
-                    source="main-session",
-                )
-            )
-        assignment.setdefault("reuse_decisions", []).append({
-            "logical_role": "问题闭环审查代理",
-            "agent_id": "review-closure-replacement-1",
-            "decision": "replace",
-            "reason": "The original finding owner failed before closure.",
-            "head": head,
-            "recorded_at": "2026-07-23T00:22:00Z",
-            "from_round": 1,
-            "to_round": 2,
-        })
-    runtime.write_json(assignment_path, assignment)
-    (task / "review.md").write_text(
-        "# 分支审查汇总\n\n"
-        "当前公开 Skill eval 已完成 qualification-first 语义审查。\n\n"
-        "## 原始报告链接\n\n"
-        + "".join(f"- {path}\n" for path in reports),
-        encoding="utf-8",
+    closure_reviewer = "finding-owner-or-replacement" if resolved else None
+    reviewer = "fresh-final-reviewer" if resolved else "independent-reviewer"
+    if closure_reviewer == reviewer:
+        raise ValueError("finding closure and fresh final review require distinct reviewers")
+    introduced_head = (
+        run_git(fixture, "rev-parse", f"{head}^") if resolved else None
     )
     semantic = {
         "candidates": production_review_candidate(
-            exit_id, head, resolved=resolved,
+            exit_id,
+            head,
+            resolved=resolved,
+            introduced_head=introduced_head,
         ),
         "ai_review_gate": {
             "status": exit_id,
@@ -2076,6 +1824,11 @@ def production_record_review(
         "task_ref": task.relative_to(fixture).as_posix(),
         "base_ref": runtime.diff_base_ref(fixture, "main"),
         "committed_head": head,
+        "review_intent": (
+            "fresh_final_review"
+            if resolved or recipe == "review-fresh-final-passed"
+            else public_input.get("review_intent", "initial_review")
+        ),
     })
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
@@ -2092,19 +1845,16 @@ def production_record_review(
         json=True,
         task=task.relative_to(fixture).as_posix(),
         base_branch="main",
-        pass_gate=exit_id == "passed",
-        summary="Branch Review eval 已完成当前语义路由。",
-        evidence=["已审查运行时、CI/CD、Docker、K8s、migration 与 Makefile 部署影响。"],
-        reviewer=str(rounds[-1]["agent_id"]),
+        evidence=(
+            [
+                f"{closure_reviewer} 已在 fix commit 上完成瞬态 finding closure。",
+                "fresh-final-reviewer 已独立审查完整当前 range 与部署影响。",
+            ]
+            if resolved
+            else ["已审查运行时、CI/CD、Docker、K8s、migration 与 Makefile 部署影响。"]
+        ),
+        reviewer=reviewer,
         review_source=runtime.INDEPENDENT_REVIEW_SOURCE,
-        review_report=(task / "review.md").relative_to(fixture).as_posix(),
-        agent_assignment=assignment_path.relative_to(fixture).as_posix(),
-        finding=[],
-        findings_file=None,
-        observation=[],
-        observations_file=None,
-        followup_candidate=[],
-        followup_candidates_file=None,
         skill_input=runtime_input.relative_to(fixture).as_posix(),
         semantic_review_file=semantic_path.relative_to(fixture).as_posix(),
         typed_exit=exit_id,
@@ -2258,7 +2008,7 @@ def production_publication_authoring(
             "reviewer_process": {
                 "reviewer": "production-publication-owner",
                 "summary": "The semantic owner completed the current ten-dimension review.",
-                "evidence_refs": ["review.md", "review-gate.json"],
+                "evidence_refs": ["review-gate.json", "pr-body.md"],
             },
             "human_confirmation": {
                 "status": "not_required",
@@ -3189,7 +2939,6 @@ def stage_production_owner_execution(
         runtime.write_json(task / "task.json", task_payload)
         run_git(fixture, "add", task.relative_to(fixture).as_posix())
         run_git(fixture, "commit", "-q", "-m", "activate production eval task")
-        production_agent_assignment(runtime, fixture, task)
         (fixture / "src/production-eval.txt").write_text(
             f"{recipe}\n", encoding="utf-8",
         )
@@ -3286,13 +3035,17 @@ def stage_production_owner_execution(
                 ),
             )
             if recipe == "review-blocked":
-                with (
-                    task / "reviews/round-002-closure.md"
-                ).open("a", encoding="utf-8") as handle:
-                    handle.write(
-                        "\n## 普通审查证据修订\n\n"
-                        "该正常路径修订使已登记的 closure raw report digest 过期。\n"
-                    )
+                (fixture / "src/production-eval.txt").write_text(
+                    "review-blocked-stale-head\n", encoding="utf-8"
+                )
+                run_git(fixture, "add", "src/production-eval.txt")
+                run_git(
+                    fixture,
+                    "commit",
+                    "-q",
+                    "-m",
+                    "advance normal branch state after review gate",
+                )
             runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
             for runtime_artifact in runtime_dir.rglob("*"):
                 if (

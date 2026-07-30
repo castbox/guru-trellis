@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.1.json",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,7 +20,7 @@
     "facts_sha256"
   ],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"enum": ["1.0", "1.1"]},
     "skill_id": {"const": "guru-review-task-publication"},
     "generated_at": {"type": "string", "minLength": 1},
     "task_dir": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
@@ -635,8 +635,6 @@
             "planning-approval.json",
             "phase2-check.json",
             "issue-scope-ledger.json",
-            "agent-assignment.json",
-            "review.md",
             "review-gate.json",
             "pr-body.md",
             "finish-summary-index.json"

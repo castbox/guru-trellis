@@ -905,11 +905,11 @@ newly created issue.
 
 ## Phase 2 Check Artifact
 
-New active evidence uses closed schema `guru-phase2-check-2.0` and
+New active evidence uses closed schema `guru-phase2-check-2.1` and
 `skill_id=guru-check-task`; the basename remains `phase2-check.json` and no
 parallel pass artifact is allowed. The artifact binds current task/workspace,
 checker-validated `guru-planning-approval-2.0`, requirement provenance, Docs
-SSOT Plan, embedded implementation evidence, issue ledger, agent recovery, base/HEAD/diff,
+SSOT Plan, embedded implementation evidence, issue ledger, base/HEAD/diff,
 complete dirty paths and reviewed path digests, executed command facts, worker
 evidence, scope qualification, adequacy dimensions, findings, unverified items,
 AI Gate, one typed exit/consumer, full-round identity, and `facts_sha256`.
@@ -922,8 +922,8 @@ an independent `implementation-handoff.md` or a second narrative SSOT.
 Requirement provenance artifacts, embedded implementation evidence, Docs SSOT
 durable paths, repository reviewed paths, and command facts are non-empty.
 Every adequacy dimension references at least one known current-round source and
-the complete dimension set covers planning, provenance, handoff, Docs SSOT,
-repository, execution, and agent evidence. `current_scope` and
+the complete dimension set covers planning, provenance, embedded implementation
+evidence, Docs SSOT, repository, execution, and worker evidence. `current_scope` and
 `scope_change_required` candidates carry non-empty trigger references. The
 checker verifies only this objective existence/closure; the AI Gate decides
 whether the evidence is semantically sufficient.
@@ -938,33 +938,17 @@ dimension. Every unverified item is likewise referenced by an adequacy
 dimension; unknown, duplicate, missing, or dangling ids fail closed. Every
 finding is blocking; a passing Gate requires no
 open current-scope finding,
-no blocking unverified item, all ten adequacy dimensions passed, a current
-completed agent recovery chain, and a full rerun over the complete current
+no blocking unverified item, all nine adequacy dimensions passed, and a full
+rerun over the complete current
 scope. A fixed finding cannot promote a prior partial round to pass.
-
-The `agent_assignment` projection requires the current task-local
-`agent-assignment.json`. Its implementation and Phase 2 check agent id sets
-must be non-empty and exactly equal the effective `completed` events for their
-respective roles after corrections and recovery validation. The worker evidence
-agent id set must exactly equal the completed Phase 2 check agent set; partial,
-unassigned, failed, unfinished, stale, or replacement-only evidence cannot enter
-the round. The projection records the task-local locator and a digest of only
-Phase-2-stable assignment state: implementation/check agent records, their
-status events and liveness, corrections targeting those events, recovery links
-for those events, exact completed id sets, and recovery closure. It does not
-bind the whole assignment file digest. Post-commit Branch Review agent records,
-status events, review rounds, and reuse decisions may therefore append without
-staling Phase 2; any change to the Phase 2 stable projection still fails closed.
-The Branch Review Gate independently validates and digests the complete current
-`agent-assignment.json` before it can pass.
 
 The checker independently derives and exactly compares `execution_sha256`,
 `scope_sha256`, `adequacy_sha256`, Gate planning/snapshot/scope/adequacy
 bindings, `findings_count`, and `full_round_sha256`. When the embedded
-`implementation_handoff` collection includes task-local `agent-assignment.json`, a legal
-ancestor-HEAD post-commit audit preserves that recorded raw path digest and
-uses the stable agent projection for freshness. This permits only Branch Review
-metadata tail and still rejects implementation/check/recovery drift.
+`implementation_handoff` collection includes terminal worker evidence, a legal
+ancestor-HEAD post-commit audit relies on recorded repository coverage and live
+Git. Routine assignment/liveness and the exceptional private recovery
+checkpoint are not Phase 2 inputs and do not enter the tracked artifact.
 
 The closed exits are `passed`, `implementation_required`, `planning_stale`, and
 `blocked`. `planning_stale` alone carries route discriminator `reapprove_plan`
@@ -985,18 +969,17 @@ Branch Review Gate and publish readiness metadata may legitimately change after
 Phase 2 because independent final review and release readiness happen after the
 task work commit. In post-commit audit mode, the validator may ignore stale
 Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
-`pr-readiness.json`, `marketplace-verification.json`, `review.md`, and
+`pr-readiness.json`, `marketplace-verification.json`, and
 `review-gate.json`; those files are instead revalidated by Branch Review Gate
-or publish-specific validators before pass or publish. Assignment freshness
-uses the stable projection above rather than a whole-file digest exception.
-This exception does not
+or publish-specific validators before pass or publish. This exception does not
 allow source, config, script, docs, schema, preset, overlay, or other
 non-metadata drift.
 
 ## Task Commit Plan Artifact
 
-Each `guru-create-task-commit` invocation owns one task-local
-`task-commit-plans/<sequence>.json`, where `sequence` is a fresh three-digit
+Each `guru-create-task-commit` invocation owns one temporary candidate under
+ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
+where `sequence` is a fresh three-digit
 increasing id. Schema `guru-task-commit-plan-1.0` binds task/branch/status,
 primary issue and ledger digest, base ref, pre-commit HEAD, planning/Phase 2/
 ledger/task evidence digests, the complete staged/unstaged/untracked/delete/
@@ -1033,7 +1016,8 @@ coverage; unrelated staged source content blocks, while a clean source is not
 added to the plan. A non-delete path must still expose the exact reviewed bytes
 and mode when the executor materializes its Git blob; a delete or rename source
 is an exact index absence. The candidate self path is authorized by the already validated in-memory plan and
-its deterministic JSON bytes, not by re-reading mutable raw file bytes. These
+The private candidate never enters its own snapshot, classifications, or exact
+stage set. These
 rules are additive to the existing schema 1.0 fields, so legacy ordinary plans
 remain structurally valid while receiving the stronger executor behavior.
 
@@ -1044,8 +1028,8 @@ or `git am` state. The detector never clears or rewrites operation markers.
 
 Every dirty path belongs to exactly one of `task-reviewed`,
 `unrelated-preserved`, `unreviewed-blocking`, or `ambiguous-blocking`. The plan
-self path uses explicit `skill-artifact` coverage and is excluded from the
-snapshot content digest to avoid self-hash recursion. Public artifacts store
+candidate is ignored owner-private runtime and is excluded from the snapshot.
+Public artifacts store
 only repo-relative paths, digests and structured facts, never file bodies,
 credentials, signed URLs, customer data or machine-local absolute paths.
 The fresh `phase2-check.json` recorder output may use task-reviewed coverage
@@ -1055,386 +1039,68 @@ this exception does
 not cover any other task, source, docs, schema, preset or overlay path.
 
 Execution requires `result.status=planned`, no blocking classifications, fresh
-evidence/HEAD/snapshot/message digest, and exact index equality. Post-commit
-result uses a closed `planned` / `revision-required` / `blocked` / `committed`
-state machine with exact status/exit pairing and no undeclared fields. The
+evidence/HEAD/snapshot/message digest, and exact index equality. The
 executor first revalidates planned gitlinks before any stage side effect, binds
 their artifact OIDs into the exact index, and then binds the complete pre-hook
 index tree and each exact path's blob/mode,
-then records the real commit SHA, parent, message/path evidence, expected/actual
-tree and per-path blob/mode evidence, preservation/hook checks and exactly one
-external exit. `committed` requires matching tree evidence and
-`hook_mutation=false`; every `blocked` branch requires a failure stage,
-current-or-created commit identity, non-empty errors and explicit preservation/
-hook facts, including unexpected staged/dirty paths and planned-path unstaged
-drift. A hook that rejects without changing the bound index, worktree, or
-unrelated state records `hook_mutation=false`; planned paths merely remaining
-staged are not mutation evidence. The runtime validates a constructed terminal
-result against the public schema and rejects cross-field contradictions before
-writing it. A later finding-fix commit requires a new
+then verifies the real commit SHA, parent, message/path evidence, tree, blobs,
+modes and unrelated preservation from Git before advancing the live ref/index.
+On success it returns only `pre_commit_head` and `commit_sha`, deletes the
+private candidate, and never writes Git-derived result/tree evidence into
+tracked metadata. On failure it leaves the private planned candidate available
+for bounded recovery without changing its bytes. A later finding-fix commit requires a new
 sequence and fresh Phase 2 evidence; a prior plan cannot be replayed.
 
-### Scenario: artifact-authorized exact-index transaction
+### Executor Boundary
 
-#### 1. Scope / Trigger
+`create-task-commit --candidate-artifact <ignored-runtime-plan>` validates one
+schema `guru-task-commit-plan-1.0` private candidate. It materializes only
+authorized blobs/modes in an isolated index, runs repository commit hooks, and
+verifies parent, raw message, committed path set, complete tree and unrelated
+preservation before conditionally advancing the live branch/index.
 
-This contract applies whenever `create-task-commit --candidate-artifact
-<task-commit-plans/NNN.json>` consumes one reviewed plan containing ordinary
-paths, gitlinks, candidate self, or any mixture of those identities.
+The private candidate is never staged. A normal validation or hook failure
+preserves the candidate and unrelated state for bounded recovery. Success
+returns `pre_commit_head` and `commit_sha`, then removes the candidate. Commit
+tree, message, path and parent facts remain derivable from Git and are not
+copied into tracked task metadata.
 
-#### 2. Signatures
+Existing task-local `task-commit-plans/*.json` are legacy read-only evidence.
+A completed plan may prove an already-created commit for one active task; a
+planned legacy file is never executed or rewritten and must be rebuilt under
+ignored runtime through the current public input.
 
-- Input command: `create-task-commit --candidate-artifact <repo-relative-plan>`.
-- Artifact input: schema `guru-task-commit-plan-1.0`.
-- Success output: `status=committed`, `exit=committed`, exact commit/tree facts.
-- Failure output: exit code 2 with blocked transaction evidence; the plan file
-  remains at its exact entry bytes because failure is not published.
+## Private Agent Recovery Checkpoint
 
-#### 3. Contracts
+Routine assignment, progress, status requests, completion, review rounds and
+liveness are ephemeral workflow facts. New tasks do not create
+`agent-assignment.json`, `reviews/*.md`, `review.md`, progress journals,
+heartbeat files or scan snapshots.
 
-- Ordinary non-delete: artifact SHA-256 + mode authorizes one persisted blob.
-- Ordinary delete/rename source: artifact authorizes exact index absence.
-- Copy destination: artifact authorizes the destination blob only;
-  `copied_from` never authorizes or stages the source.
-- Gitlink non-delete: `gitlink_head` + mode `160000` authorizes one cache entry.
-- Candidate self: deterministic serialization of the validated in-memory plan
-  authorizes the planned blob; raw post-validation bytes have no authority.
-- Transaction: staging and hooks run against an isolated index/detached HEAD;
-  real branch/index/candidate publication occurs only after every validation.
-- Publication ownership: the executor keeps the real Git `index.lock` from
-  executor entry through candidate publication and every rollback. It also
-  holds a candidate guard, then immediately acquires and verifies the Git
-  loose-ref lock after conditional branch advance. The `index.lock` is a
-  sentinel, not the final index file; an independent same-directory temporary
-  file carries final index bytes and is renamed to the live index while the
-  sentinel remains present. Ref and candidate guards remain held through that
-  publication.
-- Success linearization: after candidate result and live index publication, the
-  executor verifies the guarded ref/index transaction state, then performs one
-  final candidate inode/content identity read while both guards still hold.
-  That read is the linearization point. At that point the ref names the validated
-  commit, the commit tree and live index share the exact artifact-authorized
-  tree, and candidate bytes match the committed result whose digest is returned
-  as executor evidence.
-- Conditional rollback: a candidate C published before the final identity read
-  makes the read fail. While the index sentinel still blocks Git writers, the
-  executor restores its owned live-index preimage, releases its owned ref guard
-  only for compare-and-swap ref rollback, preserves C, and returns blocked.
-  Candidate rollback is permitted only while the candidate guard and exact
-  executor-published result identity still match. Loss of any ownership
-  preserves the third-party state and reports incomplete rollback instead of
-  overwriting it or claiming exact restoration.
-- Post-linearization writer: a candidate C published after the successful final
-  identity read is a later independent operation. It is preserved and cannot
-  retroactively change `committed` to `blocked`; immutable commit blob and
-  returned result digest evidence remain authoritative. Mutable candidate bytes
-  are required to be exact at linearization, not at every later instant.
-- Success cleanup: after the successful final candidate read, only best-effort
-  closure/removal of ref, candidate and index guards and transaction temporary
-  files may occur. Cleanup failure cannot change the committed/blocked result.
+Only a real unfinished-to-replacement transition may persist recovery state.
+The checkpoint lives under ignored
+`.trellis/.runtime/guru-team/agent-recovery/<task-key>.json` and contains one
+task identity plus a minimal ordered event chain:
 
-#### 4. Validation & Error Matrix
+- `unfinished`: logical role, predecessor agent, concrete reason, remaining
+  work/validation/blocker summary, observed branch HEAD and timestamp;
+- `replacement`: replacement agent, the exact unfinished event id, acceptance
+  reason, accepted remaining-work summary, observed branch HEAD and timestamp.
 
-| Condition | Required result |
-| --- | --- |
-| B changes to C before blob materialization | block; real HEAD/index/candidate unchanged |
-| B changes to C after materialization or a hook restages C | isolated commit/tree mismatch blocks; C never reaches real HEAD/index |
-| partial cache write or rejecting hook | block; exact live index preimage remains |
-| operation marker appears before publication | block; marker and real Git state remain |
-| isolated parent/message/path/tree mismatch | block before real ref update |
-| candidate publication fails while index lock is held | conditionally roll back the ref; live index remains its entry preimage and no concurrent `git add` can be overwritten |
-| live index publication fails after candidate publication | while the index sentinel and ref/candidate guards remain held, conditionally roll back owned ref/index and restore candidate only from the exact executor-published identity; preserve third-party state on ownership loss |
-| candidate writer publishes C before final identity read | final read fails; roll back owned ref/index, preserve C, return blocked |
-| candidate writer publishes C after final identity read | preserve C as a later operation; return committed using immutable commit blob/result digest evidence |
-| existing candidate guard | block before publication; every compliant companion writer must honor the guard |
-| concurrent branch writer | initial conditional ref advance or immediate ref-guard acquisition blocks; rollback preserves any third-party ref instead of forcing the task ref |
-| every identity and publish precondition matches | publish one exact commit and committed result; no later fallible blocked check |
+A replacement must close the currently open unfinished event for the same
+logical role. The recorder/checker validate identity, sequence, ancestry,
+timestamps and the event linkage; they never infer failure from elapsed time
+or a platform wait timeout. The checkpoint is owner-private recovery input and
+is not a Phase 2 dimension, Branch Review prerequisite, public DTO, tracked
+handoff or archive artifact.
 
-#### 5. Good/Base/Bad Cases
+### Legacy Assignment Migration
 
-- Good: reviewed B becomes the exact blob/mode in the commit and live index;
-  `result.status=committed` names that commit.
-- Base: entry index A plus reviewed worktree B commits B while preserving every
-  non-task index entry and unrelated worktree path.
-- Bad: live `git add` re-reads C, or real HEAD advances before a fallible
-  postcondition. Both patterns violate the transaction contract.
-
-#### 6. Tests Required
-
-- Real tracked, symlink, delete, delete/add rename, multi-path, candidate-self,
-  entry-index A/worktree B, Unicode/pathspec, gitlink and deliberate gitlink
-  delete cases assert the exact commit blob/mode/delete identities.
-- Controlled B-to-C windows assert either no-side-effect blocked or an
-  artifact-authorized B commit, never C.
-- Partial staging, rejecting/mutating hook, operation drift, candidate
-  publication failure, index publication failure, concurrent candidate writer,
-  concurrent `git add`, and concurrent ref writer assert either exact entry
-  preimages or preserved third-party state according to conditional ownership;
-  rollback must never overwrite the third party or falsely report exact restore.
-- A pre-linearization writer injected at final live-index publication must
-  return normally, replace the candidate with C, then be detected by the final
-  identity read; ref/index roll back, C is preserved, the index sentinel blocks
-  real `git add`, and no guard/temp leaks.
-- A post-linearization writer injected immediately after the successful final
-  candidate read is preserved as a later operation while the executor returns
-  committed; the immutable candidate plan blob in the commit and returned
-  committed-result digest remain exact. Positive publication proves guarded
-  ref/commit tree/live index/candidate-result equality at that read, with no
-  fallible success check afterward.
-
-#### 7. Wrong vs Correct
-
-Wrong: call `git add` on reviewed paths, derive `expected_tree` from that live
-index, and run postconditions only after real HEAD moved.
-
-Correct: materialize artifact-authorized blobs, build and validate an isolated
-index/commit, then publish the already validated commit/index/result as one
-recoverable transaction.
-
-Blocked evidence follows one failure-stage matrix, shared by the public schema,
-runtime validator and package tests:
-
-| `failure_stage` | Required HEAD/identity state | Required tree state |
-| --- | --- | --- |
-| `pre-commit` | unchanged HEAD; `commit_sha=pre_commit_head`; null parent/message and empty committed paths; `hook_mutation=false` | `null` before the expected tree exists, otherwise matching `actual_source=index`; mismatch is forbidden |
-| `commit` with unchanged HEAD | null parent/message and empty committed paths | non-null `actual_source=index`; matching tree with no other drift represents a non-mutating rejecting hook |
-| `commit` with changed HEAD | created message and non-empty path evidence; parent remains nullable only to record invalid parent cardinality | non-null `actual_source=commit` |
-| `postcondition` | changed HEAD plus created message and non-empty path evidence; parent remains nullable only to record invalid parent cardinality | non-null `actual_source=commit`; matching tree remains legal for a non-tree error |
-
-For `commit` and `postcondition`, tree/blob/mode mismatch, unexpected
-staged/dirty paths, planned-path unstaged drift, unrelated drift, or a changed
-HEAD with a divergent committed path set derives `hook_mutation=true`. The
-boolean is evidence output, not caller-selected state. JSON Schema constrains
-the public shape; runtime validation additionally checks identity equality,
-tree/path match flags, exact path coverage and cross-object set equality. Both
-layers fail closed on every combination they can evaluate.
-
-## Agent Assignment Artifact
-
-`agent-assignment.json` is required for Branch Review Gate pass and expected for
-new sub-agent-dispatch Guru Team tasks. It records the AI/human assignment decisions
-that already happened in the workflow:
-
-- `schema_version`, current task path, and current `HEAD`
-- `agents[]` entries for implementation/check/review assignment events
-- `logical_role` as the Chinese Trellis process identity
-- `agent_id` as the technical platform identity used for continuing/reusing an
-  agent
-- `platform_nickname` as display-only UI metadata that never participates in
-  gate decisions; prefer configured Chinese UI nicknames when the platform
-  exposes them, otherwise record the raw automatic/random nickname
-- `review_rounds[]` entries with unique, strictly increasing review round
-  number, reviewed HEAD,
-  findings count, reuse policy, and reuse decision
-- `reuse_decisions[]` entries for explicit reuse/replacement decisions across
-  rounds
-- `liveness[agent_id]` entries with `progress_anchor_at`,
-  `pending_status_request_at`, `last_checked_at`, `last_decision`, and
-  `last_scan_snapshot`
-- `status_events[]` entries for assignment, public progress, status request,
-  stale assessment, same-agent resume, replacement start, unfinished
-  termination, completion, and explicit failure handling
-
-Allowed logical roles are:
-
-- `实现代理`
-- `阶段二检查代理`
-- `问题发现审查代理`
-- `问题闭环审查代理`
-- `最终放行审查代理`
-
-The companion recorder/validator may check JSON structure, required fields,
-role enum values, HEAD resolvability, current-HEAD freshness when requested,
-file digest metadata, liveness snapshot fields, status event enum values,
-required evidence fields, and objective recovery-chain completeness for Phase 2
-check / Branch Review Gate pass. It must not decide which sub-agent should be
-used, whether implementation is sufficient, whether reviewer reuse is
-semantically acceptable, or whether a final release review is sufficient.
-
-`agent-assignment.json` schema version `1.2` is additive over the prior review
-round ledger. It keeps `agents[]`, `review_rounds[]`, `reuse_decisions[]`,
-`liveness[agent_id]`, and `status_events[]`, and adds append-only
-`event_corrections[]` plus `recovery_links[]`. Older artifacts that omit
-`liveness` or `status_events[]` are normalized for reading, but old
-`wait-timeout`, `continue-waiting`, coarse `progress-observed`, and
-unstructured stale/replacement records are not active progress, stale, or pass
-evidence.
-
-`event_corrections[]` has one narrow meaning: invalidate a prior observational
-or status-request event whose recorded provenance is not valid. Each entry has
-a unique `correction_id`, fixed `kind=invalidate-provenance`,
-`target_event_id`, target `agent_id`, canonical `target_event_sha256`, current
-resolvable `head`, UTC `recorded_at`, `source=main-session`, non-placeholder
-`reason`, and concrete `evidence`. The target must already exist, belong to the
-same agent, and be a progress or status-request event; terminal, assignment,
-stale, resume, termination, replacement, completion, failure, and workspace
-boundary events cannot be invalidated. A target may be invalidated once.
-Effective liveness progress/status projection and all pass gates exclude the
-invalidated target while retaining its raw append-only row for audit. Unknown
-targets, duplicate ids/targets, cross-agent entries, or digest mismatch fail
-closed.
-
-`recovery_links[]` has one narrow meaning: append the missing same-agent edge
-from an earlier `failed` event to a later
-`terminated-unfinished termination_reason=manual_or_platform_terminated_unfinished`
-event. Each entry has a unique `recovery_id`, fixed
-`kind=failed-to-termination`, `failed_event_id`, `termination_event_id`, same
-`agent_id`, canonical SHA-256 for both immutable target event objects, current
-resolvable `head`, UTC `recorded_at`, `source=main-session`, reason, and
-evidence. Both events must already exist, remain non-invalidated, have matching
-digests, use the same agent, and occur in forward order. A failed event may
-have at most one recovery link. Unknown/duplicate/cyclic/backward, cross-agent,
-wrong-kind, or tampered links fail closed. Recovery traversal follows the linked
-termination into the existing `replacement-started` predecessor edge and
-requires the active replacement chain to reach `completed`; a link alone never
-supplies completion evidence.
-
-`liveness[agent_id].last_scan_snapshot` records:
-
-- task worktree `HEAD`, content status digest, content diff stat digest, and
-  content max mtime, excluding `agent-assignment.json` bookkeeping writes;
-- source checkout `HEAD`, status digest, diff stat digest, and max mtime;
-- `progress_events_count`, `progress_events_digest`, and
-  `progress_events_newest_event_id`, counting only progress events.
-
-Allowed progress events are:
-
-- `explicit-message-observed`
-- `tool-activity-observed`
-- `command-output-observed`
-- `platform-progress-observed`
-- `status-response-observed`
-
-Allowed control / terminal / audit events are:
-
-- `assigned`
-- `status-requested`
-- `status-request-failed`
-- `stale-assessed`
-- `resume-same-agent`
-- `replacement-started`
-- `terminated-unfinished`
-- `completed`
-- `failed`
-- `workspace-boundary-violation`
-
-Every status event records `event_id`, `event`, `agent_id`, `logical_role`,
-`platform_nickname`, `observed_at` as UTC ISO-8601, `recorded_at`, `head`,
-`source`, and non-placeholder `evidence`. `replacement-started` additionally
-requires `predecessor_agent_id`, `predecessor_event_id`,
-`replacement_reason`, and `handoff_summary`. `resume-same-agent` requires
-`predecessor_event_id` and `handoff_summary`. `terminated-unfinished` requires
-`termination_reason` and `handoff_summary`; `termination_reason=stale_cutover`
-requires `termination_source_event_id` pointing to the same agent's
-`stale-assessed`, while
-`termination_reason=manual_or_platform_terminated_unfinished` requires an
-empty `termination_source_event_id`.
-
-Routine execution does not invoke a liveness scan cadence or persist narrative
-progress. Current gate schemas may record minimum assignment/completion identity
-in `agent-assignment.json`; the detailed state below is activated only for a
-real failed, unfinished, interrupted, stale-cutover, resume, or replacement
-case. A wait timeout alone never activates it.
-
-For that exceptional recovery path, the liveness checker is a short-lived,
-on-demand, single-sample command:
-
-```bash
-.trellis/guru-team/scripts/bash/check-subagent-liveness.sh --json \
-  --task ".trellis/tasks/<task>" \
-  --agent-id "<technical-agent-id>" \
-  --source-repo "<source-checkout-path>" \
-  --progress-scan-interval 120 \
-  --max-progress-silence 180
-```
-
-It returns exactly one decision:
-`workspace_boundary_violation_progress`, `progress_observed`,
-`status_request_required`, `continue_waiting_no_repeat_ping`,
-`stale_allowed`, or `blocked_missing_evidence`. When exceptional recovery is
-active, `progress_scan_interval=120s` is the minimum elapsed interval used to
-interpret a requested re-sample. It does not create a background scan, fixed
-polling cadence, or obligation to invoke the checker again.
-`max_progress_silence=180s` is measured from
-`progress_anchor_at`; `status-requested` does not refresh that anchor and does
-not extend `max_progress_silence_deadline_at`. If the deadline has already
-passed but there is no pending status request, checker must still return
-`status_request_required`; only after a successful `status-requested` and an
-immediate recheck can `stale_allowed` be returned when no progress appeared.
-
-Source checkout snapshot changes are
-`workspace_boundary_violation_progress`, not stale evidence. Task worktree
-snapshot changes and recorded progress events are `progress_observed`. Only new
-changes relative to `last_scan_snapshot` refresh `progress_anchor_at`. Existing
-dirty diffs, old progress events, control/bookkeeping events, and
-`agent-assignment.json` writes do not refresh liveness.
-
-`record-subagent-liveness-event.sh` is the exceptional-recovery status/liveness writer.
-`record-agent-assignment.sh` remains for review rounds and reuse decisions, and
-its old `--status-event` path must fail closed. `status-requested` and
-`status-request-failed` may be recorded only after checker decision
-`status_request_required`. `stale-assessed` may be recorded only after checker
-decision `stale_allowed`, and recorder must verify current task/source
-snapshot plus progress event digest still match `last_scan_snapshot`; otherwise
-it fails closed and requires a recheck.
-
-After `stale-assessed`, the workflow must not resume or continue waiting for
-that predecessor. The same liveness handling turn must record
-`terminated-unfinished termination_reason=stale_cutover
-termination_source_event_id=<stale-assessed.event_id>`, then replacement
-`assigned`, then `replacement-started` with
-`replacement_reason=max_progress_silence_exceeded`. Manual/platform unfinished
-termination is structurally separate through
-`termination_reason=manual_or_platform_terminated_unfinished`.
-
-`wait_agent`, `trellis channel wait`, or equivalent wait command timeout means
-only that the current wait window ended without final completion. It is not a
-failure signal and must not be used as pass evidence. `completed` means the
-agent execution chain ended, not that Phase 2 or Branch Review passed. `failed`,
-unfinished, stale, or replacement partial output must not support a passing
-Phase 2 check or Branch Review Gate until a same-agent resume or replacement
-chain later reaches `completed`. A replacement `failed` requires further
-resume/replacement and cannot close the chain.
-
-For Branch Review Gate, any review agent that recorded findings may be reused
-only as `问题闭环审查代理` for fix confirmation. This includes a previous
-`最终放行审查代理` round that found a new issue. A finding owner may be closed
-by a later same-agent closure round with `findings_count: 0` and
-`reuse_decision: reuse-for-closure`; or by a different fresh
-`问题闭环审查代理` whose technical `agent_id` has not appeared in any earlier
-`review_rounds[]` and whose `reuse_decisions[]` entry records
-`decision=new-agent` with exact `from_round`, `to_round`, closure `agent_id`,
-reviewed `head`, and non-empty `reason`. If the finding owner objectively
-failed, was interrupted, or became stale and cannot continue, the workflow may
-record a replacement closure chain: predecessor liveness evidence in `status_events[]`,
-`replacement-started` with `predecessor_agent_id`, `predecessor_event_id`,
-`replacement_reason`, and `handoff_summary`, `reuse_decisions[]`
-`decision=replace` with `from_round` / `to_round`, then a replacement
-`问题闭环审查代理` round with `findings_count: 0` and
-`reuse_decision: replace`. Every finding owner must have one of those three
-closure forms before a passing gate can be recorded. A closure round that still
-reports findings becomes a new finding owner and must itself have a later
-explicit closure; a closure that reports zero findings confirms its targeted
-finding is closed and does not need to be repeated for every later HEAD. The final
-passing review round must be the last `最终放行审查代理`, use a fresh technical
-`agent_id` that has not appeared in any earlier `review_rounds[]`, set `findings_count` to 0, set
-`reuse_decision` to `new-agent`, record the reviewed code `HEAD` in
-`reviewed_head`, and have a unique, strictly increasing `round` value so no
-later record can make the final round ambiguous.
-
-Because `最终放行审查代理` is assigned after the task work commit,
-`agent-assignment.json` may receive a post-commit metadata update before Branch
-Review Gate. `review-branch.sh` must then receive `--agent-assignment` so the
-gate records the current digest, roles, assignment count, review round count,
-reuse decision count, and status event count. This does not permit post-commit
-changes to non-metadata paths or to non-gate task artifacts.
-
-Project agent definitions have a separate display contract. Technical dispatch
-ids (`trellis-implement`, `trellis-check`, `trellis-research`, `implement`,
-`check`) are public API. UI-facing text belongs in Codex
-Markdown descriptions, headings, and assignment `logical_role`. Codex
-`nickname_candidates` must stay ASCII in current Codex releases. Do not use
-`agent-assignment.json.platform_nickname` as the source of dispatch behavior.
+Existing active tasks may retain `agent-assignment.json`, raw review reports
+and `review.md` bytes. Schema 2.0 Phase 2 and Branch Review validators may read
+them only to validate an already-recorded legacy result. New or re-entered
+gates write schema 2.1 and do not update, normalize, copy or require those
+artifacts. Archives remain byte-for-byte unchanged.
 
 ## Issue Scope Ledger
 
@@ -1497,43 +1163,26 @@ body-only close semantics controlled by Issue Scope Ledger.
 
 ## Review Gate Artifact
 
-`review-branch.sh` writes `review-gate.json` in the task directory by default.
-The artifact records:
+`review-branch.sh` writes compact schema 2.1 `review-gate.json` in the task
+directory after the independent semantic judgment exists. The tracked gate
+contains only schema/skill identity, task/mode/review intent, typed exit,
+reviewed `head`, `base_ref`, normalized semantic candidates/findings, minimum
+independent reviewer/evidence facts, and `facts_sha256`.
 
-- base branch/ref and current `HEAD`
-- diff range
-- changed files and classified deployment impact
-- review scope
-- conclusion summary
-- reviewer identity metadata
-- independent review source metadata (`review_source: independent-agent`) for
-  both passed gates and failed findings artifacts
-- required review report digest: `review_report.path`, `sha256`,
-  `size_bytes`, and `modified_at`
-- findings
-- observations
-- follow-up candidates
-- Issue Scope Ledger coverage
-- validation evidence
-- required `agent_assignment` digest summary from task-local
-  `agent-assignment.json`
-- objective language-template validation evidence: `review.md` and raw
-  `reviews/*.md` reports are Chinese human-readable task artifacts, so
-  validators may reject fixed English template headings while leaving semantic
-  sufficiency to the AI/human review
+The gate deliberately omits a second conclusion rollup, changed-file/diff
+copies, command argv, deployment projection, issue ledger copy, assignment
+continuity and report digests. The consumer derives Git/range/task facts from
+live state and validates the compact semantic result. A resolved finding keeps
+its original `introduced_head` and records the fix commit as
+`resolved_at_head`; these values are expected to differ on a normal finding-fix
+closure. `passed` after any resolved finding requires
+`review_intent=fresh_final_review` over the complete current range.
 
-The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
-allow metadata-only commits after the gate. A passed gate is invalid if it lacks
-review report metadata, `review_source: independent-agent`, or a task-local
-file named `review.md`. `--reviewer` alone is only identity metadata and cannot
-prove the review report evidence; main-session/self-review identities are
-rejected for passed gates. Enforcement lives in `validate_review_gate()` and
-`metadata_only_since()`.
-
-A failed findings artifact is also invalid recorder evidence when it lacks
-`review_source: independent-agent` or a task-local `review.md` digest. Its
-`conclusion.passed` must be `false`; `passed=true` is reserved for explicit
-`--pass` with zero findings.
+The gate is valid only for the reviewed `HEAD`, except that finalization may
+allow its declared metadata-only tail. `review_source` must be
+`independent-agent`; main-session/self-review identities are rejected. Schema
+2.0 gates remain read-only compatibility evidence and are not rewritten.
+Enforcement lives in `validate_review_gate()` and `metadata_only_since()`.
 
 Before `task.py archive`, `prepare_closeout()` fixes both the active and future
 archive locators. The active task remains the task-local boundary until the
@@ -1788,18 +1437,24 @@ expected-versus-actual assertion.
 
 The Branch Review public input contains only the `branch_review` profile,
 workflow/standalone mode, task/base/committed-head identity, and one of
-`initial_review|finding_fix_review|fresh_final_review`. Its public outputs are
+`initial_review|fresh_final_review`. Its public outputs are
 the four minimal DTOs defined by the Skill package contract. `review_ref`,
 finding refs, and proposal refs are opaque consumer identities, not embedded
 artifact bodies.
 
-`reviews/*.md`, `review.md`, `review-gate.json`, and
-`agent-assignment.json` remain task-local tracked evidence. A reviewed
-candidate has exactly one of `qualified_finding`, `scope_proposal`,
+After a fix commit, finding closure is an internal transient AI judgment by the
+finding owner or a real unfinished-agent replacement. It has no public exit or
+artifact and automatically dispatches a distinct fresh reviewer. Public input
+schema 1.1 and new gate schema 2.1 reject `finding_fix_review`; legacy schema
+2.0 gates may retain that value as read-only evidence. Migration carries only
+the closure result into a new `fresh_final_review` invocation.
+
+Only `review-gate.json` is written for a new review. A reviewed candidate has
+exactly one of `qualified_finding`, `scope_proposal`,
 `observation`, `followup_candidate`, or `rejected_candidate`.
 `qualified_finding` alone carries P0-P3 severity and must bind requirement
-references, scope basis, scenario class, qualification reason, owner round,
-reviewed HEAD, and closure evidence. `scope_proposal` uses
+references, scope basis, scenario class, qualification reason,
+`introduced_head`, `resolved_at_head`, and closure evidence. `scope_proposal` uses
 `unconfirmed_nonstandard_proposal`, contains no severity, and never selects an
 implementation route.
 

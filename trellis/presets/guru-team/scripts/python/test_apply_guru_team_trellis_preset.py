@@ -484,8 +484,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/record-change-request-review.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-change-request-review.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/resolve-human-artifacts.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-agent-recovery.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-agent-recovery.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/record-agent-assignment.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/check-agent-assignment.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-commit-messages.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/backfill-finish-summary.sh"), preset.MANAGED_ASSET_PATHS)
@@ -526,10 +530,17 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-context-discovery.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh", os.X_OK))
-        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh").is_file())
-        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh", os.X_OK))
-        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-subagent-liveness.sh").is_file())
-        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-subagent-liveness.sh", os.X_OK))
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/record-agent-recovery.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/record-agent-recovery.sh", os.X_OK))
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-agent-recovery.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-agent-recovery.sh", os.X_OK))
+        for obsolete in (
+            "record-agent-assignment.sh",
+            "check-agent-assignment.sh",
+            "record-subagent-liveness-event.sh",
+            "check-subagent-liveness.sh",
+        ):
+            self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash" / obsolete).exists())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh").is_file())
@@ -681,7 +692,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(all_platforms)
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
         ownership_facts = payload["upstream_ownership_validation"]
-        self.assertEqual(ownership_facts["reviewed_current_payload_count"], 18)
+        self.assertEqual(ownership_facts["reviewed_current_payload_count"], 21)
         self.assertRegex(ownership_facts["reviewed_current_payloads_sha256"], r"^[0-9a-f]{64}$")
         continue_paths = (
             ".agents/skills/trellis-continue/SKILL.md",
@@ -747,7 +758,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 102)
+        self.assertEqual(len(managed_assets), 100)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -925,7 +936,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ).read_text(encoding="utf-8")
 
         command_block = re.search(
-            r"load the fixed Guru Team no-workspace context set:\n\n```bash\n(.*?)\n```",
+            r"load the fixed Guru Team\s+no-workspace context set:\n\n```bash\n(.*?)\n```",
             skill,
             re.DOTALL,
         )
@@ -1026,7 +1037,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn('--task "$task_rel" --input "$input" >"$result"', verifier)
-        self.assertIn('payload["schema_version"] == "2.0"', verifier)
+        self.assertIn('recorded["schema_version"] == "2.1"', verifier)
         self.assertNotIn("--ambiguity-reviewer", verifier)
         self.assertNotIn("--normative-hit", verifier)
         self.assertIn("verify_installed_closeout.py", verifier)
@@ -1044,7 +1055,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 102", verifier)
+        self.assertIn("assert len(assets) == 100", verifier)
+        self.assertNotIn("record_throwaway_completed_agent", verifier)
+        self.assertIn('! grep -q "record-subagent-liveness-event.sh"', verifier)
+        self.assertIn("record-agent-recovery.sh", verifier)
+        self.assertIn("TASK_COMMIT_RUNTIME_DIR", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
             self.assertIn(
@@ -1596,7 +1611,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.23")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.24")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -1608,10 +1623,15 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertIn("contract-wording-review.json", public_api["artifact_contracts"])
         self.assertIn("issue-review.json", public_api["artifact_contracts"])
-        self.assertIn("agent-assignment.json", public_api["artifact_contracts"])
-        self.assertIn("reviews/*.md", public_api["artifact_contracts"])
-        self.assertIn("record-subagent-liveness-event", public_api["companion_scripts"])
-        self.assertIn("check-subagent-liveness", public_api["companion_scripts"])
+        self.assertNotIn("agent-assignment.json", public_api["artifact_contracts"])
+        self.assertNotIn("reviews/*.md", public_api["artifact_contracts"])
+        self.assertNotIn("review.md", public_api["artifact_contracts"])
+        self.assertIn("record-agent-recovery", public_api["companion_scripts"])
+        self.assertIn("check-agent-recovery", public_api["companion_scripts"])
+        self.assertNotIn("record-agent-assignment", public_api["companion_scripts"])
+        self.assertNotIn("check-agent-assignment", public_api["companion_scripts"])
+        self.assertNotIn("record-subagent-liveness-event", public_api["companion_scripts"])
+        self.assertNotIn("check-subagent-liveness", public_api["companion_scripts"])
         self.assertIn("check-commit-messages", public_api["companion_scripts"])
         self.assertIn("create-task-commit", public_api["companion_scripts"])
         self.assertIn("discover-skill-contract", public_api["companion_scripts"])
@@ -1631,7 +1651,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-phase2-check-2.0",
+            "guru-phase2-check-2.1",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.1")
@@ -1683,7 +1703,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "manifest_path": ".trellis/guru-team/extension.json",
             },
         )
-        self.assertIn("task-commit-plans/*.json", public_api["artifact_contracts"])
+        self.assertNotIn("task-commit-plans/*.json", public_api["artifact_contracts"])
         self.assertEqual(
             public_api["skill_contracts"]["active_skill_ids"],
             [
@@ -1723,7 +1743,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-task-publication-readiness-1.0",
+            "guru-task-publication-readiness-1.1",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         schema_relative = Path("schemas/contract-wording-review.schema.json")

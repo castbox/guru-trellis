@@ -44,14 +44,19 @@ Do not expose internal digests, recorder steps, `verification_required`,
 only for missing intent, a material scope/plan choice, new external authority,
 or the bounded publication/finalization side effects. A generic
 `确认继续` must never be required between automatically mapped Skill exits.
+When one current, unique side effect has been fully displayed, use `确认继续` as
+the prompt and accept any clear affirmative reply; never require the user to
+repeat a SHA, digest, or prescribed sentence. Reconfirm only after plan, HEAD,
+target, scope, or authority changes.
 
 ## Evidence And Recovery
 
 Use live source, planning, diff, tests, terminal results, and current owner gates
 directly. Do not transcribe the same facts into handoff or liveness prose.
 Platform wait timeouts are observations, not failures. Persist recovery evidence
-only when an unfinished agent is actually replaced; otherwise the completed
-terminal result is sufficient input to the semantic owner.
+only when an unfinished agent is actually replaced, using the private
+`record-agent-recovery.sh` / `check-agent-recovery.sh` checkpoint; otherwise
+the completed terminal result is sufficient input to the semantic owner.
 
 Before a planning, review, or publication stop, run:
 

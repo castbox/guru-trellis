@@ -18,7 +18,6 @@
         "repository_check_inputs",
         "docs_ssot_plan",
         "issue_scope_ledger",
-        "agent_assignment_recovery",
         "repository_snapshot",
         "invocation_freshness"
       ]
@@ -34,7 +33,6 @@
         "repository_check_inputs",
         "docs_ssot_plan",
         "issue_scope_ledger",
-        "agent_assignment_recovery",
         "repository_snapshot",
         "invocation_freshness"
       ]
@@ -88,12 +86,6 @@
       "evidence": "current primary, close, related, follow-up, and decision categories",
       "binding": "accepted issue scope",
       "freshness": "semantic ledger digest rebuilt"
-    },
-    {
-      "id": "agent_assignment_recovery",
-      "evidence": "implementation/check assignment and complete failed, unfinished, stale, replacement, and completed recovery chain",
-      "binding": "only completed evidence enters pass",
-      "freshness": "assignment checker rerun"
     },
     {
       "id": "repository_snapshot",
@@ -526,7 +518,7 @@
         "id": "phase2_check",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.0.json",
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.1.json",
           "path": "schemas/phase2-check.schema.json"
         },
         "persistence": "task_local_tracked"

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-review-branch-input-branch-review-1.0",
+  "$id": "guru-production-review-branch-input-branch-review-1.1",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -19,7 +19,7 @@
     "committed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "review_intent": {
       "type": "string",
-      "enum": ["initial_review", "finding_fix_review", "fresh_final_review"]
+      "enum": ["initial_review", "fresh_final_review"]
     }
   }
 }

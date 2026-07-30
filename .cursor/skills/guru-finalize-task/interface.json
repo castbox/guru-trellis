@@ -24,7 +24,7 @@
     {"id": "transaction_inputs", "evidence": "plan, body, summary index, ledger, planning, Phase 2 and Branch Review facts", "binding": "one immutable closeout plan", "freshness": "existing closeout engine prevalidation"},
     {"id": "verification_evidence", "evidence": "guru-verify-extension-installation verified or not-required owner result when applicable", "binding": "same task, plan and reviewed HEAD", "freshness": "owner checker rerun before continuation"},
     {"id": "archive_contract", "evidence": "official task.py archive contract, live archive month and hook preflight", "binding": "exact task metadata transaction", "freshness": "checked before official move"},
-    {"id": "invocation_freshness", "evidence": "public profile, private gate, plan digest, exact confirmation, actual exit and consumer", "binding": "one current semantic finalization round", "freshness": "checker rejects drift or ambiguity"}
+    {"id": "invocation_freshness", "evidence": "public profile, private gate, plan digest, plan-bound confirmation, actual exit and consumer", "binding": "one current semantic finalization round", "freshness": "checker rejects drift or ambiguity"}
   ],
   "runtime_dependency": {
     "extension_id": "guru-team",
@@ -82,7 +82,7 @@
   ],
   "validators": [
     {"id": "finalization_previewer", "command": "scripts/preview-finalization.sh", "runtime_command": "preview-finalization", "objective_scope": "Build or rediscover the immutable closeout plan with the existing deterministic engine and no side effect"},
-    {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record an already completed AI plan review, exact confirmation when required, selected exit and current objective facts"},
+    {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record an already completed AI plan review, plan-bound confirmation when required, selected exit and current objective facts"},
     {"id": "finalization_gate_checker", "command": "scripts/check-finalization-gate.sh", "runtime_command": "check-finalization-gate", "objective_scope": "Validate gate schema, owner checker bindings, plan digest, confirmation, HEAD, continuity, actual exit, consumer and freshness"},
     {"id": "finalization_transition_executor", "command": "scripts/execute-finalization-transition.sh", "runtime_command": "execute-finalization-transition", "objective_scope": "Execute one checked deterministic transition through the existing closeout engine without choosing the external route"},
     {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate public input, rerun the finalization gate checker, select the actual exit schema and emit one minimal DTO"}
@@ -96,8 +96,8 @@
     {"id": "blocked", "evidence": "a prerequisite, private state, path, HEAD, draft identity or external dependency prevents a unique safe continuation", "consumer": {"kind": "stop", "id": "task-finalization-blocked"}}
   ],
   "reentry": {
-    "identity": "profile, mode, task, reviewed HEAD, opaque owner refs, immutable plan, semantic gate, exact confirmation, current transaction facts and actual exit",
-    "freshness": "owner checkers and the existing closeout validator rerun before every transition; changed plan requires fresh review and exact confirmation",
+    "identity": "profile, mode, task, reviewed HEAD, opaque owner refs, immutable plan, semantic gate, plan-bound confirmation, current transaction facts and actual exit",
+    "freshness": "owner checkers and the existing closeout validator rerun before every transition; changed plan requires fresh review and confirmation",
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py"],

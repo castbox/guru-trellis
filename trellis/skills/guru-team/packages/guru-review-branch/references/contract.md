@@ -1,111 +1,69 @@
-# guru-review-branch contract
+# `guru-review-branch` Contract
 
-## Public entry
+## Entry
 
-The only profile is `branch_review`. It contains exactly `profile`, `mode`,
-`task_ref`, `base_ref`, `committed_head`, and `review_intent`.
-`guru-create-task-commit:committed` supplies the last committed identity seed;
-the caller AI freshly authors `profile`, `mode`, and one of
-`initial_review|finding_fix_review|fresh_final_review`.
+The public `branch_review` input contains only profile, mode, task/base refs,
+committed HEAD and review intent. Public input schema 1.1 allows only
+`initial_review` and `fresh_final_review`. `guru-create-task-commit:committed`
+supplies the task and commit identity; Branch Review verifies parent, message,
+paths and tree from live Git.
 
-Workflow and standalone modes both require, in order:
+Workflow and standalone mode use the same eleven preconditions: runtime,
+workspace, task, commit, planning, Phase 2, ledger, Docs SSOT, complete review
+range, working tree and invocation freshness. New reviews allow only their
+compact gate plus explicitly named ignored runtime inputs. Existing completed
+tracked commit plans and schema 2.0 assignment/report files remain read-only
+compatibility inputs for active tasks; they are not generated or required by a
+new review.
 
-1. runtime dependency;
-2. workspace boundary;
-3. task identity;
-4. commit handoff;
-5. planning approval;
-6. Phase 2 check;
-7. issue scope ledger;
-8. Docs SSOT outcome;
-9. complete review range;
-10. clean working tree, or only the current task's
-    `agent-assignment.json`, `review.md`, `review-gate.json`,
-    assignment-registered direct `reviews/*.md`, the exact current committed
-    `task-commit-plans/<sequence>.json`, and regular
-    `.trellis/.runtime/guru-team/**` input files named by the current
-    recorder/wrapper invocation;
-11. reviewer assignment and recovery;
-12. raw review evidence;
-13. invocation freshness.
+## Semantic Review
 
-The runtime reads all private evidence from the resolved active task. The public
-input never embeds planning, Phase 2, ledger, Docs SSOT, assignment, report,
-finding, range, hash, or digest bodies.
+Perform one independent semantic review of the complete current
+`origin/<base>...HEAD` range. Qualify every candidate before assigning
+severity. Bind affected behavior, evidence, requirement/scope basis and one
+scenario class. Only supported current-scope scenarios may become a P0-P3
+finding. Unconfirmed scope expansion returns `scope_confirmation_required`;
+out-of-scope or disproved candidates remain non-blocking observations,
+follow-ups or rejections.
 
-## Semantic stages
+Return `implementation_required` for an open current-scope finding. After its
+fix passes Phase 2 and a fresh commit, run one internal closure judgment by the
+finding owner or, only after a real unfinished event, a replacement. Retain the
+original `introduced_head`, bind the current `resolved_at_head`, and carry only
+concrete closure evidence into the next judgment. These heads intentionally
+differ across a normal fix commit.
 
-### Forward behavior
+Closure has no public exit, recorder call, or artifact. The AI workflow
+immediately dispatches a distinct fresh reviewer over the complete current
+range. That reviewer consumes the transient closure result, authors one
+`fresh_final_review`, and is the only reviewer whose compact passing gate is
+persisted. A closure reviewer never also performs the fresh final review.
 
-Create an independent-review handoff covering the exact task, current full
-range, requirements, approved planning, Docs SSOT result, Phase 2 result,
-deployment/safety surfaces, and the public-package/private-runtime boundary.
-Dispatch the official unchanged check/review agent. Preserve each raw report in
-`reviews/*.md`, plus assignment/liveness/recovery evidence.
+Mapped finding-fix, stale, re-entry and final-review routes continue within the
+AI workflow. They are not user choices. A user prompt remains only for real
+scope/authority decisions or a separately displayed Git/GitHub side effect.
 
-### Qualification before severity
+## Gate And Exits
 
-For every candidate, record affected behavior/path/evidence and bind its
-requirement, approved planning rule, necessary correctness/compatibility
-invariant, or explicitly confirmed expansion. Then select exactly one scenario:
+After the AI gate exists, `review-branch` writes one compact
+`review-gate.json`; `check-review-gate` validates objective structure,
+task/base/HEAD identity, complete range, finding lifecycle, fresh-final intent,
+facts digest and exact consumer. It never decides review sufficiency, severity
+or route.
 
-- `normal_required_behavior`
-- `explicit_nonstandard_requirement`
-- `approved_nonstandard_expansion`
-- `unconfirmed_nonstandard_proposal`
-- `out_of_scope`
+New gates use schema 2.1. Schema 2.0 gates and their tracked assignment/raw
+reports remain read-only compatibility evidence. Their legacy
+`finding_fix_review` intent is readable but is never accepted by public input
+schema 1.1 or a new 2.1 gate. Re-entry completes closure in memory, invokes
+`fresh_final_review`, writes one 2.1 gate, and does not copy legacy review prose
+forward.
 
-Only the first three may become `qualified_finding` and receive P0-P3. An
-unconfirmed proposal becomes `scope_proposal`, has no severity, and requires
-dedicated clarification. Out-of-scope candidates become observation,
-follow-up, or rejection. A candidate in any of the first three current-scope
-scenarios that evidence proves does not violate the current contract is
-preserved as `rejected_candidate`; it never carries `severity`, `finding_ref`,
-or another finding-only field. Ordinary continuation, planning approval, or
-reviewer severity is not expansion confirmation. A risk created only by an
-unnecessary mechanism should first be resolved by removing or replacing that
-mechanism.
+Return exactly one of:
 
-### Finding closure and final review
-
-Each qualified finding binds requirement refs, scope basis, scenario class,
-qualification reason, severity, owner round, reviewed HEAD, status, and closure
-evidence. The implementation owner repairs it, then a complete Phase 2 and task
-commit run occur before a closure round. Same-agent closure needs explicit
-continuity evidence; replacement needs a complete recovery chain:
-`decision=replace`, a closure round with `reuse_decision=replace`, and the
-complete liveness/recovery evidence from the failed, stale, or terminated
-predecessor through `replacement-started` to the replacement's completion.
-
-When all findings are closed, a fresh final reviewer that did not perform
-closure reviews the complete final range. The final round is last, current,
-zero-finding, and linked from `review.md`. Missing reports, digest mismatch,
-round gaps, stale HEAD, unfinished replacement, open closure findings, or
-reviewer reuse block.
-
-### Recorder, checker, and exit
-
-The AI owns the semantic Gate. `review-branch` records it into the existing
-artifacts; `check-review-gate` validates only objective structure, identity,
-range, HEAD, hashes, report retention, lifecycle, freshness, and exact exit.
-No second Branch Review pass artifact is allowed.
-
-Return exactly one:
-
-- `passed`: minimal active publication seed; the workflow caller next authors
-  the two task-local publication content candidates required by global Phase
-  3.6, then merges the target-owned authoring fields and invokes
+- `passed`: minimal `task_ref`, `reviewed_head`, `review_ref` seed for
   `guru-review-task-publication`;
 - `implementation_required`: current finding refs;
 - `scope_confirmation_required`: exact proposal refs;
-- `blocked`: routing identity only.
+- `blocked`: stable reason/remediation only.
 
-Unknown, multiple, stale, or unmapped results fail closed.
-
-## Upstream and runtime boundaries
-
-Never modify or overlay upstream `trellis-check` Skill/Agent files. The package
-owns the reviewer prompt and qualification contract. Public wrappers are
-dispatcher-only and never import `guru_team_trellis.py`, eval assets, or private
-review artifacts. `expected_exit` is only a runner assertion after actual
-wrapper output.
+Unknown, multiple, stale, unmapped or consumer-mismatched results fail closed.

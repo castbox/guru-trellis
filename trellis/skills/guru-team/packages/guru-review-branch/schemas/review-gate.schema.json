@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.1.json",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "skill_id", "typed_exit", "head", "base_ref", "semantic_review", "facts_sha256"],
   "properties": {
-    "schema_version": {"const": "2.0"},
+    "schema_version": {"enum": ["2.0", "2.1"]},
     "skill_id": {"const": "guru-review-branch"},
     "generated_at": {"type": "string", "minLength": 1},
     "task_dir": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
@@ -60,6 +60,68 @@
     },
     "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "2.1"}}, "required": ["schema_version"]},
+      "then": {
+        "required": ["generated_at", "task_dir", "mode", "review_intent", "verification_evidence"],
+        "not": {
+          "anyOf": [
+            {"required": ["base_branch"]},
+            {"required": ["head_branch"]},
+            {"required": ["diff_range"]},
+            {"required": ["changed_files"]},
+            {"required": ["review_scope"]},
+            {"required": ["command"]},
+            {"required": ["conclusion"]},
+            {"required": ["findings"]},
+            {"required": ["observations"]},
+            {"required": ["followup_candidates"]},
+            {"required": ["issue_scope"]},
+            {"required": ["deployment_impact"]}
+          ]
+        },
+        "properties": {
+          "review_intent": {"enum": ["initial_review", "fresh_final_review"]},
+          "verification_evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reviewer", "review_source", "evidence"],
+            "properties": {
+              "reviewer": {"type": "string", "minLength": 1},
+              "review_source": {"const": "independent-agent"},
+              "evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+            }
+          },
+          "semantic_review": {
+            "properties": {
+              "qualified_findings": {
+                "items": {
+                  "allOf": [
+                    {"$ref": "#/$defs/qualifiedFinding"},
+                    {
+                      "required": ["introduced_head", "resolved_at_head"],
+                      "not": {"anyOf": [{"required": ["owner_round"]}, {"required": ["reviewed_head"]}]},
+                      "allOf": [
+                        {
+                          "if": {"properties": {"status": {"const": "open"}}, "required": ["status"]},
+                          "then": {"properties": {"resolved_at_head": {"type": "null"}, "closure_evidence": {"maxItems": 0}}}
+                        },
+                        {
+                          "if": {"properties": {"status": {"const": "resolved"}}, "required": ["status"]},
+                          "then": {"properties": {"resolved_at_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "closure_evidence": {"minItems": 1}}}
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "scenario": {
       "type": "string",
@@ -91,7 +153,7 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["candidate_ref", "disposition", "scenario_class", "affected_behavior", "path", "evidence_refs", "requirement_refs", "scope_basis", "qualification_reason", "finding_ref", "severity", "owner_round", "reviewed_head", "status", "closure_evidence"],
+          "required": ["candidate_ref", "disposition", "scenario_class", "affected_behavior", "path", "evidence_refs", "requirement_refs", "scope_basis", "qualification_reason", "finding_ref", "severity", "status", "closure_evidence"],
           "properties": {
             "candidate_ref": {"type": "string", "minLength": 1},
             "disposition": {"const": "qualified_finding"},
@@ -106,6 +168,8 @@
             "severity": {"enum": ["P0", "P1", "P2", "P3"]},
             "owner_round": {"type": "integer", "minimum": 1},
             "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "introduced_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "resolved_at_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
             "status": {"enum": ["open", "resolved"]},
             "closure_evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
           }

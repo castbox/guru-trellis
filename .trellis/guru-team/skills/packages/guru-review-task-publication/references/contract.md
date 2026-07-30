@@ -45,12 +45,12 @@ The Phase 2 result is the publication owner's implementation and Docs SSOT
 evidence. Agent terminal output may be consumed while Phase 2 is authored, but
 publication never requires a separate `implementation-handoff.md` transcription.
 
-The repository status binding uses one closed publication allowlist. It reuses
-Branch Review's exact `agent-assignment.json`, `review.md`, `review-gate.json`,
-assignment-referenced `reviews/*.md`, and every completed
-`task-commit-plans/NNN.json` whose recorded commit is an ancestor of current
-HEAD, then adds only
+The repository status binding uses one closed publication allowlist. New
+reviews reuse only Branch Review's compact `review-gate.json`, then add
 `issue-scope-ledger.json`, `pr-body.md`, and `finish-summary-index.json`.
+Completed legacy `task-commit-plans/NNN.json` and legacy review artifacts remain
+read-only compatibility inputs when the current task was created before the
+AI-first migration; they are never generated or required by a new review.
 `pr-readiness.json` is the recorder-owned artifact and is excluded from its own
 repository snapshot. A runtime path is allowed only when it is the current
 command's explicit regular-file input under `.trellis/.runtime/guru-team/`;

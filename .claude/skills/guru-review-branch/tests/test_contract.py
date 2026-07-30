@@ -34,7 +34,11 @@ class ReviewBranchContractTest(unittest.TestCase):
         self.assertFalse(self.input_schema["additionalProperties"])
         self.assertEqual(
             self.input_schema["properties"]["review_intent"]["enum"],
-            ["initial_review", "finding_fix_review", "fresh_final_review"],
+            ["initial_review", "fresh_final_review"],
+        )
+        self.assertEqual(
+            self.input_schema["$id"],
+            "guru-production-review-branch-input-branch-review-1.1",
         )
 
     @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
@@ -51,13 +55,15 @@ class ReviewBranchContractTest(unittest.TestCase):
         invalid = copy.deepcopy(self.input_example)
         invalid["planning_approval"] = {}
         self.assertTrue(list(Draft202012Validator(self.input_schema).iter_errors(invalid)))
+        legacy_closure = copy.deepcopy(self.input_example)
+        legacy_closure["review_intent"] = "finding_fix_review"
+        self.assertTrue(list(Draft202012Validator(self.input_schema).iter_errors(legacy_closure)))
 
-    def test_thirteen_preconditions_and_semantic_profile(self) -> None:
+    def test_eleven_preconditions_and_semantic_profile(self) -> None:
         expected = [
             "runtime_dependency", "workspace_boundary", "task_identity", "commit_handoff",
             "planning_approval", "phase2_check", "issue_scope_ledger", "docs_ssot_outcome",
-            "review_range", "working_tree", "reviewer_assignment", "review_evidence",
-            "invocation_freshness",
+            "review_range", "working_tree", "invocation_freshness",
         ]
         self.assertEqual([item["id"] for item in self.interface["entry_preconditions"]], expected)
         self.assertEqual(self.interface["modes"]["workflow"]["entry_precondition_ids"], expected)
@@ -94,8 +100,8 @@ class ReviewBranchContractTest(unittest.TestCase):
         self.assertIn("targets the active `guru-review-task-publication` Skill", skill)
         self.assertIn("global Phase 3.6 order", skill)
         self.assertNotIn("planned `guru-review-task-publication`", skill)
-        self.assertIn("minimal active publication seed", contract)
-        self.assertIn("two task-local publication content candidates", contract)
+        self.assertIn("minimal `task_ref`, `reviewed_head`, `review_ref` seed", contract)
+        self.assertIn("guru-review-task-publication", contract)
         self.assertNotIn("minimal planned publication seed", contract)
 
     def test_contract_owns_qualification_and_preserves_upstream(self) -> None:
@@ -104,13 +110,18 @@ class ReviewBranchContractTest(unittest.TestCase):
             + (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
         )
         for phrase in (
-            "qualify every candidate before assigning severity",
-            "unconfirmed_nonstandard_proposal",
-            "official unchanged check/review agent",
-            "fresh final reviewer",
-            "expected_exit",
+            "qualify every",
+            "scope_confirmation_required",
+            "independent semantic review",
+            "fresh_final_review",
+            "internal transient",
+            "distinct fresh reviewer",
+            "introduced_head",
+            "resolved_at_head",
         ):
             self.assertIn(phrase, text)
+        for removed_artifact in ("reviews/*.md", "review.md", "agent-assignment.json"):
+            self.assertNotIn(removed_artifact, (PACKAGE / "SKILL.md").read_text(encoding="utf-8"))
         for forbidden in (
             "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
             "script decides severity",

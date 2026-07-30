@@ -255,19 +255,12 @@ def review_args(**overrides: object) -> argparse.Namespace:
         "json": True,
         "task": None,
         "base_branch": None,
-        "pass_gate": True,
-        "summary": "Branch Review Gate 通过。",
         "evidence": ["已覆盖 CI/CD、Docker、K8s、migration、Makefile 部署影响判断。"],
         "reviewer": "trellis-check-agent",
         "review_source": gtt.INDEPENDENT_REVIEW_SOURCE,
-        "review_report": None,
-        "agent_assignment": None,
-        "finding": [],
-        "findings_file": None,
-        "observation": [],
-        "observations_file": None,
-        "followup_candidate": [],
-        "followup_candidates_file": None,
+        "skill_input": None,
+        "semantic_review_file": None,
+        "typed_exit": "passed",
         "dry_run": False,
     }
     values.update(overrides)
@@ -310,39 +303,17 @@ def phase2_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
-def assignment_args(**overrides: object) -> argparse.Namespace:
+def recovery_args(**overrides: object) -> argparse.Namespace:
     values: dict[str, object] = {
         "root": None,
         "json": True,
         "task": None,
+        "event": "unfinished",
         "logical_role": "实现代理",
-        "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
-        "platform_nickname": "Gibbs",
-        "reason": "Codex sub-agent 模式下分配实现代理。",
-        "review_round": None,
-        "review_round_report": None,
-        "reviewed_head": None,
-        "findings_count": 0,
-        "reuse_policy": None,
-        "reuse_decision": None,
-        "reuse_reason": None,
-        "from_round": None,
-        "to_round": None,
-        "decision_head": None,
-        "status_event": None,
-        "decision": None,
-        "observed_at": None,
-        "last_observed_progress_at": None,
-        "workspace_evidence": None,
-        "running_command_evidence": None,
-        "handoff_summary": None,
-        "invalidate_event_id": None,
-        "correction_reason": None,
-        "correction_evidence": None,
-        "link_failed_event_id": None,
-        "link_termination_event_id": None,
-        "recovery_reason": None,
-        "recovery_evidence": None,
+        "agent_id": "agent-original",
+        "reason": "The implementation agent ended before completing its scope.",
+        "handoff_summary": "Preserve completed work and the exact remaining implementation scope.",
+        "predecessor_event_id": None,
         "dry_run": False,
     }
     values.update(overrides)
@@ -365,47 +336,6 @@ def resolve_human_artifacts_args(**overrides: object) -> argparse.Namespace:
         "root": None,
         "json": True,
         "task": None,
-    }
-    values.update(overrides)
-    return argparse.Namespace(**values)
-
-
-def liveness_event_args(**overrides: object) -> argparse.Namespace:
-    values: dict[str, object] = {
-        "root": None,
-        "json": True,
-        "task": None,
-        "source_repo": None,
-        "agent_id": "agent-a",
-        "event": "assigned",
-        "observed_at": "2026-07-07T00:00:00Z",
-        "evidence": "分配实现代理。",
-        "logical_role": "实现代理",
-        "platform_nickname": "Implement A",
-        "source": "main-session",
-        "predecessor_agent_id": None,
-        "predecessor_event_id": None,
-        "termination_reason": None,
-        "termination_source_event_id": None,
-        "replacement_reason": None,
-        "handoff_summary": None,
-        "dry_run": False,
-    }
-    values.update(overrides)
-    return argparse.Namespace(**values)
-
-
-def liveness_check_args(**overrides: object) -> argparse.Namespace:
-    values: dict[str, object] = {
-        "root": None,
-        "json": True,
-        "task": None,
-        "source_repo": None,
-        "agent_id": "agent-a",
-        "progress_scan_interval": 120,
-        "max_progress_silence": 180,
-        "checked_at": "2026-07-07T00:00:00Z",
-        "dry_run": False,
     }
     values.update(overrides)
     return argparse.Namespace(**values)
@@ -874,7 +804,10 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         reviewed_paths: list[str],
         unrelated_paths: list[str] | None = None,
     ) -> Path:
-        candidate = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR / f"{sequence:03d}.json"
+        task_key = hashlib.sha256(self.task_rel.encode("utf-8")).hexdigest()[:16]
+        candidate = (
+            self.root / gtt.TASK_COMMIT_RUNTIME_DIR / task_key / f"{sequence:03d}.json"
+        )
         candidate_rel = candidate.relative_to(self.root).as_posix()
         snapshot = gtt.capture_task_commit_snapshot(self.root, {candidate_rel})
         self.phase2 = {
@@ -891,11 +824,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             }
             for path in [str(item["path"]) for item in snapshot["entries"]]
         ]
-        classifications.append({
-            "path": candidate_rel, "category": "task-reviewed",
-            "reason": "Current skill evidence.", "coverage_source": "skill-artifact",
-        })
-        exact_paths = set(reviewed_paths) | {candidate_rel}
+        exact_paths = set(reviewed_paths)
         snapshot_by_path = {str(item["path"]): item for item in snapshot["entries"]}
         for path in reviewed_paths:
             renamed_from = snapshot_by_path.get(path, {}).get("renamed_from")
@@ -963,6 +892,15 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertEqual(gtt.task_commit_git_operation_state(self.root), before["operation"])
         self.assertFalse(Path(str(gtt.task_commit_index_preimage(self.root)["path"]) + ".lock").exists())
         self.assertFalse(Path(str(candidate) + ".lock").exists())
+
+    def committed_paths(self, commit_sha: str) -> set[str]:
+        return gtt.git_nul_path_set(
+            self.root,
+            [
+                "diff-tree", "--root", "--no-commit-id", "--name-only",
+                "--no-renames", "-r", "-z", commit_sha,
+            ],
+        )
 
     def run_task_commit_after_validation_mutation(
         self,
@@ -1097,10 +1035,12 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         )
 
         self.assertEqual(candidate.name, "001.json")
-        self.assertEqual(facts["exact_stage_paths"], [
-            f"{self.task_rel}/task-commit-plans/001.json",
-            "src/task.txt",
-        ])
+        self.assertEqual(facts["exact_stage_paths"], ["src/task.txt"])
+        self.assertTrue(
+            candidate.relative_to(self.root).as_posix().startswith(
+                gtt.TASK_COMMIT_RUNTIME_DIR
+            )
+        )
         classifications = {
             item["path"]: item["category"]
             for item in plan["path_classifications"]
@@ -1166,7 +1106,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertEqual(blocked, {"typed_exit": "blocked"})
         self.assertEqual(
             evidence["errors"],  # type: ignore[index]
-            ["Committed task candidate recovery evidence is stale."],
+            ["No committed task candidate is available for recovery."],
         )
 
     def test_review_entry_accepts_current_task_commit_evidence_and_rejects_stale_identity(self) -> None:
@@ -1551,32 +1491,16 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
         self.assertEqual(payload["status"], "committed")
-        self.assertEqual(set(payload["committed_paths"]), {reviewed, candidate.relative_to(self.root).as_posix()})
+        self.assertEqual(self.committed_paths(payload["commit_sha"]), {reviewed})
         self.assertEqual((self.root / "unrelated.log").read_text(encoding="utf-8"), "keep\n")
         self.assertIn("unrelated.log", gtt.git_status_paths(self.root))
-        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
-        self.assertEqual(result["status"], "committed")
-        self.assertEqual(result["parent"], payload["pre_commit_head"])
-        self.assertTrue(result["tree_evidence"]["matches"])
-        self.assertEqual(result["tree_evidence"]["expected_tree"], result["tree_evidence"]["actual_tree"])
-        self.assertEqual(gtt.task_commit_result_validation_errors(self.root, json.loads(candidate.read_text(encoding="utf-8"))), [])
+        self.assertFalse(candidate.exists())
         self.assertEqual(gtt.current_head(self.root), payload["commit_sha"])
         self.assertEqual(
             gtt.task_commit_write_tree(self.root),
             gtt.task_commit_commit_tree(self.root, payload["commit_sha"]),
         )
-        committed_candidate = subprocess.run(
-            ["git", "show", f"{payload['commit_sha']}:{candidate.relative_to(self.root).as_posix()}"],
-            cwd=self.root,
-            check=True,
-            stdout=subprocess.PIPE,
-        ).stdout
-        self.assertEqual(json.loads(committed_candidate)["result"], {"status": "planned", "exit": None})
-        self.assertNotEqual(committed_candidate, candidate.read_bytes())
-
-        tampered = json.loads(candidate.read_text(encoding="utf-8"))
-        tampered["result"]["tree_evidence"]["actual_tree"] = "0" * 40
-        self.assertTrue(gtt.task_commit_result_validation_errors(self.root, tampered))
+        self.assertNotIn(gtt.TASK_COMMIT_RUNTIME_DIR, gtt.git_status_paths(self.root))
 
     def test_index_identity_uses_literal_exact_record_for_metacharacter_paths(self) -> None:
         literal = "src/[0]*.txt"
@@ -1659,32 +1583,19 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         with self.assertRaises(gtt.WorkflowError):
             gtt.task_commit_index_identity(self.root, path)
 
-    def test_exact_executor_restages_current_candidate_bytes(self) -> None:
+    def test_exact_executor_never_stages_private_candidate(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
         candidate_rel = candidate.relative_to(self.root).as_posix()
-        subprocess.run(["git", "add", "--", candidate_rel], cwd=self.root, check=True)
-
-        plan = json.loads(candidate.read_text(encoding="utf-8"))
-        plan["ai_review"]["summary"] = "Review updated after the candidate was first staged."
-        plan["freshness"]["plan_digest"] = gtt.task_commit_plan_digest(plan)
-        gtt.write_json(candidate, plan)
 
         payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        committed = subprocess.run(
-            ["git", "show", f"{payload['commit_sha']}:{candidate_rel}"],
-            cwd=self.root,
-            check=True,
-            text=True,
-            stdout=subprocess.PIPE,
-        ).stdout
-        committed_plan = json.loads(committed)
+        self.assertEqual(self.committed_paths(payload["commit_sha"]), {"src/task.txt"})
         self.assertEqual(
-            committed_plan["ai_review"]["summary"],
-            "Review updated after the candidate was first staged.",
+            gtt.task_commit_tree_path_identity(self.root, payload["commit_sha"], candidate_rel),
+            (None, None),
         )
-        self.assertEqual(committed_plan["result"], {"status": "planned", "exit": None})
+        self.assertFalse(candidate.exists())
 
     def test_exact_executor_stages_reviewed_delete_without_broad_add(self) -> None:
         reviewed = "src/task.txt"
@@ -1693,10 +1604,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
 
         payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        self.assertEqual(
-            set(payload["committed_paths"]),
-            {reviewed, candidate.relative_to(self.root).as_posix()},
-        )
+        self.assertEqual(self.committed_paths(payload["commit_sha"]), {reviewed})
         self.assertFalse((self.root / reviewed).exists())
 
     def test_exact_executor_preserves_rename_source_and_destination(self) -> None:
@@ -1707,10 +1615,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
 
         payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        self.assertEqual(
-            set(payload["committed_paths"]),
-            {source, destination, candidate.relative_to(self.root).as_posix()},
-        )
+        self.assertEqual(self.committed_paths(payload["commit_sha"]), {source, destination})
         self.assertFalse((self.root / source).exists())
         self.assertTrue((self.root / destination).is_file())
 
@@ -1779,11 +1684,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
 
         payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        candidate_rel = candidate.relative_to(self.root).as_posix()
-        self.assertEqual(
-            set(payload["committed_paths"]),
-            {destination, candidate_rel},
-        )
+        self.assertEqual(self.committed_paths(payload["commit_sha"]), {destination})
         self.assertEqual(
             gtt.task_commit_tree_path_identity(
                 self.root, payload["commit_sha"], source
@@ -1820,11 +1721,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
 
         payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        candidate_rel = candidate.relative_to(self.root).as_posix()
-        self.assertEqual(
-            set(payload["committed_paths"]),
-            {source, destination, candidate_rel},
-        )
+        self.assertEqual(self.committed_paths(payload["commit_sha"]), {source, destination})
         source_blob, source_mode = gtt.task_commit_tree_path_identity(
             self.root, payload["commit_sha"], source
         )
@@ -1974,149 +1871,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertNotEqual(add_results[0].returncode, 0)
         self.assertIn("exact entry state was restored", str(raised.exception))
         self.assert_task_commit_entry_state(before, candidate)
-
-    def test_success_window_blocks_git_writers_and_linearizes_at_final_candidate_read(self) -> None:
-        concurrent = self.root / "src/concurrent.txt"
-        concurrent.write_text("base\n", encoding="utf-8")
-        subprocess.run(["git", "add", "src/concurrent.txt"], cwd=self.root, check=True)
-        subprocess.run(["git", "commit", "-q", "-m", "test(trellis): #122 添加成功并发基线"], cwd=self.root, check=True)
-        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
-        concurrent.write_text("concurrent-C\n", encoding="utf-8")
-        candidate = self.make_plan(1, ["src/task.txt"], ["src/concurrent.txt"])
-        original_candidate = gtt.task_commit_publish_guarded_candidate
-        original_index = gtt.task_commit_publish_locked_index
-        original_identity = gtt.task_commit_file_matches_identity
-        original_index_match = gtt.task_commit_index_preimage_matches
-        publication_order: list[str] = []
-        add_results: list[subprocess.CompletedProcess[str]] = []
-        ref_results: list[subprocess.CompletedProcess[str]] = []
-        committed_result_bytes: list[bytes] = []
-        published_index_bytes: list[bytes] = []
-        candidate_preimage = candidate.read_bytes()
-        third_party = b'{"third_party":"post-linearization-candidate-C"}\n'
-        linearized = False
-
-        def publish_candidate(source: Path, target: Path, preimage: bytes) -> None:
-            publication_order.append("candidate")
-            current_ref = gtt.current_head(self.root)
-            current_tree = subprocess.run(
-                ["git", "rev-parse", f"{current_ref}^{{tree}}"],
-                cwd=self.root,
-                check=True,
-                text=True,
-                stdout=subprocess.PIPE,
-            ).stdout.strip()
-            concurrent_ref = subprocess.run(
-                ["git", "commit-tree", current_tree, "-p", current_ref],
-                cwd=self.root,
-                check=True,
-                input="success-window concurrent ref\n",
-                text=True,
-                stdout=subprocess.PIPE,
-            ).stdout.strip()
-            ref_results.append(
-                subprocess.run(
-                    [
-                        "git",
-                        "update-ref",
-                        gtt.task_commit_branch_ref(self.root),
-                        concurrent_ref,
-                        current_ref,
-                    ],
-                    cwd=self.root,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                )
-            )
-            original_candidate(source, target, preimage)
-
-        def publish_index(source_path: Path, index_path: Path) -> None:
-            publication_order.append("index")
-            self.assertTrue(Path(str(index_path) + ".lock").is_file())
-            published_index_bytes.append(source_path.read_bytes())
-            add_results.append(
-                subprocess.run(
-                    ["git", "add", "src/concurrent.txt"],
-                    cwd=self.root,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                )
-            )
-            original_index(source_path, index_path)
-
-        def write_after_final_identity_read(
-            path: Path,
-            identity: dict[str, object],
-            expected_bytes: bytes,
-        ) -> bool:
-            nonlocal linearized
-            matches = original_identity(path, identity, expected_bytes)
-            if path == candidate and expected_bytes != candidate_preimage and matches:
-                self.assertFalse(linearized)
-                self.assertTrue(Path(str(candidate) + ".lock").is_file())
-                index_path = gtt.task_commit_index_preimage(self.root)["path"]
-                self.assertTrue(Path(str(index_path) + ".lock").is_file())
-                ref_path = gtt.task_commit_git_path(
-                    self.root, gtt.task_commit_branch_ref(self.root)
-                )
-                self.assertTrue(Path(str(ref_path) + ".lock").is_file())
-                self.assertEqual(index_path.read_bytes(), published_index_bytes[0])
-                committed_result_bytes.append(expected_bytes)
-                publication_order.append("candidate-identity")
-                linearized = True
-                gtt.task_commit_atomic_replace_bytes(candidate, third_party, 0o600)
-            return matches
-
-        def reject_post_linearization_check(preimage: dict[str, object]) -> bool:
-            if linearized:
-                raise AssertionError("fallible index check ran after success linearization")
-            return original_index_match(preimage)
-
-        with (
-            mock.patch.object(gtt, "task_commit_publish_guarded_candidate", side_effect=publish_candidate),
-            mock.patch.object(gtt, "task_commit_publish_locked_index", side_effect=publish_index),
-            mock.patch.object(gtt, "task_commit_file_matches_identity", side_effect=write_after_final_identity_read),
-            mock.patch.object(gtt, "task_commit_index_preimage_matches", side_effect=reject_post_linearization_check),
-        ):
-            payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
-
-        result = json.loads(committed_result_bytes[0].decode("utf-8"))["result"]
-        self.assertNotEqual(add_results[0].returncode, 0)
-        self.assertNotEqual(ref_results[0].returncode, 0)
-        self.assertEqual(publication_order, ["candidate", "index", "candidate-identity"])
-        self.assertEqual(payload["status"], "committed")
-        self.assertEqual(gtt.current_head(self.root), payload["commit_sha"])
-        self.assertEqual(gtt.task_commit_write_tree(self.root), gtt.task_commit_commit_tree(self.root, payload["commit_sha"]))
-        self.assertEqual(candidate.read_bytes(), third_party)
-        self.assertEqual(
-            payload["candidate_result_sha256"],
-            hashlib.sha256(committed_result_bytes[0]).hexdigest(),
-        )
-        self.assertEqual(result["commit_sha"], payload["commit_sha"])
-        self.assertEqual(result["tree_evidence"]["actual_tree"], gtt.task_commit_commit_tree(self.root, payload["commit_sha"]))
-        candidate_rel = gtt.repo_relative(self.root, candidate)
-        committed_candidate_blob, committed_candidate_mode = gtt.task_commit_tree_path_identity(
-            self.root, payload["commit_sha"], candidate_rel
-        )
-        planned_blob = subprocess.run(
-            ["git", "hash-object", "--stdin"],
-            cwd=self.root,
-            check=True,
-            input=candidate_preimage,
-            stdout=subprocess.PIPE,
-        ).stdout.decode("ascii").strip()
-        self.assertEqual((committed_candidate_blob, committed_candidate_mode), (planned_blob, "100644"))
-        index_path = gtt.task_commit_index_preimage(self.root)["path"]
-        ref_path = gtt.task_commit_git_path(self.root, gtt.task_commit_branch_ref(self.root))
-        self.assertFalse(Path(str(candidate) + ".lock").exists())
-        self.assertFalse(Path(str(index_path) + ".lock").exists())
-        self.assertFalse(Path(str(ref_path) + ".lock").exists())
-        self.assertEqual(list(candidate.parent.glob(f".{candidate.name}.*.publication")), [])
-        self.assertEqual(list(index_path.parent.glob(f".{index_path.name}.*.publication")), [])
 
     def test_candidate_writer_before_final_identity_read_rolls_back_and_is_preserved(self) -> None:
         (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
@@ -2312,8 +2066,12 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
         self.assertEqual(payload["status"], "committed")
-        self.assertFalse(payload["hook_mutation"])
-        self.assertTrue(payload["tree_evidence"]["matches"])
+        self.assertEqual(self.committed_paths(payload["commit_sha"]), {"src/task.txt"})
+        self.assertEqual(
+            gtt.task_commit_write_tree(self.root),
+            gtt.task_commit_commit_tree(self.root, payload["commit_sha"]),
+        )
+        self.assertFalse(candidate.exists())
 
     def test_failing_pre_commit_hook_preserves_ref_index_and_candidate_preimages(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -2372,10 +2130,10 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                 payload = copy.deepcopy(plan)
                 payload["result"] = result
                 with mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]):
-                    self.assertEqual(
-                        gtt.task_commit_result_validation_errors(self.root, payload),
-                        expected_errors,
-                        "runtime tamper validation must match the canonical non-masked error contract",
+                    actual_errors = gtt.task_commit_result_validation_errors(self.root, payload)
+                    self.assertTrue(
+                        set(expected_errors).issubset(actual_errors),
+                        "runtime tamper validation must retain every canonical legacy error",
                     )
 
     def test_same_path_hook_content_restage_never_publishes_unreviewed_tree(self) -> None:
@@ -2422,7 +2180,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertTrue((self.root / "src/task.txt").stat().st_mode & stat.S_IXUSR)
         self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
-    def test_old_plan_cannot_be_reused_after_first_commit(self) -> None:
+    def test_private_candidate_is_single_use_and_next_candidate_restarts_runtime_sequence(self) -> None:
         (self.root / "src/task.txt").write_text("first\n", encoding="utf-8")
         first = self.make_plan(1, ["src/task.txt"])
         gtt.execute_task_commit_candidate(self.root, first, self.task_dir)
@@ -2430,15 +2188,11 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             gtt.execute_task_commit_candidate(self.root, first, self.task_dir)
 
         (self.root / "src/task.txt").write_text("second\n", encoding="utf-8")
-        second = self.make_plan(2, ["src/task.txt"])
+        second = self.make_plan(1, ["src/task.txt"])
         plan, facts, errors = gtt.validate_task_commit_candidate(self.root, second, self.task_dir)
         self.assertEqual(errors, [])
-        self.assertEqual(plan["sequence"], "002")
+        self.assertEqual(plan["sequence"], "001")
         self.assertEqual(facts["pre_commit_head"], gtt.current_head(self.root))
-
-        reused = self.make_plan(1, ["src/task.txt"])
-        _, _, reuse_errors = gtt.validate_task_commit_candidate(self.root, reused, self.task_dir)
-        self.assertTrue(any("already exists at pre_commit_head" in error for error in reuse_errors))
 
     def test_sequence_must_be_next_unused(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -5131,7 +4885,7 @@ class HumanMarkdownArtifactResolverTest(unittest.TestCase):
         self.assertIsInstance(artifacts, list)
         return {str(item["filename"]): item for item in artifacts}  # type: ignore[index]
 
-    def test_resolve_active_task_returns_five_markdown_artifacts_only(self) -> None:
+    def test_resolve_active_task_returns_four_markdown_artifacts_only(self) -> None:
         self.write_artifacts(self.task_dir, ["prd.md", "design.md", "implement.md", "review.md", "pr-body.md"])
         for json_artifact in ["phase2-check.json", "review-gate.json", "pr-readiness.json", "agent-assignment.json"]:
             (self.task_dir / json_artifact).write_text("{}\n", encoding="utf-8")
@@ -5146,7 +4900,7 @@ class HumanMarkdownArtifactResolverTest(unittest.TestCase):
         artifacts = self.artifact_by_filename(payload)
         self.assertEqual(
             list(artifacts),
-            ["prd.md", "design.md", "implement.md", "review.md", "pr-body.md"],
+            ["prd.md", "design.md", "implement.md", "pr-body.md"],
         )
         for filename, artifact in artifacts.items():
             self.assertTrue(artifact["exists"], filename)
@@ -5172,9 +4926,6 @@ class HumanMarkdownArtifactResolverTest(unittest.TestCase):
         self.assertFalse(artifacts["design.md"]["exists"])
         self.assertEqual(artifacts["design.md"]["status"], "未生成")
         self.assertEqual(artifacts["design.md"]["link"], "")
-        self.assertFalse(artifacts["review.md"]["exists"])
-        self.assertEqual(artifacts["review.md"]["status"], "未执行")
-        self.assertEqual(artifacts["review.md"]["link"], "")
 
     def test_resolve_archive_task_when_active_task_is_missing(self) -> None:
         shutil.rmtree(self.task_dir)
@@ -5191,8 +4942,7 @@ class HumanMarkdownArtifactResolverTest(unittest.TestCase):
         self.assertTrue(payload["archived"])
         self.assertEqual(payload["task_dir_relative"], archived_rel)
         artifacts = self.artifact_by_filename(payload)
-        self.assertEqual(artifacts["review.md"]["path"], f"{archived_rel}/review.md")
-        self.assertEqual(artifacts["review.md"]["link"], str((archived / "review.md").resolve()))
+        self.assertNotIn("review.md", artifacts)
         self.assertFalse(artifacts["pr-body.md"]["exists"])
         self.assertEqual(artifacts["pr-body.md"]["link"], "")
 
@@ -5587,16 +5337,10 @@ class WorkspaceBoundaryGuardTest(unittest.TestCase):
 
     def test_wrong_task_artifact_arguments_are_rejected(self) -> None:
         self.source_task_dir.mkdir(parents=True)
-        for name, content in [("prd.md", "# PRD\n"), ("review.md", "# Review\n"), ("agent-assignment.json", "{}\n")]:
+        for name, content in [("prd.md", "# PRD\n"), ("agent-assignment.json", "{}\n")]:
             (self.source_task_dir / name).write_text(content, encoding="utf-8")
-        (self.source_task_dir / "reviews").mkdir()
-        (self.source_task_dir / "reviews/round-001.md").write_text("# Round\n", encoding="utf-8")
-        with self.assertRaises(gtt.WorkflowError):
-            gtt.load_review_report(self.workspace, self.task_dir, str(self.source_task_dir / "review.md"))
         with self.assertRaises(gtt.WorkflowError):
             gtt.validate_agent_assignment(self.workspace, self.task_dir, str(self.source_task_dir / "agent-assignment.json"))
-        with self.assertRaises(gtt.WorkflowError):
-            gtt.load_review_round_report(self.workspace, self.task_dir, str(self.source_task_dir / "reviews/round-001.md"))
         with self.assertRaises(gtt.WorkflowError):
             gtt.build_phase2_check_payload(root=self.workspace, task_dir=self.task_dir, task_context=self.task_context, task={"base_branch": "main"}, checker="trellis-check", check_summary="检查完成。", checked_artifacts=[str(self.source_task_dir / "prd.md")], checked_specs=[], coverage_items=list(gtt.REQUIRED_PHASE2_COVERAGE), validation_items=["unit|passed"], findings=[])
 
@@ -7786,7 +7530,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
-        self.assertEqual(payload["schema_version"], "2.0")
+        self.assertEqual(payload["schema_version"], "2.1")
         self.assertEqual(payload["skill_id"], "guru-check-task")
         self.assertEqual(checked["typed_exit"], "passed")
         self.assertEqual(checked["consumer"], {"kind": "skill", "id": "guru-create-task-commit"})
@@ -7966,7 +7710,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             for patcher in reversed(patches):
                 patcher.stop()
 
-    def test_phase2_v2_worker_evidence_requires_completed_check_agent(self) -> None:
+    def test_phase2_v21_worker_evidence_does_not_require_assignment_ledger(self) -> None:
         payload = self.phase2_input()
         payload["check_execution"]["worker_evidence"][0]["agent_id"] = "other-check"
         patches = self.patch_common()
@@ -7974,15 +7718,12 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             patcher.start()
         try:
             self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record_phase2(payload)
+            recorded = self.record_phase2(payload)
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
-        self.assertIn(
-            "phase2_check_worker_agent_not_completed_check_agent",
-            raised.exception.payload["error_codes"],
-        )
+        self.assertEqual(recorded["schema_version"], "2.1")
+        self.assertNotIn("agent_assignment", recorded)
 
     def test_phase2_v2_open_current_scope_finding_cannot_be_nonblocking(self) -> None:
         payload = self.phase2_input()
@@ -8147,13 +7888,14 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             gtt.phase2_semantic_errors(payload),
         )
 
-    def test_phase2_v2_worker_evidence_covers_every_completed_check_agent(self) -> None:
+    def test_phase2_v21_has_no_assignment_or_recovery_dimension(self) -> None:
         payload = self.phase2_input()
-        payload["agent_assignment"]["check_agent_ids"] = ["check-1", "check-2"]
-        self.assertIn(
-            "phase2_check_worker_agent_not_completed_check_agent",
-            gtt.phase2_semantic_errors(payload),
+        self.assertNotIn("agent_assignment", payload)
+        self.assertNotIn(
+            "agent_recovery",
+            [item["id"] for item in payload["semantic_review"]["adequacy_dimensions"]],
         )
+        self.assertEqual(len(payload["semantic_review"]["adequacy_dimensions"]), 9)
 
     def test_phase2_v2_agent_projection_requires_assignment_artifact(self) -> None:
         (self.task_dir / "agent-assignment.json").unlink()
@@ -8233,7 +7975,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                         "impact": "Reliable complete check is unavailable.",
                         "blocking": True,
                     }]
-                    payload["semantic_review"]["adequacy_dimensions"][9]["unverified_ids"] = ["U1"]
+                    payload["semantic_review"]["adequacy_dimensions"][-1]["unverified_ids"] = ["U1"]
                 result = self.record_phase2(payload, name=f"phase2-{index}.json")
                 self.assertEqual(result["typed_exit"], typed_exit)
                 self.assertEqual(result["route"], route)
@@ -8357,7 +8099,6 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self,
         *,
         include_uncovered: bool,
-        include_assignment_handoff: bool = False,
     ) -> dict[str, object]:
         patches = self.patch_common()
         for patcher in patches:
@@ -8375,25 +8116,9 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         subprocess.run(["git", "commit", "-q", "-m", "initial fixture"], cwd=self.root, check=True)
         recorded_head = gtt.current_head(self.root)
 
-        self.write_phase2_agent_assignment(recorded_head)
         (self.root / "covered.py").write_text("covered = True\n", encoding="utf-8")
         artifact = self.task_dir / "phase2-check.json"
         recorded = gtt.read_json(artifact)
-        recorded["agent_assignment"] = gtt.phase2_agent_projection(
-            self.root,
-            self.task_dir,
-            recorded["agent_assignment"],
-        )
-        if include_assignment_handoff:
-            recorded["implementation_handoff"]["artifacts"].append(
-                gtt.phase2_path_digest(self.root, self.task_dir / "agent-assignment.json")
-            )
-            handoff = {
-                key: value
-                for key, value in recorded["implementation_handoff"].items()
-                if key != "facts_sha256"
-            }
-            recorded["implementation_handoff"]["facts_sha256"] = gtt.context_digest(handoff)
         repository = recorded["repository_snapshot"]
         repository.update({
             "base_ref": "main",
@@ -8415,7 +8140,6 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         if include_uncovered:
             (self.root / "unreviewed.py").write_text("unreviewed = True\n", encoding="utf-8")
             committed_paths.append("unreviewed.py")
-        committed_paths.append(".trellis/tasks/07-04-gates/agent-assignment.json")
         subprocess.run(["git", "add", "--", *committed_paths], cwd=self.root, check=True)
         subprocess.run(["git", "commit", "-q", "-m", "commit reviewed work"], cwd=self.root, check=True)
         return recorded
@@ -8669,88 +8393,42 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
-    def test_phase2_v2_allows_real_post_commit_review_agent_metadata_tail(self) -> None:
-        recorded = self.phase2_post_commit_fixture(
-            include_uncovered=False,
-            include_assignment_handoff=True,
-        )
-        assignment_path = self.task_dir / "agent-assignment.json"
-        assignment = gtt.read_json(assignment_path)
-        head = gtt.current_head(self.root)
-        assignment["agents"].append({
-            "logical_role": "最终放行审查代理",
-            "agent_id": "review-1",
-            "platform_nickname": "review-1",
-            "assigned_at": "2026-07-19T00:01:00Z",
-            "assigned_head": head,
-            "reason": "Assign post-commit Branch Review agent.",
-            "event_id": "evt-review-1-assigned",
-        })
-        assignment["status_events"].extend([
-            self.phase2_status_event(
-                event_id="evt-review-1-assigned",
-                event="assigned",
-                agent_id="review-1",
-                logical_role="最终放行审查代理",
-                head=head,
-            ),
-            self.phase2_status_event(
-                event_id="evt-review-1-completed",
-                event="completed",
-                agent_id="review-1",
-                logical_role="最终放行审查代理",
-                head=head,
-            ),
-        ])
-        report = self.task_dir / "reviews" / "round-001-final-release.md"
-        report.parent.mkdir(parents=True, exist_ok=True)
-        report.write_text("# Final review\n", encoding="utf-8")
-        report_digest = gtt.file_digest(self.root, report)
-        assignment["review_rounds"].append({
-            "round": 1,
-            "logical_role": "最终放行审查代理",
-            "agent_id": "review-1",
-            "platform_nickname": "review-1",
-            "reviewed_head": head,
-            "findings_count": 0,
-            "reuse_policy": "Fresh final release reviewer.",
-            "reuse_decision": "new-agent",
-            "recorded_at": "2026-07-19T00:02:00Z",
-            "review_report_path": report_digest["path"],
-            "review_report_sha256": report_digest["sha256"],
-            "review_report_size_bytes": report_digest["size_bytes"],
-            "review_report_modified_at": report_digest["modified_at"],
-        })
-        assignment["updated_at"] = "2026-07-19T00:02:00Z"
-        gtt.write_json(assignment_path, assignment)
-
-        self.assertEqual(
-            gtt.validate_agent_assignment_payload(self.root, self.task_dir, assignment),
-            [],
-        )
+    def test_phase2_v21_ignores_legacy_review_metadata_tail(self) -> None:
+        recorded = self.phase2_post_commit_fixture(include_uncovered=False)
+        self.write_phase2_agent_assignment(gtt.current_head(self.root))
+        (self.task_dir / "review.md").write_text("# Legacy review\n", encoding="utf-8")
         self.assertEqual(self.validate_phase2_post_commit_fixture(recorded), [])
 
-    def test_phase2_v2_post_commit_rejects_phase2_agent_and_recovery_drift(self) -> None:
+    def test_phase2_v21_private_recovery_checkpoint_does_not_stale_phase2(self) -> None:
         recorded = self.phase2_post_commit_fixture(include_uncovered=False)
-        assignment_path = self.task_dir / "agent-assignment.json"
-        assignment = gtt.read_json(assignment_path)
-        assignment["status_events"][0]["evidence"] = "Changed implementation completion evidence."
-        gtt.write_json(assignment_path, assignment)
-        errors = self.validate_phase2_post_commit_fixture(recorded)
-        self.assertIn("phase2_check_agent_assignment_stale", errors)
-
-        assignment["status_events"].append(
-            self.phase2_status_event(
-                event_id="evt-check-1-failed",
-                event="failed",
-                agent_id="check-1",
-                logical_role="阶段二检查代理",
-                head=gtt.current_head(self.root),
-            )
-        )
-        gtt.write_json(assignment_path, assignment)
-        errors = self.validate_phase2_post_commit_fixture(recorded)
-        self.assertTrue(any(error.startswith("phase2_check_current_facts_invalid:") for error in errors))
+        recovery = {
+            "schema_version": "1.0",
+            "task_ref": ".trellis/tasks/07-04-gates",
+            "events": [{
+                "event_id": "recovery-001", "event": "unfinished",
+                "logical_role": "阶段二检查代理", "agent_id": "check-old",
+                "reason": "Agent stopped before completion.",
+                "handoff_summary": "Preserve completed checks and remaining scope.",
+                "observed_head": gtt.current_head(self.root),
+                "recorded_at": "2026-07-19T00:00:00Z",
+                "predecessor_event_id": None,
+            }, {
+                "event_id": "recovery-002", "event": "replacement",
+                "logical_role": "阶段二检查代理", "agent_id": "check-new",
+                "reason": "Replacement resumes the unfinished check.",
+                "handoff_summary": "Resume the exact remaining check scope.",
+                "observed_head": gtt.current_head(self.root),
+                "recorded_at": "2026-07-19T00:01:00Z",
+                "predecessor_event_id": "recovery-001",
+            }],
+            "updated_at": "2026-07-19T00:01:00Z",
+            "facts_sha256": "",
+        }
+        recovery["facts_sha256"] = gtt.context_digest(gtt.agent_recovery_facts(recovery))
+        path = gtt.agent_recovery_path(self.root, self.task_dir)
+        gtt.write_json(path, recovery)
+        self.assertEqual(gtt.agent_recovery_errors(self.root, self.task_dir, recovery), [])
+        self.assertEqual(self.validate_phase2_post_commit_fixture(recorded), [])
 
     @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
     def test_validate_phase2_allows_post_commit_review_gate_metadata_updates(self) -> None:
@@ -9408,6 +9086,7 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(raised.exception.payload["remote_head"], "b" * 40)
 
 
+
 class ReviewGateReportTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -9421,7 +9100,8 @@ class ReviewGateReportTest(unittest.TestCase):
             encoding="utf-8",
         )
         (self.task_dir / "issue-scope-ledger.json").write_text(
-            '{"close_issues":[{"number":20,"title":"Review gate","acceptance_evidence":["ok"]}],'
+            '{"primary_issue":{"number":20,"title":"Review gate"},'
+            '"close_issues":[{"number":20,"title":"Review gate","acceptance_evidence":["ok"]}],'
             '"related_issues":[],"followup_issues":[]}\n',
             encoding="utf-8",
         )
@@ -9429,1245 +9109,34 @@ class ReviewGateReportTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
-    def patch_review_command(self) -> list[mock._patch]:
+    def package_schema(self, name: str) -> dict[str, object]:
+        package = (
+            Path(gtt.__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-review-branch/schemas"
+        )
+        return gtt.read_json(package / name)
+
+    def patch_review_command(self, head: str) -> list[mock._patch]:
         return [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
-            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
-                "base_branch": "main",
-                "workspace_mode": "worktree",
-                "workspace_path": str(self.root),
-                "task_dir": ".trellis/tasks/07-04-review-gate",
-                "preflight": {"current_checkout": str(self.root)},
-            }),
+            mock.patch.object(
+                gtt,
+                "load_config",
+                return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"},
+            ),
+            mock.patch.object(
+                gtt,
+                "load_task_start_context",
+                return_value={
+                    "base_branch": "main",
+                    "workspace_mode": "worktree",
+                    "workspace_path": str(self.root),
+                    "task_dir": ".trellis/tasks/07-04-review-gate",
+                    "preflight": {"current_checkout": str(self.root)},
+                },
+            ),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "review_branch_entry_precondition_errors", return_value=[]),
-            mock.patch.object(gtt, "validate_planning_approval", return_value=(self.task_dir / "planning-approval.json", {}, [])),
-            mock.patch.object(gtt, "validate_phase2_check", return_value=(self.task_dir / "phase2-check.json", {}, [])),
-            mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
-            mock.patch.object(gtt, "changed_files", return_value=["trellis/workflows/guru-team/workflow.md"]),
-        ]
-
-    def write_raw_review_report(self, name: str, content: str | None = None) -> Path:
-        reports_dir = self.task_dir / "reviews"
-        reports_dir.mkdir(parents=True, exist_ok=True)
-        path = reports_dir / name
-        path.write_text(content or f"# 原始审查报告\n\n{name} 原始审查证据。\n", encoding="utf-8")
-        return path
-
-    def raw_report_name_for_round(self, round_item: dict[str, object], index: int) -> str:
-        round_number = round_item.get("round") if isinstance(round_item.get("round"), int) else index + 1
-        role = round_item.get("logical_role")
-        findings_count = round_item.get("findings_count")
-        if role == "最终放行审查代理" and findings_count == 0:
-            suffix = "final-release"
-        elif role == "问题闭环审查代理":
-            suffix = "closure"
-        else:
-            suffix = "problem-finding" if findings_count else "review"
-        return f"round-{int(round_number):03d}-{suffix}.md"
-
-    def raw_report_names_for_rounds(self, rounds: list[dict[str, object]]) -> list[str]:
-        return [self.raw_report_name_for_round(item, index) for index, item in enumerate(rounds)]
-
-    def add_raw_report_fields(self, round_item: dict[str, object], index: int) -> dict[str, object]:
-        item = dict(round_item)
-        if "review_report_path" in item:
-            return item
-        report = self.write_raw_review_report(self.raw_report_name_for_round(item, index))
-        digest = gtt.file_digest(self.root, report)
-        item.update(
-            {
-                "review_report_path": digest["path"],
-                "review_report_sha256": digest["sha256"],
-                "review_report_size_bytes": digest["size_bytes"],
-                "review_report_modified_at": digest["modified_at"],
-            }
-        )
-        return item
-
-    def review_rollup_text(self, body: str, report_names: list[str] | None = None) -> str:
-        names = report_names or ["round-001-final-release.md"]
-        links = "\n".join(f"- reviews/{name}" for name in names)
-        return f"# 审查报告\n\n{body}\n\n## 原始报告链接\n\n{links}\n"
-
-    def write_agent_assignment(
-        self,
-        review_rounds: list[dict[str, object]] | None = None,
-        reuse_decisions: list[dict[str, object]] | None = None,
-        status_events: list[dict[str, object]] | None = None,
-    ) -> Path:
-        assignment = self.task_dir / "agent-assignment.json"
-        rounds = review_rounds if review_rounds is not None else [
-            {
-                "round": 1,
-                "logical_role": "最终放行审查代理",
-                "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
-                "platform_nickname": "Gibbs",
-                "reviewed_head": "abc123",
-                "findings_count": 0,
-                "reuse_policy": "最终放行审查代理必须是 fresh new agent，并完整审查当前 diff。",
-                "reuse_decision": "new-agent",
-            }
-        ]
-        rounds = [self.add_raw_report_fields(item, index) for index, item in enumerate(rounds)]
-        normalized_status_events: list[dict[str, object]] = []
-        last_terminal_by_agent: dict[str, dict[str, object]] = {}
-        for index, raw in enumerate(status_events or []):
-            item = dict(raw)
-            item.setdefault("event_id", f"evt-{index + 1:04d}")
-            item.setdefault("recorded_at", item.get("observed_at", "2026-07-07T00:00:00Z"))
-            item.setdefault("source", "main-session")
-            item.setdefault("evidence", item.get("reason") or item.get("workspace_evidence") or "测试 fixture evidence")
-            event_name = str(item.get("event") or "")
-            agent_id = str(item.get("agent_id") or "")
-            if event_name == "terminated-unfinished":
-                item.setdefault("termination_reason", "manual_or_platform_terminated_unfinished")
-                item.setdefault("termination_source_event_id", "")
-                last_terminal_by_agent[agent_id] = item
-            elif event_name == "failed":
-                last_terminal_by_agent[agent_id] = item
-            elif event_name == "replacement-started":
-                predecessor = str(item.get("predecessor_agent_id") or "")
-                terminal = last_terminal_by_agent.get(predecessor, {})
-                predecessor_event = str(terminal.get("event") or "")
-                predecessor_reason = str(terminal.get("termination_reason") or "")
-                item.setdefault("predecessor_agent_id", predecessor)
-                item.setdefault("predecessor_event_id", terminal.get("event_id", ""))
-                if predecessor_event == "failed":
-                    item.setdefault("replacement_reason", "terminal_failed_incomplete")
-                elif predecessor_reason == "manual_or_platform_terminated_unfinished":
-                    item.setdefault("replacement_reason", "manual_or_platform_terminated_unfinished")
-                else:
-                    item.setdefault("replacement_reason", "max_progress_silence_exceeded")
-            item.setdefault("predecessor_agent_id", "")
-            item.setdefault("predecessor_event_id", "")
-            item.setdefault("termination_reason", "")
-            item.setdefault("termination_source_event_id", "")
-            item.setdefault("replacement_reason", "")
-            item.setdefault("handoff_summary", item.get("handoff_summary", ""))
-            normalized_status_events.append(item)
-        agents = [
-            {
-                "logical_role": "实现代理",
-                "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
-                "platform_nickname": "Gibbs",
-                "assigned_at": "2026-07-05T00:00:00Z",
-                "assigned_head": "abc123",
-                "reason": "Codex sub-agent 模式下分配实现代理。",
-            }
-        ]
-        known_agents = {str(agents[0]["agent_id"])}
-        for item in normalized_status_events:
-            agent_id = str(item.get("agent_id") or "")
-            if not agent_id or agent_id in known_agents:
-                continue
-            agents.append(
-                {
-                    "logical_role": item.get("logical_role") or "实现代理",
-                    "agent_id": agent_id,
-                    "platform_nickname": item.get("platform_nickname") or agent_id,
-                    "assigned_at": item.get("observed_at") or "2026-07-05T00:00:00Z",
-                    "assigned_head": item.get("head") or "abc123",
-                    "reason": "测试 fixture 中的 status event agent 已按新 liveness 合同登记。",
-                }
-            )
-            known_agents.add(agent_id)
-        assignment.write_text(
-            gtt.json.dumps(
-                {
-                    "schema_version": "1.1",
-                    "task": ".trellis/tasks/07-04-review-gate",
-                    "head": "abc123",
-                    "agents": agents,
-                    "liveness": {},
-                    "review_rounds": rounds,
-                    "reuse_decisions": reuse_decisions if reuse_decisions is not None else [],
-                    "status_events": normalized_status_events,
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        return assignment
-
-    def test_review_branch_pass_requires_review_report(self) -> None:
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(review_args(review_report=None))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("--review-report", str(raised.exception))
-        self.assertIn("--reviewer is identity metadata only", str(raised.exception))
-
-    def test_review_branch_records_review_report_digest(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(self.review_rollup_text("无 finding。"), encoding="utf-8")
-        assignment = self.write_agent_assignment()
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        recorded = payload["verification_evidence"]["review_report"]
-        self.assertEqual(recorded["path"], ".trellis/tasks/07-04-review-gate/review.md")
-        self.assertEqual(recorded["size_bytes"], review_report.stat().st_size)
-        self.assertEqual(recorded["sha256"], gtt.hashlib.sha256(review_report.read_bytes()).hexdigest())
-        raw_reports = payload["verification_evidence"]["review_reports"]
-        self.assertEqual(len(raw_reports), 1)
-        self.assertEqual(raw_reports[0]["path"], ".trellis/tasks/07-04-review-gate/reviews/round-001-final-release.md")
-        self.assertEqual(raw_reports[0]["sha256"], gtt.hashlib.sha256((self.task_dir / "reviews/round-001-final-release.md").read_bytes()).hexdigest())
-        self.assertTrue(recorded["modified_at"])
-        self.assertTrue((self.task_dir / "review-gate.json").exists())
-
-    def test_review_branch_rejects_final_rollup_english_template_headings(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(
-            "# Review Rounds\n\n"
-            "- reviews/round-001-final-release.md\n\n"
-            "## Findings Lifecycle\n\n无 finding。\n\n"
-            "## Deployment / safety impact\n\n未涉及部署资产。\n\n"
-            "## Follow-up Candidates\n\n无后续候选。\n",
-            encoding="utf-8",
-        )
-        assignment = self.write_agent_assignment()
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with (
-                mock.patch.object(gtt, "git_object_exists", return_value=True),
-                self.assertRaises(gtt.WorkflowError) as raised,
-            ):
-                gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        errors = raised.exception.payload["errors"]
-        self.assertTrue(any("Review Rounds" in error for error in errors))
-        self.assertTrue(any("Findings Lifecycle" in error for error in errors))
-        self.assertTrue(any("Deployment / safety impact" in error for error in errors))
-        self.assertTrue(any("Follow-up Candidates" in error for error in errors))
-
-    def test_review_branch_rejects_raw_report_english_template_heading(self) -> None:
-        raw_report = self.write_raw_review_report(
-            "round-001-final-release.md",
-            "# Evidence Handoff\n\nBranch Review raw evidence。\n",
-        )
-        digest = gtt.file_digest(self.root, raw_report)
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(self.review_rollup_text("无 finding。"), encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
-                    "platform_nickname": "Gibbs",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "最终放行审查代理必须是 fresh new agent，并完整审查当前 diff。",
-                    "reuse_decision": "new-agent",
-                    "review_report_path": digest["path"],
-                    "review_report_sha256": digest["sha256"],
-                    "review_report_size_bytes": digest["size_bytes"],
-                    "review_report_modified_at": digest["modified_at"],
-                }
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with (
-                mock.patch.object(gtt, "git_object_exists", return_value=True),
-                self.assertRaises(gtt.WorkflowError) as raised,
-            ):
-                gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("Evidence Handoff" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_pass_requires_rollup_to_link_raw_reports(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n缺少 raw report 链接。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment()
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with (
-                mock.patch.object(gtt, "git_object_exists", return_value=True),
-                self.assertRaises(gtt.WorkflowError) as raised,
-            ):
-                gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertIn("review.md does not link every raw review report", str(raised.exception))
-        self.assertTrue(any("reviews/round-001-final-release.md" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_pass_requires_agent_assignment(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n缺少 agent-assignment，无法证明 fresh final reviewer。\n", encoding="utf-8")
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(review_args(review_report=str(review_report)))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("--agent-assignment", str(raised.exception))
-        self.assertIn("fresh 最终放行审查代理", str(raised.exception))
-
-    def test_review_branch_pass_rejects_p3_finding(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\nP3 finding 也必须阻断。\n", encoding="utf-8")
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        finding=["P3|需要收敛的轻微问题|trellis/workflows/guru-team/workflow.md"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("any findings", str(raised.exception))
-
-    def test_review_branch_records_blocking_finding_as_failed_artifact(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n独立审查发现 P3 finding。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "reviewer-a",
-                    "platform_nickname": "问题发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现 finding 的 agent 只能复用为闭环审查代理。",
-                    "reuse_decision": "new-agent",
-                }
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        pass_gate=False,
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                        finding=["P3|需要收敛的轻微问题|trellis/workflows/guru-team/workflow.md"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertFalse(payload["conclusion"]["passed"])
-        self.assertEqual(payload["conclusion"]["findings_count"], 1)
-        self.assertEqual(payload["conclusion"]["blocking_findings_count"], 1)
-        self.assertEqual(payload["verification_evidence"]["review_source"], gtt.INDEPENDENT_REVIEW_SOURCE)
-        self.assertEqual(payload["verification_evidence"]["review_report"]["path"], ".trellis/tasks/07-04-review-gate/review.md")
-        self.assertEqual(payload["verification_evidence"]["review_reports"][0]["findings_count"], 1)
-        self.assertTrue((self.task_dir / "review-gate.json").exists())
-
-    def test_review_branch_findings_requires_current_matching_review_round(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n独立审查发现 P3 finding。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "reviewer-a",
-                    "platform_nickname": "问题发现代理",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现 finding 的 agent 只能复用为闭环审查代理。",
-                    "reuse_decision": "new-agent",
-                }
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with (
-                mock.patch.object(gtt, "git_object_exists", return_value=True),
-                self.assertRaises(gtt.WorkflowError) as raised,
-            ):
-                gtt.cmd_review_branch(
-                    review_args(
-                        pass_gate=False,
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                        finding=["P3|需要收敛的轻微问题|trellis/workflows/guru-team/workflow.md"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        errors = raised.exception.payload["errors"]
-        self.assertTrue(any("reviewed_head=abc123" in error and "findings_count=1" in error for error in errors))
-
-    def test_review_branch_records_observations_without_blocking_pass(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(self.review_rollup_text("无 finding，仅有 observation。"), encoding="utf-8")
-        assignment = self.write_agent_assignment()
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                        observation=["文案可后续更精炼|trellis/workflows/guru-team/workflow.md"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(payload["conclusion"]["passed"])
-        self.assertEqual(payload["conclusion"]["findings_count"], 0)
-        self.assertEqual(payload["conclusion"]["observations_count"], 1)
-        self.assertEqual(payload["observations"][0]["kind"], "observation")
-
-    def test_review_branch_records_followup_candidates_without_blocking_pass(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(self.review_rollup_text("无 finding，仅有 follow-up candidate。"), encoding="utf-8")
-        assignment = self.write_agent_assignment()
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                        followup_candidate=["后续可增强 PR body lint|trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(payload["conclusion"]["passed"])
-        self.assertEqual(payload["conclusion"]["findings_count"], 0)
-        self.assertEqual(payload["conclusion"]["followup_candidates_count"], 1)
-        self.assertEqual(payload["followup_candidates"][0]["kind"], "followup_candidate")
-
-    def test_review_branch_records_agent_assignment_digest(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(self.review_rollup_text("fresh 最终放行审查代理给出 0 findings。"), encoding="utf-8")
-        assignment = self.write_agent_assignment()
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        recorded = payload["verification_evidence"]["agent_assignment"]
-        self.assertEqual(recorded["path"], ".trellis/tasks/07-04-review-gate/agent-assignment.json")
-        self.assertEqual(recorded["sha256"], gtt.hashlib.sha256(assignment.read_bytes()).hexdigest())
-        self.assertEqual(recorded["roles"], ["实现代理", "最终放行审查代理"])
-        self.assertEqual(recorded["agents_count"], 1)
-        self.assertEqual(recorded["review_rounds_count"], 1)
-
-    def test_review_branch_pass_rejects_unclosed_terminated_unfinished_status_event(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n未完成终止事件缺少继任闭环。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            status_events=[
-                {
-                    "event": "terminated-unfinished",
-                    "logical_role": "实现代理",
-                    "agent_id": "implement-agent-a",
-                    "platform_nickname": "实现代理 A",
-                    "head": "abc123",
-                    "observed_at": "2026-07-07T00:10:00Z",
-                    "last_observed_progress_at": "2026-07-07T00:04:00Z",
-                    "workspace_evidence": "git diff 无变化，channel event 无新增。",
-                    "running_command_evidence": "验证命令无输出。",
-                    "decision": "terminate-unfinished",
-                    "reason": "AI 已判断当前 agent 无进展并中断。",
-                    "handoff_summary": "前任输出、当前 diff、剩余任务已整理，等待恢复或继任。",
-                }
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        errors = raised.exception.payload["errors"]
-        self.assertTrue(any("terminated-unfinished" in error for error in errors))
-        self.assertTrue(any("completed" in error for error in errors))
-
-    def test_review_branch_pass_accepts_replacement_status_event_chain(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(self.review_rollup_text("继任 agent 完成剩余工作后最终放行。"), encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            status_events=[
-                {
-                    "event": "terminated-unfinished",
-                    "logical_role": "实现代理",
-                    "agent_id": "implement-agent-a",
-                    "platform_nickname": "实现代理 A",
-                    "head": "abc123",
-                    "observed_at": "2026-07-07T00:10:00Z",
-                    "last_observed_progress_at": "2026-07-07T00:04:00Z",
-                    "workspace_evidence": "git diff 无变化，channel event 无新增。",
-                    "running_command_evidence": "验证命令无输出。",
-                    "decision": "terminate-unfinished",
-                    "reason": "AI 已判断当前 agent 无进展并中断。",
-                    "handoff_summary": "前任输出、当前 diff、剩余任务已整理。",
-                },
-                {
-                    "event": "replacement-started",
-                    "logical_role": "实现代理",
-                    "agent_id": "implement-agent-b",
-                    "platform_nickname": "实现代理 B",
-                    "head": "abc123",
-                    "observed_at": "2026-07-07T00:11:00Z",
-                    "last_observed_progress_at": "",
-                    "workspace_evidence": "继任 agent 读取前任输出和当前 diff。",
-                    "running_command_evidence": "",
-                    "decision": "start-replacement",
-                    "reason": "同一会话无法恢复，启动继任 agent 继续剩余实现。",
-                    "predecessor_agent_id": "implement-agent-a",
-                    "handoff_summary": "继任已接收 task artifacts、当前 diff、剩余 checklist 和 gate 阻塞点。",
-                },
-                {
-                    "event": "completed",
-                    "logical_role": "实现代理",
-                    "agent_id": "implement-agent-b",
-                    "platform_nickname": "实现代理 B",
-                    "head": "abc123",
-                    "observed_at": "2026-07-07T00:30:00Z",
-                    "last_observed_progress_at": "2026-07-07T00:29:00Z",
-                    "workspace_evidence": "继任 agent 完成实现并交付验证结果。",
-                    "running_command_evidence": "验证命令已结束。",
-                    "decision": "mark-completed",
-                    "reason": "继任 agent 已完成剩余工作。",
-                    "handoff_summary": "",
-                },
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(payload["conclusion"]["passed"])
-        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["status_events_count"], 3)
-
-    def test_review_branch_rejects_finding_owner_as_final_reviewer(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n同一 agent 不能从 finding owner 变成最终放行。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后可继续闭环确认，但不能最终放行。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "错误示例：复用 finding owner 作为最终放行。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("不能作为最终放行审查代理" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_accepts_fresh_final_reviewer_after_finding_closure(self) -> None:
-        review_report = self.task_dir / "review.md"
-        rounds = [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后可继续闭环确认，但不能最终放行。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 必须完整审查当前 diff。",
-                    "reuse_decision": "new-agent",
-                },
-        ]
-        review_report.write_text(
-            self.review_rollup_text(
-                "fresh final reviewer 完整审查当前 HEAD，0 findings。",
-                self.raw_report_names_for_rounds(rounds),
-            ),
-            encoding="utf-8",
-        )
-        assignment = self.write_agent_assignment(rounds)
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(payload["conclusion"]["passed"])
-        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["review_rounds_count"], 3)
-
-    def test_review_branch_rejects_semantic_finding_with_unknown_owner_and_closure_report(self) -> None:
-        head = "a" * 40
-        rounds = [
-            {
-                "round": 1,
-                "logical_role": "问题发现审查代理",
-                "agent_id": "agent-a",
-                "platform_nickname": "发现代理",
-                "reviewed_head": head,
-                "findings_count": 1,
-                "reuse_policy": "发现问题后只进入实现与闭环。",
-                "reuse_decision": "new-agent",
-            },
-            {
-                "round": 2,
-                "logical_role": "问题闭环审查代理",
-                "agent_id": "agent-a",
-                "platform_nickname": "发现代理",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "同一 agent 只确认上一轮 finding 是否关闭。",
-                "reuse_decision": "reuse-for-closure",
-            },
-            {
-                "round": 3,
-                "logical_role": "最终放行审查代理",
-                "agent_id": "agent-b",
-                "platform_nickname": "最终代理",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "最终放行必须使用 fresh agent。",
-                "reuse_decision": "new-agent",
-            },
-        ]
-        assignment = self.write_agent_assignment(rounds)
-        assignment_payload = gtt.read_json(assignment)
-        assignment_payload["head"] = head
-        gtt.write_json(assignment, assignment_payload)
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(
-            self.review_rollup_text(
-                "finding 已闭环，并由 fresh final reviewer 完整复核。",
-                self.raw_report_names_for_rounds(rounds),
-            ),
-            encoding="utf-8",
-        )
-        public_input = {
-            "profile": "branch_review",
-            "mode": "workflow",
-            "task_ref": ".trellis/tasks/07-04-review-gate",
-            "base_ref": "origin/main",
-            "committed_head": head,
-            "review_intent": "finding_fix_review",
-        }
-        semantic_input = {
-            "candidates": [{
-                "candidate_ref": "candidate-001",
-                "disposition": "qualified_finding",
-                "scenario_class": "normal_required_behavior",
-                "affected_behavior": "已批准行为需要修复。",
-                "path": "trellis/workflows/guru-team/workflow.md",
-                "evidence_refs": ["reviews/round-001-problem-finding.md"],
-                "requirement_refs": ["PRD R6"],
-                "scope_basis": "当前批准范围。",
-                "qualification_reason": "正常路径违反当前 requirement。",
-                "finding_ref": "F-001",
-                "severity": "P2",
-                "owner_round": 99,
-                "reviewed_head": head,
-                "status": "resolved",
-                "closure_evidence": ["reviews/nonexistent-closure.md"],
-            }],
-            "ai_review_gate": {
-                "status": "passed",
-                "summary": "所有 finding 已闭环。",
-            },
-        }
-        public_input_path = self.root / "review-public-input.json"
-        semantic_input_path = self.root / "review-semantic-input.json"
-        gtt.write_json(public_input_path, public_input)
-        gtt.write_json(semantic_input_path, semantic_input)
-        schema_path = (
-            Path(gtt.__file__).resolve().parents[5]
-            / "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-branch-review-input.schema.json"
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with (
-                mock.patch.object(gtt, "current_head", return_value=head),
-                mock.patch.object(gtt, "git_object_exists", return_value=True),
-                mock.patch.object(
-                    gtt,
-                    "review_branch_public_input_schema",
-                    return_value=gtt.read_json(schema_path),
-                ),
-                self.assertRaises(gtt.WorkflowError) as raised,
-            ):
-                gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                        reviewer="agent-b",
-                        skill_input=str(public_input_path),
-                        semantic_review_file=str(semantic_input_path),
-                        typed_exit="passed",
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(
-            any(
-                "owner_round" in error or "closure_evidence" in error
-                for error in raised.exception.payload.get("errors", [])
-            ),
-            raised.exception.payload,
-        )
-
-    def test_review_branch_v2_lifecycle_accepts_valid_replacement_closure(self) -> None:
-        head = "a" * 40
-        rounds = [
-            {
-                "round": 1,
-                "logical_role": "问题发现审查代理",
-                "agent_id": "agent-a",
-                "platform_nickname": "发现代理",
-                "reviewed_head": head,
-                "findings_count": 1,
-                "reuse_policy": "发现 finding 后原 agent 客观失败。",
-                "reuse_decision": "new-agent",
-            },
-            {
-                "round": 2,
-                "logical_role": "问题闭环审查代理",
-                "agent_id": "agent-c",
-                "platform_nickname": "替代闭环代理",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "替代失败的 finding owner，仅完成 closure。",
-                "reuse_decision": "replace",
-            },
-            {
-                "round": 3,
-                "logical_role": "最终放行审查代理",
-                "agent_id": "agent-b",
-                "platform_nickname": "最终代理",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "fresh final reviewer 完整复核当前范围。",
-                "reuse_decision": "new-agent",
-            },
-        ]
-        assignment = self.write_agent_assignment(
-            rounds,
-            reuse_decisions=[
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "replace",
-                    "reason": "agent-a 已失败，由 agent-c 接管 finding closure。",
-                    "head": head,
-                    "from_round": 1,
-                    "to_round": 2,
-                }
-            ],
-            status_events=[
-                {
-                    "event": "failed",
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "head": head,
-                    "observed_at": "2026-07-24T00:10:00Z",
-                    "decision": "mark-failed",
-                    "reason": "finding report 已保留，但原 agent 无法继续 closure。",
-                },
-                {
-                    "event": "replacement-started",
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "替代闭环代理",
-                    "head": head,
-                    "observed_at": "2026-07-24T00:11:00Z",
-                    "decision": "start-replacement",
-                    "reason": "原 owner 已失败，启动 replacement closure。",
-                    "predecessor_agent_id": "agent-a",
-                    "handoff_summary": "复核并闭环 round 1 finding。",
-                },
-                {
-                    "event": "completed",
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "替代闭环代理",
-                    "head": head,
-                    "observed_at": "2026-07-24T00:20:00Z",
-                    "decision": "mark-completed",
-                    "reason": "replacement closure 已完成。",
-                },
-            ],
-        )
-        payload = gtt.read_json(assignment)
-        owner_report = payload["review_rounds"][0]["review_report_path"]
-        closure_report = payload["review_rounds"][1]["review_report_path"]
-        semantic_review = {
-            "qualified_findings": [
-                {
-                    "finding_ref": "F-001",
-                    "owner_round": 1,
-                    "reviewed_head": head,
-                    "evidence_refs": [owner_report],
-                    "status": "resolved",
-                    "closure_evidence": [closure_report],
-                }
-            ]
-        }
-
-        errors = gtt.review_branch_finding_lifecycle_errors(
-            self.root,
-            self.task_dir,
-            semantic_review,
-            payload,
-        )
-
-        self.assertEqual(errors, [])
-
-    def test_review_branch_v2_lifecycle_rejects_unlinked_closure_report_when_other_replacement_is_valid(
-        self,
-    ) -> None:
-        head = "a" * 40
-        rounds = [
-            {
-                "round": 1,
-                "logical_role": "问题发现审查代理",
-                "agent_id": "agent-a",
-                "platform_nickname": "发现代理",
-                "reviewed_head": head,
-                "findings_count": 1,
-                "reuse_policy": "发现 finding 后原 agent 客观失败。",
-                "reuse_decision": "new-agent",
-            },
-            {
-                "round": 2,
-                "logical_role": "问题闭环审查代理",
-                "agent_id": "agent-c",
-                "platform_nickname": "替代闭环代理",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "替代失败的 finding owner，仅完成 closure。",
-                "reuse_decision": "replace",
-            },
-            {
-                "round": 3,
-                "logical_role": "问题闭环审查代理",
-                "agent_id": "agent-d",
-                "platform_nickname": "另一闭环代理",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "闭环另一轮产生的 finding，不与 round 1 owner 建立关系。",
-                "reuse_decision": "new-agent",
-            },
-            {
-                "round": 4,
-                "logical_role": "最终放行审查代理",
-                "agent_id": "agent-b",
-                "platform_nickname": "最终代理",
-                "reviewed_head": head,
-                "findings_count": 0,
-                "reuse_policy": "fresh final reviewer 完整复核当前范围。",
-                "reuse_decision": "new-agent",
-            },
-        ]
-        assignment = self.write_agent_assignment(
-            rounds,
-            reuse_decisions=[
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "replace",
-                    "reason": "agent-a 已失败，由 agent-c 接管 round 1 finding closure。",
-                    "head": head,
-                    "from_round": 1,
-                    "to_round": 2,
-                },
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-d",
-                    "decision": "new-agent",
-                    "reason": "agent-d 只承接 round 2 后续闭环，不承接 round 1 finding。",
-                    "head": head,
-                    "from_round": 2,
-                    "to_round": 3,
-                },
-            ],
-            status_events=[
-                {
-                    "event": "failed",
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "head": head,
-                    "observed_at": "2026-07-24T00:10:00Z",
-                    "decision": "mark-failed",
-                    "reason": "finding report 已保留，但原 agent 无法继续 closure。",
-                },
-                {
-                    "event": "replacement-started",
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "替代闭环代理",
-                    "head": head,
-                    "observed_at": "2026-07-24T00:11:00Z",
-                    "decision": "start-replacement",
-                    "reason": "原 owner 已失败，启动 replacement closure。",
-                    "predecessor_agent_id": "agent-a",
-                    "handoff_summary": "复核并闭环 round 1 finding。",
-                },
-                {
-                    "event": "completed",
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "替代闭环代理",
-                    "head": head,
-                    "observed_at": "2026-07-24T00:20:00Z",
-                    "decision": "mark-completed",
-                    "reason": "replacement closure 已完成。",
-                },
-            ],
-        )
-        payload = gtt.read_json(assignment)
-        owner_report = payload["review_rounds"][0]["review_report_path"]
-        unlinked_closure_report = payload["review_rounds"][2]["review_report_path"]
-        semantic_review = {
-            "qualified_findings": [
-                {
-                    "finding_ref": "F-001",
-                    "owner_round": 1,
-                    "reviewed_head": head,
-                    "evidence_refs": [owner_report],
-                    "status": "resolved",
-                    "closure_evidence": [unlinked_closure_report],
-                }
-            ]
-        }
-
-        errors = gtt.review_branch_finding_lifecycle_errors(
-            self.root,
-            self.task_dir,
-            semantic_review,
-            payload,
-        )
-
-        self.assertTrue(
-            any("closure round lacks" in error for error in errors),
-            errors,
-        )
-        self.assertTrue(
-            any("no current bound closure_evidence" in error for error in errors),
-            errors,
-        )
-
-    def test_review_branch_entry_rejects_paths_outside_exact_owner_metadata(self) -> None:
-        task_ref = ".trellis/tasks/07-04-review-gate"
-        task_context = {
-            "branch_name": "codex/20-review-gate",
-            "base_branch": "main",
-            "workspace_mode": "worktree",
-            "workspace_path": str(self.root),
-            "task_dir": task_ref,
-            "preflight": {"current_checkout": str(self.root)},
-        }
-        task_payload = {
-            "id": "07-04-review-gate",
-            "status": "in_progress",
-            "branch": "codex/20-review-gate",
-            "base_branch": "main",
-        }
-        (self.task_dir / "issue-scope-ledger.json").write_text(
-            '{"primary_issue":{"number":20},"close_issues":[],"related_issues":[],"followup_issues":[]}\n',
-            encoding="utf-8",
-        )
-        invalid_paths = [
-            ".trellis/tasks/unrelated/ordinary-note.md",
-            f"{task_ref}/ordinary-note.md",
-            f"{task_ref}/reviews/unregistered.md",
-            ".trellis/.runtime/guru-team/evals/undeclared.json",
-        ]
-        for invalid_path in invalid_paths:
-            with (
-                self.subTest(invalid_path=invalid_path),
-                mock.patch.object(gtt, "review_branch_public_input_schema", return_value={}),
-                mock.patch.object(gtt, "review_branch_gate_schema", return_value={}),
-                mock.patch.object(gtt, "task_commit_schema_path", return_value=self.root / "task-commit.schema.json"),
-                mock.patch.object(gtt, "load_task_start_context", return_value=task_context),
-                mock.patch.object(gtt, "assert_workspace_boundary"),
-                mock.patch.object(gtt, "task_json", return_value=task_payload),
-                mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
-                mock.patch.object(gtt, "current_head", return_value="a" * 40),
-                mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
-                mock.patch.object(gtt, "changed_files", return_value=[]),
-                mock.patch.object(gtt, "review_branch_task_commit_evidence_errors", return_value=[]),
-                mock.patch.object(
-                    gtt,
-                    "validate_planning_approval",
-                    return_value=(self.task_dir / "planning-approval.json", {}, []),
-                ),
-                mock.patch.object(
-                    gtt,
-                    "validate_phase2_check",
-                    return_value=(
-                        self.task_dir / "phase2-check.json",
-                        {
-                            "typed_exit": "passed",
-                            "docs_ssot_plan": {
-                                "strategy": "ssot_first",
-                                "task_delta_merged": True,
-                            },
-                        },
-                        [],
-                    ),
-                ),
-                mock.patch.object(gtt, "git_status_paths", return_value=[invalid_path]),
-            ):
-                errors = gtt.review_branch_entry_precondition_errors(
-                    self.root,
-                    self.task_dir,
-                    {**gtt.DEFAULTS, "github_repo": "owner/repo"},
-                )
-
-            self.assertTrue(
-                any("working tree" in error and invalid_path in error for error in errors),
-                errors,
-            )
-
-    def test_review_branch_entry_accepts_exact_owner_metadata_and_direct_runtime_input(self) -> None:
-        task_ref = ".trellis/tasks/07-04-review-gate"
-        head = "a" * 40
-        task_context = {
-            "branch_name": "codex/20-review-gate",
-            "base_branch": "main",
-            "workspace_mode": "worktree",
-            "workspace_path": str(self.root),
-            "task_dir": task_ref,
-            "preflight": {"current_checkout": str(self.root)},
-        }
-        task_payload = {
-            "id": "07-04-review-gate",
-            "status": "in_progress",
-            "branch": "codex/20-review-gate",
-            "base_branch": "main",
-        }
-        (self.task_dir / "issue-scope-ledger.json").write_text(
-            '{"primary_issue":{"number":20},"close_issues":[],"related_issues":[],"followup_issues":[]}\n',
-            encoding="utf-8",
-        )
-        assignment = self.write_agent_assignment()
-        assignment_payload = gtt.read_json(assignment)
-        assignment_payload["head"] = head
-        gtt.write_json(assignment, assignment_payload)
-        raw_report = assignment_payload["review_rounds"][0]["review_report_path"]
-        (self.task_dir / "review.md").write_text("# 审查汇总\n", encoding="utf-8")
-        gtt.write_json(self.task_dir / "review-gate.json", {"typed_exit": "passed"})
-        plan_dir = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR
-        plan_dir.mkdir()
-        gtt.write_json(
-            plan_dir / "001.json",
-            {
-                "sequence": "001",
-                "result": {
-                    "status": "committed",
-                    "commit_sha": head,
-                },
-            },
-        )
-        runtime_input = self.root / ".trellis/.runtime/guru-team/evals/public-input.json"
-        runtime_input.parent.mkdir(parents=True)
-        gtt.write_json(runtime_input, {"profile": "branch_review"})
-        dirty_paths = [
-            f"{task_ref}/agent-assignment.json",
-            f"{task_ref}/review.md",
-            f"{task_ref}/review-gate.json",
-            raw_report,
-            f"{task_ref}/task-commit-plans/001.json",
-            ".trellis/.runtime/guru-team/evals/public-input.json",
-        ]
-        with (
-            mock.patch.object(gtt, "review_branch_public_input_schema", return_value={}),
-            mock.patch.object(gtt, "review_branch_gate_schema", return_value={}),
-            mock.patch.object(gtt, "task_commit_schema_path", return_value=self.root / "task-commit.schema.json"),
-            mock.patch.object(gtt, "load_task_start_context", return_value=task_context),
-            mock.patch.object(gtt, "assert_workspace_boundary"),
-            mock.patch.object(gtt, "task_json", return_value=task_payload),
-            mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
-            mock.patch.object(gtt, "current_head", return_value=head),
-            mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
-            mock.patch.object(gtt, "changed_files", return_value=[]),
-            mock.patch.object(gtt, "review_branch_task_commit_evidence_errors", return_value=[]),
             mock.patch.object(
                 gtt,
                 "validate_planning_approval",
@@ -10676,3190 +9145,506 @@ class ReviewGateReportTest(unittest.TestCase):
             mock.patch.object(
                 gtt,
                 "validate_phase2_check",
-                return_value=(
-                    self.task_dir / "phase2-check.json",
-                    {
-                        "typed_exit": "passed",
-                        "docs_ssot_plan": {
-                            "strategy": "ssot_first",
-                            "task_delta_merged": True,
-                        },
-                    },
-                    [],
-                ),
+                return_value=(self.task_dir / "phase2-check.json", {}, []),
             ),
-            mock.patch.object(gtt, "git_status_paths", return_value=dirty_paths),
-            mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=0)),
-        ):
-            errors = gtt.review_branch_entry_precondition_errors(
-                self.root,
-                self.task_dir,
-                {**gtt.DEFAULTS, "github_repo": "owner/repo"},
-                direct_runtime_inputs=[
-                    ".trellis/.runtime/guru-team/evals/public-input.json",
-                ],
-            )
-
-        self.assertFalse(any("working tree" in error for error in errors), errors)
-
-    def test_review_branch_metadata_allowlist_accepts_committed_ancestor_plan(self) -> None:
-        plan = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR / "001.json"
-        plan.parent.mkdir()
-        committed_head = "a" * 40
-        current_head = "b" * 40
-        gtt.write_json(
-            plan,
-            {
-                "result": {
-                    "status": "committed",
-                    "commit_sha": committed_head,
-                }
-            },
-        )
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value=current_head),
+            mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
+            mock.patch.object(gtt, "current_head", return_value=head),
+            mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
             mock.patch.object(
                 gtt,
-                "run",
-                return_value=mock.Mock(returncode=0),
-            ) as run,
-        ):
-            allowed = gtt.review_branch_task_metadata_allowlist(
-                self.root,
-                self.task_dir,
-            )
-
-        self.assertIn(plan.relative_to(self.root).as_posix(), allowed)
-        run.assert_called_once_with(
-            ["git", "merge-base", "--is-ancestor", committed_head, current_head],
-            cwd=self.root,
-            check=False,
-        )
-
-    def test_review_branch_metadata_allowlist_rejects_non_ancestor_plan(self) -> None:
-        plan = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR / "001.json"
-        plan.parent.mkdir()
-        gtt.write_json(
-            plan,
-            {
-                "result": {
-                    "status": "committed",
-                    "commit_sha": "a" * 40,
-                }
-            },
-        )
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value="b" * 40),
+                "changed_files",
+                return_value=["trellis/workflows/guru-team/workflow.md"],
+            ),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
             mock.patch.object(
                 gtt,
-                "run",
-                return_value=mock.Mock(returncode=1),
+                "review_branch_public_input_schema",
+                return_value=self.package_schema("public-branch-review-input.schema.json"),
             ),
+            mock.patch.object(
+                gtt,
+                "review_branch_gate_schema",
+                return_value=self.package_schema("review-gate.schema.json"),
+            ),
+        ]
+
+    def write_inputs(
+        self,
+        *,
+        head: str,
+        review_intent: str,
+        typed_exit: str,
+        candidates: list[dict[str, object]],
+    ) -> tuple[Path, Path]:
+        public_input = self.root / "review-public-input.json"
+        semantic_input = self.root / "review-semantic-input.json"
+        gtt.write_json(
+            public_input,
+            {
+                "profile": "branch_review",
+                "mode": "workflow",
+                "task_ref": ".trellis/tasks/07-04-review-gate",
+                "base_ref": "origin/main",
+                "committed_head": head,
+                "review_intent": review_intent,
+            },
+        )
+        gtt.write_json(
+            semantic_input,
+            {
+                "candidates": candidates,
+                "ai_review_gate": {
+                    "status": typed_exit,
+                    "summary": "已完成当前完整 diff 的独立语义审查。",
+                },
+            },
+        )
+        return public_input, semantic_input
+
+    def record(
+        self,
+        *,
+        head: str,
+        review_intent: str,
+        typed_exit: str,
+        candidates: list[dict[str, object]],
+        reviewer: str = "independent-review-agent",
+    ) -> dict[str, object]:
+        public_input, semantic_input = self.write_inputs(
+            head=head,
+            review_intent=review_intent,
+            typed_exit=typed_exit,
+            candidates=candidates,
+        )
+        patchers = self.patch_review_command(head)
+        for patcher in patchers:
+            patcher.start()
+        try:
+            return gtt.cmd_review_branch(
+                review_args(
+                    reviewer=reviewer,
+                    skill_input=str(public_input),
+                    semantic_review_file=str(semantic_input),
+                    typed_exit=typed_exit,
+                )
+            )
+        finally:
+            for patcher in reversed(patchers):
+                patcher.stop()
+
+    def resolved_finding(self, introduced_head: str, resolved_head: str) -> dict[str, object]:
+        return {
+            "candidate_ref": "candidate-001",
+            "disposition": "qualified_finding",
+            "scenario_class": "normal_required_behavior",
+            "affected_behavior": "已批准行为需要修复。",
+            "path": "trellis/workflows/guru-team/workflow.md",
+            "evidence_refs": ["review-gate.json:F-001"],
+            "requirement_refs": ["Issue #119 regression"],
+            "scope_basis": "当前批准范围。",
+            "qualification_reason": "正常路径违反当前 requirement。",
+            "finding_ref": "F-001",
+            "severity": "P2",
+            "introduced_head": introduced_head,
+            "resolved_at_head": resolved_head,
+            "status": "resolved",
+            "closure_evidence": [f"commit:{resolved_head}", "test:branch-review-regression"],
+        }
+
+    def test_review_branch_records_only_compact_v21_gate(self) -> None:
+        head = "a" * 40
+        payload = self.record(
+            head=head,
+            review_intent="initial_review",
+            typed_exit="passed",
+            candidates=[],
+        )
+
+        self.assertEqual(payload["schema_version"], "2.1")
+        self.assertEqual(payload["typed_exit"], "passed")
+        self.assertEqual(
+            set(gtt.read_json(self.task_dir / "review-gate.json")),
+            {
+                "schema_version", "skill_id", "generated_at", "task_dir",
+                "mode", "review_intent", "typed_exit", "head", "base_ref",
+                "semantic_review", "verification_evidence", "facts_sha256",
+            },
+        )
+        self.assertFalse((self.task_dir / "review.md").exists())
+        self.assertFalse((self.task_dir / "agent-assignment.json").exists())
+        self.assertFalse((self.task_dir / "reviews").exists())
+
+    def test_check_review_gate_projects_v21_gate_to_live_git_entry(self) -> None:
+        head = "a" * 40
+        gate = {
+            "schema_version": "2.1",
+            "mode": "workflow",
+            "task_dir": ".trellis/tasks/07-04-review-gate",
+            "base_ref": "origin/main",
+            "head": head,
+            "review_intent": "fresh_final_review",
+            "typed_exit": "passed",
+        }
+        gate_path = self.task_dir / "review-gate.json"
+        gtt.write_json(gate_path, gate)
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value=gtt.DEFAULTS),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "load_task_start_context", return_value={}),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(
+                gtt,
+                "validate_review_gate",
+                return_value=(gate_path, gate, []),
+            ),
+            mock.patch.object(
+                gtt,
+                "review_branch_entry_precondition_errors",
+                return_value=[],
+            ) as entry_check,
+            mock.patch.object(gtt, "current_head", return_value=head),
         ):
-            allowed = gtt.review_branch_task_metadata_allowlist(
-                self.root,
-                self.task_dir,
+            checked = gtt.cmd_check_review_gate(argparse.Namespace(
+                root=str(self.root),
+                task=str(self.task_dir),
+                allow_metadata_after_gate=False,
+                allow_nonpass=False,
+                expected_exit="passed",
+            ))
+
+        self.assertEqual(checked["typed_exit"], "passed")
+        self.assertEqual(
+            entry_check.call_args.kwargs["public_input"],
+            {
+                "profile": "branch_review",
+                "mode": "workflow",
+                "task_ref": ".trellis/tasks/07-04-review-gate",
+                "base_ref": "origin/main",
+                "committed_head": head,
+                "review_intent": "fresh_final_review",
+            },
+        )
+
+    def test_review_branch_v21_accepts_119_closure_then_distinct_fresh_final_sequence(self) -> None:
+        introduced_head = "a" * 40
+        resolved_head = "b" * 40
+
+        open_finding = self.resolved_finding(introduced_head, introduced_head)
+        open_finding.update({"status": "open", "resolved_at_head": None, "closure_evidence": []})
+        initial = self.record(
+            head=introduced_head,
+            review_intent="initial_review",
+            typed_exit="implementation_required",
+            candidates=[open_finding],
+            reviewer="finding-owner",
+        )
+        self.assertEqual(initial["typed_exit"], "implementation_required")
+
+        ephemeral_closure = {
+            "reviewer": "finding-owner",
+            "introduced_head": introduced_head,
+            "resolved_at_head": resolved_head,
+            "evidence": [f"commit:{resolved_head}", "test:branch-review-regression"],
+        }
+        fresh_final_reviewer = "fresh-final-agent"
+        self.assertNotEqual(ephemeral_closure["reviewer"], fresh_final_reviewer)
+
+        payload = self.record(
+            head=resolved_head,
+            review_intent="fresh_final_review",
+            typed_exit="passed",
+            candidates=[self.resolved_finding(introduced_head, resolved_head)],
+            reviewer=fresh_final_reviewer,
+        )
+
+        recorded = gtt.read_json(self.task_dir / "review-gate.json")
+        self.assertEqual(payload["typed_exit"], "passed")
+        finding = recorded["semantic_review"]["qualified_findings"][0]
+        self.assertEqual(finding["introduced_head"], introduced_head)
+        self.assertEqual(finding["resolved_at_head"], resolved_head)
+        self.assertNotEqual(finding["introduced_head"], finding["resolved_at_head"])
+        self.assertEqual(
+            set(recorded["verification_evidence"]),
+            {"reviewer", "review_source", "evidence"},
+        )
+        self.assertEqual(recorded["verification_evidence"]["reviewer"], fresh_final_reviewer)
+        self.assertFalse((self.task_dir / "reviews").exists())
+        self.assertFalse((self.task_dir / "review.md").exists())
+        self.assertFalse((self.task_dir / "agent-assignment.json").exists())
+
+    def test_review_branch_rejects_legacy_finding_fix_public_intent(self) -> None:
+        introduced_head = "a" * 40
+        resolved_head = "b" * 40
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            self.record(
+                head=resolved_head,
+                review_intent="finding_fix_review",
+                typed_exit="passed",
+                candidates=[self.resolved_finding(introduced_head, resolved_head)],
             )
 
-        self.assertNotIn(plan.relative_to(self.root).as_posix(), allowed)
+        self.assertIn("public input is invalid", str(raised.exception))
 
-    def test_review_branch_semantic_payload_accepts_current_scope_rejections(self) -> None:
-        head = "a" * 40
-        for scenario in (
-            "normal_required_behavior",
-            "explicit_nonstandard_requirement",
-            "approved_nonstandard_expansion",
-        ):
-            with self.subTest(scenario=scenario):
-                semantic_input = self.root / f"{scenario}.json"
-                gtt.write_json(
-                    semantic_input,
-                    {
-                        "candidates": [
-                            {
-                                "candidate_ref": f"candidate-{scenario}",
-                                "disposition": "rejected_candidate",
-                                "scenario_class": scenario,
-                                "affected_behavior": "Reviewer candidate was disproved by current evidence.",
-                                "path": "src/production-eval.txt",
-                                "evidence_refs": ["tests/current-evidence.md"],
-                                "requirement_refs": ["PRD R5"],
-                                "scope_basis": "The candidate was evaluated against the current approved contract.",
-                                "qualification_reason": "Current implementation evidence proves no contract violation.",
-                            }
-                        ],
-                        "ai_review_gate": {
-                            "status": "passed",
-                            "summary": "The candidate was rejected without assigning finding severity.",
-                        },
-                    },
-                )
+    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
+    def test_review_gate_schema_keeps_legacy_20_intent_read_only(self) -> None:
+        from jsonschema import Draft202012Validator
 
-                result = gtt.review_branch_semantic_payload(
-                    self.root,
-                    str(semantic_input),
-                    "passed",
-                    head,
-                )
-
-                self.assertEqual(
-                    result["rejected_candidates"][0]["scenario_class"],
-                    scenario,
-                )
-                self.assertNotIn("severity", result["rejected_candidates"][0])
-                self.assertNotIn("finding_ref", result["rejected_candidates"][0])
-
-    def test_review_branch_semantic_payload_rejects_finding_fields_on_rejections(self) -> None:
-        head = "a" * 40
-        for forbidden_field, forbidden_value in (
-            ("severity", "P2"),
-            ("finding_ref", "F-001"),
-        ):
-            with self.subTest(forbidden_field=forbidden_field):
-                semantic_input = self.root / f"rejected-{forbidden_field}.json"
-                candidate = {
-                    "candidate_ref": f"candidate-{forbidden_field}",
-                    "disposition": "rejected_candidate",
-                    "scenario_class": "normal_required_behavior",
-                    "affected_behavior": "Reviewer candidate was disproved by current evidence.",
-                    "path": "src/production-eval.txt",
-                    "evidence_refs": ["tests/current-evidence.md"],
-                    "requirement_refs": ["PRD R5"],
-                    "scope_basis": "The candidate was evaluated against the current approved contract.",
-                    "qualification_reason": "Current implementation evidence proves no contract violation.",
-                    forbidden_field: forbidden_value,
-                }
-                gtt.write_json(
-                    semantic_input,
-                    {
-                        "candidates": [candidate],
-                        "ai_review_gate": {
-                            "status": "passed",
-                            "summary": "The candidate cannot carry finding fields.",
-                        },
-                    },
-                )
-
-                with self.assertRaises(gtt.WorkflowError):
-                    gtt.review_branch_semantic_payload(
-                        self.root,
-                        str(semantic_input),
-                        "passed",
-                        head,
-                    )
-
-    def test_final_review_round_errors_accepts_explicit_new_agent_closure(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "old123",
-                    "findings_count": 2,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "fixed123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "new-agent",
-                    "reason": "agent-c 针对 round 1 findings 审查修复后的新 HEAD。",
-                    "head": "fixed123",
-                    "from_round": 1,
-                    "to_round": 2,
-                }
-            ],
-        }
-
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertEqual(errors, [])
-
-    def test_final_review_round_errors_accepts_chained_new_agent_closures(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "head-1",
-                    "findings_count": 4,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "head-2",
-                    "findings_count": 2,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-d",
-                    "reviewed_head": "head-3",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 4,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "new-agent",
-                    "reason": "round 2 明确闭环 round 1 findings，同时记录新 findings。",
-                    "head": "head-2",
-                    "from_round": 1,
-                    "to_round": 2,
-                },
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-d",
-                    "decision": "new-agent",
-                    "reason": "round 3 明确闭环 round 2 新 findings。",
-                    "head": "head-3",
-                    "from_round": 2,
-                    "to_round": 3,
-                },
-            ],
-        }
-
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertEqual(errors, [])
-
-    def test_final_review_round_errors_rejects_new_agent_closure_seen_in_earlier_round(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "head-1",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "head-2",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "head-3",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 4,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "new-agent",
-                    "reason": "Round 8 反例：agent-c 已在 round 1 出现，不能冒充 fresh closure agent。",
-                    "head": "head-3",
-                    "from_round": 2,
-                    "to_round": 3,
-                }
-            ],
-        }
-
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertTrue(any("缺少闭环轮次" in error for error in errors))
-
-    def test_final_review_round_errors_rejects_final_agent_seen_in_earlier_clean_round(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "old123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [],
-        }
-
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertTrue(any("任何更早 review_rounds" in error for error in errors))
-
-    def test_final_review_round_errors_rejects_new_agent_relation_type_and_round_decision_mismatch(self) -> None:
-        base_payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "fixed123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "new-agent",
-                    "reason": "Round 8 关系精确性反例。",
-                    "head": "fixed123",
-                    "from_round": 1,
-                    "to_round": 2,
-                }
-            ],
-        }
-        invalid_payloads = []
-        for field, value in [("from_round", True), ("to_round", False), ("from_round", "1"), ("to_round", "2")]:
-            payload = gtt.json.loads(gtt.json.dumps(base_payload))
-            payload["reuse_decisions"][0][field] = value
-            invalid_payloads.append(payload)
-        round_mismatch = gtt.json.loads(gtt.json.dumps(base_payload))
-        round_mismatch["review_rounds"][1]["reuse_decision"] = "not-applicable"
-        invalid_payloads.append(round_mismatch)
-
-        for payload in invalid_payloads:
-            with self.subTest(payload=payload):
-                errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-                self.assertTrue(any("缺少闭环轮次" in error for error in errors))
-
-    def test_validate_agent_assignment_rejects_non_strict_reuse_decision_rounds(self) -> None:
-        assignment = self.write_agent_assignment(
-            reuse_decisions=[
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "new-agent",
-                    "reason": "Round 8 strict int 反例。",
-                    "head": "abc123",
-                    "from_round": True,
-                    "to_round": "2",
-                }
-            ]
-        )
-        payload = gtt.read_json(assignment)
-
-        with mock.patch.object(gtt, "git_object_exists", return_value=True):
-            errors = gtt.validate_agent_assignment_payload(self.root, self.task_dir, payload)
-
-        self.assertTrue(any("from_round 必须是正 strict int" in error for error in errors))
-        self.assertTrue(any("to_round 必须是正 strict int" in error for error in errors))
-
-    def test_final_review_round_errors_rejects_new_agent_closure_without_explicit_relation(self) -> None:
-        base_payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "fixed123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [],
-        }
-        invalid_decisions = [
-            None,
-            {
-                "logical_role": "问题闭环审查代理",
-                "agent_id": "agent-c",
-                "decision": "new-agent",
-                "reason": "缺少 from_round/to_round。",
-                "head": "fixed123",
+        schema = self.package_schema("review-gate.schema.json")
+        legacy = {
+            "schema_version": "2.0",
+            "skill_id": "guru-review-branch",
+            "typed_exit": "blocked",
+            "head": "a" * 40,
+            "base_ref": "origin/main",
+            "review_intent": "finding_fix_review",
+            "semantic_review": {
+                "qualified_findings": [],
+                "scope_proposals": [],
+                "observations": [],
+                "followup_candidates": [],
+                "rejected_candidates": [],
+                "ai_review_gate": {"status": "blocked", "summary": "legacy"},
             },
-            {
-                "logical_role": "问题闭环审查代理",
-                "agent_id": "wrong-agent",
-                "decision": "new-agent",
-                "reason": "agent_id 不匹配 closure round。",
-                "head": "fixed123",
-                "from_round": 1,
-                "to_round": 2,
-            },
-            {
-                "logical_role": "问题闭环审查代理",
-                "agent_id": "agent-c",
-                "decision": "new-agent",
-                "reason": "from/to 轮次错误。",
-                "head": "fixed123",
-                "from_round": 2,
-                "to_round": 3,
-            },
-        ]
-
-        for decision in invalid_decisions:
-            with self.subTest(decision=decision):
-                payload = gtt.json.loads(gtt.json.dumps(base_payload))
-                if decision is not None:
-                    payload["reuse_decisions"] = [decision]
-                errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-                self.assertTrue(any("from_round/to_round" in error for error in errors))
-
-    def test_final_review_round_errors_rejects_unclosed_nonzero_new_agent_closure(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "fixed123",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "new-agent",
-                    "reason": "round 2 仍有 finding，不能闭环 round 1。",
-                    "head": "fixed123",
-                    "from_round": 1,
-                    "to_round": 2,
-                }
-            ],
+            "facts_sha256": "b" * 64,
         }
+        self.assertEqual(list(Draft202012Validator(schema).iter_errors(legacy)), [])
+        current = {**legacy, "schema_version": "2.1"}
+        self.assertTrue(list(Draft202012Validator(schema).iter_errors(current)))
 
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertTrue(any("from_round/to_round" in error for error in errors))
-
-    def test_review_branch_accepts_replacement_closure_when_original_review_agent_failed(self) -> None:
-        review_report = self.task_dir / "review.md"
-        rounds = [
-                {
-                    "round": 1,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "中断最终代理",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_policy": "fresh final reviewer 发现 P2 finding，但随后失败，不能自己闭环。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "替代闭环代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "替代中断 agent，仅闭环 round 1 finding，不作为最终放行。",
-                    "reuse_decision": "replace",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 必须完整审查当前 HEAD diff。",
-                    "reuse_decision": "new-agent",
-                },
-        ]
-        review_report.write_text(
-            self.review_rollup_text(
-                "round 1 的 finding 已由替代闭环代理完成，fresh final reviewer 当前 HEAD 0 findings。",
-                self.raw_report_names_for_rounds(rounds),
-            ),
-            encoding="utf-8",
+    def test_review_branch_records_open_finding_without_raw_round(self) -> None:
+        head = "c" * 40
+        finding = self.resolved_finding(head, head)
+        finding.update({"status": "open", "resolved_at_head": None, "closure_evidence": []})
+        payload = self.record(
+            head=head,
+            review_intent="initial_review",
+            typed_exit="implementation_required",
+            candidates=[finding],
         )
-        assignment = self.write_agent_assignment(
-            rounds,
-            reuse_decisions=[
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "replace",
-                    "reason": "agent-a 已失败，无法继续同一技术 agent 闭环；agent-c 只闭环 round 1 finding。",
-                    "head": "abc123",
-                    "from_round": 1,
-                    "to_round": 2,
-                }
-            ],
-            status_events=[
-                {
-                    "event": "failed",
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "中断最终代理",
-                    "head": "old123",
-                    "observed_at": "2026-07-07T00:10:00Z",
-                    "last_observed_progress_at": "",
-                    "workspace_evidence": "raw report 已保留，连接中断后无法同 agent 继续。",
-                    "running_command_evidence": "review agent stream disconnected。",
-                    "decision": "mark-failed",
-                    "reason": "该 agent 已失败，不能作为 passing final，也不能继续闭环。",
-                    "handoff_summary": "",
-                },
-                {
-                    "event": "replacement-started",
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "替代闭环代理",
-                    "head": "abc123",
-                    "observed_at": "2026-07-07T00:11:00Z",
-                    "last_observed_progress_at": "",
-                    "workspace_evidence": "替代 agent 读取前任 raw report、当前 diff 和 finding。",
-                    "running_command_evidence": "替代闭环审查已启动。",
-                    "decision": "start-replacement",
-                    "reason": "原 review agent 已失败，启动替代闭环代理只复核该 finding。",
-                    "predecessor_agent_id": "agent-a",
-                    "handoff_summary": "闭环目标：确认 round 1 finding 在当前 HEAD 已修复。",
-                },
-                {
-                    "event": "completed",
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "替代闭环代理",
-                    "head": "abc123",
-                    "observed_at": "2026-07-07T00:20:00Z",
-                    "last_observed_progress_at": "2026-07-07T00:19:00Z",
-                    "workspace_evidence": "替代闭环 raw report 已写入 task worktree。",
-                    "running_command_evidence": "闭环审查完成，findings_count=0。",
-                    "decision": "mark-completed",
-                    "reason": "替代闭环代理已确认 finding 闭环。",
-                    "handoff_summary": "",
-                },
-            ],
+
+        self.assertEqual(payload["typed_exit"], "implementation_required")
+        self.assertEqual(
+            payload["semantic_review"]["qualified_findings"][0]["finding_ref"],
+            "F-001",
         )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            def object_exists(_root: Path, ref: str) -> bool:
-                return ref in {"abc123", "old123"}
+        self.assertFalse((self.task_dir / "reviews").exists())
 
-            with mock.patch.object(gtt, "git_object_exists", side_effect=object_exists):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
+    def test_review_branch_rejects_main_session_reviewer(self) -> None:
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            self.record(
+                head="d" * 40,
+                review_intent="initial_review",
+                typed_exit="passed",
+                candidates=[],
+                reviewer="codex-main-session",
+            )
 
-        self.assertTrue(payload["conclusion"]["passed"])
-        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["reuse_decisions_count"], 1)
-        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["status_events_count"], 3)
-
-    def test_review_branch_rejects_replacement_closure_without_recovery_evidence(self) -> None:
-        review_report = self.task_dir / "review.md"
-        rounds = [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后必须闭环。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "替代闭环代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "错误示例：只写 replace round，没有恢复链证据。",
-                    "reuse_decision": "replace",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 必须完整审查当前 HEAD diff。",
-                    "reuse_decision": "new-agent",
-                },
-        ]
-        review_report.write_text(
-            self.review_rollup_text(
-                "缺少 replacement-started / completed 恢复链时不能最终放行。",
-                self.raw_report_names_for_rounds(rounds),
-            ),
-            encoding="utf-8",
-        )
-        assignment = self.write_agent_assignment(
-            rounds,
-            reuse_decisions=[
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "replace",
-                    "reason": "缺少 status_events 恢复链的替代闭环不能通过。",
-                    "head": "abc123",
-                    "from_round": 1,
-                    "to_round": 2,
-                }
-            ],
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            def object_exists(_root: Path, ref: str) -> bool:
-                return ref in {"abc123", "old123"}
-
-            with mock.patch.object(gtt, "git_object_exists", side_effect=object_exists):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("replacement-started" in error for error in raised.exception.payload["errors"]))
-
-    def test_final_review_round_errors_rejects_replacement_closure_agent_as_final(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "replace",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "replace",
-                    "reason": "agent-a failed; agent-c closes only the finding.",
-                    "head": "abc123",
-                    "from_round": 1,
-                    "to_round": 2,
-                }
-            ],
-            "status_events": [
-                {
-                    "event": "failed",
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "head": "old123",
-                    "decision": "mark-failed",
-                },
-                {
-                    "event": "replacement-started",
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "head": "abc123",
-                    "decision": "start-replacement",
-                    "predecessor_agent_id": "agent-a",
-                    "handoff_summary": "agent-c closes round 1 finding only.",
-                },
-                {
-                    "event": "completed",
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "head": "abc123",
-                    "decision": "mark-completed",
-                },
-            ],
-        }
-
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertTrue(any("替代 finding closure" in error for error in errors))
-
-    def test_final_review_round_errors_rejects_new_agent_closure_agent_as_final(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-c",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-            "reuse_decisions": [
-                {
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-c",
-                    "decision": "new-agent",
-                    "reason": "agent-c 只负责闭环 round 1 finding。",
-                    "head": "abc123",
-                    "from_round": 1,
-                    "to_round": 2,
-                }
-            ],
-        }
-
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertTrue(any("finding closure" in error for error in errors))
-
-    def test_review_branch_accepts_prior_head_closure_before_current_final(self) -> None:
-        review_report = self.task_dir / "review.md"
-        rounds = [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "old123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后可继续闭环确认，但不能最终放行。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "old123",
-                    "findings_count": 0,
-                    "reuse_policy": "同一 agent 确认自己发现的问题已修复。",
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 必须完整审查当前 HEAD diff。",
-                    "reuse_decision": "new-agent",
-                },
-        ]
-        review_report.write_text(
-            self.review_rollup_text(
-                "fresh final reviewer 负责当前 HEAD 完整 diff，历史 closure 不需要随 HEAD 重跑。",
-                self.raw_report_names_for_rounds(rounds),
-            ),
-            encoding="utf-8",
-        )
-        assignment = self.write_agent_assignment(rounds)
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                payload = gtt.cmd_review_branch(
-                    review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(payload["conclusion"]["passed"])
-        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["review_rounds_count"], 3)
-
-    def test_review_branch_rejects_bool_findings_count(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\nfindings_count 必须是明确整数 0。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": False,
-                    "reuse_policy": "错误示例：JSON false 不能冒充明确的 0 findings。",
-                    "reuse_decision": "new-agent",
-                }
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("findings_count 必须是非负整数" in error for error in raised.exception.payload["errors"]))
-
-    def test_final_review_round_errors_rejects_bool_final_findings_count(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": False,
-                    "reuse_decision": "new-agent",
-                }
-            ],
-        }
-
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertTrue(any("findings_count 必须为明确整数 0" in error for error in errors))
-
-    def test_review_branch_rejects_final_reviewer_without_prior_closure_round(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n缺少问题闭环审查代理。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后必须先由同 agent 闭环确认。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "错误示例：未经过 finding owner 闭环就最终放行。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("问题闭环审查代理" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_rejects_stale_final_review_round_head(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n最终放行 round 的 HEAD 过期。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "old123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 必须完整审查当前 diff。",
-                    "reuse_decision": "new-agent",
-                }
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            def object_exists(_root: Path, ref: str) -> bool:
-                return ref in {"abc123", "old123"}
-
-            with mock.patch.object(gtt, "git_object_exists", side_effect=object_exists):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("与当前 HEAD" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_rejects_finding_round_without_agent_id(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n发现过 finding 的轮次缺少 agent_id。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后必须记录 technical agent id。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 必须完整审查当前 diff。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("必须记录 agent_id" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_rejects_non_integer_round_without_crashing(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\nround 字段非法时应返回校验错误。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": "one",
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "非法 round 应由 validator fail closed。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("round 必须是正整数" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_rejects_new_final_round_without_prior_closure(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n上一轮 fresh final reviewer 发现 finding 后也必须先闭环。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后必须由同 agent 闭环确认。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理一",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "fresh final reviewer 完整审查但发现新 finding。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 4,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-c",
-                    "platform_nickname": "最终代理二",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "错误示例：跳过 agent-b 闭环直接换新 final。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("agent-b" in error and "问题闭环审查代理" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_rejects_duplicate_review_round_numbers(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n重复 round 不能证明最后一轮 final reviewer。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后必须由同 agent 闭环确认。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理一",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 完整审查当前 diff。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "错误示例：重复 round 让最后一轮 final 有歧义。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("round 3 重复" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_rejects_non_increasing_review_round_numbers(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\nround 必须按记录顺序严格递增。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 2,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后必须由同 agent 闭环确认。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 1,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 完整审查当前 diff。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("严格递增" in error for error in raised.exception.payload["errors"]))
-
-    def test_final_review_round_errors_rejects_duplicate_highest_final_round(self) -> None:
-        payload = {
-            "review_rounds": [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-a",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_decision": "new-agent",
-                },
-            ],
-        }
-
-        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
-
-        self.assertTrue(any("round 3 重复" in error for error in errors))
-        self.assertTrue(any("唯一最后一轮" in error for error in errors))
-
-    def test_review_branch_rejects_invalid_agent_assignment(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n无 finding。\n", encoding="utf-8")
-        assignment = self.write_agent_assignment()
-        payload = gtt.read_json(assignment)
-        payload["agents"][0]["logical_role"] = "Reviewer"
-        assignment.write_text(gtt.json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_object_exists", return_value=True):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(
-                        review_args(
-                            review_report=str(review_report),
-                            agent_assignment=str(assignment),
-                        )
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("agent assignment", str(raised.exception).lower())
-        self.assertTrue(any("logical_role" in error for error in raised.exception.payload["errors"]))
-
-    def test_review_branch_pass_rejects_main_session_reviewer(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n主会话自审不应通过。\n", encoding="utf-8")
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(
-                    review_args(
-                        reviewer="codex-main-session",
-                        review_source=gtt.INDEPENDENT_REVIEW_SOURCE,
-                        review_report=str(review_report),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("independent Agent", str(raised.exception))
-        self.assertIn("main-session", raised.exception.payload["errors"][0])
 
-    def test_review_branch_pass_requires_independent_review_source(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n缺 review_source 不应通过。\n", encoding="utf-8")
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(
-                    review_args(
-                        review_source="",
-                        review_report=str(review_report),
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn(gtt.INDEPENDENT_REVIEW_SOURCE, raised.exception.payload["errors"][0])
-
-    def test_review_branch_findings_require_independent_review_source(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\nfindings artifact 也需要 independent source。\n", encoding="utf-8")
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(
-                    review_args(
-                        pass_gate=False,
-                        review_source="",
-                        review_report=str(review_report),
-                        finding=["P3|需要修复|trellis/workflows/guru-team/workflow.md"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn(gtt.INDEPENDENT_REVIEW_SOURCE, raised.exception.payload["errors"][0])
-
-    def test_review_branch_requires_report_even_with_blocking_findings(self) -> None:
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(
-                    review_args(
-                        pass_gate=False,
-                        review_report=None,
-                        finding=["P2|需要修复|trellis/workflows/guru-team/workflow.md"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("--review-report", str(raised.exception))
-
-    def test_review_branch_requires_phase2_check_report(self) -> None:
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(
-                gtt,
-                "validate_phase2_check",
-                return_value=(self.task_dir / "phase2-check.json", {}, ["phase2 missing"]),
-            ):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_review_branch(review_args(review_report=str(self.task_dir / "review.md")))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("Phase 2 check report", str(raised.exception))
-
-    def test_review_branch_requires_current_task_commit_handoff(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(
-            self.review_rollup_text("缺少当前 task commit handoff。"),
-            encoding="utf-8",
+    def test_review_branch_requires_phase2_check(self) -> None:
+        head = "e" * 40
+        public_input, semantic_input = self.write_inputs(
+            head=head,
+            review_intent="initial_review",
+            typed_exit="passed",
+            candidates=[],
         )
-        assignment = self.write_agent_assignment()
-        patches = self.patch_review_command()
-        for patcher in patches:
+        patchers = self.patch_review_command(head)
+        for patcher in patchers:
             patcher.start()
         try:
             with (
-                mock.patch.object(gtt, "git_object_exists", return_value=True),
                 mock.patch.object(
                     gtt,
-                    "review_branch_entry_precondition_errors",
-                    return_value=["review entry task commit evidence is missing."],
+                    "validate_phase2_check",
+                    return_value=(self.task_dir / "phase2-check.json", {}, ["phase2 missing"]),
                 ),
                 self.assertRaises(gtt.WorkflowError) as raised,
             ):
                 gtt.cmd_review_branch(
                     review_args(
-                        review_report=str(review_report),
-                        agent_assignment=str(assignment),
+                        skill_input=str(public_input),
+                        semantic_review_file=str(semantic_input),
                     )
                 )
         finally:
-            for patcher in reversed(patches):
+            for patcher in reversed(patchers):
                 patcher.stop()
 
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(
-            any(
-                "task commit" in error.lower()
-                for error in raised.exception.payload.get("errors", [])
-            )
-        )
+        self.assertIn("Phase 2 check report", str(raised.exception))
 
-    def test_review_branch_requires_task_local_review_report(self) -> None:
-        outside_report = self.root / "review.md"
-        outside_report.write_text("# Review\n\n错误位置。\n", encoding="utf-8")
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(review_args(review_report=str(outside_report)))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
+    def test_review_branch_cli_exposes_only_structured_v21_recorder(self) -> None:
+        review = next(
+            action
+            for action in gtt.build_parser()._actions
+            if isinstance(action, argparse._SubParsersAction)
+        ).choices["review-branch"]
+        options = {
+            option
+            for action in review._actions
+            for option in action.option_strings
+        }
 
-        self.assertIn("task-local review.md", str(raised.exception))
+        for required in {
+            "--skill-input", "--semantic-review-file", "--typed-exit",
+            "--reviewer", "--review-source", "--evidence",
+        }:
+            self.assertIn(required, options)
+        for removed in {
+            "--pass", "--summary", "--review-report", "--agent-assignment",
+            "--finding", "--findings-file", "--observation",
+            "--observations-file", "--followup-candidate",
+            "--followup-candidates-file",
+        }:
+            self.assertNotIn(removed, options)
 
-    def test_review_branch_requires_review_report_named_review_md(self) -> None:
-        wrong_report = self.task_dir / "prd.md"
-        wrong_report.write_text("# PRD\n\n不是 review report。\n", encoding="utf-8")
-        patches = self.patch_review_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_review_branch(review_args(review_report=str(wrong_report)))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertIn("review.md", str(raised.exception))
-
-    def write_gate(self, head: str = "abc123", review_report: dict[str, object] | None = None) -> None:
+    def test_schema_v20_gate_remains_read_only_checker_input(self) -> None:
+        head = "f" * 40
         gate = {
+            "schema_version": "2.0",
+            "skill_id": gtt.BRANCH_REVIEW_SKILL_ID,
+            "generated_at": "2026-07-30T00:00:00Z",
+            "task_dir": ".trellis/tasks/07-04-review-gate",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+            "typed_exit": "passed",
             "head": head,
-            "conclusion": {"passed": True, "summary": "Branch Review Gate 通过。"},
+            "base_ref": "origin/main",
+            "semantic_review": {
+                "qualified_findings": [],
+                "scope_proposals": [],
+                "observations": [],
+                "followup_candidates": [],
+                "rejected_candidates": [],
+                "ai_review_gate": {"status": "passed", "summary": "旧 gate 已通过。"},
+            },
+            "conclusion": {
+                "passed": True,
+                "summary": "旧 gate 已通过。",
+                "findings_count": 0,
+                "blocking_findings_count": 0,
+            },
+            "findings": [],
             "verification_evidence": {
-                "reviewer": "trellis-check-agent",
+                "reviewer": "legacy-independent-agent",
                 "review_source": gtt.INDEPENDENT_REVIEW_SOURCE,
-                "review_report": review_report,
-                "evidence": ["已覆盖 CI/CD、Docker、K8s、migration、Makefile 部署影响判断。"],
+                "evidence": ["旧 active task 的已完成独立审查。"],
             },
         }
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-
-    def valid_report(self) -> dict[str, object]:
-        review_report = self.task_dir / "review.md"
-        if not review_report.exists():
-            self.write_raw_review_report("round-001-final-release.md")
-            review_report.write_text(self.review_rollup_text("最终放行审查代理给出 0 findings。"), encoding="utf-8")
-        return gtt.file_digest(self.root, review_report)
-
-    def assignment_summary_for_path(self, assignment: Path) -> dict[str, object]:
-        return {
-            "path": ".trellis/tasks/07-04-review-gate/agent-assignment.json",
-            "sha256": gtt.hashlib.sha256(assignment.read_bytes()).hexdigest(),
-            "size_bytes": assignment.stat().st_size,
-            "modified_at": "2026-07-04T00:00:00+00:00",
-            "roles": ["实现代理", "最终放行审查代理"],
-            "agents_count": 1,
-            "review_rounds_count": 1,
-            "reuse_decisions_count": 0,
-        }
-
-    def valid_assignment_summary(self) -> dict[str, object]:
-        return self.assignment_summary_for_path(self.write_agent_assignment())
-
-    def review_reports_summary_for_assignment(self, assignment: Path | None = None) -> list[dict[str, object]]:
-        assignment_path = assignment or (self.task_dir / "agent-assignment.json")
-        payload = gtt.read_json(assignment_path)
-        return gtt.review_reports_from_assignment(self.root, self.task_dir, payload)
-
-    def add_assignment_evidence_to_gate(self, gate: dict[str, object], assignment: Path | None = None) -> Path:
-        assignment_path = assignment or self.write_agent_assignment()
-        verification = gate.setdefault("verification_evidence", {})
-        assert isinstance(verification, dict)
-        verification["agent_assignment"] = self.assignment_summary_for_path(assignment_path)
-        verification["review_reports"] = self.review_reports_summary_for_assignment(assignment_path)
-        return assignment_path
-
-    def write_archived_gate_with_active_paths(self) -> Path:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(self.review_rollup_text("最终放行审查代理给出 0 findings。"), encoding="utf-8")
-        assignment = self.write_agent_assignment()
-        self.write_gate(review_report=gtt.file_digest(self.root, review_report))
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["task_dir"] = ".trellis/tasks/07-04-review-gate"
-        gate["findings"] = []
-        gate["conclusion"]["findings_count"] = 0
-        gate["conclusion"]["blocking_findings_count"] = 0
-        gate["issue_scope"] = {
-            "ledger_path": ".trellis/tasks/07-04-review-gate/issue-scope-ledger.json",
-            "close_issues_reviewed": [{"number": 20, "title": "Review gate"}],
-        }
-        gate["verification_evidence"]["agent_assignment"] = {
-            "path": ".trellis/tasks/07-04-review-gate/agent-assignment.json",
-            "sha256": gtt.hashlib.sha256(assignment.read_bytes()).hexdigest(),
-            "size_bytes": assignment.stat().st_size,
-            "modified_at": "2026-07-04T00:00:00+00:00",
-            "roles": ["实现代理", "最终放行审查代理"],
-            "agents_count": 1,
-            "review_rounds_count": 1,
-            "reuse_decisions_count": 0,
-            "task": ".trellis/tasks/07-04-review-gate",
-        }
-        gate["verification_evidence"]["review_reports"] = self.review_reports_summary_for_assignment(assignment)
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-review-gate"
-        archived_task_dir.mkdir(parents=True)
-        for name in [
-            "task.json",
-            "issue-scope-ledger.json",
-            "review.md",
-            "agent-assignment.json",
-            "review-gate.json",
-        ]:
-            (archived_task_dir / name).write_bytes((self.task_dir / name).read_bytes())
-        archived_reports_dir = archived_task_dir / "reviews"
-        archived_reports_dir.mkdir()
-        for report in sorted((self.task_dir / "reviews").glob("*.md")):
-            (archived_reports_dir / report.name).write_bytes(report.read_bytes())
-        review_report.unlink()
-        assignment.unlink()
-        return archived_task_dir
-
-    def test_validate_review_gate_rejects_reviewer_only_passed_gate(self) -> None:
-        self.write_gate(review_report=None)
-        with mock.patch.object(gtt, "current_head", return_value="abc123"):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("review_report" in error for error in errors))
-
-    def test_validate_review_gate_rejects_missing_review_source(self) -> None:
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["verification_evidence"].pop("review_source")
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with mock.patch.object(gtt, "current_head", return_value="abc123"):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("review_source" in error for error in errors))
-
-    def test_validate_review_gate_rejects_missing_agent_assignment_summary(self) -> None:
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["findings"] = []
-        gate["conclusion"]["findings_count"] = 0
-        gate["conclusion"]["blocking_findings_count"] = 0
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with mock.patch.object(gtt, "current_head", return_value="abc123"):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("agent_assignment" in error for error in errors))
-
-    def test_validate_review_gate_rejects_passed_gate_with_findings(self) -> None:
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["findings"] = [
-            {
-                "priority": "P3",
-                "message": "P3 也必须阻断。",
-                "path": "trellis/workflows/guru-team/workflow.md",
-            }
-        ]
-        gate["conclusion"]["findings_count"] = 1
-        gate["conclusion"]["blocking_findings_count"] = 1
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with mock.patch.object(gtt, "current_head", return_value="abc123"):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("findings[] 非空" in error for error in errors))
-        self.assertTrue(any("findings_count=1" in error for error in errors))
-        self.assertTrue(any("blocking_findings_count=1" in error for error in errors))
-
-    def test_validate_review_gate_rejects_passed_gate_with_nonzero_finding_count(self) -> None:
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["findings"] = []
-        gate["conclusion"]["findings_count"] = 1
-        gate["conclusion"]["blocking_findings_count"] = 0
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with mock.patch.object(gtt, "current_head", return_value="abc123"):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("findings_count=1" in error for error in errors))
-        self.assertTrue(any("与 findings[] 数量 0 不一致" in error for error in errors))
-
-    def test_validate_review_gate_accepts_zero_finding_counts(self) -> None:
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["findings"] = []
-        gate["conclusion"]["findings_count"] = 0
-        gate["conclusion"]["blocking_findings_count"] = 0
-        self.add_assignment_evidence_to_gate(gate)
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
+        gate["facts_sha256"] = gtt.context_digest({
+            key: value
+            for key, value in gate.items()
+            if key not in {"generated_at", "facts_sha256"}
+        })
+        path = self.task_dir / "review-gate.json"
+        gtt.write_json(path, gate)
+        before = path.read_bytes()
         with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
+            mock.patch.object(gtt, "current_head", return_value=head),
+            mock.patch.object(gtt, "review_branch_owner_evidence_precondition_errors", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "review_branch_gate_schema",
+                return_value=self.package_schema("review-gate.schema.json"),
+            ),
+            mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]),
         ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+            _, _, errors = gtt.validate_review_gate(
+                self.root,
+                self.task_dir,
+                {**gtt.DEFAULTS, "github_repo": "owner/repo"},
+                False,
+            )
 
         self.assertEqual(errors, [])
-
-    def test_validate_review_gate_accepts_archived_task_with_active_artifact_paths(self) -> None:
-        archived_task_dir = self.write_archived_gate_with_active_paths()
-        with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, archived_task_dir, gtt.DEFAULTS, False)
-
-        self.assertEqual(errors, [])
-
-    def test_migrate_review_gate_for_archived_task_rewrites_task_local_paths(self) -> None:
-        archived_task_dir = self.write_archived_gate_with_active_paths()
-        migration = gtt.migrate_review_gate_for_archived_task(self.root, archived_task_dir, gtt.DEFAULTS)
-        gate = gtt.read_json(archived_task_dir / "review-gate.json")
-        archived_task = ".trellis/tasks/archive/2026-07/07-04-review-gate"
-
-        self.assertTrue(migration["migrated"])
-        self.assertEqual(gate["task_dir"], archived_task)
-        self.assertEqual(gate["issue_scope"]["ledger_path"], f"{archived_task}/issue-scope-ledger.json")
-        self.assertEqual(gate["verification_evidence"]["review_report"]["path"], f"{archived_task}/review.md")
-        self.assertEqual(gate["verification_evidence"]["agent_assignment"]["path"], f"{archived_task}/agent-assignment.json")
-        self.assertEqual(gate["verification_evidence"]["agent_assignment"]["task"], archived_task)
-        self.assertEqual(gate["verification_evidence"]["review_reports"][0]["path"], f"{archived_task}/reviews/round-001-final-release.md")
-
-    def test_validate_review_gate_rejects_main_session_reviewer(self) -> None:
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["verification_evidence"]["reviewer"] = "codex-main-session"
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with mock.patch.object(gtt, "current_head", return_value="abc123"):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("main-session" in error for error in errors))
-
-    def test_validate_review_gate_requires_modified_at(self) -> None:
-        report = self.valid_report()
-        report.pop("modified_at")
-        self.write_gate(review_report=report)
-        with mock.patch.object(gtt, "current_head", return_value="abc123"):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertIn("Branch Review Gate review_report 缺少 modified_at。", errors)
-
-    def test_validate_review_gate_rejects_stale_review_report_digest(self) -> None:
-        report = self.valid_report()
-        report["sha256"] = "0" * 64
-        report["size_bytes"] = int(report["size_bytes"]) + 1
-        self.write_gate(review_report=report)
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["findings"] = []
-        gate["conclusion"]["findings_count"] = 0
-        gate["conclusion"]["blocking_findings_count"] = 0
-        self.add_assignment_evidence_to_gate(gate)
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("review_report artifact 已过期" in error and "sha256" in error for error in errors))
-        self.assertTrue(any("review_report artifact 已过期" in error and "size_bytes" in error for error in errors))
-
-    def test_validate_review_gate_rejects_final_rollup_english_template_heading(self) -> None:
-        review_report = self.task_dir / "review.md"
-        review_report.write_text(
-            "# Follow-up Candidates\n\n- reviews/round-001-final-release.md\n",
-            encoding="utf-8",
-        )
-        self.write_gate(review_report=gtt.file_digest(self.root, review_report))
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["findings"] = []
-        gate["conclusion"]["findings_count"] = 0
-        gate["conclusion"]["blocking_findings_count"] = 0
-        self.add_assignment_evidence_to_gate(gate)
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("Follow-up Candidates" in error for error in errors))
-
-    def test_validate_review_gate_accepts_agent_assignment_summary(self) -> None:
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        self.add_assignment_evidence_to_gate(gate)
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertEqual(errors, [])
-
-    def test_validate_review_gate_rejects_finding_owner_as_final_reviewer(self) -> None:
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后可继续闭环确认，但不能最终放行。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "错误示例：复用 finding owner 作为最终放行。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["verification_evidence"]["agent_assignment"] = {
-            "path": ".trellis/tasks/07-04-review-gate/agent-assignment.json",
-            "sha256": gtt.hashlib.sha256(assignment.read_bytes()).hexdigest(),
-            "size_bytes": assignment.stat().st_size,
-            "modified_at": "2026-07-04T00:00:00+00:00",
-            "roles": ["问题发现审查代理", "问题闭环审查代理", "最终放行审查代理"],
-            "agents_count": 0,
-            "review_rounds_count": 3,
-            "reuse_decisions_count": 0,
-        }
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("不能作为最终放行审查代理" in error for error in errors))
-
-    def test_validate_review_gate_rejects_missing_closure_round_before_final(self) -> None:
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后必须先由同 agent 闭环确认。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "错误示例：未经过 finding owner 闭环就最终放行。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["verification_evidence"]["agent_assignment"] = {
-            "path": ".trellis/tasks/07-04-review-gate/agent-assignment.json",
-            "sha256": gtt.hashlib.sha256(assignment.read_bytes()).hexdigest(),
-            "size_bytes": assignment.stat().st_size,
-            "modified_at": "2026-07-04T00:00:00+00:00",
-            "roles": ["问题发现审查代理", "最终放行审查代理"],
-            "agents_count": 0,
-            "review_rounds_count": 2,
-            "reuse_decisions_count": 0,
-        }
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("问题闭环审查代理" in error for error in errors))
-
-    def test_validate_review_gate_rejects_duplicate_final_round_number(self) -> None:
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "问题发现审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "发现问题后必须先由同 agent 闭环确认。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 2,
-                    "logical_role": "问题闭环审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
-                    "reuse_decision": "reuse-for-closure",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理一",
-                    "reviewed_head": "abc123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 完整审查当前 diff。",
-                    "reuse_decision": "new-agent",
-                },
-                {
-                    "round": 3,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "发现代理",
-                    "reviewed_head": "abc123",
-                    "findings_count": 1,
-                    "reuse_policy": "错误示例：重复 round 让最后一轮 final 有歧义。",
-                    "reuse_decision": "new-agent",
-                },
-            ]
-        )
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["verification_evidence"]["agent_assignment"] = {
-            "path": ".trellis/tasks/07-04-review-gate/agent-assignment.json",
-            "sha256": gtt.hashlib.sha256(assignment.read_bytes()).hexdigest(),
-            "size_bytes": assignment.stat().st_size,
-            "modified_at": "2026-07-04T00:00:00+00:00",
-            "roles": ["问题发现审查代理", "问题闭环审查代理", "最终放行审查代理"],
-            "agents_count": 0,
-            "review_rounds_count": 4,
-            "reuse_decisions_count": 0,
-        }
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("round 3 重复" in error for error in errors))
-        self.assertTrue(any("唯一最后一轮" in error for error in errors))
-
-    def test_validate_review_gate_rejects_non_task_local_agent_assignment(self) -> None:
-        outside = self.root / "agent-assignment.json"
-        outside.write_text(gtt.json.dumps(gtt.read_json(self.write_agent_assignment()), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        self.write_gate(review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["verification_evidence"]["agent_assignment"] = {
-            "path": "agent-assignment.json",
-            "sha256": gtt.hashlib.sha256(outside.read_bytes()).hexdigest(),
-            "size_bytes": outside.stat().st_size,
-            "modified_at": "2026-07-04T00:00:00+00:00",
-            "roles": ["实现代理"],
-        }
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with mock.patch.object(gtt, "current_head", return_value="abc123"):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
-
-        self.assertTrue(any("task-local" in error for error in errors))
-
-    def test_validate_review_gate_accepts_metadata_only_tail_when_allowed(self) -> None:
-        assignment = self.write_agent_assignment(
-            [
-                {
-                    "round": 1,
-                    "logical_role": "最终放行审查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "最终代理",
-                    "reviewed_head": "old123",
-                    "findings_count": 0,
-                    "reuse_policy": "fresh final reviewer 审查 gate 记录的代码 HEAD。",
-                    "reuse_decision": "new-agent",
-                }
-            ]
-        )
-        self.write_gate(head="old123", review_report=self.valid_report())
-        gate = gtt.read_json(self.task_dir / "review-gate.json")
-        gate["verification_evidence"]["agent_assignment"] = {
-            "path": ".trellis/tasks/07-04-review-gate/agent-assignment.json",
-            "sha256": gtt.hashlib.sha256(assignment.read_bytes()).hexdigest(),
-            "size_bytes": assignment.stat().st_size,
-            "modified_at": "2026-07-04T00:00:00+00:00",
-            "roles": ["最终放行审查代理"],
-            "agents_count": 1,
-            "review_rounds_count": 1,
-            "reuse_decisions_count": 0,
-        }
-        gate["verification_evidence"]["review_reports"] = self.review_reports_summary_for_assignment(assignment)
-        (self.task_dir / "review-gate.json").write_text(
-            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        with (
-            mock.patch.object(gtt, "current_head", return_value="new123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "metadata_only_since", return_value=(True, [".trellis/tasks/archive/07-04-review-gate/task.json"])),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, True)
-
-        self.assertEqual(errors, [])
-
-    def test_validate_review_gate_rejects_non_metadata_tail(self) -> None:
-        self.write_gate(head="old123", review_report=self.valid_report())
-        with (
-            mock.patch.object(gtt, "current_head", return_value="new123"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "metadata_only_since", return_value=(False, ["trellis/workflows/guru-team/workflow.md"])),
-        ):
-            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, True)
-
-        self.assertTrue(any("非 Trellis metadata" in error for error in errors))
+        self.assertEqual(path.read_bytes(), before)
 
 
-class AgentAssignmentArtifactTest(unittest.TestCase):
+
+class AgentRecoveryCheckpointTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
-        self.task_dir = self.root / ".trellis/tasks/07-05-agent-assignment"
+        self.task_dir = self.root / ".trellis/tasks/07-05-agent-recovery"
         self.task_dir.mkdir(parents=True)
         (self.root / ".trellis/guru-team").mkdir(parents=True)
         (self.root / ".git").mkdir()
         (self.task_dir / "task.json").write_text(
-            '{"title":"Agent assignment","base_branch":"main"}\n',
+            '{"title":"Agent recovery","base_branch":"main"}\n',
             encoding="utf-8",
         )
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
-    def patch_assignment_command(self) -> list[mock._patch]:
+    def patch_recovery_command(self) -> list[mock._patch]:
         return [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
-            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
-                "workspace_mode": "worktree",
-                "workspace_path": str(self.root),
-                "task_dir": ".trellis/tasks/07-05-agent-assignment",
-                "preflight": {"current_checkout": str(self.root)},
-            }),
+            mock.patch.object(gtt, "load_config", return_value=gtt.DEFAULTS),
+            mock.patch.object(
+                gtt,
+                "load_task_start_context",
+                return_value={
+                    "workspace_mode": "worktree",
+                    "workspace_path": str(self.root),
+                    "task_dir": ".trellis/tasks/07-05-agent-recovery",
+                    "preflight": {"current_checkout": str(self.root)},
+                },
+            ),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
+            mock.patch.object(gtt, "current_head", return_value="a" * 40),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
         ]
 
-    def write_raw_review_report(self, name: str = "round-001-problem-finding.md") -> Path:
-        reports_dir = self.task_dir / "reviews"
-        reports_dir.mkdir(parents=True, exist_ok=True)
-        path = reports_dir / name
-        path.write_text("# Raw Review\n\n问题发现审查代理 raw evidence。\n", encoding="utf-8")
-        return path
-
-    def repair_status_event(
-        self,
-        event_id: str,
-        event: str,
-        agent_id: str,
-        observed_at: str,
-        **overrides: object,
-    ) -> dict[str, object]:
-        role = "阶段二检查代理"
-        nickname = "Check A" if agent_id == "agent-a" else "Check B"
-        value: dict[str, object] = {
-            "event_id": event_id,
-            "event": event,
-            "agent_id": agent_id,
-            "logical_role": role,
-            "platform_nickname": nickname,
-            "observed_at": observed_at,
-            "recorded_at": observed_at,
-            "head": "abc123",
-            "source": "main-session",
-            "evidence": f"{event} fixture evidence。",
-            "predecessor_agent_id": "",
-            "predecessor_event_id": "",
-            "termination_reason": "",
-            "termination_source_event_id": "",
-            "replacement_reason": "",
-            "handoff_summary": "",
-        }
-        value.update(overrides)
-        return value
-
-    def write_repair_fixture(self, *, schema_version: str = "1.2", include_completed: bool = True) -> Path:
-        events = [
-            self.repair_status_event("evt-a-assigned", "assigned", "agent-a", "2026-07-07T00:00:00Z"),
-            self.repair_status_event("evt-a-failed-1", "failed", "agent-a", "2026-07-07T00:01:00Z"),
-            self.repair_status_event(
-                "evt-a-resume",
-                "resume-same-agent",
-                "agent-a",
-                "2026-07-07T00:02:00Z",
-                predecessor_event_id="evt-a-failed-1",
-                handoff_summary="Resume the same checked scope and remaining validation.",
-            ),
-            self.repair_status_event("evt-a-failed-2", "failed", "agent-a", "2026-07-07T00:03:00Z"),
-            self.repair_status_event(
-                "evt-a-terminated",
-                "terminated-unfinished",
-                "agent-a",
-                "2026-07-07T00:04:00Z",
-                termination_reason="manual_or_platform_terminated_unfinished",
-                handoff_summary="Transfer partial evidence, checked scope, and remaining blockers.",
-            ),
-            self.repair_status_event("evt-b-assigned", "assigned", "agent-b", "2026-07-07T00:05:00Z"),
-            self.repair_status_event(
-                "evt-b-replacement",
-                "replacement-started",
-                "agent-b",
-                "2026-07-07T00:06:00Z",
-                predecessor_agent_id="agent-a",
-                predecessor_event_id="evt-a-terminated",
-                replacement_reason="manual_or_platform_terminated_unfinished",
-                handoff_summary="Replacement accepted exact partial evidence and remaining checks.",
-            ),
-        ]
-        if include_completed:
-            events.append(
-                self.repair_status_event(
-                    "evt-b-completed",
-                    "completed",
-                    "agent-b",
-                    "2026-07-07T00:07:00Z",
+    def test_checkpoint_records_only_real_unfinished_replacement(self) -> None:
+        patchers = self.patch_recovery_command()
+        for patcher in patchers:
+            patcher.start()
+        try:
+            unfinished = gtt.cmd_record_agent_recovery(recovery_args())
+            replacement = gtt.cmd_record_agent_recovery(
+                recovery_args(
+                    event="replacement",
+                    agent_id="agent-replacement",
+                    reason="The replacement accepted the unfinished scope.",
+                    predecessor_event_id="recovery-001",
                 )
             )
-        events.append(
-            self.repair_status_event(
-                "evt-a-wrong-provenance",
-                "explicit-message-observed",
-                "agent-a",
-                "2026-07-07T00:08:00Z",
-                evidence="Agent-side recorder incorrectly claimed main-session provenance.",
-            )
-        )
-        payload = {
-            "schema_version": schema_version,
-            "generated_at": "2026-07-07T00:00:00Z",
-            "updated_at": "2026-07-07T00:08:00Z",
-            "task": ".trellis/tasks/07-05-agent-assignment",
-            "head": "abc123",
-            "agents": [
-                {
-                    "logical_role": "阶段二检查代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "Check A",
-                    "assigned_at": "2026-07-07T00:00:00Z",
-                    "assigned_head": "abc123",
-                    "reason": "Assign original checker.",
-                    "event_id": "evt-a-assigned",
-                },
-                {
-                    "logical_role": "阶段二检查代理",
-                    "agent_id": "agent-b",
-                    "platform_nickname": "Check B",
-                    "assigned_at": "2026-07-07T00:05:00Z",
-                    "assigned_head": "abc123",
-                    "reason": "Assign replacement checker.",
-                    "event_id": "evt-b-assigned",
-                },
-            ],
-            "liveness": {},
-            "review_rounds": [],
-            "reuse_decisions": [],
-            "status_events": events,
-            "event_corrections": [],
-            "recovery_links": [],
-        }
-        path = self.task_dir / "agent-assignment.json"
-        gtt.write_json(path, payload)
-        return path
-
-    def test_record_agent_assignment_writes_agents_entry(self) -> None:
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            payload = gtt.cmd_record_agent_assignment(assignment_args())
+            checked = gtt.cmd_check_agent_recovery(recovery_args())
         finally:
-            for patcher in reversed(patches):
+            for patcher in reversed(patchers):
                 patcher.stop()
 
-        artifact = self.task_dir / "agent-assignment.json"
-        self.assertTrue(artifact.exists())
-        recorded = gtt.read_json(artifact)
-        self.assertEqual(payload["recorded"]["logical_role"], "实现代理")
-        self.assertEqual(recorded["task"], ".trellis/tasks/07-05-agent-assignment")
-        self.assertEqual(recorded["head"], "abc123")
-        self.assertEqual(recorded["agents"][0]["platform_nickname"], "Gibbs")
-
-    def test_record_agent_assignment_writes_review_round(self) -> None:
-        raw_report = self.write_raw_review_report()
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_agent_assignment(assignment_args())
-            payload = gtt.cmd_record_agent_assignment(
-                assignment_args(
-                    logical_role="问题发现审查代理",
-                    review_round=1,
-                    findings_count=2,
-                    reuse_policy="问题发现代理可继续闭环复查，但不能作为最终放行审查代理。",
-                    reuse_decision="reuse-for-closure",
-                    review_round_report=str(raw_report),
-                    reason=None,
-                )
-            )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
-        self.assertEqual(payload["recorded"]["round"], 1)
-        self.assertEqual(recorded["review_rounds"][0]["logical_role"], "问题发现审查代理")
-        self.assertEqual(recorded["review_rounds"][0]["findings_count"], 2)
-        self.assertEqual(recorded["review_rounds"][0]["review_report_path"], ".trellis/tasks/07-05-agent-assignment/reviews/round-001-problem-finding.md")
-        self.assertEqual(recorded["review_rounds"][0]["review_report_sha256"], gtt.hashlib.sha256(raw_report.read_bytes()).hexdigest())
-
-    def test_record_agent_assignment_review_round_requires_raw_report(self) -> None:
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_agent_assignment(
-                    assignment_args(
-                        logical_role="问题发现审查代理",
-                        review_round=1,
-                        findings_count=1,
-                        reuse_policy="问题发现代理可继续闭环复查，但不能作为最终放行审查代理。",
-                        reuse_decision="new-agent",
-                        reason=None,
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertIn("--review-round-report", str(raised.exception))
-
-    def test_record_agent_assignment_status_event_fails_closed(self) -> None:
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_agent_assignment(
-                    assignment_args(
-                        status_event="wait-timeout",
-                        decision="continue-waiting",
-                        reason="等待窗口 timeout，但最近仍有输出和工作区变化，继续等待。",
-                        last_observed_progress_at="2026-07-07T00:00:00Z",
-                        workspace_evidence="git diff 仍在变化。",
-                        running_command_evidence="验证命令仍在运行。",
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("record-subagent-liveness-event.sh", str(raised.exception))
+        self.assertTrue(unfinished["checkpoint"].startswith(gtt.AGENT_RECOVERY_RUNTIME_DIR))
+        self.assertEqual(replacement["event"]["predecessor_event_id"], "recovery-001")
+        self.assertEqual(checked["replacement_count"], 1)
+        self.assertEqual(checked["open_unfinished"], {})
         self.assertFalse((self.task_dir / "agent-assignment.json").exists())
 
-    def test_record_agent_assignment_rejects_terminated_unfinished_without_evidence(self) -> None:
-        patches = self.patch_assignment_command()
-        for patcher in patches:
+    def test_checkpoint_rejects_replacement_without_unfinished(self) -> None:
+        patchers = self.patch_recovery_command()
+        for patcher in patchers:
             patcher.start()
         try:
             with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_agent_assignment(
-                    assignment_args(
-                        status_event="terminated-unfinished",
-                        decision="terminate-unfinished",
-                        reason="缺少证据的终止记录。",
+                gtt.cmd_record_agent_recovery(
+                    recovery_args(
+                        event="replacement",
+                        agent_id="agent-replacement",
+                        predecessor_event_id="recovery-001",
                     )
                 )
         finally:
-            for patcher in reversed(patches):
+            for patcher in reversed(patchers):
                 patcher.stop()
 
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("record-subagent-liveness-event.sh", str(raised.exception))
-
-    def test_check_agent_assignment_rejects_invalid_status_event_enum(self) -> None:
-        artifact = self.task_dir / "agent-assignment.json"
-        artifact.write_text(
-            gtt.json.dumps(
-                {
-                    "schema_version": "1.0",
-                    "task": ".trellis/tasks/07-05-agent-assignment",
-                    "head": "abc123",
-                    "agents": [],
-                    "review_rounds": [],
-                    "reuse_decisions": [],
-                    "status_events": [
-                        {
-                            "event": "timeout",
-                            "logical_role": "实现代理",
-                            "agent_id": "agent-a",
-                            "platform_nickname": "实现代理",
-                            "head": "abc123",
-                            "observed_at": "2026-07-07T00:00:00Z",
-                            "last_observed_progress_at": "",
-                            "workspace_evidence": "",
-                            "running_command_evidence": "",
-                            "decision": "continue-waiting",
-                            "reason": "非法事件枚举。",
-                            "handoff_summary": "",
-                        }
-                    ],
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_agent_assignment(
-                    argparse.Namespace(
-                        root=None,
-                        json=True,
-                        task=None,
-                        agent_assignment=None,
-                        require_current_head=False,
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("status_events[0].event 非法" in error for error in raised.exception.payload["errors"]))
-
-    def test_check_agent_assignment_rejects_stale_head_when_required(self) -> None:
-        artifact = self.task_dir / "agent-assignment.json"
-        artifact.write_text(
-            gtt.json.dumps(
-                {
-                    "schema_version": "1.0",
-                    "task": ".trellis/tasks/07-05-agent-assignment",
-                    "head": "old123",
-                    "agents": [],
-                    "review_rounds": [],
-                    "reuse_decisions": [],
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_agent_assignment(
-                    argparse.Namespace(
-                        root=None,
-                        json=True,
-                        task=None,
-                        agent_assignment=None,
-                        require_current_head=True,
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(any("当前 HEAD" in error for error in raised.exception.payload["errors"]))
-
-    def test_check_agent_assignment_rejects_non_object_json(self) -> None:
-        artifact = self.task_dir / "agent-assignment.json"
-        artifact.write_text("[]\n", encoding="utf-8")
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_agent_assignment(
-                    argparse.Namespace(
-                        root=None,
-                        json=True,
-                        task=None,
-                        agent_assignment=None,
-                        require_current_head=False,
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("JSON root must be an object", str(raised.exception))
-
-    def test_append_only_correction_and_recovery_link_restore_machine_gate(self) -> None:
-        self.write_repair_fixture()
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            correction = gtt.cmd_record_agent_assignment(
-                assignment_args(
-                    logical_role=None,
-                    reason=None,
-                    invalidate_event_id="evt-a-wrong-provenance",
-                    correction_reason="Invalidate falsely attributed main-session provenance.",
-                    correction_evidence="The technical agent disclosed that it called the recorder itself.",
-                )
-            )
-            recovery = gtt.cmd_record_agent_assignment(
-                assignment_args(
-                    logical_role=None,
-                    reason=None,
-                    link_failed_event_id="evt-a-failed-2",
-                    link_termination_event_id="evt-a-terminated",
-                    recovery_reason="Bind the historical failed-to-termination transition.",
-                    recovery_evidence="The append-only sequence records resume, second failure, termination, replacement, and completion.",
-                )
-            )
-            checked = gtt.cmd_check_agent_assignment(
-                argparse.Namespace(
-                    root=None,
-                    json=True,
-                    task=None,
-                    agent_assignment=None,
-                    require_current_head=False,
-                )
-            )
-            phase2_errors = gtt.phase2_agent_assignment_errors(self.root, self.task_dir)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        payload = gtt.read_json(self.task_dir / "agent-assignment.json")
-        self.assertEqual(payload["schema_version"], "1.2")
-        self.assertEqual(correction["recorded"]["kind"], "invalidate-provenance")
-        self.assertEqual(recovery["recorded"]["kind"], "failed-to-termination")
-        self.assertEqual(len(payload["status_events"]), 9)
-        self.assertNotIn(
-            "evt-a-wrong-provenance",
-            {item["event_id"] for item in gtt.effective_status_events(payload)},
-        )
-        self.assertEqual(checked["status"], "ok")
-        self.assertEqual(checked["event_corrections_count"], 1)
-        self.assertEqual(checked["recovery_links_count"], 1)
-        self.assertEqual(phase2_errors, [])
-
-    def test_legacy_invalid_recovery_ledger_remains_blocked(self) -> None:
-        self.write_repair_fixture(schema_version="1.1")
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_agent_assignment(
-                    argparse.Namespace(
-                        root=None,
-                        json=True,
-                        task=None,
-                        agent_assignment=None,
-                        require_current_head=False,
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertTrue(any("failed 后缺少" in error for error in raised.exception.payload["errors"]))
-
-    def test_correction_recovery_validator_rejects_reference_tamper_matrix(self) -> None:
-        self.write_repair_fixture()
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_agent_assignment(
-                assignment_args(
-                    logical_role=None,
-                    reason=None,
-                    invalidate_event_id="evt-a-wrong-provenance",
-                    correction_reason="Invalidate false provenance.",
-                    correction_evidence="Agent-side recorder disclosure.",
-                )
-            )
-            gtt.cmd_record_agent_assignment(
-                assignment_args(
-                    logical_role=None,
-                    reason=None,
-                    link_failed_event_id="evt-a-failed-2",
-                    link_termination_event_id="evt-a-terminated",
-                    recovery_reason="Bind missing transition.",
-                    recovery_evidence="Historical ordered sequence evidence.",
-                )
-            )
-            base = gtt.read_json(self.task_dir / "agent-assignment.json")
-            cases: list[tuple[str, object, str]] = []
-
-            def mutate_unknown(value: dict[str, object]) -> None:
-                value["event_corrections"][0]["target_event_id"] = "evt-unknown"
-
-            def mutate_duplicate(value: dict[str, object]) -> None:
-                value["event_corrections"].append(copy.deepcopy(value["event_corrections"][0]))
-
-            def mutate_correction_digest(value: dict[str, object]) -> None:
-                value["event_corrections"][0]["target_event_sha256"] = "0" * 64
-
-            def mutate_cross_agent(value: dict[str, object]) -> None:
-                value["event_corrections"][0]["agent_id"] = "agent-b"
-
-            def mutate_terminal_invalidation(value: dict[str, object]) -> None:
-                completed = next(
-                    item for item in value["status_events"] if item["event_id"] == "evt-b-completed"
-                )
-                value["event_corrections"][0]["target_event_id"] = "evt-b-completed"
-                value["event_corrections"][0]["target_event_sha256"] = gtt.agent_status_event_sha256(completed)
-                value["event_corrections"][0]["agent_id"] = "agent-b"
-
-            def mutate_recovery_unknown(value: dict[str, object]) -> None:
-                value["recovery_links"][0]["termination_event_id"] = "evt-unknown"
-
-            def mutate_recovery_duplicate(value: dict[str, object]) -> None:
-                value["recovery_links"].append(copy.deepcopy(value["recovery_links"][0]))
-
-            def mutate_recovery_digest(value: dict[str, object]) -> None:
-                value["recovery_links"][0]["failed_event_sha256"] = "0" * 64
-
-            def mutate_recovery_cross_agent(value: dict[str, object]) -> None:
-                value["recovery_links"][0]["agent_id"] = "agent-b"
-
-            def mutate_cycle(value: dict[str, object]) -> None:
-                reverse = copy.deepcopy(value["recovery_links"][0])
-                reverse["recovery_id"] = "rec-0002-0123456789"
-                reverse["failed_event_id"], reverse["termination_event_id"] = (
-                    reverse["termination_event_id"],
-                    reverse["failed_event_id"],
-                )
-                value["recovery_links"].append(reverse)
-
-            cases.extend(
-                [
-                    ("unknown correction", mutate_unknown, "未引用已有 event"),
-                    ("duplicate correction", mutate_duplicate, "重复"),
-                    ("correction digest", mutate_correction_digest, "target_event_sha256"),
-                    ("correction cross-agent", mutate_cross_agent, "target event 不一致"),
-                    ("terminal invalidation", mutate_terminal_invalidation, "只能失效 progress/status-request"),
-                    ("unknown recovery", mutate_recovery_unknown, "引用已有"),
-                    ("duplicate recovery", mutate_recovery_duplicate, "重复"),
-                    ("recovery digest", mutate_recovery_digest, "failed_event_sha256"),
-                    ("recovery cross-agent", mutate_recovery_cross_agent, "referenced events 不一致"),
-                    ("recovery cycle", mutate_cycle, "cycle"),
-                ]
-            )
-            for label, mutator, expected in cases:
-                with self.subTest(label=label):
-                    value = copy.deepcopy(base)
-                    mutator(value)
-                    errors = gtt.validate_agent_assignment_payload(self.root, self.task_dir, value)
-                    self.assertIn(expected, "\n".join(errors))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def test_recovery_link_without_replacement_completion_remains_blocked(self) -> None:
-        self.write_repair_fixture(include_completed=False)
-        patches = self.patch_assignment_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_agent_assignment(
-                assignment_args(
-                    logical_role=None,
-                    reason=None,
-                    link_failed_event_id="evt-a-failed-2",
-                    link_termination_event_id="evt-a-terminated",
-                    recovery_reason="Bind missing transition.",
-                    recovery_evidence="Historical ordered sequence evidence.",
-                )
-            )
-            errors = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertTrue(any("completed" in error or "完整恢复链" in error for error in errors))
-
-
-class SubagentLivenessStateMachineTest(unittest.TestCase):
-    def setUp(self) -> None:
-        self.tmp = tempfile.TemporaryDirectory()
-        self.root = Path(self.tmp.name)
-        self.source = self.root / "source-checkout"
-        self.source.mkdir()
-        self.task_dir = self.root / ".trellis/tasks/07-05-agent-assignment"
-        self.task_dir.mkdir(parents=True)
-        (self.root / ".trellis/guru-team").mkdir(parents=True)
-        (self.root / ".git").mkdir()
-        (self.source / ".git").mkdir()
-        (self.task_dir / "task.json").write_text('{"title":"Liveness","base_branch":"main"}\n', encoding="utf-8")
-        self.machine_state = {
-            "task_head": "abc123",
-            "task_content_status_digest": "task-status-a",
-            "task_content_diff_stat_digest": "task-diff-a",
-            "task_content_max_mtime": "2026-07-07T00:00:00Z",
-            "source_head": "source123",
-            "source_status_digest": "source-status-a",
-            "source_diff_stat_digest": "source-diff-a",
-            "source_max_mtime": "2026-07-07T00:00:00Z",
-        }
-
-    def tearDown(self) -> None:
-        self.tmp.cleanup()
-
-    def patch_liveness_command(self) -> list[mock._patch]:
-        return [
-            mock.patch.object(gtt, "repo_root", side_effect=lambda path: self.source if str(path).endswith("source-checkout") else self.root),
-            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
-                "workspace_mode": "worktree",
-                "workspace_path": str(self.root),
-                "task_dir": ".trellis/tasks/07-05-agent-assignment",
-                "preflight": {"current_checkout": str(self.source)},
-            }),
-            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-            mock.patch.object(gtt, "current_head", side_effect=lambda root: "source123" if root == self.source else "abc123"),
-            mock.patch.object(gtt, "git_object_exists", return_value=True),
-            mock.patch.object(gtt, "collect_liveness_snapshot", side_effect=self.snapshot),
-        ]
-
-    def snapshot(self, root: Path, task_dir: Path, source_repo: Path, payload: dict[str, object], agent_id: str, captured_at: str | None = None) -> dict[str, object]:
-        return {
-            "captured_at": captured_at or "2026-07-07T00:00:00Z",
-            **self.machine_state,
-            **gtt.progress_events_digest(payload, agent_id),
-        }
-
-    def run_with_patches(self, callback):
-        patches = self.patch_liveness_command()
-        for patcher in patches:
-            patcher.start()
-        try:
-            return callback()
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def record(self, **overrides: object) -> dict[str, object]:
-        args = liveness_event_args(source_repo=str(self.source), **overrides)
-        return gtt.cmd_record_subagent_liveness_event(args)
-
-    def check(self, **overrides: object) -> dict[str, object]:
-        args = liveness_check_args(source_repo=str(self.source), **overrides)
-        return gtt.cmd_check_subagent_liveness(args)
-
-    def assign(self) -> None:
-        self.record(event="assigned", observed_at="2026-07-07T00:00:00Z", evidence="分配实现代理。")
-
-    def reset_assignment_artifact(self) -> None:
-        artifact = self.task_dir / "agent-assignment.json"
-        if artifact.exists():
-            artifact.unlink()
-        self.machine_state = {
-            "task_head": "abc123",
-            "task_content_status_digest": "task-status-a",
-            "task_content_diff_stat_digest": "task-diff-a",
-            "task_content_max_mtime": "2026-07-07T00:00:00Z",
-            "source_head": "source123",
-            "source_status_digest": "source-status-a",
-            "source_diff_stat_digest": "source-diff-a",
-            "source_max_mtime": "2026-07-07T00:00:00Z",
-        }
-
-    def test_assigned_initializes_agents_liveness_and_status_event(self) -> None:
-        def scenario() -> dict[str, object]:
-            return self.record(event="assigned", observed_at="2026-07-07T00:00:00Z", evidence="分配实现代理。")
-
-        payload = self.run_with_patches(scenario)
-        recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
-        self.assertTrue(str(payload["event_id"]).startswith("evt-"))
-        self.assertEqual(recorded["schema_version"], "1.2")
-        self.assertEqual(recorded["agents"][0]["assigned_at"], "2026-07-07T00:00:00Z")
-        self.assertEqual(recorded["agents"][0]["assigned_head"], "abc123")
-        self.assertEqual(recorded["agents"][0]["reason"], "分配实现代理。")
-        self.assertEqual(recorded["status_events"][0]["event"], "assigned")
-        self.assertIn("agent-a", recorded["liveness"])
-        self.assertEqual(recorded["liveness"]["agent-a"]["progress_anchor_at"], "2026-07-07T00:00:00Z")
-
-    def test_deadline_passed_without_pending_still_requires_status_request_then_allows_stale(self) -> None:
-        def scenario() -> tuple[dict[str, object], dict[str, object]]:
-            self.assign()
-            first = self.check(checked_at="2026-07-07T00:03:01Z")
-            self.record(
-                event="status-requested",
-                observed_at="2026-07-07T00:03:02Z",
-                evidence="主会话已发送显式 status request。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            second = self.check(checked_at="2026-07-07T00:03:02Z")
-            return first, second
-
-        first, second = self.run_with_patches(scenario)
-        self.assertEqual(first["decision"], "status_request_required")
-        self.assertEqual(first["next_wait_ms"], 0)
-        self.assertEqual(first["max_progress_silence_deadline_at"], "2026-07-07T00:03:00Z")
-        self.assertEqual(second["decision"], "stale_allowed")
-        self.assertEqual(second["max_progress_silence_deadline_at"], "2026-07-07T00:03:00Z")
-
-    def test_pending_status_request_before_deadline_waits_without_repeat_ping(self) -> None:
-        def scenario() -> dict[str, object]:
-            self.assign()
-            first = self.check(checked_at="2026-07-07T00:01:59Z")
-            self.assertEqual(first["decision"], "status_request_required")
-            self.record(
-                event="status-requested",
-                observed_at="2026-07-07T00:02:00Z",
-                evidence="主会话已发送显式 status request。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            return self.check(checked_at="2026-07-07T00:02:01Z")
-
-        payload = self.run_with_patches(scenario)
-        self.assertEqual(payload["decision"], "continue_waiting_no_repeat_ping")
-        self.assertLessEqual(payload["next_wait_ms"], 59000)
-
-    def test_recorded_progress_refreshes_anchor_and_clears_pending_request(self) -> None:
-        def scenario() -> dict[str, object]:
-            self.assign()
-            first = self.check(checked_at="2026-07-07T00:00:19Z")
-            self.assertEqual(first["decision"], "status_request_required")
-            self.record(
-                event="status-requested",
-                observed_at="2026-07-07T00:00:20Z",
-                evidence="主会话已发送显式 status request。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            self.record(
-                event="explicit-message-observed",
-                observed_at="2026-07-07T00:01:00Z",
-                evidence="实现代理回复正在迁移改动到 task worktree。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            return self.check(checked_at="2026-07-07T00:01:01Z")
-
-        payload = self.run_with_patches(scenario)
-        recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
-        self.assertEqual(payload["decision"], "progress_observed")
-        self.assertEqual(payload["progress_anchor_at"], "2026-07-07T00:01:00Z")
-        self.assertIsNone(recorded["liveness"]["agent-a"]["pending_status_request_at"])
-        self.assertEqual(payload["progress_sources"][0]["source"], "status_event")
-
-    def test_source_snapshot_change_outputs_workspace_boundary_progress(self) -> None:
-        def scenario() -> dict[str, object]:
-            self.assign()
-            self.machine_state["source_status_digest"] = "source-status-b"
-            return self.check(checked_at="2026-07-07T00:01:00Z")
-
-        payload = self.run_with_patches(scenario)
-        self.assertEqual(payload["decision"], "workspace_boundary_violation_progress")
-        self.assertEqual(payload["progress_sources"][0]["source"], "source_status")
-
-    def test_task_machine_snapshot_changes_are_progress_observed(self) -> None:
-        cases = [
-            ("task_head", "task456", "task_head"),
-            ("task_content_status_digest", "task-status-b", "task_status"),
-            ("task_content_diff_stat_digest", "task-diff-b", "task_diff_stat"),
-            ("task_content_max_mtime", "2026-07-07T00:00:30Z", "task_mtime"),
-        ]
-        for field, value, source_kind in cases:
-            with self.subTest(field=field):
-                def scenario() -> dict[str, object]:
-                    self.reset_assignment_artifact()
-                    self.assign()
-                    self.machine_state[field] = value
-                    return self.check(checked_at="2026-07-07T00:01:00Z")
-
-                payload = self.run_with_patches(scenario)
-                self.assertEqual(payload["decision"], "progress_observed")
-                self.assertEqual(payload["progress_anchor_at"], "2026-07-07T00:01:00Z")
-                self.assertEqual(payload["progress_sources"][0]["source"], source_kind)
-
-    def test_source_machine_snapshot_changes_are_workspace_boundary_progress(self) -> None:
-        cases = [
-            ("source_head", "source456", "source_head"),
-            ("source_status_digest", "source-status-b", "source_status"),
-            ("source_diff_stat_digest", "source-diff-b", "source_diff_stat"),
-            ("source_max_mtime", "2026-07-07T00:00:30Z", "source_mtime"),
-        ]
-        for field, value, source_kind in cases:
-            with self.subTest(field=field):
-                def scenario() -> dict[str, object]:
-                    self.reset_assignment_artifact()
-                    self.assign()
-                    self.machine_state[field] = value
-                    return self.check(checked_at="2026-07-07T00:01:00Z")
-
-                payload = self.run_with_patches(scenario)
-                self.assertEqual(payload["decision"], "workspace_boundary_violation_progress")
-                self.assertEqual(payload["progress_anchor_at"], "2026-07-07T00:01:00Z")
-                self.assertEqual(payload["progress_sources"][0]["source"], source_kind)
-
-    def test_recorded_progress_event_types_are_progress_observed(self) -> None:
-        for event_name in sorted(gtt.AGENT_PROGRESS_EVENTS):
-            with self.subTest(event=event_name):
-                def scenario() -> dict[str, object]:
-                    self.reset_assignment_artifact()
-                    self.assign()
-                    self.record(
-                        event=event_name,
-                        observed_at="2026-07-07T00:01:00Z",
-                        evidence=f"{event_name} 公开进展。",
-                        logical_role=None,
-                        platform_nickname=None,
-                    )
-                    return self.check(checked_at="2026-07-07T00:01:01Z")
-
-                payload = self.run_with_patches(scenario)
-                self.assertEqual(payload["decision"], "progress_observed")
-                self.assertEqual(payload["progress_anchor_at"], "2026-07-07T00:01:00Z")
-                self.assertEqual(payload["progress_sources"][0]["source"], "status_event")
-                self.assertEqual(payload["progress_sources"][0]["event"], event_name)
-
-    def test_stale_assessed_rejects_new_progress_after_stale_allowed(self) -> None:
-        def scenario() -> None:
-            self.assign()
-            first = self.check(checked_at="2026-07-07T00:00:09Z")
-            self.assertEqual(first["decision"], "status_request_required")
-            self.record(event="status-requested", observed_at="2026-07-07T00:00:10Z", evidence="已发送 status request。", logical_role=None, platform_nickname=None)
-            self.check(checked_at="2026-07-07T00:03:01Z")
-            self.record(event="tool-activity-observed", observed_at="2026-07-07T00:03:02Z", evidence="stale 写入前观察到 tool activity。", logical_role=None, platform_nickname=None)
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record(event="stale-assessed", observed_at="2026-07-07T00:03:03Z", evidence="尝试基于旧 stale_allowed 写入 stale。", logical_role=None, platform_nickname=None)
-            self.assertIn("rerun check-subagent-liveness", str(raised.exception))
-
-        self.run_with_patches(scenario)
-
-    def test_stale_assessed_rejects_task_or_source_snapshot_drift_after_stale_allowed(self) -> None:
-        cases = [
-            ("task_content_status_digest", "task-status-b"),
-            ("source_status_digest", "source-status-b"),
-        ]
-        for field, value in cases:
-            with self.subTest(field=field):
-                def scenario() -> None:
-                    self.reset_assignment_artifact()
-                    self.assign()
-                    first = self.check(checked_at="2026-07-07T00:00:09Z")
-                    self.assertEqual(first["decision"], "status_request_required")
-                    self.record(event="status-requested", observed_at="2026-07-07T00:00:10Z", evidence="已发送 status request。", logical_role=None, platform_nickname=None)
-                    self.check(checked_at="2026-07-07T00:03:01Z")
-                    self.machine_state[field] = value
-                    with self.assertRaises(gtt.WorkflowError) as raised:
-                        self.record(event="stale-assessed", observed_at="2026-07-07T00:03:03Z", evidence="尝试基于旧 stale_allowed 写入 stale。", logical_role=None, platform_nickname=None)
-                    self.assertIn("rerun check-subagent-liveness", str(raised.exception))
-
-                self.run_with_patches(scenario)
-
-    def test_stale_cutover_requires_replacement_completion_and_rejects_resume(self) -> None:
-        def scenario() -> list[str]:
-            self.assign()
-            first = self.check(checked_at="2026-07-07T00:00:09Z")
-            self.assertEqual(first["decision"], "status_request_required")
-            self.record(event="status-requested", observed_at="2026-07-07T00:00:10Z", evidence="已发送 status request。", logical_role=None, platform_nickname=None)
-            self.check(checked_at="2026-07-07T00:03:01Z")
-            stale = self.record(event="stale-assessed", observed_at="2026-07-07T00:03:02Z", evidence="checker 已输出 stale_allowed。", logical_role=None, platform_nickname=None)
-            with self.assertRaises(gtt.WorkflowError):
-                self.record(event="resume-same-agent", observed_at="2026-07-07T00:03:03Z", evidence="错误尝试恢复 stale agent。", predecessor_event_id=stale["event_id"], handoff_summary="继续范围、已知输出、剩余工作和 gate blockers。", logical_role=None, platform_nickname=None)
-            self.record(
-                event="terminated-unfinished",
-                observed_at="2026-07-07T00:03:04Z",
-                evidence="stale cutover 停止接受 predecessor 输出。",
-                termination_reason="stale_cutover",
-                termination_source_event_id=stale["event_id"],
-                handoff_summary="predecessor output、当前 diff、剩余工作和 gate blockers。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            self.record(event="assigned", agent_id="agent-b", observed_at="2026-07-07T00:03:05Z", evidence="分配 replacement。", logical_role="实现代理", platform_nickname="Implement B")
-            self.record(
-                event="replacement-started",
-                agent_id="agent-b",
-                observed_at="2026-07-07T00:03:06Z",
-                evidence="replacement 已接收 handoff。",
-                predecessor_agent_id="agent-a",
-                predecessor_event_id=stale["event_id"],
-                replacement_reason="max_progress_silence_exceeded",
-                handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            incomplete = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
-            self.record(event="completed", agent_id="agent-b", observed_at="2026-07-07T00:10:00Z", evidence="replacement 完成实现。", logical_role=None, platform_nickname=None)
-            complete = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
-            return incomplete, complete
-
-        incomplete, complete = self.run_with_patches(scenario)
-        self.assertTrue(any("replacement chain" in error or "completed" in error for error in incomplete))
-        self.assertEqual(complete, [])
-
-    def test_status_request_failed_does_not_set_pending_or_allow_stale(self) -> None:
-        def scenario() -> tuple[dict[str, object], dict[str, object]]:
-            self.assign()
-            decision = self.check(checked_at="2026-07-07T00:03:00Z")
-            self.assertEqual(decision["decision"], "status_request_required")
-            self.record(event="status-request-failed", observed_at="2026-07-07T00:03:01Z", evidence="平台 status request 发送失败。", logical_role=None, platform_nickname=None)
-            first = self.check(checked_at="2026-07-07T00:03:02Z")
-            second = self.check(checked_at="2026-07-07T00:04:00Z")
-            return first, second
-
-        first, second = self.run_with_patches(scenario)
-        self.assertEqual(first["decision"], "status_request_required")
-        self.assertEqual(second["decision"], "status_request_required")
-
-    def test_status_request_events_require_checker_authorization(self) -> None:
-        def scenario() -> None:
-            self.assign()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record(event="status-requested", observed_at="2026-07-07T00:00:10Z", evidence="未先运行 checker 就记录 status request。", logical_role=None, platform_nickname=None)
-            self.assertIn("status_request_required", str(raised.exception))
-
-        self.run_with_patches(scenario)
-
-    def test_liveness_timestamps_are_normalized_to_utc_z_and_non_utc_is_rejected(self) -> None:
-        def scenario() -> None:
-            self.record(event="assigned", observed_at="2026-07-07T00:00:00+00:00", evidence="分配实现代理。")
-            recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
-            self.assertEqual(recorded["agents"][0]["assigned_at"], "2026-07-07T00:00:00Z")
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record(event="explicit-message-observed", observed_at="2026-07-07T08:00:01+08:00", evidence="非 UTC 时间不应被接受。", logical_role=None, platform_nickname=None)
-            self.assertIn("must be UTC", str(raised.exception))
-
-        self.run_with_patches(scenario)
-
-    def test_non_handoff_events_reject_handoff_summary(self) -> None:
-        def scenario() -> None:
-            self.assign()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record(
-                    event="explicit-message-observed",
-                    observed_at="2026-07-07T00:00:10Z",
-                    evidence="实现代理公开回复。",
-                    handoff_summary="progress event 不应携带 handoff summary。",
-                    logical_role=None,
-                    platform_nickname=None,
-                )
-            self.assertIn("handoff_summary", str(raised.exception))
-
-        self.run_with_patches(scenario)
-
-    def test_terminated_unfinished_requires_structured_reason(self) -> None:
-        def scenario() -> None:
-            self.assign()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record(
-                    event="terminated-unfinished",
-                    observed_at="2026-07-07T00:01:00Z",
-                    evidence="缺少结构化终止原因。",
-                    handoff_summary="predecessor output、当前 diff、剩余工作和 gate blockers。",
-                    logical_role=None,
-                    platform_nickname=None,
-                )
-            self.assertIn("--termination-reason", str(raised.exception))
-
-        self.run_with_patches(scenario)
-
-    def test_replacement_started_requires_predecessor_event_and_matching_reason(self) -> None:
-        def scenario() -> None:
-            self.assign()
-            failed = self.record(event="failed", observed_at="2026-07-07T00:01:00Z", evidence="实现代理失败且未完成。", logical_role=None, platform_nickname=None)
-            with self.assertRaises(gtt.WorkflowError) as same_agent:
-                self.record(
-                    event="replacement-started",
-                    observed_at="2026-07-07T00:01:01Z",
-                    evidence="错误地把同一 agent 记录为 replacement。",
-                    predecessor_agent_id="agent-a",
-                    predecessor_event_id=failed["event_id"],
-                    replacement_reason="terminal_failed_incomplete",
-                    handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
-                    logical_role=None,
-                    platform_nickname=None,
-                )
-            self.assertIn("different replacement agent", str(same_agent.exception))
-            self.record(event="assigned", agent_id="agent-b", observed_at="2026-07-07T00:01:01Z", evidence="分配 replacement。", logical_role="实现代理", platform_nickname="Implement B")
-            with self.assertRaises(gtt.WorkflowError) as missing:
-                self.record(
-                    event="replacement-started",
-                    agent_id="agent-b",
-                    observed_at="2026-07-07T00:01:02Z",
-                    evidence="replacement 缺少 predecessor_event_id。",
-                    predecessor_agent_id="agent-a",
-                    replacement_reason="terminal_failed_incomplete",
-                    handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
-                    logical_role=None,
-                    platform_nickname=None,
-                )
-            self.assertIn("--predecessor-event-id", str(missing.exception))
-            with self.assertRaises(gtt.WorkflowError) as mismatch:
-                self.record(
-                    event="replacement-started",
-                    agent_id="agent-b",
-                    observed_at="2026-07-07T00:01:03Z",
-                    evidence="replacement reason 与 failed 证据不匹配。",
-                    predecessor_agent_id="agent-a",
-                    predecessor_event_id=failed["event_id"],
-                    replacement_reason="max_progress_silence_exceeded",
-                    handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
-                    logical_role=None,
-                    platform_nickname=None,
-                )
-            self.assertIn("terminal_failed_incomplete", str(mismatch.exception))
-
-        self.run_with_patches(scenario)
-
-    def test_replacement_failure_requires_additional_recovery_before_pass(self) -> None:
-        def scenario() -> tuple[list[str], list[str]]:
-            self.assign()
-            unfinished = self.record(
-                event="terminated-unfinished",
-                observed_at="2026-07-07T00:01:00Z",
-                evidence="平台手动终止未完成实现代理。",
-                termination_reason="manual_or_platform_terminated_unfinished",
-                handoff_summary="predecessor output、当前 diff、剩余工作和 gate blockers。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            self.record(event="assigned", agent_id="agent-b", observed_at="2026-07-07T00:01:01Z", evidence="分配第一任 replacement。", logical_role="实现代理", platform_nickname="Implement B")
-            self.record(
-                event="replacement-started",
-                agent_id="agent-b",
-                observed_at="2026-07-07T00:01:02Z",
-                evidence="第一任 replacement 已接收 handoff。",
-                predecessor_agent_id="agent-a",
-                predecessor_event_id=unfinished["event_id"],
-                replacement_reason="manual_or_platform_terminated_unfinished",
-                handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            failed = self.record(event="failed", agent_id="agent-b", observed_at="2026-07-07T00:02:00Z", evidence="第一任 replacement 失败且未完成。", logical_role=None, platform_nickname=None)
-            incomplete = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
-            self.record(event="assigned", agent_id="agent-c", observed_at="2026-07-07T00:02:01Z", evidence="分配第二任 replacement。", logical_role="实现代理", platform_nickname="Implement C")
-            self.record(
-                event="replacement-started",
-                agent_id="agent-c",
-                observed_at="2026-07-07T00:02:02Z",
-                evidence="第二任 replacement 已接收 handoff。",
-                predecessor_agent_id="agent-b",
-                predecessor_event_id=failed["event_id"],
-                replacement_reason="terminal_failed_incomplete",
-                handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
-                logical_role=None,
-                platform_nickname=None,
-            )
-            self.record(event="completed", agent_id="agent-c", observed_at="2026-07-07T00:03:00Z", evidence="第二任 replacement 完成实现。", logical_role=None, platform_nickname=None)
-            complete = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
-            return incomplete, complete
-
-        incomplete, complete = self.run_with_patches(scenario)
-        self.assertTrue(any("failed 后缺少" in error for error in incomplete))
-        self.assertEqual(complete, [])
+        self.assertIn("must close the open unfinished role", str(raised.exception.payload["errors"]))
+
+    def test_routine_path_creates_no_recovery_checkpoint(self) -> None:
+        path = gtt.agent_recovery_path(self.root, self.task_dir)
+        self.assertFalse(path.exists())
+        self.assertTrue(path.as_posix().startswith((self.root / gtt.AGENT_RECOVERY_RUNTIME_DIR).as_posix()))
 
 
 class FinishWorkEntrypointContractTest(unittest.TestCase):
@@ -14038,7 +9823,6 @@ class HumanArtifactResolutionContractTest(unittest.TestCase):
             "`prd.md`",
             "`design.md`",
             "`implement.md`",
-            "`review.md`",
             "`pr-body.md`",
         ]
         for relpath in self.FINISH_WORKFLOW_FILES:
@@ -14116,18 +9900,28 @@ class IntakeScopeEvolutionContractTest(unittest.TestCase):
                 self.assertNotIn("intake clarity check", guru_team_gate)
                 self.assertNotIn("trellis-brainstorm", guru_team_gate)
 
-    def test_start_entrypoints_prompt_intake_clarity_check(self) -> None:
+    def test_start_entrypoints_are_thin_workflow_loaders(self) -> None:
         for relpath in self.START_ENTRYPOINT_FILES:
             with self.subTest(path=relpath):
                 self.assert_file_contains(
                     relpath,
                     [
-                        "intake clarity check",
-                        "trellis-brainstorm",
-                        "issue body/comments",
-                        "reviewed proposed issue body",
+                        "thin fallback loader",
+                        "`.trellis/workflow.md`",
+                        "mandatory invoke `guru-sync-base`",
+                        "Do not call `prepare-task`",
+                        "`确认继续`",
                     ],
                 )
+                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+                for duplicated_detail in (
+                    "trellis-brainstorm",
+                    "issue body/comments",
+                    "create-worktree",
+                    "create-task",
+                    "task-start-context.json",
+                ):
+                    self.assertNotIn(duplicated_detail, content)
 
     def test_continue_entrypoints_delegate_scope_change_gate_to_workflow(self) -> None:
         for relpath in self.CONTINUE_ENTRYPOINT_FILES:
@@ -14143,15 +9937,15 @@ class IntakeScopeEvolutionContractTest(unittest.TestCase):
                 ):
                     self.assertNotIn(duplicated_detail, content)
 
-    def test_public_docs_describe_scope_evolution_contract(self) -> None:
+    def test_public_docs_point_to_canonical_scope_and_interaction_contracts(self) -> None:
         for relpath in self.PUBLIC_DOC_FILES:
             with self.subTest(path=relpath):
                 self.assert_file_contains(
                     relpath,
                     [
                         "Intake clarity",
-                        "trellis-brainstorm",
-                        "issue-scope-ledger.json",
+                        "workflow",
+                        "确认继续",
                     ],
                 )
 
@@ -14396,11 +10190,12 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
             ).read_text(encoding="utf-8").split()
         )
         for expected in [
-            "Qualification before severity",
-            "Same-agent closure needs explicit",
-            "replacement needs a complete recovery chain",
-            "fresh final reviewer that did not perform closure",
-            "reviewer reuse block",
+            "Qualify every candidate before assigning severity",
+            "Retain the original `introduced_head`",
+            "bind the current `resolved_at_head`",
+            "Closure has no public exit, recorder call, or artifact",
+            "distinct fresh reviewer",
+            "never accepted by public input schema 1.1",
         ]:
             self.assertIn(expected, package_contract)
 
@@ -14657,6 +10452,24 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
         gate = {"changed_files": ["trellis/workflows/guru-team/workflow.md"], "issue_scope": {"close_issues_reviewed": [{"number": 96}]}}
         self.assertEqual(gtt.validate_ledger_for_publish(ledger, gate, allow_pending_remote_marketplace=True), [])
         self.assertTrue(any("必须是 passed" in error for error in gtt.validate_ledger_for_publish(ledger, gate)))
+
+    def test_compact_review_gate_leaves_issue_closure_to_publication_gate(self) -> None:
+        ledger = {
+            "close_issues": [{"number": 161, "acceptance_evidence": ["回归通过"]}],
+            "related_issues": [],
+            "followup_issues": [],
+        }
+        compact_gate = {"schema_version": "2.1"}
+        legacy_gate = {"schema_version": "2.0"}
+
+        self.assertEqual(
+            gtt.validate_ledger_for_publish(ledger, compact_gate),
+            [],
+        )
+        self.assertTrue(any(
+            "未记录对 close issue #161" in error
+            for error in gtt.validate_ledger_for_publish(ledger, legacy_gate)
+        ))
 
     def test_passed_remote_marketplace_evidence_rejects_tampered_digest(self) -> None:
         issue = {"acceptance_evidence": [{
@@ -21522,7 +17335,6 @@ shutil.move(str(active), str(archived))
             source_root / ".trellis/spec/workflow/companion-scripts.md",
             source_root / ".trellis/spec/workflow/data-contracts.md",
             source_root / ".trellis/spec/workflow/workflow-contract.md",
-            source_root / "docs/requirements/guru-team-trellis-flow.md",
         ]
         for path in paths:
             with self.subTest(path=str(path)):
@@ -23295,7 +19107,7 @@ shutil.move(str(active), str(archived))
                 "phase2-check.json",
                 "planning-approval.json",
                 "prd.md",
-                "review.md",
+                "review-gate.json",
                 "task.json",
             ],
         )
@@ -23353,7 +19165,7 @@ shutil.move(str(active), str(archived))
             failed["dirty_paths"],
         )
         self.assertEqual(len(result["archived_files"]), 10)
-        self.assertNotIn("review-gate.json", result["archived_files"])
+        self.assertIn("review-gate.json", result["archived_files"])
         self.assertGreaterEqual(result["all_transition_attempts"].count("archive-prune"), 2)
 
     def test_production_existing_archive_locator_fails_dry_run_and_formal_without_side_effects(self) -> None:
@@ -23774,7 +19586,7 @@ shutil.move(str(active), str(archived))
             for name in [
                 "closeout-plan.json", "design.md", "finish-summary.json",
                 "implement.md", "issue-scope-ledger.json", "phase2-check.json",
-                "planning-approval.json", "prd.md", "review.md", "task.json",
+                "planning-approval.json", "prd.md", "review-gate.json", "task.json",
             ]
         }
         expected = {
@@ -23804,7 +19616,7 @@ shutil.move(str(active), str(archived))
             "evidence-commit": (active, None, "in_progress", evidence_paths, evidence_paths, "reviewed", "reviewed", None, None, None, None),
             "evidence-push": (active, None, "in_progress", set(), set(), "evidence", "reviewed", None, None, None, None),
             "draft": (active, None, "in_progress", set(), set(), "evidence", "evidence", None, None, None, None),
-            "projection": (active, None, "in_progress", {f"{active}/review.md"}, set(), "evidence", "evidence", "evidence", True, "OPEN", 105),
+            "projection": (active, None, "in_progress", {f"{active}/finish-summary.json", f"{active}/review.md"}, set(), "evidence", "evidence", "evidence", True, "OPEN", 105),
             "archive-move": (active, None, "in_progress", {f"{active}/finish-summary.json"}, set(), "evidence", "evidence", "evidence", True, "OPEN", 105),
             "archive-commit": (None, archive, "completed", archive_move_paths, archive_move_paths, "evidence", "evidence", "evidence", True, "OPEN", 105),
             "archive-push": (None, archive, "completed", set(), set(), "archive", "evidence", "evidence", True, "OPEN", 105),

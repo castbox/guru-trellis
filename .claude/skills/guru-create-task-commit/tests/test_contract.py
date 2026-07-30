@@ -327,27 +327,26 @@ class TaskCommitPackageContractTests(unittest.TestCase):
         executor = next(
             item for item in self.interface["validators"] if item["id"] == "exact_executor"
         )
-        self.assertIn("artifact-authorized ordinary/gitlink/candidate bindings", executor["objective_scope"])
-        self.assertIn("guarded conditional ref/candidate rollback under an index.lock sentinel", executor["objective_scope"])
-        self.assertIn("independent final-index publication", executor["objective_scope"])
-        self.assertIn("final candidate identity-read linearization", executor["objective_scope"])
-        self.assertIn("immutable commit blob/result digest evidence", executor["objective_scope"])
+        self.assertIn("artifact-authorized ordinary/gitlink bindings", executor["objective_scope"])
+        self.assertIn("conditional ref/index publication", executor["objective_scope"])
+        self.assertIn("private runtime cleanup", executor["objective_scope"])
         self.assertIn("deletion inheritance limited to rename sources", executor["objective_scope"])
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
         for phrase in (
-            "isolated transaction",
-            "detached HEAD",
-            "does not replace the candidate entry bytes",
-            "exact executor-published result identity",
-            "final candidate inode/content",
-            "later operation",
-            "committed-result SHA-256",
-            "provenance only and never stages or removes the source",
-            "not self-contained or portable",
-            "run-skill-command",
+            ".trellis/.runtime/guru-team/task-commit-plans/",
+            "never staged or committed",
+            "exact blobs/modes",
+            "detached commit transaction",
+            "deletes the private candidate",
+            "read-only compatibility",
         ):
             self.assertIn(phrase, contract)
-        self.assertNotIn("stages literal exact paths", contract)
+        for forbidden in (
+            "candidate self path",
+            "committed-result SHA-256",
+            "current task-local file contains the real post-commit result",
+        ):
+            self.assertNotIn(forbidden, contract)
 
     def test_planning_approval_precondition_uses_skill_owned_v2_checker(self) -> None:
         planning_approval = next(

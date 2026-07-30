@@ -138,8 +138,7 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
     base_head = git(root, real_git, "rev-parse", BASE_BRANCH)
 
     task_dir = root / ".trellis/tasks" / f"07-11-{issue}-installed-closeout-{case_name}"
-    reviews_dir = task_dir / "reviews"
-    reviews_dir.mkdir(parents=True)
+    task_dir.mkdir(parents=True)
     context = {
         "schema_version": "1.0",
         "source_issue": {
@@ -209,78 +208,6 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
     gtt.write_json(task_dir / "finish-summary-index.json", index)
     (task_dir / "pr-body.md").write_bytes(valid_pr_body(issue).encode("utf-8"))
 
-    raw_report = reviews_dir / "round-001-final-release.md"
-    raw_report.write_text(
-        "# 最终放行审查原始报告\n\n## 证据\n\n- 完整安装 closeout fixture 已审查。\n\n## 结论\n\n- 0 findings，允许进入事务验证。\n",
-        encoding="utf-8",
-    )
-    raw_digest = gtt.file_digest(root, raw_report)
-    round_item = {
-        "round": 1,
-        "logical_role": "最终放行审查代理",
-        "agent_id": f"installed-closeout-review-{issue}",
-        "platform_nickname": "Installed Closeout Review",
-        "reviewed_head": reviewed_head,
-        "findings_count": 0,
-        "reuse_policy": "最终放行审查代理必须是 fresh new agent，并完整审查当前 diff。",
-        "reuse_decision": "new-agent",
-        "review_report_path": raw_digest["path"],
-        "review_report_sha256": raw_digest["sha256"],
-        "review_report_size_bytes": raw_digest["size_bytes"],
-        "review_report_modified_at": raw_digest["modified_at"],
-    }
-    assignment = {
-        "schema_version": "1.1",
-        "task": task_dir.relative_to(root).as_posix(),
-        "head": reviewed_head,
-        "agents": [{
-            "logical_role": "最终放行审查代理",
-            "agent_id": f"installed-closeout-review-{issue}",
-            "platform_nickname": "Installed Closeout Review",
-            "assigned_at": "2026-07-11T00:00:00Z",
-            "assigned_head": reviewed_head,
-            "reason": "installed closeout smoke fixture 独立审查。",
-        }],
-        "liveness": {},
-        "review_rounds": [round_item],
-        "reuse_decisions": [],
-        "status_events": [],
-    }
-    gtt.write_json(task_dir / "agent-assignment.json", assignment)
-    (task_dir / "review.md").write_text(
-        "# 审查报告\n\n## 审查轮次\n\n- [Round 1](reviews/round-001-final-release.md)\n\n"
-        "## 证据\n\n- 已审查安装后的完整 closeout fixture。\n\n## 结论\n\n- 0 findings，最终放行通过。\n",
-        encoding="utf-8",
-    )
-
-    config = gtt.load_config(root)
-    assignment_summary = gtt.summarize_agent_assignment(
-        root, task_dir, task_dir / "agent-assignment.json", assignment
-    )
-    gate = gtt.build_review_gate_payload(
-        root=root,
-        task_dir=task_dir,
-        config=config,
-        task_context=context,
-        base_branch=BASE_BRANCH,
-        pass_gate=True,
-        findings=[],
-        observations=[],
-        followup_candidates=[],
-        command=["installed-closeout-smoke"],
-        summary="安装后的完整 closeout fixture 已通过独立审查。",
-        evidence=["真实 Git branch/bare remote 与安装 wrapper 将执行完整事务。"],
-        reviewer=f"installed-closeout-review-{issue}",
-        review_source="independent-agent",
-        review_report=gtt.file_digest(root, task_dir / "review.md"),
-        agent_assignment=assignment_summary,
-        review_reports=gtt.review_reports_from_assignment(root, task_dir, assignment),
-    )
-    gtt.write_json(task_dir / "review-gate.json", gate)
-    _path, _payload, gate_errors = gtt.validate_review_gate(root, task_dir, config, True)
-    if gate_errors:
-        raise RuntimeError("invalid installed closeout review gate: " + "; ".join(gate_errors))
-
     for name, content in (
         (
             "prd.md",
@@ -288,19 +215,9 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         ),
         ("design.md", "# 设计\n\n使用已安装 Guru Team runtime 完成收尾。\n"),
         ("implement.md", "# 实施\n\n先通过 publication gate，再执行 finish-work。\n"),
-        (
-            "implementation-handoff.md",
-            "# 实现交接\n\n已完成 throwaway fixture，并保留验证证据。\n",
-        ),
     ):
         (task_dir / name).write_text(content, encoding="utf-8")
     adapter = load_installed_eval_adapter(root)
-    for stale_review_path in (
-        task_dir / "review-gate.json",
-        task_dir / "review.md",
-    ):
-        stale_review_path.unlink(missing_ok=True)
-    shutil.rmtree(task_dir / "reviews", ignore_errors=True)
 
     docs_path = root / "docs/requirements.md"
     docs_path.parent.mkdir(parents=True, exist_ok=True)
@@ -327,7 +244,6 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
     )
     task_payload["status"] = "in_progress"
     gtt.write_json(task_dir / "task.json", task_payload)
-    adapter.production_agent_assignment(gtt, root, task_dir)
     checked = adapter.production_record_phase2(
         gtt,
         root,
