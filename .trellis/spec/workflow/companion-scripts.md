@@ -1011,9 +1011,11 @@ ledger, readiness, or marketplace artifact validators.
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
 - `record-phase2-check` now accepts one AI-authored closed input for
-  `guru-phase2-check-2.0`, rebuilds objective task/planning/ledger/agent/repository
-  projections, writes the single artifact, and never infers scope, severity,
-  adequacy, Docs SSOT consistency, semantic pass, or route intent;
+  new `guru-phase2-check-2.1` records, while preserving read-only compatibility
+  for existing `guru-phase2-check-2.0` artifacts; it rebuilds objective
+  task/planning/ledger/agent/repository projections, writes the single artifact,
+  and never infers scope, severity, adequacy, Docs SSOT consistency, semantic
+  pass, or route intent;
 - `check-phase2-check` validates the published schema, digests, references,
   current HEAD/diff/dirty snapshot, reviewed paths, planning linkage, recovery
   closure, full-round identity, and the four-exit/consumer union;
@@ -1259,10 +1261,12 @@ package wrappers call those commands only through `run-skill-command`.
 family and projects into the same executor; it does not retain a second
 installation implementation or semantic route owner.
 
-`marketplace_verification_required()` returns changed-surface facts only. The
-legacy closeout boolean is an explicitly named compatibility projection for
-existing consumers. Neither function may decide applicability for the active
-Skill.
+`marketplace_verification_required()` returns changed-surface facts only and
+does not decide applicability for the active Skill. Closeout uses those same
+candidate-surface facts after rebuilding the reviewed path set from the pinned
+task base through the Branch Review HEAD. A pre-pinned legacy task may fall
+back to its review gate's `changed_files`; compact Branch Review 2.1 never
+depends on that removed field.
 
 The executor accepts an already AI-selected closed capability list, resolves a
 credentials-safe remote locator, freezes the requested ref with
@@ -1480,6 +1484,16 @@ missing, stale, consumer-mismatched, or otherwise invalid projection stops
 before archive mutation. Closeout plans that do not require marketplace
 verification continue to pass no projection, while the legacy executor profile
 without an external owner result retains its deterministic verifier path.
+
+Closeout plan preparation owns one deterministic reviewed-change projection.
+It derives `review.changed_paths` from
+`task-start-context.json.base_head_sha...reviewed_head`, derives
+`review.close_issues_reviewed` from the publication-validated Issue Scope
+Ledger, and feeds the same reviewed paths to marketplace candidate-surface
+classification, pending/passed ledger evidence projection, archive retention,
+and the finish-summary template. Compact Branch Review remains semantic and
+small; the finalizer does not require it to duplicate path or issue-scope
+inventories.
 
 `verification_required.repo_ref` must equal the immutable plan repository.
 `resume_finalization` accepts only declared same-plan post-content recovery

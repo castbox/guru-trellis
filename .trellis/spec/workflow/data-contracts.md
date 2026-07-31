@@ -1213,6 +1213,17 @@ output, or archive commit SHA. Its projection does record a fixed sentinel PR
 URL/ref and the complete schema-valid finish-summary template so all local
 summary errors are known during prepare.
 
+For current tasks, `review.changed_paths` is rebuilt deterministically from the
+pinned `task-start-context.json.base_head_sha` through the reviewed Branch
+Review `HEAD`; compact gate schema 2.1 does not carry a duplicate
+`changed_files` inventory. Only older tasks without a pinned base may reuse a
+legacy gate's `changed_files`. The rebuilt list is the single input to closeout
+review reporting, marketplace candidate-surface classification, ledger
+evidence projection, archive retention, and finish-summary changed paths.
+`review.close_issues_reviewed` is projected from the publication-validated
+`issue-scope-ledger.json.close_issues`, not from removed compact-gate scope
+fields.
+
 `git.repo` is the normalized `owner/repository` identity. All effective fetch
 and push URLs of `git.remote` have a raw/effective two-layer contract. Raw
 `remote.<name>.url`, optional `pushurl`, and every `url.*.insteadOf` /

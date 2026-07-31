@@ -5229,7 +5229,13 @@ def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: 
     return errors
 
 
-def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *, allow_pending_remote_marketplace: bool = False) -> list[str]:
+def validate_ledger_for_publish(
+    ledger: dict[str, Any],
+    gate: dict[str, Any],
+    *,
+    allow_pending_remote_marketplace: bool = False,
+    marketplace_required: bool | None = None,
+) -> list[str]:
     errors: list[str] = []
     close_issues = ledger.get("close_issues")
     if not isinstance(close_issues, list):
@@ -5241,6 +5247,10 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *,
     gate_reviewed = set(
         issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed"))
     )
+    if marketplace_required is None:
+        marketplace_required = bool(
+            marketplace_verification_required(gate)["candidate_surfaces"]
+        )
     for issue in close_issues:
         if not isinstance(issue, dict):
             errors.append("close_issues 中存在非对象条目。")
@@ -5254,7 +5264,7 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *,
             errors.append(f"issue #{number} 同时出现在 close_issues 与 related/followup 中。")
         if not issue_has_evidence(issue):
             errors.append(f"close_issues 中 issue #{number} 缺少验收或验证证据。")
-        if legacy_closeout_marketplace_verification_required(gate):
+        if marketplace_required:
             errors.extend(
                 f"close_issues 中 issue #{number}：{error}"
                 for error in remote_marketplace_evidence_errors(issue, allow_pending=allow_pending_remote_marketplace)
@@ -16698,14 +16708,6 @@ MARKETPLACE_VERIFICATION_PREFIXES = (
     "README.md",
 )
 
-LEGACY_CLOSEOUT_MARKETPLACE_VERIFICATION_PREFIXES = (
-    "trellis/index.json",
-    "trellis/guru-team-extension.json",
-    "trellis/workflows/",
-    "trellis/presets/",
-)
-
-
 EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
 EXTENSION_VERIFICATION_SCHEMA_VERSION = "1.0"
 EXTENSION_VERIFICATION_CAPABILITIES = (
@@ -16829,14 +16831,59 @@ def marketplace_verification_required(gate: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def legacy_closeout_marketplace_verification_required(gate: dict[str, Any]) -> bool:
-    """Compatibility-only closeout projection until issue #119 activates the new route."""
-    files = gate.get("changed_files") if isinstance(gate.get("changed_files"), list) else []
-    return any(
-        isinstance(path, str)
-        and path.startswith(LEGACY_CLOSEOUT_MARKETPLACE_VERIFICATION_PREFIXES)
-        for path in files
+def closeout_reviewed_change_facts(
+    root: Path,
+    task_context: dict[str, Any],
+    gate: dict[str, Any],
+    reviewed_head: str,
+) -> dict[str, Any]:
+    """Rebuild one reviewed-path fact set for closeout and its projections."""
+    base_head = str(task_context.get("base_head_sha") or "").strip()
+    if re.fullmatch(r"[0-9a-f]{40}", base_head):
+        proc = run(
+            ["git", "diff", "--name-only", f"{base_head}...{reviewed_head}"],
+            cwd=root,
+            check=False,
+        )
+        if proc.returncode != 0:
+            raise WorkflowError(
+                "Could not rebuild closeout reviewed paths from the pinned task base.",
+                exit_code=2,
+                payload={
+                    "base_head": base_head,
+                    "reviewed_head": reviewed_head,
+                    "stderr": proc.stderr.strip(),
+                },
+            )
+        changed_paths = sorted(
+            {
+                path.strip()
+                for path in proc.stdout.splitlines()
+                if path.strip()
+            }
+        )
+    else:
+        legacy_paths = gate.get("changed_files")
+        if not isinstance(legacy_paths, list):
+            raise WorkflowError(
+                "Closeout reviewed paths require a pinned task base or a legacy changed_files gate.",
+                exit_code=2,
+            )
+        changed_paths = sorted(
+            {
+                str(path)
+                for path in legacy_paths
+                if isinstance(path, str) and path
+            }
+        )
+    marketplace = marketplace_verification_required(
+        {"changed_files": changed_paths}
     )
+    return {
+        "changed_paths": changed_paths,
+        "candidate_surfaces": marketplace["candidate_surfaces"],
+        "marketplace_required": bool(marketplace["candidate_surfaces"]),
+    }
 
 
 def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str], display_command: list[str] | None = None) -> dict[str, Any]:
@@ -26705,7 +26752,17 @@ def build_closeout_plan(
     reviewed_head: str,
     title: str,
     include_finalization_gate: bool = False,
+    review_facts: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    if review_facts is None:
+        review_facts = closeout_reviewed_change_facts(
+            root,
+            task_context,
+            gate,
+            reviewed_head,
+        )
+    reviewed_paths = list(review_facts["changed_paths"])
+    requires_marketplace = bool(review_facts["marketplace_required"])
     active_locator = repo_relative(root, task_dir)
     existing_plan_path = closeout_plan_path(task_dir)
     existing_plan = read_json(existing_plan_path) if existing_plan_path.is_file() else {}
@@ -26787,7 +26844,7 @@ def build_closeout_plan(
         task_files.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT, FINISH_SUMMARY_ARTIFACT})
         if include_finalization_gate:
             task_files.add(TASK_FINALIZATION_GATE_ARTIFACT)
-        if legacy_closeout_marketplace_verification_required(gate):
+        if requires_marketplace:
             task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
     move_paths = sorted(task_files)
     if existing_projection:
@@ -26807,7 +26864,7 @@ def build_closeout_plan(
         retained_archive_paths = list(move_paths)
     else:
         retained_allowlist = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
-        if legacy_closeout_marketplace_verification_required(gate):
+        if requires_marketplace:
             retained_allowlist.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
         retained_archive_paths = sorted(set(move_paths) & retained_allowlist)
     metadata_allowlist = sorted(
@@ -26832,7 +26889,7 @@ def build_closeout_plan(
         }
         evidence_names.difference_update(untracked_archive_outputs)
         evidence_names.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT})
-        if legacy_closeout_marketplace_verification_required(gate):
+        if requires_marketplace:
             evidence_names.update({MARKETPLACE_VERIFICATION_ARTIFACT, "issue-scope-ledger.json"})
         evidence_paths = sorted(f"{active_locator}/{name}" for name in evidence_names)
     context_path = task_dir / str(DEFAULTS["task_start_context_artifact"])
@@ -26867,7 +26924,7 @@ def build_closeout_plan(
         )
     projected_ledger = (
         record_marketplace_machine_evidence(ledger, pending)
-        if legacy_closeout_marketplace_verification_required(gate)
+        if requires_marketplace
         else ledger
     )
     projected_artifacts = {
@@ -26883,7 +26940,7 @@ def build_closeout_plan(
         read_json(finish_summary_index_path),
         reviewed_head,
         pr_url=placeholder["url"],
-        changed_paths=sorted(set(gate.get("changed_files", [])) | set(metadata_allowlist)),
+        changed_paths=sorted(set(reviewed_paths) | set(metadata_allowlist)),
         archive_dir_override=archive_locator,
         generated_at_override=generated_at,
         artifacts_override=projected_artifacts,
@@ -26909,8 +26966,10 @@ def build_closeout_plan(
         "review": {
             "gate_locator": repo_relative(root, gate_path),
             "reviewed_head": str(gate.get("head") or ""),
-            "changed_paths": sorted(set(str(path) for path in gate.get("changed_files", []) if str(path))),
-            "close_issues_reviewed": sorted(set(issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed")))),
+            "changed_paths": reviewed_paths,
+            "close_issues_reviewed": sorted(
+                set(issue_numbers(ledger.get("close_issues")))
+            ),
         },
         "publish": {
             "title": title,
@@ -26920,7 +26979,7 @@ def build_closeout_plan(
             "match": {"repo": repo, "head": head_branch, "base": normalize_ref(base_branch).removeprefix("origin/")},
         },
         "marketplace": {
-            "required": legacy_closeout_marketplace_verification_required(gate),
+            "required": requires_marketplace,
             "pending_machine": pending,
             "verifier_artifact_locator": MARKETPLACE_VERIFICATION_ARTIFACT,
         },
@@ -26953,6 +27012,7 @@ def prepare_closeout(
     task_context: dict[str, Any],
     *,
     verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     official_after_archive_hook_state(root)
     gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
@@ -26972,9 +27032,15 @@ def prepare_closeout(
     reviewed_head = str(gate.get("head") or "")
     if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
         raise WorkflowError("Branch Review Gate reviewed HEAD is invalid.", exit_code=2)
+    review_facts = closeout_reviewed_change_facts(
+        root,
+        task_context,
+        gate,
+        reviewed_head,
+    )
     index_path, index = load_finish_summary_index(task_dir, args.finish_summary_index_file)
     ledger = load_issue_scope_ledger(task_dir, task_context)
-    requires_marketplace = legacy_closeout_marketplace_verification_required(gate)
+    requires_marketplace = bool(review_facts["marketplace_required"])
     if requires_marketplace:
         existing_targets: list[dict[str, Any]] = []
         if isinstance(ledger.get("primary_issue"), dict):
@@ -27000,7 +27066,10 @@ def prepare_closeout(
     else:
         validation_ledger = ledger
     ledger_errors = validate_ledger_for_publish(
-        validation_ledger, gate, allow_pending_remote_marketplace=requires_marketplace
+        validation_ledger,
+        gate,
+        allow_pending_remote_marketplace=requires_marketplace,
+        marketplace_required=requires_marketplace,
     )
     if ledger_errors:
         raise WorkflowError("Issue Scope Ledger is incomplete for closeout.", exit_code=2, payload={"errors": ledger_errors})
@@ -27032,6 +27101,7 @@ def prepare_closeout(
         include_finalization_gate=bool(
             getattr(args, "include_finalization_gate", False)
         ),
+        review_facts=review_facts,
     )
     month_supersession: dict[str, Any] | None = None
     finalizer_takeover: dict[str, Any] | None = None
@@ -27039,7 +27109,9 @@ def prepare_closeout(
     if existing.is_file():
         persisted = validate_closeout_plan(read_json(existing))
         if persisted != plan:
-            persisted_marketplace_verification = None
+            previous_month = closeout_archive_month(persisted)
+            next_month = closeout_archive_month(plan)
+            persisted_marketplace_verification = marketplace_verification
             checked_verification = (
                 verification_owner_result[1]
                 if isinstance(verification_owner_result, tuple)
@@ -27051,16 +27123,26 @@ def prepare_closeout(
                 persisted["marketplace"]["required"]
                 and checked_verification.get("typed_exit") == "verified"
             ):
-                persisted_marketplace_verification = (
+                projected_marketplace_verification = (
                     finalization_marketplace_verification_compatibility_projection(
                         root,
                         task_dir,
-                        persisted,
+                        plan if previous_month == next_month else persisted,
                         verification_owner_result,
                     )
                 )
-            previous_month = closeout_archive_month(persisted)
-            next_month = closeout_archive_month(plan)
+                if (
+                    persisted_marketplace_verification is not None
+                    and persisted_marketplace_verification
+                    != projected_marketplace_verification
+                ):
+                    raise WorkflowError(
+                        "Task finalization received conflicting marketplace verification projections.",
+                        exit_code=2,
+                    )
+                persisted_marketplace_verification = (
+                    projected_marketplace_verification
+                )
             committed = current_head(root) != reviewed_head
             takeover_errors = (
                 closeout_finalizer_gate_takeover_errors(
@@ -27794,7 +27876,11 @@ def build_final_archive_projection(
 ) -> tuple[Path, dict[str, Any]]:
     plan = prepared["plan"]
     ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
-    ledger_errors = validate_ledger_for_publish(ledger, prepared["gate"])
+    ledger_errors = validate_ledger_for_publish(
+        ledger,
+        prepared["gate"],
+        marketplace_required=bool(plan["marketplace"]["required"]),
+    )
     if ledger_errors:
         raise WorkflowError("Final projection ledger validation failed.", exit_code=2, payload={"errors": ledger_errors})
     readiness = read_json(task_dir / PR_READINESS_ARTIFACT)
@@ -28834,6 +28920,8 @@ def apply_active_closeout_finalizer_takeover(
     task_dir: Path,
     prepared: dict[str, Any],
     finalization_gate: Any,
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> str:
     takeover = prepared.get("finalizer_takeover")
     if not isinstance(takeover, dict):
@@ -28881,6 +28969,7 @@ def apply_active_closeout_finalizer_takeover(
         previous,
         prepared["ledger"],
         prepared["gate"],
+        marketplace_verification=marketplace_verification,
     )
     if actual_prior_state != takeover.get("prior_state"):
         errors.append("finalizer takeover predecessor state changed after preview")
@@ -29072,7 +29161,15 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             raise WorkflowError("Interrupted archive move must resume through formal finish-work.", exit_code=2)
         return resume_active_archive_move(root, args, config, task_dir, task_context)
 
-    prepared = prepare_closeout(root, args, config, task_dir, task_context)
+    marketplace_verification = getattr(args, "external_verification", None)
+    prepared = prepare_closeout(
+        root,
+        args,
+        config,
+        task_dir,
+        task_context,
+        marketplace_verification=marketplace_verification,
+    )
     plan = prepared["plan"]
     if args.dry_run:
         return {
@@ -29095,7 +29192,6 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     require_gh_auth(root)
     ledger = load_issue_scope_ledger(task_dir, task_context)
     evidence_commit: dict[str, Any] | None = None
-    marketplace_verification = getattr(args, "external_verification", None)
     if prepared.get("month_supersession") is not None:
         supersession = prepared["month_supersession"]
         if supersession.get("committed") is True:
@@ -29111,6 +29207,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             prepared,
             getattr(args, "finalization_gate", None),
+            marketplace_verification=marketplace_verification,
         )
     else:
         entry_state = resolve_closeout_pre_draft_state(

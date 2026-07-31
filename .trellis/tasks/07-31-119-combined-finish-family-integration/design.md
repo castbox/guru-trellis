@@ -205,6 +205,10 @@ apply生成 dogfood copies。Task docs只保存本次 provenance、设计选择�
 - `trellis/presets/guru-team/README.md`
 - `.trellis/spec/workflow/workflow-contract.md`
 - `.trellis/spec/workflow/companion-scripts.md`
+- `.trellis/spec/workflow/data-contracts.md`
+- `.trellis/spec/workflow/skill-package-contract.md`
+- `.trellis/spec/workflow/quality-guidelines.md`
+- `.trellis/spec/workflow/index.md`
 - `.trellis/spec/preset/installer.md`
 - `.trellis/spec/preset/overlay-guidelines.md`
 - `.trellis/spec/preset/upstream-ownership.md`
@@ -212,12 +216,6 @@ apply生成 dogfood copies。Task docs只保存本次 provenance、设计选择�
 
 ### 10.4 Audited no-update owners
 
-- `.trellis/spec/workflow/skill-package-contract.md`：PR #165 的 minimal DTO、private state、
-  projection 与 AI-first规则保持原义，本 task没有 public I/O change。
-- `.trellis/spec/workflow/data-contracts.md`：artifact schemas 与 ownership不变；bridge只传内存
-  projection。
-- `.trellis/spec/workflow/quality-guidelines.md` 与 `.trellis/spec/workflow/index.md`：现有 gate
-  与导航规则不变，实施后用 stale-term scan复核。
 - `docs/requirements/`：current files不含 legacy finish entry 文案，实施后复核零 stale hit。
 
 ### 10.5 Task delta merge

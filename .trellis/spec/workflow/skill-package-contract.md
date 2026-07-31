@@ -1144,12 +1144,14 @@ maps it to one exact active Skill; it does not repeat semantic scope judgment.
 
 Official unchanged `trellis-check` workers provide review evidence only. They
 cannot own the Guru Gate, artifact, finding severity, or route. The package
-publishes closed schema `guru-phase2-check-2.0`; active legacy schema 1.0
-requires complete semantic re-entry, while archived artifacts remain historical.
-Recorder/checker runtime commands accept AI-authored closed input and validate
-only objective schema, linkage, digest, HEAD/diff/dirty, full-round, and
-exit/consumer invariants. Legacy `--pass --coverage` calls must
-fail closed rather than synthesize a semantic result.
+publishes closed schema `guru-phase2-check-2.1` for new records; existing
+`guru-phase2-check-2.0` artifacts are accepted only through read-only
+compatibility, active legacy schema 1.0 requires complete semantic re-entry,
+and archived artifacts remain historical. Recorder/checker runtime commands
+accept AI-authored closed input and validate only objective schema, linkage,
+digest, HEAD/diff/dirty, full-round, and exit/consumer invariants. Legacy
+`--pass --coverage` calls must fail closed rather than synthesize a semantic
+result.
 
 The entry evidence collections for requirement provenance, implementation
 result, Docs SSOT durable paths, repository reviewed paths, and executed

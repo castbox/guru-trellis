@@ -1,12 +1,12 @@
 {
   "schema_version": "2.1",
   "skill_id": "guru-review-branch",
-  "generated_at": "2026-07-31T02:50:20Z",
+  "generated_at": "2026-07-31T05:14:17Z",
   "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
   "mode": "workflow",
-  "review_intent": "initial_review",
-  "typed_exit": "implementation_required",
-  "head": "8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
+  "review_intent": "fresh_final_review",
+  "typed_exit": "passed",
+  "head": "c8c84ab21fc80cd2e72017e293f2aba38e00150c",
   "base_ref": "origin/main",
   "semantic_review": {
     "qualified_findings": [
@@ -14,30 +14,32 @@
         "candidate_ref": "BR-CAND-119-01",
         "disposition": "qualified_finding",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "The committed branch contains six Guru entry files with an extra blank line at EOF, so the complete committed range fails git diff --check and contradicts the passed Phase 2 command evidence.",
+        "affected_behavior": "The first committed branch candidate contained six Guru entry files with an extra blank line at EOF, causing the complete committed range to fail git diff --check and invalidating the old Phase 2 whitespace claim.",
         "path": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
         "evidence_refs": [
-          "git diff --check origin/main...HEAD exits 2",
-          "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md:34",
-          "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md:34",
-          "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md:34",
-          ".codex/prompts/guru-finish-work.md:34",
-          ".claude/commands/guru/finish-work.md:34",
-          ".cursor/commands/guru-finish-work.md:34",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json:580"
+          "introduced HEAD 8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
+          "resolved HEAD c8c84ab21fc80cd2e72017e293f2aba38e00150c",
+          "six Guru entries share SHA-256 c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+          "git diff --check origin/main...HEAD exits 0",
+          "phase2-check.json schema 2.1 contains 49 checked commands and marks BR-119-01 resolved"
         ],
         "requirement_refs": [
           ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:140",
           ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md:78"
         ],
-        "scope_basis": "Issue #119 acceptance explicitly requires git diff --check to pass and canonical overlays to generate clean dogfood copies.",
-        "qualification_reason": "The defect reproduces on the ordinary committed review range without tampering, is directly caused by current Issue #119 files, and makes the recorded final Phase 2 validation claim false for the committed bytes.",
+        "scope_basis": "Issue #119 acceptance requires clean canonical and dogfood entry bytes plus a passing complete-range whitespace check.",
+        "qualification_reason": "The original defect reproduced on an ordinary committed path and was current scope. The finding owner and a distinct fresh reviewer independently verified the exact fix commit and complete current range.",
         "finding_ref": "BR-119-01",
         "severity": "P2",
         "introduced_head": "8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
-        "resolved_at_head": null,
-        "status": "open",
-        "closure_evidence": []
+        "resolved_at_head": "c8c84ab21fc80cd2e72017e293f2aba38e00150c",
+        "status": "resolved",
+        "closure_evidence": [
+          "Fix commit parent equals introduced_head and contains the exact authorized 10-path set.",
+          "All six Guru entry files are 1696 bytes, byte-identical, and end with exactly one newline.",
+          "Canonical and dogfood copies match; ownership facts are fcfedc7dbc1c4e9e6897b37745cc4cc0c89962696730e92d9d8f78af13710129.",
+          "Fresh Phase 2 schema 2.1 gate passed with 49 command records and no open finding."
+        ]
       }
     ],
     "scope_proposals": [],
@@ -46,19 +48,19 @@
         "candidate_ref": "BR-CAND-119-04",
         "disposition": "observation",
         "scenario_class": "out_of_scope",
-        "affected_behavior": "Exact marketplace installation from the unpublished current branch ref has not yet run.",
+        "affected_behavior": "Exact marketplace installation from the current unpublished feature branch ref has not yet run.",
         "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
         "evidence_refs": [
-          "default throwaway verification fails closed for an unpublished dirty branch",
-          "local candidate install/update/reapply verification passed",
-          "remote branch verification is required after the separately authorized push"
+          "git ls-remote confirms the current feature ref does not exist remotely",
+          "default throwaway verification fails closed for the unpublished branch",
+          "local candidate install, update, reselect, reapply and recovery verification passed"
         ],
         "requirement_refs": [
           ".trellis/spec/preset/installer.md",
           ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json"
         ],
-        "scope_basis": "Remote marketplace verification is a post-push publication gate and push has not been authorized.",
-        "qualification_reason": "The current branch does not claim that remote verification already occurred, so this is a transparent deferred verification observation rather than a current code finding."
+        "scope_basis": "Exact remote marketplace verification is a post-push publication gate and push has not been authorized.",
+        "qualification_reason": "The branch makes no remote-verification claim, so this is a transparent deferred observation rather than a current finding."
       }
     ],
     "followup_candidates": [
@@ -77,7 +79,7 @@
           ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json"
         ],
         "scope_basis": "The approved Issue #119 boundary preserves these compatibility assets and assigns physical removal to Issue #132.",
-        "qualification_reason": "This is valid follow-up ownership but is not a defect or missing acceptance item in the current delivery."
+        "qualification_reason": "This remains valid follow-up ownership and is not a defect in the current delivery."
       }
     ],
     "rejected_candidates": [
@@ -88,27 +90,27 @@
         "affected_behavior": "The Phase 2 requirement-provenance entry for issue-scope-ledger.json has a different digest and size from the raw repository file.",
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
         "evidence_refs": [
-          "phase2_requirement_artifact_digest uses planning_scope_ledger_projection",
-          "phase2-check repository_snapshot separately binds the raw ledger bytes",
-          "the committed ledger raw bytes match the Phase 2 repository snapshot"
+          "semantic ledger projection is 105 bytes with digest 2be4796e",
+          "raw repository snapshot is 2916 bytes and separately bound",
+          "all current artifact bindings match live files"
         ],
         "requirement_refs": [
           ".trellis/spec/workflow/data-contracts.md",
           ".agents/skills/guru-check-task/references/contract.md"
         ],
         "scope_basis": "The accepted evidence contract intentionally distinguishes normalized semantic ledger identity from raw repository snapshot identity.",
-        "qualification_reason": "Current runtime and artifact evidence prove the differing identities are intentional and both are fresh; no normal-path stale or mismatch behavior exists."
+        "qualification_reason": "The complete current gate proves both identities are intentional and fresh; no stale or mismatch behavior exists."
       },
       {
         "candidate_ref": "BR-CAND-119-05",
         "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "The combined integration could have changed existing Finish Skill public interfaces or legacy compatibility payloads.",
+        "affected_behavior": "The combined integration or finding fix could have changed existing Finish Skill public interfaces or legacy compatibility payloads.",
         "path": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
         "evidence_refs": [
           "all three Finish interface and schema trees are byte-identical to origin/main",
           "all five canonical legacy entry payloads are byte-identical to origin/main",
-          "source and installed combined integration tests pass"
+          "source and installed combined integration tests each pass 6 of 6"
         ],
         "requirement_refs": [
           ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:113",
@@ -133,20 +135,38 @@
           ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:121"
         ],
         "scope_basis": "The user and repository contract explicitly exclude these expansions from Issue #119.",
-        "qualification_reason": "These scenarios are outside the accepted scope and cannot become findings without a new explicit requirement."
+        "qualification_reason": "These scenarios remain outside accepted scope and cannot become findings without a new explicit requirement."
+      },
+      {
+        "candidate_ref": "BR-CAND-119-07",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Earlier durable Docs SSOT statements could remain inconsistent with the Guru finish route and Issue #119 combined acceptance.",
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "evidence_refs": [
+          "P2-docs-ssot-finish-route is resolved in current Phase 2",
+          "data-contracts.md names canonical guru-finish-work recovery",
+          "workflow index records the current Issue #119 acceptance surface"
+        ],
+        "requirement_refs": [
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md:216",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json"
+        ],
+        "scope_basis": "The ssot_first plan requires current durable docs to agree with the implemented route.",
+        "qualification_reason": "Fresh final review found the previously stale statements corrected and no current Docs SSOT conflict."
       }
     ],
     "ai_review_gate": {
-      "status": "implementation_required",
-      "summary": "The independent complete-range initial review found one supported current-scope P2 finding: six new Guru entry files fail git diff --check and invalidate the recorded Phase 2 validation claim. No scope proposal exists; all other candidates are follow-up, observation, out-of-scope, or disproved."
+      "status": "passed",
+      "summary": "The distinct fresh final reviewer covered the complete origin/main...c8c84ab2 range. BR-119-01 is resolved with concrete lifecycle evidence; no open P0-P3 finding, scope proposal, blocking unverified item, public-contract drift, compatibility regression, or Docs SSOT conflict remains."
     }
   },
   "verification_evidence": {
-    "reviewer": "branch_review_119",
+    "reviewer": "check_119",
     "review_source": "independent-agent",
     "evidence": [
-      "Independent committed full-range review of origin/main...8905260e9c22887f7cc95d3bed38d1b8ed2097b0: git diff --check exits 2 for six new Guru finish entry files with a blank line at EOF; this invalidates the committed Phase 2 diff-check claim. All other reviewed candidates were rejected, deferred to #132, or recorded as the separately authorized post-push remote verification observation."
+      "Distinct fresh final review of complete origin/main@7ca1a0b9...c8c84ab21fc80cd2e72017e293f2aba38e00150c: BR-119-01 lifecycle is resolved from 8905260e to c8c84ab2; both commit messages and path sets pass; current Phase 2 schema 2.1 binds 49 commands and 70 raw artifacts; ownership/drift and source/installed integration pass; public DTOs and five legacy payloads are unchanged; no open finding or scope proposal remains. Issue #132 stays follow-up and exact remote marketplace install stays a post-push observation."
     ]
   },
-  "facts_sha256": "9cc5e01eafc447fc2d3cde614dd46db16f36683b46530f22ebca2c5f8f1cf534"
+  "facts_sha256": "bd8cc68de173ee6128a43a1b99759aa48efc9fd541726c70a586129a2e7370cd"
 }

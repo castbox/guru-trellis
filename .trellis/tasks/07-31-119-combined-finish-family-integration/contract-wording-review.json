@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "skill_id": "guru-review-contract-wording",
-  "generated_at": "2026-07-30T16:46:56.664Z",
+  "generated_at": "2026-07-31T06:37:51Z",
   "profile": "planning_artifacts",
   "mode": "workflow",
   "vocabulary_version": "contract-wording-v2",
@@ -20,8 +20,8 @@
         "kind": "markdown_file",
         "id": "file:.trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-        "size_bytes": 14042,
-        "content_sha256": "05607677ac2172e8b3166795bf8007ef47b2f5ee88f9517ca47b353c436fb020"
+        "size_bytes": 13759,
+        "content_sha256": "660499c25db1bc1a86615d72b9c588c4b8e503dbf4aff4a8688f15092c40dcbf"
       },
       {
         "kind": "markdown_file",
@@ -31,7 +31,7 @@
         "content_sha256": "3daca243e63109d6545270093b59f9bf24d3bb35dbc0b6d2a89fe183ea65de70"
       }
     ],
-    "scope_sha256": "d3a225626a7bb00275bf8c752faa3a5130dded7b7bc9be82ca6cf423e1b1734a"
+    "scope_sha256": "e3bcf5d39628f9233f9ffa9bf2e139047dfde5257329372dc64e8188184e147c"
   },
   "scan": {
     "hits": [],
@@ -44,7 +44,7 @@
     "ai_review_gate": {
       "status": "passed",
       "reviewer": "Codex primary agent /root",
-      "summary": "Reviewed the complete fixed prd/design/implement scope against live Issue #119, accepted-current comment, Issue #105, PR #162/#165 current contracts, repository specs and user boundaries. The zero-hit scan was not used as a substitute for semantic review; every conditional path, owner, gate, acceptance item, compatibility rule and exclusion is explicit and deterministic.",
+      "summary": "Reviewed the complete current prd.md, design.md, and implement.md scope after the Docs SSOT Plan re-entry. The revised plan now identifies every workflow spec actually updated by Issue #119 as a durable owner, preserves PR #165 public I/O and AI-first semantics, keeps Issue #132 cleanup out of scope, and leaves only docs/requirements as an audited no-update owner. The zero-hit scanner result was not used as a substitute for semantic review.",
       "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
       "checked_dimensions": {
         "complete_profile_scope": true,
@@ -69,8 +69,8 @@
     "status": "not_required",
     "confirmed_by": null,
     "confirmed_at": null,
-    "reason": "The fresh task-local planning rewrite is within the already authorized planning scope and changes no product authority."
+    "reason": "This wording review records a task-local Docs SSOT Plan correction inside the already approved Issue #119 scope; it changes no product authority or public contract."
   },
   "typed_exit": "pass",
-  "facts_sha256": "5636c563217984052b196615cba3dd837c232d73243d15ca823e306c396781d9"
+  "facts_sha256": "65700e542e5b2aab0d69e80262eb6bb91326ba98bd2d24bb8d2eed9577cce3af"
 }
