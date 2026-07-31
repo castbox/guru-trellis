@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-finalize-task",
+  "generated_at": "2026-07-31T17:36:32Z",
+  "invocation": {
+    "profile": "verification_verified",
+    "mode": "workflow",
+    "task_ref": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+    "input_identity_sha256": "8241a17350c5a79e6c3ce0513f0d96ea6ca4e55656b917f5ca15a4c8797228b6"
+  },
+  "plan": {
+    "available": true,
+    "plan_ref": "closeout-plan:8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3",
+    "plan_digest": "8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3",
+    "reviewed_head": "95379d6b498edcd7f0362d10ba20009f84a55d41"
+  },
+  "review": {
+    "status": "passed",
+    "summary": "同一 immutable plan 仍绑定 Issue #119/#115、reviewed HEAD 95379d6、current publication readiness、8 月 archive locator、唯一 Draft identity 与 compact archive transaction；task-local extension verification 已对精确 remote HEAD 完成完整 12-capability 验证，content_pushed 是合法的同 plan terminal publication 入口。",
+    "evidence_refs": [
+      "closeout-plan:8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3",
+      "publication:5c066d7140f28fc16e2ca27a2e12be01076975a35d70fd15868a7f0238dda032",
+      "extension-verification:a214e3da531e0e1d7589b7d7",
+      "transaction_state=content_pushed",
+      "live origin/main=7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
+      "live remote feature ref=95379d6b498edcd7f0362d10ba20009f84a55d41",
+      "gh pr list returned no open feat/119-finish-family-integration-main -> main candidate"
+    ]
+  },
+  "confirmation": {
+    "status": "confirmed",
+    "confirmed_plan_digest": "8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3",
+    "summary": "用户于 2026-08-01 在完整 plan side-effect set、target、HEAD、archive locator 与 authorization conflict 已展示后，明确授权完整 8d73eacc finalizer 原子事务；授权覆盖 content push、remote marketplace verification、证据 commit/push、唯一 Draft PR、archive commit/push 与 Draft 转 Ready，不覆盖 merge、额外 Issue mutation或资源清理。"
+  },
+  "route": {
+    "typed_exit": "published",
+    "consumer": {
+      "kind": "workflow",
+      "id": "guru-finalization-finish-response"
+    },
+    "output": {
+      "materialization": "executor"
+    }
+  },
+  "freshness": {
+    "current_facts_sha256": "94e9a8a8962e52b0fbce54b78f7545d81ebee41de7f3ec7471bb9a44a8a1e614",
+    "supersedes_gate_ref": "task-finalization-gate:ba2707057b987802bcd07d8eee40e9f324e9cced46da09061fc19beb81c51645"
+  }
+}
