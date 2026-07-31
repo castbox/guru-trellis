@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "skill_id": "guru-approve-task-plan",
-  "generated_at": "2026-07-31T07:25:41Z",
+  "generated_at": "2026-07-31T10:03:17Z",
   "mode": "workflow",
   "task": {
     "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
@@ -18,25 +18,13 @@
     "selected_base": "main",
     "base_ref": "refs/remotes/origin/main",
     "base_head": "7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
-    "head": "c8c84ab21fc80cd2e72017e293f2aba38e00150c",
+    "head": "bc3b3aec6962769f1cf610aba668fdc9a1db8c55",
     "dirty_paths": [
       ".trellis/guru-team/extension.json",
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/spec/docs/public-docs.md",
-      ".trellis/spec/workflow/companion-scripts.md",
-      ".trellis/spec/workflow/data-contracts.md",
       ".trellis/spec/workflow/skill-package-contract.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
-      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json"
     ],
-    "captured_at": "2026-07-31T07:25:41Z"
+    "captured_at": "2026-07-31T10:03:17Z"
   },
   "requirement_authorities": [
     {
@@ -85,7 +73,7 @@
       "id": "repo:skill-contract",
       "kind": "repository_document",
       "locator": ".trellis/spec/workflow/skill-package-contract.md",
-      "sha256": "4916990c0a566b1fce8af2fccbfc2ede51844481665f74d7fd84c06f926a0de8",
+      "sha256": "479b66193ba05f819427d11bd9c6786029599e922892691e2b462e1f236bce4a",
       "updated_at": null
     },
     {
@@ -774,8 +762,8 @@
     "ai_review_gate": {
       "status": "passed",
       "reviewer": "Codex primary agent /root",
-      "summary": "Fresh same-scope re-entry reviewed the unchanged current prd.md, design.md and implement.md plus R1-R17 provenance after the planned Docs SSOT convergence and the two Phase 2 finding fixes. The active schema wording now consistently declares guru-phase2-check-2.1 for new records with 2.0 read-only compatibility, and the same-month verified takeover now preserves the current augmented-plan owner binding through evidence_ready and published recovery. These changes implement the approved private bridge and durable-docs plan without changing the three Skill owners, 13 exits, minimal public DTOs, existing #105 failure model, #132 cleanup boundary or frozen donor constraints. All nine entry preconditions are current, with no findings, revisions, scope proposals or blockers.",
-      "reviewed_at": "2026-07-31T07:24:48Z",
+      "summary": "Fresh same-scope re-entry reviewed the unchanged current prd.md, design.md, implement.md, Docs SSOT Plan, R1-R17 provenance, six unusual-scenario dispositions, current Issue #119 authority, and the BR-119-02 correction. The Skill package contract now states that Issue #119 integrates the global Finish route, keeps the verifier as sole semantic owner, preserves the standalone not_required finalizer edge, and adds no public input or output fields. This is the approved ssot_first implementation path, not an authority or scope mutation. No planning finding, revision action, scope proposal, or blocker remains.",
+      "reviewed_at": "2026-07-31T10:02:54.496Z",
       "findings": [],
       "revision_actions": [],
       "scope_proposals": [],
@@ -787,14 +775,14 @@
     "status": "confirmed",
     "prompt_presented_at": "2026-07-31T07:23:00Z",
     "confirmed_at": "2026-07-31T07:24:48Z",
-    "evidence_summary": "用户已查看当前三份规划绝对链接、same-month verified takeover 与 Phase 2 Docs SSOT 修复、三平台 overlay drift、live main、候选 HEAD 与 frozen donor invariants，随后独立回复“确认继续”，授权重录当前 planning approval、完整重跑 Phase 2 并停在 commit plan 前；未授权 commit、push、PR、merge、Issue closure 或 cleanup。"
+    "evidence_summary": "用户已查看且确认当前 Issue #119 的 prd.md、design.md、implement.md 绝对链接及 finding-fix re-entry；三份 planning 文件保持不变。本次只刷新 BR-119-02 修订后的 repo:skill-contract 权威摘要并继续完整 Phase 2，未授权 commit、push、PR、merge、Issue closure 或 cleanup。"
   },
   "typed_exit": "approved",
   "consumer": {
     "kind": "workflow",
     "id": "phase-1-task-activation"
   },
-  "reason": "The unchanged current planning set passed fresh wording, adequacy, provenance, unusual-scenario and post-planning confirmation review after the planned finding fixes updated only private runtime recovery and durable Docs SSOT wording; the unique next consumer is complete Phase 2 validation.",
-  "supersedes_facts_sha256": "b01cc5075c462c2b90bc41dd4f960863958e2ee3c1ab2e7719af12da9bdda5e7",
-  "facts_sha256": "43ec1f6975d030451cc580678dfcf4659a90db299cf7990a18931c5cc39deed6"
+  "reason": "The unchanged Issue #119 planning set remains adequate. Re-entry refreshes only the repository Skill-contract authority after resolving BR-119-02 and preserves every existing scope, public-I/O, recovery, installation, donor, and authorization boundary.",
+  "supersedes_facts_sha256": "43ec1f6975d030451cc580678dfcf4659a90db299cf7990a18931c5cc39deed6",
+  "facts_sha256": "300d9b925cdd7f98d5488d05b44b8ab5144799495915b384b62fd5fe551fb468"
 }

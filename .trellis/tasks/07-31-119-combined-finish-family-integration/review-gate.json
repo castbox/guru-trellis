@@ -1,12 +1,12 @@
 {
   "schema_version": "2.1",
   "skill_id": "guru-review-branch",
-  "generated_at": "2026-07-31T05:14:17Z",
+  "generated_at": "2026-07-31T09:34:23Z",
   "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
   "mode": "workflow",
   "review_intent": "fresh_final_review",
-  "typed_exit": "passed",
-  "head": "c8c84ab21fc80cd2e72017e293f2aba38e00150c",
+  "typed_exit": "implementation_required",
+  "head": "bc3b3aec6962769f1cf610aba668fdc9a1db8c55",
   "base_ref": "origin/main",
   "semantic_review": {
     "qualified_findings": [
@@ -19,27 +19,50 @@
         "evidence_refs": [
           "introduced HEAD 8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
           "resolved HEAD c8c84ab21fc80cd2e72017e293f2aba38e00150c",
-          "six Guru entries share SHA-256 c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
-          "git diff --check origin/main...HEAD exits 0",
-          "phase2-check.json schema 2.1 contains 49 checked commands and marks BR-119-01 resolved"
+          "git diff --check origin/main...bc3b3aec6962769f1cf610aba668fdc9a1db8c55 exits 0",
+          "the current complete-range reviewer rechecked the resolved lifecycle"
         ],
         "requirement_refs": [
           ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:140",
           ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md:78"
         ],
         "scope_basis": "Issue #119 acceptance requires clean canonical and dogfood entry bytes plus a passing complete-range whitespace check.",
-        "qualification_reason": "The original defect reproduced on an ordinary committed path and was current scope. The finding owner and a distinct fresh reviewer independently verified the exact fix commit and complete current range.",
+        "qualification_reason": "The original defect reproduced on an ordinary committed path and was current scope. Its committed fix and current complete-range evidence remain valid.",
         "finding_ref": "BR-119-01",
         "severity": "P2",
         "introduced_head": "8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
-        "resolved_at_head": "c8c84ab21fc80cd2e72017e293f2aba38e00150c",
+        "resolved_at_head": "bc3b3aec6962769f1cf610aba668fdc9a1db8c55",
         "status": "resolved",
         "closure_evidence": [
-          "Fix commit parent equals introduced_head and contains the exact authorized 10-path set.",
-          "All six Guru entry files are 1696 bytes, byte-identical, and end with exactly one newline.",
-          "Canonical and dogfood copies match; ownership facts are fcfedc7dbc1c4e9e6897b37745cc4cc0c89962696730e92d9d8f78af13710129.",
-          "Fresh Phase 2 schema 2.1 gate passed with 49 command records and no open finding."
+          "The current reviewer confirmed the six Guru entry files remain byte-identical and git diff --check still passes.",
+          "The current Phase 2 evidence preserves BR-119-01 as resolved and the reviewed fix is an ancestor of the current HEAD."
         ]
+      },
+      {
+        "candidate_ref": "BR-CAND-119-07",
+        "disposition": "qualified_finding",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "The durable Skill package contract still says that global Finish routing is deferred to Issue #119 even though the current branch implements the combined route, so the ssot_first Docs SSOT claim is not true.",
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "evidence_refs": [
+          ".trellis/spec/workflow/skill-package-contract.md:1508 says Global Finish routing remains deferred to #119",
+          ".trellis/spec/workflow/skill-package-contract.md:1635-1638 says the active package is integrated and Issue #119 adds the combined integration",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json:1360 claims all durable owners are synchronized",
+          "the independent reviewer checked the complete origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...bc3b3aec6962769f1cf610aba668fdc9a1db8c55 range"
+        ],
+        "requirement_refs": [
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md:214",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:104",
+          "AGENTS.md:10"
+        ],
+        "scope_basis": "The approved ssot_first plan requires every listed durable owner to describe the implemented Finish-family route consistently before Issue #119 may pass review.",
+        "qualification_reason": "The contradiction occurs on the normal maintained documentation path, is reproducible without scope expansion, and directly invalidates current-scope acceptance evidence.",
+        "finding_ref": "BR-119-02",
+        "severity": "P2",
+        "introduced_head": "bc3b3aec6962769f1cf610aba668fdc9a1db8c55",
+        "resolved_at_head": null,
+        "status": "open",
+        "closure_evidence": []
       }
     ],
     "scope_proposals": [],
@@ -51,8 +74,7 @@
         "affected_behavior": "Exact marketplace installation from the current unpublished feature branch ref has not yet run.",
         "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
         "evidence_refs": [
-          "git ls-remote confirms the current feature ref does not exist remotely",
-          "default throwaway verification fails closed for the unpublished branch",
+          "the current feature ref is not published remotely",
           "local candidate install, update, reselect, reapply and recovery verification passed"
         ],
         "requirement_refs": [
@@ -84,33 +106,15 @@
     ],
     "rejected_candidates": [
       {
-        "candidate_ref": "BR-CAND-119-02",
-        "disposition": "rejected_candidate",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "The Phase 2 requirement-provenance entry for issue-scope-ledger.json has a different digest and size from the raw repository file.",
-        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
-        "evidence_refs": [
-          "semantic ledger projection is 105 bytes with digest 2be4796e",
-          "raw repository snapshot is 2916 bytes and separately bound",
-          "all current artifact bindings match live files"
-        ],
-        "requirement_refs": [
-          ".trellis/spec/workflow/data-contracts.md",
-          ".agents/skills/guru-check-task/references/contract.md"
-        ],
-        "scope_basis": "The accepted evidence contract intentionally distinguishes normalized semantic ledger identity from raw repository snapshot identity.",
-        "qualification_reason": "The complete current gate proves both identities are intentional and fresh; no stale or mismatch behavior exists."
-      },
-      {
         "candidate_ref": "BR-CAND-119-05",
         "disposition": "rejected_candidate",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "The combined integration or finding fix could have changed existing Finish Skill public interfaces or legacy compatibility payloads.",
+        "affected_behavior": "The combined integration could have changed existing Finish Skill public interfaces or legacy compatibility payloads.",
         "path": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
         "evidence_refs": [
           "all three Finish interface and schema trees are byte-identical to origin/main",
           "all five canonical legacy entry payloads are byte-identical to origin/main",
-          "source and installed combined integration tests each pass 6 of 6"
+          "source and installed combined integration tests pass"
         ],
         "requirement_refs": [
           ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:113",
@@ -136,37 +140,19 @@
         ],
         "scope_basis": "The user and repository contract explicitly exclude these expansions from Issue #119.",
         "qualification_reason": "These scenarios remain outside accepted scope and cannot become findings without a new explicit requirement."
-      },
-      {
-        "candidate_ref": "BR-CAND-119-07",
-        "disposition": "rejected_candidate",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "Earlier durable Docs SSOT statements could remain inconsistent with the Guru finish route and Issue #119 combined acceptance.",
-        "path": ".trellis/spec/workflow/data-contracts.md",
-        "evidence_refs": [
-          "P2-docs-ssot-finish-route is resolved in current Phase 2",
-          "data-contracts.md names canonical guru-finish-work recovery",
-          "workflow index records the current Issue #119 acceptance surface"
-        ],
-        "requirement_refs": [
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md:216",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json"
-        ],
-        "scope_basis": "The ssot_first plan requires current durable docs to agree with the implemented route.",
-        "qualification_reason": "Fresh final review found the previously stale statements corrected and no current Docs SSOT conflict."
       }
     ],
     "ai_review_gate": {
-      "status": "passed",
-      "summary": "The distinct fresh final reviewer covered the complete origin/main...c8c84ab2 range. BR-119-01 is resolved with concrete lifecycle evidence; no open P0-P3 finding, scope proposal, blocking unverified item, public-contract drift, compatibility regression, or Docs SSOT conflict remains."
+      "status": "implementation_required",
+      "summary": "The independent complete-range review found one open current-scope P2 finding: BR-119-02. The durable Skill package contract still defers global Finish routing to Issue #119, contradicting the implemented combined route and invalidating the current Docs SSOT pass claim. The route must return to implementation, update the durable owner, and rerun a complete Phase 2 before a new task commit and fresh-final review."
     }
   },
   "verification_evidence": {
     "reviewer": "check_119",
     "review_source": "independent-agent",
     "evidence": [
-      "Distinct fresh final review of complete origin/main@7ca1a0b9...c8c84ab21fc80cd2e72017e293f2aba38e00150c: BR-119-01 lifecycle is resolved from 8905260e to c8c84ab2; both commit messages and path sets pass; current Phase 2 schema 2.1 binds 49 commands and 70 raw artifacts; ownership/drift and source/installed integration pass; public DTOs and five legacy payloads are unchanged; no open finding or scope proposal remains. Issue #132 stays follow-up and exact remote marketplace install stays a post-push observation."
+      "check_119 independently reviewed origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...bc3b3aec6962769f1cf610aba668fdc9a1db8c55 across 73 paths and found BR-119-02 at skill-package-contract.md:1508; mechanical boundary, runtime, ownership, integration and artifact binding checks otherwise passed."
     ]
   },
-  "facts_sha256": "bd8cc68de173ee6128a43a1b99759aa48efc9fd541726c70a586129a2e7370cd"
+  "facts_sha256": "a319e6b35db8ca70e7d593654116d49f4c59d507308153b80503b71bfb235db1"
 }

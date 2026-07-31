@@ -1505,7 +1505,11 @@ The two structured inputs are deliberately distinct:
 The workflow profile is owned by this package and is consumed by active
 `guru-finalize-task:verification_required`. It publishes the target schema,
 example, fixture, real-wrapper eval, and concrete target-owned authoring seed.
-Global Finish routing remains deferred to #119.
+Issue #119 integrates the global Finish route: the workflow maps the reachable
+`verified`, `return_to_task_work`, and `blocked` exits to their unique
+consumers, while the standalone `not_required` projection retains its declared
+finalizer edge. The verifier remains the sole semantic owner, and this
+integration adds no public input or output fields.
 Caller input never contains applicability, capability list, remote facts,
 adequacy, expected exit, or command matrix.
 
