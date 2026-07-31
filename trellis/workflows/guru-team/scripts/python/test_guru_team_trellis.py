@@ -13259,6 +13259,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         *,
         marketplace_required: bool,
         arbitrary_metadata: bool = False,
+        artifact_drift: bool = False,
+        ledger_drift: bool = False,
         execute_remaining: bool = False,
     ) -> dict[str, object] | None:
         source_root = Path(__file__).resolve().parents[5]
@@ -13389,15 +13391,18 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 head_branch="main",
             )
         self.assertEqual(plan["marketplace"]["required"], marketplace_required)
-        if marketplace_required:
-            self.ledger = gtt.record_marketplace_machine_evidence(
-                self.ledger,
-                plan["marketplace"]["pending_machine"],
-            )
-            gtt.write_json(
-                self.task_dir / "issue-scope-ledger.json",
-                self.ledger,
-            )
+        publication_ledger = (
+            gtt.closeout_semantic_ledger(self.ledger)
+            if marketplace_required
+            else copy.deepcopy(self.ledger)
+        )
+        gtt.write_json(
+            self.task_dir / "issue-scope-ledger.json",
+            publication_ledger,
+        )
+        publication_ledger_content = (
+            self.task_dir / "issue-scope-ledger.json"
+        ).read_bytes()
         stored_repository = gtt.task_publication_repository_binding(
             self.root,
             self.task_dir,
@@ -13419,6 +13424,23 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "invocation_freshness",
             )
         }
+        stored_entries["issue_scope_ledger"] = (
+            gtt.task_publication_issue_scope_ledger_binding(
+                publication_ledger,
+                publication_ledger_content,
+            )
+        )
+        stored_entries["review_range_and_working_tree"] = (
+            gtt.task_publication_binding(stored_repository)
+        )
+        stored_artifacts = {
+            "issue-scope-ledger.json": gtt.task_publication_artifact_binding(
+                publication_ledger_content
+            ),
+            "pr-body.md": gtt.task_publication_artifact_binding(
+                (self.task_dir / "pr-body.md").read_bytes()
+            ),
+        }
         publication_ref = "publication:real-recorder-reentry"
         publication = {
             "task_dir": task_ref,
@@ -13431,6 +13453,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "review_ref": "review-gate:real-recorder-reentry",
             },
             "deterministic_bindings": {
+                "artifacts": stored_artifacts,
                 "repository": stored_repository,
                 "entry_preconditions": stored_entries,
                 "publication_ref": publication_ref,
@@ -13440,6 +13463,26 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         }
         gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, publication)
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        if marketplace_required:
+            self.ledger = gtt.record_marketplace_machine_evidence(
+                publication_ledger,
+                plan["marketplace"]["pending_machine"],
+            )
+            gtt.write_json(
+                self.task_dir / "issue-scope-ledger.json",
+                self.ledger,
+            )
+        else:
+            self.ledger = publication_ledger
+        if ledger_drift:
+            drifted_ledger = copy.deepcopy(self.ledger)
+            drifted_ledger["close_issues"][0]["reason"] = (
+                "unreviewed ledger semantic drift"
+            )
+            gtt.write_json(
+                self.task_dir / "issue-scope-ledger.json",
+                drifted_ledger,
+            )
         plan_ref = f"closeout-plan:{plan['plan_digest']}"
 
         if marketplace_required:
@@ -13578,10 +13621,40 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 self.task_dir,
             )
             entries = copy.deepcopy(stored_entries)
+            ledger_content = (
+                self.task_dir / "issue-scope-ledger.json"
+            ).read_bytes()
+            entries["issue_scope_ledger"] = (
+                gtt.task_publication_issue_scope_ledger_binding(
+                    gtt.read_json(
+                        self.task_dir / "issue-scope-ledger.json"
+                    ),
+                    ledger_content,
+                )
+            )
             entries["review_range_and_working_tree"] = (
                 gtt.task_publication_binding(repository)
             )
             return entries, [], {}, repository
+
+        def current_artifacts(
+            *_args: object,
+            **_kwargs: object,
+        ) -> dict[str, dict[str, object]]:
+            artifacts = copy.deepcopy(stored_artifacts)
+            artifacts["issue-scope-ledger.json"] = (
+                gtt.task_publication_artifact_binding(
+                    (
+                        self.task_dir / "issue-scope-ledger.json"
+                    ).read_bytes()
+                )
+            )
+            if artifact_drift:
+                artifacts["pr-body.md"] = {
+                    "sha256": "f" * 64,
+                    "size": artifacts["pr-body.md"]["size"],
+                }
+            return artifacts
 
         prepared = {
             "plan": plan,
@@ -13610,10 +13683,20 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             mock.patch.object(
                 gtt,
                 "task_publication_check_errors",
-                return_value=[
+                return_value=(
+                    ["task publication artifact bindings are stale"]
+                    if marketplace_required or artifact_drift
+                    else []
+                )
+                + [
                     "task publication repository binding is stale",
                     "task publication entry precondition bindings are stale",
                 ],
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_artifact_bindings",
+                side_effect=current_artifacts,
             ),
             mock.patch.object(
                 gtt,
@@ -13630,6 +13713,17 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             if arbitrary_metadata:
                 with self.assertRaises(gtt.WorkflowError):
                     gtt.cmd_preview_finalization(runtime_args)
+                return None
+            if artifact_drift or ledger_drift:
+                stale_preview = gtt.cmd_preview_finalization(runtime_args)
+                self.assertEqual(
+                    stale_preview["transaction_state"],
+                    "publication_review_stale",
+                )
+                self.assertEqual(
+                    stale_preview["publication_stale_reason"],
+                    "publication_review_stale",
+                )
                 return None
 
             preview = gtt.cmd_preview_finalization(runtime_args)
@@ -13895,6 +13989,22 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.exercise_real_verification_metadata_reentry(
                 marketplace_required=True,
                 arbitrary_metadata=True,
+            )
+        )
+
+    def test_real_verification_reentry_rejects_other_artifact_drift(self) -> None:
+        self.assertIsNone(
+            self.exercise_real_verification_metadata_reentry(
+                marketplace_required=True,
+                artifact_drift=True,
+            )
+        )
+
+    def test_real_verification_reentry_rejects_ledger_semantic_drift(self) -> None:
+        self.assertIsNone(
+            self.exercise_real_verification_metadata_reentry(
+                marketplace_required=True,
+                ledger_drift=True,
             )
         )
 

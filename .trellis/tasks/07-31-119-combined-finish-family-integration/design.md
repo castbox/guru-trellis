@@ -103,6 +103,25 @@ deterministic verifier；finalizer profile只消费 checked owner projection。
   private artifact。
 - Projection 不写 task artifact，不改变 archive move set，不制造 metadata commit。
 
+### 4.4 Publication freshness compatibility
+
+`execute_closeout_content_push()` 保持 #105 事务顺序：先固定 plan/readiness，再写
+pending remote-verification machine evidence。Finalizer 不重写 publication semantic gate，而是
+执行一个精确 deterministic augmentation：
+
+- current ledger 去掉所有 `remote_marketplace_verification` 后的 canonical digest 必须
+  与 immutable plan 的 `inputs.issue_scope_ledger` 一致；
+- primary issue 与所有 close issues 必须持有同一个 plan-owned pending evidence，或由
+  current checked #117 owner projection 精确派生的 passed evidence；
+- stored publication artifact/entry bindings 必须唯一匹配无 evidence、legacy pending、
+  current plan pending 或 current checked passed 中的一个 reviewed preimage；
+- 只替换 `issue-scope-ledger.json` artifact binding、`issue_scope_ledger` entry binding
+  和派生 `review_range_and_working_tree` binding，其余 artifacts、entries、repository facts、
+  semantic findings/conclusions 与 `publication_ref` 保持字节级一致。
+
+这一规则只处理诚实正常流程中的 finalizer-owned machine update，不扩展为通用 stale
+放宽、hostile-input 防御或额外 transaction protocol。
+
 ## 5. Eval 与 combined test 设计
 
 ### 5.1 Finalizer terminal cases

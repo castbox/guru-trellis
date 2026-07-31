@@ -631,9 +631,17 @@ recorder writes and must remain invalid to the checker and public wrapper.
 Package/runtime/eval tests cover both profiles and modes, three exits, stale
 re-entry, metadata correction to fresh pass, metadata correction that reveals
 durable drift, legacy readiness rejection, and finalization augmentation only
-after a passing gate. Finalization tests prove that adding only the exact
-validated closeout plan reruns all twelve entries, changes only the repository
-and derived review-range binding, and rejects any additional metadata drift.
+after a passing gate. Finalization tests prove that adding the exact validated
+closeout plan reruns all twelve entries. A later closeout transaction may also
+replace only the Issue Scope Ledger's `remote_marketplace_verification` with
+the plan-owned `pending_machine` object or the exact `passed` object derived
+from the current checker-passed verification projection. The semantic ledger
+without that machine evidence must still match the immutable plan, and the
+stored publication artifact and entry bindings must match one unique reviewed
+preimage. Only the ledger artifact binding, `issue_scope_ledger` entry binding,
+ledger status-path membership, repository binding, and derived
+`review_range_and_working_tree` binding may change; tests reject every other
+artifact, ledger field, entry, repository fact, or status-path drift.
 Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.

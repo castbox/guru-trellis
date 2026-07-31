@@ -1451,9 +1451,20 @@ checker-reproducible failed
 bindings only after the AI owner has selected the route.
 Only a checker-passed `ready` gate may receive that compatibility layer.
 The finalization owner reruns all twelve entries after adding the exact
-validated `closeout-plan.json`; it accepts only the corresponding repository
-binding and derived `review_range_and_working_tree` digest change, with every
-other binding still exact and passed.
+validated `closeout-plan.json`. The later closeout transaction may also replace
+only the `remote_marketplace_verification` machine evidence in the Issue Scope
+Ledger with either the plan's exact `pending_machine` object or the exact
+`passed` object derived from the current checker-passed extension-verification
+owner result. That narrow augmentation is valid only when the ledger with all
+such machine evidence removed still matches
+`closeout-plan.inputs.issue_scope_ledger`, and the prior publication bindings
+match one exact reviewed ledger preimage. It may change only the
+`issue-scope-ledger.json` artifact binding, the `issue_scope_ledger` entry
+binding, the corresponding status-path membership, and the derived
+`review_range_and_working_tree` binding. Every semantic review field,
+conclusion, finding, other artifact/entry binding, repository fact, and
+`publication_ref` remains exact; any additional ledger or artifact drift fails
+closed.
 Legacy deterministic `ready=true` snapshots never satisfy the semantic gate.
 
 For `publication_review_stale`, the recorder reads the exact current prior

@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "skill_id": "guru-approve-task-plan",
-  "generated_at": "2026-07-31T10:03:17Z",
+  "generated_at": "2026-07-31T13:58:17Z",
   "mode": "workflow",
   "task": {
     "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
@@ -18,13 +18,29 @@
     "selected_base": "main",
     "base_ref": "refs/remotes/origin/main",
     "base_head": "7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
-    "head": "bc3b3aec6962769f1cf610aba668fdc9a1db8c55",
+    "head": "e7079961de0428e3492dfd0e26ac8c9f7ad7aa36",
     "dirty_paths": [
+      ".DS_Store",
+      ".trellis/.DS_Store",
       ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/companion-scripts.md",
       ".trellis/spec/workflow/skill-package-contract.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json"
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/closeout-plan.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/task-finalization-gate.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
     ],
-    "captured_at": "2026-07-31T10:03:17Z"
+    "captured_at": "2026-07-31T13:58:17Z"
   },
   "requirement_authorities": [
     {
@@ -73,14 +89,14 @@
       "id": "repo:skill-contract",
       "kind": "repository_document",
       "locator": ".trellis/spec/workflow/skill-package-contract.md",
-      "sha256": "479b66193ba05f819427d11bd9c6786029599e922892691e2b462e1f236bce4a",
+      "sha256": "37d0ed15aec5591366b66fa1ca435e6778ed5a4148a2ee0c45e8562001cb5bff",
       "updated_at": null
     },
     {
       "id": "repo:companion-scripts",
       "kind": "repository_document",
       "locator": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "590bf8d62149f7ffc687da4539546c65da9474a93e15525c32b258f95a2bfd12",
+      "sha256": "688cd6efd66c53237c71e3f9894835d850f30dece6473ec4d0cd11835d6adf38",
       "updated_at": null
     },
     {
@@ -107,49 +123,49 @@
     {
       "id": "user:post-planning-approval",
       "kind": "user_request",
-      "locator": "用户已查看当前 Issue #119 的 prd.md、design.md、implement.md 绝对链接，以及 same-month verified takeover 修复、Phase 2 schema Docs SSOT 修正、三平台 overlay drift、live main、候选 HEAD 与冻结 donor 状态，随后于 2026-07-31 独立回复“确认继续”，授权重录当前 planning approval、完整重跑 Phase 2 并停在 commit plan 前。",
-      "sha256": "4821d30056e25964e5957be6648c20177a56a0300577643d5921f0e2ebec9860",
+      "locator": "用户已查看整改后的 Issue #119 prd.md、design.md、implement.md 绝对链接，以及仅限 immutable-plan-owned pending/passed marketplace machine evidence 的 closeout-order 兼容边界，随后于 2026-07-31 独立回复“确认继续”，授权重录当前 planning approval、收敛全量验证并完成新 Phase 2，仍停在 exact commit plan 前；未授权 commit、push、PR、merge、Issue closure 或 cleanup。",
+      "sha256": "2eff0c6956724fd03fc2d825514510821754ba140a3377f6eaff8348f09d9301",
       "updated_at": null
     }
   ],
   "reviewed_artifacts": [
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-      "sha256": "3bf0f8520193af1dd8d058c5ad83229cbd1511ae80ed91799579635fbb7ea986",
-      "size_bytes": 9026,
-      "modified_at": "2026-07-30T16:46:20.513721+00:00"
+      "sha256": "5226cfc7208d96d5c8dc66b7c3512ee10f16703841fe94555e8b08a7a631c861",
+      "size_bytes": 9738,
+      "modified_at": "2026-07-31T13:11:29.493615+00:00"
     },
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-      "sha256": "660499c25db1bc1a86615d72b9c588c4b8e503dbf4aff4a8688f15092c40dcbf",
-      "size_bytes": 13759,
-      "modified_at": "2026-07-31T06:35:58.003219+00:00"
+      "sha256": "514d0d61eb4e751b39ccb82854e33453dd2c81d31d65196b13dd6237e544163d",
+      "size_bytes": 15005,
+      "modified_at": "2026-07-31T12:45:15.466732+00:00"
     },
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
-      "sha256": "3daca243e63109d6545270093b59f9bf24d3bb35dbc0b6d2a89fe183ea65de70",
-      "size_bytes": 8630,
-      "modified_at": "2026-07-30T16:46:20.514471+00:00"
+      "sha256": "8797cf796f8b26853d826dd8e9bd277c6ca020d5d31e5c5d1db40ddddfea75b5",
+      "size_bytes": 9013,
+      "modified_at": "2026-07-31T13:11:29.494254+00:00"
     }
   ],
   "approved_artifacts": [
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-      "sha256": "3bf0f8520193af1dd8d058c5ad83229cbd1511ae80ed91799579635fbb7ea986",
-      "size_bytes": 9026,
-      "modified_at": "2026-07-30T16:46:20.513721+00:00"
+      "sha256": "5226cfc7208d96d5c8dc66b7c3512ee10f16703841fe94555e8b08a7a631c861",
+      "size_bytes": 9738,
+      "modified_at": "2026-07-31T13:11:29.493615+00:00"
     },
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-      "sha256": "660499c25db1bc1a86615d72b9c588c4b8e503dbf4aff4a8688f15092c40dcbf",
-      "size_bytes": 13759,
-      "modified_at": "2026-07-31T06:35:58.003219+00:00"
+      "sha256": "514d0d61eb4e751b39ccb82854e33453dd2c81d31d65196b13dd6237e544163d",
+      "size_bytes": 15005,
+      "modified_at": "2026-07-31T12:45:15.466732+00:00"
     },
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
-      "sha256": "3daca243e63109d6545270093b59f9bf24d3bb35dbc0b6d2a89fe183ea65de70",
-      "size_bytes": 8630,
-      "modified_at": "2026-07-30T16:46:20.514471+00:00"
+      "sha256": "8797cf796f8b26853d826dd8e9bd277c6ca020d5d31e5c5d1db40ddddfea75b5",
+      "size_bytes": 9013,
+      "modified_at": "2026-07-31T13:11:29.494254+00:00"
     }
   ],
   "docs_ssot_plan": {
@@ -180,15 +196,15 @@
     "schema_id": "guru-contract-wording-review-1.0",
     "profile": "planning_artifacts",
     "typed_exit": "pass",
-    "artifact_sha256": "5f1456d8b2aed3256c370907971e76ff1c0076a6995e5898e07f53ff7b6adb5d",
-    "facts_sha256": "65700e542e5b2aab0d69e80262eb6bb91326ba98bd2d24bb8d2eed9577cce3af",
-    "scope_sha256": "e3bcf5d39628f9233f9ffa9bf2e139047dfde5257329372dc64e8188184e147c",
+    "artifact_sha256": "f21655f08e06173bb22839c41ef7e1e341f4365cab0f58d7090e274fe1108832",
+    "facts_sha256": "52b73dc301c729327bdcf9a2c00efe6df6cca8ffec31b52c4d5ca268594a3322",
+    "scope_sha256": "6fce5b8d0f08aab4baebbd6b0d759ce48b6fa11328169ed3e2f2b23627a20b17",
     "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
   },
   "ambiguity_review": {
     "status": "passed",
     "reviewer": "Codex primary agent /root",
-    "summary": "Reviewed the complete current prd.md, design.md, and implement.md scope after the Docs SSOT Plan re-entry. The revised plan now identifies every workflow spec actually updated by Issue #119 as a durable owner, preserves PR #165 public I/O and AI-first semantics, keeps Issue #132 cleanup out of scope, and leaves only docs/requirements as an audited no-update owner. The zero-hit scanner result was not used as a substitute for semantic review.",
+    "summary": "Reviewed the complete current prd.md, design.md, and implement.md after the closeout-order finding fix. The plan limits compatibility to the immutable-plan-owned pending/passed marketplace machine evidence and its exact ledger artifact, entry, and working-tree bindings; all other ledger semantics, artifacts, public DTOs, Skill ownership, and Issue #132 boundaries remain unchanged. Every conditional path names its trigger and fail-closed result, every acceptance item is observable, and the zero-hit scanner result was not used as a substitute for semantic review.",
     "normative_language": {
       "controlled_terms": [
         "可以",
@@ -318,7 +334,7 @@
         "id": "R5-evidence-bridge",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
         "locator": "### 3.3 Cross-skill evidence integration",
-        "statement_sha256": "cf29cd71354be9449aa8132b3db3e9bcc0bfacd349852453e360b337c079afbc",
+        "statement_sha256": "41b40cd41e1914d5fc0e2925890f0f1403a91d5dad261856b152991e88039342",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
@@ -351,7 +367,7 @@
         "id": "R7-105-regression",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
         "locator": "### 3.5 #105 事务与 recovery 回归",
-        "statement_sha256": "ac4f384d946c6363cef805c0a38868c1e7b7ce994f6c1b93c38611678af5f3c6",
+        "statement_sha256": "34c6d0aef2167f9fd7861a54906ae0c8625d608895859bd4d00719c07ab06d2e",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:105",
@@ -537,7 +553,7 @@
         "id": "R14-order",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
         "locator": "## 2. 有序实施清单",
-        "statement_sha256": "e12ac3a1b8a886139d23e9f64ae94652be20ad5c523e5a5a4fbb885f11561fab",
+        "statement_sha256": "bf9a156e9610c4f8bd316246bead94033fbca7cc97296ce0bb1e1c3bd0ca1419",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
@@ -626,7 +642,7 @@
         "R17-authorization-stops"
       ],
       "all_load_bearing_items_covered": true,
-      "review_sha256": "54f16dbf584c9add9c6c399a6d002fefaf7cda05877314a2f33cced47d73af1c"
+      "review_sha256": "b7392eafeaa47360f3cdad3912c5e4476c0861e3969183f62619d72bd9740343"
     }
   },
   "unusual_scenario_review": {
@@ -762,8 +778,8 @@
     "ai_review_gate": {
       "status": "passed",
       "reviewer": "Codex primary agent /root",
-      "summary": "Fresh same-scope re-entry reviewed the unchanged current prd.md, design.md, implement.md, Docs SSOT Plan, R1-R17 provenance, six unusual-scenario dispositions, current Issue #119 authority, and the BR-119-02 correction. The Skill package contract now states that Issue #119 integrates the global Finish route, keeps the verifier as sole semantic owner, preserves the standalone not_required finalizer edge, and adds no public input or output fields. This is the approved ssot_first implementation path, not an authority or scope mutation. No planning finding, revision action, scope proposal, or blocker remains.",
-      "reviewed_at": "2026-07-31T10:02:54.496Z",
+      "summary": "Fresh same-scope re-entry reviewed the current prd.md, design.md, implement.md, Docs SSOT Plan, R1-R17 provenance, six unusual-scenario dispositions, current Issue #119 authority, and the closeout-order correction. The plan strictly limits publication compatibility to one immutable-plan-owned pending/passed marketplace machine evidence transition plus the exact ledger artifact, entry, and working-tree bindings; it preserves all other ledger semantics, artifacts, semantic conclusions, public DTOs, three Finish Skill owners, #105 transaction order, #132 follow-up ownership, and separate external side-effect authorizations. This is a bounded ssot_first correctness fix, not an authority or scope mutation. No planning finding, revision action, scope proposal, or blocker remains.",
+      "reviewed_at": "2026-07-31T13:57:14Z",
       "findings": [],
       "revision_actions": [],
       "scope_proposals": [],
@@ -773,16 +789,16 @@
   "user_confirmation": {
     "kind": "post-planning-approval",
     "status": "confirmed",
-    "prompt_presented_at": "2026-07-31T07:23:00Z",
-    "confirmed_at": "2026-07-31T07:24:48Z",
-    "evidence_summary": "用户已查看且确认当前 Issue #119 的 prd.md、design.md、implement.md 绝对链接及 finding-fix re-entry；三份 planning 文件保持不变。本次只刷新 BR-119-02 修订后的 repo:skill-contract 权威摘要并继续完整 Phase 2，未授权 commit、push、PR、merge、Issue closure 或 cleanup。"
+    "prompt_presented_at": "2026-07-31T13:12:01Z",
+    "confirmed_at": "2026-07-31T13:57:14Z",
+    "evidence_summary": "用户已查看并确认整改后的 prd.md、design.md、implement.md 绝对链接及 closeout-order 兼容边界，授权重新记录 planning approval、收敛当前全量验证并完成新 Phase 2；仍明确未授权 commit、push、PR、merge、Issue closure 或 cleanup。"
   },
   "typed_exit": "approved",
   "consumer": {
     "kind": "workflow",
     "id": "phase-1-task-activation"
   },
-  "reason": "The unchanged Issue #119 planning set remains adequate. Re-entry refreshes only the repository Skill-contract authority after resolving BR-119-02 and preserves every existing scope, public-I/O, recovery, installation, donor, and authorization boundary.",
-  "supersedes_facts_sha256": "43ec1f6975d030451cc580678dfcf4659a90db299cf7990a18931c5cc39deed6",
-  "facts_sha256": "300d9b925cdd7f98d5488d05b44b8ab5144799495915b384b62fd5fe551fb468"
+  "reason": "The current Issue #119 planning set remains adequate after the bounded closeout-order correction. Re-entry preserves the accepted scope, minimal public I/O, three Skill owners, #105 transaction and recovery contract, installation lifecycle, frozen donor, #132 follow-up, and every external side-effect authorization boundary.",
+  "supersedes_facts_sha256": "300d9b925cdd7f98d5488d05b44b8ab5144799495915b384b62fd5fe551fb468",
+  "facts_sha256": "87ef69a587a72889cdae0d607cee1862ed1478d0baaaf206fcb66f3689cb92d3"
 }

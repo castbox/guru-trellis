@@ -57,6 +57,11 @@ Guru namespace 平台入口、private runtime projection、production eval 与�
   不得进入 public DTO。
 - Projection 缺失、失配或无法验证时必须在 archive mutation 前停止，并返回当前 owner
   合同声明的 blocker。
+- Content push 写入 immutable plan 的精确 `pending_machine` evidence 后，已通过的
+  publication semantic review 必须仍可作为 current owner result 被 finalizer 消费。
+  该兼容窗口严格限定为 `issue-scope-ledger.json` 中的唯一机器 evidence 变化及其
+  artifact/entry/working-tree 派生 binding；任何额外 ledger 语义或 artifact 漂移仍必须
+  返回 `publication_review_stale`。
 
 ### 3.4 Combined production eval
 
@@ -77,6 +82,9 @@ Guru namespace 平台入口、private runtime projection、production eval 与�
   checker-passed marketplace projection，并保持 task location、PR draft/state、local/remote/PR
   HEAD、dirty/staged paths、artifact mutation 与唯一 next exit 的既有断言。
 - 本 task 不改变 #105 transaction order、finish-summary history contract 或 failure model。
+- 回归必须真实覆盖 publication 先绑定、content push 后写 pending ledger、checked
+  `verified` re-entry 自动进入 `resume_finalization`/`evidence_ready` 的正常顺序，不得
+  通过预先把 pending evidence 写入 publication fixture 规避 freshness 校验。
 
 ### 3.6 Clean install、update、preset reapply 与平台验收
 

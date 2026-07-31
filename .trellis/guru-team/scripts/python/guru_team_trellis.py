@@ -5177,19 +5177,23 @@ def remote_marketplace_evidence(issue: dict[str, Any]) -> dict[str, Any] | None:
     return matches[0] if len(matches) == 1 else None
 
 
+def legacy_pending_marketplace_evidence() -> dict[str, Any]:
+    return {
+        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+        "status": "pending",
+        "required": True,
+        "artifact_path": "marketplace-verification.json",
+        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
+    }
+
+
 def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: bool) -> list[str]:
     item = remote_marketplace_evidence(issue)
     if item is None:
         return ["缺少唯一 remote_marketplace_verification 结构化 evidence。"]
     status = item.get("status")
     if status == "pending" and allow_pending:
-        legacy_pending = {
-            "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
-            "status": "pending",
-            "required": True,
-            "artifact_path": "marketplace-verification.json",
-            "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
-        }
+        legacy_pending = legacy_pending_marketplace_evidence()
         machine_pending_keys = {
             "type", "status", "required", "artifact_path", "artifact_sha256",
             "verified_content_head", "remote_head", "publish_head", "commands_passed",
@@ -13067,11 +13071,28 @@ def task_publication_artifact_bindings(task_dir: Path) -> dict[str, dict[str, An
                 exit_code=2,
             )
         content = path.read_bytes()
-        bindings[name] = {
-            "sha256": hashlib.sha256(content).hexdigest(),
-            "size": len(content),
-        }
+        bindings[name] = task_publication_artifact_binding(content)
     return bindings
+
+
+def task_publication_artifact_binding(content: bytes) -> dict[str, Any]:
+    return {
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "size": len(content),
+    }
+
+
+def task_publication_issue_scope_ledger_binding(
+    ledger: dict[str, Any],
+    content: bytes,
+) -> dict[str, str]:
+    return task_publication_binding({
+        "artifact_sha256": hashlib.sha256(content).hexdigest(),
+        "primary_issue": ledger.get("primary_issue"),
+        "close_issues": ledger.get("close_issues"),
+        "related_issues": ledger.get("related_issues"),
+        "followup_issues": ledger.get("followup_issues"),
+    })
 
 
 def task_publication_repository_binding(
@@ -13394,13 +13415,12 @@ def task_publication_entry_precondition_bindings(
             f"issue_scope_ledger:{item}" for item in sorted(set(ledger_errors))
         )
     else:
-        bindings["issue_scope_ledger"] = task_publication_binding({
-            "artifact_sha256": hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
-            "primary_issue": ledger.get("primary_issue"),
-            "close_issues": ledger.get("close_issues"),
-            "related_issues": ledger.get("related_issues"),
-            "followup_issues": ledger.get("followup_issues"),
-        })
+        bindings["issue_scope_ledger"] = (
+            task_publication_issue_scope_ledger_binding(
+                ledger,
+                ledger_path.read_bytes(),
+            )
+        )
 
     docs = (
         phase2_payload.get("docs_ssot_plan")
@@ -14217,6 +14237,129 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
     }
 
 
+def task_publication_finalization_ledger_augmentation(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate the one machine-only ledger delta owned by closeout."""
+    if plan.get("marketplace", {}).get("required") is not True:
+        raise WorkflowError(
+            "Task publication ledger augmentation requires marketplace verification.",
+            exit_code=2,
+        )
+    ledger_path = issue_scope_ledger_path(task_dir)
+    if not ledger_path.is_file() or ledger_path.is_symlink():
+        raise WorkflowError(
+            "Task publication ledger augmentation requires a safe issue scope ledger.",
+            exit_code=2,
+        )
+    ledger = read_json(ledger_path)
+    semantic_ledger = closeout_semantic_ledger(ledger)
+    plan_input = (
+        plan.get("inputs", {}).get("issue_scope_ledger")
+        if isinstance(plan.get("inputs"), dict)
+        else None
+    )
+    expected_plan_input = {
+        "path": repo_relative(root, ledger_path),
+        "sha256": canonical_json_sha256(semantic_ledger),
+    }
+    if plan_input != expected_plan_input:
+        raise WorkflowError(
+            "Task publication ledger semantic content differs from the immutable closeout plan.",
+            exit_code=2,
+        )
+
+    allowed_current_evidence = [plan["marketplace"]["pending_machine"]]
+    if marketplace_verification is not None:
+        allowed_current_evidence.append(
+            closeout_passed_marketplace_evidence(
+                root,
+                marketplace_verification_path(task_dir, load_config(root)),
+                marketplace_verification,
+            )
+        )
+    targets: list[dict[str, Any]] = []
+    primary = ledger.get("primary_issue")
+    if isinstance(primary, dict):
+        targets.append(primary)
+    close_issues = ledger.get("close_issues")
+    if isinstance(close_issues, list):
+        targets.extend(item for item in close_issues if isinstance(item, dict))
+    evidence = [remote_marketplace_evidence(issue) for issue in targets]
+    matching_evidence = next(
+        (
+            candidate
+            for candidate in allowed_current_evidence
+            if evidence and all(item == candidate for item in evidence)
+        ),
+        None,
+    )
+    if matching_evidence is None:
+        raise WorkflowError(
+            "Task publication ledger does not contain the exact plan-owned marketplace evidence.",
+            exit_code=2,
+        )
+
+    bindings = payload.get("deterministic_bindings")
+    artifacts = bindings.get("artifacts") if isinstance(bindings, dict) else None
+    entries = (
+        bindings.get("entry_preconditions")
+        if isinstance(bindings, dict)
+        else None
+    )
+    stored_artifact = (
+        artifacts.get("issue-scope-ledger.json")
+        if isinstance(artifacts, dict)
+        else None
+    )
+    stored_entry = (
+        entries.get("issue_scope_ledger")
+        if isinstance(entries, dict)
+        else None
+    )
+    prior_candidates = [semantic_ledger]
+    for candidate_evidence in [
+        legacy_pending_marketplace_evidence(),
+        *allowed_current_evidence,
+    ]:
+        candidate = record_marketplace_machine_evidence(
+            semantic_ledger,
+            candidate_evidence,
+        )
+        if candidate not in prior_candidates:
+            prior_candidates.append(candidate)
+    prior_matches = []
+    for candidate in prior_candidates:
+        content = closeout_json_artifact_bytes(candidate)
+        if (
+            stored_artifact == task_publication_artifact_binding(content)
+            and stored_entry
+            == task_publication_issue_scope_ledger_binding(candidate, content)
+        ):
+            prior_matches.append(candidate)
+    if len(prior_matches) != 1:
+        raise WorkflowError(
+            "Task publication ledger augmentation does not match one reviewed ledger preimage.",
+            exit_code=2,
+        )
+
+    current_content = ledger_path.read_bytes()
+    return {
+        "path": repo_relative(root, ledger_path),
+        "artifact_binding": task_publication_artifact_binding(current_content),
+        "entry_binding": task_publication_issue_scope_ledger_binding(
+            ledger,
+            current_content,
+        ),
+        "evidence_status": matching_evidence["status"],
+    }
+
+
 def check_task_publication_for_finalization_augmentation(
     root: Path,
     task_dir: Path,
@@ -14225,9 +14368,11 @@ def check_task_publication_for_finalization_augmentation(
     expected_closeout_plan_digest: str | None,
     additional_owned_paths: list[str] | None = None,
     allow_verification_metadata: bool = False,
+    marketplace_verification: dict[str, Any] | None = None,
     require_plan: bool = True,
 ) -> dict[str, Any]:
     """Recheck a ready gate across an exact finalizer-owned metadata delta."""
+    artifacts_stale = "task publication artifact bindings are stale"
     repository_stale = "task publication repository binding is stale"
     entries_stale = "task publication entry precondition bindings are stale"
     plan_path = closeout_plan_path(task_dir)
@@ -14295,6 +14440,90 @@ def check_task_publication_for_finalization_augmentation(
     if payload.get("typed_exit") != "ready":
         errors.append("task publication finalization augmentation requires ready")
 
+    stored_artifacts = (
+        bindings.get("artifacts") if isinstance(bindings, dict) else None
+    )
+    current_artifacts: dict[str, dict[str, Any]] | None = None
+    if artifacts_stale in errors:
+        try:
+            current_artifacts = task_publication_artifact_bindings(task_dir)
+        except WorkflowError as exc:
+            errors.append(str(exc))
+
+    stored_entries = (
+        bindings.get("entry_preconditions")
+        if isinstance(bindings, dict)
+        else None
+    )
+    current_entries: dict[str, dict[str, str]] | None = None
+    entry_errors: list[str] = []
+    if entries_stale in errors:
+        review_identity = (
+            payload.get("review_identity")
+            if isinstance(payload.get("review_identity"), dict)
+            else {}
+        )
+        invocation = {
+            "task_ref": payload.get("task_dir"),
+            "profile": payload.get("profile"),
+            "mode": payload.get("mode"),
+            "review_intent": payload.get("review_intent"),
+            "stale_reason": payload.get("stale_reason"),
+            "reentry_context": payload.get("reentry_context"),
+            "supersedes_publication_ref": payload.get(
+                "supersedes_publication_ref"
+            ),
+            "reviewed_head": review_identity.get("reviewed_head"),
+            "review_ref": review_identity.get("review_ref"),
+        }
+        current_entries, entry_errors, _review_gate, _repository = (
+            task_publication_entry_precondition_bindings(
+                root,
+                task_dir,
+                load_config(root),
+                invocation,
+                finalization_owned_paths=finalization_paths,
+            )
+        )
+
+    ledger_augmentation: dict[str, Any] | None = None
+    stored_ledger_artifact = (
+        stored_artifacts.get("issue-scope-ledger.json")
+        if isinstance(stored_artifacts, dict)
+        else None
+    )
+    current_ledger_artifact = (
+        current_artifacts.get("issue-scope-ledger.json")
+        if isinstance(current_artifacts, dict)
+        else stored_ledger_artifact
+    )
+    stored_ledger_entry = (
+        stored_entries.get("issue_scope_ledger")
+        if isinstance(stored_entries, dict)
+        else None
+    )
+    current_ledger_entry = (
+        current_entries.get("issue_scope_ledger")
+        if isinstance(current_entries, dict)
+        else stored_ledger_entry
+    )
+    ledger_binding_changed = (
+        stored_ledger_artifact != current_ledger_artifact
+        or stored_ledger_entry != current_ledger_entry
+    )
+    if ledger_binding_changed and plan is not None:
+        try:
+            ledger_augmentation = task_publication_finalization_ledger_augmentation(
+                root,
+                task_dir,
+                payload,
+                plan,
+                marketplace_verification=marketplace_verification,
+            )
+        except WorkflowError as exc:
+            errors.append(str(exc))
+
+    repository_delta_accepted = False
     if repository_stale in errors:
         stored_without_status = (
             {key: value for key, value in stored_repository.items() if key != "status_paths"}
@@ -14316,59 +14545,54 @@ def check_task_publication_for_finalization_augmentation(
             if isinstance(current_repository, dict)
             else None
         )
+        status_additions = set(finalization_paths)
+        if (
+            ledger_augmentation is not None
+            and isinstance(stored_status, list)
+            and ledger_augmentation["path"] not in stored_status
+        ):
+            status_additions.add(ledger_augmentation["path"])
         exact_finalization_delta = (
             stored_without_status == current_without_status
             and isinstance(stored_status, list)
             and isinstance(current_status, list)
-            and current_status == sorted({*stored_status, *finalization_paths})
+            and current_status == sorted({*stored_status, *status_additions})
             and all(path not in stored_status for path in finalization_paths)
         )
         if exact_finalization_delta:
             errors.remove(repository_stale)
-            if entries_stale in errors:
-                stored_entries = (
-                    bindings.get("entry_preconditions")
-                    if isinstance(bindings, dict)
-                    else None
+            repository_delta_accepted = True
+
+    if artifacts_stale in errors and ledger_augmentation is not None:
+        expected_artifacts = (
+            copy.deepcopy(stored_artifacts)
+            if isinstance(stored_artifacts, dict)
+            else None
+        )
+        if isinstance(expected_artifacts, dict):
+            expected_artifacts["issue-scope-ledger.json"] = (
+                ledger_augmentation["artifact_binding"]
+            )
+        if current_artifacts == expected_artifacts:
+            errors.remove(artifacts_stale)
+
+    if entries_stale in errors:
+        expected_entries = (
+            copy.deepcopy(stored_entries)
+            if isinstance(stored_entries, dict)
+            else None
+        )
+        if isinstance(expected_entries, dict):
+            if ledger_augmentation is not None:
+                expected_entries["issue_scope_ledger"] = (
+                    ledger_augmentation["entry_binding"]
                 )
-                review_identity = (
-                    payload.get("review_identity")
-                    if isinstance(payload.get("review_identity"), dict)
-                    else {}
+            if repository_delta_accepted:
+                expected_entries["review_range_and_working_tree"] = (
+                    task_publication_binding(current_repository)
                 )
-                invocation = {
-                    "task_ref": payload.get("task_dir"),
-                    "profile": payload.get("profile"),
-                    "mode": payload.get("mode"),
-                    "review_intent": payload.get("review_intent"),
-                    "stale_reason": payload.get("stale_reason"),
-                    "reentry_context": payload.get("reentry_context"),
-                    "supersedes_publication_ref": payload.get(
-                        "supersedes_publication_ref"
-                    ),
-                    "reviewed_head": review_identity.get("reviewed_head"),
-                    "review_ref": review_identity.get("review_ref"),
-                }
-                current_entries, entry_errors, _review_gate, _repository = (
-                    task_publication_entry_precondition_bindings(
-                        root,
-                        task_dir,
-                        load_config(root),
-                        invocation,
-                        finalization_owned_paths=finalization_paths,
-                    )
-                )
-                expected_entries = (
-                    copy.deepcopy(stored_entries)
-                    if isinstance(stored_entries, dict)
-                    else None
-                )
-                if isinstance(expected_entries, dict):
-                    expected_entries["review_range_and_working_tree"] = (
-                        task_publication_binding(current_repository)
-                    )
-                if not entry_errors and current_entries == expected_entries:
-                    errors.remove(entries_stale)
+        if not entry_errors and current_entries == expected_entries:
+            errors.remove(entries_stale)
 
     errors = sorted(set(errors))
     if errors:
@@ -29569,6 +29793,7 @@ def finalization_publication_owner_result(
         [repo_relative(root, gate_path)] if gate_path.is_file() else []
     )
     allow_verification_metadata = False
+    marketplace_verification: dict[str, Any] | None = None
     if verification is not None:
         checked_verification = verification[1]
         if (
@@ -29587,6 +29812,20 @@ def finalization_publication_owner_result(
             )
         )
         allow_verification_metadata = True
+        if checked_verification.get("typed_exit") == "verified":
+            if expected_plan_digest is None:
+                raise WorkflowError(
+                    "Task finalization verified publication augmentation requires the immutable plan.",
+                    exit_code=2,
+                )
+            marketplace_verification = (
+                finalization_marketplace_verification_compatibility_projection(
+                    root,
+                    task_dir,
+                    validate_closeout_plan(read_json(plan_path)),
+                    verification,
+                )
+            )
     try:
         if plan_path.is_file() or gate_path.is_file():
             checked = check_task_publication_for_finalization_augmentation(
@@ -29596,6 +29835,7 @@ def finalization_publication_owner_result(
                 expected_closeout_plan_digest=expected_plan_digest,
                 additional_owned_paths=additional_owned_paths,
                 allow_verification_metadata=allow_verification_metadata,
+                marketplace_verification=marketplace_verification,
                 require_plan=plan_path.is_file(),
             )
         else:

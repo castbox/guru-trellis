@@ -29,6 +29,10 @@
 - [ ] 在 finalizer preview/retry path从 checker-passed #117 owner result构建 projection。
 - [ ] 保持 legacy executor在没有外部 owner result时执行 current deterministic verifier。
 - [ ] 新增 focused tests，断言 raw owner artifact不能被 legacy parser冒充 passed projection。
+- [ ] immutable plan-owned pending/passed ledger machine evidence 是唯一可接受的 publication
+  artifact/entry/working-tree bindings，保持 semantic review 与其余 bindings 不变。
+- [ ] 新增真实顺序回归：publication 先绑定、content push 后写 pending、checked
+  `verified` re-entry 自动续接；额外 ledger 语义或 artifact drift 仍 fail closed。
 
 ### Phase C：Terminal eval 与 combined integration
 

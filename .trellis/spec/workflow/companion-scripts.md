@@ -1451,11 +1451,18 @@ readiness builder. It must first validate a checker-passed current `ready`
 gate, then add or verify only finalization-owned deterministic
 `publish_inputs`. It preserves semantic review, conclusion, bindings,
 replacement identity, and `publication_ref`, and never creates `ready=true` or
-a second artifact. If the exact validated `closeout-plan.json` is the sole new
-path, the augmentation revalidates all twelve entries and accepts only the
-corresponding repository binding plus derived
-`review_range_and_working_tree` digest change; all other entries remain exact
-and passed.
+a second artifact. Finalization re-entry revalidates all twelve entries across
+the exact closeout-owned status paths. In addition to the validated plan, gate,
+and verification artifacts, it may accept one machine-only Issue Scope Ledger
+delta: every primary/close target must contain the same exact plan-owned
+`pending_machine` object or the exact `passed` object derived from the current
+checked verification projection; stripping those objects must reproduce the
+immutable plan's semantic ledger digest; and the stored publication artifact
+and entry bindings must match one exact reviewed preimage. Only the
+`issue-scope-ledger.json` artifact binding, `issue_scope_ledger` entry binding,
+ledger status-path membership, and derived `review_range_and_working_tree`
+binding may change. Any other artifact, ledger field, entry, repository fact,
+or status path remains stale and blocks re-entry.
 
 ## Task Finalization Recorder, Checker, Executor, And Invocation
 
