@@ -23,6 +23,18 @@ Guru namespace 平台入口、private runtime projection、production eval 与�
   private projection threading 与回归结构的语义参考。旧 task artifact、gate、plan、
   liveness、review report、runtime evidence、commit plan 均不进入本 task。
 
+### 2.1 2026-08-01 恢复增量
+
+- Finalizer 已创建并 push evidence commit `3fe71d7` 与 compact archive commit
+  `15d957b`，并创建 Draft PR #166。archive push 后 GitHub PR `headRefOid` 短暂落后，
+  Ready transition 未执行；随后 local、remote 与 PR HEAD 已收敛到 `15d957b`。
+- `same_plan_resume` 随后错误返回 `publication_review_missing`。schema 1.1 compact
+  archive 已按合同删除 `pr-readiness.json`，archived recovery 不得把该文件作为恢复前置条件。
+- Recovery commit `57e7d0d` 只恢复同一 task 的 active locator。`3fe71d7`、`15d957b`
+  与旧 plan/gate 继续保留在 Git 历史中作为失败证据，不作为新 HEAD 的 pass evidence。
+- 本轮只修复上述两个 correctness bug。现有 branch、task 与 Draft PR #166 是唯一身份；
+  禁止创建重复 task、PR、archive、side-effect commit 或 recovery input。
+
 ## 3. 功能需求
 
 ### 3.1 Global workflow 与 typed exit consumers
@@ -110,6 +122,23 @@ Guru namespace 平台入口、private runtime projection、production eval 与�
 - Durable workflow/spec/README 必须在实现阶段完成 `ssot_first` 同步；task 规划只保存
   provenance、执行顺序与验证记录。
 
+### 3.8 Finalizer HEAD 收敛与 compact archive recovery
+
+- `resolve_closeout_pull_request()` 与其它 validator 保持单次客观读取。Ready executor 在
+  remote branch 与 local HEAD 一致、同一 Draft PR identity 仍成立且 PR HEAD 暂时落后时，
+  使用固定六次读取预算：首次读取加五次一秒间隔重读。
+- 任一次重读发现 local/remote 分叉、PR number/URL/repo/head/base identity 改变、PR 不再为
+  预期 Draft，或第六次读取后 PR HEAD 仍未收敛时，事务返回 `blocked`。收敛时 executor
+  自动执行同一 PR 的 Ready transition，不生成 recovery input，不请求用户确认，不重建 plan。
+- Finalizer preview 必须先解析 active/archive locator、committed immutable plan 与 transaction
+  state，再决定 publication owner artifact 是否适用。只有 active pre-publication 路径检查当前
+  task-local `pr-readiness.json`。
+- Archived 或 `archive_pushed` recovery 必须从 committed plan、`task-finalization-gate.json`、
+  evidence commit、archive commit、remote branch 与 GitHub PR facts 恢复。compact 12-file archive
+  不含 `pr-readiness.json` 时仍必须进入同一 plan 的 Ready executor。
+- 当 local、remote 与 PR HEAD 已收敛时，唯一合法 side effect 是复用 Draft PR #166 并标记
+  Ready。恢复不得创建重复 PR、重复 archive commit、重复 evidence commit 或其它 side effect。
+
 ## 4. AI-first 与 public contract 约束
 
 - Public DTO 结构、`exit_id` discriminator、六组 consumer projections 与三个 Skill 的
@@ -146,6 +175,21 @@ Guru namespace 平台入口、private runtime projection、production eval 与�
 - [ ] Durable docs/spec/README 完成 Docs SSOT Plan，schema/public I/O 无变化的理由有审计记录。
 - [ ] 冻结 donor HEAD、tracked dirty、untracked reports 与 ignored runtime inputs 保持原样。
 - [ ] `git diff --check` 通过；工作树只含本 task 授权范围内的规划、实现、测试与文档变更。
+
+### 6.1 当前恢复增量验收
+
+- [ ] PR HEAD 首次读取旧值、后续在六次预算内收敛时，finalizer 自动完成 Ready transition。
+- [ ] PR HEAD 到第六次读取仍不一致时，finalizer fail closed 且不执行 `gh pr ready`。
+- [ ] schema 1.1 compact 12-file archive 不含 `pr-readiness.json` 时，same-plan recovery 仍进入
+  PR #166 Ready transition。
+- [ ] Active pre-publication task 缺少 current readiness 时仍返回
+  `publication_review_missing`，不进入 archive recovery。
+- [ ] Recovery fixture 证明没有重复 PR、archive commit、evidence commit、recovery input 或
+  用户确认，并且 PR #166 是唯一复用对象。
+- [ ] Canonical runtime unit、source/installed Finish-family integration、finalizer package
+  contract、preset apply、dogfood drift、`git diff --check` 与 current `guru-check-task` 通过。
+- [ ] 旧 clean-install、upgrade/update、全量 Skill 与其它已完成验收不因本轮 digest 变化重放；
+  新 HEAD 只刷新受影响的 planning、Phase 2、Branch Review、publication 与 finalizer evidence。
 
 ## 7. 文档状态
 

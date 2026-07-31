@@ -547,7 +547,7 @@
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
         "source": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "0d715676a9445cd05bb661d95a231897786ede6aaa64be74eea514ca51755504",
+        "sha256": "207d7b0b1372865afb58d6bdf22792bf6fea9868d44a22201b2bcc5d354cd443",
         "executable": false,
         "action": "unchanged"
       },

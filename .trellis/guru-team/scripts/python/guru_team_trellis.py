@@ -22,6 +22,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -443,6 +444,8 @@ CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS = {
 }
 CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 12
 CLOSEOUT_PR_PLACEHOLDER_NUMBER = 9223372036854775807
+CLOSEOUT_PR_HEAD_READ_ATTEMPTS = 6
+CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS = 1
 CLOSEOUT_SUMMARY_RUNTIME_FACT_FIELDS = [
     "github.pr_url",
     "index.search_terms.pr_refs",
@@ -28918,18 +28921,67 @@ def ensure_closeout_pr_ready(
         plan,
         pr,
         expected_draft=bool(pr["isDraft"]),
-        expected_head=local_head,
         bound_pr=bound_pr,
     )
-    remote_proc = run(["git", "ls-remote", "--heads", git["remote"], git["head_branch"]], cwd=root, check=False)
-    rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
-    remote_head = rows[0][0] if len(rows) == 1 else ""
-    if remote_proc.returncode != 0 or not (local_head == remote_head == pr["headRefOid"]):
+    remote_head = closeout_remote_branch_head(root, plan)
+    if local_head != remote_head:
         raise WorkflowError(
             "Closeout local/remote/PR HEAD identity mismatch.",
             exit_code=2,
             payload={"local_head": local_head, "remote_head": remote_head, "pr_head": pr["headRefOid"]},
         )
+    initial_pr = pr
+    for attempt in range(CLOSEOUT_PR_HEAD_READ_ATTEMPTS):
+        if pr["headRefOid"] == local_head:
+            break
+        if attempt + 1 == CLOSEOUT_PR_HEAD_READ_ATTEMPTS:
+            raise WorkflowError(
+                "Closeout local/remote/PR HEAD identity mismatch.",
+                exit_code=2,
+                payload={
+                    "local_head": local_head,
+                    "remote_head": remote_head,
+                    "pr_head": pr["headRefOid"],
+                },
+            )
+        time.sleep(CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS)
+        reread = resolve_closeout_pull_request(
+            root,
+            git["repo"],
+            git["head_branch"],
+            git["base_branch"],
+            git["remote"],
+        )
+        if reread is None:
+            raise WorkflowError(
+                "Closeout pull request disappeared while waiting for HEAD convergence.",
+                exit_code=2,
+            )
+        validate_closeout_remote_pull_request_identity(
+            plan,
+            reread,
+            expected_draft=bool(initial_pr["isDraft"]),
+            bound_pr=bound_pr or initial_pr,
+        )
+        remote_head = closeout_remote_branch_head(root, plan)
+        if remote_head != local_head:
+            raise WorkflowError(
+                "Closeout local/remote/PR HEAD identity mismatch.",
+                exit_code=2,
+                payload={
+                    "local_head": local_head,
+                    "remote_head": remote_head,
+                    "pr_head": reread["headRefOid"],
+                },
+            )
+        pr = reread
+    validate_closeout_remote_pull_request_identity(
+        plan,
+        pr,
+        expected_draft=bool(initial_pr["isDraft"]),
+        expected_head=local_head,
+        bound_pr=bound_pr or initial_pr,
+    )
     if pr["isDraft"]:
         proc = run(["gh", "pr", "ready", "--repo", git["repo"], str(pr["number"])], cwd=root, check=False)
         if proc.returncode != 0:
@@ -29045,6 +29097,20 @@ def resume_archived_closeout(
     git = plan["git"]
     require_gh_auth(root)
     archive_commit = committed_archive or resolve_committed_closeout_archive_transaction(root, plan)
+    finalizer_recovery = (
+        archive_commit is not None
+        and bool(getattr(args, "include_finalization_gate", False))
+        and isinstance(getattr(args, "finalization_gate", None), dict)
+    )
+    if finalizer_recovery:
+        local_head = current_head(root)
+        remote_head = closeout_remote_branch_head(root, plan)
+        if remote_head != local_head:
+            raise WorkflowError(
+                "Archived finalization recovery requires the pushed archive HEAD before Ready.",
+                exit_code=2,
+                payload={"local_head": local_head, "remote_head": remote_head},
+            )
     bound_pr: dict[str, Any] | None = None
     if archive_commit is not None:
         summary_pr = archive_commit.get("summary_pr")
@@ -29065,7 +29131,7 @@ def resume_archived_closeout(
     validate_closeout_remote_pull_request_identity(
         plan,
         pr,
-        expected_draft=bool(pr["isDraft"]),
+        expected_draft=True if finalizer_recovery else bool(pr["isDraft"]),
         bound_pr=bound_pr,
     )
     if archive_commit is None:
@@ -29076,12 +29142,14 @@ def resume_archived_closeout(
             bound_pr=pr,
         )
     else:
-        push_closeout_branch_if_needed(root, plan)
+        if not finalizer_recovery:
+            push_closeout_branch_if_needed(root, plan)
     result = ensure_closeout_pr_ready(root, plan, bound_pr=bound_pr or pr)
     return {
         "status": "ok",
         "stage": "ready",
         "task_dir": str(task_dir),
+        "archived_task_dir": str(task_dir),
         "plan_digest": plan["plan_digest"],
         "archive_commit": archive_commit,
         "publish": result,
@@ -30676,8 +30744,12 @@ def finalization_eval_preview_context(
 def finalization_archived_published_facts(
     root: Path,
     plan: dict[str, Any],
+    transaction: dict[str, Any] | None = None,
 ) -> tuple[bool, dict[str, Any] | None]:
-    transaction = resolve_committed_closeout_archive_transaction(root, plan)
+    transaction = transaction or resolve_committed_closeout_archive_transaction(
+        root,
+        plan,
+    )
     if transaction is None:
         raise WorkflowError(
             "Archived task finalization is not the exact plan transaction.",
@@ -30707,7 +30779,6 @@ def finalization_archived_published_facts(
         plan,
         pr,
         expected_draft=bool(pr["isDraft"]),
-        expected_head=local_head,
         bound_pr=summary_pr,
     )
     complete = (
@@ -30716,6 +30787,139 @@ def finalization_archived_published_facts(
         and pr.get("headRefOid") == local_head
     )
     return complete, pr if complete else None
+
+
+def finalization_archived_gate(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> dict[str, Any]:
+    commit = str(transaction.get("commit") or "")
+    gate_locator = (
+        f"{plan['task']['archive_locator']}/{TASK_FINALIZATION_GATE_ARTIFACT}"
+    )
+    gate_bytes = closeout_commit_blob_bytes(root, commit, gate_locator)
+    try:
+        gate = json.loads(gate_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError(
+            "Archived task finalization gate is invalid JSON.",
+            exit_code=2,
+        ) from exc
+    if not isinstance(gate, dict):
+        raise WorkflowError(
+            "Archived task finalization gate must be an object.",
+            exit_code=2,
+        )
+    return gate
+
+
+def finalization_archived_owner_results(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    public_input: dict[str, Any],
+) -> tuple[dict[str, Any], tuple[dict[str, Any], dict[str, Any]] | None]:
+    gate = finalization_archived_gate(root, plan, transaction)
+    errors = skill_json_schema_validation_errors(
+        gate,
+        finalization_gate_schema(root),
+        "archived task finalization gate",
+    )
+    expected_plan = {
+        "available": True,
+        "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+        "plan_digest": plan["plan_digest"],
+        "reviewed_head": plan["git"]["reviewed_work_head"],
+    }
+    invocation = gate.get("invocation") if isinstance(gate, dict) else None
+    route = gate.get("route") if isinstance(gate, dict) else None
+    if (
+        not isinstance(invocation, dict)
+        or invocation.get("task_ref") != plan["task"]["active_locator"]
+    ):
+        errors.append("archived finalization gate task identity mismatch")
+    if not isinstance(gate, dict) or gate.get("plan") != expected_plan:
+        errors.append("archived finalization gate plan identity mismatch")
+    if (
+        not isinstance(route, dict)
+        or route.get("typed_exit") != "published"
+        or route.get("consumer") != FINALIZATION_CONSUMERS["published"]
+        or route.get("output") != FINALIZATION_EXECUTOR_OUTPUT_MARKER
+    ):
+        errors.append("archived finalization gate does not authorize publication")
+    review = gate.get("review") if isinstance(gate, dict) else None
+    evidence_refs = (
+        review.get("evidence_refs") if isinstance(review, dict) else None
+    )
+    refs = evidence_refs if isinstance(evidence_refs, list) else []
+    publication_refs = [
+        value
+        for value in refs
+        if isinstance(value, str)
+        and value.startswith("publication:")
+        and value != "publication:"
+    ]
+    verification_refs = [
+        value
+        for value in refs
+        if isinstance(value, str)
+        and value.startswith("extension-verification:")
+        and value != "extension-verification:"
+    ]
+    if len(publication_refs) != 1:
+        errors.append(
+            "archived finalization gate publication identity is not unique"
+        )
+    if len(verification_refs) > 1 or (
+        plan["marketplace"]["required"] and len(verification_refs) != 1
+    ):
+        errors.append(
+            "archived finalization gate verification identity is not unique"
+        )
+    input_publication_ref = public_input.get("publication_ref")
+    if (
+        isinstance(input_publication_ref, str)
+        and publication_refs
+        and input_publication_ref != publication_refs[0]
+    ):
+        errors.append("archived finalization publication seed changed")
+    input_verification_ref = public_input.get("verification_ref")
+    if (
+        isinstance(input_verification_ref, str)
+        and verification_refs
+        and input_verification_ref != verification_refs[0]
+    ):
+        errors.append("archived finalization verification seed changed")
+    if errors:
+        raise WorkflowError(
+            "Archived task finalization owner facts are invalid.",
+            exit_code=2,
+            payload={"errors": sorted(set(errors))},
+        )
+    verification = (
+        (
+            {"source": "committed-finalization-gate"},
+            {
+                "status": "ok",
+                "typed_exit": (
+                    "verified"
+                    if plan["marketplace"]["required"]
+                    else "not_required"
+                ),
+                "verification_ref": verification_refs[0],
+            },
+        )
+        if verification_refs
+        else None
+    )
+    return (
+        {
+            "owner_status": "current",
+            "publication_ref": publication_refs[0],
+        },
+        verification,
+    )
 
 
 def finalization_preview_context(
@@ -30727,54 +30931,67 @@ def finalization_preview_context(
     if eval_context is not None:
         return eval_context
     task_dir = finalization_task_dir(root, public_input)
-    verification = finalization_verification_owner_result(
-        root,
-        task_dir,
-        public_input,
-    )
-    publication = finalization_publication_owner_result(
-        root,
-        task_dir,
-        public_input,
-        verification,
-    )
-    if publication.get("owner_status") == "stale":
-        facts = {
-            "task_ref": public_input["task_ref"],
-            "profile": public_input["profile"],
-            "mode": public_input["mode"],
-            "publication_status": "stale",
-            "stale_reason": publication["stale_reason"],
-        }
-        return {
-            "task_dir": task_dir,
-            "task_context": None,
-            "prepared": None,
-            "plan": None,
-            "plan_ref": None,
-            "transaction_state": "publication_review_stale",
-            "publication": publication,
-            "publication_status": "stale",
-            "publication_stale_reason": publication["stale_reason"],
-            "verification": None,
-            "facts": facts,
-            "current_facts_sha256": context_digest(facts),
-        }
+    archived = task_dir_is_archived(root, task_dir)
     config = load_config(root)
-    if task_dir_is_archived(root, task_dir):
+    if archived:
         plan = finalization_verification_augmentation_plan(root, task_dir)
         if plan is None:
             raise WorkflowError(
                 "Archived task finalization is missing its immutable plan.",
                 exit_code=2,
             )
+        transaction = resolve_committed_closeout_archive_transaction(root, plan)
+        if transaction is None:
+            raise WorkflowError(
+                "Archived task finalization is not the exact plan transaction.",
+                exit_code=2,
+            )
+        publication, verification = finalization_archived_owner_results(
+            root,
+            plan,
+            transaction,
+            public_input,
+        )
         published_transition_complete, published_pr = (
-            finalization_archived_published_facts(root, plan)
+            finalization_archived_published_facts(root, plan, transaction)
         )
         state = "ready" if published_transition_complete else "archived"
         prepared = None
         task_context = None
     else:
+        verification = finalization_verification_owner_result(
+            root,
+            task_dir,
+            public_input,
+        )
+        publication = finalization_publication_owner_result(
+            root,
+            task_dir,
+            public_input,
+            verification,
+        )
+        if publication.get("owner_status") == "stale":
+            facts = {
+                "task_ref": public_input["task_ref"],
+                "profile": public_input["profile"],
+                "mode": public_input["mode"],
+                "publication_status": "stale",
+                "stale_reason": publication["stale_reason"],
+            }
+            return {
+                "task_dir": task_dir,
+                "task_context": None,
+                "prepared": None,
+                "plan": None,
+                "plan_ref": None,
+                "transaction_state": "publication_review_stale",
+                "publication": publication,
+                "publication_status": "stale",
+                "publication_stale_reason": publication["stale_reason"],
+                "verification": None,
+                "facts": facts,
+                "current_facts_sha256": context_digest(facts),
+            }
         published_transition_complete = False
         published_pr = None
         task_context = load_task_start_context(task_dir, config)
@@ -30844,7 +31061,7 @@ def finalization_preview_context(
             "Task finalization plan_ref does not match the current immutable plan.",
             exit_code=2,
         )
-    if verification is None:
+    if verification is None and not archived:
         verification = finalization_current_verification_owner_result(
             root,
             task_dir,
@@ -31193,7 +31410,10 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
         )
     task_dir = context["task_dir"]
     artifact_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-    if not getattr(args, "dry_run", False):
+    committed_recovery = (
+        context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
+    )
+    if not getattr(args, "dry_run", False) and not committed_recovery:
         write_json(artifact_path, gate)
     return {
         "status": "ok",
@@ -31213,6 +31433,27 @@ def finalization_gate_input(
 ) -> tuple[dict[str, Any], Path]:
     task_dir = finalization_task_dir(root, public_input)
     expected = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+    if task_dir_is_archived(root, task_dir):
+        if value:
+            relative = skill_safe_relative(str(value).strip())
+            if relative is None or (root / relative).resolve() != expected.resolve():
+                raise WorkflowError(
+                    "Task finalization gate must use the exact task-local artifact.",
+                    exit_code=2,
+                )
+        plan = finalization_verification_augmentation_plan(root, task_dir)
+        if plan is None:
+            raise WorkflowError(
+                "Archived task finalization is missing its immutable plan.",
+                exit_code=2,
+            )
+        transaction = resolve_committed_closeout_archive_transaction(root, plan)
+        if transaction is None:
+            raise WorkflowError(
+                "Archived task finalization is not the exact plan transaction.",
+                exit_code=2,
+            )
+        return finalization_archived_gate(root, plan, transaction), expected
     path = (
         stage0_owner_path(root, value, "arguments.owner_result")
         if value
@@ -31275,6 +31516,9 @@ def check_finalization_gate_result(
         "task finalization gate",
     )
     context = finalization_preview_context(root, args, public_input)
+    committed_recovery = (
+        context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
+    )
     expected_invocation = {
         "profile": public_input["profile"],
         "mode": public_input["mode"],
@@ -31290,11 +31534,22 @@ def check_finalization_gate_result(
             plan["git"]["reviewed_work_head"] if plan is not None else None
         ),
     }
-    if gate.get("invocation") != expected_invocation:
+    if committed_recovery:
+        invocation = gate.get("invocation")
+        if (
+            not isinstance(invocation, dict)
+            or invocation.get("task_ref") != plan["task"]["active_locator"]
+        ):
+            errors.append("committed task finalization gate task identity mismatch")
+    elif gate.get("invocation") != expected_invocation:
         errors.append("task finalization gate invocation identity mismatch")
     if gate.get("plan") != expected_plan:
         errors.append("task finalization gate plan identity mismatch")
-    if gate.get("freshness", {}).get("current_facts_sha256") != context["current_facts_sha256"]:
+    if (
+        not committed_recovery
+        and gate.get("freshness", {}).get("current_facts_sha256")
+        != context["current_facts_sha256"]
+    ):
         errors.append("task finalization gate current facts mismatch")
     try:
         finalization_validate_route(
@@ -31442,7 +31697,11 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         finish_args.body_artifact = None
         finish_args.finalization_gate = gate
         finish_args.include_finalization_gate = True
-        if context["plan"]["marketplace"]["required"]:
+        if (
+            context["plan"]["marketplace"]["required"]
+            and context["transaction_state"]
+            not in FINALIZATION_COMMITTED_RECOVERY_STATES
+        ):
             verification = context["verification"]
             if not isinstance(verification, tuple) or len(verification) != 2:
                 raise WorkflowError(
@@ -31459,11 +31718,10 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             )
         result = cmd_finish_work(finish_args)
         archived_gate = Path(result["archived_task_dir"]) / TASK_FINALIZATION_GATE_ARTIFACT
-        published_gate = read_json(archived_gate)
         materialized_gate = finalization_gate_with_published_output(
             root,
             Path(result["archived_task_dir"]),
-            published_gate,
+            gate,
             context["plan"],
             result["publish"]["pr"],
         )

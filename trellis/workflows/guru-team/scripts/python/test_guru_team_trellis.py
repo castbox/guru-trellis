@@ -12931,7 +12931,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
     ) -> tuple[dict[str, object], dict[str, object], list[str]]:
         self.task["status"] = "in_progress"
         gtt.write_json(self.task_dir / "task.json", self.task)
-        with mock.patch.object(gtt, "current_head", return_value=self.head):
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "current_archive_month", return_value="2026-07"),
+        ):
             plan = self.build_plan()
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
         publish_inputs = {
@@ -15955,6 +15958,549 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(projected_owner, verification)
         rediscover.assert_not_called()
 
+    def test_archived_owner_results_use_committed_gate_without_readiness(self) -> None:
+        plan = self.build_plan(include_finalization_gate=True)
+        publication_ref = "publication:current"
+        verification_ref = "extension-verification:checked result / 当前"
+        gate = {
+            "schema_version": "1.0",
+            "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
+            "generated_at": "2026-08-01T00:00:00Z",
+            "invocation": {
+                "profile": "verification_verified",
+                "mode": "workflow",
+                "task_ref": plan["task"]["active_locator"],
+                "input_identity_sha256": "b" * 64,
+            },
+            "plan": {
+                "available": True,
+                "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+                "plan_digest": plan["plan_digest"],
+                "reviewed_head": plan["git"]["reviewed_work_head"],
+            },
+            "review": {
+                "status": "passed",
+                "summary": "The committed finalization gate remains current.",
+                "evidence_refs": [
+                    f"closeout-plan:{plan['plan_digest']}",
+                    publication_ref,
+                    verification_ref,
+                ],
+            },
+            "confirmation": {
+                "status": "confirmed",
+                "confirmed_plan_digest": plan["plan_digest"],
+                "summary": "The exact closeout plan was confirmed.",
+            },
+            "route": {
+                "typed_exit": "published",
+                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            },
+            "freshness": {
+                "current_facts_sha256": "c" * 64,
+                "supersedes_gate_ref": None,
+            },
+        }
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": plan["task"]["active_locator"],
+            "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+            "recovery_intent": "Resume the same immutable transaction.",
+            "recovery_context": "The archive commit is already pushed.",
+        }
+        transaction = {"commit": self.head, "parent": "d" * 40}
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "closeout_commit_blob_bytes",
+                return_value=gtt.closeout_json_artifact_bytes(gate),
+            ) as committed_blob,
+            mock.patch.object(
+                gtt,
+                "task_publication_path",
+                side_effect=AssertionError("archived readiness was reopened"),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_package_root",
+                return_value=package_root,
+            ),
+        ):
+            publication, verification = gtt.finalization_archived_owner_results(
+                self.root,
+                plan,
+                transaction,
+                public_input,
+            )
+
+        self.assertEqual(publication["publication_ref"], publication_ref)
+        self.assertEqual(verification[1]["verification_ref"], verification_ref)
+        self.assertEqual(verification[1]["typed_exit"], "verified")
+        committed_blob.assert_called_once_with(
+            self.root,
+            self.head,
+            (
+                f"{plan['task']['archive_locator']}/"
+                f"{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
+            ),
+        )
+
+        with (
+            mock.patch.object(
+                gtt,
+                "closeout_commit_blob_bytes",
+                return_value=gtt.closeout_json_artifact_bytes(gate),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_package_root",
+                return_value=package_root,
+            ),
+            self.assertRaises(gtt.WorkflowError) as mismatched,
+        ):
+            gtt.finalization_archived_owner_results(
+                self.root,
+                plan,
+                transaction,
+                {**public_input, "verification_ref": "extension-verification:other"},
+            )
+        self.assertIn(
+            "archived finalization verification seed changed",
+            mismatched.exception.payload["errors"],
+        )
+
+    def test_compact_archive_preview_bypasses_active_publication_owner(self) -> None:
+        plan = self.build_plan(include_finalization_gate=True)
+        archived = self.root / plan["task"]["archive_locator"]
+        archived.mkdir(parents=True, exist_ok=True)
+        retained = set(gtt.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+        if plan["marketplace"]["required"]:
+            retained.update(gtt.CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
+        for relative in retained:
+            path = archived / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("committed archive fixture\n", encoding="utf-8")
+        self.assertLessEqual(len(retained), gtt.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS)
+        self.assertFalse((archived / gtt.PR_READINESS_ARTIFACT).exists())
+
+        publication = {
+            "owner_status": "current",
+            "publication_ref": f"publication:{'a' * 64}",
+        }
+        verification = (
+            {"source": "committed-finalization-gate"},
+            {
+                "status": "ok",
+                "typed_exit": "verified",
+                "verification_ref": "extension-verification:checked",
+            },
+        )
+        transaction = {
+            "commit": self.head,
+            "parent": "d" * 40,
+            "summary_pr": {
+                "number": 166,
+                "url": "https://github.com/owner/repo/pull/166",
+            },
+        }
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": plan["task"]["active_locator"],
+            "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+            "recovery_intent": "Resume the same immutable transaction.",
+            "recovery_context": "The compact archive commit is already pushed.",
+        }
+        with (
+            mock.patch.object(gtt, "finalization_task_dir", return_value=archived),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=True),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_plan",
+                return_value=plan,
+            ),
+            mock.patch.object(
+                gtt,
+                "resolve_committed_closeout_archive_transaction",
+                return_value=transaction,
+            ) as resolve_transaction,
+            mock.patch.object(
+                gtt,
+                "finalization_archived_owner_results",
+                return_value=(publication, verification),
+            ) as archived_owner,
+            mock.patch.object(
+                gtt,
+                "finalization_archived_published_facts",
+                return_value=(False, None),
+            ) as published_facts,
+            mock.patch.object(
+                gtt,
+                "finalization_publication_owner_result",
+                side_effect=AssertionError("active publication owner was called"),
+            ) as active_publication,
+            mock.patch.object(
+                gtt,
+                "finalization_verification_owner_result",
+                side_effect=AssertionError("archived #117 artifact was reopened"),
+            ) as active_verification,
+        ):
+            context = gtt.finalization_preview_context(
+                self.root,
+                argparse.Namespace(include_finalization_gate=True),
+                public_input,
+            )
+
+        self.assertEqual(context["transaction_state"], "archived")
+        self.assertEqual(context["publication"], publication)
+        self.assertEqual(context["verification"], verification)
+        self.assertFalse(context["published_transition_complete"])
+        resolve_transaction.assert_called_once_with(self.root, plan)
+        archived_owner.assert_called_once_with(
+            self.root,
+            plan,
+            transaction,
+            public_input,
+        )
+        published_facts.assert_called_once_with(self.root, plan, transaction)
+        active_publication.assert_not_called()
+        active_verification.assert_not_called()
+
+    def test_archived_same_plan_transition_uses_committed_gate_and_only_marks_ready(
+        self,
+    ) -> None:
+        plan = self.build_plan(include_finalization_gate=True)
+        body = (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(encoding="utf-8")
+        archived = self.root / plan["task"]["archive_locator"]
+        shutil.rmtree(self.task_dir)
+        archived.mkdir(parents=True)
+        gtt.write_json(archived / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+
+        publication_ref = "publication:current reviewed result"
+        verification_ref = "extension-verification:checked result / 当前"
+        committed_gate = {
+            "schema_version": "1.0",
+            "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
+            "generated_at": "2026-08-01T00:00:00Z",
+            "invocation": {
+                "profile": "verification_verified",
+                "mode": "workflow",
+                "task_ref": plan["task"]["active_locator"],
+                "input_identity_sha256": "b" * 64,
+            },
+            "plan": {
+                "available": True,
+                "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+                "plan_digest": plan["plan_digest"],
+                "reviewed_head": plan["git"]["reviewed_work_head"],
+            },
+            "review": {
+                "status": "passed",
+                "summary": "The committed archive authorizes the same plan.",
+                "evidence_refs": [
+                    f"closeout-plan:{plan['plan_digest']}",
+                    publication_ref,
+                    verification_ref,
+                ],
+            },
+            "confirmation": {
+                "status": "confirmed",
+                "confirmed_plan_digest": plan["plan_digest"],
+                "summary": "The exact closeout plan was confirmed.",
+            },
+            "route": {
+                "typed_exit": "published",
+                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            },
+            "freshness": {
+                "current_facts_sha256": "c" * 64,
+                "supersedes_gate_ref": None,
+            },
+        }
+        committed_gate_path = archived / gtt.TASK_FINALIZATION_GATE_ARTIFACT
+        gtt.write_json(committed_gate_path, committed_gate)
+
+        subprocess.run(
+            ["git", "init", "-q", "-b", "fix/105-closeout"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Finalization Recovery"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "config",
+                "user.email",
+                "finalization-recovery@example.invalid",
+            ],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "committed compact archive"],
+            cwd=self.root,
+            check=True,
+        )
+        archive_commit = gtt.current_head(self.root)
+        committed_gate_bytes = committed_gate_path.read_bytes()
+
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": plan["task"]["active_locator"],
+            "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+            "recovery_intent": "Resume the same immutable transaction.",
+            "recovery_context": "The compact archive is already pushed.",
+        }
+        facts = {
+            "task_ref": public_input["task_ref"],
+            "profile": public_input["profile"],
+            "mode": public_input["mode"],
+            "plan_ref": public_input["plan_ref"],
+            "plan_digest": plan["plan_digest"],
+            "reviewed_head": plan["git"]["reviewed_work_head"],
+            "archive_locator": plan["task"]["archive_locator"],
+            "publication_ref": publication_ref,
+            "verification_ref": verification_ref,
+        }
+        verification = (
+            {"source": "committed-finalization-gate"},
+            {
+                "status": "ok",
+                "typed_exit": "verified",
+                "verification_ref": verification_ref,
+            },
+        )
+        context = {
+            "task_dir": archived,
+            "task_context": None,
+            "prepared": None,
+            "plan": plan,
+            "plan_ref": public_input["plan_ref"],
+            "transaction_state": "archived",
+            "published_transition_complete": False,
+            "published_pr": None,
+            "publication": {
+                "owner_status": "current",
+                "publication_ref": publication_ref,
+            },
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "verification": verification,
+            "facts": facts,
+            "current_facts_sha256": gtt.context_digest(facts),
+        }
+        reviewed = {
+            "review": {
+                "status": "passed",
+                "summary": "The same committed transaction is ready to resume.",
+                "evidence_refs": [publication_ref, verification_ref],
+            },
+            "confirmation": {
+                "status": "not_required",
+                "confirmed_plan_digest": plan["plan_digest"],
+                "summary": "The immutable plan was already confirmed.",
+            },
+            "route": {
+                "typed_exit": "published",
+                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            },
+            "supersedes_gate_ref": "task-finalization-gate:committed",
+        }
+        transaction = {
+            "commit": archive_commit,
+            "parent": "d" * 40,
+            "summary_pr": {
+                "number": 166,
+                "url": "https://github.com/owner/repo/pull/166",
+            },
+        }
+        draft = {
+            **closeout_head_repository_fields(),
+            "number": 166,
+            "url": "https://github.com/owner/repo/pull/166",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": plan["git"]["head_branch"],
+            "baseRefName": plan["git"]["base_branch"],
+            "headRefOid": archive_commit,
+            "isDraft": True,
+        }
+        ready = dict(draft, isDraft=False)
+        args = argparse.Namespace(
+            root=str(self.root),
+            input="unused-input.json",
+            review_input="unused-review.json",
+            gate=None,
+            dry_run=False,
+            include_finalization_gate=True,
+        )
+        source_root = Path(__file__).resolve().parents[5]
+        package_root = (
+            source_root
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+        original_run = gtt.run
+        ready_commands: list[list[str]] = []
+
+        def run_with_ready(command: list[str], **kwargs: object) -> object:
+            if command[:3] == ["gh", "pr", "ready"]:
+                ready_commands.append(command)
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            return original_run(command, **kwargs)
+
+        def execute_archived(finish_args: argparse.Namespace) -> dict[str, object]:
+            return gtt.resume_archived_closeout(
+                self.root,
+                finish_args,
+                archived,
+                committed_plan=plan,
+                committed_archive=transaction,
+            )
+
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_public_input",
+                return_value=(public_input, "unused-input.json"),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_semantic_review_input",
+                return_value=reviewed,
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_preview_context",
+                return_value=context,
+            ),
+            mock.patch.object(gtt, "finalization_task_dir", return_value=archived),
+            mock.patch.object(
+                gtt,
+                "resolve_committed_closeout_archive_transaction",
+                return_value=transaction,
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_package_root",
+                return_value=package_root,
+            ),
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pull_request",
+                side_effect=[draft, draft, ready],
+            ),
+            mock.patch.object(
+                gtt,
+                "closeout_remote_branch_head",
+                return_value=archive_commit,
+            ),
+            mock.patch.object(gtt, "run", side_effect=run_with_ready),
+            mock.patch.object(gtt, "cmd_finish_work", side_effect=execute_archived),
+            mock.patch.object(gtt, "create_pull_request") as create_pr,
+            mock.patch.object(
+                gtt,
+                "resume_archive_metadata_transaction",
+            ) as archive_transaction,
+            mock.patch.object(
+                gtt,
+                "execute_archive_metadata_transaction",
+            ) as archive_commit_side_effect,
+            mock.patch.object(
+                gtt,
+                "commit_closeout_evidence_metadata",
+            ) as evidence_commit,
+            mock.patch.object(
+                gtt,
+                "push_closeout_branch_if_needed",
+            ) as push_branch,
+        ):
+            recorded = gtt.cmd_record_finalization_gate(args)
+            self.assertEqual(recorded["typed_exit"], "published")
+            self.assertEqual(gtt.git_status_paths(self.root), [])
+            checked = gtt.cmd_check_finalization_gate(args)
+            self.assertEqual(checked["typed_exit"], "published")
+            transitioned = gtt.cmd_execute_finalization_transition(args)
+
+        self.assertEqual(transitioned["typed_exit"], "published")
+        self.assertEqual(transitioned["output"]["pr_number"], 166)
+        self.assertEqual(ready_commands, [["gh", "pr", "ready", "--repo", "owner/repo", "166"]])
+        self.assertEqual(committed_gate_path.read_bytes(), committed_gate_bytes)
+        self.assertEqual(gtt.git_status_paths(self.root), [])
+        self.assertEqual(
+            subprocess.run(
+                ["git", "diff", "--cached", "--name-only"],
+                cwd=self.root,
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout,
+            "",
+        )
+        create_pr.assert_not_called()
+        archive_transaction.assert_not_called()
+        archive_commit_side_effect.assert_not_called()
+        evidence_commit.assert_not_called()
+        push_branch.assert_not_called()
+
+    def test_active_preview_without_readiness_remains_publication_stale(self) -> None:
+        public_input = {
+            "profile": "standalone_finalization",
+            "mode": "standalone",
+            "task_ref": self.task_dir.relative_to(self.root).as_posix(),
+            "finalization_intent": "Finalize the reviewed task.",
+            "finalization_context": "Current active task.",
+        }
+        stale = {
+            "owner_status": "stale",
+            "stale_reason": "publication_review_missing",
+        }
+        with (
+            mock.patch.object(gtt, "finalization_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(
+                gtt,
+                "finalization_verification_owner_result",
+                return_value=None,
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_publication_owner_result",
+                return_value=stale,
+            ) as publication_owner,
+            mock.patch.object(
+                gtt,
+                "finalization_verification_augmentation_plan",
+            ) as archived_plan,
+        ):
+            context = gtt.finalization_preview_context(
+                self.root,
+                argparse.Namespace(include_finalization_gate=True),
+                public_input,
+            )
+
+        self.assertIsNone(context["plan"])
+        self.assertEqual(context["transaction_state"], "publication_review_stale")
+        self.assertEqual(context["publication_stale_reason"], "publication_review_missing")
+        publication_owner.assert_called_once()
+        archived_plan.assert_not_called()
+
     def test_cross_month_reprepare_consumes_checked_owner_before_plan_rebuild(
         self,
     ) -> None:
@@ -16367,6 +16913,11 @@ shutil.move(str(active), str(archived))
 
             compatibility = {"status": "passed", "steps": [{"passed": True}]}
             with (
+                mock.patch.object(
+                    gtt,
+                    "current_archive_month",
+                    return_value="2026-07",
+                ),
                 mock.patch.object(
                     gtt,
                     "validate_closeout_active_projection",
@@ -18534,6 +19085,117 @@ shutil.move(str(active), str(archived))
             gtt.ensure_closeout_pr_ready(self.root, plan)
         self.assertEqual(raised.exception.payload["stage"], "draft-to-ready")
         mutation.assert_not_called()
+
+    def test_draft_to_ready_waits_for_transient_pr_head_convergence(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        stale_head = "b" * 40
+        draft = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": stale_head,
+            "isDraft": True,
+        }
+        converged = dict(draft, headRefOid=self.head)
+        ready = dict(converged, isDraft=False)
+        commands: list[list[str]] = []
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            commands.append(command)
+            if command[:3] == ["git", "ls-remote", "--heads"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{self.head}\trefs/heads/fix/105-closeout\n",
+                    stderr="",
+                )
+            if command[:3] == ["gh", "pr", "ready"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            raise AssertionError(command)
+
+        with (
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pull_request",
+                side_effect=[draft, converged, ready],
+            ) as resolve,
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(gtt.time, "sleep") as sleeper,
+        ):
+            result = gtt.ensure_closeout_pr_ready(
+                self.root,
+                plan,
+                bound_pr=draft,
+            )
+
+        self.assertEqual(result["status"], "ready")
+        self.assertEqual(result["pr"]["number"], 105)
+        self.assertFalse(result["pr"]["isDraft"])
+        self.assertEqual(resolve.call_count, 3)
+        sleeper.assert_called_once_with(
+            gtt.CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS,
+        )
+        self.assertEqual(
+            sum(command[:3] == ["gh", "pr", "ready"] for command in commands),
+            1,
+        )
+
+    def test_draft_to_ready_fails_after_bounded_pr_head_mismatch(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        stale_head = "b" * 40
+        draft = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": stale_head,
+            "isDraft": True,
+        }
+        commands: list[list[str]] = []
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            commands.append(command)
+            if command[:3] == ["git", "ls-remote", "--heads"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{self.head}\trefs/heads/fix/105-closeout\n",
+                    stderr="",
+                )
+            raise AssertionError(command)
+
+        with (
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pull_request",
+                return_value=draft,
+            ) as resolve,
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(gtt.time, "sleep") as sleeper,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.ensure_closeout_pr_ready(self.root, plan, bound_pr=draft)
+
+        self.assertEqual(resolve.call_count, gtt.CLOSEOUT_PR_HEAD_READ_ATTEMPTS)
+        self.assertEqual(
+            sleeper.call_count,
+            gtt.CLOSEOUT_PR_HEAD_READ_ATTEMPTS - 1,
+        )
+        self.assertEqual(raised.exception.payload["local_head"], self.head)
+        self.assertEqual(raised.exception.payload["remote_head"], self.head)
+        self.assertEqual(raised.exception.payload["pr_head"], stale_head)
+        self.assertFalse(
+            any(command[:3] == ["gh", "pr", "ready"] for command in commands)
+        )
 
     def test_post_archive_layout_and_ready_do_not_run_local_artifact_validators(self) -> None:
         plan = self.build_plan()

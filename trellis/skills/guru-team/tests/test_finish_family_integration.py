@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -9,6 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 
 SOURCE_REPO = Path(__file__).resolve().parents[4]
@@ -167,7 +170,413 @@ def output_object_branches(schema: dict[str, Any]) -> list[dict[str, Any]]:
     return []
 
 
+def load_selected_runtime() -> Any:
+    runtime = (
+        REPO / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        if EXECUTION_MODE == "installed"
+        else REPO / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        f"guru_finish_family_runtime_{EXECUTION_MODE}",
+        runtime,
+    )
+    if spec is None or spec.loader is None:
+        raise AssertionError(f"could not load runtime: {runtime}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 class FinishFamilyIntegrationTests(unittest.TestCase):
+    def test_selected_runtime_converges_pr_head_and_bounds_persistent_mismatch(
+        self,
+    ) -> None:
+        runtime = load_selected_runtime()
+        local_head = "a" * 40
+        stale_head = "b" * 40
+        body = "Issue #119 finalizer recovery\n"
+        plan = {
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "feat/119-finish-family-integration-main",
+                "base_branch": "main",
+            },
+            "publish": {
+                "title": "#119 完成 Finish family combined integration",
+                "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+            },
+        }
+        draft = {
+            "number": 166,
+            "url": "https://github.com/castbox/guru-trellis/pull/166",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": plan["git"]["head_branch"],
+            "baseRefName": "main",
+            "headRefOid": stale_head,
+            "isDraft": True,
+            "headRepository": {"nameWithOwner": "castbox/guru-trellis"},
+            "headRepositoryOwner": {"login": "castbox"},
+            "isCrossRepository": False,
+        }
+        converged = dict(draft, headRefOid=local_head)
+        ready = dict(converged, isDraft=False)
+        with tempfile.TemporaryDirectory(prefix="guru-finish-head-") as temporary:
+            root = Path(temporary)
+            with (
+                mock.patch.object(
+                    runtime,
+                    "resolve_closeout_pull_request",
+                    side_effect=[draft, converged, ready],
+                ) as resolve,
+                mock.patch.object(runtime, "current_head", return_value=local_head),
+                mock.patch.object(
+                    runtime,
+                    "closeout_remote_branch_head",
+                    return_value=local_head,
+                ),
+                mock.patch.object(
+                    runtime,
+                    "run",
+                    return_value=mock.Mock(returncode=0, stdout="", stderr=""),
+                ) as command,
+                mock.patch.object(runtime.time, "sleep") as sleeper,
+            ):
+                result = runtime.ensure_closeout_pr_ready(
+                    root,
+                    plan,
+                    bound_pr=draft,
+                )
+            self.assertEqual(result["status"], "ready")
+            self.assertEqual(result["pr"]["number"], 166)
+            self.assertEqual(resolve.call_count, 3)
+            sleeper.assert_called_once_with(
+                runtime.CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS,
+            )
+            self.assertEqual(command.call_count, 1)
+            self.assertEqual(command.call_args.args[0][:3], ["gh", "pr", "ready"])
+
+            with (
+                mock.patch.object(
+                    runtime,
+                    "resolve_closeout_pull_request",
+                    return_value=draft,
+                ) as resolve,
+                mock.patch.object(runtime, "current_head", return_value=local_head),
+                mock.patch.object(
+                    runtime,
+                    "closeout_remote_branch_head",
+                    return_value=local_head,
+                ),
+                mock.patch.object(runtime, "run") as command,
+                mock.patch.object(runtime.time, "sleep") as sleeper,
+                self.assertRaises(runtime.WorkflowError),
+            ):
+                runtime.ensure_closeout_pr_ready(root, plan, bound_pr=draft)
+            self.assertEqual(
+                resolve.call_count,
+                runtime.CLOSEOUT_PR_HEAD_READ_ATTEMPTS,
+            )
+            self.assertEqual(
+                sleeper.call_count,
+                runtime.CLOSEOUT_PR_HEAD_READ_ATTEMPTS - 1,
+            )
+            command.assert_not_called()
+
+    def test_selected_runtime_recovers_compact_archive_before_readiness_check(
+        self,
+    ) -> None:
+        runtime = load_selected_runtime()
+        plan_digest = "a" * 64
+        reviewed_head = "b" * 40
+        active = ".trellis/tasks/07-31-119-combined-finish-family-integration"
+        archive = (
+            ".trellis/tasks/archive/2026-08/"
+            "07-31-119-combined-finish-family-integration"
+        )
+        plan = {
+            "plan_digest": plan_digest,
+            "task": {"active_locator": active, "archive_locator": archive},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "feat/119-finish-family-integration-main",
+                "base_branch": "main",
+                "reviewed_work_head": reviewed_head,
+            },
+            "marketplace": {"required": True},
+        }
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": active,
+            "plan_ref": f"closeout-plan:{plan_digest}",
+            "recovery_intent": "Resume the same immutable transaction.",
+            "recovery_context": "The compact archive is already committed.",
+        }
+        publication = {
+            "owner_status": "current",
+            "publication_ref": f"publication:{'c' * 64}",
+        }
+        verification = (
+            {"source": "committed-finalization-gate"},
+            {
+                "status": "ok",
+                "typed_exit": "verified",
+                "verification_ref": "extension-verification:checked",
+            },
+        )
+        transaction = {
+            "commit": "d" * 40,
+            "parent": "e" * 40,
+            "summary_pr": {
+                "number": 166,
+                "url": "https://github.com/castbox/guru-trellis/pull/166",
+            },
+        }
+        with tempfile.TemporaryDirectory(prefix="guru-finish-archive-") as temporary:
+            root = Path(temporary)
+            archived = root / archive
+            archived.mkdir(parents=True)
+            retained = set(runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+            retained.update(runtime.CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
+            for relative in retained:
+                path = archived / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("committed fixture\n", encoding="utf-8")
+            self.assertEqual(len(retained), runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS)
+            self.assertFalse((archived / runtime.PR_READINESS_ARTIFACT).exists())
+
+            with (
+                mock.patch.object(
+                    runtime,
+                    "finalization_task_dir",
+                    return_value=archived,
+                ),
+                mock.patch.object(runtime, "task_dir_is_archived", return_value=True),
+                mock.patch.object(runtime, "load_config", return_value={}),
+                mock.patch.object(
+                    runtime,
+                    "finalization_verification_augmentation_plan",
+                    return_value=plan,
+                ),
+                mock.patch.object(
+                    runtime,
+                    "resolve_committed_closeout_archive_transaction",
+                    return_value=transaction,
+                ),
+                mock.patch.object(
+                    runtime,
+                    "finalization_archived_owner_results",
+                    return_value=(publication, verification),
+                ),
+                mock.patch.object(
+                    runtime,
+                    "finalization_archived_published_facts",
+                    return_value=(False, None),
+                ),
+                mock.patch.object(
+                    runtime,
+                    "finalization_publication_owner_result",
+                    side_effect=AssertionError("active readiness was reopened"),
+                ) as readiness,
+                mock.patch.object(
+                    runtime,
+                    "finalization_verification_owner_result",
+                    side_effect=AssertionError("archived #117 artifact was reopened"),
+                ) as verification_owner,
+                mock.patch.object(runtime, "create_pull_request") as create_pr,
+                mock.patch.object(
+                    runtime,
+                    "execute_archive_metadata_transaction",
+                ) as archive_transaction,
+                mock.patch.object(
+                    runtime,
+                    "commit_closeout_evidence_metadata",
+                ) as evidence_commit,
+            ):
+                context = runtime.finalization_preview_context(
+                    root,
+                    mock.Mock(include_finalization_gate=True),
+                    public_input,
+                )
+            self.assertEqual(context["transaction_state"], "archived")
+            self.assertEqual(context["publication"], publication)
+            readiness.assert_not_called()
+            verification_owner.assert_not_called()
+            create_pr.assert_not_called()
+            archive_transaction.assert_not_called()
+            evidence_commit.assert_not_called()
+
+    def test_selected_runtime_archived_transition_skips_gate_and_verifier_mutation(
+        self,
+    ) -> None:
+        runtime = load_selected_runtime()
+        plan_digest = "a" * 64
+        active = ".trellis/tasks/07-31-119-combined-finish-family-integration"
+        archive = (
+            ".trellis/tasks/archive/2026-08/"
+            "07-31-119-combined-finish-family-integration"
+        )
+        plan = {
+            "plan_digest": plan_digest,
+            "task": {"active_locator": active, "archive_locator": archive},
+            "git": {"reviewed_work_head": "b" * 40},
+            "marketplace": {"required": True},
+        }
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": active,
+            "plan_ref": f"closeout-plan:{plan_digest}",
+            "recovery_intent": "Resume the same immutable transaction.",
+            "recovery_context": "The compact archive is already committed.",
+        }
+        context = {
+            "task_dir": Path("unused"),
+            "task_context": None,
+            "prepared": None,
+            "plan": plan,
+            "plan_ref": public_input["plan_ref"],
+            "transaction_state": "archived",
+            "published_transition_complete": False,
+            "publication": {"owner_status": "current"},
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "verification": (
+                {"source": "committed-finalization-gate"},
+                {"status": "ok", "typed_exit": "verified"},
+            ),
+            "facts": {"transaction_state": "archived"},
+            "current_facts_sha256": "c" * 64,
+        }
+        gate = {
+            "route": {
+                "typed_exit": "published",
+                "consumer": runtime.FINALIZATION_CONSUMERS["published"],
+                "output": runtime.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            }
+        }
+        reviewed = {
+            "review": {
+                "status": "passed",
+                "summary": "The committed recovery is ready.",
+                "evidence_refs": ["publication:current"],
+            },
+            "confirmation": {
+                "status": "not_required",
+                "confirmed_plan_digest": plan_digest,
+                "summary": "The immutable plan was already confirmed.",
+            },
+            "route": gate["route"],
+            "supersedes_gate_ref": "task-finalization-gate:committed",
+        }
+        args = argparse.Namespace(
+            root=None,
+            input="unused-input.json",
+            review_input="unused-review.json",
+            gate=None,
+            dry_run=False,
+        )
+        with tempfile.TemporaryDirectory(prefix="guru-finish-transition-") as temporary:
+            root = Path(temporary)
+            archived = root / archive
+            archived.mkdir(parents=True)
+            gate_path = archived / runtime.TASK_FINALIZATION_GATE_ARTIFACT
+            gate_path.write_text("committed gate bytes\n", encoding="utf-8")
+            committed_bytes = gate_path.read_bytes()
+            context["task_dir"] = archived
+            args.root = str(root)
+            published_gate = {
+                "route": {
+                    "output": {
+                        "exit_id": "published",
+                        "task_ref": archive,
+                        "pr_number": 166,
+                        "pr_url": "https://github.com/castbox/guru-trellis/pull/166",
+                    }
+                }
+            }
+            finish_result = {
+                "archived_task_dir": str(archived),
+                "publish": {
+                    "pr": {
+                        "number": 166,
+                        "url": "https://github.com/castbox/guru-trellis/pull/166",
+                    }
+                },
+            }
+            with (
+                mock.patch.object(
+                    runtime,
+                    "finalization_public_input",
+                    return_value=(public_input, "unused-input.json"),
+                ),
+                mock.patch.object(
+                    runtime,
+                    "finalization_semantic_review_input",
+                    return_value=reviewed,
+                ),
+                mock.patch.object(
+                    runtime,
+                    "finalization_preview_context",
+                    return_value=context,
+                ),
+                mock.patch.object(runtime, "finalization_validate_route"),
+                mock.patch.object(
+                    runtime,
+                    "finalization_gate_schema",
+                    return_value={},
+                ),
+                mock.patch.object(
+                    runtime,
+                    "skill_json_schema_validation_errors",
+                    return_value=[],
+                ),
+            ):
+                recorded = runtime.cmd_record_finalization_gate(args)
+            self.assertEqual(recorded["typed_exit"], "published")
+            self.assertEqual(gate_path.read_bytes(), committed_bytes)
+
+            with (
+                mock.patch.object(
+                    runtime,
+                    "finalization_public_input",
+                    return_value=(public_input, "unused-input.json"),
+                ),
+                mock.patch.object(
+                    runtime,
+                    "finalization_gate_input",
+                    return_value=(gate, gate_path),
+                ),
+                mock.patch.object(
+                    runtime,
+                    "check_finalization_gate_result",
+                    return_value=(gate, context),
+                ),
+                mock.patch.object(
+                    runtime,
+                    "finalization_marketplace_verification_compatibility_projection",
+                    side_effect=AssertionError("archived #117 evidence was reopened"),
+                ) as projection,
+                mock.patch.object(
+                    runtime,
+                    "cmd_finish_work",
+                    return_value=finish_result,
+                ) as finish,
+                mock.patch.object(
+                    runtime,
+                    "finalization_gate_with_published_output",
+                    return_value=published_gate,
+                ),
+            ):
+                transitioned = runtime.cmd_execute_finalization_transition(args)
+            self.assertEqual(transitioned["output"]["pr_number"], 166)
+            projection.assert_not_called()
+            self.assertIsNone(getattr(finish.call_args.args[0], "external_verification", None))
+            self.assertEqual(gate_path.read_bytes(), committed_bytes)
+
     def test_13_public_exits_have_unique_consumers_and_private_fields_stay_private(
         self,
     ) -> None:

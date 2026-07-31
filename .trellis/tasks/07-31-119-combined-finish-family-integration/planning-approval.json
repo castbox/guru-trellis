@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "skill_id": "guru-approve-task-plan",
-  "generated_at": "2026-07-31T13:58:17Z",
+  "generated_at": "2026-07-31T18:06:35Z",
   "mode": "workflow",
   "task": {
     "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
@@ -18,29 +18,14 @@
     "selected_base": "main",
     "base_ref": "refs/remotes/origin/main",
     "base_head": "7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
-    "head": "e7079961de0428e3492dfd0e26ac8c9f7ad7aa36",
+    "head": "57e7d0d4e350ac892ed599d20db67d2a99d8c38d",
     "dirty_paths": [
-      ".DS_Store",
-      ".trellis/.DS_Store",
-      ".trellis/guru-team/extension.json",
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/spec/workflow/companion-scripts.md",
-      ".trellis/spec/workflow/skill-package-contract.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/closeout-plan.json",
       ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
       ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
       ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/task-finalization-gate.json",
-      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md"
     ],
-    "captured_at": "2026-07-31T13:58:17Z"
+    "captured_at": "2026-07-31T18:06:35Z"
   },
   "requirement_authorities": [
     {
@@ -65,10 +50,10 @@
       "updated_at": "2026-07-12T10:52:49Z"
     },
     {
-      "id": "user:current-request",
+      "id": "user:119-recovery-request",
       "kind": "user_request",
-      "locator": "用户要求基于整改后的 live main 完成 Issue #119 剩余 combined Finish-family integration；保留 PR #165 AI-first contract、冻结 donor 只读、#132 follow-up、commit/push/PR/merge/closure/cleanup 分别授权。",
-      "sha256": "03a2c54e96c6b9784b450553306c3dc88a2beeacd13d8938f9dd549d14469f77",
+      "locator": "用户要求在 Issue #119 同一交付链修复 GitHub PR HEAD 正常传播延迟与 compact schema 1.1 archived recovery 不得依赖 pr-readiness.json；保留失败链、既有 task、branch 与 Draft PR #166；禁止手工 gh pr ready、新 task、新 PR、force-push 与历史重写；本轮授权止于 recovery commit、实现、受影响验证、task-work commit 与 fresh Branch Review，push 与 PR mutation 另行授权。",
+      "sha256": "9f9af3531f5073d7b467a0a931a340c34109858a31f96f6480e34ea15142ff2f",
       "updated_at": null
     },
     {
@@ -100,79 +85,58 @@
       "updated_at": null
     },
     {
-      "id": "repo:upstream-ownership",
-      "kind": "repository_document",
-      "locator": ".trellis/spec/preset/upstream-ownership.md",
-      "sha256": "faaabc38fee22bc3e04f8e5aba79fafe3358f8c9ba634a53d50d856d6624e961",
-      "updated_at": null
-    },
-    {
-      "id": "repo:installer",
-      "kind": "repository_document",
-      "locator": ".trellis/spec/preset/installer.md",
-      "sha256": "232bf9253df8fbca3666c42ee465be49e2a527308bfb17f2f979bd87771d4919",
-      "updated_at": null
-    },
-    {
       "id": "task:issue-ledger",
       "kind": "task_artifact",
       "locator": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
       "sha256": "2be4796ee5e15c67a81ade3ca8244e95c995ac916ab8fad98691c0559549dbe2",
-      "updated_at": null
-    },
-    {
-      "id": "user:post-planning-approval",
-      "kind": "user_request",
-      "locator": "用户已查看整改后的 Issue #119 prd.md、design.md、implement.md 绝对链接，以及仅限 immutable-plan-owned pending/passed marketplace machine evidence 的 closeout-order 兼容边界，随后于 2026-07-31 独立回复“确认继续”，授权重录当前 planning approval、收敛全量验证并完成新 Phase 2，仍停在 exact commit plan 前；未授权 commit、push、PR、merge、Issue closure 或 cleanup。",
-      "sha256": "2eff0c6956724fd03fc2d825514510821754ba140a3377f6eaff8348f09d9301",
       "updated_at": null
     }
   ],
   "reviewed_artifacts": [
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-      "sha256": "5226cfc7208d96d5c8dc66b7c3512ee10f16703841fe94555e8b08a7a631c861",
-      "size_bytes": 9738,
-      "modified_at": "2026-07-31T13:11:29.493615+00:00"
+      "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+      "size_bytes": 13165,
+      "modified_at": "2026-07-31T17:58:13.408484+00:00"
     },
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-      "sha256": "514d0d61eb4e751b39ccb82854e33453dd2c81d31d65196b13dd6237e544163d",
-      "size_bytes": 15005,
-      "modified_at": "2026-07-31T12:45:15.466732+00:00"
+      "sha256": "b7f65ebf819d63601eab7b95b630470bbe00ee106254babf9f036c8bef344411",
+      "size_bytes": 19581,
+      "modified_at": "2026-07-31T17:58:13.408879+00:00"
     },
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
-      "sha256": "8797cf796f8b26853d826dd8e9bd277c6ca020d5d31e5c5d1db40ddddfea75b5",
-      "size_bytes": 9013,
-      "modified_at": "2026-07-31T13:11:29.494254+00:00"
+      "sha256": "d0757b504b85179e16aecb32bd137e05c21c6b11ab640ea2aad53394ed5b344e",
+      "size_bytes": 11726,
+      "modified_at": "2026-07-31T17:58:13.409436+00:00"
     }
   ],
   "approved_artifacts": [
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-      "sha256": "5226cfc7208d96d5c8dc66b7c3512ee10f16703841fe94555e8b08a7a631c861",
-      "size_bytes": 9738,
-      "modified_at": "2026-07-31T13:11:29.493615+00:00"
+      "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+      "size_bytes": 13165,
+      "modified_at": "2026-07-31T17:58:13.408484+00:00"
     },
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-      "sha256": "514d0d61eb4e751b39ccb82854e33453dd2c81d31d65196b13dd6237e544163d",
-      "size_bytes": 15005,
-      "modified_at": "2026-07-31T12:45:15.466732+00:00"
+      "sha256": "b7f65ebf819d63601eab7b95b630470bbe00ee106254babf9f036c8bef344411",
+      "size_bytes": 19581,
+      "modified_at": "2026-07-31T17:58:13.408879+00:00"
     },
     {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
-      "sha256": "8797cf796f8b26853d826dd8e9bd277c6ca020d5d31e5c5d1db40ddddfea75b5",
-      "size_bytes": 9013,
-      "modified_at": "2026-07-31T13:11:29.494254+00:00"
+      "sha256": "d0757b504b85179e16aecb32bd137e05c21c6b11ab640ea2aad53394ed5b344e",
+      "size_bytes": 11726,
+      "modified_at": "2026-07-31T17:58:13.409436+00:00"
     }
   ],
   "docs_ssot_plan": {
     "strategy": "ssot_first",
     "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
     "locator": "## 10. Docs SSOT Plan",
-    "statement_sha256": "1081920e09487dc707090e61b506fab1df0b8ceccfcffd6c5ad8079c9e91e3e0",
+    "statement_sha256": "c29fc4e68a21fa8ae135d6ff0eedd278bacddc8cf2c354b9775fc17d4c185c7e",
     "durable_paths": [
       "trellis/workflows/guru-team/workflow.md",
       ".trellis/workflow.md",
@@ -196,15 +160,15 @@
     "schema_id": "guru-contract-wording-review-1.0",
     "profile": "planning_artifacts",
     "typed_exit": "pass",
-    "artifact_sha256": "f21655f08e06173bb22839c41ef7e1e341f4365cab0f58d7090e274fe1108832",
-    "facts_sha256": "52b73dc301c729327bdcf9a2c00efe6df6cca8ffec31b52c4d5ca268594a3322",
-    "scope_sha256": "6fce5b8d0f08aab4baebbd6b0d759ce48b6fa11328169ed3e2f2b23627a20b17",
+    "artifact_sha256": "576aaa6399a07772b6f4416f68fec60feb18ae0b52811447080bf822585d7213",
+    "facts_sha256": "8cd5213e320c0ca90a05037f67b70134f1b0025d2ac18ce283674f683628a916",
+    "scope_sha256": "d9cce5fba9d036a6edc4a3c5cccc79bb5054c22aff70ba28762de49c63257880",
     "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
   },
   "ambiguity_review": {
     "status": "passed",
-    "reviewer": "Codex primary agent /root",
-    "summary": "Reviewed the complete current prd.md, design.md, and implement.md after the closeout-order finding fix. The plan limits compatibility to the immutable-plan-owned pending/passed marketplace machine evidence and its exact ledger artifact, entry, and working-tree bindings; all other ledger semantics, artifacts, public DTOs, Skill ownership, and Issue #132 boundaries remain unchanged. Every conditional path names its trigger and fail-closed result, every acceptance item is observable, and the zero-hit scanner result was not used as a substitute for semantic review.",
+    "reviewer": "Codex GPT-5",
+    "summary": "完整 re-entry 已复核固定三文件范围、零词汇命中、两项 recovery correctness 合同、六项回归、授权边界与 Docs checkpoint；规划可进入实现。",
     "normative_language": {
       "controlled_terms": [
         "可以",
@@ -272,229 +236,142 @@
         "authority_refs": [
           "issue:119",
           "comment:119:5045074001",
-          "user:current-request"
+          "user:119-recovery-request"
         ],
-        "reason": "Live #119 and the current user request require the bounded combined Finish-family completion and only #119/#115 close planning.",
+        "reason": "Issue #119 与当前用户请求共同限定 combined Finish-family 目标、既有身份复用和本轮 recovery delta。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R2-current-baseline",
+        "id": "R2-baseline-and-failure",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
         "locator": "## 2. 权威与当前基线",
-        "statement_sha256": "e6ad8e5b11e246d47ad2aaf8d529099c62c1b396633d34f57d17e44126d9c840",
+        "statement_sha256": "4511309d03646a6cf3f0f7c545b2c9ed34873f1dfc6f49e85cd7e23c2116e095",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
-          "comment:119:5045074001",
-          "user:current-request",
+          "user:119-recovery-request",
           "repo:skill-contract"
         ],
-        "reason": "The accepted-current authority and current repository contracts make PR #162/#165 behavior the non-reimplementation baseline.",
+        "reason": "当前权威要求保留 PR #162/#165 完成交付与 3fe71d7/15d957b 失败链，只修正两个 correctness bug。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R3-routing",
+        "id": "R3-functional-contracts",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-        "locator": "### 3.1 Global workflow 与 typed exit consumers",
-        "statement_sha256": "844664696c9a2de6d2a985e74227ff74888f32afffa379f73c4de536b5435d5f",
+        "locator": "## 3. 功能需求",
+        "statement_sha256": "d28ff533c288bb1cc09dadfeee7959a28fd6c901c6be2a3ef98797580503c3a0",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
-          "comment:119:5045074001",
-          "repo:workflow-contract",
-          "repo:skill-contract"
-        ],
-        "reason": "The issue fixes thin global ordering, stable Skill ids, unique consumers and fail-closed exit routing.",
-        "implementation_choice": null,
-        "scope_expansion": null,
-        "out_of_scope_proposal": null
-      },
-      {
-        "id": "R4-guru-entry",
-        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-        "locator": "### 3.2 Guru namespace 入口与兼容迁移",
-        "statement_sha256": "6f17f5d20b74072c7d52ede84d7e0e45d63c5fc61824ceb54a810bdeaab9d438",
-        "classification": "explicit_requirement",
-        "authority_refs": [
-          "issue:119",
-          "user:current-request",
-          "repo:upstream-ownership",
-          "repo:installer"
-        ],
-        "reason": "The accepted Guru namespace revision requires additive platform entries while #132 retains physical legacy cleanup.",
-        "implementation_choice": null,
-        "scope_expansion": null,
-        "out_of_scope_proposal": null
-      },
-      {
-        "id": "R5-evidence-bridge",
-        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-        "locator": "### 3.3 Cross-skill evidence integration",
-        "statement_sha256": "41b40cd41e1914d5fc0e2925890f0f1403a91d5dad261856b152991e88039342",
-        "classification": "explicit_requirement",
-        "authority_refs": [
-          "issue:119",
-          "comment:119:5045074001",
-          "repo:skill-contract",
-          "repo:companion-scripts"
-        ],
-        "reason": "The combined integration must consume checked #117 evidence without reading private owner artifacts through public consumers.",
-        "implementation_choice": null,
-        "scope_expansion": null,
-        "out_of_scope_proposal": null
-      },
-      {
-        "id": "R6-terminal-evals",
-        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-        "locator": "### 3.4 Combined production eval",
-        "statement_sha256": "eab27160a281697acb34400fc55dc93c2e94f0dca4d9566bcc46408884fe638c",
-        "classification": "explicit_requirement",
-        "authority_refs": [
-          "comment:119:5045074001",
-          "user:current-request",
-          "repo:skill-contract"
-        ],
-        "reason": "The current corpus gap is exactly the publication-ready and same-plan terminal published coverage.",
-        "implementation_choice": null,
-        "scope_expansion": null,
-        "out_of_scope_proposal": null
-      },
-      {
-        "id": "R7-105-regression",
-        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-        "locator": "### 3.5 #105 事务与 recovery 回归",
-        "statement_sha256": "34c6d0aef2167f9fd7861a54906ae0c8625d608895859bd4d00719c07ab06d2e",
-        "classification": "explicit_requirement",
-        "authority_refs": [
           "issue:105",
-          "issue:119",
-          "user:current-request",
+          "comment:119:5045074001",
+          "user:119-recovery-request",
           "repo:companion-scripts"
         ],
-        "reason": "Issue #119 explicitly carries the complete existing #105 transaction and recovery matrix without expanding its failure model.",
+        "reason": "该章节完整覆盖原 combined integration 与当前 PR HEAD 收敛、compact archive recovery、active stale 和 no-duplicate 合同。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R8-install-update",
-        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-        "locator": "### 3.6 Clean install、update、preset reapply 与平台验收",
-        "statement_sha256": "95bef14dde91ccd17eb8d3eb2c1071d26e075189628492fb8b6f3015aca86ee8",
-        "classification": "explicit_requirement",
-        "authority_refs": [
-          "issue:119",
-          "user:current-request",
-          "repo:agents",
-          "repo:installer"
-        ],
-        "reason": "The repository gate and user request require clean install, upgrade dry-run, update, reapply, sidecar and platform acceptance.",
-        "implementation_choice": null,
-        "scope_expansion": null,
-        "out_of_scope_proposal": null
-      },
-      {
-        "id": "R9-ownership-docs",
-        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
-        "locator": "### 3.7 Ownership、Docs SSOT 与减法",
-        "statement_sha256": "7f9f96c5cfd1db817c8f5ed5659d95beeeaaf7a8f815433e5c1a861586ff6e69",
-        "classification": "explicit_requirement",
-        "authority_refs": [
-          "issue:119",
-          "user:current-request",
-          "repo:agents",
-          "repo:upstream-ownership"
-        ],
-        "reason": "Current ownership must clear #119 while preserving #132 as the removal owner and synchronizing durable SSOT.",
-        "implementation_choice": null,
-        "scope_expansion": null,
-        "out_of_scope_proposal": null
-      },
-      {
-        "id": "R10-ai-first",
+        "id": "R4-ai-first",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
         "locator": "## 4. AI-first 与 public contract 约束",
         "statement_sha256": "e6edc13d8038588a24bb09539a3a36a23131896c68c2c0f4f502c487411c20e9",
         "classification": "explicit_requirement",
         "authority_refs": [
           "comment:119:5045074001",
-          "user:current-request",
+          "user:119-recovery-request",
           "repo:skill-contract",
           "repo:workflow-contract"
         ],
-        "reason": "PR #165 and the user boundary preserve automatic mapped exits, minimal DTOs and no routine handoff or generic continuation prompt.",
+        "reason": "PR #165 与当前请求保持 mapped exits 自动承接、最小 DTO、无通用继续确认和无 recovery input。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R11-exclusions",
+        "id": "R5-exclusions",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
         "locator": "## 5. 明确排除",
         "statement_sha256": "9a5accd9ecb2932f99a420b00e469e92fcc07a29f3f36e762686861ea73928d1",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
-          "user:current-request",
+          "user:119-recovery-request",
           "repo:agents"
         ],
-        "reason": "The source authority explicitly excludes predecessor reimplementation, #132 delivery, donor artifact migration and nonstandard hardening.",
+        "reason": "当前 authority 排除 predecessor 重实现、#132、donor mutation、history rewrite 与非标准加固。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R12-acceptance",
+        "id": "R6-acceptance",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
         "locator": "## 6. 验收标准",
-        "statement_sha256": "f75e777f6a5831b7e26625fc0066aa918ca381b1bdb756881c538e13992fc078",
+        "statement_sha256": "2990774d65659a46f5a44851c1ccfad2ca461f4cb5084c22a8067fdfbf140a90",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
           "issue:105",
-          "comment:119:5045074001",
-          "user:current-request",
+          "user:119-recovery-request",
           "repo:agents"
         ],
-        "reason": "The acceptance list binds every remaining delta to observable file, route, test, install, ownership and donor-invariant evidence.",
+        "reason": "验收清单把原 #119 证据与六项 current recovery regression、affected validation 和 evidence refresh 边界绑定为可观察结果。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "C1-private-projection",
+        "id": "R7-design-owner-boundary",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-        "locator": "### 4.2 调用链",
-        "statement_sha256": "c1da0564387aba05443ec23db554938585b192bf1038681561866ba21584cee7",
-        "classification": "necessary_implementation_choice",
+        "locator": "## 1. 设计结论",
+        "statement_sha256": "54eab3b3b1269de6680cb407077b795464dc57fe9ad606d23bd609cf1f37dbc2",
+        "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
           "comment:119:5045074001",
-          "repo:skill-contract",
+          "user:119-recovery-request",
+          "repo:skill-contract"
+        ],
+        "reason": "设计结论保持三个 public Skill owners 与 existing transaction owner，只允许 private runtime correctness 修正。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C1-bounded-pr-reread",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "locator": "### 2.2 PR HEAD 有界收敛设计",
+        "statement_sha256": "fa14c958879344cd1d6864c4167b174bf9539c8f36eedbd7a50d5203a046886d",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "user:119-recovery-request",
           "repo:companion-scripts"
         ],
-        "reason": "A single in-memory private projection is required to bridge the checked owner result into the unchanged legacy transaction validator without public DTO expansion.",
+        "reason": "Executor 必须吸收 GitHub 正常传播延迟，同时保持 validator 单次检查与 persistent mismatch fail closed。",
         "implementation_choice": {
           "alternatives": [
             {
-              "id": "private-in-memory-projection",
-              "tradeoff": "Reuse the checked owner projection and thread it through the private call chain without artifact or DTO growth."
+              "id": "executor-six-read-budget",
+              "tradeoff": "由 side-effect executor 执行首次读取加五次一秒重读，收敛后继续 Ready。"
             },
             {
-              "id": "rewrite-owner-artifact",
-              "tradeoff": "Makes legacy parsing direct but violates #117 private ownership and introduces dual schema semantics."
+              "id": "validator-retry",
+              "tradeoff": "把执行策略放入 validator，破坏单次客观检查边界。"
             },
             {
-              "id": "expand-public-dto",
-              "tradeoff": "Makes transport visible but adds fields with no direct consumer use and weakens PR #165 minimal handoff."
+              "id": "unbounded-wait",
+              "tradeoff": "没有确定终止条件，无法 fail closed。"
             }
           ],
-          "selected_id": "private-in-memory-projection",
-          "selection_reason": "It preserves current public contracts and assigns the compatibility bridge to the private deterministic runtime.",
+          "selected_id": "executor-six-read-budget",
+          "selection_reason": "固定六次预算直接满足正常传播延迟与确定失败边界，不改变 public contract。",
           "product_scope_expanded": false,
           "risk_scope_expanded": false
         },
@@ -502,30 +379,34 @@
         "out_of_scope_proposal": null
       },
       {
-        "id": "C2-integration-suite",
+        "id": "C2-archive-first-recovery",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-        "locator": "### 5.2 Dedicated integration suite",
-        "statement_sha256": "e32695cc36dc57b4c1912f67b7214e2b01f14646653d5a40ca0f0aee32bc8141",
+        "locator": "### 2.3 Archived recovery 顺序",
+        "statement_sha256": "97c34e32afa498f99d436aa823648c8cb694e807fb2180052cdd3a946a8917d6",
         "classification": "necessary_implementation_choice",
         "authority_refs": [
-          "issue:119",
-          "comment:119:5045074001",
-          "repo:agents"
+          "user:119-recovery-request",
+          "repo:companion-scripts",
+          "repo:skill-contract"
         ],
-        "reason": "A dedicated suite gives combined graph and distribution assertions one owner without duplicating package-local behavior tests.",
+        "reason": "Compact schema 1.1 已裁剪 readiness，archived recovery 只能先消费 committed plan、gate、transaction 与 Git/GitHub facts。",
         "implementation_choice": {
           "alternatives": [
             {
-              "id": "dedicated-integration-suite",
-              "tradeoff": "Owns combined route, platform, corpus and distribution assertions in one bounded module."
+              "id": "committed-archive-first",
+              "tradeoff": "从 compact archive 仍保留的 committed facts 恢复并跳过 active publication owner artifact。"
             },
             {
-              "id": "append-monolithic-package-tests",
-              "tradeoff": "Avoids one file but mixes combined ownership into package-local behavior coverage and increases duplication."
+              "id": "restore-pr-readiness",
+              "tradeoff": "重新制造 archive 合同已删除的 artifact。"
+            },
+            {
+              "id": "active-owner-first",
+              "tradeoff": "继续触发 publication_review_missing bug。"
             }
           ],
-          "selected_id": "dedicated-integration-suite",
-          "selection_reason": "It keeps combined acceptance separate from #116/#117/#118 internal behavior tests.",
+          "selected_id": "committed-archive-first",
+          "selection_reason": "该顺序与 schema 1.1 archive allowlist 和 immutable transaction recovery source 一致。",
           "product_scope_expanded": false,
           "risk_scope_expanded": false
         },
@@ -533,85 +414,83 @@
         "out_of_scope_proposal": null
       },
       {
-        "id": "R13-docs-ssot",
+        "id": "R8-docs-ssot",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
         "locator": "## 10. Docs SSOT Plan",
-        "statement_sha256": "1081920e09487dc707090e61b506fab1df0b8ceccfcffd6c5ad8079c9e91e3e0",
+        "statement_sha256": "c29fc4e68a21fa8ae135d6ff0eedd278bacddc8cf2c354b9775fc17d4c185c7e",
         "classification": "explicit_requirement",
         "authority_refs": [
           "repo:agents",
           "repo:workflow-contract",
-          "repo:upstream-ownership",
-          "repo:installer"
+          "repo:skill-contract",
+          "repo:companion-scripts"
         ],
-        "reason": "Workflow, platform, runtime and installer changes require ssot_first durable synchronization plus explicit no-update decisions.",
+        "reason": "原 #119 durable SSOT 已完成；current recovery 只让 runtime 符合既有 compact archive 与三方 HEAD 合同，不新增 durable API。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R14-order",
+        "id": "R9-execution-order",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
         "locator": "## 2. 有序实施清单",
-        "statement_sha256": "bf9a156e9610c4f8bd316246bead94033fbca7cc97296ce0bb1e1c3bd0ca1419",
+        "statement_sha256": "d27046c745baac705c1e276218892a7e2a88364b01096a97937c49c267e5c298",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
+          "user:119-recovery-request",
           "repo:agents",
           "repo:workflow-contract"
         ],
-        "reason": "The implementation order respects canonical-first edits, private runtime plumbing, eval integration, preset materialization and final checking.",
+        "reason": "执行顺序把 recovery correction 追加到原 combined flow，并明确不重放无关 install、upgrade 或 Skill 验收。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R15-test-matrix",
+        "id": "R10-affected-validation",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
-        "locator": "## 3. 验证命令与预期结果",
-        "statement_sha256": "2d0be140a2074e32774bdb3d772d8084bec44d15f2749fa291d48073e3f7b2ba",
+        "locator": "### 3.1 当前恢复增量命令",
+        "statement_sha256": "24a581bc51b5a9707f66c5ab316e8426aba1db24406e10367f63ae60b64f3931",
         "classification": "explicit_requirement",
         "authority_refs": [
-          "issue:105",
-          "issue:119",
-          "comment:119:5045074001",
-          "repo:agents",
-          "repo:installer"
+          "user:119-recovery-request",
+          "repo:agents"
         ],
-        "reason": "The command matrix independently covers runtime, package, integration, ownership, overlay, throwaway, upgrade and formatting evidence.",
+        "reason": "该命令集合精确覆盖 canonical runtime、source/installed integration、finalizer package、preset、drift 与 formatting。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R16-review-gates",
+        "id": "R11-review-gates",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
         "locator": "## 4. Review gates",
         "statement_sha256": "9c52973efb58933c474ff9de508792c7b0920d8d12659745c39494e2d7e22fff",
         "classification": "explicit_requirement",
         "authority_refs": [
           "issue:119",
+          "user:119-recovery-request",
           "repo:agents",
           "repo:workflow-contract",
           "repo:skill-contract"
         ],
-        "reason": "Scope, routing, transaction, distribution and Docs SSOT each have a deterministic pass condition before Phase 2 completion.",
+        "reason": "Scope、routing、transaction、distribution 与 Docs SSOT 继续拥有客观 gate，current check 只重跑受影响证据。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
       },
       {
-        "id": "R17-authorization-stops",
+        "id": "R12-authorization",
         "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
         "locator": "## 5. 授权停止点",
-        "statement_sha256": "dcc7bda50ac861840fabb9c4a6722067949ddc92d04102b308b2b4a319bc5b33",
+        "statement_sha256": "dbddf1210438dd85e2b895094ee30610fd809946f03203600e7d13c691e00ad5",
         "classification": "explicit_requirement",
         "authority_refs": [
-          "user:current-request",
-          "user:post-planning-approval",
+          "user:119-recovery-request",
           "repo:agents"
         ],
-        "reason": "The user separately authorizes planning activation and implementation while reserving commit, push, PR, merge, closure and cleanup authority.",
+        "reason": "用户当前授权覆盖 local recovery、实现、验证、task-work commit 与 fresh Branch Review；push、PR Ready、Issue、merge 与 cleanup 保持未授权。",
         "implementation_choice": null,
         "scope_expansion": null,
         "out_of_scope_proposal": null
@@ -619,167 +498,40 @@
     ],
     "coverage": {
       "reviewer": "Codex primary agent /root",
-      "summary": "R1-R17 cover the bounded goal, current-main baseline, route ownership, Guru entry migration, private evidence bridge, terminal evals, #105 regressions, install and upgrade gates, ownership and Docs SSOT, AI-first constraints, exclusions, acceptance, two necessary implementation choices, execution order, validation, review gates and authorization stops. No load-bearing item is uncovered.",
+      "summary": "R1-R12 与 C1-C2 覆盖 current authority、原 combined integration 基线、两项 correctness bug、AI-first/public I/O、排除范围、全部恢复验收、Docs checkpoint、执行顺序、受影响验证、review gates 与 side-effect authorization。",
       "reviewed_entry_ids": [
         "R1-goal",
-        "R2-current-baseline",
-        "R3-routing",
-        "R4-guru-entry",
-        "R5-evidence-bridge",
-        "R6-terminal-evals",
-        "R7-105-regression",
-        "R8-install-update",
-        "R9-ownership-docs",
-        "R10-ai-first",
-        "R11-exclusions",
-        "R12-acceptance",
-        "C1-private-projection",
-        "C2-integration-suite",
-        "R13-docs-ssot",
-        "R14-order",
-        "R15-test-matrix",
-        "R16-review-gates",
-        "R17-authorization-stops"
+        "R2-baseline-and-failure",
+        "R3-functional-contracts",
+        "R4-ai-first",
+        "R5-exclusions",
+        "R6-acceptance",
+        "R7-design-owner-boundary",
+        "C1-bounded-pr-reread",
+        "C2-archive-first-recovery",
+        "R8-docs-ssot",
+        "R9-execution-order",
+        "R10-affected-validation",
+        "R11-review-gates",
+        "R12-authorization"
       ],
       "all_load_bearing_items_covered": true,
-      "review_sha256": "b7392eafeaa47360f3cdad3912c5e4476c0861e3969183f62619d72bd9740343"
+      "review_sha256": "e8da1db977f8bec25920835f96f1f560b18ec97d05bfe8988e2a5e725d4d17d0"
     }
   },
   "unusual_scenario_review": {
     "reviewer": "Codex primary agent /root",
-    "summary": "Reviewed all six closed unusual-scenario classes. Current authority requires only the existing #105 normal failure/recovery matrix and honest-but-fallible compatibility paths; no nonstandard mechanism or scope expansion is needed.",
-    "candidates": [
-      {
-        "id": "US-01-security-threat",
-        "scenario_class": "security_or_threat",
-        "trigger_evidence": "The current authority preserves credential redaction but excludes authenticity, anti-tamper and hostile-input threat modeling.",
-        "scope": "Keep current secret handling and normal correctness checks; add no threat boundary.",
-        "cost": "A threat model would add contracts and negative fixtures outside #119.",
-        "alternatives": [
-          "Retain existing secret redaction contracts.",
-          "Route a future explicit security requirement to a separate issue."
-        ],
-        "consequence": "Threat-only findings do not block #119; real secret leakage still blocks.",
-        "source_requirement_refs": [
-          "issue:119",
-          "user:current-request",
-          "repo:agents"
-        ],
-        "proposal_sha256": "0a61cea24f51904c02df01e9507e084bdba96e14094c609f0a7249ec210137a5",
-        "disposition": "out_of_scope",
-        "confirmation": null
-      },
-      {
-        "id": "US-02-malicious-actor",
-        "scenario_class": "attack_or_malicious_actor",
-        "trigger_evidence": "Issue #119 and repository rules assume honest-but-fallible workflow participants.",
-        "scope": "Do not defend against deliberate artifact, digest, state or payload forgery.",
-        "cost": "Authenticity defenses would expand runtime and acceptance scope.",
-        "alternatives": [
-          "Validate normal recorder and checker correctness.",
-          "Use a future explicit security issue for adversarial behavior."
-        ],
-        "consequence": "Cases requiring deliberate deception remain outside current acceptance.",
-        "source_requirement_refs": [
-          "issue:119",
-          "user:current-request",
-          "repo:agents"
-        ],
-        "proposal_sha256": "22a9efcdc0e8ed1ffe8a03b550870b3c828c49e3351a9907495f1a5c7e5949cd",
-        "disposition": "out_of_scope",
-        "confirmation": null
-      },
-      {
-        "id": "US-03-race",
-        "scenario_class": "toctou_or_concurrency_race",
-        "trigger_evidence": "Current acceptance requires freshness and recovery but no concurrent executor stress.",
-        "scope": "Do not add locks, leases, TOCTOU protocols or race scheduling tests.",
-        "cost": "Concurrency machinery would expand state and recovery semantics.",
-        "alternatives": [
-          "Keep current per-invocation identity and freshness checks.",
-          "Use a separate concurrency requirement if introduced later."
-        ],
-        "consequence": "Normal remote drift still fails closed; race hardening does not enter #119.",
-        "source_requirement_refs": [
-          "issue:119",
-          "user:current-request",
-          "repo:agents"
-        ],
-        "proposal_sha256": "16f055eaa890c46fa9937720fea85e89e554bcbd9ec3491f984f99ad9f447e5c",
-        "disposition": "out_of_scope",
-        "confirmation": null
-      },
-      {
-        "id": "US-04-fault-crash",
-        "scenario_class": "fault_injection_or_crash_consistency",
-        "trigger_evidence": "Issue #105 supplies a closed deterministic failure/recovery matrix and the user forbids expansion.",
-        "scope": "Run the existing #105 matrix and add only the identified owner-projection normal/recovery regressions.",
-        "cost": "New crash protocols or fault stages would change the accepted transaction model.",
-        "alternatives": [
-          "Retain the existing #105 matrix.",
-          "Route a future reliability expansion through new authority."
-        ],
-        "consequence": "Existing failures remain covered; new fault/crash scenarios do not block.",
-        "source_requirement_refs": [
-          "issue:105",
-          "issue:119",
-          "user:current-request",
-          "repo:agents"
-        ],
-        "proposal_sha256": "3cbe1f2b23dc53aa961a98d331c9a23a1f299fd297f9e306948564d2d9557c73",
-        "disposition": "out_of_scope",
-        "confirmation": null
-      },
-      {
-        "id": "US-05-cross-os",
-        "scenario_class": "cross_os_atomicity",
-        "trigger_evidence": "Platform entry parity is required, but cross-OS filesystem atomicity is explicitly excluded.",
-        "scope": "Validate declared platform entry and adapter contracts without a cross-OS atomic protocol.",
-        "cost": "Cross-OS consistency requires a new filesystem and runner matrix.",
-        "alternatives": [
-          "Use current platform contract tests.",
-          "Create a future portability issue for filesystem guarantees."
-        ],
-        "consequence": "Cross-OS atomicity is not an implementation or review finding for #119.",
-        "source_requirement_refs": [
-          "issue:119",
-          "user:current-request",
-          "repo:agents"
-        ],
-        "proposal_sha256": "9dfacaafbc29e80a156975535928bc140c513b70b1279c679fad3ca59e5db686",
-        "disposition": "out_of_scope",
-        "confirmation": null
-      },
-      {
-        "id": "US-06-other",
-        "scenario_class": "other_nonstandard",
-        "trigger_evidence": "The only current follow-up is #132 upstream overlay convergence.",
-        "scope": "Keep #132 implementation and physical legacy removal outside this task.",
-        "cost": "Pulling #132 into #119 would broaden ownership and close scope.",
-        "alternatives": [
-          "Preserve the bounded legacy compatibility inventory.",
-          "Implement #132 only through its own task and authority."
-        ],
-        "consequence": "#119 clears its blockers but does not claim full upstream overlay cleanup.",
-        "source_requirement_refs": [
-          "issue:119",
-          "user:current-request",
-          "repo:upstream-ownership"
-        ],
-        "proposal_sha256": "96706d04aa4a057d17a49e7a55bd78f15aa07393cd0e81e62156f67ca0ce96f0",
-        "disposition": "out_of_scope",
-        "confirmation": null
-      }
-    ],
+    "summary": "已复核六类非常规场景；当前 authority 只要求正常 GitHub propagation delay 与 compact archive recovery，不引入恶意 actor、锁、TOCTOU、额外 fault injection、crash consistency 或跨 OS atomicity。",
+    "candidates": [],
     "unresolved_count": 0,
-    "review_sha256": "daa397d8565920b63570ced988b306e24a814e7c58c98456571e30118e7aa91f"
+    "review_sha256": "091c5b44ba9c2537b8bf780d76b5652f3edeaf92c88dc3b51a77b099aad534ed"
   },
   "semantic_review": {
     "ai_review_gate": {
       "status": "passed",
       "reviewer": "Codex primary agent /root",
-      "summary": "Fresh same-scope re-entry reviewed the current prd.md, design.md, implement.md, Docs SSOT Plan, R1-R17 provenance, six unusual-scenario dispositions, current Issue #119 authority, and the closeout-order correction. The plan strictly limits publication compatibility to one immutable-plan-owned pending/passed marketplace machine evidence transition plus the exact ledger artifact, entry, and working-tree bindings; it preserves all other ledger semantics, artifacts, semantic conclusions, public DTOs, three Finish Skill owners, #105 transaction order, #132 follow-up ownership, and separate external side-effect authorizations. This is a bounded ssot_first correctness fix, not an authority or scope mutation. No planning finding, revision action, scope proposal, or blocker remains.",
-      "reviewed_at": "2026-07-31T13:57:14Z",
+      "summary": "Current 三份规划完整保留 #119 原 scope，只增加两项同一 finalizer 交付链 correctness 修复；实现路径、六项回归、受影响验证、Docs checkpoint 与授权边界明确，可进入实现。",
+      "reviewed_at": "2026-07-31T18:03:38Z",
       "findings": [],
       "revision_actions": [],
       "scope_proposals": [],
@@ -789,16 +541,16 @@
   "user_confirmation": {
     "kind": "post-planning-approval",
     "status": "confirmed",
-    "prompt_presented_at": "2026-07-31T13:12:01Z",
-    "confirmed_at": "2026-07-31T13:57:14Z",
-    "evidence_summary": "用户已查看并确认整改后的 prd.md、design.md、implement.md 绝对链接及 closeout-order 兼容边界，授权重新记录 planning approval、收敛当前全量验证并完成新 Phase 2；仍明确未授权 commit、push、PR、merge、Issue closure 或 cleanup。"
+    "prompt_presented_at": "2026-07-31T18:03:00Z",
+    "confirmed_at": "2026-07-31T18:03:38Z",
+    "evidence_summary": "用户查看 current prd.md、design.md、implement.md 三个绝对链接后回复确认继续，授权记录 planning approval 并执行先前展示的本地第 1 至第 8 步；push 与 PR mutation 未授权。"
   },
   "typed_exit": "approved",
   "consumer": {
     "kind": "workflow",
     "id": "phase-1-task-activation"
   },
-  "reason": "The current Issue #119 planning set remains adequate after the bounded closeout-order correction. Re-entry preserves the accepted scope, minimal public I/O, three Skill owners, #105 transaction and recovery contract, installation lifecycle, frozen donor, #132 follow-up, and every external side-effect authorization boundary.",
-  "supersedes_facts_sha256": "300d9b925cdd7f98d5488d05b44b8ab5144799495915b384b62fd5fe551fb468",
-  "facts_sha256": "87ef69a587a72889cdae0d607cee1862ed1478d0baaaf206fcb66f3689cb92d3"
+  "reason": "Current recovery plan 通过 semantic gate、wording pass 与专用 post-planning confirmation。",
+  "supersedes_facts_sha256": "87ef69a587a72889cdae0d607cee1862ed1478d0baaaf206fcb66f3689cb92d3",
+  "facts_sha256": "952b98e2033aa808a0c5c9c76359cb488967132d88566e8289f3660f863f33ef"
 }

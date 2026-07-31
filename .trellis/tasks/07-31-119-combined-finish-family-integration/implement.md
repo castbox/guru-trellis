@@ -8,6 +8,14 @@
 - 每个阶段失败即停止，禁止带着 stale evidence进入下一阶段。
 - Commit、push、PR、merge、Issue closure与cleanup均属于独立授权边界。
 
+### 1.1 当前恢复覆盖规则
+
+- 保留 `3fe71d7` 与 `15d957b` 失败链；`57e7d0d` 只恢复同一 task active locator。
+- 旧 closeout plan、finalization gate、publication readiness 与 Branch Review 只作失败证据。
+- 本轮实现只修改 finalizer runtime、对应 unit/integration tests 与 preset 生成的 installed copies。
+- 既有 clean install、upgrade/update、全量 Skill suite 与无关 Phase 2 不因旧 digest 变化重放。
+- PR #166 保持 Draft；push 与 public finalizer 原子事务须在后续分别取得明确授权。
+
 ## 2. 有序实施清单
 
 ### Phase A：Guru entry、workflow 与 durable SSOT
@@ -71,6 +79,18 @@
 - [ ] Finding fix发生后重新运行受影响 tests与 fresh Phase 2 check。
 - [ ] Gate通过后停止在 commit授权前。
 
+### Phase G：当前 finalizer recovery correction
+
+- [ ] 在 Ready executor 增加六次读取预算，保持 PR fact validator 单次检查。
+- [ ] 覆盖 stale-then-converged 与 persistent-mismatch 两条 PR HEAD 回归。
+- [ ] 把 finalizer preview 调整为 locator/plan/transaction classification 先于 publication owner 检查。
+- [ ] 覆盖 compact 12-file archive 无 `pr-readiness.json` 的 same-plan Ready recovery。
+- [ ] 覆盖 active pre-publication 缺少 readiness 仍 stale。
+- [ ] 断言 recovery 不创建重复 PR、archive commit、evidence commit、recovery input 或 side effect，
+  并唯一复用 PR #166 fixture。
+- [ ] 运行 canonical apply，只同步 runtime 与 Finish-family installed integration test。
+- [ ] 运行本节受影响验证与 current `guru-check-task`，不执行 Phase D 的 throwaway/upgrade 重放。
+
 ## 3. 验证命令与预期结果
 
 ```bash
@@ -96,6 +116,23 @@ Native CLI未安装或未登录时，production adapter必须返回 contract声�
 不得伪装成 `passed`。Shared adapter与 deterministic corpus closure必须在本机执行通过。
 Exact pushed-remote verification属于后续 push授权后的 `guru-verify-extension-installation` gate，
 本阶段只声明 local candidate与 installed throwaway结果。
+
+### 3.1 当前恢复增量命令
+
+```bash
+python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py
+python3 trellis/skills/guru-team/tests/test_finish_family_integration.py -q
+GURU_FINISH_INTEGRATION_MODE=installed GURU_FINISH_INTEGRATION_ROOT="$PWD" \
+  python3 .trellis/guru-team/skills/tests/test_finish_family_integration.py -q
+python3 -m unittest trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py
+python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py
+trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .
+git diff --check
+```
+
+预期结果：六项 recovery regression 全部通过；source 与 installed integration 结果一致；preset
+apply test 和 dogfood drift 无差异；`git diff --check` 无输出。随后 public `guru-check-task`
+只消费上述 current evidence 与未变的既有 task-scope evidence。
 
 ## 4. Review gates
 
@@ -139,6 +176,10 @@ planning approval、运行 `task.py start` 与进入实现。
 
 实现与 Phase 2 check通过后停止。Stage/commit、push、PR creation、merge、Issue closure与
 worktree/task cleanup分别重新展示 exact side effects并取得授权。
+
+当前恢复已获得 recovery commit、规划修订、实现、受影响验证、current mandatory gate、一个
+task-work commit 与 fresh Branch Review 的明确授权。完成 fresh Branch Review 后停止；普通 push、
+新 finalizer plan 的原子事务、PR Ready、Issue mutation、merge 与 cleanup 均不在该授权内。
 
 ## 6. 回滚与恢复
 

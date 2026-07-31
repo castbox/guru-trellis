@@ -23,6 +23,59 @@ legacy entry 在 #132 前保留 compatibility status。
 | Install | 已有 clean/update/reapply verifier | 加入 Guru entry 与 ownership assertions |
 | Ownership | 五个 legacy entries 仍被 #119 阻塞 | 清空其 #119 blocker，保留 #132 removal owner |
 
+### 2.1 当前恢复修复边界
+
+当前恢复不改变 Skill id、typed exit、public DTO、schema、transaction order 或 archive 12-file
+allowlist。Canonical runtime 只修正两个内部控制点：Ready executor 的 GitHub PR HEAD 有界收敛，
+以及 archived preview 在 publication owner 检查前完成 locator/plan/transaction classification。
+
+已 push 的 `3fe71d7 -> 15d957b` 失败链保持不可变；`57e7d0d` 是独立 recovery commit。
+后续 task-work commit、fresh Branch Review 与 finalizer evidence 均绑定新 HEAD。Draft PR #166
+保持唯一 remote publication identity。
+
+### 2.2 PR HEAD 有界收敛设计
+
+`resolve_closeout_pull_request()` 继续完成一次 `gh pr list` 与结构校验。新增 executor-private
+helper 只在以下前置事实全部成立时重读：local HEAD 与 remote branch HEAD 一致、PR number/URL/
+repository/head branch/base branch 与 bound PR 相同、PR 仍为 Draft，且差异只剩
+`headRefOid != local HEAD`。
+
+读取预算固定为六次，间隔固定为一秒。测试以 mock sleeper 替代实际停顿。每次结果先由
+现有 identity validator 做单次校验；identity drift 与 remote divergence 立即失败。第六次仍未
+收敛时返回当前 `local_head`、`remote_head`、`pr_head` 客观 payload。收敛后沿现有 executor
+调用 `gh pr ready` 并单次确认 Ready 状态。
+
+### 2.3 Archived recovery 顺序
+
+Preview 顺序调整为：
+
+```text
+resolve active/archive locator
+  -> load committed immutable plan
+  -> resolve committed archive transaction and finalization gate
+  -> classify active pre-publication vs archived/archive_pushed
+  -> active: validate publication owner artifact
+  -> archived: derive publication/PR binding from committed plan and transaction
+  -> resolve local/remote/PR facts
+  -> same-plan Ready executor
+```
+
+Archived projection 只含下一个 consumer 所需的 current publication identity，不复原、伪造或
+重新生成 `pr-readiness.json`。`resolve_committed_closeout_archive_transaction()`、archive blob
+continuity、summary PR binding 与 finalization gate 继续证明 evidence/archive commit 关系。
+Active task 未到 committed archive state 时保持现有 publication owner 检查，所以缺少 readiness
+仍精确返回 stale。
+
+### 2.4 Idempotency 与失败边界
+
+- Existing Draft PR 由 immutable head/base/repository 与 committed summary PR 唯一绑定；恢复路径
+  不调用 Draft PR create。
+- Committed evidence/archive transaction 已存在时，恢复路径不调用 metadata commit、archive move
+  或 push；三方 HEAD 收敛后只执行一次 Ready transition。
+- PR identity drift、真实 HEAD 分叉或有界读取耗尽均 fail closed，不创建 handoff/recovery artifact。
+- 该修复不增加 lock、TOCTOU 协议、fault injection、跨 OS crash consistency 或 hostile-input
+  防御。
+
 ## 3. Workflow 与入口设计
 
 ### 3.1 Canonical route
@@ -243,6 +296,13 @@ Entry name、compatibility status、installer行为与 private bridge职责合�
 Planning provenance、命令日志、审查过程与 branch-specific验证结论只保留在 task history。
 #132 limitation 写入最终 Docs SSOT 与 PR body。
 
+### 10.6 当前恢复 Docs checkpoint
+
+本轮采用 `no_docs_update_needed`。已检查 workflow、skill-package、companion-script 与 data-contract
+durable owners；它们已经规定 compact archive allowlist、committed recovery source、单一 Draft PR
+与三方 HEAD gate。本轮只让 runtime 符合既有合同，不新增长期 API、schema、入口或用户流程。
+本节、`prd.md` §3.8 与 `implement.md` §2 的恢复阶段只作为 task-scoped delta 和验证索引。
+
 ## 11. Provenance Matrix
 
 | ID | Planning locator | Class | Authority | Coverage |
@@ -266,6 +326,10 @@ Planning provenance、命令日志、审查过程与 branch-specific验证结论
 | R15 | `implement.md` §3 | explicit_requirement | Issue #105, Issue #119 | command/test matrix |
 | R16 | `implement.md` §4 | explicit_requirement | AGENTS.md, workflow gates | objective review gates |
 | R17 | `implement.md` §5 | explicit_requirement | user side-effect boundary | authorization stops |
+| R18 | `prd.md` §3.8 | explicit_requirement | user recovery requirement | PR HEAD bounded reread与 archive recovery order |
+| R19 | `prd.md` §6.1 | explicit_requirement | user recovery acceptance | six focused regressions与 affected validation |
+| C3 | `design.md` §2.2 | necessary_implementation_choice | finalizer executor boundary | fixed six-read convergence budget |
+| C4 | `design.md` §2.3 | necessary_implementation_choice | compact archive 1.1 contract | locator/plan/transaction first ordering |
 
 ### 11.1 Implementation choice C1
 
@@ -279,3 +343,15 @@ scope。
 选项 `dedicated-integration-suite` 被选中：单独验证 graph、entry、distribution 与 ownership。
 选项 `append-monolithic-package-tests` 会把 combined assertions继续堆入 package-local suite，
 弱化 test ownership。选中项不扩大 product scope 或 risk scope。
+
+### 11.3 Implementation choice C3
+
+选项 `executor-bounded-reread` 被选中：六次读取覆盖正常 GitHub propagation delay，并让 persistent
+mismatch 在确定边界内终止。选项 `validator-retry` 会把执行策略放入客观 validator；选项
+`unbounded-wait` 没有终止条件。选中项不扩大 product scope 或 risk scope。
+
+### 11.4 Implementation choice C4
+
+选项 `committed-archive-first` 被选中：archived recovery 先消费 archive 仍保留的 plan、gate、
+summary 与 Git history。选项 `restore-pr-readiness` 会重新制造合同已裁剪的 artifact；选项
+`active-owner-first` 会重复当前 bug。选中项不扩大 product scope 或 risk scope。
