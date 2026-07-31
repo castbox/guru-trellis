@@ -1,0 +1,650 @@
+{
+  "schema_version": "1.1",
+  "task": {
+    "id": "119-combined-finish-family-integration",
+    "title": "集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+    "source_issue": 119,
+    "active_locator": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+    "archive_locator": ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration"
+  },
+  "git": {
+    "repo": "castbox/guru-trellis",
+    "remote": "origin",
+    "base_branch": "main",
+    "head_branch": "feat/119-finish-family-integration-main",
+    "reviewed_work_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+    "evidence_parent_head": "95379d6b498edcd7f0362d10ba20009f84a55d41"
+  },
+  "inputs": {
+    "task_context": {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/task-start-context.json",
+      "sha256": "ac8601dc93e9f1e08219ac30f8153d1bd9ce317f7f1d8139d930953727605cda"
+    },
+    "task": {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/task.json",
+      "sha256": "8fa449da785d2a232a8baf2c0d9b8e9cb69637f5a092bd0494b0083556e8bacf"
+    },
+    "review_gate": {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+      "sha256": "ec40dd0fee9e1a0710a8e7e849335c33383fc070f141cce143a3dfc8c0c3af8a"
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+      "sha256": "41d59b175ba242049663a2ec99a9bb0e1920c3e5fb98fed7012b4a5f7bd5e4f0"
+    },
+    "pr_body": {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+      "sha256": "85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7"
+    },
+    "finish_summary_index": {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+      "sha256": "4cdfc0655064fb229590f17a71c2ffd266969944cdfba2fe8592cdbceccbe895"
+    },
+    "official_after_archive_hooks": {
+      "path": ".trellis/config.yaml",
+      "sha256": "a9c3a7631d2a488d1a25c667c554f206b08ddd4ed9f3f6b3c9a4bec2e7f3bd84"
+    },
+    "guru_team_config": {
+      "path": ".trellis/guru-team/config.yml",
+      "sha256": "1d30ea4d4522a2e1f3861ed08f2be15063900c3dee0a622437e2ad9c5e1e024b"
+    }
+  },
+  "review": {
+    "gate_locator": ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+    "reviewed_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/evals/evals.json",
+      ".agents/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+      ".agents/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+      ".claude/commands/guru/finish-work.md",
+      ".claude/skills/guru-finalize-task/evals/evals.json",
+      ".claude/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+      ".claude/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+      ".codex/prompts/guru-finish-work.md",
+      ".codex/skills/guru-finalize-task/evals/evals.json",
+      ".codex/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+      ".codex/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+      ".cursor/commands/guru-finish-work.md",
+      ".cursor/skills/guru-finalize-task/evals/evals.json",
+      ".cursor/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+      ".cursor/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/check.jsonl",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/context-discovery.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-review.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/task-start-context.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+      "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "close_issues_reviewed": [
+      115,
+      119
+    ]
+  },
+  "publish": {
+    "title": "完成：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+    "body_sha256": "85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
+    "draft": true,
+    "draft_to_ready": true,
+    "match": {
+      "repo": "castbox/guru-trellis",
+      "head": "feat/119-finish-family-integration-main",
+      "base": "main"
+    }
+  },
+  "marketplace": {
+    "required": true,
+    "pending_machine": {
+      "type": "remote_marketplace_verification",
+      "status": "pending",
+      "required": true,
+      "artifact_path": "marketplace-verification.json",
+      "artifact_sha256": "",
+      "verified_content_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+      "remote_head": "",
+      "publish_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+      "commands_passed": false
+    },
+    "verifier_artifact_locator": "marketplace-verification.json"
+  },
+  "projection": {
+    "active_locator": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+    "archive_locator": ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration",
+    "finish_summary_locator": ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/finish-summary.json",
+    "metadata_allowlist": [
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/check.jsonl",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/closeout-plan.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/context-discovery.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-review.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/task-start-context.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/task.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/closeout-plan.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/design.md",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/implement.md",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/phase2-check.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/planning-approval.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/prd.md",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/review-gate.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/task-finalization-gate.json",
+      ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/task.json"
+    ],
+    "move_paths": [
+      "check.jsonl",
+      "closeout-plan.json",
+      "context-discovery.json",
+      "contract-wording-review.json",
+      "design.md",
+      "finish-summary-index.json",
+      "finish-summary.json",
+      "implement.jsonl",
+      "implement.md",
+      "issue-review.json",
+      "issue-scope-ledger.json",
+      "marketplace-verification.json",
+      "phase2-check.json",
+      "planning-approval.json",
+      "pr-body.md",
+      "pr-readiness.json",
+      "prd.md",
+      "review-gate.json",
+      "task-finalization-gate.json",
+      "task-start-context.json",
+      "task.json"
+    ],
+    "tracked_move_paths": [
+      "check.jsonl",
+      "closeout-plan.json",
+      "context-discovery.json",
+      "contract-wording-review.json",
+      "design.md",
+      "finish-summary-index.json",
+      "implement.jsonl",
+      "implement.md",
+      "issue-review.json",
+      "issue-scope-ledger.json",
+      "marketplace-verification.json",
+      "phase2-check.json",
+      "planning-approval.json",
+      "pr-body.md",
+      "pr-readiness.json",
+      "prd.md",
+      "review-gate.json",
+      "task-start-context.json",
+      "task.json"
+    ],
+    "untracked_archive_outputs": [
+      "finish-summary.json",
+      "task-finalization-gate.json"
+    ],
+    "evidence_paths": [
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/closeout-plan.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json"
+    ],
+    "summary_placeholder": {
+      "number": 9223372036854775807,
+      "url": "https://github.com/castbox/guru-trellis/pull/9223372036854775807",
+      "ref": "PR #9223372036854775807"
+    },
+    "summary_template_sha256": "c2f0fec24b77e0c3f5a795f8a2303501f0bf9fb6f2fb2ef81b629aabd62ed413",
+    "summary_template": {
+      "schema_version": 1,
+      "generated_at": "2026-07-31T16:27:27Z",
+      "generator": "guru-team.finish-work",
+      "task": {
+        "slug": "07-31-119-combined-finish-family-integration",
+        "title": "集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+        "status": "completed",
+        "artifact_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+        "archive_dir": ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration"
+      },
+      "git": {
+        "base_branch": "main",
+        "branch": "feat/119-finish-family-integration-main",
+        "commits": [
+          "8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
+          "c8c84ab21fc80cd2e72017e293f2aba38e00150c",
+          "bc3b3aec6962769f1cf610aba668fdc9a1db8c55",
+          "e7079961de0428e3492dfd0e26ac8c9f7ad7aa36",
+          "95379d6b498edcd7f0362d10ba20009f84a55d41"
+        ],
+        "changed_paths": [
+          ".agents/skills/guru-finalize-task/evals/evals.json",
+          ".agents/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+          ".agents/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+          ".claude/commands/guru/finish-work.md",
+          ".claude/skills/guru-finalize-task/evals/evals.json",
+          ".claude/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+          ".claude/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+          ".codex/prompts/guru-finish-work.md",
+          ".codex/skills/guru-finalize-task/evals/evals.json",
+          ".codex/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+          ".codex/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+          ".cursor/commands/guru-finish-work.md",
+          ".cursor/skills/guru-finalize-task/evals/evals.json",
+          ".cursor/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+          ".cursor/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/preset/upstream-ownership.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/index.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/check.jsonl",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/closeout-plan.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/context-discovery.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-review.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/task-start-context.json",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/task.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/closeout-plan.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/design.md",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/implement.md",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/phase2-check.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/planning-approval.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/prd.md",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/review-gate.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/task-finalization-gate.json",
+          ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/task.json",
+          ".trellis/workflow.md",
+          "README.md",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+          "trellis/presets/guru-team/ownership/upstream-ownership.json",
+          "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ]
+      },
+      "github": {
+        "source_issues": [
+          119
+        ],
+        "close_issues": [
+          115,
+          119
+        ],
+        "related_issues": [
+          105,
+          116,
+          117,
+          118
+        ],
+        "followup_issues": [
+          132
+        ],
+        "pr_url": "https://github.com/castbox/guru-trellis/pull/9223372036854775807"
+      },
+      "artifacts": {
+        "prd": "prd.md",
+        "design": "design.md",
+        "implement": "implement.md",
+        "issue_scope_ledger": "issue-scope-ledger.json",
+        "phase2_check": "phase2-check.json",
+        "review_gate": "review-gate.json",
+        "task_finalization_gate": "task-finalization-gate.json",
+        "closeout_plan": "closeout-plan.json",
+        "marketplace_verification": "marketplace-verification.json"
+      },
+      "index": {
+        "problem": "三个 Finish Skills 已在 main 完成，但 Guru 日常入口、combined typed routing、checked evidence transaction bridge、publication-first ledger freshness、terminal eval 与安装生命周期仍未形成一条完整路径。",
+        "outcome": "已完成 #119 combined integration：guru-finish-work 跨平台入口、13 exits 唯一 consumers、private evidence bridge、exact pending/passed publication-ledger augmentation、两个 published eval、安装更新回归与 Docs SSOT 均闭合；#132 继续负责 legacy removal。",
+        "changed_behavior": [
+          "Codex、Claude、Cursor 通过同一 guru-finish-work 薄入口进入 live workflow。",
+          "三个 Finish Skills 的 13 exits 均由唯一 consumer 或 fail-closed stop 承接。",
+          "Checked #117 evidence 以 private projection 贯通 normal archive 与 active recovery。",
+          "Publication review 后写入 plan-owned marketplace evidence 的正常顺序只更新枚举的 ledger 与派生 bindings，其余 drift 继续 fail closed。",
+          "Finalizer 新增 publication-ready-published 与 same-plan-published real-wrapper eval。",
+          "Clean install、update、reselect、reapply、upgrade dry-run 与 ownership 验收已完成。"
+        ],
+        "affected_surfaces": [
+          {
+            "kind": "workflow",
+            "name": "Finish-family global routing",
+            "paths": [
+              "trellis/workflows/guru-team/workflow.md",
+              ".trellis/workflow.md"
+            ],
+            "change": "日常入口改为 guru-finish-work，并保持三个 mandatory owners 与唯一 typed consumers。"
+          },
+          {
+            "kind": "prompt",
+            "name": "Guru namespace platform entries",
+            "paths": [
+              "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+              "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+              "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md"
+            ],
+            "change": "新增三平台 byte-identical 薄入口，不复制 Skill internals 或 artifact schema。"
+          },
+          {
+            "kind": "script",
+            "name": "Finalization private evidence bridge",
+            "paths": [
+              "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+            ],
+            "change": "同一 marketplace projection 在 archive mutation 前服务 normal 与 recovery validators，并以唯一 reviewed preimage 支持 exact pending/passed ledger augmentation。"
+          },
+          {
+            "kind": "test",
+            "name": "Combined lifecycle regressions",
+            "paths": [
+              "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+              "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+              "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+            ],
+            "change": "覆盖 route graph、terminal eval、Issue #105 recovery、publication-ledger 顺序、install、update 与 reapply。"
+          },
+          {
+            "kind": "docs",
+            "name": "Workflow and preset Docs SSOT",
+            "paths": [
+              "README.md",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/presets/guru-team/README.md",
+              ".trellis/spec/workflow/workflow-contract.md"
+            ],
+            "change": "同步 Guru 日常入口、private bridge、legacy compatibility 与 #132 边界。"
+          }
+        ],
+        "contract_changes": [
+          {
+            "contract": "Guru Finish entry",
+            "before": "日常收尾仍依赖 trellis-finish-work compatibility namespace。",
+            "after": "日常收尾改由 guru-finish-work 启动，legacy entries 仅保留到 #132。",
+            "source_artifact": "design.md"
+          },
+          {
+            "contract": "Finish typed routing",
+            "before": "三个已完成 Skills 尚未形成 combined entry 与完整 consumer graph。",
+            "after": "Global workflow 只编排 stable ids 与 13 exits，mapped routes 自动承接。",
+            "source_artifact": "prd.md"
+          },
+          {
+            "contract": "Marketplace evidence consumption",
+            "before": "Checked #117 result 未完整贯通 legacy transaction validator。",
+            "after": "Finalizer 用进程内 private projection 覆盖 normal 与 active recovery。",
+            "source_artifact": "design.md"
+          },
+          {
+            "contract": "Publication-ledger closeout ordering",
+            "before": "Publication review 完成后，content push 写入 plan-owned marketplace evidence 会使 readiness bindings 被误判为 stale。",
+            "after": "只接受 immutable plan 的 pending evidence 或 current checker-derived passed projection，并只重算 ledger artifact、entry、status-path、repository 与派生 working-tree bindings。",
+            "source_artifact": "phase2-check.json"
+          },
+          {
+            "contract": "Preset lifecycle acceptance",
+            "before": "安装门禁未完整绑定 Guru entries 与 combined transaction behavior。",
+            "after": "Clean install、update、reselect、reapply、upgrade dry-run 与多平台验收已覆盖。",
+            "source_artifact": "phase2-check.json"
+          }
+        ],
+        "search_terms": {
+          "issue_refs": [
+            "#105",
+            "#115",
+            "#116",
+            "#117",
+            "#118",
+            "#119",
+            "#132"
+          ],
+          "pr_refs": [
+            "PR #9223372036854775807"
+          ],
+          "branches": [
+            "feat/119-finish-family-integration-main"
+          ],
+          "paths": [
+            ".agents/skills/guru-finalize-task/evals/evals.json",
+            ".agents/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+            ".agents/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+            ".claude/commands/guru/finish-work.md",
+            ".claude/skills/guru-finalize-task/evals/evals.json",
+            ".claude/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+            ".claude/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+            ".codex/prompts/guru-finish-work.md",
+            ".codex/skills/guru-finalize-task/evals/evals.json",
+            ".codex/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+            ".codex/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+            ".cursor/commands/guru-finish-work.md",
+            ".cursor/skills/guru-finalize-task/evals/evals.json",
+            ".cursor/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+            ".cursor/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+            ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+            ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+            ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+            ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+            ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+            ".trellis/spec/docs/public-docs.md",
+            ".trellis/spec/preset/installer.md",
+            ".trellis/spec/preset/overlay-guidelines.md",
+            ".trellis/spec/preset/upstream-ownership.md",
+            ".trellis/spec/workflow/companion-scripts.md",
+            ".trellis/spec/workflow/data-contracts.md",
+            ".trellis/spec/workflow/index.md",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            ".trellis/spec/workflow/skill-package-contract.md",
+            ".trellis/spec/workflow/workflow-contract.md",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/check.jsonl",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/closeout-plan.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/context-discovery.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-review.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/task-start-context.json",
+            ".trellis/tasks/07-31-119-combined-finish-family-integration/task.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/closeout-plan.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/design.md",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/finish-summary.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/implement.md",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/phase2-check.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/planning-approval.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/prd.md",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/review-gate.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/task-finalization-gate.json",
+            ".trellis/tasks/archive/2026-08/07-31-119-combined-finish-family-integration/task.json",
+            ".trellis/workflow.md",
+            "README.md",
+            "trellis/guru-team-extension.json",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+            "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+            "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+            "trellis/presets/guru-team/ownership/upstream-ownership.json",
+            "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+            "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+            "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+            "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+            "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+            "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+            "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+            "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+            "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+            "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+            "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+            "trellis/skills/guru-team/tests/test_skill_packages.py",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+            "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+            "trellis/workflows/guru-team/workflow.md"
+          ],
+          "commands": [
+            "guru-finish-work",
+            "verify-throwaway-install.sh",
+            "trellis upgrade --dry-run --tag 0.6.5"
+          ],
+          "config_keys": [
+            "target_trellis_cli",
+            "blocking_issues",
+            "removal_issue"
+          ],
+          "schema_fields": [
+            "exit_id",
+            "publication_ref",
+            "verification_ref"
+          ],
+          "symbols": [
+            "finalization_marketplace_verification_compatibility_projection",
+            "task_publication_finalization_ledger_augmentation",
+            "check_task_publication_for_finalization_augmentation",
+            "execute_archive_metadata_transaction",
+            "resume_active_archive_move"
+          ],
+          "phrases": [
+            "guru-finish-work 跨平台入口迁移已完成",
+            "Finish family 13 exits 集成已完成",
+            "private marketplace evidence bridge 已完成",
+            "publication ledger closeout ordering 已完成",
+            "Issue 105 transaction recovery 回归已完成",
+            "verify-throwaway-install.sh update reapply 已完成"
+          ]
+        },
+        "retrieval_text": "集成 Task 收尾 Skills 并迁移 trellis-finish-work\n三个 Finish Skills 已在 main 完成，但 Guru 日常入口、combined typed routing、checked evidence transaction bridge、publication-first ledger freshness、terminal eval 与安装生命周期仍未形成一条完整路径。\n已完成 #119 combined integration：guru-finish-work 跨平台入口、13 exits 唯一 consumers、private evidence bridge、exact pending/passed publication-ledger augmentation、两个 published eval、安装更新回归与 Docs SSOT 均闭合；#132 继续负责 legacy removal。\nCodex、Claude、Cursor 通过同一 guru-finish-work 薄入口进入 live workflow。\n三个 Finish Skills 的 13 exits 均由唯一 consumer 或 fail-closed stop 承接。\nChecked #117 evidence 以 private projection 贯通 normal archive 与 active recovery。\nPublication review 后写入 plan-owned marketplace evidence 的正常顺序只更新枚举的 ledger 与派生 bindings，其余 drift 继续 fail closed。\nFinalizer 新增 publication-ready-published 与 same-plan-published real-wrapper eval。\nClean install、update、reselect、reapply、upgrade dry-run 与 ownership 验收已完成。\n日常入口改为 guru-finish-work，并保持三个 mandatory owners 与唯一 typed consumers。\n新增三平台 byte-identical 薄入口，不复制 Skill internals 或 artifact schema。\n同一 marketplace projection 在 archive mutation 前服务 normal 与 recovery validators，并以唯一 reviewed preimage 支持 exact pending/passed ledger augmentation。\n覆盖 route graph、terminal eval、Issue #105 recovery、publication-ledger 顺序、install、update 与 reapply。\n同步 Guru 日常入口、private bridge、legacy compatibility 与 #132 边界。\n日常收尾仍依赖 trellis-finish-work compatibility namespace。\n日常收尾改由 guru-finish-work 启动，legacy entries 仅保留到 #132。\n三个已完成 Skills 尚未形成 combined entry 与完整 consumer graph。\nGlobal workflow 只编排 stable ids 与 13 exits，mapped routes 自动承接。\nChecked #117 result 未完整贯通 legacy transaction validator。\nFinalizer 用进程内 private projection 覆盖 normal 与 active recovery。\nPublication review 完成后，content push 写入 plan-owned marketplace evidence 会使 readiness bindings 被误判为 stale。\n只接受 immutable plan 的 pending evidence 或 current checker-derived passed projection，并只重算 ledger artifact、entry、status-path、repository 与派生 working-tree bindings。\n安装门禁未完整绑定 Guru entries 与 combined transaction behavior。\nClean install、update、reselect、reapply、upgrade dry-run 与多平台验收已覆盖。\nguru-finish-work 跨平台入口迁移已完成\nFinish family 13 exits 集成已完成\nprivate marketplace evidence bridge 已完成\npublication ledger closeout ordering 已完成\nIssue 105 transaction recovery 回归已完成\nverify-throwaway-install.sh update reapply 已完成"
+      }
+    },
+    "runtime_fact_fields": [
+      "github.pr_url",
+      "index.search_terms.pr_refs"
+    ]
+  },
+  "transitions": [
+    "prepared",
+    "content_pushed",
+    "evidence_pushed",
+    "draft_bound",
+    "projection_validated",
+    "archive_moved",
+    "archive_pushed",
+    "ready"
+  ],
+  "plan_digest": "8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3"
+}

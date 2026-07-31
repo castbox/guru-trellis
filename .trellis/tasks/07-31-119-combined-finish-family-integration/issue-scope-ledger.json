@@ -7,7 +7,18 @@
     "reason": "当前唯一 combined Finish-family integration delivery unit。",
     "acceptance_evidence": [
       "Fresh Phase 2 semantic review against the complete HEAD c8c84ab21fc80cd2e72017e293f2aba38e00150c working-tree candidate covers 50 exact command records, 808 passing tests and 13 declared skips, including clean install/update/reselect/reapply, compact finalizer plan reconstruction and the Issue #105 transaction/recovery matrix.",
-      "Independent final pre-recorder review found no open P0-P3 finding after all five supported current-scope P2 fixes. The canonical Branch Review Gate will be rerun after the separately authorized task commit and must pass before publication or Issue closure."
+      "Independent final pre-recorder review found no open P0-P3 finding after all five supported current-scope P2 fixes. The canonical Branch Review Gate will be rerun after the separately authorized task commit and must pass before publication or Issue closure.",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "5dba3450a85bd90ddebf7000b8f819f4f32adcd18e52663326840f0702831542",
+        "verified_content_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+        "remote_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+        "publish_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+        "commands_passed": true
+      }
     ]
   },
   "close_issues": [
@@ -18,7 +29,18 @@
       "reason": "本 task 覆盖 #119 全部 accepted-current combined acceptance。",
       "acceptance_evidence": [
         "Fresh Phase 2 semantic review against the complete HEAD c8c84ab21fc80cd2e72017e293f2aba38e00150c working-tree candidate covers 50 exact command records, 808 passing tests and 13 declared skips, including clean install/update/reselect/reapply, compact finalizer plan reconstruction and the Issue #105 transaction/recovery matrix.",
-        "Independent final pre-recorder review found no open P0-P3 finding after all five supported current-scope P2 fixes. The canonical Branch Review Gate will be rerun after the separately authorized task commit and must pass before publication or Issue closure."
+        "Independent final pre-recorder review found no open P0-P3 finding after all five supported current-scope P2 fixes. The canonical Branch Review Gate will be rerun after the separately authorized task commit and must pass before publication or Issue closure.",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "5dba3450a85bd90ddebf7000b8f819f4f32adcd18e52663326840f0702831542",
+          "verified_content_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "remote_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "publish_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "commands_passed": true
+        }
       ]
     },
     {
@@ -28,7 +50,18 @@
       "reason": "#119 combined acceptance 完成后按 Issue authority 一并关闭 umbrella。",
       "acceptance_evidence": [
         "Issues #116, #117 and #118 are closed; the current #119 delivery integrates their existing public contracts into the canonical Finish-family workflow, Guru namespace entries, private evidence bridge and installation lifecycle without reopening their internal behavior.",
-        "Fresh Phase 2 semantic review and independent final pre-recorder review cover the complete #119 combined acceptance while preserving Issue #132 as the sole follow-up owner for physical legacy overlay removal; canonical Branch Review remains a required post-commit gate."
+        "Fresh Phase 2 semantic review and independent final pre-recorder review cover the complete #119 combined acceptance while preserving Issue #132 as the sole follow-up owner for physical legacy overlay removal; canonical Branch Review remains a required post-commit gate.",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "5dba3450a85bd90ddebf7000b8f819f4f32adcd18e52663326840f0702831542",
+          "verified_content_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "remote_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "publish_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "commands_passed": true
+        }
       ]
     }
   ],

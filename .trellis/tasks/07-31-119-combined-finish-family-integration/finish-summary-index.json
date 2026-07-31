@@ -1,12 +1,13 @@
 {
   "schema_version": 1,
   "index": {
-    "problem": "三个 Finish Skills 已在 main 完成，但 Guru 日常入口、combined typed routing、checked evidence transaction bridge、terminal eval 与安装生命周期仍未形成一条完整路径。",
-    "outcome": "已完成 #119 combined integration：guru-finish-work 跨平台入口、13 exits 唯一 consumers、private evidence bridge、两个 published eval、安装更新回归与 Docs SSOT 均闭合；#132 继续负责 legacy removal。",
+    "problem": "三个 Finish Skills 已在 main 完成，但 Guru 日常入口、combined typed routing、checked evidence transaction bridge、publication-first ledger freshness、terminal eval 与安装生命周期仍未形成一条完整路径。",
+    "outcome": "已完成 #119 combined integration：guru-finish-work 跨平台入口、13 exits 唯一 consumers、private evidence bridge、exact pending/passed publication-ledger augmentation、两个 published eval、安装更新回归与 Docs SSOT 均闭合；#132 继续负责 legacy removal。",
     "changed_behavior": [
       "Codex、Claude、Cursor 通过同一 guru-finish-work 薄入口进入 live workflow。",
       "三个 Finish Skills 的 13 exits 均由唯一 consumer 或 fail-closed stop 承接。",
       "Checked #117 evidence 以 private projection 贯通 normal archive 与 active recovery。",
+      "Publication review 后写入 plan-owned marketplace evidence 的正常顺序只更新枚举的 ledger 与派生 bindings，其余 drift 继续 fail closed。",
       "Finalizer 新增 publication-ready-published 与 same-plan-published real-wrapper eval。",
       "Clean install、update、reselect、reapply、upgrade dry-run 与 ownership 验收已完成。"
     ],
@@ -36,7 +37,7 @@
         "paths": [
           "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
         ],
-        "change": "同一 marketplace projection 在 archive mutation 前服务 normal 与 recovery validators。"
+        "change": "同一 marketplace projection 在 archive mutation 前服务 normal 与 recovery validators，并以唯一 reviewed preimage 支持 exact pending/passed ledger augmentation。"
       },
       {
         "kind": "test",
@@ -46,7 +47,7 @@
           "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
           "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
         ],
-        "change": "覆盖 route graph、terminal eval、Issue #105 recovery、install、update 与 reapply。"
+        "change": "覆盖 route graph、terminal eval、Issue #105 recovery、publication-ledger 顺序、install、update 与 reapply。"
       },
       {
         "kind": "docs",
@@ -80,6 +81,12 @@
         "source_artifact": "design.md"
       },
       {
+        "contract": "Publication-ledger closeout ordering",
+        "before": "Publication review 完成后，content push 写入 plan-owned marketplace evidence 会使 readiness bindings 被误判为 stale。",
+        "after": "只接受 immutable plan 的 pending evidence 或 current checker-derived passed projection，并只重算 ledger artifact、entry、status-path、repository 与派生 working-tree bindings。",
+        "source_artifact": "phase2-check.json"
+      },
+      {
         "contract": "Preset lifecycle acceptance",
         "before": "安装门禁未完整绑定 Guru entries 与 combined transaction behavior。",
         "after": "Clean install、update、reselect、reapply、upgrade dry-run 与多平台验收已覆盖。",
@@ -104,6 +111,8 @@
       ],
       "symbols": [
         "finalization_marketplace_verification_compatibility_projection",
+        "task_publication_finalization_ledger_augmentation",
+        "check_task_publication_for_finalization_augmentation",
         "execute_archive_metadata_transaction",
         "resume_active_archive_move"
       ],
@@ -111,6 +120,7 @@
         "guru-finish-work 跨平台入口迁移已完成",
         "Finish family 13 exits 集成已完成",
         "private marketplace evidence bridge 已完成",
+        "publication ledger closeout ordering 已完成",
         "Issue 105 transaction recovery 回归已完成",
         "verify-throwaway-install.sh update reapply 已完成"
       ]
