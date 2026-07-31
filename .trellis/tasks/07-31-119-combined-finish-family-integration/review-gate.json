@@ -1,0 +1,152 @@
+{
+  "schema_version": "2.1",
+  "skill_id": "guru-review-branch",
+  "generated_at": "2026-07-31T02:50:20Z",
+  "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+  "mode": "workflow",
+  "review_intent": "initial_review",
+  "typed_exit": "implementation_required",
+  "head": "8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
+  "base_ref": "origin/main",
+  "semantic_review": {
+    "qualified_findings": [
+      {
+        "candidate_ref": "BR-CAND-119-01",
+        "disposition": "qualified_finding",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "The committed branch contains six Guru entry files with an extra blank line at EOF, so the complete committed range fails git diff --check and contradicts the passed Phase 2 command evidence.",
+        "path": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "evidence_refs": [
+          "git diff --check origin/main...HEAD exits 2",
+          "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md:34",
+          "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md:34",
+          "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md:34",
+          ".codex/prompts/guru-finish-work.md:34",
+          ".claude/commands/guru/finish-work.md:34",
+          ".cursor/commands/guru-finish-work.md:34",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json:580"
+        ],
+        "requirement_refs": [
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:140",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md:78"
+        ],
+        "scope_basis": "Issue #119 acceptance explicitly requires git diff --check to pass and canonical overlays to generate clean dogfood copies.",
+        "qualification_reason": "The defect reproduces on the ordinary committed review range without tampering, is directly caused by current Issue #119 files, and makes the recorded final Phase 2 validation claim false for the committed bytes.",
+        "finding_ref": "BR-119-01",
+        "severity": "P2",
+        "introduced_head": "8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
+        "resolved_at_head": null,
+        "status": "open",
+        "closure_evidence": []
+      }
+    ],
+    "scope_proposals": [],
+    "observations": [
+      {
+        "candidate_ref": "BR-CAND-119-04",
+        "disposition": "observation",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "Exact marketplace installation from the unpublished current branch ref has not yet run.",
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "evidence_refs": [
+          "default throwaway verification fails closed for an unpublished dirty branch",
+          "local candidate install/update/reapply verification passed",
+          "remote branch verification is required after the separately authorized push"
+        ],
+        "requirement_refs": [
+          ".trellis/spec/preset/installer.md",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json"
+        ],
+        "scope_basis": "Remote marketplace verification is a post-push publication gate and push has not been authorized.",
+        "qualification_reason": "The current branch does not claim that remote verification already occurred, so this is a transparent deferred verification observation rather than a current code finding."
+      }
+    ],
+    "followup_candidates": [
+      {
+        "candidate_ref": "BR-CAND-119-03",
+        "disposition": "followup_candidate",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "Five legacy trellis-finish-work compatibility assets remain physically present pending full upstream overlay convergence.",
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "evidence_refs": [
+          "removal_issue remains 132",
+          "legacy payload bytes are unchanged from origin/main"
+        ],
+        "requirement_refs": [
+          "Issue #132",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json"
+        ],
+        "scope_basis": "The approved Issue #119 boundary preserves these compatibility assets and assigns physical removal to Issue #132.",
+        "qualification_reason": "This is valid follow-up ownership but is not a defect or missing acceptance item in the current delivery."
+      }
+    ],
+    "rejected_candidates": [
+      {
+        "candidate_ref": "BR-CAND-119-02",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "The Phase 2 requirement-provenance entry for issue-scope-ledger.json has a different digest and size from the raw repository file.",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
+        "evidence_refs": [
+          "phase2_requirement_artifact_digest uses planning_scope_ledger_projection",
+          "phase2-check repository_snapshot separately binds the raw ledger bytes",
+          "the committed ledger raw bytes match the Phase 2 repository snapshot"
+        ],
+        "requirement_refs": [
+          ".trellis/spec/workflow/data-contracts.md",
+          ".agents/skills/guru-check-task/references/contract.md"
+        ],
+        "scope_basis": "The accepted evidence contract intentionally distinguishes normalized semantic ledger identity from raw repository snapshot identity.",
+        "qualification_reason": "Current runtime and artifact evidence prove the differing identities are intentional and both are fresh; no normal-path stale or mismatch behavior exists."
+      },
+      {
+        "candidate_ref": "BR-CAND-119-05",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "The combined integration could have changed existing Finish Skill public interfaces or legacy compatibility payloads.",
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+        "evidence_refs": [
+          "all three Finish interface and schema trees are byte-identical to origin/main",
+          "all five canonical legacy entry payloads are byte-identical to origin/main",
+          "source and installed combined integration tests pass"
+        ],
+        "requirement_refs": [
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:113",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md:144"
+        ],
+        "scope_basis": "Issue #119 requires additive integration while preserving PR #165 public DTOs and bounded legacy compatibility.",
+        "qualification_reason": "Current committed bytes and tests disprove public-contract or legacy-payload drift."
+      },
+      {
+        "candidate_ref": "BR-CAND-119-06",
+        "disposition": "rejected_candidate",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "Additional adversarial, concurrency, TOCTOU, locking, fault-injection, or cross-OS crash-consistency hardening could be proposed.",
+        "path": "AGENTS.md",
+        "evidence_refs": [
+          "AGENTS.md honest-but-fallible boundary",
+          "prd.md explicit exclusions",
+          "no current normal-path defect requires these expansions"
+        ],
+        "requirement_refs": [
+          "AGENTS.md:2.1",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:121"
+        ],
+        "scope_basis": "The user and repository contract explicitly exclude these expansions from Issue #119.",
+        "qualification_reason": "These scenarios are outside the accepted scope and cannot become findings without a new explicit requirement."
+      }
+    ],
+    "ai_review_gate": {
+      "status": "implementation_required",
+      "summary": "The independent complete-range initial review found one supported current-scope P2 finding: six new Guru entry files fail git diff --check and invalidate the recorded Phase 2 validation claim. No scope proposal exists; all other candidates are follow-up, observation, out-of-scope, or disproved."
+    }
+  },
+  "verification_evidence": {
+    "reviewer": "branch_review_119",
+    "review_source": "independent-agent",
+    "evidence": [
+      "Independent committed full-range review of origin/main...8905260e9c22887f7cc95d3bed38d1b8ed2097b0: git diff --check exits 2 for six new Guru finish entry files with a blank line at EOF; this invalidates the committed Phase 2 diff-check claim. All other reviewed candidates were rejected, deferred to #132, or recorded as the separately authorized post-push remote verification observation."
+    ]
+  },
+  "facts_sha256": "9cc5e01eafc447fc2d3cde614dd46db16f36683b46530f22ebca2c5f8f1cf534"
+}

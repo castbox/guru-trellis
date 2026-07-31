@@ -31,4 +31,3 @@ external authority, or a material scope decision may pause the route.
 Do not call deterministic closeout scripts directly, reproduce package
 internals or artifact schemas, or create a handoff artifact. Return only the
 terminal `published` result or the concrete declared blocker.
-

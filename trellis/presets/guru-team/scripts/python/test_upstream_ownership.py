@@ -252,7 +252,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["legacy_entries_sha256"], ownership.canonical_sha256(inventory["legacy_entries"]))
         self.assertEqual(first["frozen_legacy_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
         self.assertEqual(first["materialized_frozen_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
-        self.assertEqual(first["facts_sha256"], "df546f8fabcbd946ba976485dfa713edd5492a6a1f8f979c439e3eaed0de60fd")
+        self.assertEqual(first["facts_sha256"], "fcfedc7dbc1c4e9e6897b37745cc4cc0c89962696730e92d9d8f78af13710129")
 
         additive_claims = {
             claim["path"]: claim

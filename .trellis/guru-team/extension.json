@@ -316,11 +316,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-30T21:17:10Z",
+  "installed_at": "2026-07-31T03:11:41Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "feat/119-finish-family-integration-main",
-    "commit": "7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
+    "commit": "8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
