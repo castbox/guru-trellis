@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-31T13:12:01Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-31-119-combined-finish-family-integration",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "size_bytes": 9738,
+        "content_sha256": "5226cfc7208d96d5c8dc66b7c3512ee10f16703841fe94555e8b08a7a631c861"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "size_bytes": 15005,
+        "content_sha256": "514d0d61eb4e751b39ccb82854e33453dd2c81d31d65196b13dd6237e544163d"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "size_bytes": 9013,
+        "content_sha256": "8797cf796f8b26853d826dd8e9bd277c6ca020d5d31e5c5d1db40ddddfea75b5"
+      }
+    ],
+    "scope_sha256": "6fce5b8d0f08aab4baebbd6b0d759ce48b6fa11328169ed3e2f2b23627a20b17"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex primary agent /root",
+      "summary": "Reviewed the complete current prd.md, design.md, and implement.md after the closeout-order finding fix. The plan limits compatibility to the immutable-plan-owned pending/passed marketplace machine evidence and its exact ledger artifact, entry, and working-tree bindings; all other ledger semantics, artifacts, public DTOs, Skill ownership, and Issue #132 boundaries remain unchanged. Every conditional path names its trigger and fail-closed result, every acceptance item is observable, and the zero-hit scanner result was not used as a substitute for semantic review.",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "This wording review records a task-local deterministic clarification for the already accepted Issue #119 closeout-order fix; it changes no product authority, close scope, or public contract."
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "52b73dc301c729327bdcf9a2c00efe6df6cca8ffec31b52c4d5ca268594a3322"
+}

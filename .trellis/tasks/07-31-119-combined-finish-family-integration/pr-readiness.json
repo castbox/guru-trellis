@@ -1,0 +1,493 @@
+{
+  "schema_version": "1.1",
+  "skill_id": "guru-review-task-publication",
+  "generated_at": "2026-07-31T16:44:09Z",
+  "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+  "profile": "publication_review_stale",
+  "mode": "workflow",
+  "review_intent": "stale_reentry_review",
+  "review_identity": {
+    "reviewed_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+    "review_ref": "review-gate:822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "diff_outcome_consistency",
+        "status": "passed",
+        "summary": "The complete 5-commit, 73-path diff implements only the remaining Issue #119 combined Finish-family route, Guru namespace entries, private evidence bridge, compact-gate reconstruction, bounded publication-ledger augmentation, terminal evals, lifecycle acceptance and Docs SSOT reconciliation.",
+        "evidence_refs": [
+          "git diff --name-status origin/main...95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "git rev-list --count origin/main..95379d6b498edcd7f0362d10ba20009f84a55d41 = 5",
+          "review-gate.json typed_exit=passed",
+          "phase2-check.json semantic_review.ai_review_gate.status=passed"
+        ]
+      },
+      {
+        "id": "issue_scope_closure",
+        "status": "passed",
+        "summary": "The ledger closes only #119 and umbrella #115 after complete combined acceptance, keeps closed dependencies #105/#116/#117/#118 related, and preserves open #132 as the sole legacy physical-removal follow-up; live #119/#115/#132 states remain open pending later authorized publication and closure.",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "review-gate.json current passed scope review",
+          "live GitHub issue-state reread on 2026-08-01",
+          "pr-body.md#Issue 关闭范围"
+        ]
+      },
+      {
+        "id": "pr_body_quality",
+        "status": "passed",
+        "summary": "The refreshed Chinese PR body states the concrete integration, exact publication-ledger correction, impact, validation, review, closure, safety and Docs SSOT results; Closes is limited to #119/#115 and exact remote feature-ref verification is explicitly not claimed before push.",
+        "evidence_refs": [
+          "pr-body.md sha256=85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
+          "issue-scope-ledger.json",
+          "review-gate.json",
+          "phase2-check.json"
+        ]
+      },
+      {
+        "id": "validation_claims",
+        "status": "passed",
+        "summary": "The publication claims match the fresh Phase 2 gate: 29 exact command records and 810 passing tests across runtime 553, Skill packages 184, preset 47, ownership 14 and two integration suites of 6 each, with 13 declared runtime skips plus clean install/update/reselect/reapply, upgrade dry-run, drift and Issue #105 transaction/recovery coverage.",
+        "evidence_refs": [
+          "phase2-check.json check_execution.commands count=29",
+          "phase2-check.json semantic_review.adequacy_dimensions.tests",
+          "pr-body.md#验证结果",
+          "remote feature ref e7079961 remains a disclosed post-push limitation"
+        ]
+      },
+      {
+        "id": "branch_review_summary",
+        "status": "passed",
+        "summary": "The refreshed body accurately reports the fresh-final review of origin/main@7ca1a0b9 through 95379d6 across all 5 commits and 73 paths; BR-119-01, BR-119-02 and P2-publication-ledger-closeout-order are resolved and there is no open P0-P3 finding, scope proposal or blocker.",
+        "evidence_refs": [
+          "review-gate.json sha256=822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2",
+          "review-gate:822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2",
+          "git log origin/main..95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "independent transient finding-closure review"
+        ]
+      },
+      {
+        "id": "docs_ssot_reconciliation",
+        "status": "passed",
+        "summary": "The ssot_first result remains current across all 15 durable owners: combined routing, minimal public DTOs, private checked-evidence bridging and exact pending/passed publication-ledger augmentation agree, while task chronology remains private and #132 owns physical legacy removal.",
+        "evidence_refs": [
+          "phase2-check.json docs_ssot_plan with 15 durable paths",
+          "design.md#Docs SSOT Plan",
+          "review-gate.json BR-119-02 and publication-ledger closure",
+          "pr-body.md#Docs SSOT"
+        ]
+      },
+      {
+        "id": "safety_deployment_impact",
+        "status": "passed",
+        "summary": "The publication truthfully states the private evidence boundary, unchanged public Skill I/O and legacy payloads, absence of secrets or production infrastructure changes, and the explicit exclusion of malicious actors, concurrency, locks, TOCTOU, extra fault injection and cross-OS crash-consistency expansion.",
+        "evidence_refs": [
+          "pr-body.md#安全说明",
+          "pr-body.md#影响范围",
+          "prd.md#明确排除",
+          "phase2-check.json compatibility and deployment_and_operations dimensions"
+        ]
+      },
+      {
+        "id": "finish_summary_semantics",
+        "status": "passed",
+        "summary": "The refreshed finish summary remains task-specific and searchable, includes the current publication-ledger outcome and #132 limitation, and its deterministic retrieval text is 2284 characters, within the 3000-character final contract.",
+        "evidence_refs": [
+          "finish-summary-index.json sha256=4cdfc0655064fb229590f17a71c2ffd266969944cdfba2fe8592cdbceccbe895",
+          "finish_summary_retrieval_text length=2284",
+          "phase2-check.json",
+          "design.md"
+        ]
+      },
+      {
+        "id": "metadata_tail_integrity",
+        "status": "passed",
+        "summary": "The current tracked tail contains only the checker-passed compact review gate and the two publication-owned content artifacts; there is no source, test, durable-doc, spec, workflow, schema, config, preset or unrelated task-artifact drift after the reviewed HEAD.",
+        "evidence_refs": [
+          "git status --porcelain=v1 lists only review-gate.json, pr-body.md and finish-summary-index.json",
+          "git diff --check origin/main...95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "git diff --check working tree",
+          "publication review closed allowlist contract"
+        ]
+      },
+      {
+        "id": "artifact_binding_freshness",
+        "status": "passed",
+        "summary": "Live origin/main remains 7ca1a0b9, current HEAD remains 95379d6, the current Branch Review ref and planning/Phase 2/ledger/content bytes are freshly reread, the frozen donor retains its original HEAD/status/runtime path set, and the unpublished remote feature ref remains e7079961 as explicitly disclosed.",
+        "evidence_refs": [
+          "git ls-remote origin refs/heads/main refs/heads/feat/119-finish-family-integration-main",
+          "current artifact SHA-256 reread on 2026-08-01",
+          "review-gate:822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2",
+          "frozen donor HEAD d01111b3628c2a4b00b99ee098703acefe8620c9, status and ignored-runtime path-set reread"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "finding_ref": "PUB-119-01",
+        "dimension": "issue_scope_closure",
+        "summary": "The initial Issue Scope Ledger named the correct close targets but left their acceptance_evidence arrays empty, so the ready precondition could not prove closure.",
+        "scope_basis": "Issue #119 and the publication contract require concrete evidence before Closes #119 or Closes #115 may be approved.",
+        "evidence_refs": [
+          "issue-scope-ledger.json before publication metadata revision",
+          "validate_ledger_for_publish requirement"
+        ],
+        "affected_artifacts": [
+          "issue-scope-ledger.json"
+        ],
+        "route_class": "metadata_revision",
+        "status": "closed",
+        "closure_evidence": [
+          "issue-scope-ledger.json contains non-empty acceptance evidence for #119 and #115",
+          "current review-gate.json supplies the required passed fresh-final evidence",
+          "the publication recorder revalidates the current ledger before ready"
+        ]
+      },
+      {
+        "finding_ref": "PUB-119-02",
+        "dimension": "finish_summary_semantics",
+        "summary": "The first index passed the authoring boundary but produced deterministic retrieval text longer than 3000 characters, so finalization preview failed closed.",
+        "scope_basis": "Issue #119 closeout requires a final finish-summary that passes the existing retrieval length contract without dropping the combined outcome or follow-up boundary.",
+        "evidence_refs": [
+          "historical side-effect-free preview retrieval length error",
+          "finish-summary-index.json before stale metadata revision"
+        ],
+        "affected_artifacts": [
+          "finish-summary-index.json",
+          "pr-readiness.json"
+        ],
+        "route_class": "metadata_revision",
+        "status": "closed",
+        "closure_evidence": [
+          "finish-summary-index.json was compressed without changing implementation or issue scope",
+          "the current deterministic retrieval text is 2284 characters and preserves the combined outcome plus #132 limitation"
+        ]
+      },
+      {
+        "finding_ref": "PUB-119-03",
+        "dimension": "diff_outcome_consistency",
+        "summary": "The finalizer originally read legacy review-gate changed_files and issue_scope fields, so a valid compact 2.1 gate yielded no reviewed paths, no reviewed close issues and marketplace.required=false.",
+        "scope_basis": "Issue #119 requires the combined finalizer to reconstruct applicability from the pinned base and compact current gate so extension-surface changes reach the pushed-ref verifier; PR #165 intentionally removed the legacy fields.",
+        "evidence_refs": [
+          "historical side-effect-free closeout preview at c8c84ab21fc80cd2e72017e293f2aba38e00150c",
+          "fix lineage through e7079961de0428e3492dfd0e26ac8c9f7ad7aa36",
+          "phase2-check.json compact-gate and source/installed integration evidence",
+          "review-gate.json current resolved lifecycle"
+        ],
+        "affected_artifacts": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "pr-readiness.json"
+        ],
+        "route_class": "task_work",
+        "status": "closed",
+        "closure_evidence": [
+          "The compact-gate reconstruction fix is committed and is an ancestor of reviewed HEAD 95379d6b498edcd7f0362d10ba20009f84a55d41.",
+          "Fresh Phase 2 covers marketplace.required routing, source/installed integration and Issue #105 transaction/recovery behavior.",
+          "Fresh-final Branch Review passed the complete 5-commit, 73-path range with no open P0-P3 finding."
+        ]
+      }
+    ],
+    "conclusions": {
+      "issue_scope": {
+        "status": "passed",
+        "summary": "Issue #119 and umbrella #115 are publication-ready for later authorized closure; #105/#116/#117/#118 remain related only and #132 remains the open physical-removal follow-up.",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "review-gate.json",
+          "live GitHub issue-state reread on 2026-08-01"
+        ]
+      },
+      "docs_ssot": {
+        "status": "passed",
+        "summary": "All 15 durable owners contain the approved combined Finish route, private evidence and bounded ledger-augmentation contracts; no unresolved task-only contract remains.",
+        "evidence_refs": [
+          "phase2-check.json docs_ssot_plan",
+          "review-gate.json",
+          "pr-body.md#Docs SSOT"
+        ]
+      },
+      "safety_deployment": {
+        "status": "passed",
+        "summary": "The publication has no undisclosed secret, production, infrastructure, migration, public-I/O or deployment impact and preserves every explicit out-of-scope boundary.",
+        "evidence_refs": [
+          "pr-body.md#安全说明",
+          "pr-body.md#影响范围",
+          "phase2-check.json"
+        ]
+      }
+    },
+    "revision_history": [
+      {
+        "revision_ref": "PUB-119-01",
+        "kind": "metadata_revision",
+        "summary": "Added concrete acceptance evidence to the existing #119/#115 ledger entries without changing close, related or follow-up issue sets.",
+        "evidence_refs": [
+          "issue-scope-ledger.json",
+          "phase2-check.json",
+          "review-gate.json"
+        ]
+      },
+      {
+        "revision_ref": "PUB-119-02",
+        "kind": "stale_reentry",
+        "summary": "Compressed only finish-summary-index.json after the first finalization preview exposed the deterministic retrieval boundary.",
+        "evidence_refs": [
+          "finish-summary-index.json",
+          "historical side-effect-free finalizer preview"
+        ]
+      },
+      {
+        "revision_ref": "PUB-119-03",
+        "kind": "replacement",
+        "summary": "Replaced the prior ready result with return_to_task_work when compact Branch Review applicability loss exposed a normal current-scope finalizer defect.",
+        "evidence_refs": [
+          "prior pr-readiness.json",
+          "historical closeout preview",
+          "review-gate.json schema_version=2.1"
+        ]
+      },
+      {
+        "revision_ref": "PUB-119-04",
+        "kind": "stale_reentry",
+        "summary": "Re-entered publication after the compact-gate fix, bounded publication-ledger ordering fix, complete Phase 2 rerun, task commits and passed fresh-final Branch Review.",
+        "evidence_refs": [
+          "phase2-check.json",
+          "review-gate.json",
+          "git log origin/main..95379d6b498edcd7f0362d10ba20009f84a55d41"
+        ]
+      },
+      {
+        "revision_ref": "PUB-119-05",
+        "kind": "metadata_revision",
+        "summary": "Refreshed only pr-body.md and finish-summary-index.json to state the current 5-commit review, 29-command/810-test evidence, resolved publication-ledger ordering and exact post-push limitation.",
+        "evidence_refs": [
+          "pr-body.md",
+          "finish-summary-index.json",
+          "phase2-check.json",
+          "review-gate.json"
+        ]
+      }
+    ],
+    "reviewer_process": {
+      "reviewer": "codex-root-publication-review-owner",
+      "summary": "Reread all twelve objective precondition sources and the current publication contract, then re-reviewed the dimensions directly changed by the compact-gate fix, bounded ledger-order fix, fresh Phase 2, fresh-final Branch Review and publication-content refresh. Unchanged scope, public-I/O, compatibility, deployment and #132 boundaries were carried forward only after their current bindings were revalidated.",
+      "evidence_refs": [
+        ".agents/skills/guru-review-task-publication/SKILL.md",
+        ".agents/skills/guru-review-task-publication/references/contract.md",
+        "origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...95379d6b498edcd7f0362d10ba20009f84a55d41",
+        "current planning, Phase 2, ledger, review gate, PR body and finish summary",
+        "live refs, issue states and frozen donor invariant reread on 2026-08-01"
+      ]
+    },
+    "human_confirmation": {
+      "status": "not_required",
+      "summary": "The mapped ready exit is automatically consumed by guru-finalize-task and requires no routine continue confirmation. Commit, push, PR creation, merge, Issue closure and cleanup remain separate explicit authorization boundaries.",
+      "confirmed_by": null,
+      "confirmed_at": null
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "All ten current publication dimensions and all three conclusions pass; PUB-119-01, PUB-119-02 and PUB-119-03 are closed, the current Branch Review has no open P0-P3 finding, and the only remaining remote marketplace observation is correctly deferred until a separately authorized push."
+    }
+  },
+  "deterministic_bindings": {
+    "artifacts": {
+      "prd.md": {
+        "sha256": "5226cfc7208d96d5c8dc66b7c3512ee10f16703841fe94555e8b08a7a631c861",
+        "size": 9738
+      },
+      "design.md": {
+        "sha256": "514d0d61eb4e751b39ccb82854e33453dd2c81d31d65196b13dd6237e544163d",
+        "size": 15005
+      },
+      "implement.md": {
+        "sha256": "8797cf796f8b26853d826dd8e9bd277c6ca020d5d31e5c5d1db40ddddfea75b5",
+        "size": 9013
+      },
+      "planning-approval.json": {
+        "sha256": "301241da6d25a77c70aaa589c464bbafa2c8bbd14792e6ee54d0ff8c98b4970c",
+        "size": 37129
+      },
+      "phase2-check.json": {
+        "sha256": "483c086dc64a7e2459e57f44eb7394b63f3cb11baf09abfeb99547eb122a3d7c",
+        "size": 47377
+      },
+      "issue-scope-ledger.json": {
+        "sha256": "1427f49ebe73cf3c993a447cdffdd5727822eb0a1c90f7627822e807b9b8b2a5",
+        "size": 4705
+      },
+      "review-gate.json": {
+        "sha256": "822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2",
+        "size": 13558
+      },
+      "pr-body.md": {
+        "sha256": "85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
+        "size": 7231
+      },
+      "finish-summary-index.json": {
+        "sha256": "4cdfc0655064fb229590f17a71c2ffd266969944cdfba2fe8592cdbceccbe895",
+        "size": 6258
+      }
+    },
+    "repository": {
+      "head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+      "branch": "feat/119-finish-family-integration-main",
+      "base_ref": "origin/main",
+      "diff_paths": [
+        ".agents/skills/guru-finalize-task/evals/evals.json",
+        ".agents/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        ".agents/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        ".claude/commands/guru/finish-work.md",
+        ".claude/skills/guru-finalize-task/evals/evals.json",
+        ".claude/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        ".claude/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        ".codex/prompts/guru-finish-work.md",
+        ".codex/skills/guru-finalize-task/evals/evals.json",
+        ".codex/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        ".codex/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        ".cursor/commands/guru-finish-work.md",
+        ".cursor/skills/guru-finalize-task/evals/evals.json",
+        ".cursor/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        ".cursor/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/preset/upstream-ownership.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/index.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/skill-package-contract.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/check.jsonl",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/context-discovery.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-review.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/task-start-context.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+        "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+        "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "status_paths": [
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json"
+      ]
+    },
+    "entry_preconditions": {
+      "runtime_dependency": {
+        "status": "passed",
+        "facts_sha256": "cf153410271a1f6ec3f2b5229e02e48c452bb11ada6b5ef981a83c458afce2e8"
+      },
+      "task_workspace": {
+        "status": "passed",
+        "facts_sha256": "6b0de61c8986954e970ac23fd91b854c9586b25245d318b1f7ae9e7a1d036f9c"
+      },
+      "task_identity": {
+        "status": "passed",
+        "facts_sha256": "355d5a6de10ea0ba6a51cca0491539e41a3dd900e3433f736062197df2fdef49"
+      },
+      "branch_review_handoff": {
+        "status": "passed",
+        "facts_sha256": "da30a77f2b3b52356f952f20074d4f3e647bf51b7e871ba4d4db28f710727230"
+      },
+      "planning_approval": {
+        "status": "passed",
+        "facts_sha256": "b7c9fc16bbbcf7df044ffb1ccec1f6c47c93d9029121dc0bf9911efe49d5541d"
+      },
+      "phase2_check": {
+        "status": "passed",
+        "facts_sha256": "e5823424ba2e8dd12036f5f056378bada7a9209a0a1aaa82a2b8b5258d736aec"
+      },
+      "issue_scope_ledger": {
+        "status": "passed",
+        "facts_sha256": "3070913db9c776d025dc033ff132fe5cdf432dd061109b57e8a1cc6d8fef3e3e"
+      },
+      "docs_ssot_reconciliation": {
+        "status": "passed",
+        "facts_sha256": "0b576e9a43e5bef9f47d9c7ef041aa8979325a851544b048a0c4ddfa02658535"
+      },
+      "branch_review_evidence": {
+        "status": "passed",
+        "facts_sha256": "0c5f4760c2e24f3b29c2b297faac819102a2948a25882d641563f60220caacbc"
+      },
+      "publication_content": {
+        "status": "passed",
+        "facts_sha256": "1ad0e1086f20f0ef93550df6ddd468a622a3539c428f4b6260a626a50a80e994"
+      },
+      "review_range_and_working_tree": {
+        "status": "passed",
+        "facts_sha256": "3f9fd5507d22994e219e71c000baae04adf8e46c323ee1d9ad186d35c22f8683"
+      },
+      "invocation_freshness": {
+        "status": "passed",
+        "facts_sha256": "c90bdfbbcf91b9dc0d64b1eb84c8665013f1e91ab68d2ce1e357ad1d8acfe810"
+      }
+    },
+    "publication_ref": "publication:5c066d7140f28fc16e2ca27a2e12be01076975a35d70fd15868a7f0238dda032"
+  },
+  "typed_exit": "ready",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-finalize-task"
+  },
+  "supersedes_publication_ref": "publication:0372d60759f3432c7a953b59f0490d5684c99a35922c8eff45ef4796c2ebedc9",
+  "stale_reason": "The prior return_to_task_work publication result at c8c84ab21fc80cd2e72017e293f2aba38e00150c is superseded by the completed compact-gate and publication-ledger task-work fixes and the passed fresh-final Branch Review at 95379d6b498edcd7f0362d10ba20009f84a55d41.",
+  "reentry_context": "Re-enter publication against the current 5-commit, 73-path reviewed state, the refreshed publication content, the closed publication finding lifecycle, and the unchanged post-push remote marketplace observation.",
+  "facts_sha256": "d821bd958da1e59ac61d718073ea211b5d27312298fdf5fbbcf9c402fcc8d46b",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/119-finish-family-integration-main",
+    "reviewed_head_sha": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+    "title": "完成：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+    "body_source": "pr-body.md",
+    "body_sha256": "85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3"
+  }
+}
