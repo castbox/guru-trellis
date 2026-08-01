@@ -15958,6 +15958,150 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(projected_owner, verification)
         rediscover.assert_not_called()
 
+    def test_publication_preview_ignores_historical_verification_owner(self) -> None:
+        plan = self.build_plan(include_finalization_gate=True)
+        task_ref = plan["task"]["active_locator"]
+        stale_owner = {
+            "schema_version": "1.0",
+            "skill_id": gtt.EXTENSION_VERIFICATION_SKILL_ID,
+            "typed_exit": "verified",
+            "public_input": {
+                "profile": "verification_required",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "plan_ref": f"closeout-plan:{'c' * 64}",
+                "repo_ref": plan["git"]["repo"],
+                "reviewed_head": "d" * 40,
+            },
+        }
+        gtt.write_json(
+            self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            stale_owner,
+        )
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "reviewed_head": self.head,
+            "publication_ref": "publication:current",
+            "finalization_intent": "Finalize the exact reviewed task plan.",
+        }
+        prepared = {
+            "plan": plan,
+            "ledger": self.ledger,
+            "gate": self.gate,
+            "finalizer_takeover": None,
+            "month_supersession": None,
+        }
+        args = argparse.Namespace(include_finalization_gate=True)
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_publication_owner_result",
+                return_value={
+                    "owner_status": "current",
+                    "publication_ref": public_input["publication_ref"],
+                },
+            ),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(
+                gtt,
+                "load_task_start_context",
+                return_value=self.context,
+            ),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(
+                gtt,
+                "task_json",
+                return_value={**self.task, "status": "in_progress"},
+            ),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_pre_draft_state",
+                return_value="prepared",
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_current_verification_owner_result",
+                side_effect=AssertionError(
+                    "fresh publication must not consume historical owner evidence"
+                ),
+            ) as rediscover,
+        ):
+            context = gtt.finalization_preview_context(
+                self.root,
+                args,
+                public_input,
+            )
+
+        self.assertEqual(context["transaction_state"], "prepared")
+        self.assertIsNone(context["verification"])
+        rediscover.assert_not_called()
+
+    def test_same_plan_preview_keeps_historical_verification_fail_closed(self) -> None:
+        plan = self.build_plan(include_finalization_gate=True)
+        task_ref = plan["task"]["active_locator"]
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+            "recovery_intent": "Resume the exact immutable transaction.",
+            "recovery_context": "The prior verification owner is stale.",
+        }
+        prepared = {
+            "plan": plan,
+            "ledger": self.ledger,
+            "gate": self.gate,
+            "finalizer_takeover": None,
+            "month_supersession": None,
+        }
+        args = argparse.Namespace(include_finalization_gate=True)
+        stale_error = gtt.WorkflowError(
+            "Extension verification evidence is not current for the immutable finalization plan.",
+            exit_code=2,
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_publication_owner_result",
+                return_value={
+                    "owner_status": "current",
+                    "publication_ref": "publication:current",
+                },
+            ),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(
+                gtt,
+                "load_task_start_context",
+                return_value=self.context,
+            ),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(
+                gtt,
+                "task_json",
+                return_value={**self.task, "status": "in_progress"},
+            ),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
+            mock.patch.object(
+                gtt,
+                "finalization_current_verification_owner_result",
+                side_effect=stale_error,
+            ) as rediscover,
+        ):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.finalization_preview_context(
+                    self.root,
+                    args,
+                    public_input,
+                )
+
+        self.assertIs(raised.exception, stale_error)
+        rediscover.assert_called_once()
+
     def test_archived_owner_results_use_committed_gate_without_readiness(self) -> None:
         plan = self.build_plan(include_finalization_gate=True)
         publication_ref = "publication:current"

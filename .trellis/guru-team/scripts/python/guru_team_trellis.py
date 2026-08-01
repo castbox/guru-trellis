@@ -30964,6 +30964,7 @@ def finalization_preview_context(
             task_dir,
             public_input,
         )
+        reuse_current_verification = public_input["profile"] != "publication_ready"
         publication = finalization_publication_owner_result(
             root,
             task_dir,
@@ -31017,7 +31018,7 @@ def finalization_preview_context(
             elif prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
             else:
-                if verification is None:
+                if verification is None and reuse_current_verification:
                     verification = finalization_current_verification_owner_result(
                         root,
                         task_dir,
@@ -31061,7 +31062,7 @@ def finalization_preview_context(
             "Task finalization plan_ref does not match the current immutable plan.",
             exit_code=2,
         )
-    if verification is None and not archived:
+    if verification is None and not archived and reuse_current_verification:
         verification = finalization_current_verification_owner_result(
             root,
             task_dir,
