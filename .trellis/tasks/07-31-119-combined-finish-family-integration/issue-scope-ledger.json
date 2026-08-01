@@ -6,14 +6,18 @@
     "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
     "reason": "当前唯一 combined Finish-family integration delivery unit。",
     "acceptance_evidence": [
-      "Current recovery Phase 2 reviews the complete origin/main-to-HEAD 57e7d0d4e350ac892ed599d20db67d2a99d8c38d working-tree candidate and binds 23 fresh affected-validation and current-state command records, including the full 559-test runtime suite, source/installed integration, preset/package contracts and Draft PR #166 identity.",
-      "The earlier c8c84ab, 95379d6 and 15d957b gates and marketplace evidence are historical failure-chain evidence only. Fresh Phase 2 and a post-commit full Branch Review must pass before publication or Issue closure.",
+      "Fresh guru-check-task Phase 2 at d8664c83b2ad3ff14e001d071e66d31e6e1dab49 binds the exact 72bf89a789d25598a95944dfe9af8735b4a92a10 work commit ancestry and 15 affected-validation records: 561 runtime tests, six finalizer-contract tests, nine source integration tests, nine installed integration tests, 47 preset tests, compile, drift, parity, workspace, task, sidecar and frozen-donor checks all passed.",
+      "Distinct fresh-final Branch Review passed at 72bf89a789d25598a95944dfe9af8735b4a92a10 across the complete origin/main range of 12 commits and 74 net paths. F119-FRESH-001 (P1) and F119-FRESH-002 (P3) are resolved with concrete closure evidence and no open current-scope P0-P3 finding; c8c84ab, 95379d6 and 15d957b remain historical failure-chain evidence only.",
       {
         "type": "remote_marketplace_verification",
-        "status": "pending",
+        "status": "passed",
         "required": true,
         "artifact_path": "marketplace-verification.json",
-        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+        "artifact_sha256": "518b0a3719a804efb92eb6bc90cc8c75b1395b6e531da1b053007fce0e03e466",
+        "verified_content_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+        "remote_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+        "publish_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+        "commands_passed": true
       }
     ]
   },
@@ -24,14 +28,18 @@
       "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
       "reason": "本 task 覆盖 #119 全部 accepted-current combined acceptance。",
       "acceptance_evidence": [
-        "Current recovery Phase 2 reviews the complete origin/main-to-HEAD 57e7d0d4e350ac892ed599d20db67d2a99d8c38d working-tree candidate and binds 23 fresh affected-validation and current-state command records, including the full 559-test runtime suite, source/installed integration, preset/package contracts and Draft PR #166 identity.",
-        "The earlier c8c84ab, 95379d6 and 15d957b gates and marketplace evidence are historical failure-chain evidence only. Fresh Phase 2 and a post-commit full Branch Review must pass before publication or Issue closure.",
+        "Fresh guru-check-task Phase 2 at d8664c83b2ad3ff14e001d071e66d31e6e1dab49 binds the exact 72bf89a789d25598a95944dfe9af8735b4a92a10 work commit ancestry and 15 affected-validation records: 561 runtime tests, six finalizer-contract tests, nine source integration tests, nine installed integration tests, 47 preset tests, compile, drift, parity, workspace, task, sidecar and frozen-donor checks all passed.",
+        "Distinct fresh-final Branch Review passed at 72bf89a789d25598a95944dfe9af8735b4a92a10 across the complete origin/main range of 12 commits and 74 net paths. F119-FRESH-001 (P1) and F119-FRESH-002 (P3) are resolved with concrete closure evidence and no open current-scope P0-P3 finding; c8c84ab, 95379d6 and 15d957b remain historical failure-chain evidence only.",
         {
           "type": "remote_marketplace_verification",
-          "status": "pending",
+          "status": "passed",
           "required": true,
           "artifact_path": "marketplace-verification.json",
-          "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+          "artifact_sha256": "518b0a3719a804efb92eb6bc90cc8c75b1395b6e531da1b053007fce0e03e466",
+          "verified_content_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "remote_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "publish_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "commands_passed": true
         }
       ]
     },
@@ -42,13 +50,17 @@
       "reason": "#119 combined acceptance 完成后按 Issue authority 一并关闭 umbrella。",
       "acceptance_evidence": [
         "Issues #116, #117 and #118 are closed; the current #119 delivery integrates their existing public contracts into the canonical Finish-family workflow, Guru namespace entries, private evidence bridge and installation lifecycle without reopening their internal behavior.",
-        "Current recovery Phase 2 covers the complete #119 combined acceptance and explicitly treats the earlier c8c84ab, 95379d6 and 15d957b gates as historical failure-chain evidence while preserving Issue #132 as the sole follow-up owner; canonical Branch Review remains a required post-commit gate.",
+        "Fresh Phase 2 and the distinct fresh-final Branch Review now pass for work commit 72bf89a789d25598a95944dfe9af8735b4a92a10. Both recovery findings are resolved, earlier c8c84ab/95379d6/15d957b evidence remains historical only, and Issue #132 remains the sole follow-up owner for physical legacy-overlay removal.",
         {
           "type": "remote_marketplace_verification",
-          "status": "pending",
+          "status": "passed",
           "required": true,
           "artifact_path": "marketplace-verification.json",
-          "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+          "artifact_sha256": "518b0a3719a804efb92eb6bc90cc8c75b1395b6e531da1b053007fce0e03e466",
+          "verified_content_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "remote_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "publish_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "commands_passed": true
         }
       ]
     }

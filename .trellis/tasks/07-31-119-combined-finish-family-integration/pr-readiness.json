@@ -1,24 +1,24 @@
 {
   "schema_version": "1.1",
   "skill_id": "guru-review-task-publication",
-  "generated_at": "2026-07-31T16:44:09Z",
+  "generated_at": "2026-08-01T06:58:24Z",
   "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
   "profile": "publication_review_stale",
   "mode": "workflow",
   "review_intent": "stale_reentry_review",
   "review_identity": {
-    "reviewed_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
-    "review_ref": "review-gate:822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2"
+    "reviewed_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+    "review_ref": "review-gate:c36926e6dde1c083ca2f27b97e9bbc729d0652d1ca3adcd528b507b5fed78880"
   },
   "semantic_review": {
     "dimensions": [
       {
         "id": "diff_outcome_consistency",
         "status": "passed",
-        "summary": "The complete 5-commit, 73-path diff implements only the remaining Issue #119 combined Finish-family route, Guru namespace entries, private evidence bridge, compact-gate reconstruction, bounded publication-ledger augmentation, terminal evals, lifecycle acceptance and Docs SSOT reconciliation.",
+        "summary": "The complete origin/main@7ca1a0b through 72bf89a range contains 12 commits and 74 net paths implementing the accepted Issue #119 combined Finish-family integration plus the two required recovery correctness fixes; it does not implement Issue #132 physical legacy removal or reopen the internal behavior of Issues #116, #117 or #118.",
         "evidence_refs": [
-          "git diff --name-status origin/main...95379d6b498edcd7f0362d10ba20009f84a55d41",
-          "git rev-list --count origin/main..95379d6b498edcd7f0362d10ba20009f84a55d41 = 5",
+          "git log origin/main..72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "git diff --name-status origin/main...72bf89a789d25598a95944dfe9af8735b4a92a10",
           "review-gate.json typed_exit=passed",
           "phase2-check.json semantic_review.ai_review_gate.status=passed"
         ]
@@ -26,20 +26,20 @@
       {
         "id": "issue_scope_closure",
         "status": "passed",
-        "summary": "The ledger closes only #119 and umbrella #115 after complete combined acceptance, keeps closed dependencies #105/#116/#117/#118 related, and preserves open #132 as the sole legacy physical-removal follow-up; live #119/#115/#132 states remain open pending later authorized publication and closure.",
+        "summary": "The refreshed ledger closes only Issue #119 and umbrella Issue #115 after complete combined acceptance, keeps closed dependencies #105/#116/#117/#118 related only, and preserves open Issue #132 as the sole physical-removal follow-up; live #119 and #115 remain open pending later authorized merge and closure.",
         "evidence_refs": [
-          "issue-scope-ledger.json",
-          "review-gate.json current passed scope review",
-          "live GitHub issue-state reread on 2026-08-01",
-          "pr-body.md#Issue 关闭范围"
+          "issue-scope-ledger.json sha256=647fba5987090b19e393ea543954e6c3472ee3c1c43a83913451767ebd7f2ca3",
+          "live GitHub Issue states reread on 2026-08-01",
+          "pr-body.md#Issue 关闭范围",
+          "review-gate.json"
         ]
       },
       {
         "id": "pr_body_quality",
         "status": "passed",
-        "summary": "The refreshed Chinese PR body states the concrete integration, exact publication-ledger correction, impact, validation, review, closure, safety and Docs SSOT results; Closes is limited to #119/#115 and exact remote feature-ref verification is explicitly not claimed before push.",
+        "summary": "The refreshed Chinese PR body describes the current combined route, bounded six-read PR HEAD convergence, compact archived recovery without working-tree readiness, exact affected validation, current 12-commit review, closure scope, safety and Docs SSOT results; it explicitly leaves remote feature-ref verification pending until push.",
         "evidence_refs": [
-          "pr-body.md sha256=85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
+          "pr-body.md sha256=f75bc8b00cad8f49af03e73d2c22313fde7f0be8b1aac3a6f2b507788a42f7f2",
           "issue-scope-ledger.json",
           "review-gate.json",
           "phase2-check.json"
@@ -48,33 +48,33 @@
       {
         "id": "validation_claims",
         "status": "passed",
-        "summary": "The publication claims match the fresh Phase 2 gate: 29 exact command records and 810 passing tests across runtime 553, Skill packages 184, preset 47, ownership 14 and two integration suites of 6 each, with 13 declared runtime skips plus clean install/update/reselect/reapply, upgrade dry-run, drift and Issue #105 transaction/recovery coverage.",
+        "summary": "Publication claims match the fresh affected Phase 2 evidence: 561 runtime tests with 13 existing conditional skips, six finalizer-contract tests, nine source integration tests, nine installed integration tests with one existing environment-dependent skip, 47 preset tests, and compile, drift, parity, workspace, task, sidecar and frozen-donor checks all passed; unrelated suites and lifecycle replays are not falsely claimed as rerun.",
         "evidence_refs": [
-          "phase2-check.json check_execution.commands count=29",
-          "phase2-check.json semantic_review.adequacy_dimensions.tests",
-          "pr-body.md#验证结果",
-          "remote feature ref e7079961 remains a disclosed post-push limitation"
+          "phase2-check.json sha256=244b22f63623cc8f93ce485271816a50b148c20f2d2d8885ccecc9504a5131db",
+          "phase2-check.json check_execution",
+          "phase2-check.json bounded-validation-exclusions",
+          "pr-body.md#验证结果"
         ]
       },
       {
         "id": "branch_review_summary",
         "status": "passed",
-        "summary": "The refreshed body accurately reports the fresh-final review of origin/main@7ca1a0b9 through 95379d6 across all 5 commits and 73 paths; BR-119-01, BR-119-02 and P2-publication-ledger-closeout-order are resolved and there is no open P0-P3 finding, scope proposal or blocker.",
+        "summary": "The refreshed publication content accurately reports the distinct fresh-final review of origin/main@7ca1a0b through 72bf89a across all 12 commits and 74 net paths; F119-FRESH-001 P1 and F119-FRESH-002 P3 are resolved at the reviewed HEAD and no new current-scope P0-P3 finding, scope proposal or blocker remains.",
         "evidence_refs": [
-          "review-gate.json sha256=822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2",
-          "review-gate:822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2",
-          "git log origin/main..95379d6b498edcd7f0362d10ba20009f84a55d41",
-          "independent transient finding-closure review"
+          "review-gate.json sha256=c36926e6dde1c083ca2f27b97e9bbc729d0652d1ca3adcd528b507b5fed78880",
+          "review-gate:c36926e6dde1c083ca2f27b97e9bbc729d0652d1ca3adcd528b507b5fed78880",
+          "git log origin/main..72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "codex-independent-agent:issue119_fresh_branch_review"
         ]
       },
       {
         "id": "docs_ssot_reconciliation",
         "status": "passed",
-        "summary": "The ssot_first result remains current across all 15 durable owners: combined routing, minimal public DTOs, private checked-evidence bridging and exact pending/passed publication-ledger augmentation agree, while task chronology remains private and #132 owns physical legacy removal.",
+        "summary": "The ssot_first result remains current across the 15 durable workflow, runtime, preset, ownership and public-doc owners: active publication paths retain task-local readiness ownership, while compact archived/archive_pushed recovery uses exact committed transaction evidence plus live Git/GitHub facts; task chronology remains private and Issue #132 owns later physical removal.",
         "evidence_refs": [
           "phase2-check.json docs_ssot_plan with 15 durable paths",
           "design.md#Docs SSOT Plan",
-          "review-gate.json BR-119-02 and publication-ledger closure",
+          "review-gate.json F119-FRESH-002 closure",
           "pr-body.md#Docs SSOT"
         ]
       },
@@ -85,53 +85,56 @@
         "evidence_refs": [
           "pr-body.md#安全说明",
           "pr-body.md#影响范围",
-          "prd.md#明确排除",
+          "prd.md explicit exclusions",
           "phase2-check.json compatibility and deployment_and_operations dimensions"
         ]
       },
       {
         "id": "finish_summary_semantics",
         "status": "passed",
-        "summary": "The refreshed finish summary remains task-specific and searchable, includes the current publication-ledger outcome and #132 limitation, and its deterministic retrieval text is 2284 characters, within the 3000-character final contract.",
+        "summary": "The finalizer-preview revision keeps the finish summary task-specific and searchable, includes bounded PR HEAD convergence and committed compact-archive recovery, preserves the combined outcome and Issue #132 limitation, and produces an exact 2996-character retrieval text within the 3000-character contract.",
         "evidence_refs": [
-          "finish-summary-index.json sha256=4cdfc0655064fb229590f17a71c2ffd266969944cdfba2fe8592cdbceccbe895",
-          "finish_summary_retrieval_text length=2284",
-          "phase2-check.json",
+          "finish-summary-index.json sha256=7f5e559145ca4c3bc89f73093e197787fd7d8d48da0417a1e20ed089eef7a491",
+          "side-effect-free finalizer preview retrieval length failure=3063",
+          "current deterministic retrieval length=2996",
+          "phase2-check.json recovery findings",
+          "review-gate.json",
           "design.md"
         ]
       },
       {
         "id": "metadata_tail_integrity",
         "status": "passed",
-        "summary": "The current tracked tail contains only the checker-passed compact review gate and the two publication-owned content artifacts; there is no source, test, durable-doc, spec, workflow, schema, config, preset or unrelated task-artifact drift after the reviewed HEAD.",
+        "summary": "Before recorder output, the tracked tail contains exactly the checker-passed current review gate and the three publication-owned metadata artifacts; there is no source, test, durable-doc, spec, workflow, schema, config, preset or unrelated task-artifact drift after reviewed HEAD 72bf89a.",
         "evidence_refs": [
-          "git status --porcelain=v1 lists only review-gate.json, pr-body.md and finish-summary-index.json",
-          "git diff --check origin/main...95379d6b498edcd7f0362d10ba20009f84a55d41",
+          "git status --porcelain=v1 lists only review-gate.json, issue-scope-ledger.json, pr-body.md and finish-summary-index.json",
           "git diff --check working tree",
+          "git diff --check origin/main...72bf89a789d25598a95944dfe9af8735b4a92a10",
           "publication review closed allowlist contract"
         ]
       },
       {
         "id": "artifact_binding_freshness",
         "status": "passed",
-        "summary": "Live origin/main remains 7ca1a0b9, current HEAD remains 95379d6, the current Branch Review ref and planning/Phase 2/ledger/content bytes are freshly reread, the frozen donor retains its original HEAD/status/runtime path set, and the unpublished remote feature ref remains e7079961 as explicitly disclosed.",
+        "summary": "Live origin/main remains 7ca1a0b, local HEAD and current Branch Review bind 72bf89a, planning, Phase 2, ledger and publication-content bytes were reread, remote feature and the unique OPEN Draft PR #166 remain at 15d957b, and the prior 7cf415cd publication artifact is superseded by its exact opaque ref after the bounded metadata revision.",
         "evidence_refs": [
-          "git ls-remote origin refs/heads/main refs/heads/feat/119-finish-family-integration-main",
-          "current artifact SHA-256 reread on 2026-08-01",
-          "review-gate:822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2",
-          "frozen donor HEAD d01111b3628c2a4b00b99ee098703acefe8620c9, status and ignored-runtime path-set reread"
+          "git ls-remote origin refs/heads/main refs/heads/feat/119-finish-family-integration-main on 2026-08-01",
+          "gh pr view 166 current OPEN Draft identity on 2026-08-01",
+          "review-gate:c36926e6dde1c083ca2f27b97e9bbc729d0652d1ca3adcd528b507b5fed78880",
+          "supersedes publication:7cf415cd9328ef15d2e2f156974d613fcb7ab978eaa206b22f7a0a08c9e52076"
         ]
       }
     ],
     "findings": [
       {
-        "finding_ref": "PUB-119-01",
+        "finding_ref": "PUB-119-08",
         "dimension": "issue_scope_closure",
-        "summary": "The initial Issue Scope Ledger named the correct close targets but left their acceptance_evidence arrays empty, so the ready precondition could not prove closure.",
-        "scope_basis": "Issue #119 and the publication contract require concrete evidence before Closes #119 or Closes #115 may be approved.",
+        "summary": "The historical Issue Scope Ledger still bound the earlier recovery candidate and did not contain the current 72bf89a Phase 2 and fresh-final Branch Review acceptance evidence.",
+        "scope_basis": "Issue #119 publication must bind current acceptance evidence before Closes #119 or Closes #115 can be approved, while preserving the related and follow-up issue sets.",
         "evidence_refs": [
-          "issue-scope-ledger.json before publication metadata revision",
-          "validate_ledger_for_publish requirement"
+          "issue-scope-ledger.json before current metadata revision",
+          "phase2-check.json current affected validation",
+          "review-gate.json current 72bf89a review"
         ],
         "affected_artifacts": [
           "issue-scope-ledger.json"
@@ -139,19 +142,58 @@
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "issue-scope-ledger.json contains non-empty acceptance evidence for #119 and #115",
-          "current review-gate.json supplies the required passed fresh-final evidence",
-          "the publication recorder revalidates the current ledger before ready"
+          "issue-scope-ledger.json now binds the current 72bf89a work commit, 15 affected-validation records and the distinct 12-commit/74-path fresh-final review.",
+          "The close set remains exactly #119 and #115, related issues remain #105/#116/#117/#118, and #132 remains the sole follow-up."
         ]
       },
       {
-        "finding_ref": "PUB-119-02",
-        "dimension": "finish_summary_semantics",
-        "summary": "The first index passed the authoring boundary but produced deterministic retrieval text longer than 3000 characters, so finalization preview failed closed.",
-        "scope_basis": "Issue #119 closeout requires a final finish-summary that passes the existing retrieval length contract without dropping the combined outcome or follow-up boundary.",
+        "finding_ref": "PUB-119-09",
+        "dimension": "pr_body_quality",
+        "summary": "The historical PR body described obsolete recovery counts and Branch Review identity and omitted the current PR HEAD convergence and compact archived-plan recovery outcomes.",
+        "scope_basis": "Issue #119 publication must describe the exact current reviewed delivery without presenting superseded gates or counts as current evidence.",
         "evidence_refs": [
-          "historical side-effect-free preview retrieval length error",
-          "finish-summary-index.json before stale metadata revision"
+          "pr-body.md before current metadata revision",
+          "phase2-check.json current affected validation",
+          "review-gate.json current 72bf89a review"
+        ],
+        "affected_artifacts": [
+          "pr-body.md"
+        ],
+        "route_class": "metadata_revision",
+        "status": "closed",
+        "closure_evidence": [
+          "pr-body.md now reports 72bf89a, 12 commits, 74 net paths and the current affected validation counts.",
+          "The body now states bounded PR HEAD convergence, committed compact archive recovery, unique Draft PR #166 reuse and the still-pending remote verification without changing Issue scope."
+        ]
+      },
+      {
+        "finding_ref": "PUB-119-10",
+        "dimension": "finish_summary_semantics",
+        "summary": "The historical finish summary did not describe the final bounded PR HEAD convergence and exact committed-plan compact archive recovery contracts.",
+        "scope_basis": "The Issue #119 finish summary must make the current behavioral outcome searchable without copying private runtime state or expanding public DTOs.",
+        "evidence_refs": [
+          "finish-summary-index.json before current metadata revision",
+          "phase2-check.json F119-FRESH-001 and F119-FRESH-002 evidence",
+          "review-gate.json"
+        ],
+        "affected_artifacts": [
+          "finish-summary-index.json"
+        ],
+        "route_class": "metadata_revision",
+        "status": "closed",
+        "closure_evidence": [
+          "finish-summary-index.json now names bounded PR HEAD convergence and exact committed compact-archive recovery in outcome, behavior, surfaces, contracts and search terms.",
+          "The summary preserves Issue #132 as the sole legacy physical-removal owner and contains no task runtime payload."
+        ]
+      },
+      {
+        "finding_ref": "PUB-119-12",
+        "dimension": "finish_summary_semantics",
+        "summary": "The first current-HEAD finalizer preview generated a 3063-character retrieval_text, exceeding the existing 3000-character finish-summary contract.",
+        "scope_basis": "Issue #119 finalization requires the task-local finish summary to pass the deterministic archive projection without dropping the current recovery outcomes or Issue #132 boundary.",
+        "evidence_refs": [
+          "side-effect-free guru-finalize-task preview error: index.retrieval_text length must be between 1 and 3000 characters",
+          "finish-summary-index.json before bounded preview revision"
         ],
         "affected_artifacts": [
           "finish-summary-index.json",
@@ -160,49 +202,24 @@
         "route_class": "metadata_revision",
         "status": "closed",
         "closure_evidence": [
-          "finish-summary-index.json was compressed without changing implementation or issue scope",
-          "the current deterministic retrieval text is 2284 characters and preserves the combined outcome plus #132 limitation"
-        ]
-      },
-      {
-        "finding_ref": "PUB-119-03",
-        "dimension": "diff_outcome_consistency",
-        "summary": "The finalizer originally read legacy review-gate changed_files and issue_scope fields, so a valid compact 2.1 gate yielded no reviewed paths, no reviewed close issues and marketplace.required=false.",
-        "scope_basis": "Issue #119 requires the combined finalizer to reconstruct applicability from the pinned base and compact current gate so extension-surface changes reach the pushed-ref verifier; PR #165 intentionally removed the legacy fields.",
-        "evidence_refs": [
-          "historical side-effect-free closeout preview at c8c84ab21fc80cd2e72017e293f2aba38e00150c",
-          "fix lineage through e7079961de0428e3492dfd0e26ac8c9f7ad7aa36",
-          "phase2-check.json compact-gate and source/installed integration evidence",
-          "review-gate.json current resolved lifecycle"
-        ],
-        "affected_artifacts": [
-          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-          "pr-readiness.json"
-        ],
-        "route_class": "task_work",
-        "status": "closed",
-        "closure_evidence": [
-          "The compact-gate reconstruction fix is committed and is an ancestor of reviewed HEAD 95379d6b498edcd7f0362d10ba20009f84a55d41.",
-          "Fresh Phase 2 covers marketplace.required routing, source/installed integration and Issue #105 transaction/recovery behavior.",
-          "Fresh-final Branch Review passed the complete 5-commit, 73-path range with no open P0-P3 finding."
+          "Only the duplicated outcome wording was compressed; bounded PR HEAD convergence, committed compact-archive recovery, installation evidence and Issue #132 ownership remain explicit elsewhere in the same index.",
+          "The deterministic retrieval projection is now 2996 characters and the publication recorder will bind the new artifact bytes before the retry."
         ]
       }
     ],
     "conclusions": {
       "issue_scope": {
         "status": "passed",
-        "summary": "Issue #119 and umbrella #115 are publication-ready for later authorized closure; #105/#116/#117/#118 remain related only and #132 remains the open physical-removal follow-up.",
+        "summary": "Issue #119 and umbrella Issue #115 are publication-ready for later authorized merge and closure; #105/#116/#117/#118 remain related only and #132 remains the open physical-removal follow-up.",
         "evidence_refs": [
           "issue-scope-ledger.json",
           "review-gate.json",
-          "live GitHub issue-state reread on 2026-08-01"
+          "live GitHub Issue states reread on 2026-08-01"
         ]
       },
       "docs_ssot": {
         "status": "passed",
-        "summary": "All 15 durable owners contain the approved combined Finish route, private evidence and bounded ledger-augmentation contracts; no unresolved task-only contract remains.",
+        "summary": "Durable owners contain the approved combined Finish route, private evidence, bounded PR HEAD convergence and exact committed compact-archive recovery contracts; no unresolved task-only contract remains.",
         "evidence_refs": [
           "phase2-check.json docs_ssot_plan",
           "review-gate.json",
@@ -221,9 +238,9 @@
     },
     "revision_history": [
       {
-        "revision_ref": "PUB-119-01",
+        "revision_ref": "PUB-119-08",
         "kind": "metadata_revision",
-        "summary": "Added concrete acceptance evidence to the existing #119/#115 ledger entries without changing close, related or follow-up issue sets.",
+        "summary": "Refreshed only Issue Scope Ledger publication evidence to bind the current Phase 2 and fresh-final Branch Review without changing close, related or follow-up issue identity.",
         "evidence_refs": [
           "issue-scope-ledger.json",
           "phase2-check.json",
@@ -231,109 +248,109 @@
         ]
       },
       {
-        "revision_ref": "PUB-119-02",
-        "kind": "stale_reentry",
-        "summary": "Compressed only finish-summary-index.json after the first finalization preview exposed the deterministic retrieval boundary.",
-        "evidence_refs": [
-          "finish-summary-index.json",
-          "historical side-effect-free finalizer preview"
-        ]
-      },
-      {
-        "revision_ref": "PUB-119-03",
-        "kind": "replacement",
-        "summary": "Replaced the prior ready result with return_to_task_work when compact Branch Review applicability loss exposed a normal current-scope finalizer defect.",
-        "evidence_refs": [
-          "prior pr-readiness.json",
-          "historical closeout preview",
-          "review-gate.json schema_version=2.1"
-        ]
-      },
-      {
-        "revision_ref": "PUB-119-04",
-        "kind": "stale_reentry",
-        "summary": "Re-entered publication after the compact-gate fix, bounded publication-ledger ordering fix, complete Phase 2 rerun, task commits and passed fresh-final Branch Review.",
-        "evidence_refs": [
-          "phase2-check.json",
-          "review-gate.json",
-          "git log origin/main..95379d6b498edcd7f0362d10ba20009f84a55d41"
-        ]
-      },
-      {
-        "revision_ref": "PUB-119-05",
+        "revision_ref": "PUB-119-09",
         "kind": "metadata_revision",
-        "summary": "Refreshed only pr-body.md and finish-summary-index.json to state the current 5-commit review, 29-command/810-test evidence, resolved publication-ledger ordering and exact post-push limitation.",
+        "summary": "Refreshed only pr-body.md to state the current recovery behavior, exact affected validation, 72bf89a fresh-final review and unique Draft PR #166 path.",
         "evidence_refs": [
           "pr-body.md",
+          "phase2-check.json",
+          "review-gate.json"
+        ]
+      },
+      {
+        "revision_ref": "PUB-119-10",
+        "kind": "metadata_revision",
+        "summary": "Refreshed only finish-summary-index.json to make bounded PR HEAD convergence and exact committed compact-archive recovery searchable while preserving the Issue #132 boundary.",
+        "evidence_refs": [
           "finish-summary-index.json",
           "phase2-check.json",
           "review-gate.json"
         ]
+      },
+      {
+        "revision_ref": "PUB-119-11",
+        "kind": "stale_reentry",
+        "summary": "Superseded the historical 95379d6 publication owner result by its exact opaque ref after the current 72bf89a task work commit, affected Phase 2, passed fresh-final Branch Review and publication-only metadata refresh; old finalizer and publication evidence remains historical only.",
+        "evidence_refs": [
+          "publication:5c066d7140f28fc16e2ca27a2e12be01076975a35d70fd15868a7f0238dda032",
+          "review-gate.json",
+          "git log origin/main..72bf89a789d25598a95944dfe9af8735b4a92a10"
+        ]
+      },
+      {
+        "revision_ref": "PUB-119-12",
+        "kind": "metadata_revision",
+        "summary": "Auto-consumed the finalizer publication_review_stale route and compressed only finish-summary-index.json from a 3063-character to a 2996-character deterministic retrieval projection.",
+        "evidence_refs": [
+          "side-effect-free guru-finalize-task preview",
+          "finish-summary-index.json",
+          "publication:7cf415cd9328ef15d2e2f156974d613fcb7ab978eaa206b22f7a0a08c9e52076"
+        ]
       }
     ],
     "reviewer_process": {
-      "reviewer": "codex-root-publication-review-owner",
-      "summary": "Reread all twelve objective precondition sources and the current publication contract, then re-reviewed the dimensions directly changed by the compact-gate fix, bounded ledger-order fix, fresh Phase 2, fresh-final Branch Review and publication-content refresh. Unchanged scope, public-I/O, compatibility, deployment and #132 boundaries were carried forward only after their current bindings were revalidated.",
+      "reviewer": "codex-root-publication-review-owner:72bf89a",
+      "summary": "Reread all twelve objective precondition sources after the side-effect-free finalizer preview. Re-reviewed finish_summary_semantics, metadata_tail_integrity and artifact_binding_freshness against the bounded index revision; carried forward the other seven dimensions only after their direct evidence remained current and byte-identical.",
       "evidence_refs": [
         ".agents/skills/guru-review-task-publication/SKILL.md",
         ".agents/skills/guru-review-task-publication/references/contract.md",
-        "origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...95379d6b498edcd7f0362d10ba20009f84a55d41",
+        "origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...72bf89a789d25598a95944dfe9af8735b4a92a10",
         "current planning, Phase 2, ledger, review gate, PR body and finish summary",
-        "live refs, issue states and frozen donor invariant reread on 2026-08-01"
+        "live refs, Issue states, Draft PR #166 identity and frozen donor invariant reread on 2026-08-01"
       ]
     },
     "human_confirmation": {
       "status": "not_required",
-      "summary": "The mapped ready exit is automatically consumed by guru-finalize-task and requires no routine continue confirmation. Commit, push, PR creation, merge, Issue closure and cleanup remain separate explicit authorization boundaries.",
+      "summary": "The mapped ready exit is automatically consumed by guru-finalize-task and requires no routine continue confirmation. Commit, push, PR mutation, merge, Issue closure and cleanup remain separate explicit authorization boundaries.",
       "confirmed_by": null,
       "confirmed_at": null
     },
     "ai_review_gate": {
       "status": "passed",
-      "summary": "All ten current publication dimensions and all three conclusions pass; PUB-119-01, PUB-119-02 and PUB-119-03 are closed, the current Branch Review has no open P0-P3 finding, and the only remaining remote marketplace observation is correctly deferred until a separately authorized push."
+      "summary": "All ten current publication dimensions and all three conclusions pass; PUB-119-08, PUB-119-09, PUB-119-10 and finalizer-preview metadata finding PUB-119-12 are closed, the fresh Branch Review has no open current-scope P0-P3 finding, and exact remote marketplace verification remains deferred to the separately authorized push."
     }
   },
   "deterministic_bindings": {
     "artifacts": {
       "prd.md": {
-        "sha256": "5226cfc7208d96d5c8dc66b7c3512ee10f16703841fe94555e8b08a7a631c861",
-        "size": 9738
+        "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+        "size": 13165
       },
       "design.md": {
-        "sha256": "514d0d61eb4e751b39ccb82854e33453dd2c81d31d65196b13dd6237e544163d",
-        "size": 15005
+        "sha256": "b7f65ebf819d63601eab7b95b630470bbe00ee106254babf9f036c8bef344411",
+        "size": 19581
       },
       "implement.md": {
-        "sha256": "8797cf796f8b26853d826dd8e9bd277c6ca020d5d31e5c5d1db40ddddfea75b5",
-        "size": 9013
+        "sha256": "d0757b504b85179e16aecb32bd137e05c21c6b11ab640ea2aad53394ed5b344e",
+        "size": 11726
       },
       "planning-approval.json": {
-        "sha256": "301241da6d25a77c70aaa589c464bbafa2c8bbd14792e6ee54d0ff8c98b4970c",
-        "size": 37129
+        "sha256": "039779012fe6236b072dffe40506886052ad940813b944051a6dad9480fd4d53",
+        "size": 24229
       },
       "phase2-check.json": {
-        "sha256": "483c086dc64a7e2459e57f44eb7394b63f3cb11baf09abfeb99547eb122a3d7c",
-        "size": 47377
+        "sha256": "244b22f63623cc8f93ce485271816a50b148c20f2d2d8885ccecc9504a5131db",
+        "size": 80643
       },
       "issue-scope-ledger.json": {
-        "sha256": "1427f49ebe73cf3c993a447cdffdd5727822eb0a1c90f7627822e807b9b8b2a5",
-        "size": 4705
+        "sha256": "647fba5987090b19e393ea543954e6c3472ee3c1c43a83913451767ebd7f2ca3",
+        "size": 6054
       },
       "review-gate.json": {
-        "sha256": "822f95b4005870356f5fbdebccfa172040b10e2d523cd7cf34f6b76138ca1ca2",
-        "size": 13558
+        "sha256": "c36926e6dde1c083ca2f27b97e9bbc729d0652d1ca3adcd528b507b5fed78880",
+        "size": 18887
       },
       "pr-body.md": {
-        "sha256": "85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
-        "size": 7231
+        "sha256": "f75bc8b00cad8f49af03e73d2c22313fde7f0be8b1aac3a6f2b507788a42f7f2",
+        "size": 7834
       },
       "finish-summary-index.json": {
-        "sha256": "4cdfc0655064fb229590f17a71c2ffd266969944cdfba2fe8592cdbceccbe895",
-        "size": 6258
+        "sha256": "7f5e559145ca4c3bc89f73093e197787fd7d8d48da0417a1e20ed089eef7a491",
+        "size": 7715
       }
     },
     "repository": {
-      "head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+      "head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
       "branch": "feat/119-finish-family-integration-main",
       "base_ref": "origin/main",
       "diff_paths": [
@@ -378,6 +395,7 @@
         ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
         ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-review.json",
         ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json",
         ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
         ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
         ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
@@ -413,6 +431,7 @@
       ],
       "status_paths": [
         ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+        ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
         ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
         ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json"
       ]
@@ -432,62 +451,62 @@
       },
       "branch_review_handoff": {
         "status": "passed",
-        "facts_sha256": "da30a77f2b3b52356f952f20074d4f3e647bf51b7e871ba4d4db28f710727230"
+        "facts_sha256": "729fc45357d1ef64200047783e1f931010e3c0ffb0aad979193263a974d6a568"
       },
       "planning_approval": {
         "status": "passed",
-        "facts_sha256": "b7c9fc16bbbcf7df044ffb1ccec1f6c47c93d9029121dc0bf9911efe49d5541d"
+        "facts_sha256": "fbc6c78f9683c9a3c2bf61dcbc27a125e92bc0ede5fb0496568e29a20cd45416"
       },
       "phase2_check": {
         "status": "passed",
-        "facts_sha256": "e5823424ba2e8dd12036f5f056378bada7a9209a0a1aaa82a2b8b5258d736aec"
+        "facts_sha256": "5c85dca4a1e42609d20b6ebe9225bbeaea4dfd5ffc5378ebb90dd6338a5ebbbb"
       },
       "issue_scope_ledger": {
         "status": "passed",
-        "facts_sha256": "3070913db9c776d025dc033ff132fe5cdf432dd061109b57e8a1cc6d8fef3e3e"
+        "facts_sha256": "e26684bd505dadc0534d53b0e11a67ffa4ddd5484447a53e1f7aec0ff4c135dd"
       },
       "docs_ssot_reconciliation": {
         "status": "passed",
-        "facts_sha256": "0b576e9a43e5bef9f47d9c7ef041aa8979325a851544b048a0c4ddfa02658535"
+        "facts_sha256": "4adceacfafd3f8248bf2220cb0821164aae0fa84f2b068b1ce613de2a3ca8ecd"
       },
       "branch_review_evidence": {
         "status": "passed",
-        "facts_sha256": "0c5f4760c2e24f3b29c2b297faac819102a2948a25882d641563f60220caacbc"
+        "facts_sha256": "29c7e3a37e2b5c521841cb5924ef74e01ae57dabaa9322f41e149094ef8a205d"
       },
       "publication_content": {
         "status": "passed",
-        "facts_sha256": "1ad0e1086f20f0ef93550df6ddd468a622a3539c428f4b6260a626a50a80e994"
+        "facts_sha256": "ff38db78c76df05fb7a6d70866959ff514939a97b332b1edbdbe0ef9b8ee4895"
       },
       "review_range_and_working_tree": {
         "status": "passed",
-        "facts_sha256": "3f9fd5507d22994e219e71c000baae04adf8e46c323ee1d9ad186d35c22f8683"
+        "facts_sha256": "456065aae4f33649c38a397c1a772cf1cf704b4fe29084b9b248e285ec84ddf5"
       },
       "invocation_freshness": {
         "status": "passed",
-        "facts_sha256": "c90bdfbbcf91b9dc0d64b1eb84c8665013f1e91ab68d2ce1e357ad1d8acfe810"
+        "facts_sha256": "a757d72b36891a26703cf78fe0da7dd495e2193e6da65e56d857055c583525e5"
       }
     },
-    "publication_ref": "publication:5c066d7140f28fc16e2ca27a2e12be01076975a35d70fd15868a7f0238dda032"
+    "publication_ref": "publication:7e12fbf43df688ad0edc9e7dbcca4f50615e88d8d395112446654a2dce27f449"
   },
   "typed_exit": "ready",
   "consumer": {
     "kind": "skill",
     "id": "guru-finalize-task"
   },
-  "supersedes_publication_ref": "publication:0372d60759f3432c7a953b59f0490d5684c99a35922c8eff45ef4796c2ebedc9",
-  "stale_reason": "The prior return_to_task_work publication result at c8c84ab21fc80cd2e72017e293f2aba38e00150c is superseded by the completed compact-gate and publication-ledger task-work fixes and the passed fresh-final Branch Review at 95379d6b498edcd7f0362d10ba20009f84a55d41.",
-  "reentry_context": "Re-enter publication against the current 5-commit, 73-path reviewed state, the refreshed publication content, the closed publication finding lifecycle, and the unchanged post-push remote marketplace observation.",
-  "facts_sha256": "d821bd958da1e59ac61d718073ea211b5d27312298fdf5fbbcf9c402fcc8d46b",
+  "supersedes_publication_ref": "publication:7cf415cd9328ef15d2e2f156974d613fcb7ab978eaa206b22f7a0a08c9e52076",
+  "stale_reason": "finalization_preview_finish_summary_retrieval_overflow",
+  "reentry_context": "The side-effect-free finalizer preview found a 3063-character generated retrieval_text above the 3000-character contract. Compress only finish-summary-index.json to 2996 characters, rebuild current publication evidence, and retry the same 72bf89a plan preview without side effects.",
+  "facts_sha256": "7ec8d775d21cc80415afb526dcf847c57d3aea244ed6f085de68046791d3d136",
   "publish_inputs": {
     "repo": "castbox/guru-trellis",
     "base_branch": "main",
     "head_branch": "feat/119-finish-family-integration-main",
-    "reviewed_head_sha": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+    "reviewed_head_sha": "72bf89a789d25598a95944dfe9af8735b4a92a10",
     "title": "完成：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
     "body_source": "pr-body.md",
-    "body_sha256": "85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
+    "body_sha256": "f75bc8b00cad8f49af03e73d2c22313fde7f0be8b1aac3a6f2b507788a42f7f2",
     "draft": true,
     "reviewed_source": "body-artifact:pr-readiness.json",
-    "closeout_plan_digest": "8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3"
+    "closeout_plan_digest": "0fdf8e5fb2c315b2e4476a2faa414c5d3109ae518f1cd0c996731c503bca0423"
   }
 }

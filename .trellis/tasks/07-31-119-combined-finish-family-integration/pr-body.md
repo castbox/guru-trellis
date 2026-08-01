@@ -7,6 +7,8 @@
 - 扩展 clean install、`trellis update`、workflow reselect、preset reapply、CLI upgrade dry-run、ownership 与 drift 验收；五个 legacy `trellis-finish-work` payload 保持不变，只移除 #119 blocker，并继续由 #132 负责物理删除。
 - 同步 canonical source、dogfood copies、managed manifest、README 与 workflow/preset/spec Docs SSOT；修复 Branch Review 发现的六份 Guru entry EOF 多余空行。
 - 修复正常 closeout 先完成 publication review、再由 content push 写入 plan-owned marketplace machine evidence 时的 freshness 顺序：仅接受 immutable plan 的 exact pending evidence 或 current checker-derived passed projection，并只更新枚举的 ledger artifact、entry、status-path、repository 与派生 working-tree bindings。
+- 修复 GitHub PR HEAD 正常传播延迟：validator 保持单次客观读取，executor 在 local/remote 已一致且 PR identity 稳定时执行六次有界读取；短暂旧值收敛后自动继续，持续不一致、identity drift 或 remote divergence 仍 fail closed。
+- 修复 compact schema 1.1 archived recovery 的工作树依赖：active pre-publication 仍检查 task-local publication owner artifact；archived/archive_pushed recovery 从 exact committed plan、gate、evidence/archive commit、finish summary 与 live Git/GitHub facts 恢复，不要求或重建已删除的 `pr-readiness.json`。
 
 ## 影响范围
 
@@ -17,19 +19,18 @@
 
 ## 验证结果
 
-- Fresh Phase 2 schema 2.1 记录 29 条 exact commands：runtime 553 passed / 13 declared skips，Skill packages 184 passed，preset 47 passed，ownership 14 passed，source 与 installed combined integration 各 6 passed，共 810 tests passed。
-- 两次 `apply.sh --repo . --all-platforms` 均成功且第二次幂等；dogfood overlay drift、changed JSON、Python compile、Bash syntax、workspace boundary、frozen donor invariants 与 `git diff --check origin/main` 全部通过。
-- Clean throwaway 验证覆盖 marketplace index、workflow install/preview/switch、preset install、`trellis update`、workflow reselect、preset reapply、多平台 discovery、managed hashes、`.new`/`.bak` contract 与 normal/extension closeout transaction。
-- `trellis upgrade --dry-run --tag 0.6.5` 通过且未修改 host global installation；Issue #105 的 prepare、push、draft、archive、recovery、PR identity 与 failure matrix 完整回归通过。
-- Publication-ledger 顺序回归覆盖 semantic ledger、唯一 reviewed preimage、pending/passed projection、允许的五类派生 binding，以及其它 ledger/artifact/entry/repository/status-path drift 的 fail-closed 负例。
+- 当前 recovery Phase 2 schema 2.1 记录 15 条受影响验证：runtime 561 passed / 13 existing conditional skips，finalizer contract 6 passed，source integration 9 passed，installed integration 9 passed / 1 existing environment-dependent skip，preset 47 passed。
+- Python compile、canonical/installed runtime parity、canonical/installed integration parity、dogfood overlay drift、workspace boundary、task validation、sidecar scan、frozen donor invariants 与 `git diff --check` 全部通过。
+- 回归明确覆盖 PR HEAD 首次旧值后收敛、持续不一致 fail closed、compact archive 不含 `closeout-plan.json`/`pr-readiness.json` 的 same-plan recovery、active missing-readiness stale，以及不重复 PR/archive/evidence commit 或其它 side effect。
+- 既有完整 #119 clean install、upgrade/update、workflow reselect、preset reapply、多平台与 Issue #105 transaction/recovery 验收保持有效；本 recovery 按授权未因 plan/digest 变化重放无关 Phase 2 或 Skill tests。
 - 当前分支尚未 push，因此不声明 exact unpublished feature-ref marketplace install 已完成；该项由 push 后的 `guru-verify-extension-installation` gate 使用真实 remote ref 验证。
 
 ## Review Gate
 
-- Fresh-final Branch Review 覆盖 `origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...95379d6b498edcd7f0362d10ba20009f84a55d41` 的 5 个 commits、73 个 changed paths 和完整当前 task/ledger/Docs SSOT evidence。
-- `BR-119-01`（Guru entry EOF 空白）、`BR-119-02`（durable Finish route SSOT）和 `P2-publication-ledger-closeout-order` 均绑定当前 reviewed HEAD 并已 resolved。
+- Distinct fresh-final Branch Review 覆盖 `origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...72bf89a789d25598a95944dfe9af8735b4a92a10` 的完整 12 commits、74 net paths 和当前 task/ledger/Docs SSOT evidence。
+- `F119-FRESH-001`（P1 archived plan working-tree dependency）和 `F119-FRESH-002`（P3 durable archived-readiness SSOT）保留原 `introduced_head=d8664c83...`，并在 `resolved_at_head=72bf89a7...` 取得独立 closure。
 - 独立 reviewer 确认无 open P0-P3 finding、scope proposal、public-I/O drift、compatibility regression 或 Docs SSOT conflict；Branch Review typed exit 为 `passed`，唯一 consumer 是 `guru-review-task-publication`。
-- Exact remote feature-ref marketplace installation 仍是 push 后 observation，不是当前 Branch Review pass 声明；#132 仍是 legacy physical removal follow-up。
+- Draft PR #166 仍是唯一 OPEN Draft，当前 remote/PR HEAD 仍为历史 `15d957b...`；这是独立 push/finalizer 授权前的预期 observation，不是 Branch Review pass 证据。#132 仍是 legacy physical removal follow-up。
 
 ## Issue 关闭范围
 
@@ -56,6 +57,6 @@ Closes #115
 
 - `strategy`：`ssot_first`。
 - `durable docs`：canonical/dogfood workflow、root/workflow/preset README，以及 workflow、preset、ownership、public-docs 等 15 个 durable paths 已同步并由 Phase 2 绑定当前 SHA-256。
-- `merged delta`：日常 `guru-finish-work` 入口、legacy compatibility 状态、private projection responsibility、exact pending/passed publication-ledger augmentation、installer/update/reapply 与 #132 边界已合并到 durable owners；已闭环 findings 不再留下冲突合同。
+- `merged delta`：日常 `guru-finish-work` 入口、legacy compatibility、private projection、publication-ledger augmentation、PR HEAD 有界收敛、active-versus-archived evidence ownership、installer/update/reapply 与 #132 边界已合并到 durable owners；compact archive 不再依赖或重建 readiness artifact。
 - `task history`：live GitHub discovery、donor 比对、命令日志、finding lifecycle 与 unpublished branch observation 仅保留在 task history/runtime evidence，不扩张 public DTO。
 - `follow-up / limitation`：#132 继续负责 legacy overlay physical removal；exact remote feature-ref marketplace verification 必须在独立 push 授权后完成，当前 PR 文案不把该未执行项写成已验证。

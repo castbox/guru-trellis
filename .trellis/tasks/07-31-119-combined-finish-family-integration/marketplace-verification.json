@@ -1,34 +1,36 @@
 {
   "schema_version": "1.0",
   "skill_id": "guru-verify-extension-installation",
-  "generated_at": "2026-07-31T17:31:36Z",
+  "generated_at": "2026-08-01T07:30:01Z",
   "mode": "workflow",
   "profile": "verification_required",
   "public_input": {
     "profile": "verification_required",
     "mode": "workflow",
     "task_ref": ".trellis/tasks/07-31-119-combined-finish-family-integration",
-    "plan_ref": "closeout-plan:8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3",
+    "plan_ref": "closeout-plan:0fdf8e5fb2c315b2e4476a2faa414c5d3109ae518f1cd0c996731c503bca0423",
     "repo_ref": "castbox/guru-trellis",
-    "reviewed_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+    "reviewed_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
     "verification_target": "extension-installation"
   },
   "repository": {
     "repo_ref": "castbox/guru-trellis",
     "remote": "origin",
     "ref": "refs/heads/feat/119-finish-family-integration-main",
-    "reviewed_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
-    "remote_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
-    "task_worktree_sha256": "f563eec95e1f0d327fc2b2b7a9bf238593225ba8bb6f82e7baeec4fee1eca3e4"
+    "reviewed_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+    "remote_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+    "task_worktree_sha256": "dbba747da60fa7205c7add471c7df7d4b588cea0cf2093fe61108f32fea4cb76"
   },
   "applicability": {
     "status": "required",
-    "reason": "Issue #119 修改 canonical workflow、preset/overlay installer、Guru namespace 平台入口、公共 Skill 分发与安装生命周期合同，必须从已 push 的精确 remote feature ref 完成安装验证。",
+    "reason": "Issue #119 的 74-path delivery 修改 canonical workflow、preset/overlay installer、Guru namespace 平台入口、公共 Skill 分发、ownership inventory、README 命令与安装/update/reapply 生命周期合同，必须从已 push 的精确 remote feature ref 完成安装验证。",
     "evidence_paths": [
       "trellis/workflows/guru-team/workflow.md",
       "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
       "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "trellis/skills/guru-team/tests/test_finish_family_integration.py"
+      "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "README.md"
     ]
   },
   "verification_profile": {
@@ -46,7 +48,7 @@
       "readme_commands",
       "redaction"
     ],
-    "selection_reason": "当前 73-path delivery 同时影响 marketplace workflow、initial/upgrade preset lifecycle、三平台入口、Skill contract distribution、ownership inventory 与公开安装文档，因此选择完整 12-capability profile。",
+    "selection_reason": "当前交付同时影响 marketplace workflow、initial/upgrade preset lifecycle、三平台入口、Skill contract distribution、ownership inventory 与公开安装文档，因此选择完整 12-capability profile。",
     "coverage": [
       "trellis/index.json and canonical workflow -> marketplace_index,new_repo_init,existing_repo_preview_switch",
       "preset installer and managed overlays -> preset_initial_apply,preset_reapply,trellis_update_reapply,managed_conflict_sidecars",
@@ -69,7 +71,7 @@
           "refs/heads/feat/119-finish-family-integration-main^{}"
         ],
         "exit_code": 0,
-        "stdout_sha256": "c40109ebe77d1735d916d3fa72da65330a3212116f47725ad5bbd6c495afe17b",
+        "stdout_sha256": "63a4e7b58703f6775bd0d5dcf18ca8e890be1019c3222b92dbcd083dbf2b2723",
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 91,
         "stderr_size_bytes": 0
@@ -100,7 +102,7 @@
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_sha256": "61a211e6830932b939a22239a0e583815018b54a41ab43ff81f405b0f00a92c8",
+        "stderr_sha256": "44fa96a6ba8b62e7134dba9e52517e5e5d185eda36298f761b9c0e57d81b99aa",
         "stdout_size_bytes": 0,
         "stderr_size_bytes": 110
       },
@@ -110,13 +112,13 @@
           "git",
           "checkout",
           "--detach",
-          "95379d6b498edcd7f0362d10ba20009f84a55d41"
+          "72bf89a789d25598a95944dfe9af8735b4a92a10"
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_sha256": "28a36c308bfdb0012cecba1fc03e9dc2f4b87af7ccde4acee56b1e2dd9ef5e53",
+        "stderr_sha256": "73b73891ceebaaffaea38ea733028c844aee59c002e520cf207d5ca225d8a4c8",
         "stdout_size_bytes": 0,
-        "stderr_size_bytes": 75
+        "stderr_size_bytes": 80
       },
       {
         "id": "verify_checkout_commit",
@@ -127,7 +129,7 @@
           "HEAD^{commit}"
         ],
         "exit_code": 0,
-        "stdout_sha256": "345847304436b3c9cfa562e1b6da3391ed9a3e9355439c24d04a9ac6c2251544",
+        "stdout_sha256": "6bb89a1a5c18ff1dad2661c780f2ab95a7e6eb5e379e018a0c49761be2872ad1",
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 40,
         "stderr_size_bytes": 0
@@ -139,10 +141,10 @@
           "<temp-install-work>"
         ],
         "exit_code": 0,
-        "stdout_sha256": "eb3e171ae25bab11e6f47e2dbbdd903c96020727dae4ea839df93253082021b4",
-        "stderr_sha256": "b289768ec8b17545b5e23012043a2985af2fe638828cc2578885fa2a6cf88f3b",
+        "stdout_sha256": "8e006883e3b5d7605b7bcff4640e171cf29bee806b4c8103a47f97a0599ce2ab",
+        "stderr_sha256": "40273ba5a759a5d333124b73300602b40ddc2f8914601f9ccfb338b062d0eeb8",
         "stdout_size_bytes": 4184792,
-        "stderr_size_bytes": 1147
+        "stderr_size_bytes": 1149
       }
     ],
     "capabilities": [
@@ -709,7 +711,7 @@
         "platform": null,
         "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
         "source_path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "expected_sha256": "3ee136e69afd9b62b92efe04f8b202ad781560403906c43ec14290d4b25d06c7",
+        "expected_sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
         "relation": "managed_manifest"
       },
       {
@@ -2586,7 +2588,7 @@
         "category": "preset",
         "platform": null,
         "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "3ee136e69afd9b62b92efe04f8b202ad781560403906c43ec14290d4b25d06c7"
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083"
       },
       {
         "category": "schema",
@@ -3964,7 +3966,7 @@
       }
     ],
     "asset_inventory": {
-      "expected_set_sha256": "dbe7e448544044709d6dcd7de639c63bd7d01046757a7bdc78957610ae0592c8",
+      "expected_set_sha256": "a693fc6c3c48805f7e748e38d92e88e8550275c69e436171341b215d3e052363",
       "expected_count": 236,
       "observed_count": 236,
       "matched_count": 236,
@@ -4024,7 +4026,7 @@
         "id": "applicability_and_profile_coverage",
         "status": "passed",
         "evidence_refs": [
-          "complete origin/main...95379d6 changed-path classification",
+          "complete origin/main@7ca1a0b...72bf89a changed-path classification",
           "12 ordered capability facts all passed"
         ]
       },
@@ -4035,7 +4037,7 @@
           "command:resolve_remote_ref exit=0",
           "command:checkout_resolved_commit exit=0",
           "command:verify_checkout_commit exit=0",
-          "remote_head=95379d6b498edcd7f0362d10ba20009f84a55d41"
+          "remote_head=72bf89a789d25598a95944dfe9af8735b4a92a10"
         ]
       },
       {
@@ -4056,6 +4058,7 @@
         "evidence_refs": [
           "asset_inventory expected=236 observed=236 matched=236",
           "workflow=1/1,preset=6/6,schema=4/4,skill=45/45,platform=180/180",
+          "expected_set_sha256=a693fc6c3c48805f7e748e38d92e88e8550275c69e436171341b215d3e052363",
           "no missing duplicate unexpected mismatched or relation-error paths"
         ]
       },
@@ -4063,7 +4066,7 @@
         "id": "platform_and_contract_equality",
         "status": "passed",
         "evidence_refs": [
-          "capability:skill_contract_discovery",
+          "capability:skill_contract_discovery asset_paths=49",
           "capability:platform_equality asset_paths=225"
         ]
       },
@@ -4089,7 +4092,8 @@
         "status": "passed",
         "evidence_refs": [
           "capability:redaction",
-          "sanitized command argv and digest-only stdout/stderr retention"
+          "sanitized command argv and digest-only stdout/stderr retention",
+          "execution facts sha256=b5c2bd05e851f71629a2a08893256a888b66835be2f6b849bde75cbca9c54f25"
         ]
       }
     ],
@@ -4102,12 +4106,12 @@
     "id": "guru-finalize-task"
   },
   "identity": {
-    "verification_ref": "extension-verification:a214e3da531e0e1d7589b7d7"
+    "verification_ref": "extension-verification:7b21ceb679f602b9cb106892"
   },
   "blocker": null,
   "freshness": {
-    "plan_ref": "closeout-plan:8d73eaccba5c3943b2d801cc5fb459c886ca937d8ec79e5ca01197c04246ffc3",
-    "supersedes_verification_ref": null,
+    "plan_ref": "closeout-plan:0fdf8e5fb2c315b2e4476a2faa414c5d3109ae518f1cd0c996731c503bca0423",
+    "supersedes_verification_ref": "extension-verification:a214e3da531e0e1d7589b7d7",
     "current": true
   },
   "redaction": {
@@ -4119,7 +4123,7 @@
       "retained_command_digests"
     ]
   },
-  "machine_facts_sha256": "249f112e0f7e5ef8537af1f315b43d78ce922fac9816299279a1af35f97c2c16",
-  "semantic_review_sha256": "77607cc66dab66430fa178478f4ae859b5f33522e42d8d70cf60a48801497014",
-  "facts_sha256": "a214e3da531e0e1d7589b7d786e6c40b4a243115650a3e60556ac7c7a0e9082c"
+  "machine_facts_sha256": "a392db207b67132710502cbbb6e51f99b3cbde90ca4147eb49e5d2193dffe8a1",
+  "semantic_review_sha256": "728d6b52b206a4099b3d7a466ed0f847d2284a78c7c61933f0b3029b90eef8e8",
+  "facts_sha256": "7b21ceb679f602b9cb106892aea8361beb3637d94439501d95aff5760e2fa972"
 }

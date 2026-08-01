@@ -2,12 +2,14 @@
   "schema_version": 1,
   "index": {
     "problem": "三个 Finish Skills 已在 main 完成，但 Guru 日常入口、combined typed routing、checked evidence transaction bridge、publication-first ledger freshness、terminal eval 与安装生命周期仍未形成一条完整路径。",
-    "outcome": "已完成 #119 combined integration：guru-finish-work 跨平台入口、13 exits 唯一 consumers、private evidence bridge、exact pending/passed publication-ledger augmentation、两个 published eval、安装更新回归与 Docs SSOT 均闭合；#132 继续负责 legacy removal。",
+    "outcome": "#119 combined integration 已完成：guru-finish-work 跨平台入口、13 exits 唯一 consumers、private evidence bridge、publication-ledger 顺序、PR HEAD 有界收敛和 compact archive recovery 均闭合；Docs SSOT、安装更新及 #132 legacy removal 边界不变。",
     "changed_behavior": [
       "Codex、Claude、Cursor 通过同一 guru-finish-work 薄入口进入 live workflow。",
       "三个 Finish Skills 的 13 exits 均由唯一 consumer 或 fail-closed stop 承接。",
       "Checked #117 evidence 以 private projection 贯通 normal archive 与 active recovery。",
       "Publication review 后写入 plan-owned marketplace evidence 的正常顺序只更新枚举的 ledger 与派生 bindings，其余 drift 继续 fail closed。",
+      "PR HEAD 短暂旧值由 executor 有界重读并在三方收敛后自动继续；持续 mismatch、identity drift 或 remote divergence 仍 fail closed。",
+      "Compact archived/archive_pushed recovery 从 exact committed transaction 与 live Git/GitHub facts 恢复，不再依赖工作树 closeout-plan.json 或已删除的 pr-readiness.json。",
       "Finalizer 新增 publication-ready-published 与 same-plan-published real-wrapper eval。",
       "Clean install、update、reselect、reapply、upgrade dry-run 与 ownership 验收已完成。"
     ],
@@ -91,6 +93,18 @@
         "before": "安装门禁未完整绑定 Guru entries 与 combined transaction behavior。",
         "after": "Clean install、update、reselect、reapply、upgrade dry-run 与多平台验收已覆盖。",
         "source_artifact": "phase2-check.json"
+      },
+      {
+        "contract": "GitHub PR HEAD convergence",
+        "before": "Remote branch 已更新但 GitHub PR headRefOid 短暂落后时会立即阻塞 Ready transition。",
+        "after": "Validator 保持单次读取，executor 在 identity 与 local/remote 稳定时执行固定六次有界读取；收敛后自动继续，持续不一致仍 fail closed。",
+        "source_artifact": "phase2-check.json"
+      },
+      {
+        "contract": "Compact archived recovery evidence",
+        "before": "Archived recovery 仍可能先要求工作树 closeout plan 或已从 schema 1.1 archive 删除的 readiness artifact。",
+        "after": "Active 路径检查 task-local publication owner；archived/archive_pushed 路径先解析 locator、immutable committed plan 与 transaction，再验证 remote branch 和 GitHub PR facts。",
+        "source_artifact": "review-gate.json"
       }
     ],
     "search_terms": {
@@ -113,6 +127,8 @@
         "finalization_marketplace_verification_compatibility_projection",
         "task_publication_finalization_ledger_augmentation",
         "check_task_publication_for_finalization_augmentation",
+        "ensure_closeout_pr_ready",
+        "finalization_verification_augmentation_plan",
         "execute_archive_metadata_transaction",
         "resume_active_archive_move"
       ],
@@ -121,6 +137,8 @@
         "Finish family 13 exits 集成已完成",
         "private marketplace evidence bridge 已完成",
         "publication ledger closeout ordering 已完成",
+        "GitHub PR HEAD 有界收敛已完成",
+        "compact archived recovery 不依赖 readiness 已完成",
         "Issue 105 transaction recovery 回归已完成",
         "verify-throwaway-install.sh update reapply 已完成"
       ]
