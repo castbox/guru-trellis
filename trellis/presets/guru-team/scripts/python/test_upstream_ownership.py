@@ -214,6 +214,14 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["active_count"], 43)
         self.assertEqual(first["generated_in_clean_init_count"], 37)
         self.assertEqual(first["legacy_not_generated_count"], 6)
+        self.assertEqual(first["overlay_count"], 46)
+        self.assertEqual(first["legacy_overlay_count"], 43)
+        self.assertEqual(first["additive_overlay_count"], 3)
+        self.assertEqual(
+            first["additive_overlay_paths_sha256"],
+            ownership.path_set_sha256(sorted(ownership.EXPECTED_ADDITIVE_OVERLAY_CLAIMS)),
+        )
+        self.assertRegex(first["additive_overlay_payload_aggregate_sha256"], r"^[0-9a-f]{64}$")
         self.assertEqual(first["active_payload_aggregate_sha256"], ownership.CURRENT_PAYLOAD_AGGREGATE_SHA256)
         self.assertEqual(first["reviewed_current_payload_count"], 21)
         self.assertEqual(
@@ -244,7 +252,42 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["legacy_entries_sha256"], ownership.canonical_sha256(inventory["legacy_entries"]))
         self.assertEqual(first["frozen_legacy_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
         self.assertEqual(first["materialized_frozen_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
-        self.assertEqual(first["facts_sha256"], "af9fb30f13b09501ee8c732cc02663546376c6e4f561950cc08bba716286e21d")
+        self.assertEqual(first["facts_sha256"], "fcfedc7dbc1c4e9e6897b37745cc4cc0c89962696730e92d9d8f78af13710129")
+
+        additive_claims = {
+            claim["path"]: claim
+            for claim in inventory["managed_path_claims"]
+            if claim["path"] in ownership.EXPECTED_ADDITIVE_OVERLAY_CLAIMS
+        }
+        self.assertEqual(set(additive_claims), set(ownership.EXPECTED_ADDITIVE_OVERLAY_CLAIMS))
+        for path, rule_id in ownership.EXPECTED_ADDITIVE_OVERLAY_CLAIMS.items():
+            self.assertEqual(
+                additive_claims[path],
+                {
+                    "path": path,
+                    "category": "guru_owned",
+                    "classification_rule": rule_id,
+                    "covered_by_legacy_paths": [],
+                },
+            )
+            overlay = self.repo / ownership.OVERLAY_ROOT_RELATIVE / path
+            self.assertTrue(overlay.is_file())
+            self.assertFalse(overlay.is_symlink())
+
+        finish_legacy = [
+            entry
+            for entry in inventory["legacy_entries"]
+            if entry["replacement_owners"]
+            == [
+                "guru-review-task-publication",
+                "guru-verify-extension-installation",
+                "guru-finalize-task",
+            ]
+        ]
+        self.assertEqual(len(finish_legacy), 5)
+        for entry in finish_legacy:
+            self.assertEqual(entry["blocking_issues"], [])
+            self.assertEqual(entry["removal_issue"], 132)
 
         recorded_owners = {
             owner
@@ -263,6 +306,67 @@ class UpstreamOwnershipTest(unittest.TestCase):
         inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
         self.assertEqual(list(Draft202012Validator(schema).iter_errors(inventory)), [])
+
+    def test_additive_overlay_prefix_sibling_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            extra = repo / ownership.OVERLAY_ROOT_RELATIVE / ".codex/prompts/guru-finish-work.md.backup"
+            extra.write_text("undeclared additive sibling\n", encoding="utf-8")
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        self.assertIn(
+            "overlay_not_in_frozen_baseline",
+            {item["code"] for item in payload["errors"] if item["path"] == ".codex/prompts/guru-finish-work.md.backup"},
+        )
+        inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
+        self.assertEqual(
+            ownership.classify_guru_path(
+                ".codex/prompts/guru-finish-work.md.backup",
+                inventory["guru_owned_rules"],
+            ),
+            [],
+        )
+
+    def test_additive_overlay_must_be_regular(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            relative = ".codex/prompts/guru-finish-work.md"
+            overlay = repo / ownership.OVERLAY_ROOT_RELATIVE / relative
+            overlay.unlink()
+            overlay.symlink_to("trellis-finish-work.md")
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        matching = [
+            item
+            for item in payload["errors"]
+            if item["code"] == "additive_overlay_not_regular" and item["path"] == relative
+        ]
+        self.assertEqual(len(matching), 1)
+
+    def test_additive_overlay_requires_exact_claim(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            inventory_path = repo / ownership.INVENTORY_RELATIVE
+            inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+            relative = ".codex/prompts/guru-finish-work.md"
+            inventory["managed_path_claims"] = [
+                claim for claim in inventory["managed_path_claims"] if claim["path"] != relative
+            ]
+            self.write_json(inventory_path, inventory)
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        matching = [
+            item
+            for item in payload["errors"]
+            if item["code"] == "additive_overlay_claim_missing" and item["path"] == relative
+        ]
+        self.assertEqual(len(matching), 1)
 
     def test_unknown_replacement_owner_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -297,6 +401,61 @@ class UpstreamOwnershipTest(unittest.TestCase):
         ]
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0]["path"], inventory["legacy_entries"][0]["path"])
+
+    def test_only_exact_finish_legacy_paths_allow_empty_blockers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            inventory_path = repo / ownership.INVENTORY_RELATIVE
+            inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+            entry = next(
+                item
+                for item in inventory["legacy_entries"]
+                if item["path"] not in ownership.FINISH_LEGACY_PATHS
+            )
+            entry["replacement_owners"] = [
+                "guru-review-task-publication",
+                "guru-verify-extension-installation",
+                "guru-finalize-task",
+            ]
+            entry["blocking_issues"] = []
+            self.write_json(inventory_path, inventory)
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        self.assertIn(
+            "missing_blocking_issue",
+            {
+                item["code"]
+                for item in payload["errors"]
+                if item["path"] == entry["path"]
+            },
+        )
+
+    def test_exact_finish_legacy_paths_require_empty_blockers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            inventory_path = repo / ownership.INVENTORY_RELATIVE
+            inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+            entry = next(
+                item
+                for item in inventory["legacy_entries"]
+                if item["path"] in ownership.FINISH_LEGACY_PATHS
+            )
+            entry["blocking_issues"] = [119]
+            self.write_json(inventory_path, inventory)
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        self.assertIn(
+            "finish_blocking_issue_mismatch",
+            {
+                item["code"]
+                for item in payload["errors"]
+                if item["path"] == entry["path"]
+            },
+        )
 
     def test_reviewed_current_payload_bytes_are_bound(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

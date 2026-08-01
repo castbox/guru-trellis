@@ -35,8 +35,8 @@
     },
     "guru_owned_rules": {
       "type": "array",
-      "minItems": 8,
-      "maxItems": 8,
+      "minItems": 11,
+      "maxItems": 11,
       "items": {"$ref": "#/$defs/guruOwnedRule"}
     },
     "managed_path_claims": {
@@ -160,7 +160,7 @@
         "migration_state": {"enum": ["active", "removed"]},
         "baseline_sha256": {"$ref": "#/$defs/sha256"},
         "current_payload_sha256": {
-          "description": "Reviewed current bytes for the five active Issue #131 continue entries and eight AI-first agent entries reviewed by Issue #161; baseline_sha256 remains the immutable Issue #128 historical identity.",
+          "description": "Reviewed current bytes for the five active Issue #131 continue entries plus the eight AI-first implement/check entries and five finish compatibility entries reviewed by Issue #161; baseline_sha256 remains the immutable Issue #128 historical identity.",
           "$ref": "#/$defs/sha256"
         },
         "generated_in_clean_init": {"type": "boolean"},
@@ -174,7 +174,6 @@
         },
         "blocking_issues": {
           "type": "array",
-          "minItems": 1,
           "uniqueItems": true,
           "items": {"$ref": "#/$defs/issueNumber"}
         },
@@ -188,6 +187,32 @@
         }
       },
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "path": {
+                "enum": [
+                  ".agents/skills/trellis-finish-work/SKILL.md",
+                  ".claude/commands/trellis/finish-work.md",
+                  ".codex/prompts/trellis-finish-work.md",
+                  ".codex/skills/trellis-finish-work/SKILL.md",
+                  ".cursor/commands/trellis-finish-work.md"
+                ]
+              }
+            },
+            "required": ["path"]
+          },
+          "then": {
+            "properties": {
+              "blocking_issues": {"maxItems": 0}
+            }
+          },
+          "else": {
+            "properties": {
+              "blocking_issues": {"minItems": 1}
+            }
+          }
+        },
         {
           "if": {"properties": {"migration_state": {"const": "active"}}, "required": ["migration_state"]},
           "then": {

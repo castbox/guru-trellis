@@ -272,7 +272,8 @@ python3 ./.trellis/scripts/task.py set-scope <name> <scope>
 
 Run `python3 ./.trellis/scripts/task.py --help` for the authoritative list.
 
-Before finalization, create or review the task-local PR body at
+Canonical explicit closeout enters through `guru-finish-work`. Before
+finalization, create or review the task-local PR body at
 `{TASK_DIR}/pr-body.md` and the current `finish-summary-index.json`, then invoke
 the active `guru-review-task-publication` owner. Only its `ready` exit enters
 `guru-finalize-task`. The finalizer privately runs closeout preview, plan-bound
@@ -298,11 +299,12 @@ without a Markdown link so the response does not create a dead link.
 These are internal workflow helpers. `publish-pr.sh` is intentionally omitted
 from the normal helper sequence because it is an unconditional compatibility
 blocker; ordinary direct `finish-work.sh` calls are blocked. The explicit
-`trellis-finish-work` entrypoint is a thin live-workflow router; the active
+`guru-finish-work` entrypoint is the thin live-workflow router. The five frozen
+`trellis-finish-work` files remain byte-pinned compatibility routers through
+Issue #132; they do not own another route or artifact model. The active
 finalizer privately pushes reviewed evidence, binds one immutable draft PR,
 builds the final summary, performs the archive transaction, and marks the same
-PR ready only after its semantic gate and plan-bound confirmation. They are not
-new user-facing primary commands.
+PR ready only after its semantic gate and plan-bound confirmation.
 
 ### Sub-agent Boundary
 
@@ -1041,7 +1043,7 @@ If implementation reveals a requirement defect, return to Phase 1 and update art
 - 3.7 Finalize and publish `[required · once]`
 
 [workflow-state:completed]
-Use `guru-finalize-task`. One approved closeout plan covers push, required verification, Draft PR, archive, and Ready. Auto-route verification and same-plan recovery; stop only for changed side effects, new authority, or a real external blocker.
+Use canonical `guru-finish-work`; auto-route mapped Finish exits and stop only for changed side effects, new authority, or a declared blocker.
 [/workflow-state:completed]
 
 #### 3.2 Debug retrospective `[on demand]`
@@ -1169,6 +1171,13 @@ then repeat complete Phase 2 check, task commit, Branch Review, and publication
 review. `blocked`, unknown, missing, multiple, stale, consumer-mismatched, or
 unmapped results stop fail closed.
 
+The canonical `guru-finish-work` platform entry reads live state and reaches
+this same route when publication review is not current. Until Issue #132 removes
+the frozen compatibility overlay, `trellis-continue` may reach this route from
+Branch Review `passed`, but it stops at current `ready`; the five
+`trellis-finish-work` files remain compatibility routers only. No entry owns a
+second publication route or copies active Skill behavior.
+
 The active extension verifier is independently discoverable for standalone use
 and is conditionally reached from the active finalizer:
 
@@ -1220,10 +1229,12 @@ binds the exact HEAD, digest, target, and scope, but the user never repeats
 those tokens. A changed or ambiguous plan must be shown and confirmed again.
 
 `guru-verify-extension-installation` is conditional: invoke it only when the
-finalizer emits `verification_required`. Its `verified` and `not_required`
-results return directly to the same finalizer plan. `return_to_task_work`
-resumes implementation and the complete downstream check/review sequence;
-`blocked` stops.
+finalizer emits `verification_required`. That workflow route accepts only
+`verified` back into the same finalizer plan. The separate task-bearing
+standalone verifier may return `not_required` only through finalizer profile
+`standalone_verification_not_required`. `return_to_task_work` resumes
+implementation and the complete downstream check/review sequence; `blocked`
+stops.
 
 The task-local `pr-body.md` and `finish-summary-index.json` are authored before
 publication review and are not regenerated after `ready`. Publication review
@@ -1259,7 +1270,7 @@ verification, digest, or checkpoint artifacts in the standard response.
    closure.
 4. Planning artifacts must be persisted before implementation.
 5. In business projects, `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**` durable docs, `00-bootstrap-guidelines` generated docs SSOT, and workflow artifact human-readable fields are Chinese by default, with English reserved for literal tokens such as commands, paths, config keys, GitHub keywords, and code symbols.
-6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`; `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
+6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and canonical `guru-finish-work`; frozen `trellis-finish-work` entries remain compatibility routers through Issue #132, and `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
 7. `review-branch` and `finish-work.sh` are companion script subcommands, not user-facing phases; `publish-pr` is a compatibility-only blocked command. Ordinary direct `finish-work.sh` and every `publish-pr` call are blocked before archive/push/PR.
 8. Branch Review Gate belongs after commit and before finalization; do not put it in a non-blocking hook.
 9. Push, Draft PR, verification, archive and Ready belong to one finalizer plan; do not ask users to run a separate publish flow.

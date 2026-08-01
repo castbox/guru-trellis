@@ -746,9 +746,10 @@ ordinary direct calls before closeout-plan, push, draft PR, archive, or publish
 side effects; only `guru-finalize-task`'s checked private transition executor
 may pass the `--from-trellis-finish-work` intent marker. `publish-pr` is retained
 only as an unconditional compatibility blocker: it performs no repo/task
-resolution or side effect and points callers to `trellis-finish-work`. Every
-interruption returns through the same finalizer semantic loop and its mapped
-recovery consumer.
+resolution or side effect. Its legacy `required_entrypoint=trellis-finish-work`
+error value remains a compatibility identifier for the frozen routers; the
+canonical user route is `guru-finish-work`. Every interruption returns through
+the same finalizer semantic loop and its mapped recovery consumer.
 
 Finish-summary separates AI judgment from deterministic facts. Publication
 preparation writes task-local `finish-summary-index.json` with reviewed
@@ -932,8 +933,9 @@ is absent from or mismatched with the planned archive transaction,
 recovery falls back to the pre-commit metadata path and keeps all layout,
 dirty/staged path, blob, official `task.json`, and lineage checks fail closed.
 An archived directory containing only `closeout-plan.json` is resolvable only
-by the `trellis-finish-work` recovery entry; ordinary task resolution still
-requires `task.json`. That plan-only entry reads the plan from the current
+by the canonical `guru-finish-work` recovery route or a frozen compatibility
+router; ordinary task resolution still requires `task.json`. That plan-only
+entry reads the plan from the current
 commit blob rather than trusting working-tree bytes, then applies a dedicated
 fail-closed workspace boundary before GitHub access or committed-archive
 recovery. The boundary requires the actual Git toplevel, configured and remote
@@ -989,7 +991,7 @@ validation / impact / safety content, Docs SSOT section/key presence, and Issue
 Scope Ledger close/ref semantics. They must not decide whether the release
 explanation or Docs SSOT rationale is true or sufficient; that judgment belongs
 to the AI readiness review before
-`trellis-finish-work`. Formal closeout accepts only `--body-file` pointing
+`guru-finish-work`. Formal closeout accepts only `--body-file` pointing
 directly to the current task-local `pr-body.md`; it rejects `--body-artifact`,
 generated body fallbacks, and readiness-relative `body_file` resolution. Formal
 finish binds that reviewed `pr-body.md` into
@@ -1009,9 +1011,11 @@ ledger, readiness, or marketplace artifact validators.
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
 - `record-phase2-check` now accepts one AI-authored closed input for
-  `guru-phase2-check-2.0`, rebuilds objective task/planning/ledger/agent/repository
-  projections, writes the single artifact, and never infers scope, severity,
-  adequacy, Docs SSOT consistency, semantic pass, or route intent;
+  new `guru-phase2-check-2.1` records, while preserving read-only compatibility
+  for existing `guru-phase2-check-2.0` artifacts; it rebuilds objective
+  task/planning/ledger/agent/repository projections, writes the single artifact,
+  and never infers scope, severity, adequacy, Docs SSOT consistency, semantic
+  pass, or route intent;
 - `check-phase2-check` validates the published schema, digests, references,
   current HEAD/diff/dirty snapshot, reviewed paths, planning linkage, recovery
   closure, full-round identity, and the four-exit/consumer union;
@@ -1257,10 +1261,12 @@ package wrappers call those commands only through `run-skill-command`.
 family and projects into the same executor; it does not retain a second
 installation implementation or semantic route owner.
 
-`marketplace_verification_required()` returns changed-surface facts only. The
-legacy closeout boolean is an explicitly named compatibility projection for
-existing consumers. Neither function may decide applicability for the active
-Skill.
+`marketplace_verification_required()` returns changed-surface facts only and
+does not decide applicability for the active Skill. Closeout uses those same
+candidate-surface facts after rebuilding the reviewed path set from the pinned
+task base through the Branch Review HEAD. A pre-pinned legacy task may fall
+back to its review gate's `changed_files`; compact Branch Review 2.1 never
+depends on that removed field.
 
 The executor accepts an already AI-selected closed capability list, resolves a
 credentials-safe remote locator, freezes the requested ref with
@@ -1445,11 +1451,18 @@ readiness builder. It must first validate a checker-passed current `ready`
 gate, then add or verify only finalization-owned deterministic
 `publish_inputs`. It preserves semantic review, conclusion, bindings,
 replacement identity, and `publication_ref`, and never creates `ready=true` or
-a second artifact. If the exact validated `closeout-plan.json` is the sole new
-path, the augmentation revalidates all twelve entries and accepts only the
-corresponding repository binding plus derived
-`review_range_and_working_tree` digest change; all other entries remain exact
-and passed.
+a second artifact. Finalization re-entry revalidates all twelve entries across
+the exact closeout-owned status paths. In addition to the validated plan, gate,
+and verification artifacts, it may accept one machine-only Issue Scope Ledger
+delta: every primary/close target must contain the same exact plan-owned
+`pending_machine` object or the exact `passed` object derived from the current
+checked verification projection; stripping those objects must reproduce the
+immutable plan's semantic ledger digest; and the stored publication artifact
+and entry bindings must match one exact reviewed preimage. Only the
+`issue-scope-ledger.json` artifact binding, `issue_scope_ledger` entry binding,
+ledger status-path membership, and derived `review_range_and_working_tree`
+binding may change. Any other artifact, ledger field, entry, repository fact,
+or status path remains stale and blocks re-entry.
 
 ## Task Finalization Recorder, Checker, Executor, And Invocation
 
@@ -1465,6 +1478,29 @@ metadata tail only when the owner task/plan/reviewed-HEAD/repository seed, remot
 ref, immutable evidence allowlist, validated evidence commit, committed archived
 plan/evidence blobs, and exact archive transaction all match. It rejects every
 additional dirty path or identity/commit drift.
+
+When the current closeout plan requires extension verification, finalization
+builds the legacy transaction validator's marketplace object only from a
+checker-passed current `guru-verify-extension-installation` owner result. This
+compatibility projection is private and in-memory: it is passed unchanged
+through preview and retry pre-draft resolution, final archive projection,
+active projection validation, normal archive execution, and active-completed
+archive recovery. It never rewrites the #117 owner result, never creates a
+second `marketplace-verification.json`, and never enters a public DTO. A
+missing, stale, consumer-mismatched, or otherwise invalid projection stops
+before archive mutation. Closeout plans that do not require marketplace
+verification continue to pass no projection, while the legacy executor profile
+without an external owner result retains its deterministic verifier path.
+
+Closeout plan preparation owns one deterministic reviewed-change projection.
+It derives `review.changed_paths` from
+`task-start-context.json.base_head_sha...reviewed_head`, derives
+`review.close_issues_reviewed` from the publication-validated Issue Scope
+Ledger, and feeds the same reviewed paths to marketplace candidate-surface
+classification, pending/passed ledger evidence projection, archive retention,
+and the finish-summary template. Compact Branch Review remains semantic and
+small; the finalizer does not require it to duplicate path or issue-scope
+inventories.
 
 `verification_required.repo_ref` must equal the immutable plan repository.
 `resume_finalization` accepts only declared same-plan post-content recovery

@@ -2636,6 +2636,16 @@ def stage_finalization_owner_execution(
             "ready",
             False,
         ),
+        "finalization-publication-ready-published": (
+            "published",
+            "ready",
+            False,
+        ),
+        "finalization-same-plan-published": (
+            "published",
+            "ready",
+            False,
+        ),
         "finalization-blocked": (
             "blocked",
             "prepared",

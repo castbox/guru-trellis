@@ -1144,12 +1144,14 @@ maps it to one exact active Skill; it does not repeat semantic scope judgment.
 
 Official unchanged `trellis-check` workers provide review evidence only. They
 cannot own the Guru Gate, artifact, finding severity, or route. The package
-publishes closed schema `guru-phase2-check-2.0`; active legacy schema 1.0
-requires complete semantic re-entry, while archived artifacts remain historical.
-Recorder/checker runtime commands accept AI-authored closed input and validate
-only objective schema, linkage, digest, HEAD/diff/dirty, full-round, and
-exit/consumer invariants. Legacy `--pass --coverage` calls must
-fail closed rather than synthesize a semantic result.
+publishes closed schema `guru-phase2-check-2.1` for new records; existing
+`guru-phase2-check-2.0` artifacts are accepted only through read-only
+compatibility, active legacy schema 1.0 requires complete semantic re-entry,
+and archived artifacts remain historical. Recorder/checker runtime commands
+accept AI-authored closed input and validate only objective schema, linkage,
+digest, HEAD/diff/dirty, full-round, and exit/consumer invariants. Legacy
+`--pass --coverage` calls must fail closed rather than synthesize a semantic
+result.
 
 The entry evidence collections for requirement provenance, implementation
 result, Docs SSOT durable paths, repository reviewed paths, and executed
@@ -1449,9 +1451,20 @@ checker-reproducible failed
 bindings only after the AI owner has selected the route.
 Only a checker-passed `ready` gate may receive that compatibility layer.
 The finalization owner reruns all twelve entries after adding the exact
-validated `closeout-plan.json`; it accepts only the corresponding repository
-binding and derived `review_range_and_working_tree` digest change, with every
-other binding still exact and passed.
+validated `closeout-plan.json`. The later closeout transaction may also replace
+only the `remote_marketplace_verification` machine evidence in the Issue Scope
+Ledger with either the plan's exact `pending_machine` object or the exact
+`passed` object derived from the current checker-passed extension-verification
+owner result. That narrow augmentation is valid only when the ledger with all
+such machine evidence removed still matches
+`closeout-plan.inputs.issue_scope_ledger`, and the prior publication bindings
+match one exact reviewed ledger preimage. It may change only the
+`issue-scope-ledger.json` artifact binding, the `issue_scope_ledger` entry
+binding, the corresponding status-path membership, and the derived
+`review_range_and_working_tree` binding. Every semantic review field,
+conclusion, finding, other artifact/entry binding, repository fact, and
+`publication_ref` remains exact; any additional ledger or artifact drift fails
+closed.
 Legacy deterministic `ready=true` snapshots never satisfy the semantic gate.
 
 For `publication_review_stale`, the recorder reads the exact current prior
@@ -1503,7 +1516,11 @@ The two structured inputs are deliberately distinct:
 The workflow profile is owned by this package and is consumed by active
 `guru-finalize-task:verification_required`. It publishes the target schema,
 example, fixture, real-wrapper eval, and concrete target-owned authoring seed.
-Global Finish routing remains deferred to #119.
+Issue #119 integrates the global Finish route: the workflow maps the reachable
+`verified`, `return_to_task_work`, and `blocked` exits to their unique
+consumers, while the standalone `not_required` projection retains its declared
+finalizer edge. The verifier remains the sole semantic owner, and this
+integration adds no public input or output fields.
 Caller input never contains applicability, capability list, remote facts,
 adequacy, expected exit, or command matrix.
 
@@ -1631,5 +1648,7 @@ selects and validates the actual exit schema before the grader compares
 `expected_exit`, which never enters adapter/native input. Canonical, installed,
 shared, Codex, Claude, and Cursor corpus bytes are identical. The active package
 uses `workflow_integration_state=integrated`; the global workflow invokes it and
-maps all six exits. Upstream Finish overlays remain separate cleanup scope
-owned by #132, and this integration does not claim #119 combined acceptance.
+  maps all six exits. Issue #119 combined integration adds three Guru-owned
+  daily entries, two terminal published evals, and the checked-verification
+  projection bridge without changing public Skill I/O. Upstream Finish overlays
+  remain separate physical cleanup scope owned by #132.

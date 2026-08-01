@@ -730,6 +730,15 @@ def install_skill_packages(
     source_files: list[tuple[Path, Path]] = [
         (canonical_root / "registry.json", Path("registry.json")),
     ]
+    finish_integration_test = canonical_root / "tests/test_finish_family_integration.py"
+    if not finish_integration_test.is_file() or finish_integration_test.is_symlink():
+        raise SystemExit("Canonical Finish family integration test is missing or unsafe.")
+    source_files.append(
+        (
+            finish_integration_test,
+            finish_integration_test.relative_to(canonical_root),
+        )
+    )
     for shared_root_name in ("schemas", "adapters", "migrations"):
         shared_root = canonical_root / shared_root_name
         if shared_root.is_dir():

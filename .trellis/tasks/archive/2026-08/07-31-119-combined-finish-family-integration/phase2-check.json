@@ -1,0 +1,1612 @@
+{
+  "mode": "workflow",
+  "requirement_provenance": {
+    "summary": "Live Issue #119 authority, Issue #105 transaction/recovery requirements, PR #162/#165 contracts, the existing Draft PR #166 identity, approved recovery planning, and the fresh Branch Review findings were reviewed as one unchanged delivery scope. Earlier plans, gates and publication evidence remain failure history only.",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/context-discovery.json",
+        "sha256": "174a98ddc2a084be9e7aadb4dcd1d3721e9bb5347285c0645805c4f26ca2b80c",
+        "size_bytes": 596935
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-review.json",
+        "sha256": "65c1c94e93a91b257c1ab44f5e2a1661b6deb622836745bbef1dc65b832118b3",
+        "size_bytes": 12791
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+        "sha256": "2be4796ee5e15c67a81ade3ca8244e95c995ac916ab8fad98691c0559549dbe2",
+        "size_bytes": 105
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+        "size_bytes": 13165
+      }
+    ],
+    "facts_sha256": "774c7e7e6c3d7df73004a2ee4a9326b8e30c5682a9c4451ca51f387ad7c1328b"
+  },
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "durable_paths": [
+      {
+        "path": "README.md",
+        "sha256": "5ea922f4464b8f3fe23f2dc17c9e64a1f2251e3b87a4b478147a114f06c5e457",
+        "size_bytes": 78409
+      },
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "sha256": "456b4de9807e63e6fe7d1a41ebe9994d7a2da3c303224d95f769af8a0eb007cb",
+        "size_bytes": 86087
+      },
+      {
+        "path": ".trellis/workflow.md",
+        "sha256": "456b4de9807e63e6fe7d1a41ebe9994d7a2da3c303224d95f769af8a0eb007cb",
+        "size_bytes": 86087
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "2e95b7e9536d13b0b2d2c501ff02f825bf1027b330d6c729383366fb258f28b2",
+        "size_bytes": 65106
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "dbccfdeebf6eb53ff51b1d5e17d59863acf6e7a2c08166fa97373cbbcda7cbde",
+        "size_bytes": 66601
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "0af974a31d4a22db38b6fd633414e92f386718e2e12644bb0d27225fe94fd346",
+        "size_bytes": 28514
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "232bf9253df8fbca3666c42ee465be49e2a527308bfb17f2f979bd87771d4919",
+        "size_bytes": 35768
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "6b255bd9ce8c5dadf20e6f6beb7910c7bc1c0c52c7738a57c1db2ee79d86d0f2",
+        "size_bytes": 25785
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "faaabc38fee22bc3e04f8e5aba79fafe3358f8c9ba634a53d50d856d6624e961",
+        "size_bytes": 17976
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "688cd6efd66c53237c71e3f9894835d850f30dece6473ec4d0cd11835d6adf38",
+        "size_bytes": 95506
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "3f4b98b771fcfe2a39d45122d1b26cb173249ceb640a8df63838206d0c3c5361",
+        "size_bytes": 94294
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "sha256": "477cfca630f8ff16fefa116371a8a099c869fe0b3a5f9267f7597f150af9c0d8",
+        "size_bytes": 9670
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "ad84620cccfc0fe8ca3fe9cf31f5d7590690a1acba71b9e76654e067e782247b",
+        "size_bytes": 47005
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "37d0ed15aec5591366b66fa1ca435e6778ed5a4148a2ee0c45e8562001cb5bff",
+        "size_bytes": 99426
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "sha256": "2fb09b325b26c7c3efecf7c332370f18a599160f24b76fdfbbe9de2034f2e449",
+        "size_bytes": 67040
+      }
+    ],
+    "sync_result": "The durable workflow SSOT now distinguishes active task-local pr-readiness ownership from compact archived/archive_pushed recovery. Archived recovery reads the exact committed plan, gate, evidence/archive commit and summary before validating remote and GitHub PR facts; no public Skill I/O, schema id, platform entry or #132 ownership changed.",
+    "task_delta_merged": true,
+    "task_history_only": [
+      "The failed 3fe71d7 evidence commit, 15d957b compact archive commit and Draft PR #166 recovery chronology",
+      "Gitignored current-round command logs and authoring inputs",
+      "Independent finding and resolution chronology",
+      "The separately authorized future push and Ready transition"
+    ],
+    "no_update_reason": null,
+    "followup_or_pr_limit": "Issue #132 remains the sole owner of physical legacy overlay removal; current publication evidence must continue to reuse Draft PR #166.",
+    "facts_sha256": "aa9629fa42bd5b1d65f383ef1aa3d1da3dc1bfce30e3cea28f2f9aef97b88517"
+  },
+  "implementation_handoff": {
+    "summary": "The two fresh Branch Review findings are resolved in the current uncommitted candidate: archived plan recovery no longer depends on a working-tree closeout-plan.json, unit and source integration regressions exercise the exact committed blob path, the durable workflow contract no longer names archived pr-readiness.json as recovery authority, and preset reapply synchronized canonical and installed copies without sidecars. No commit, push, PR mutation, Issue mutation or frozen-donor mutation occurred.",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
+        "sha256": "40dabff4b3e0949c79f6dbbbec55ba4d8eb31ab989ba5c77786bf2c951c88b92",
+        "size_bytes": 254
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
+        "size_bytes": 1693689
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "33e83e0ee42c7586a567c896104d14f0be26444186b2489dd94153551610e546",
+        "size_bytes": 1231518
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+        "sha256": "a7ca75e5cb292340eb4ece0ea4d3cd60235a96803925cce35b1f1ecda1be7458",
+        "size_bytes": 32905
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "sha256": "89575909a70ca750af5aa8704f558516f37635a7b274d242b92a0130c1e53f4a",
+        "size_bytes": 74199
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "sha256": "c158630ef4d9689c79b2e412336fb4626558a3ee7d3adb4f61de77b4a305a1b7",
+        "size_bytes": 106957
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+        "sha256": "331efdf43c0c38bd9f3d11b8416fa1c42f4445151194735dea942cb664ac540a",
+        "size_bytes": 55777
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "sha256": "6db976266f67e8ebd93d2962a5f4b098c6f1d40bc1205ea951e4aff9b20a41cd",
+        "size_bytes": 25876
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "b7381fd56b465167457a8320cc490b6d79221a2b4bd5dbb3201f4d4a4e8b1136",
+        "size_bytes": 193398
+      },
+      {
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "sha256": "1d34b0d6cefffc5a3c6c879f6348f01178f754666d7a84128ad911d38a407748",
+        "size_bytes": 43955
+      },
+      {
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "sha256": "b732614dd67e6e98c3b89b0b3e0f03952e262a8e1a0a31d9383c68a4be792264",
+        "size_bytes": 8176
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+        "sha256": "d158543a6a2f8de129a72de243d62a7a46b705e357ff6a6810b771257f7064f4",
+        "size_bytes": 7676
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        "sha256": "b7156bd7d20f9c9693af8227f268fab3c3bb732ae6b83a2a5aebf055c40afd87",
+        "size_bytes": 384
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        "sha256": "ea019282ca2ff3402093cf2179b87625033081fc55de3c57b831119d683a1059",
+        "size_bytes": 336
+      },
+      {
+        "path": ".claude/commands/guru/finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": ".codex/prompts/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": ".cursor/commands/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "f4e831a79800a2e34517436d9cef8a9396de60964cff4f30bc7c9cc8c68128d0",
+        "size_bytes": 1045117
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
+        "size_bytes": 1693689
+      },
+      {
+        "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+        "sha256": "a7ca75e5cb292340eb4ece0ea4d3cd60235a96803925cce35b1f1ecda1be7458",
+        "size_bytes": 32905
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+        "size_bytes": 13165
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "sha256": "b7f65ebf819d63601eab7b95b630470bbe00ee106254babf9f036c8bef344411",
+        "size_bytes": 19581
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "sha256": "d0757b504b85179e16aecb32bd137e05c21c6b11ab640ea2aad53394ed5b344e",
+        "size_bytes": 11726
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+        "sha256": "039779012fe6236b072dffe40506886052ad940813b944051a6dad9480fd4d53",
+        "size_bytes": 24229
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+        "sha256": "576aaa6399a07772b6f4416f68fec60feb18ae0b52811447080bf822585d7213",
+        "size_bytes": 3202
+      }
+    ],
+    "facts_sha256": "d4d9784a9e80576c7a3beb1b70b3d9c137024bac0702cc1924e11d7a01a4020a"
+  },
+  "repository_snapshot": {
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
+    "head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
+    "diff_range": "origin/main...HEAD",
+    "dirty_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "reviewed_paths": [
+      {
+        "path": ".agents/skills/guru-finalize-task/evals/evals.json",
+        "sha256": "d158543a6a2f8de129a72de243d62a7a46b705e357ff6a6810b771257f7064f4",
+        "size_bytes": 7676
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        "sha256": "b7156bd7d20f9c9693af8227f268fab3c3bb732ae6b83a2a5aebf055c40afd87",
+        "size_bytes": 384
+      },
+      {
+        "path": ".agents/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        "sha256": "ea019282ca2ff3402093cf2179b87625033081fc55de3c57b831119d683a1059",
+        "size_bytes": 336
+      },
+      {
+        "path": ".claude/commands/guru/finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/evals/evals.json",
+        "sha256": "d158543a6a2f8de129a72de243d62a7a46b705e357ff6a6810b771257f7064f4",
+        "size_bytes": 7676
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        "sha256": "b7156bd7d20f9c9693af8227f268fab3c3bb732ae6b83a2a5aebf055c40afd87",
+        "size_bytes": 384
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        "sha256": "ea019282ca2ff3402093cf2179b87625033081fc55de3c57b831119d683a1059",
+        "size_bytes": 336
+      },
+      {
+        "path": ".codex/prompts/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/evals/evals.json",
+        "sha256": "d158543a6a2f8de129a72de243d62a7a46b705e357ff6a6810b771257f7064f4",
+        "size_bytes": 7676
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        "sha256": "b7156bd7d20f9c9693af8227f268fab3c3bb732ae6b83a2a5aebf055c40afd87",
+        "size_bytes": 384
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        "sha256": "ea019282ca2ff3402093cf2179b87625033081fc55de3c57b831119d683a1059",
+        "size_bytes": 336
+      },
+      {
+        "path": ".cursor/commands/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/evals/evals.json",
+        "sha256": "d158543a6a2f8de129a72de243d62a7a46b705e357ff6a6810b771257f7064f4",
+        "size_bytes": 7676
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        "sha256": "b7156bd7d20f9c9693af8227f268fab3c3bb732ae6b83a2a5aebf055c40afd87",
+        "size_bytes": 384
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        "sha256": "ea019282ca2ff3402093cf2179b87625033081fc55de3c57b831119d683a1059",
+        "size_bytes": 336
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "f4e831a79800a2e34517436d9cef8a9396de60964cff4f30bc7c9cc8c68128d0",
+        "size_bytes": 1045117
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
+        "size_bytes": 1693689
+      },
+      {
+        "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        "sha256": "11ced85f739e244e3f7b703212068d21592bbddc6a4bf338b785c9013c9eafab",
+        "size_bytes": 161583
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/evals.json",
+        "sha256": "d158543a6a2f8de129a72de243d62a7a46b705e357ff6a6810b771257f7064f4",
+        "size_bytes": 7676
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        "sha256": "b7156bd7d20f9c9693af8227f268fab3c3bb732ae6b83a2a5aebf055c40afd87",
+        "size_bytes": 384
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        "sha256": "ea019282ca2ff3402093cf2179b87625033081fc55de3c57b831119d683a1059",
+        "size_bytes": 336
+      },
+      {
+        "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+        "sha256": "a7ca75e5cb292340eb4ece0ea4d3cd60235a96803925cce35b1f1ecda1be7458",
+        "size_bytes": 32905
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "0af974a31d4a22db38b6fd633414e92f386718e2e12644bb0d27225fe94fd346",
+        "size_bytes": 28514
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "sha256": "232bf9253df8fbca3666c42ee465be49e2a527308bfb17f2f979bd87771d4919",
+        "size_bytes": 35768
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "6b255bd9ce8c5dadf20e6f6beb7910c7bc1c0c52c7738a57c1db2ee79d86d0f2",
+        "size_bytes": 25785
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "faaabc38fee22bc3e04f8e5aba79fafe3358f8c9ba634a53d50d856d6624e961",
+        "size_bytes": 17976
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "688cd6efd66c53237c71e3f9894835d850f30dece6473ec4d0cd11835d6adf38",
+        "size_bytes": 95506
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "3f4b98b771fcfe2a39d45122d1b26cb173249ceb640a8df63838206d0c3c5361",
+        "size_bytes": 94294
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "sha256": "477cfca630f8ff16fefa116371a8a099c869fe0b3a5f9267f7597f150af9c0d8",
+        "size_bytes": 9670
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "ad84620cccfc0fe8ca3fe9cf31f5d7590690a1acba71b9e76654e067e782247b",
+        "size_bytes": 47005
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "37d0ed15aec5591366b66fa1ca435e6778ed5a4148a2ee0c45e8562001cb5bff",
+        "size_bytes": 99426
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "sha256": "2fb09b325b26c7c3efecf7c332370f18a599160f24b76fdfbbe9de2034f2e449",
+        "size_bytes": 67040
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/check.jsonl",
+        "sha256": "40dabff4b3e0949c79f6dbbbec55ba4d8eb31ab989ba5c77786bf2c951c88b92",
+        "size_bytes": 254
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/context-discovery.json",
+        "sha256": "174a98ddc2a084be9e7aadb4dcd1d3721e9bb5347285c0645805c4f26ca2b80c",
+        "size_bytes": 596935
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+        "sha256": "576aaa6399a07772b6f4416f68fec60feb18ae0b52811447080bf822585d7213",
+        "size_bytes": 3202
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "sha256": "b7f65ebf819d63601eab7b95b630470bbe00ee106254babf9f036c8bef344411",
+        "size_bytes": 19581
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
+        "sha256": "4cdfc0655064fb229590f17a71c2ffd266969944cdfba2fe8592cdbceccbe895",
+        "size_bytes": 6258
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
+        "sha256": "40dabff4b3e0949c79f6dbbbec55ba4d8eb31ab989ba5c77786bf2c951c88b92",
+        "size_bytes": 254
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "sha256": "d0757b504b85179e16aecb32bd137e05c21c6b11ab640ea2aad53394ed5b344e",
+        "size_bytes": 11726
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-review.json",
+        "sha256": "65c1c94e93a91b257c1ab44f5e2a1661b6deb622836745bbef1dc65b832118b3",
+        "size_bytes": 12791
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+        "sha256": "c319773d37404819dd5e5f0bff12d9766aeb07ee192fe9e14e0c84b9d6cfced2",
+        "size_bytes": 5594
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json",
+        "sha256": "5dba3450a85bd90ddebf7000b8f819f4f32adcd18e52663326840f0702831542",
+        "size_bytes": 228461
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+        "sha256": "039779012fe6236b072dffe40506886052ad940813b944051a6dad9480fd4d53",
+        "size_bytes": 24229
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
+        "sha256": "85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
+        "size_bytes": 7231
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+        "sha256": "db221ef9a6b5c5f442f0f9a831549803e6564fc21d942e6bea12f3c2f10069b5",
+        "size_bytes": 27122
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+        "size_bytes": 13165
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+        "sha256": "5683a9b87a18a49a4304286071243fed324f13e643a4014b6cc995a59305cfd7",
+        "size_bytes": 5870
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/task-start-context.json",
+        "sha256": "99b7ed253c9a157f5010ff87f74d798cff106af8e24911ff3813b707e96b5ab5",
+        "size_bytes": 7811
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/task.json",
+        "sha256": "8fa449da785d2a232a8baf2c0d9b8e9cb69637f5a092bd0494b0083556e8bacf",
+        "size_bytes": 709
+      },
+      {
+        "path": ".trellis/workflow.md",
+        "sha256": "456b4de9807e63e6fe7d1a41ebe9994d7a2da3c303224d95f769af8a0eb007cb",
+        "size_bytes": 86087
+      },
+      {
+        "path": "README.md",
+        "sha256": "5ea922f4464b8f3fe23f2dc17c9e64a1f2251e3b87a4b478147a114f06c5e457",
+        "size_bytes": 78409
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "sha256": "af07d98b7f0a145708d9c522ca01b83ab7e2e645ae0648e2860b5781fb60f25c",
+        "size_bytes": 14069
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "dbccfdeebf6eb53ff51b1d5e17d59863acf6e7a2c08166fa97373cbbcda7cbde",
+        "size_bytes": 66601
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "size_bytes": 1696
+      },
+      {
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "sha256": "1d34b0d6cefffc5a3c6c879f6348f01178f754666d7a84128ad911d38a407748",
+        "size_bytes": 43955
+      },
+      {
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "sha256": "b732614dd67e6e98c3b89b0b3e0f03952e262a8e1a0a31d9383c68a4be792264",
+        "size_bytes": 8176
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "b7381fd56b465167457a8320cc490b6d79221a2b4bd5dbb3201f4d4a4e8b1136",
+        "size_bytes": 193398
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "sha256": "89575909a70ca750af5aa8704f558516f37635a7b274d242b92a0130c1e53f4a",
+        "size_bytes": 74199
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "sha256": "c158630ef4d9689c79b2e412336fb4626558a3ee7d3adb4f61de77b4a305a1b7",
+        "size_bytes": 106957
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "sha256": "6db976266f67e8ebd93d2962a5f4b098c6f1d40bc1205ea951e4aff9b20a41cd",
+        "size_bytes": 25876
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+        "sha256": "331efdf43c0c38bd9f3d11b8416fa1c42f4445151194735dea942cb664ac540a",
+        "size_bytes": 55777
+      },
+      {
+        "path": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "sha256": "11ced85f739e244e3f7b703212068d21592bbddc6a4bf338b785c9013c9eafab",
+        "size_bytes": 161583
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/evals.json",
+        "sha256": "d158543a6a2f8de129a72de243d62a7a46b705e357ff6a6810b771257f7064f4",
+        "size_bytes": 7676
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/publication-ready-published-facts.json",
+        "sha256": "b7156bd7d20f9c9693af8227f268fab3c3bb732ae6b83a2a5aebf055c40afd87",
+        "size_bytes": 384
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-finalize-task/evals/files/same-plan-published-facts.json",
+        "sha256": "ea019282ca2ff3402093cf2179b87625033081fc55de3c57b831119d683a1059",
+        "size_bytes": 336
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+        "sha256": "a7ca75e5cb292340eb4ece0ea4d3cd60235a96803925cce35b1f1ecda1be7458",
+        "size_bytes": 32905
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "4b3e574ee67f92b7edb14a90a106626ae0404c502a623b4f32cc5ae712f0975a",
+        "size_bytes": 270126
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "2e95b7e9536d13b0b2d2c501ff02f825bf1027b330d6c729383366fb258f28b2",
+        "size_bytes": 65106
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
+        "size_bytes": 1693689
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "33e83e0ee42c7586a567c896104d14f0be26444186b2489dd94153551610e546",
+        "size_bytes": 1231518
+      },
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "sha256": "456b4de9807e63e6fe7d1a41ebe9994d7a2da3c303224d95f769af8a0eb007cb",
+        "size_bytes": 86087
+      }
+    ],
+    "snapshot_sha256": "10e1c42db550e4fd7b7ed9681f6f1d1c89c0ec0747e50405d566490101b0c69d"
+  },
+  "check_execution": {
+    "commands": [
+      {
+        "id": "recovery-final-runtime-full",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "41cf6a21ee8f29db89dc45b5e13f1ac022fcd31622d6043f481165e0ccb15817",
+        "stdout_size_bytes": 2548,
+        "stderr_sha256": "2298f3b0555f169c3cd99ca489845b165ed6034f9bfa7e9b155d6a737b0b988e",
+        "stderr_size_bytes": 3944,
+        "summary": "The complete affected canonical runtime suite passed 561 tests with 13 existing conditional skips."
+      },
+      {
+        "id": "recovery-final-finalizer-contract",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "8be0320742bab1b4bfc39ff6df95d39ff0ff4fe8d43acee82020c4e42fdb11f0",
+        "stderr_size_bytes": 104,
+        "summary": "The public finalizer contract suite passed all six tests."
+      },
+      {
+        "id": "recovery-final-source-integration",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "python3",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+          "-q"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "a01c84bfa650f2d765ffbc4f6bd74da78fc77dc139b1b11d96827551868ff7ad",
+        "stderr_size_bytes": 98,
+        "summary": "The source Finish-family integration suite passed all nine tests, including committed-plan recovery with the working-tree plan absent."
+      },
+      {
+        "id": "recovery-final-installed-integration",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "GURU_FINISH_INTEGRATION_MODE=installed",
+          "GURU_FINISH_INTEGRATION_ROOT=/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/119-finish-family-integration-main",
+          "python3",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+          "-q"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "232e6aac903d66a34e1f98e5bd1ce4be944b588ef1e1ec2fd1ecc305983912c2",
+        "stderr_size_bytes": 109,
+        "summary": "The installed Finish-family integration suite passed all nine tests with one existing environment-dependent skip."
+      },
+      {
+        "id": "recovery-final-preset-full",
+        "argv": [
+          "env",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "python3",
+          "-m",
+          "unittest",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "c53dad869c8c1b5cdb409bc283ca65192dd8823faf251018913f6e55bd4c793f",
+        "stderr_size_bytes": 811,
+        "summary": "The affected preset apply suite passed all 47 tests."
+      },
+      {
+        "id": "recovery-final-dogfood-drift",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+          "--repo",
+          "."
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "9a9c590b80eea2efef3994e684f0ae41556174b8fbcd37ddac80b121ab73530d",
+        "stdout_size_bytes": 2070,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Dogfood overlay ownership and canonical-installed drift validation passed."
+      },
+      {
+        "id": "recovery-final-python-compile",
+        "argv": [
+          "env",
+          "PYTHONPYCACHEPREFIX=.trellis/.runtime/guru-team/issue-119/phase2-rerun-logs/recovery-final-pycache",
+          "python3",
+          "-m",
+          "py_compile",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "All affected canonical and installed Python files compile successfully."
+      },
+      {
+        "id": "recovery-final-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The current candidate has no whitespace errors."
+      },
+      {
+        "id": "recovery-final-workspace-boundary",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "015cb008b1386e8673980e1cb8bb6e96de85f8b7fc985b2d4073c3518e56c1d6",
+        "stdout_size_bytes": 1274,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The active task remains bound to the approved worktree and branch."
+      },
+      {
+        "id": "recovery-final-task-validate",
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a157477363785d12da28862a4a1d66007e09536bde221792c386544e487573f1",
+        "stdout_size_bytes": 339,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The active task structure and JSONL journals validate."
+      },
+      {
+        "id": "recovery-final-runtime-parity",
+        "argv": [
+          "cmp",
+          "-s",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Canonical and installed finalizer runtime bytes are identical."
+      },
+      {
+        "id": "recovery-final-integration-parity",
+        "argv": [
+          "cmp",
+          "-s",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Canonical and installed Finish-family integration tests are identical."
+      },
+      {
+        "id": "recovery-final-sidecar-scan",
+        "argv": [
+          "zsh",
+          "-lc",
+          "! find . -type f \\( -name \"*.new\" -o -name \"*.bak\" \\) -print -quit | grep -q ."
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Preset reapply completed with no .new or .bak sidecars."
+      },
+      {
+        "id": "recovery-final-frozen-donor-head",
+        "argv": [
+          "git",
+          "-C",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/119-combined-finish-family-integration",
+          "rev-parse",
+          "HEAD"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a5a0c2f42acb5e63b3c745ae1a936cfa5f1669a916cddf4602dd3ee8b87a2afd",
+        "stdout_size_bytes": 41,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The frozen donor HEAD remains d01111b3628c2a4b00b99ee098703acefe8620c9."
+      },
+      {
+        "id": "recovery-final-frozen-donor-status",
+        "argv": [
+          "git",
+          "-C",
+          "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/119-combined-finish-family-integration",
+          "status",
+          "--porcelain=v2",
+          "--branch",
+          "--untracked-files=all"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "af214cf781f99548b31a5bed6241d848e5c1476e37ed24be2f4b23b141faa426",
+        "stdout_size_bytes": 1276,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The frozen donor retains its original branch, tracked dirty files and untracked evidence set without mutation."
+      }
+    ],
+    "worker_evidence": [
+      {
+        "source": "declared_platform_alternative",
+        "agent_id": "codex-root-issue119-final-recovery",
+        "summary": "A fresh complete Phase 2 semantic round reviewed the approved #119 scope, the full origin/main-to-working-tree candidate, both fresh Branch Review findings, current canonical/installed runtime and tests, affected command evidence, Docs SSOT, exclusions and frozen-donor boundary. No remaining current-scope defect was found.",
+        "evidence_only": true,
+        "facts_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966"
+      }
+    ],
+    "unverified_items": [
+      {
+        "id": "current-head-remote-publication",
+        "command_or_area": "Create and push the current task work commit, then converge the existing remote branch and Draft PR #166",
+        "reason": "Commit, push and PR mutation remain separately authorized downstream actions.",
+        "impact": "Local Phase 2 can pass, but remote verification and the unique Draft-to-Ready transition remain mandatory before publication completes.",
+        "blocking": false
+      },
+      {
+        "id": "current-head-branch-review",
+        "command_or_area": "Run one fresh full origin/main...HEAD Branch Review after the current task work commit",
+        "reason": "The new commit does not yet exist, so the current implementation-required review gate cannot bind the future HEAD.",
+        "impact": "guru-create-task-commit is the immediate mapped consumer; fresh Branch Review remains the next mandatory semantic gate.",
+        "blocking": false
+      },
+      {
+        "id": "current-head-plan-generation",
+        "command_or_area": "Generate a new immutable finalizer plan after refreshed Branch Review and publication review",
+        "reason": "Generating it before the reviewed commit would bind stale HEAD and evidence digests.",
+        "impact": "The public finalizer must later generate and execute a new plan that uniquely reuses Draft PR #166.",
+        "blocking": false
+      },
+      {
+        "id": "bounded-validation-exclusions",
+        "command_or_area": "Replay clean install, upgrade/update, unrelated Skill suites or prior Phase 2 solely because the finalizer runtime and workflow wording changed",
+        "reason": "The user explicitly limited this recovery round to affected finalizer/runtime/preset validation and the current mandatory gate. Source/installed integration, preset reapply, drift and the complete affected runtime suite passed.",
+        "impact": "No current acceptance claim relies on an unrun affected check; broader historical #119 evidence remains unchanged and is not being regenerated.",
+        "blocking": false
+      }
+    ],
+    "execution_sha256": "f42ab9bd13137b6f656e31a3ff38dcda26419c8b160920811d6b690faded6fc0"
+  },
+  "scope_qualification": {
+    "candidates": [
+      {
+        "id": "docs-ssot-stale-finish-route",
+        "summary": "Two durable workflow spec statements had retained the legacy entry name or denied Issue #119 combined acceptance.",
+        "trigger_refs": [
+          ".trellis/spec/workflow/data-contracts.md:1330",
+          ".trellis/spec/workflow/index.md:159",
+          "design.md#10-docs-ssot-plan"
+        ],
+        "normal_path_reproduction": "A normal reader following the former durable Docs SSOT encountered statements conflicting with the canonical guru-finish-work route and current combined acceptance surface.",
+        "disposition": "current_scope",
+        "route_basis": "The approved ssot_first acceptance requires durable workflow docs to describe the daily entry and #119 combined integration consistently.",
+        "severity": "P2",
+        "finding_id": "P2-docs-ssot-finish-route"
+      },
+      {
+        "id": "branch-review-entry-eof",
+        "summary": "The first committed candidate contained one extra EOF blank line in each of three canonical Guru entries and three generated copies, invalidating the old Phase 2 diff-check claim.",
+        "trigger_refs": [
+          "review-gate.json#BR-119-01",
+          "prd.md#acceptance",
+          "implement.md#validation"
+        ],
+        "normal_path_reproduction": "On committed HEAD 8905260e, git diff --check origin/main...HEAD exited 2 with six new-blank-line-at-EOF errors. After the current fix, git diff --check origin/main exits 0 across the complete candidate.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 acceptance explicitly requires clean canonical and dogfood entry bytes plus a passing complete candidate whitespace check.",
+        "severity": "P2",
+        "finding_id": "BR-119-01"
+      },
+      {
+        "id": "same-month-verified-takeover-owner-binding",
+        "summary": "The same-month active finalizer takeover could rebuild an augmented closeout plan but retain marketplace verification projected against the pre-augmentation plan.",
+        "trigger_refs": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#prepare_closeout",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#apply_active_closeout_finalizer_takeover",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "normal_path_reproduction": "A normal same-month verified retry follows legacy persisted plan to augmented current plan to evidence_ready and published recovery; before the fix, the checked owner evidence could bind the persisted plan instead of the augmented current plan.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 requires the #117 checker-passed private projection to remain plan-consistent through same-month takeover and active-completed recovery.",
+        "severity": "P2",
+        "finding_id": "P2-finalizer-same-month-owner-projection"
+      },
+      {
+        "id": "phase2-schema-docs-contract-version",
+        "summary": "Three durable Docs SSOT files described schema 2.0 as the active new-record Phase 2 contract after runtime and Skill packages had moved new records to 2.1.",
+        "trigger_refs": [
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/skill-package-contract.md"
+        ],
+        "normal_path_reproduction": "A normal installer or maintainer following the durable docs could author a new 2.0 artifact even though the current recorder owns 2.1 and accepts 2.0 only as read-only compatibility.",
+        "disposition": "current_scope",
+        "route_basis": "The approved ssot_first plan requires runtime, schema, Skill contracts, tests, and durable documentation to expose one current new-record contract.",
+        "severity": "P2",
+        "finding_id": "P2-phase2-schema-contract-version"
+      },
+      {
+        "id": "finish-work-prepare-projection-threading",
+        "summary": "The real cmd_finish_work path read external verification after closeout preparation, so the formal prepare and takeover-apply path did not receive one identical checked private projection.",
+        "trigger_refs": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#cmd_finish_work",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#prepare_closeout",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "normal_path_reproduction": "A normal mapped verification_required to verified retry enters cmd_finish_work; before the fix, prepare_closeout ran before args.external_verification was loaded and the real wrapper path could diverge from the intended private projection flow.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 requires thin workflow orchestration to carry the checker-passed #117 result through the real finalizer path without a public DTO or duplicate artifact.",
+        "severity": "P2",
+        "finding_id": "P2-finish-work-prepare-projection-threading"
+      },
+      {
+        "id": "branch-review-docs-ssot-finish-route",
+        "summary": "The durable Skill package contract still said global Finish routing was deferred to Issue #119 after the combined route had already been implemented.",
+        "trigger_refs": [
+          "review-gate.json#BR-119-02",
+          ".trellis/spec/workflow/skill-package-contract.md:1508",
+          "design.md#10-docs-ssot-plan"
+        ],
+        "normal_path_reproduction": "A normal maintainer reading the pre-fix durable contract encountered a direct contradiction between the deferred-routing sentence and the same file's integrated global route plus Issue #119 acceptance statement.",
+        "disposition": "current_scope",
+        "route_basis": "The approved ssot_first plan requires every durable owner to describe the implemented Finish-family route consistently before Issue #119 can pass.",
+        "severity": "P2",
+        "finding_id": "BR-119-02"
+      },
+      {
+        "id": "phase2-compact-reviewed-path-count-evidence",
+        "summary": "The tracked Phase 2 command summary said the compact finalizer preview reconstructed 70 reviewed paths even though its bound stdout proved 73.",
+        "trigger_refs": [
+          "phase2-check.json#check_execution.commands.compact-finalizer-plan",
+          "phase2-rerun-logs/compact-finalizer-plan.stdout.log",
+          "independent check_119 Phase 2 review"
+        ],
+        "normal_path_reproduction": "A normal reviewer comparing the tracked command summary with the bound compact-helper stdout found 70 in prose and changed_path_count=73 in the same evidence record.",
+        "disposition": "current_scope",
+        "route_basis": "Guru Phase 2 gate evidence must state exact reviewed facts; a wrong path count cannot remain in a passed tracked artifact even when the underlying coverage is complete.",
+        "severity": "P3",
+        "finding_id": "P3-phase2-compact-reviewed-path-count"
+      },
+      {
+        "id": "issue-132-physical-cleanup",
+        "summary": "Physical removal of the five legacy trellis-finish-work assets and full upstream overlay convergence remain follow-up work.",
+        "trigger_refs": [
+          "Issue #132",
+          "issue-scope-ledger.json"
+        ],
+        "normal_path_reproduction": "The compatibility assets remain present by design and are still listed with removal_issue=132.",
+        "disposition": "followup_proposal",
+        "route_basis": "The user and approved scope explicitly reserve physical cleanup for Issue #132.",
+        "severity": null,
+        "finding_id": null
+      },
+      {
+        "id": "excluded-hardening-expansion",
+        "summary": "Adversarial forgery, concurrency races, locks, TOCTOU, extra fault injection, and cross-OS crash consistency were considered and excluded.",
+        "trigger_refs": [
+          "prd.md#5",
+          "AGENTS.md#2.1"
+        ],
+        "normal_path_reproduction": "No supported honest normal path requires these threat or nonfunctional expansions for the accepted combined integration.",
+        "disposition": "out_of_scope",
+        "route_basis": "The live user boundary and repository contract explicitly prohibit importing these scenarios into Issue #119.",
+        "severity": null,
+        "finding_id": null
+      },
+      {
+        "id": "finalizer-pr-head-propagation-delay",
+        "summary": "A freshly pushed remote branch could converge before GitHub updated the same PR headRefOid, causing a false permanent block at Ready.",
+        "trigger_refs": [
+          "user:current-request#github-pr-head-propagation",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#ensure_closeout_pr_ready"
+        ],
+        "normal_path_reproduction": "The actual #119 archive push left local and remote at 15d957b while PR #166 briefly reported its preceding HEAD; a later read converged without any identity change or branch divergence.",
+        "disposition": "current_scope",
+        "route_basis": "The Ready executor owns bounded retries for normal provider propagation while the validator remains a single objective read.",
+        "severity": "P1",
+        "finding_id": "P1-finalizer-pr-head-propagation-delay"
+      },
+      {
+        "id": "compact-archive-readiness-dependency",
+        "summary": "Archived same-plan recovery incorrectly required pr-readiness.json even though schema 1.1 compaction had contractually removed it.",
+        "trigger_refs": [
+          "user:current-request#compact-archive-recovery",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#finalization_preview_context"
+        ],
+        "normal_path_reproduction": "The committed 12-file archive at 15d957b had no pr-readiness.json, so a normal same_plan_resume returned publication_review_missing before resolving its committed transaction.",
+        "disposition": "current_scope",
+        "route_basis": "Committed plan, finalization gate, evidence/archive commits, remote branch and GitHub PR facts are sufficient for archived Ready recovery.",
+        "severity": "P1",
+        "finding_id": "P1-compact-archive-readiness-dependency"
+      },
+      {
+        "id": "archived-recovery-owner-projection-reopen",
+        "summary": "Archived recovery passed a compact committed-gate tuple into the active #117 compatibility projection and could not reach Ready.",
+        "trigger_refs": [
+          "phase2-agent:issue119_postfix_phase2_check#P1",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#cmd_execute_finalization_transition"
+        ],
+        "normal_path_reproduction": "The normal marketplace-required archived path reconstructed only the committed finalizer refs, then called a projection that requires the full active #117 owner payload.",
+        "disposition": "current_scope",
+        "route_basis": "Committed recovery must validate the archived gate and skip reopening or reprojecting active verification evidence.",
+        "severity": "P1",
+        "finding_id": "P1-archived-recovery-owner-projection-reopen"
+      },
+      {
+        "id": "archived-recovery-gate-mutation",
+        "summary": "The finalizer recorder temporarily rewrote the archived task-finalization-gate.json before restoring committed bytes.",
+        "trigger_refs": [
+          "phase2-agent:issue119_postfix_phase2_check#P2",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#cmd_record_finalization_gate"
+        ],
+        "normal_path_reproduction": "A normal same-plan archived invocation dirtied the compact archive gate even though Draft-to-Ready must be its only legal side effect.",
+        "disposition": "current_scope",
+        "route_basis": "Archived and ready states must validate the committed gate in memory without writing any task artifact.",
+        "severity": "P2",
+        "finding_id": "P2-archived-recovery-gate-mutation"
+      },
+      {
+        "id": "stale-closure-ledger",
+        "summary": "The scope ledger still presented pre-recovery candidate c8c84ab and its older marketplace/review evidence as current closure acceptance.",
+        "trigger_refs": [
+          "phase2-agent:issue119_postfix_phase2_check#P2",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json"
+        ],
+        "normal_path_reproduction": "A normal publication review would read c8c84ab, 95379d6 and the older no-finding statement even though later recovery exposed and fixed two correctness bugs and retained 15d957b only as failed-chain history.",
+        "disposition": "current_scope",
+        "route_basis": "Current close scope must bind fresh acceptance and must not treat superseded finalizer or marketplace gates as pass evidence.",
+        "severity": "P2",
+        "finding_id": "P2-stale-closure-ledger"
+      },
+      {
+        "id": "current-stale-closeout-plan-blocks-new-finalizer-plan",
+        "summary": "The restored active task retained the failed 95379d6 finalizer plan, whose same-month move set already owns task-finalization-gate.json and therefore blocks a new current-HEAD finalizer plan.",
+        "trigger_refs": [
+          "fresh-branch-review:54423007#P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/closeout-plan.json",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#prepare_closeout"
+        ],
+        "normal_path_reproduction": "A normal failed archive followed by the authorized revert restores the compact plan under the active locator. Fresh publication at a new HEAD then reaches persisted-plan protection; same-month finalizer takeover is inapplicable because the old plan already owns the finalizer gate, and month supersession is inapplicable because both plans target 2026-08.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 must recover the same task and reuse Draft PR #166 without resetting history or rebuilding the transaction. Removing only the stale active copy preserves immutable failure evidence while allowing the required new plan.",
+        "severity": "P1",
+        "finding_id": "P1-current-stale-closeout-plan-blocks-new-finalizer-plan"
+      },
+      {
+        "id": "initial-publication-stale-verification-consumption",
+        "summary": "Fresh publication_ready preview could opportunistically consume a historical task-local marketplace-verification owner and block before the new immutable plan's verifier route.",
+        "trigger_refs": [
+          "public-finalizer-preview:01e6cd1#publication-review-stale-followup",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#finalization_preview_context",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration/marketplace-verification.json"
+        ],
+        "normal_path_reproduction": "After a failed prior finalizer chain, a fresh publication_ready invocation for the same active task encountered the historical #117 owner artifact before establishing its own current immutable plan. The old owner was honestly stale, but it belongs only to verification_verified or exact same-plan recovery.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 requires mapped fresh publication to proceed automatically to the current verifier while exact recovery remains plan-bound and fail closed.",
+        "severity": "P1",
+        "finding_id": "P1-initial-publication-stale-verification-consumption"
+      },
+      {
+        "id": "fresh-archived-plan-working-tree-dependency",
+        "summary": "Archived verification augmentation returned before reading the exact commit plan whenever the archived working-tree closeout-plan.json was missing.",
+        "trigger_refs": [
+          "review-gate.json#F119-FRESH-001",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#finalization_verification_augmentation_plan",
+          "Issue #119 compact recovery acceptance"
+        ],
+        "normal_path_reproduction": "A normal same-plan archived recovery can retain an exact committed transaction while a local archived file is absent. Before the fix, the helper checked the working-tree plan before classifying the task as archived and returned None instead of reading the immutable commit blob.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 and Issue #105 require exact-commit archived recovery without rebuilding the transaction or requiring removed task-local artifacts.",
+        "severity": "P1",
+        "finding_id": "F119-FRESH-001"
+      },
+      {
+        "id": "fresh-workflow-contract-archived-readiness-authority",
+        "summary": "The durable workflow contract still described archived pr-readiness.json as recovery authority after compact schema 1.1 removed it.",
+        "trigger_refs": [
+          "review-gate.json#F119-FRESH-002",
+          ".trellis/spec/workflow/workflow-contract.md#User-Facing-Entrypoints",
+          "guru-finalize-task compact archive contract"
+        ],
+        "normal_path_reproduction": "A normal maintainer following the durable workflow SSOT could reintroduce the deleted readiness dependency because active and archived recovery authority were not distinguished.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 combined acceptance requires the runtime and durable recovery SSOT to agree on the compact archive contract.",
+        "severity": "P3",
+        "finding_id": "F119-FRESH-002"
+      }
+    ],
+    "scope_sha256": "9afa0a3205c62f595324bcd4f5ac6f3152bcdad8d21880749fac9a867dfc2e41"
+  },
+  "semantic_review": {
+    "adequacy_dimensions": [
+      {
+        "id": "requirements",
+        "status": "passed",
+        "summary": "The complete #119 combined acceptance and both fresh recovery correctness findings are satisfied without reopening #116/#117/#118 internals, implementing #132, creating a task/PR, changing public DTOs or adding routine confirmation.",
+        "evidence_refs": [
+          "planning",
+          "requirement_provenance"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P1-archived-recovery-owner-projection-reopen",
+          "P1-compact-archive-readiness-dependency",
+          "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
+          "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
+          "P2-archived-recovery-gate-mutation",
+          "P2-stale-closure-ledger"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "design",
+        "status": "passed",
+        "summary": "Active paths retain task-local publication ownership checks, while archived paths classify locator and transaction state first and read immutable plan evidence from the exact commit. Validator single-read behavior and AI-first public contracts remain unchanged.",
+        "evidence_refs": [
+          "planning",
+          "docs_ssot_plan"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P1-archived-recovery-owner-projection-reopen",
+          "P1-compact-archive-readiness-dependency",
+          "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
+          "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
+          "P2-archived-recovery-gate-mutation",
+          "P2-stale-closure-ledger"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "implementation",
+        "status": "passed",
+        "summary": "Canonical runtime contains the minimal ordering correction, preset reapply produced the byte-identical installed runtime, and no duplicate wrapper, recovery artifact, transaction or public I/O was introduced.",
+        "evidence_refs": [
+          "implementation_handoff",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "BR-119-01",
+          "BR-119-02",
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P1-archived-recovery-owner-projection-reopen",
+          "P1-compact-archive-readiness-dependency",
+          "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
+          "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
+          "P2-archived-recovery-gate-mutation",
+          "P2-finalizer-same-month-owner-projection",
+          "P2-finish-work-prepare-projection-threading",
+          "P2-stale-closure-ledger",
+          "P3-phase2-compact-reviewed-path-count"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "tests",
+        "status": "passed",
+        "summary": "Fresh affected validation passed 561 runtime tests, six finalizer contract tests, nine source and nine installed integration tests, 47 preset tests, compile, drift, parity, workspace, task and sidecar checks.",
+        "evidence_refs": [
+          "check_execution"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "BR-119-01",
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P1-archived-recovery-owner-projection-reopen",
+          "P1-compact-archive-readiness-dependency",
+          "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
+          "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
+          "P2-archived-recovery-gate-mutation",
+          "P2-finalizer-same-month-owner-projection",
+          "P2-finish-work-prepare-projection-threading",
+          "P2-stale-closure-ledger"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "docs_ssot",
+        "status": "passed",
+        "summary": "The durable workflow contract now matches compact schema 1.1: active readiness remains task-local, while archived/archive_pushed recovery uses exact committed plan/gate/evidence/summary plus remote and GitHub PR facts.",
+        "evidence_refs": [
+          "docs_ssot_plan",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "BR-119-02",
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P2-docs-ssot-finish-route",
+          "P2-phase2-schema-contract-version"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "cross_layer",
+        "status": "passed",
+        "summary": "The exact committed-plan recovery path is covered in canonical source and installed integration, and canonical/installed runtime plus integration bytes match after preset reapply.",
+        "evidence_refs": [
+          "implementation_handoff",
+          "check_execution"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P1-archived-recovery-owner-projection-reopen",
+          "P1-compact-archive-readiness-dependency",
+          "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
+          "P2-archived-recovery-gate-mutation",
+          "P2-finalizer-same-month-owner-projection",
+          "P2-finish-work-prepare-projection-threading",
+          "P2-stale-closure-ledger"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "compatibility",
+        "status": "passed",
+        "summary": "Public Skill ids, schema ids, DTO fields, typed exits, Draft PR identity and active pre-publication stale behavior remain unchanged; missing/invalid committed plan blobs still fail closed.",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
+          "P1-initial-publication-stale-verification-consumption"
+        ],
+        "unverified_ids": []
+      },
+      {
+        "id": "deployment_and_operations",
+        "status": "passed",
+        "summary": "Preset reapply completed with installed validation status ok, no .new/.bak sidecars and zero drift. Commit, push, fresh Branch Review and current-HEAD finalizer plan remain downstream authorized actions.",
+        "evidence_refs": [
+          "docs_ssot_plan",
+          "check_execution"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "P1-finalizer-pr-head-propagation-delay",
+          "P1-compact-archive-readiness-dependency",
+          "P1-archived-recovery-owner-projection-reopen",
+          "P2-archived-recovery-gate-mutation",
+          "P2-stale-closure-ledger"
+        ],
+        "unverified_ids": [
+          "current-head-remote-publication",
+          "current-head-branch-review",
+          "current-head-plan-generation"
+        ]
+      },
+      {
+        "id": "verification_completeness",
+        "status": "passed",
+        "summary": "The complete current candidate received a fresh semantic review and every user-authorized affected finalizer/runtime/preset/static validation. Broader clean install, upgrade/update and unrelated Skill replay were intentionally excluded without weakening current evidence.",
+        "evidence_refs": [
+          "requirement_provenance",
+          "check_execution"
+        ],
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
+        "finding_ids": [
+          "BR-119-01",
+          "BR-119-02",
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P1-archived-recovery-owner-projection-reopen",
+          "P1-compact-archive-readiness-dependency",
+          "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
+          "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
+          "P2-archived-recovery-gate-mutation",
+          "P2-finalizer-same-month-owner-projection",
+          "P2-finish-work-prepare-projection-threading",
+          "P2-phase2-schema-contract-version",
+          "P2-stale-closure-ledger",
+          "P3-phase2-compact-reviewed-path-count"
+        ],
+        "unverified_ids": [
+          "current-head-remote-publication",
+          "current-head-branch-review",
+          "current-head-plan-generation",
+          "bounded-validation-exclusions"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "id": "P2-docs-ssot-finish-route",
+        "candidate_id": "docs-ssot-stale-finish-route",
+        "severity": "P2",
+        "summary": "Corrected data-contracts.md to name canonical guru-finish-work recovery with bounded legacy routing, and corrected workflow/index.md to describe the active Issue #119 combined acceptance surface.",
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "BR-119-01",
+        "candidate_id": "branch-review-entry-eof",
+        "severity": "P2",
+        "summary": "Removed the extra EOF blank line from three canonical Guru entries, applied the three dogfood copies, refreshed installed manifest provenance, and updated the single derived ownership facts baseline; the complete current candidate now passes git diff --check.",
+        "path": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P2-finalizer-same-month-owner-projection",
+        "candidate_id": "same-month-verified-takeover-owner-binding",
+        "severity": "P2",
+        "summary": "Threaded the current augmented-plan marketplace verification projection through prepare_closeout and active takeover apply, failed closed on projection conflict, and retained the persisted-plan rule only for cross-month reprepare.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P2-phase2-schema-contract-version",
+        "candidate_id": "phase2-schema-docs-contract-version",
+        "severity": "P2",
+        "summary": "Reconciled public-docs.md, companion-scripts.md, and skill-package-contract.md so new records use guru-phase2-check-2.1 and existing 2.0 artifacts are read-only compatibility.",
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P2-finish-work-prepare-projection-threading",
+        "candidate_id": "finish-work-prepare-projection-threading",
+        "severity": "P2",
+        "summary": "Moved external verification loading before real closeout preparation and passed the identical private projection into prepare and active takeover apply; the regression now executes cmd_finish_work through both real functions.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "BR-119-02",
+        "candidate_id": "branch-review-docs-ssot-finish-route",
+        "severity": "P2",
+        "summary": "Replaced the stale deferred-routing statement with the integrated Issue #119 global route, its reachable typed-exit consumers, the standalone not_required edge, verifier semantic ownership, and the unchanged minimal public I/O boundary.",
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P3-phase2-compact-reviewed-path-count",
+        "candidate_id": "phase2-compact-reviewed-path-count-evidence",
+        "severity": "P3",
+        "summary": "Corrected the compact-finalizer-plan command summary from 70 to the stdout-bound 73 reviewed paths and re-recorded the complete schema 2.1 Phase 2 artifact.",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P1-finalizer-pr-head-propagation-delay",
+        "candidate_id": "finalizer-pr-head-propagation-delay",
+        "severity": "P1",
+        "summary": "Added a fixed six-read executor budget, identity/remote drift checks, automatic convergence continuation and persistent-mismatch fail-closed regression.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P1-compact-archive-readiness-dependency",
+        "candidate_id": "compact-archive-readiness-dependency",
+        "severity": "P1",
+        "summary": "Reordered preview around the committed locator, immutable plan and transaction, so archived recovery no longer opens the active publication owner artifact.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P1-archived-recovery-owner-projection-reopen",
+        "candidate_id": "archived-recovery-owner-projection-reopen",
+        "severity": "P1",
+        "summary": "Committed recovery now consumes the validated archive gate directly and bypasses active #117 compatibility projection without weakening plan, route, transaction or PR identity checks.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P2-archived-recovery-gate-mutation",
+        "candidate_id": "archived-recovery-gate-mutation",
+        "severity": "P2",
+        "summary": "Archived/ready recording and checking are in-memory only; the terminal DTO is materialized from the validated committed gate and no restore helper remains.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P2-stale-closure-ledger",
+        "candidate_id": "stale-closure-ledger",
+        "severity": "P2",
+        "summary": "Replaced the stale c8c84ab/current-pass narrative with the current recovery candidate, explicitly classified c8c84ab/95379d6/15d957b as historical failure evidence, and returned remote marketplace verification to pending until the separately authorized new push.",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
+        "candidate_id": "current-stale-closeout-plan-blocks-new-finalizer-plan",
+        "severity": "P1",
+        "summary": "Removed the stale active closeout-plan.json through a new reviewed recovery delta while retaining its active and compact-archive forms in immutable 3fe71d7/15d957b history. No source, runtime, preset, public contract, PR or donor state changed.",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/closeout-plan.json",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "P1-initial-publication-stale-verification-consumption",
+        "candidate_id": "initial-publication-stale-verification-consumption",
+        "severity": "P1",
+        "summary": "Fresh publication_ready now declines historical task-local verification reuse, while verification_verified and same_plan_resume retain the strict current owner/plan verifier; focused regressions cover both paths.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "F119-FRESH-001",
+        "candidate_id": "fresh-archived-plan-working-tree-dependency",
+        "severity": "P1",
+        "summary": "Moved the active working-tree plan presence check behind archived classification, so archived recovery reads and validates the exact current commit plan blob even when the local archived plan is absent. Unit and source integration regressions cover the path.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "F119-FRESH-002",
+        "candidate_id": "fresh-workflow-contract-archived-readiness-authority",
+        "severity": "P3",
+        "summary": "Updated the durable workflow SSOT to require pr-readiness.json only on active pre-publication/evidence retry paths and to recover compact archived/archive_pushed state from exact committed transaction and live Git/GitHub facts.",
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "blocking": true,
+        "status": "resolved"
+      }
+    ],
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "All nine Phase 2 adequacy dimensions pass for the complete current #119 candidate. F119-FRESH-001 and F119-FRESH-002 are resolved with current source, installed, test, preset and Docs SSOT evidence; no open current-scope finding or blocking unverified item remains.",
+      "full_rerun": true,
+      "planning_facts_sha256": "01ea6947267442ab6b62db22986f87c680bf03f1277163ea8beac02292833002",
+      "snapshot_sha256": "10e1c42db550e4fd7b7ed9681f6f1d1c89c0ec0747e50405d566490101b0c69d",
+      "scope_sha256": "9afa0a3205c62f595324bcd4f5ac6f3152bcdad8d21880749fac9a867dfc2e41",
+      "adequacy_sha256": "18767ae585c416199368a640a45fdbc1f16d421ed16fa74829f87f84f32b4fc3",
+      "findings_count": 16,
+      "full_round_sha256": "c9b167ce1daa555ee0041eccc0f7101f950fd47b400d84464c97bde53b68ca52"
+    },
+    "adequacy_sha256": "18767ae585c416199368a640a45fdbc1f16d421ed16fa74829f87f84f32b4fc3"
+  },
+  "human_confirmation": {
+    "kind": "not-required",
+    "status": "not_required",
+    "summary": "guru-check-task has no unconditional human confirmation; the approved implementation and validation scope is unchanged.",
+    "confirmed_at": null
+  },
+  "typed_exit": "passed",
+  "route": null,
+  "reason": "The complete current Issue #119 candidate passes the mandatory Phase 2 gate after resolving both fresh Branch Review findings. The next mapped consumer is guru-create-task-commit, which remains separately authorized.",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-commit"
+  },
+  "schema_version": "2.1",
+  "skill_id": "guru-check-task",
+  "generated_at": "2026-08-01T05:57:09Z",
+  "task": {
+    "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+    "task_id": "119-combined-finish-family-integration",
+    "branch": "feat/119-finish-family-integration-main",
+    "base_branch": "main",
+    "issue_numbers": [
+      115,
+      119
+    ],
+    "task_identity_sha256": "e0c43c4515d8af129980ab53c71db9a3bf25238a460d9005e3880db64b6fca89"
+  },
+  "planning": {
+    "schema_id": "guru-planning-approval-2.0",
+    "typed_exit": "approved",
+    "artifact": {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
+      "sha256": "039779012fe6236b072dffe40506886052ad940813b944051a6dad9480fd4d53",
+      "size_bytes": 24229
+    },
+    "reviewed_artifacts": [
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+        "size_bytes": 13165
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "sha256": "b7f65ebf819d63601eab7b95b630470bbe00ee106254babf9f036c8bef344411",
+        "size_bytes": 19581
+      },
+      {
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "sha256": "d0757b504b85179e16aecb32bd137e05c21c6b11ab640ea2aad53394ed5b344e",
+        "size_bytes": 11726
+      }
+    ],
+    "facts_sha256": "01ea6947267442ab6b62db22986f87c680bf03f1277163ea8beac02292833002"
+  },
+  "facts_sha256": "6d9f7a6f864143dba4d35e6a4e7141c56583e71ef3632e2ffe6bd0dea9633abc"
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-finalize-task",
+  "generated_at": "2026-08-01T07:34:33Z",
+  "invocation": {
+    "profile": "verification_verified",
+    "mode": "workflow",
+    "task_ref": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+    "input_identity_sha256": "48ad3711270a175ce561cde30ba11bb609eb4d2a427748f1eb49562af1f392fa"
+  },
+  "plan": {
+    "available": true,
+    "plan_ref": "closeout-plan:0fdf8e5fb2c315b2e4476a2faa414c5d3109ae518f1cd0c996731c503bca0423",
+    "plan_digest": "0fdf8e5fb2c315b2e4476a2faa414c5d3109ae518f1cd0c996731c503bca0423",
+    "reviewed_head": "72bf89a789d25598a95944dfe9af8735b4a92a10"
+  },
+  "review": {
+    "status": "passed",
+    "summary": "同一 immutable plan 仍精确绑定 Issue #119/#115、reviewed HEAD 72bf89a、current publication readiness、2026-08 archive locator、唯一 Draft PR #166 与 compact 12-file archive transaction；task-local extension verification 已从精确 remote ref 完成完整 12-capability、236-asset clean verification，content_pushed 是合法的同 plan terminal publication 入口。",
+    "evidence_refs": [
+      "closeout-plan:0fdf8e5fb2c315b2e4476a2faa414c5d3109ae518f1cd0c996731c503bca0423",
+      "publication:7e12fbf43df688ad0edc9e7dbcca4f50615e88d8d395112446654a2dce27f449",
+      "extension-verification:7b21ceb679f602b9cb106892",
+      "transaction_state=content_pushed",
+      "remote feature ref=72bf89a789d25598a95944dfe9af8735b4a92a10",
+      "PR #166 OPEN Draft headRefOid=72bf89a789d25598a95944dfe9af8735b4a92a10",
+      "asset_inventory expected=236 observed=236 matched=236"
+    ]
+  },
+  "confirmation": {
+    "status": "not_required",
+    "confirmed_plan_digest": "0fdf8e5fb2c315b2e4476a2faa414c5d3109ae518f1cd0c996731c503bca0423",
+    "summary": "这是同一已确认 plan 的自动 re-entry；verification、evidence commit/push、PR #166 reuse、compact archive commit/push 与 Ready transition 已包含在原授权中，plan、HEAD、目标和 scope 均未改变。"
+  },
+  "route": {
+    "typed_exit": "published",
+    "consumer": {
+      "kind": "workflow",
+      "id": "guru-finalization-finish-response"
+    },
+    "output": {
+      "materialization": "executor"
+    }
+  },
+  "freshness": {
+    "current_facts_sha256": "93128734c7227226c54e18150d992122eff897679fd9fff68b297aaa8ed2e091",
+    "supersedes_gate_ref": "task-finalization-gate:123e6f12fced725d25d3dcab63b5b6e1304ab7c30937074491ef8475ea010fb6"
+  }
+}

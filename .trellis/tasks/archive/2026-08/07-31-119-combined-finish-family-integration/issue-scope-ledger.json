@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 119,
+    "url": "https://github.com/castbox/guru-trellis/issues/119",
+    "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+    "reason": "当前唯一 combined Finish-family integration delivery unit。",
+    "acceptance_evidence": [
+      "Fresh guru-check-task Phase 2 at d8664c83b2ad3ff14e001d071e66d31e6e1dab49 binds the exact 72bf89a789d25598a95944dfe9af8735b4a92a10 work commit ancestry and 15 affected-validation records: 561 runtime tests, six finalizer-contract tests, nine source integration tests, nine installed integration tests, 47 preset tests, compile, drift, parity, workspace, task, sidecar and frozen-donor checks all passed.",
+      "Distinct fresh-final Branch Review passed at 72bf89a789d25598a95944dfe9af8735b4a92a10 across the complete origin/main range of 12 commits and 74 net paths. F119-FRESH-001 (P1) and F119-FRESH-002 (P3) are resolved with concrete closure evidence and no open current-scope P0-P3 finding; c8c84ab, 95379d6 and 15d957b remain historical failure-chain evidence only.",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "518b0a3719a804efb92eb6bc90cc8c75b1395b6e531da1b053007fce0e03e466",
+        "verified_content_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+        "remote_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+        "publish_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 119,
+      "url": "https://github.com/castbox/guru-trellis/issues/119",
+      "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+      "reason": "本 task 覆盖 #119 全部 accepted-current combined acceptance。",
+      "acceptance_evidence": [
+        "Fresh guru-check-task Phase 2 at d8664c83b2ad3ff14e001d071e66d31e6e1dab49 binds the exact 72bf89a789d25598a95944dfe9af8735b4a92a10 work commit ancestry and 15 affected-validation records: 561 runtime tests, six finalizer-contract tests, nine source integration tests, nine installed integration tests, 47 preset tests, compile, drift, parity, workspace, task, sidecar and frozen-donor checks all passed.",
+        "Distinct fresh-final Branch Review passed at 72bf89a789d25598a95944dfe9af8735b4a92a10 across the complete origin/main range of 12 commits and 74 net paths. F119-FRESH-001 (P1) and F119-FRESH-002 (P3) are resolved with concrete closure evidence and no open current-scope P0-P3 finding; c8c84ab, 95379d6 and 15d957b remain historical failure-chain evidence only.",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "518b0a3719a804efb92eb6bc90cc8c75b1395b6e531da1b053007fce0e03e466",
+          "verified_content_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "remote_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "publish_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "commands_passed": true
+        }
+      ]
+    },
+    {
+      "number": 115,
+      "url": "https://github.com/castbox/guru-trellis/issues/115",
+      "title": "按 Skill-first 重构 Guru Team task 收尾流程 umbrella",
+      "reason": "#119 combined acceptance 完成后按 Issue authority 一并关闭 umbrella。",
+      "acceptance_evidence": [
+        "Issues #116, #117 and #118 are closed; the current #119 delivery integrates their existing public contracts into the canonical Finish-family workflow, Guru namespace entries, private evidence bridge and installation lifecycle without reopening their internal behavior.",
+        "Fresh Phase 2 and the distinct fresh-final Branch Review now pass for work commit 72bf89a789d25598a95944dfe9af8735b4a92a10. Both recovery findings are resolved, earlier c8c84ab/95379d6/15d957b evidence remains historical only, and Issue #132 remains the sole follow-up owner for physical legacy-overlay removal.",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "518b0a3719a804efb92eb6bc90cc8c75b1395b6e531da1b053007fce0e03e466",
+          "verified_content_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "remote_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "publish_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 105,
+      "url": "https://github.com/castbox/guru-trellis/issues/105",
+      "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+      "reason": "已完成 transaction/recovery baseline；本 task 只完整回归，不重新关闭或改变语义。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 116,
+      "url": "https://github.com/castbox/guru-trellis/issues/116",
+      "title": "拆分 #115：实现 guru-review-task-publication 闭环 Skill",
+      "reason": "已完成 publication review owner；本 task 仅消费 public contract。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 117,
+      "url": "https://github.com/castbox/guru-trellis/issues/117",
+      "title": "拆分 #115：实现 guru-verify-extension-installation 闭环 Skill",
+      "reason": "已完成 verification owner；本 task 仅消费 public contract。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 118,
+      "url": "https://github.com/castbox/guru-trellis/issues/118",
+      "title": "拆分 #115：实现 guru-finalize-task 事务闭环 Skill",
+      "reason": "已完成 finalization owner；本 task 不重做内部行为。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "保留全仓 upstream overlay cleanup ownership；不得在 #119 提前实现或关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

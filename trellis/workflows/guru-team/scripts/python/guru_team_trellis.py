@@ -22,6 +22,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -443,6 +444,8 @@ CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS = {
 }
 CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 12
 CLOSEOUT_PR_PLACEHOLDER_NUMBER = 9223372036854775807
+CLOSEOUT_PR_HEAD_READ_ATTEMPTS = 6
+CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS = 1
 CLOSEOUT_SUMMARY_RUNTIME_FACT_FIELDS = [
     "github.pr_url",
     "index.search_terms.pr_refs",
@@ -5177,19 +5180,23 @@ def remote_marketplace_evidence(issue: dict[str, Any]) -> dict[str, Any] | None:
     return matches[0] if len(matches) == 1 else None
 
 
+def legacy_pending_marketplace_evidence() -> dict[str, Any]:
+    return {
+        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+        "status": "pending",
+        "required": True,
+        "artifact_path": "marketplace-verification.json",
+        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
+    }
+
+
 def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: bool) -> list[str]:
     item = remote_marketplace_evidence(issue)
     if item is None:
         return ["缺少唯一 remote_marketplace_verification 结构化 evidence。"]
     status = item.get("status")
     if status == "pending" and allow_pending:
-        legacy_pending = {
-            "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
-            "status": "pending",
-            "required": True,
-            "artifact_path": "marketplace-verification.json",
-            "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
-        }
+        legacy_pending = legacy_pending_marketplace_evidence()
         machine_pending_keys = {
             "type", "status", "required", "artifact_path", "artifact_sha256",
             "verified_content_head", "remote_head", "publish_head", "commands_passed",
@@ -5229,7 +5236,13 @@ def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: 
     return errors
 
 
-def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *, allow_pending_remote_marketplace: bool = False) -> list[str]:
+def validate_ledger_for_publish(
+    ledger: dict[str, Any],
+    gate: dict[str, Any],
+    *,
+    allow_pending_remote_marketplace: bool = False,
+    marketplace_required: bool | None = None,
+) -> list[str]:
     errors: list[str] = []
     close_issues = ledger.get("close_issues")
     if not isinstance(close_issues, list):
@@ -5241,6 +5254,10 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *,
     gate_reviewed = set(
         issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed"))
     )
+    if marketplace_required is None:
+        marketplace_required = bool(
+            marketplace_verification_required(gate)["candidate_surfaces"]
+        )
     for issue in close_issues:
         if not isinstance(issue, dict):
             errors.append("close_issues 中存在非对象条目。")
@@ -5254,7 +5271,7 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *,
             errors.append(f"issue #{number} 同时出现在 close_issues 与 related/followup 中。")
         if not issue_has_evidence(issue):
             errors.append(f"close_issues 中 issue #{number} 缺少验收或验证证据。")
-        if legacy_closeout_marketplace_verification_required(gate):
+        if marketplace_required:
             errors.extend(
                 f"close_issues 中 issue #{number}：{error}"
                 for error in remote_marketplace_evidence_errors(issue, allow_pending=allow_pending_remote_marketplace)
@@ -13057,11 +13074,28 @@ def task_publication_artifact_bindings(task_dir: Path) -> dict[str, dict[str, An
                 exit_code=2,
             )
         content = path.read_bytes()
-        bindings[name] = {
-            "sha256": hashlib.sha256(content).hexdigest(),
-            "size": len(content),
-        }
+        bindings[name] = task_publication_artifact_binding(content)
     return bindings
+
+
+def task_publication_artifact_binding(content: bytes) -> dict[str, Any]:
+    return {
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "size": len(content),
+    }
+
+
+def task_publication_issue_scope_ledger_binding(
+    ledger: dict[str, Any],
+    content: bytes,
+) -> dict[str, str]:
+    return task_publication_binding({
+        "artifact_sha256": hashlib.sha256(content).hexdigest(),
+        "primary_issue": ledger.get("primary_issue"),
+        "close_issues": ledger.get("close_issues"),
+        "related_issues": ledger.get("related_issues"),
+        "followup_issues": ledger.get("followup_issues"),
+    })
 
 
 def task_publication_repository_binding(
@@ -13384,13 +13418,12 @@ def task_publication_entry_precondition_bindings(
             f"issue_scope_ledger:{item}" for item in sorted(set(ledger_errors))
         )
     else:
-        bindings["issue_scope_ledger"] = task_publication_binding({
-            "artifact_sha256": hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
-            "primary_issue": ledger.get("primary_issue"),
-            "close_issues": ledger.get("close_issues"),
-            "related_issues": ledger.get("related_issues"),
-            "followup_issues": ledger.get("followup_issues"),
-        })
+        bindings["issue_scope_ledger"] = (
+            task_publication_issue_scope_ledger_binding(
+                ledger,
+                ledger_path.read_bytes(),
+            )
+        )
 
     docs = (
         phase2_payload.get("docs_ssot_plan")
@@ -14207,6 +14240,129 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
     }
 
 
+def task_publication_finalization_ledger_augmentation(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate the one machine-only ledger delta owned by closeout."""
+    if plan.get("marketplace", {}).get("required") is not True:
+        raise WorkflowError(
+            "Task publication ledger augmentation requires marketplace verification.",
+            exit_code=2,
+        )
+    ledger_path = issue_scope_ledger_path(task_dir)
+    if not ledger_path.is_file() or ledger_path.is_symlink():
+        raise WorkflowError(
+            "Task publication ledger augmentation requires a safe issue scope ledger.",
+            exit_code=2,
+        )
+    ledger = read_json(ledger_path)
+    semantic_ledger = closeout_semantic_ledger(ledger)
+    plan_input = (
+        plan.get("inputs", {}).get("issue_scope_ledger")
+        if isinstance(plan.get("inputs"), dict)
+        else None
+    )
+    expected_plan_input = {
+        "path": repo_relative(root, ledger_path),
+        "sha256": canonical_json_sha256(semantic_ledger),
+    }
+    if plan_input != expected_plan_input:
+        raise WorkflowError(
+            "Task publication ledger semantic content differs from the immutable closeout plan.",
+            exit_code=2,
+        )
+
+    allowed_current_evidence = [plan["marketplace"]["pending_machine"]]
+    if marketplace_verification is not None:
+        allowed_current_evidence.append(
+            closeout_passed_marketplace_evidence(
+                root,
+                marketplace_verification_path(task_dir, load_config(root)),
+                marketplace_verification,
+            )
+        )
+    targets: list[dict[str, Any]] = []
+    primary = ledger.get("primary_issue")
+    if isinstance(primary, dict):
+        targets.append(primary)
+    close_issues = ledger.get("close_issues")
+    if isinstance(close_issues, list):
+        targets.extend(item for item in close_issues if isinstance(item, dict))
+    evidence = [remote_marketplace_evidence(issue) for issue in targets]
+    matching_evidence = next(
+        (
+            candidate
+            for candidate in allowed_current_evidence
+            if evidence and all(item == candidate for item in evidence)
+        ),
+        None,
+    )
+    if matching_evidence is None:
+        raise WorkflowError(
+            "Task publication ledger does not contain the exact plan-owned marketplace evidence.",
+            exit_code=2,
+        )
+
+    bindings = payload.get("deterministic_bindings")
+    artifacts = bindings.get("artifacts") if isinstance(bindings, dict) else None
+    entries = (
+        bindings.get("entry_preconditions")
+        if isinstance(bindings, dict)
+        else None
+    )
+    stored_artifact = (
+        artifacts.get("issue-scope-ledger.json")
+        if isinstance(artifacts, dict)
+        else None
+    )
+    stored_entry = (
+        entries.get("issue_scope_ledger")
+        if isinstance(entries, dict)
+        else None
+    )
+    prior_candidates = [semantic_ledger]
+    for candidate_evidence in [
+        legacy_pending_marketplace_evidence(),
+        *allowed_current_evidence,
+    ]:
+        candidate = record_marketplace_machine_evidence(
+            semantic_ledger,
+            candidate_evidence,
+        )
+        if candidate not in prior_candidates:
+            prior_candidates.append(candidate)
+    prior_matches = []
+    for candidate in prior_candidates:
+        content = closeout_json_artifact_bytes(candidate)
+        if (
+            stored_artifact == task_publication_artifact_binding(content)
+            and stored_entry
+            == task_publication_issue_scope_ledger_binding(candidate, content)
+        ):
+            prior_matches.append(candidate)
+    if len(prior_matches) != 1:
+        raise WorkflowError(
+            "Task publication ledger augmentation does not match one reviewed ledger preimage.",
+            exit_code=2,
+        )
+
+    current_content = ledger_path.read_bytes()
+    return {
+        "path": repo_relative(root, ledger_path),
+        "artifact_binding": task_publication_artifact_binding(current_content),
+        "entry_binding": task_publication_issue_scope_ledger_binding(
+            ledger,
+            current_content,
+        ),
+        "evidence_status": matching_evidence["status"],
+    }
+
+
 def check_task_publication_for_finalization_augmentation(
     root: Path,
     task_dir: Path,
@@ -14215,9 +14371,11 @@ def check_task_publication_for_finalization_augmentation(
     expected_closeout_plan_digest: str | None,
     additional_owned_paths: list[str] | None = None,
     allow_verification_metadata: bool = False,
+    marketplace_verification: dict[str, Any] | None = None,
     require_plan: bool = True,
 ) -> dict[str, Any]:
     """Recheck a ready gate across an exact finalizer-owned metadata delta."""
+    artifacts_stale = "task publication artifact bindings are stale"
     repository_stale = "task publication repository binding is stale"
     entries_stale = "task publication entry precondition bindings are stale"
     plan_path = closeout_plan_path(task_dir)
@@ -14285,6 +14443,90 @@ def check_task_publication_for_finalization_augmentation(
     if payload.get("typed_exit") != "ready":
         errors.append("task publication finalization augmentation requires ready")
 
+    stored_artifacts = (
+        bindings.get("artifacts") if isinstance(bindings, dict) else None
+    )
+    current_artifacts: dict[str, dict[str, Any]] | None = None
+    if artifacts_stale in errors:
+        try:
+            current_artifacts = task_publication_artifact_bindings(task_dir)
+        except WorkflowError as exc:
+            errors.append(str(exc))
+
+    stored_entries = (
+        bindings.get("entry_preconditions")
+        if isinstance(bindings, dict)
+        else None
+    )
+    current_entries: dict[str, dict[str, str]] | None = None
+    entry_errors: list[str] = []
+    if entries_stale in errors:
+        review_identity = (
+            payload.get("review_identity")
+            if isinstance(payload.get("review_identity"), dict)
+            else {}
+        )
+        invocation = {
+            "task_ref": payload.get("task_dir"),
+            "profile": payload.get("profile"),
+            "mode": payload.get("mode"),
+            "review_intent": payload.get("review_intent"),
+            "stale_reason": payload.get("stale_reason"),
+            "reentry_context": payload.get("reentry_context"),
+            "supersedes_publication_ref": payload.get(
+                "supersedes_publication_ref"
+            ),
+            "reviewed_head": review_identity.get("reviewed_head"),
+            "review_ref": review_identity.get("review_ref"),
+        }
+        current_entries, entry_errors, _review_gate, _repository = (
+            task_publication_entry_precondition_bindings(
+                root,
+                task_dir,
+                load_config(root),
+                invocation,
+                finalization_owned_paths=finalization_paths,
+            )
+        )
+
+    ledger_augmentation: dict[str, Any] | None = None
+    stored_ledger_artifact = (
+        stored_artifacts.get("issue-scope-ledger.json")
+        if isinstance(stored_artifacts, dict)
+        else None
+    )
+    current_ledger_artifact = (
+        current_artifacts.get("issue-scope-ledger.json")
+        if isinstance(current_artifacts, dict)
+        else stored_ledger_artifact
+    )
+    stored_ledger_entry = (
+        stored_entries.get("issue_scope_ledger")
+        if isinstance(stored_entries, dict)
+        else None
+    )
+    current_ledger_entry = (
+        current_entries.get("issue_scope_ledger")
+        if isinstance(current_entries, dict)
+        else stored_ledger_entry
+    )
+    ledger_binding_changed = (
+        stored_ledger_artifact != current_ledger_artifact
+        or stored_ledger_entry != current_ledger_entry
+    )
+    if ledger_binding_changed and plan is not None:
+        try:
+            ledger_augmentation = task_publication_finalization_ledger_augmentation(
+                root,
+                task_dir,
+                payload,
+                plan,
+                marketplace_verification=marketplace_verification,
+            )
+        except WorkflowError as exc:
+            errors.append(str(exc))
+
+    repository_delta_accepted = False
     if repository_stale in errors:
         stored_without_status = (
             {key: value for key, value in stored_repository.items() if key != "status_paths"}
@@ -14306,59 +14548,54 @@ def check_task_publication_for_finalization_augmentation(
             if isinstance(current_repository, dict)
             else None
         )
+        status_additions = set(finalization_paths)
+        if (
+            ledger_augmentation is not None
+            and isinstance(stored_status, list)
+            and ledger_augmentation["path"] not in stored_status
+        ):
+            status_additions.add(ledger_augmentation["path"])
         exact_finalization_delta = (
             stored_without_status == current_without_status
             and isinstance(stored_status, list)
             and isinstance(current_status, list)
-            and current_status == sorted({*stored_status, *finalization_paths})
+            and current_status == sorted({*stored_status, *status_additions})
             and all(path not in stored_status for path in finalization_paths)
         )
         if exact_finalization_delta:
             errors.remove(repository_stale)
-            if entries_stale in errors:
-                stored_entries = (
-                    bindings.get("entry_preconditions")
-                    if isinstance(bindings, dict)
-                    else None
+            repository_delta_accepted = True
+
+    if artifacts_stale in errors and ledger_augmentation is not None:
+        expected_artifacts = (
+            copy.deepcopy(stored_artifacts)
+            if isinstance(stored_artifacts, dict)
+            else None
+        )
+        if isinstance(expected_artifacts, dict):
+            expected_artifacts["issue-scope-ledger.json"] = (
+                ledger_augmentation["artifact_binding"]
+            )
+        if current_artifacts == expected_artifacts:
+            errors.remove(artifacts_stale)
+
+    if entries_stale in errors:
+        expected_entries = (
+            copy.deepcopy(stored_entries)
+            if isinstance(stored_entries, dict)
+            else None
+        )
+        if isinstance(expected_entries, dict):
+            if ledger_augmentation is not None:
+                expected_entries["issue_scope_ledger"] = (
+                    ledger_augmentation["entry_binding"]
                 )
-                review_identity = (
-                    payload.get("review_identity")
-                    if isinstance(payload.get("review_identity"), dict)
-                    else {}
+            if repository_delta_accepted:
+                expected_entries["review_range_and_working_tree"] = (
+                    task_publication_binding(current_repository)
                 )
-                invocation = {
-                    "task_ref": payload.get("task_dir"),
-                    "profile": payload.get("profile"),
-                    "mode": payload.get("mode"),
-                    "review_intent": payload.get("review_intent"),
-                    "stale_reason": payload.get("stale_reason"),
-                    "reentry_context": payload.get("reentry_context"),
-                    "supersedes_publication_ref": payload.get(
-                        "supersedes_publication_ref"
-                    ),
-                    "reviewed_head": review_identity.get("reviewed_head"),
-                    "review_ref": review_identity.get("review_ref"),
-                }
-                current_entries, entry_errors, _review_gate, _repository = (
-                    task_publication_entry_precondition_bindings(
-                        root,
-                        task_dir,
-                        load_config(root),
-                        invocation,
-                        finalization_owned_paths=finalization_paths,
-                    )
-                )
-                expected_entries = (
-                    copy.deepcopy(stored_entries)
-                    if isinstance(stored_entries, dict)
-                    else None
-                )
-                if isinstance(expected_entries, dict):
-                    expected_entries["review_range_and_working_tree"] = (
-                        task_publication_binding(current_repository)
-                    )
-                if not entry_errors and current_entries == expected_entries:
-                    errors.remove(entries_stale)
+        if not entry_errors and current_entries == expected_entries:
+            errors.remove(entries_stale)
 
     errors = sorted(set(errors))
     if errors:
@@ -16698,14 +16935,6 @@ MARKETPLACE_VERIFICATION_PREFIXES = (
     "README.md",
 )
 
-LEGACY_CLOSEOUT_MARKETPLACE_VERIFICATION_PREFIXES = (
-    "trellis/index.json",
-    "trellis/guru-team-extension.json",
-    "trellis/workflows/",
-    "trellis/presets/",
-)
-
-
 EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
 EXTENSION_VERIFICATION_SCHEMA_VERSION = "1.0"
 EXTENSION_VERIFICATION_CAPABILITIES = (
@@ -16829,14 +17058,59 @@ def marketplace_verification_required(gate: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def legacy_closeout_marketplace_verification_required(gate: dict[str, Any]) -> bool:
-    """Compatibility-only closeout projection until issue #119 activates the new route."""
-    files = gate.get("changed_files") if isinstance(gate.get("changed_files"), list) else []
-    return any(
-        isinstance(path, str)
-        and path.startswith(LEGACY_CLOSEOUT_MARKETPLACE_VERIFICATION_PREFIXES)
-        for path in files
+def closeout_reviewed_change_facts(
+    root: Path,
+    task_context: dict[str, Any],
+    gate: dict[str, Any],
+    reviewed_head: str,
+) -> dict[str, Any]:
+    """Rebuild one reviewed-path fact set for closeout and its projections."""
+    base_head = str(task_context.get("base_head_sha") or "").strip()
+    if re.fullmatch(r"[0-9a-f]{40}", base_head):
+        proc = run(
+            ["git", "diff", "--name-only", f"{base_head}...{reviewed_head}"],
+            cwd=root,
+            check=False,
+        )
+        if proc.returncode != 0:
+            raise WorkflowError(
+                "Could not rebuild closeout reviewed paths from the pinned task base.",
+                exit_code=2,
+                payload={
+                    "base_head": base_head,
+                    "reviewed_head": reviewed_head,
+                    "stderr": proc.stderr.strip(),
+                },
+            )
+        changed_paths = sorted(
+            {
+                path.strip()
+                for path in proc.stdout.splitlines()
+                if path.strip()
+            }
+        )
+    else:
+        legacy_paths = gate.get("changed_files")
+        if not isinstance(legacy_paths, list):
+            raise WorkflowError(
+                "Closeout reviewed paths require a pinned task base or a legacy changed_files gate.",
+                exit_code=2,
+            )
+        changed_paths = sorted(
+            {
+                str(path)
+                for path in legacy_paths
+                if isinstance(path, str) and path
+            }
+        )
+    marketplace = marketplace_verification_required(
+        {"changed_files": changed_paths}
     )
+    return {
+        "changed_paths": changed_paths,
+        "candidate_surfaces": marketplace["candidate_surfaces"],
+        "marketplace_required": bool(marketplace["candidate_surfaces"]),
+    }
 
 
 def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str], display_command: list[str] | None = None) -> dict[str, Any]:
@@ -22334,6 +22608,22 @@ def _validate_skill_installed(
         )
 
     add_expected(skills_root / "registry.json", Path("registry.json"), skills_root / "registry.json")
+    finish_integration_test = (
+        skills_root / "tests/test_finish_family_integration.py"
+    )
+    finish_integration_stat = skill_lstat_path(
+        root,
+        finish_integration_test,
+        "installed Finish family integration test",
+        errors,
+        kind="file",
+    )
+    if finish_integration_stat is not None:
+        add_expected(
+            finish_integration_test,
+            Path("tests/test_finish_family_integration.py"),
+            finish_integration_test,
+        )
     for shared_root_name in ("schemas", "adapters", "migrations"):
         shared_root = skills_root / shared_root_name
         shared_files = skill_collect_tree_files(
@@ -26689,7 +26979,17 @@ def build_closeout_plan(
     reviewed_head: str,
     title: str,
     include_finalization_gate: bool = False,
+    review_facts: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    if review_facts is None:
+        review_facts = closeout_reviewed_change_facts(
+            root,
+            task_context,
+            gate,
+            reviewed_head,
+        )
+    reviewed_paths = list(review_facts["changed_paths"])
+    requires_marketplace = bool(review_facts["marketplace_required"])
     active_locator = repo_relative(root, task_dir)
     existing_plan_path = closeout_plan_path(task_dir)
     existing_plan = read_json(existing_plan_path) if existing_plan_path.is_file() else {}
@@ -26771,7 +27071,7 @@ def build_closeout_plan(
         task_files.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT, FINISH_SUMMARY_ARTIFACT})
         if include_finalization_gate:
             task_files.add(TASK_FINALIZATION_GATE_ARTIFACT)
-        if legacy_closeout_marketplace_verification_required(gate):
+        if requires_marketplace:
             task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
     move_paths = sorted(task_files)
     if existing_projection:
@@ -26791,7 +27091,7 @@ def build_closeout_plan(
         retained_archive_paths = list(move_paths)
     else:
         retained_allowlist = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
-        if legacy_closeout_marketplace_verification_required(gate):
+        if requires_marketplace:
             retained_allowlist.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
         retained_archive_paths = sorted(set(move_paths) & retained_allowlist)
     metadata_allowlist = sorted(
@@ -26816,7 +27116,7 @@ def build_closeout_plan(
         }
         evidence_names.difference_update(untracked_archive_outputs)
         evidence_names.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT})
-        if legacy_closeout_marketplace_verification_required(gate):
+        if requires_marketplace:
             evidence_names.update({MARKETPLACE_VERIFICATION_ARTIFACT, "issue-scope-ledger.json"})
         evidence_paths = sorted(f"{active_locator}/{name}" for name in evidence_names)
     context_path = task_dir / str(DEFAULTS["task_start_context_artifact"])
@@ -26851,7 +27151,7 @@ def build_closeout_plan(
         )
     projected_ledger = (
         record_marketplace_machine_evidence(ledger, pending)
-        if legacy_closeout_marketplace_verification_required(gate)
+        if requires_marketplace
         else ledger
     )
     projected_artifacts = {
@@ -26867,7 +27167,7 @@ def build_closeout_plan(
         read_json(finish_summary_index_path),
         reviewed_head,
         pr_url=placeholder["url"],
-        changed_paths=sorted(set(gate.get("changed_files", [])) | set(metadata_allowlist)),
+        changed_paths=sorted(set(reviewed_paths) | set(metadata_allowlist)),
         archive_dir_override=archive_locator,
         generated_at_override=generated_at,
         artifacts_override=projected_artifacts,
@@ -26893,8 +27193,10 @@ def build_closeout_plan(
         "review": {
             "gate_locator": repo_relative(root, gate_path),
             "reviewed_head": str(gate.get("head") or ""),
-            "changed_paths": sorted(set(str(path) for path in gate.get("changed_files", []) if str(path))),
-            "close_issues_reviewed": sorted(set(issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed")))),
+            "changed_paths": reviewed_paths,
+            "close_issues_reviewed": sorted(
+                set(issue_numbers(ledger.get("close_issues")))
+            ),
         },
         "publish": {
             "title": title,
@@ -26904,7 +27206,7 @@ def build_closeout_plan(
             "match": {"repo": repo, "head": head_branch, "base": normalize_ref(base_branch).removeprefix("origin/")},
         },
         "marketplace": {
-            "required": legacy_closeout_marketplace_verification_required(gate),
+            "required": requires_marketplace,
             "pending_machine": pending,
             "verifier_artifact_locator": MARKETPLACE_VERIFICATION_ARTIFACT,
         },
@@ -26935,6 +27237,9 @@ def prepare_closeout(
     config: dict[str, Any],
     task_dir: Path,
     task_context: dict[str, Any],
+    *,
+    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     official_after_archive_hook_state(root)
     gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
@@ -26954,9 +27259,15 @@ def prepare_closeout(
     reviewed_head = str(gate.get("head") or "")
     if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
         raise WorkflowError("Branch Review Gate reviewed HEAD is invalid.", exit_code=2)
+    review_facts = closeout_reviewed_change_facts(
+        root,
+        task_context,
+        gate,
+        reviewed_head,
+    )
     index_path, index = load_finish_summary_index(task_dir, args.finish_summary_index_file)
     ledger = load_issue_scope_ledger(task_dir, task_context)
-    requires_marketplace = legacy_closeout_marketplace_verification_required(gate)
+    requires_marketplace = bool(review_facts["marketplace_required"])
     if requires_marketplace:
         existing_targets: list[dict[str, Any]] = []
         if isinstance(ledger.get("primary_issue"), dict):
@@ -26982,7 +27293,10 @@ def prepare_closeout(
     else:
         validation_ledger = ledger
     ledger_errors = validate_ledger_for_publish(
-        validation_ledger, gate, allow_pending_remote_marketplace=requires_marketplace
+        validation_ledger,
+        gate,
+        allow_pending_remote_marketplace=requires_marketplace,
+        marketplace_required=requires_marketplace,
     )
     if ledger_errors:
         raise WorkflowError("Issue Scope Ledger is incomplete for closeout.", exit_code=2, payload={"errors": ledger_errors})
@@ -27014,6 +27328,7 @@ def prepare_closeout(
         include_finalization_gate=bool(
             getattr(args, "include_finalization_gate", False)
         ),
+        review_facts=review_facts,
     )
     month_supersession: dict[str, Any] | None = None
     finalizer_takeover: dict[str, Any] | None = None
@@ -27023,6 +27338,38 @@ def prepare_closeout(
         if persisted != plan:
             previous_month = closeout_archive_month(persisted)
             next_month = closeout_archive_month(plan)
+            persisted_marketplace_verification = marketplace_verification
+            checked_verification = (
+                verification_owner_result[1]
+                if isinstance(verification_owner_result, tuple)
+                and len(verification_owner_result) == 2
+                and isinstance(verification_owner_result[1], dict)
+                else {}
+            )
+            if (
+                persisted["marketplace"]["required"]
+                and checked_verification.get("typed_exit") == "verified"
+            ):
+                projected_marketplace_verification = (
+                    finalization_marketplace_verification_compatibility_projection(
+                        root,
+                        task_dir,
+                        plan if previous_month == next_month else persisted,
+                        verification_owner_result,
+                    )
+                )
+                if (
+                    persisted_marketplace_verification is not None
+                    and persisted_marketplace_verification
+                    != projected_marketplace_verification
+                ):
+                    raise WorkflowError(
+                        "Task finalization received conflicting marketplace verification projections.",
+                        exit_code=2,
+                    )
+                persisted_marketplace_verification = (
+                    projected_marketplace_verification
+                )
             committed = current_head(root) != reviewed_head
             takeover_errors = (
                 closeout_finalizer_gate_takeover_errors(
@@ -27041,7 +27388,12 @@ def prepare_closeout(
                 and not (root / persisted["task"]["archive_locator"]).exists()
             ):
                 prior_state = resolve_closeout_pre_draft_state(
-                    root, task_dir, persisted, ledger, gate
+                    root,
+                    task_dir,
+                    persisted,
+                    ledger,
+                    gate,
+                    marketplace_verification=persisted_marketplace_verification,
                 )
                 legal_states = (
                     {"evidence_pushed"}
@@ -27096,7 +27448,12 @@ def prepare_closeout(
                     prior_state = "evidence_pushed"
                 else:
                     prior_state = resolve_closeout_pre_draft_state(
-                        root, task_dir, persisted, ledger, gate
+                        root,
+                        task_dir,
+                        persisted,
+                        ledger,
+                        gate,
+                        marketplace_verification=persisted_marketplace_verification,
                     )
                     if prior_state not in {"content_pushed", "evidence_ready"}:
                         raise WorkflowError(
@@ -27281,6 +27638,8 @@ def resolve_closeout_pre_draft_state(
     plan: dict[str, Any],
     ledger: dict[str, Any],
     gate: dict[str, Any],
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> str:
     if closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
         return "evidence_pushed"
@@ -27357,7 +27716,11 @@ def resolve_closeout_pre_draft_state(
 
     verification_path = marketplace_verification_path(task_dir)
     if verification_path.is_file():
-        verification = read_json(verification_path)
+        verification = (
+            marketplace_verification
+            if isinstance(marketplace_verification, dict)
+            else read_json(verification_path)
+        )
         if verification.get("status") == "passed" and not marketplace_verification_contract_errors(verification):
             passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
             if evidence and all(item == passed for item in evidence):
@@ -27691,7 +28054,11 @@ def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dic
 
 
 def validate_closeout_marketplace_artifact(
-    root: Path, task_dir: Path, plan: dict[str, Any], ledger: dict[str, Any]
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    ledger: dict[str, Any],
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> None:
     if not plan["marketplace"]["required"]:
         return
@@ -27701,7 +28068,11 @@ def validate_closeout_marketplace_artifact(
     artifact = task_dir / locator
     if not artifact.is_file():
         raise WorkflowError("Marketplace verifier artifact is missing from the task.", exit_code=2)
-    verification = read_json(artifact)
+    verification = (
+        marketplace_verification
+        if isinstance(marketplace_verification, dict)
+        else read_json(artifact)
+    )
     if verification.get("status") != "passed" or marketplace_verification_contract_errors(verification):
         raise WorkflowError("Marketplace verifier artifact is not a passed canonical artifact.", exit_code=2)
     expected = closeout_passed_marketplace_evidence(root, artifact, verification)
@@ -27727,10 +28098,16 @@ def build_final_archive_projection(
     task_dir: Path,
     prepared: dict[str, Any],
     pr: dict[str, Any],
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     plan = prepared["plan"]
     ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
-    ledger_errors = validate_ledger_for_publish(ledger, prepared["gate"])
+    ledger_errors = validate_ledger_for_publish(
+        ledger,
+        prepared["gate"],
+        marketplace_required=bool(plan["marketplace"]["required"]),
+    )
     if ledger_errors:
         raise WorkflowError("Final projection ledger validation failed.", exit_code=2, payload={"errors": ledger_errors})
     readiness = read_json(task_dir / PR_READINESS_ARTIFACT)
@@ -27746,7 +28123,13 @@ def build_final_archive_projection(
         require_summary=False,
         expected_head=current_head(root),
     )
-    validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+    validate_closeout_marketplace_artifact(
+        root,
+        task_dir,
+        plan,
+        ledger,
+        marketplace_verification,
+    )
     summary = closeout_summary_for_pr(plan, pr)
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
         raise WorkflowError("Final projection must contain one canonical PR ref.", exit_code=2)
@@ -27883,7 +28266,13 @@ def validate_closeout_evidence_commit(
         validate_closeout_evidence_commit(root, previous, expected_parent, _seen=seen)
 
 
-def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[str, Any]) -> None:
+def validate_closeout_active_projection(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
+) -> None:
     if repo_relative(root, task_dir) != plan["task"]["active_locator"] or not task_dir.is_dir():
         raise WorkflowError("Closeout active projection locator is invalid.", exit_code=2)
     actual_files = sorted(path.relative_to(task_dir).as_posix() for path in task_dir.rglob("*") if path.is_file())
@@ -27896,7 +28285,13 @@ def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[s
         )
     read_and_validate_closeout_final_summary(task_dir / FINISH_SUMMARY_ARTIFACT, plan)
     ledger = read_json(task_dir / "issue-scope-ledger.json")
-    validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+    validate_closeout_marketplace_artifact(
+        root,
+        task_dir,
+        plan,
+        ledger,
+        marketplace_verification,
+    )
 
 
 def closeout_commit_tree_entry(root: Path, commit: str, path: str) -> tuple[str, str, str]:
@@ -28445,13 +28840,19 @@ def execute_archive_metadata_transaction(
     plan: dict[str, Any],
     *,
     bound_pr: dict[str, Any] | None = None,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     archive_script = root / ".trellis/scripts/task.py"
     if not archive_script.is_file():
         raise WorkflowError(f"Trellis task.py not found: {archive_script}")
     evidence_commit = current_head(root)
     validate_closeout_evidence_commit(root, plan, evidence_commit)
-    validate_closeout_active_projection(root, task_dir, plan)
+    validate_closeout_active_projection(
+        root,
+        task_dir,
+        plan,
+        marketplace_verification=marketplace_verification,
+    )
     assert_closeout_archive_path_preflight(root, plan["task"]["archive_locator"])
     validate_closeout_pre_move_continuity(
         root,
@@ -28520,18 +28921,67 @@ def ensure_closeout_pr_ready(
         plan,
         pr,
         expected_draft=bool(pr["isDraft"]),
-        expected_head=local_head,
         bound_pr=bound_pr,
     )
-    remote_proc = run(["git", "ls-remote", "--heads", git["remote"], git["head_branch"]], cwd=root, check=False)
-    rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
-    remote_head = rows[0][0] if len(rows) == 1 else ""
-    if remote_proc.returncode != 0 or not (local_head == remote_head == pr["headRefOid"]):
+    remote_head = closeout_remote_branch_head(root, plan)
+    if local_head != remote_head:
         raise WorkflowError(
             "Closeout local/remote/PR HEAD identity mismatch.",
             exit_code=2,
             payload={"local_head": local_head, "remote_head": remote_head, "pr_head": pr["headRefOid"]},
         )
+    initial_pr = pr
+    for attempt in range(CLOSEOUT_PR_HEAD_READ_ATTEMPTS):
+        if pr["headRefOid"] == local_head:
+            break
+        if attempt + 1 == CLOSEOUT_PR_HEAD_READ_ATTEMPTS:
+            raise WorkflowError(
+                "Closeout local/remote/PR HEAD identity mismatch.",
+                exit_code=2,
+                payload={
+                    "local_head": local_head,
+                    "remote_head": remote_head,
+                    "pr_head": pr["headRefOid"],
+                },
+            )
+        time.sleep(CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS)
+        reread = resolve_closeout_pull_request(
+            root,
+            git["repo"],
+            git["head_branch"],
+            git["base_branch"],
+            git["remote"],
+        )
+        if reread is None:
+            raise WorkflowError(
+                "Closeout pull request disappeared while waiting for HEAD convergence.",
+                exit_code=2,
+            )
+        validate_closeout_remote_pull_request_identity(
+            plan,
+            reread,
+            expected_draft=bool(initial_pr["isDraft"]),
+            bound_pr=bound_pr or initial_pr,
+        )
+        remote_head = closeout_remote_branch_head(root, plan)
+        if remote_head != local_head:
+            raise WorkflowError(
+                "Closeout local/remote/PR HEAD identity mismatch.",
+                exit_code=2,
+                payload={
+                    "local_head": local_head,
+                    "remote_head": remote_head,
+                    "pr_head": reread["headRefOid"],
+                },
+            )
+        pr = reread
+    validate_closeout_remote_pull_request_identity(
+        plan,
+        pr,
+        expected_draft=bool(initial_pr["isDraft"]),
+        expected_head=local_head,
+        bound_pr=bound_pr or initial_pr,
+    )
     if pr["isDraft"]:
         proc = run(["gh", "pr", "ready", "--repo", git["repo"], str(pr["number"])], cwd=root, check=False)
         if proc.returncode != 0:
@@ -28647,6 +29097,20 @@ def resume_archived_closeout(
     git = plan["git"]
     require_gh_auth(root)
     archive_commit = committed_archive or resolve_committed_closeout_archive_transaction(root, plan)
+    finalizer_recovery = (
+        archive_commit is not None
+        and bool(getattr(args, "include_finalization_gate", False))
+        and isinstance(getattr(args, "finalization_gate", None), dict)
+    )
+    if finalizer_recovery:
+        local_head = current_head(root)
+        remote_head = closeout_remote_branch_head(root, plan)
+        if remote_head != local_head:
+            raise WorkflowError(
+                "Archived finalization recovery requires the pushed archive HEAD before Ready.",
+                exit_code=2,
+                payload={"local_head": local_head, "remote_head": remote_head},
+            )
     bound_pr: dict[str, Any] | None = None
     if archive_commit is not None:
         summary_pr = archive_commit.get("summary_pr")
@@ -28667,7 +29131,7 @@ def resume_archived_closeout(
     validate_closeout_remote_pull_request_identity(
         plan,
         pr,
-        expected_draft=bool(pr["isDraft"]),
+        expected_draft=True if finalizer_recovery else bool(pr["isDraft"]),
         bound_pr=bound_pr,
     )
     if archive_commit is None:
@@ -28678,12 +29142,14 @@ def resume_archived_closeout(
             bound_pr=pr,
         )
     else:
-        push_closeout_branch_if_needed(root, plan)
+        if not finalizer_recovery:
+            push_closeout_branch_if_needed(root, plan)
     result = ensure_closeout_pr_ready(root, plan, bound_pr=bound_pr or pr)
     return {
         "status": "ok",
         "stage": "ready",
         "task_dir": str(task_dir),
+        "archived_task_dir": str(task_dir),
         "plan_digest": plan["plan_digest"],
         "archive_commit": archive_commit,
         "publish": result,
@@ -28746,6 +29212,8 @@ def apply_active_closeout_finalizer_takeover(
     task_dir: Path,
     prepared: dict[str, Any],
     finalization_gate: Any,
+    *,
+    marketplace_verification: dict[str, Any] | None = None,
 ) -> str:
     takeover = prepared.get("finalizer_takeover")
     if not isinstance(takeover, dict):
@@ -28793,6 +29261,7 @@ def apply_active_closeout_finalizer_takeover(
         previous,
         prepared["ledger"],
         prepared["gate"],
+        marketplace_verification=marketplace_verification,
     )
     if actual_prior_state != takeover.get("prior_state"):
         errors.append("finalizer takeover predecessor state changed after preview")
@@ -28843,7 +29312,13 @@ def resume_active_archive_move(
     summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if not summary_path.is_file():
         raise WorkflowError("Archive-move recovery requires the validated final summary.", exit_code=2)
-    validate_closeout_active_projection(root, task_dir, plan)
+    marketplace_verification = getattr(args, "external_verification", None)
+    validate_closeout_active_projection(
+        root,
+        task_dir,
+        plan,
+        marketplace_verification=marketplace_verification,
+    )
     validate_closeout_evidence_commit(root, plan, current_head(root))
     assert_closeout_archive_month_current(plan)
     official_after_archive_hook_state(root)
@@ -28871,6 +29346,7 @@ def resume_active_archive_move(
         task_dir,
         plan,
         bound_pr=pr,
+        marketplace_verification=marketplace_verification,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
@@ -28977,7 +29453,15 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             raise WorkflowError("Interrupted archive move must resume through formal finish-work.", exit_code=2)
         return resume_active_archive_move(root, args, config, task_dir, task_context)
 
-    prepared = prepare_closeout(root, args, config, task_dir, task_context)
+    marketplace_verification = getattr(args, "external_verification", None)
+    prepared = prepare_closeout(
+        root,
+        args,
+        config,
+        task_dir,
+        task_context,
+        marketplace_verification=marketplace_verification,
+    )
     plan = prepared["plan"]
     if args.dry_run:
         return {
@@ -29015,10 +29499,16 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             prepared,
             getattr(args, "finalization_gate", None),
+            marketplace_verification=marketplace_verification,
         )
     else:
         entry_state = resolve_closeout_pre_draft_state(
-            root, task_dir, plan, ledger, prepared["gate"]
+            root,
+            task_dir,
+            plan,
+            ledger,
+            prepared["gate"],
+            marketplace_verification=marketplace_verification,
         )
     if entry_state == "prepared":
         content_push = execute_closeout_content_push(
@@ -29037,9 +29527,8 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
 
     if entry_state in {"prepared", "content_pushed"}:
         if plan["marketplace"]["required"]:
-            verification = getattr(args, "external_verification", None)
-            if not isinstance(verification, dict):
-                verification = execute_marketplace_verification(
+            if not isinstance(marketplace_verification, dict):
+                marketplace_verification = execute_marketplace_verification(
                     root,
                     task_dir,
                     plan["git"]["repo"],
@@ -29049,7 +29538,11 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
                     config,
                 )
             verification_path = marketplace_verification_path(task_dir, config)
-            passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
+            passed = closeout_passed_marketplace_evidence(
+                root,
+                verification_path,
+                marketplace_verification,
+            )
             write_json(issue_scope_ledger_path(task_dir), record_marketplace_machine_evidence(ledger, passed))
 
     if entry_state in {"prepared", "content_pushed", "evidence_ready"}:
@@ -29074,7 +29567,12 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
     finish_summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if finish_summary_path.is_file():
-        validate_closeout_active_projection(root, task_dir, plan)
+        validate_closeout_active_projection(
+            root,
+            task_dir,
+            plan,
+            marketplace_verification=marketplace_verification,
+        )
         validate_closeout_pull_request_identity(
             root,
             task_dir,
@@ -29085,7 +29583,13 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             expected_head=current_head(root),
         )
     else:
-        finish_summary_path, _summary = build_final_archive_projection(root, task_dir, prepared, pr)
+        finish_summary_path, _summary = build_final_archive_projection(
+            root,
+            task_dir,
+            prepared,
+            pr,
+            marketplace_verification=marketplace_verification,
+        )
     finalization_gate = getattr(args, "finalization_gate", None)
     if isinstance(finalization_gate, dict):
         if (
@@ -29102,6 +29606,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         plan,
         bound_pr=pr,
+        marketplace_verification=marketplace_verification,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
@@ -29356,6 +29861,7 @@ def finalization_publication_owner_result(
         [repo_relative(root, gate_path)] if gate_path.is_file() else []
     )
     allow_verification_metadata = False
+    marketplace_verification: dict[str, Any] | None = None
     if verification is not None:
         checked_verification = verification[1]
         if (
@@ -29374,6 +29880,20 @@ def finalization_publication_owner_result(
             )
         )
         allow_verification_metadata = True
+        if checked_verification.get("typed_exit") == "verified":
+            if expected_plan_digest is None:
+                raise WorkflowError(
+                    "Task finalization verified publication augmentation requires the immutable plan.",
+                    exit_code=2,
+                )
+            marketplace_verification = (
+                finalization_marketplace_verification_compatibility_projection(
+                    root,
+                    task_dir,
+                    validate_closeout_plan(read_json(plan_path)),
+                    verification,
+                )
+            )
     try:
         if plan_path.is_file() or gate_path.is_file():
             checked = check_task_publication_for_finalization_augmentation(
@@ -29383,6 +29903,7 @@ def finalization_publication_owner_result(
                 expected_closeout_plan_digest=expected_plan_digest,
                 additional_owned_paths=additional_owned_paths,
                 allow_verification_metadata=allow_verification_metadata,
+                marketplace_verification=marketplace_verification,
                 require_plan=plan_path.is_file(),
             )
         else:
@@ -29437,9 +29958,9 @@ def finalization_verification_augmentation_plan(
     task_dir: Path,
 ) -> dict[str, Any] | None:
     plan_path = closeout_plan_path(task_dir)
-    if not plan_path.is_file() or plan_path.is_symlink():
-        return None
     if not task_dir_is_archived(root, task_dir):
+        if not plan_path.is_file() or plan_path.is_symlink():
+            return None
         return validate_closeout_plan(read_json(plan_path))
     locator = repo_relative(root, task_dir)
     content = closeout_optional_commit_blob_bytes(
@@ -30223,8 +30744,12 @@ def finalization_eval_preview_context(
 def finalization_archived_published_facts(
     root: Path,
     plan: dict[str, Any],
+    transaction: dict[str, Any] | None = None,
 ) -> tuple[bool, dict[str, Any] | None]:
-    transaction = resolve_committed_closeout_archive_transaction(root, plan)
+    transaction = transaction or resolve_committed_closeout_archive_transaction(
+        root,
+        plan,
+    )
     if transaction is None:
         raise WorkflowError(
             "Archived task finalization is not the exact plan transaction.",
@@ -30254,7 +30779,6 @@ def finalization_archived_published_facts(
         plan,
         pr,
         expected_draft=bool(pr["isDraft"]),
-        expected_head=local_head,
         bound_pr=summary_pr,
     )
     complete = (
@@ -30263,6 +30787,139 @@ def finalization_archived_published_facts(
         and pr.get("headRefOid") == local_head
     )
     return complete, pr if complete else None
+
+
+def finalization_archived_gate(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> dict[str, Any]:
+    commit = str(transaction.get("commit") or "")
+    gate_locator = (
+        f"{plan['task']['archive_locator']}/{TASK_FINALIZATION_GATE_ARTIFACT}"
+    )
+    gate_bytes = closeout_commit_blob_bytes(root, commit, gate_locator)
+    try:
+        gate = json.loads(gate_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError(
+            "Archived task finalization gate is invalid JSON.",
+            exit_code=2,
+        ) from exc
+    if not isinstance(gate, dict):
+        raise WorkflowError(
+            "Archived task finalization gate must be an object.",
+            exit_code=2,
+        )
+    return gate
+
+
+def finalization_archived_owner_results(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    public_input: dict[str, Any],
+) -> tuple[dict[str, Any], tuple[dict[str, Any], dict[str, Any]] | None]:
+    gate = finalization_archived_gate(root, plan, transaction)
+    errors = skill_json_schema_validation_errors(
+        gate,
+        finalization_gate_schema(root),
+        "archived task finalization gate",
+    )
+    expected_plan = {
+        "available": True,
+        "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+        "plan_digest": plan["plan_digest"],
+        "reviewed_head": plan["git"]["reviewed_work_head"],
+    }
+    invocation = gate.get("invocation") if isinstance(gate, dict) else None
+    route = gate.get("route") if isinstance(gate, dict) else None
+    if (
+        not isinstance(invocation, dict)
+        or invocation.get("task_ref") != plan["task"]["active_locator"]
+    ):
+        errors.append("archived finalization gate task identity mismatch")
+    if not isinstance(gate, dict) or gate.get("plan") != expected_plan:
+        errors.append("archived finalization gate plan identity mismatch")
+    if (
+        not isinstance(route, dict)
+        or route.get("typed_exit") != "published"
+        or route.get("consumer") != FINALIZATION_CONSUMERS["published"]
+        or route.get("output") != FINALIZATION_EXECUTOR_OUTPUT_MARKER
+    ):
+        errors.append("archived finalization gate does not authorize publication")
+    review = gate.get("review") if isinstance(gate, dict) else None
+    evidence_refs = (
+        review.get("evidence_refs") if isinstance(review, dict) else None
+    )
+    refs = evidence_refs if isinstance(evidence_refs, list) else []
+    publication_refs = [
+        value
+        for value in refs
+        if isinstance(value, str)
+        and value.startswith("publication:")
+        and value != "publication:"
+    ]
+    verification_refs = [
+        value
+        for value in refs
+        if isinstance(value, str)
+        and value.startswith("extension-verification:")
+        and value != "extension-verification:"
+    ]
+    if len(publication_refs) != 1:
+        errors.append(
+            "archived finalization gate publication identity is not unique"
+        )
+    if len(verification_refs) > 1 or (
+        plan["marketplace"]["required"] and len(verification_refs) != 1
+    ):
+        errors.append(
+            "archived finalization gate verification identity is not unique"
+        )
+    input_publication_ref = public_input.get("publication_ref")
+    if (
+        isinstance(input_publication_ref, str)
+        and publication_refs
+        and input_publication_ref != publication_refs[0]
+    ):
+        errors.append("archived finalization publication seed changed")
+    input_verification_ref = public_input.get("verification_ref")
+    if (
+        isinstance(input_verification_ref, str)
+        and verification_refs
+        and input_verification_ref != verification_refs[0]
+    ):
+        errors.append("archived finalization verification seed changed")
+    if errors:
+        raise WorkflowError(
+            "Archived task finalization owner facts are invalid.",
+            exit_code=2,
+            payload={"errors": sorted(set(errors))},
+        )
+    verification = (
+        (
+            {"source": "committed-finalization-gate"},
+            {
+                "status": "ok",
+                "typed_exit": (
+                    "verified"
+                    if plan["marketplace"]["required"]
+                    else "not_required"
+                ),
+                "verification_ref": verification_refs[0],
+            },
+        )
+        if verification_refs
+        else None
+    )
+    return (
+        {
+            "owner_status": "current",
+            "publication_ref": publication_refs[0],
+        },
+        verification,
+    )
 
 
 def finalization_preview_context(
@@ -30274,54 +30931,68 @@ def finalization_preview_context(
     if eval_context is not None:
         return eval_context
     task_dir = finalization_task_dir(root, public_input)
-    verification = finalization_verification_owner_result(
-        root,
-        task_dir,
-        public_input,
-    )
-    publication = finalization_publication_owner_result(
-        root,
-        task_dir,
-        public_input,
-        verification,
-    )
-    if publication.get("owner_status") == "stale":
-        facts = {
-            "task_ref": public_input["task_ref"],
-            "profile": public_input["profile"],
-            "mode": public_input["mode"],
-            "publication_status": "stale",
-            "stale_reason": publication["stale_reason"],
-        }
-        return {
-            "task_dir": task_dir,
-            "task_context": None,
-            "prepared": None,
-            "plan": None,
-            "plan_ref": None,
-            "transaction_state": "publication_review_stale",
-            "publication": publication,
-            "publication_status": "stale",
-            "publication_stale_reason": publication["stale_reason"],
-            "verification": None,
-            "facts": facts,
-            "current_facts_sha256": context_digest(facts),
-        }
+    archived = task_dir_is_archived(root, task_dir)
     config = load_config(root)
-    if task_dir_is_archived(root, task_dir):
+    if archived:
         plan = finalization_verification_augmentation_plan(root, task_dir)
         if plan is None:
             raise WorkflowError(
                 "Archived task finalization is missing its immutable plan.",
                 exit_code=2,
             )
+        transaction = resolve_committed_closeout_archive_transaction(root, plan)
+        if transaction is None:
+            raise WorkflowError(
+                "Archived task finalization is not the exact plan transaction.",
+                exit_code=2,
+            )
+        publication, verification = finalization_archived_owner_results(
+            root,
+            plan,
+            transaction,
+            public_input,
+        )
         published_transition_complete, published_pr = (
-            finalization_archived_published_facts(root, plan)
+            finalization_archived_published_facts(root, plan, transaction)
         )
         state = "ready" if published_transition_complete else "archived"
         prepared = None
         task_context = None
     else:
+        verification = finalization_verification_owner_result(
+            root,
+            task_dir,
+            public_input,
+        )
+        reuse_current_verification = public_input["profile"] != "publication_ready"
+        publication = finalization_publication_owner_result(
+            root,
+            task_dir,
+            public_input,
+            verification,
+        )
+        if publication.get("owner_status") == "stale":
+            facts = {
+                "task_ref": public_input["task_ref"],
+                "profile": public_input["profile"],
+                "mode": public_input["mode"],
+                "publication_status": "stale",
+                "stale_reason": publication["stale_reason"],
+            }
+            return {
+                "task_dir": task_dir,
+                "task_context": None,
+                "prepared": None,
+                "plan": None,
+                "plan_ref": None,
+                "transaction_state": "publication_review_stale",
+                "publication": publication,
+                "publication_status": "stale",
+                "publication_stale_reason": publication["stale_reason"],
+                "verification": None,
+                "facts": facts,
+                "current_facts_sha256": context_digest(facts),
+            }
         published_transition_complete = False
         published_pr = None
         task_context = load_task_start_context(task_dir, config)
@@ -30333,19 +31004,56 @@ def finalization_preview_context(
             prepared = None
         else:
             setattr(args, "include_finalization_gate", True)
-            prepared = prepare_closeout(root, args, config, task_dir, task_context)
+            prepared = prepare_closeout(
+                root,
+                args,
+                config,
+                task_dir,
+                task_context,
+                verification_owner_result=verification,
+            )
             plan = prepared["plan"]
             if prepared.get("finalizer_takeover") is not None:
                 state = prepared["finalizer_takeover"]["prior_state"]
             elif prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
             else:
+                if verification is None and reuse_current_verification:
+                    verification = finalization_current_verification_owner_result(
+                        root,
+                        task_dir,
+                        task_ref=public_input["task_ref"],
+                        plan_ref=f"closeout-plan:{plan['plan_digest']}",
+                        reviewed_head=plan["git"]["reviewed_work_head"],
+                        plan=plan,
+                    )
+                marketplace_verification = None
+                checked_verification = (
+                    verification[1]
+                    if isinstance(verification, tuple)
+                    and len(verification) == 2
+                    and isinstance(verification[1], dict)
+                    else {}
+                )
+                if (
+                    plan["marketplace"]["required"]
+                    and checked_verification.get("typed_exit") == "verified"
+                ):
+                    marketplace_verification = (
+                        finalization_marketplace_verification_compatibility_projection(
+                            root,
+                            task_dir,
+                            plan,
+                            verification,
+                        )
+                    )
                 state = resolve_closeout_pre_draft_state(
                     root,
                     task_dir,
                     plan,
                     prepared["ledger"],
                     prepared["gate"],
+                    marketplace_verification=marketplace_verification,
                 )
     plan_ref = f"closeout-plan:{plan['plan_digest']}"
     input_plan_ref = public_input.get("plan_ref")
@@ -30354,7 +31062,7 @@ def finalization_preview_context(
             "Task finalization plan_ref does not match the current immutable plan.",
             exit_code=2,
         )
-    if verification is None:
+    if verification is None and not archived and reuse_current_verification:
         verification = finalization_current_verification_owner_result(
             root,
             task_dir,
@@ -30703,7 +31411,10 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
         )
     task_dir = context["task_dir"]
     artifact_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-    if not getattr(args, "dry_run", False):
+    committed_recovery = (
+        context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
+    )
+    if not getattr(args, "dry_run", False) and not committed_recovery:
         write_json(artifact_path, gate)
     return {
         "status": "ok",
@@ -30723,6 +31434,27 @@ def finalization_gate_input(
 ) -> tuple[dict[str, Any], Path]:
     task_dir = finalization_task_dir(root, public_input)
     expected = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+    if task_dir_is_archived(root, task_dir):
+        if value:
+            relative = skill_safe_relative(str(value).strip())
+            if relative is None or (root / relative).resolve() != expected.resolve():
+                raise WorkflowError(
+                    "Task finalization gate must use the exact task-local artifact.",
+                    exit_code=2,
+                )
+        plan = finalization_verification_augmentation_plan(root, task_dir)
+        if plan is None:
+            raise WorkflowError(
+                "Archived task finalization is missing its immutable plan.",
+                exit_code=2,
+            )
+        transaction = resolve_committed_closeout_archive_transaction(root, plan)
+        if transaction is None:
+            raise WorkflowError(
+                "Archived task finalization is not the exact plan transaction.",
+                exit_code=2,
+            )
+        return finalization_archived_gate(root, plan, transaction), expected
     path = (
         stage0_owner_path(root, value, "arguments.owner_result")
         if value
@@ -30785,6 +31517,9 @@ def check_finalization_gate_result(
         "task finalization gate",
     )
     context = finalization_preview_context(root, args, public_input)
+    committed_recovery = (
+        context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
+    )
     expected_invocation = {
         "profile": public_input["profile"],
         "mode": public_input["mode"],
@@ -30800,11 +31535,22 @@ def check_finalization_gate_result(
             plan["git"]["reviewed_work_head"] if plan is not None else None
         ),
     }
-    if gate.get("invocation") != expected_invocation:
+    if committed_recovery:
+        invocation = gate.get("invocation")
+        if (
+            not isinstance(invocation, dict)
+            or invocation.get("task_ref") != plan["task"]["active_locator"]
+        ):
+            errors.append("committed task finalization gate task identity mismatch")
+    elif gate.get("invocation") != expected_invocation:
         errors.append("task finalization gate invocation identity mismatch")
     if gate.get("plan") != expected_plan:
         errors.append("task finalization gate plan identity mismatch")
-    if gate.get("freshness", {}).get("current_facts_sha256") != context["current_facts_sha256"]:
+    if (
+        not committed_recovery
+        and gate.get("freshness", {}).get("current_facts_sha256")
+        != context["current_facts_sha256"]
+    ):
         errors.append("task finalization gate current facts mismatch")
     try:
         finalization_validate_route(
@@ -30952,7 +31698,11 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         finish_args.body_artifact = None
         finish_args.finalization_gate = gate
         finish_args.include_finalization_gate = True
-        if context["plan"]["marketplace"]["required"]:
+        if (
+            context["plan"]["marketplace"]["required"]
+            and context["transaction_state"]
+            not in FINALIZATION_COMMITTED_RECOVERY_STATES
+        ):
             verification = context["verification"]
             if not isinstance(verification, tuple) or len(verification) != 2:
                 raise WorkflowError(
@@ -30969,11 +31719,10 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             )
         result = cmd_finish_work(finish_args)
         archived_gate = Path(result["archived_task_dir"]) / TASK_FINALIZATION_GATE_ARTIFACT
-        published_gate = read_json(archived_gate)
         materialized_gate = finalization_gate_with_published_output(
             root,
             Path(result["archived_task_dir"]),
-            published_gate,
+            gate,
             context["plan"],
             result["publish"]["pr"],
         )

@@ -1213,6 +1213,17 @@ output, or archive commit SHA. Its projection does record a fixed sentinel PR
 URL/ref and the complete schema-valid finish-summary template so all local
 summary errors are known during prepare.
 
+For current tasks, `review.changed_paths` is rebuilt deterministically from the
+pinned `task-start-context.json.base_head_sha` through the reviewed Branch
+Review `HEAD`; compact gate schema 2.1 does not carry a duplicate
+`changed_files` inventory. Only older tasks without a pinned base may reuse a
+legacy gate's `changed_files`. The rebuilt list is the single input to closeout
+review reporting, marketplace candidate-surface classification, ledger
+evidence projection, archive retention, and finish-summary changed paths.
+`review.close_issues_reviewed` is projected from the publication-validated
+`issue-scope-ledger.json.close_issues`, not from removed compact-gate scope
+fields.
+
 `git.repo` is the normalized `owner/repository` identity. All effective fetch
 and push URLs of `git.remote` have a raw/effective two-layer contract. Raw
 `remote.<name>.url`, optional `pushurl`, and every `url.*.insteadOf` /
@@ -1327,9 +1338,11 @@ Archived working-tree deletion, content tampering, and the resulting dirty
 paths are ignored; recovery may only push that exact commit when needed, check
 remote PR identity and three-way HEAD alignment, and retry draft-to-ready. An
 archived directory containing only `closeout-plan.json` is resolvable for this
-path only by `trellis-finish-work`; other commands still require `task.json`.
-Neither path parses, rebuilds, validates, or rewrites an archived body, summary,
-ledger, readiness, or marketplace artifact.
+path only by the canonical `guru-finish-work` recovery entry; the frozen
+`trellis-finish-work` entries may route there as compatibility assets through
+Issue #132, while other commands still require `task.json`. Neither path
+parses, rebuilds, validates, or rewrites an archived body, summary, ledger,
+readiness, or marketplace artifact.
 
 Plan-only recovery does not use an empty task context as authorization. It
 loads `closeout-plan.json` from the current commit blob and, before GitHub or

@@ -184,6 +184,14 @@ print(f"{label}: 10/10 publication validator wrappers reached shared help")
 PY
 }
 
+verify_finish_family_integration() {
+  local label="$1"
+  printf 'Installed Finish-family integration: %s\n' "$label"
+  GURU_FINISH_INTEGRATION_MODE=installed \
+    GURU_FINISH_INTEGRATION_ROOT="$TARGET" \
+    python3 "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q
+}
+
 fail_if_python_cache() {
   local label="$1"
   local root="$2"
@@ -1502,10 +1510,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.24"
+assert extension["version"] == "0.6.5-guru.25"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 100
+assert len(assets) == 103
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "pr-body.md", "review-gate.json", "pr-readiness.json",
@@ -1623,7 +1631,7 @@ done <<'EOF'
 guru-approve-task-plan|["approved-initial","revision-required","clarify-scope","blocked-initial"]
 guru-check-task|["passed-initial","implementation-required","planning-stale","blocked-initial"]
 guru-create-task-commit|["committed-initial","revision-required","committed-finding-fix","blocked-recovery"]
-guru-finalize-task|["publication-verification-required","publication-review-stale","same-plan-resume","cross-month-reprepare","published-recovery","blocked-private-state","verified-reentry-published","not-required-reentry-published"]
+guru-finalize-task|["publication-verification-required","publication-review-stale","same-plan-resume","cross-month-reprepare","published-recovery","publication-ready-published","same-plan-published","blocked-private-state","verified-reentry-published","not-required-reentry-published"]
 guru-review-branch|["workflow-passed","standalone-passed","implementation-required","scope-confirmation-required","blocked-stale","finding-fix-passed","fresh-final-passed"]
 guru-review-task-publication|["workflow-initial-ready","standalone-initial-ready","return-to-task-work","blocked-external","stale-reentry-ready","metadata-fix-fresh-ready","metadata-fix-durable-drift-return"]
 guru-verify-extension-installation|["workflow-required-verified","workflow-applicability-conflict-blocked","standalone-not-required","task-install-finding-return","standalone-remote-unavailable","workflow-transient-retry-verified","workflow-stale-plan-reentry-verified"]
@@ -1717,6 +1725,10 @@ test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-w
 test -x "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
 test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
+test -f "$TARGET/.codex/prompts/guru-finish-work.md"
+test -f "$TARGET/.claude/commands/guru/finish-work.md"
+test -f "$TARGET/.cursor/commands/guru-finish-work.md"
+test -f "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py"
 verify_requirements_clarification_exits "initial"
 verify_contract_wording_standalone_profiles "initial"
 verify_change_request_review_package "initial"
@@ -1729,6 +1741,7 @@ test ! -e "$TARGET/.claude/skills/guru-example-action"
   trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_active_package_and_routes_pass \
   trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_wrappers_emit_distinct_exits_and_stable_errors \
   trellis.skills.guru-team.tests.test_skill_packages.EvalRunnerTests.test_four_adapters_execute_same_corpus_and_expected_non_success_exits)
+verify_finish_family_integration "initial"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 mkdir -p "$TARGET/.trellis/tasks/archive"
 BACKFILL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
@@ -3288,6 +3301,7 @@ test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-wo
 test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
+verify_finish_family_integration "after-update-reapply"
 "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json >/dev/null
 EXTENSION_CONTRACT_AFTER_UPDATE_JSON="$(
   "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" \

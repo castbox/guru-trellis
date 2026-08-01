@@ -1,0 +1,560 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-08-01T05:54:22Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+    "task_identity_sha256": "e0c43c4515d8af129980ab53c71db9a3bf25238a460d9005e3880db64b6fca89",
+    "scope_ledger_sha256": "2be4796ee5e15c67a81ade3ca8244e95c995ac916ab8fad98691c0559549dbe2",
+    "status": "in_progress",
+    "branch": "feat/119-finish-family-integration-main",
+    "issue_numbers": [
+      115,
+      119
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
+    "head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
+    "dirty_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "captured_at": "2026-08-01T05:54:22Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:119",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/119",
+      "sha256": "f44d394244e873c4400fb93ef968ee0278a63e35414a54772b81b174290a21bf",
+      "updated_at": "2026-07-22T11:09:31Z"
+    },
+    {
+      "id": "comment:119:5045074001",
+      "kind": "github_comment",
+      "locator": "https://github.com/castbox/guru-trellis/issues/119#issuecomment-5045074001",
+      "sha256": "583c0b4ee3525729d350c2f3c4ef70dc721f9a3a8a4ee3b0c288bd8c92c09b36",
+      "updated_at": null
+    },
+    {
+      "id": "issue:105",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/105",
+      "sha256": "b892a6ef33c03bfff7eceaecb386478d1cd5bce7cbcc0b11521272701eb70e46",
+      "updated_at": "2026-07-12T10:52:49Z"
+    },
+    {
+      "id": "user:119-recovery-request",
+      "kind": "user_request",
+      "locator": "用户要求在 Issue #119 同一交付链修复 GitHub PR HEAD 正常传播延迟与 compact schema 1.1 archived recovery 不得依赖 pr-readiness.json；保留失败链、既有 task、branch 与 Draft PR #166；禁止手工 gh pr ready、新 task、新 PR、force-push 与历史重写；本轮授权止于 recovery commit、实现、受影响验证、task-work commit 与 fresh Branch Review，push 与 PR mutation 另行授权。",
+      "sha256": "9f9af3531f5073d7b467a0a931a340c34109858a31f96f6480e34ea15142ff2f",
+      "updated_at": null
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "407124b935c60ec45d459af484f30653ec6bb5e5694dc9214403ca9d32004fe8",
+      "updated_at": null
+    },
+    {
+      "id": "repo:workflow-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "2fb09b325b26c7c3efecf7c332370f18a599160f24b76fdfbbe9de2034f2e449",
+      "updated_at": null
+    },
+    {
+      "id": "repo:skill-contract",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "37d0ed15aec5591366b66fa1ca435e6778ed5a4148a2ee0c45e8562001cb5bff",
+      "updated_at": null
+    },
+    {
+      "id": "repo:companion-scripts",
+      "kind": "repository_document",
+      "locator": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "688cd6efd66c53237c71e3f9894835d850f30dece6473ec4d0cd11835d6adf38",
+      "updated_at": null
+    },
+    {
+      "id": "task:issue-ledger",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+      "sha256": "2be4796ee5e15c67a81ade3ca8244e95c995ac916ab8fad98691c0559549dbe2",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+      "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+      "size_bytes": 13165,
+      "modified_at": "2026-07-31T17:58:13.408484+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+      "sha256": "b7f65ebf819d63601eab7b95b630470bbe00ee106254babf9f036c8bef344411",
+      "size_bytes": 19581,
+      "modified_at": "2026-07-31T17:58:13.408879+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+      "sha256": "d0757b504b85179e16aecb32bd137e05c21c6b11ab640ea2aad53394ed5b344e",
+      "size_bytes": 11726,
+      "modified_at": "2026-07-31T17:58:13.409436+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+      "sha256": "9751f28c6c812d902d537f616e724a7463feea8b20dd132445e7b9ddadbb788c",
+      "size_bytes": 13165,
+      "modified_at": "2026-07-31T17:58:13.408484+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+      "sha256": "b7f65ebf819d63601eab7b95b630470bbe00ee106254babf9f036c8bef344411",
+      "size_bytes": 19581,
+      "modified_at": "2026-07-31T17:58:13.408879+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+      "sha256": "d0757b504b85179e16aecb32bd137e05c21c6b11ab640ea2aad53394ed5b344e",
+      "size_bytes": 11726,
+      "modified_at": "2026-07-31T17:58:13.409436+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+    "locator": "## 10. Docs SSOT Plan",
+    "statement_sha256": "c29fc4e68a21fa8ae135d6ff0eedd278bacddc8cf2c354b9775fc17d4c185c7e",
+    "durable_paths": [
+      "trellis/workflows/guru-team/workflow.md",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/docs/public-docs.md"
+    ]
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "576aaa6399a07772b6f4416f68fec60feb18ae0b52811447080bf822585d7213",
+    "facts_sha256": "8cd5213e320c0ca90a05037f67b70134f1b0025d2ac18ce283674f683628a916",
+    "scope_sha256": "d9cce5fba9d036a6edc4a3c5cccc79bb5054c22aff70ba28762de49c63257880",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "Codex GPT-5",
+    "summary": "完整 re-entry 已复核固定三文件范围、零词汇命中、两项 recovery correctness 合同、六项回归、授权边界与 Docs checkpoint；规划可进入实现。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "R1-goal",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "locator": "## 1. 目标",
+        "statement_sha256": "ba230d474a835eaac4b2e9d1fc83a7bbd0d1153129299b2ad6222228e4d64e94",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "comment:119:5045074001",
+          "user:119-recovery-request"
+        ],
+        "reason": "Issue #119 与当前用户请求共同限定 combined Finish-family 目标、既有身份复用和本轮 recovery delta。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R2-baseline-and-failure",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "locator": "## 2. 权威与当前基线",
+        "statement_sha256": "4511309d03646a6cf3f0f7c545b2c9ed34873f1dfc6f49e85cd7e23c2116e095",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "user:119-recovery-request",
+          "repo:skill-contract"
+        ],
+        "reason": "当前权威要求保留 PR #162/#165 完成交付与 3fe71d7/15d957b 失败链，只修正两个 correctness bug。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R3-functional-contracts",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "locator": "## 3. 功能需求",
+        "statement_sha256": "d28ff533c288bb1cc09dadfeee7959a28fd6c901c6be2a3ef98797580503c3a0",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "issue:105",
+          "comment:119:5045074001",
+          "user:119-recovery-request",
+          "repo:companion-scripts"
+        ],
+        "reason": "该章节完整覆盖原 combined integration 与当前 PR HEAD 收敛、compact archive recovery、active stale 和 no-duplicate 合同。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R4-ai-first",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "locator": "## 4. AI-first 与 public contract 约束",
+        "statement_sha256": "e6edc13d8038588a24bb09539a3a36a23131896c68c2c0f4f502c487411c20e9",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "comment:119:5045074001",
+          "user:119-recovery-request",
+          "repo:skill-contract",
+          "repo:workflow-contract"
+        ],
+        "reason": "PR #165 与当前请求保持 mapped exits 自动承接、最小 DTO、无通用继续确认和无 recovery input。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R5-exclusions",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "locator": "## 5. 明确排除",
+        "statement_sha256": "9a5accd9ecb2932f99a420b00e469e92fcc07a29f3f36e762686861ea73928d1",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "user:119-recovery-request",
+          "repo:agents"
+        ],
+        "reason": "当前 authority 排除 predecessor 重实现、#132、donor mutation、history rewrite 与非标准加固。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R6-acceptance",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
+        "locator": "## 6. 验收标准",
+        "statement_sha256": "2990774d65659a46f5a44851c1ccfad2ca461f4cb5084c22a8067fdfbf140a90",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "issue:105",
+          "user:119-recovery-request",
+          "repo:agents"
+        ],
+        "reason": "验收清单把原 #119 证据与六项 current recovery regression、affected validation 和 evidence refresh 边界绑定为可观察结果。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R7-design-owner-boundary",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "locator": "## 1. 设计结论",
+        "statement_sha256": "54eab3b3b1269de6680cb407077b795464dc57fe9ad606d23bd609cf1f37dbc2",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "comment:119:5045074001",
+          "user:119-recovery-request",
+          "repo:skill-contract"
+        ],
+        "reason": "设计结论保持三个 public Skill owners 与 existing transaction owner，只允许 private runtime correctness 修正。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C1-bounded-pr-reread",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "locator": "### 2.2 PR HEAD 有界收敛设计",
+        "statement_sha256": "fa14c958879344cd1d6864c4167b174bf9539c8f36eedbd7a50d5203a046886d",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "user:119-recovery-request",
+          "repo:companion-scripts"
+        ],
+        "reason": "Executor 必须吸收 GitHub 正常传播延迟，同时保持 validator 单次检查与 persistent mismatch fail closed。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "executor-six-read-budget",
+              "tradeoff": "由 side-effect executor 执行首次读取加五次一秒重读，收敛后继续 Ready。"
+            },
+            {
+              "id": "validator-retry",
+              "tradeoff": "把执行策略放入 validator，破坏单次客观检查边界。"
+            },
+            {
+              "id": "unbounded-wait",
+              "tradeoff": "没有确定终止条件，无法 fail closed。"
+            }
+          ],
+          "selected_id": "executor-six-read-budget",
+          "selection_reason": "固定六次预算直接满足正常传播延迟与确定失败边界，不改变 public contract。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "C2-archive-first-recovery",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "locator": "### 2.3 Archived recovery 顺序",
+        "statement_sha256": "97c34e32afa498f99d436aa823648c8cb694e807fb2180052cdd3a946a8917d6",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "user:119-recovery-request",
+          "repo:companion-scripts",
+          "repo:skill-contract"
+        ],
+        "reason": "Compact schema 1.1 已裁剪 readiness，archived recovery 只能先消费 committed plan、gate、transaction 与 Git/GitHub facts。",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "committed-archive-first",
+              "tradeoff": "从 compact archive 仍保留的 committed facts 恢复并跳过 active publication owner artifact。"
+            },
+            {
+              "id": "restore-pr-readiness",
+              "tradeoff": "重新制造 archive 合同已删除的 artifact。"
+            },
+            {
+              "id": "active-owner-first",
+              "tradeoff": "继续触发 publication_review_missing bug。"
+            }
+          ],
+          "selected_id": "committed-archive-first",
+          "selection_reason": "该顺序与 schema 1.1 archive allowlist 和 immutable transaction recovery source 一致。",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R8-docs-ssot",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
+        "locator": "## 10. Docs SSOT Plan",
+        "statement_sha256": "c29fc4e68a21fa8ae135d6ff0eedd278bacddc8cf2c354b9775fc17d4c185c7e",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "repo:agents",
+          "repo:workflow-contract",
+          "repo:skill-contract",
+          "repo:companion-scripts"
+        ],
+        "reason": "原 #119 durable SSOT 已完成；current recovery 只让 runtime 符合既有 compact archive 与三方 HEAD 合同，不新增 durable API。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R9-execution-order",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "locator": "## 2. 有序实施清单",
+        "statement_sha256": "d27046c745baac705c1e276218892a7e2a88364b01096a97937c49c267e5c298",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "user:119-recovery-request",
+          "repo:agents",
+          "repo:workflow-contract"
+        ],
+        "reason": "执行顺序把 recovery correction 追加到原 combined flow，并明确不重放无关 install、upgrade 或 Skill 验收。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R10-affected-validation",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "locator": "### 3.1 当前恢复增量命令",
+        "statement_sha256": "24a581bc51b5a9707f66c5ab316e8426aba1db24406e10367f63ae60b64f3931",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "user:119-recovery-request",
+          "repo:agents"
+        ],
+        "reason": "该命令集合精确覆盖 canonical runtime、source/installed integration、finalizer package、preset、drift 与 formatting。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R11-review-gates",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "locator": "## 4. Review gates",
+        "statement_sha256": "9c52973efb58933c474ff9de508792c7b0920d8d12659745c39494e2d7e22fff",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:119",
+          "user:119-recovery-request",
+          "repo:agents",
+          "repo:workflow-contract",
+          "repo:skill-contract"
+        ],
+        "reason": "Scope、routing、transaction、distribution 与 Docs SSOT 继续拥有客观 gate，current check 只重跑受影响证据。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "R12-authorization",
+        "artifact_path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
+        "locator": "## 5. 授权停止点",
+        "statement_sha256": "dbddf1210438dd85e2b895094ee30610fd809946f03203600e7d13c691e00ad5",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "user:119-recovery-request",
+          "repo:agents"
+        ],
+        "reason": "用户当前授权覆盖 local recovery、实现、验证、task-work commit 与 fresh Branch Review；push、PR Ready、Issue、merge 与 cleanup 保持未授权。",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      }
+    ],
+    "coverage": {
+      "reviewer": "Codex primary agent /root",
+      "summary": "R1-R12 与 C1-C2 覆盖 current authority、原 combined integration 基线、两项 correctness bug、AI-first/public I/O、排除范围、全部恢复验收、Docs checkpoint、执行顺序、受影响验证、review gates 与 side-effect authorization。",
+      "reviewed_entry_ids": [
+        "R1-goal",
+        "R2-baseline-and-failure",
+        "R3-functional-contracts",
+        "R4-ai-first",
+        "R5-exclusions",
+        "R6-acceptance",
+        "R7-design-owner-boundary",
+        "C1-bounded-pr-reread",
+        "C2-archive-first-recovery",
+        "R8-docs-ssot",
+        "R9-execution-order",
+        "R10-affected-validation",
+        "R11-review-gates",
+        "R12-authorization"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "e8da1db977f8bec25920835f96f1f560b18ec97d05bfe8988e2a5e725d4d17d0"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "Codex primary agent /root",
+    "summary": "已复核六类非常规场景；当前 authority 只要求正常 GitHub propagation delay 与 compact archive recovery，不引入恶意 actor、锁、TOCTOU、额外 fault injection、crash consistency 或跨 OS atomicity。",
+    "candidates": [],
+    "unresolved_count": 0,
+    "review_sha256": "091c5b44ba9c2537b8bf780d76b5652f3edeaf92c88dc3b51a77b099aad534ed"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "Codex primary agent /root",
+      "summary": "The unchanged approved #119 planning set remains adequate after resolving F119-FRESH-001 and F119-FRESH-002: archived recovery now reads the exact committed plan before task-local ownership checks, the durable workflow SSOT matches compact schema 1.1, public contracts and scope remain unchanged, and the authorized validation/commit boundaries remain intact.",
+      "reviewed_at": "2026-08-01T05:54:15Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-31T18:03:00Z",
+    "confirmed_at": "2026-07-31T18:03:38Z",
+    "evidence_summary": "用户查看 current prd.md、design.md、implement.md 三个绝对链接后回复确认继续，授权记录 planning approval 并执行先前展示的本地第 1 至第 8 步；push 与 PR mutation 未授权。"
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "The unchanged current recovery plan passes fresh semantic reapproval after its workflow-contract authority was corrected; no planning document or scope changed.",
+  "supersedes_facts_sha256": "952b98e2033aa808a0c5c9c76359cb488967132d88566e8289f3660f863f33ef",
+  "facts_sha256": "01ea6947267442ab6b62db22986f87c680bf03f1277163ea8beac02292833002"
+}

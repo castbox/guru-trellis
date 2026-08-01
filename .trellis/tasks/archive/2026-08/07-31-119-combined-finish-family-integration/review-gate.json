@@ -1,0 +1,291 @@
+{
+  "schema_version": "2.1",
+  "skill_id": "guru-review-branch",
+  "generated_at": "2026-08-01T06:31:31Z",
+  "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
+  "mode": "workflow",
+  "review_intent": "fresh_final_review",
+  "typed_exit": "passed",
+  "head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+  "base_ref": "origin/main",
+  "semantic_review": {
+    "qualified_findings": [
+      {
+        "candidate_ref": "fresh-archived-plan-working-tree-dependency",
+        "disposition": "qualified_finding",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Compact archive 的 same-plan recovery 曾在 archived classification 前要求工作树中的 closeout-plan.json，导致合法归档事务无法恢复到唯一的 PR Ready 动作。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          "finalization_verification_augmentation_plan",
+          "test_archived_finalization_recovery_reads_committed_plan_and_evidence",
+          "test_selected_runtime_recovers_compact_archive_before_readiness_check",
+          "commit:72bf89a789d25598a95944dfe9af8735b4a92a10"
+        ],
+        "requirement_refs": [
+          "Issue #119 compact archived recovery",
+          "prd.md §3.8",
+          "design.md §2.3"
+        ],
+        "scope_basis": "这是用户明确要求的正常 archived/archive_pushed recovery correctness 路径。",
+        "qualification_reason": "该缺陷无需伪造或非常规竞态即可在 schema 1.1 compact archive 中发生；当前 HEAD 已将 archived plan 读取切换为 exact current commit blob。",
+        "finding_ref": "F119-FRESH-001",
+        "severity": "P1",
+        "introduced_head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
+        "resolved_at_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+        "status": "resolved",
+        "closure_evidence": [
+          "Archived classification 先于工作树 plan presence 检查；active 路径仍要求安全的 task-local plan。",
+          "Archived 路径通过 git show 语义从当前 exact archive commit 的 archive locator 读取并验证 immutable closeout plan。",
+          "Unit regression 删除工作树 closeout-plan.json 后仍取得 committed plan。",
+          "Source/installed integration regression 同时移除工作树 closeout-plan.json 与 pr-readiness.json，仍进入 archived state，且未调用 active publication/verifier owner、PR create、archive transaction 或 evidence commit。",
+          "Canonical 与 installed runtime、integration test bytes 完全一致。"
+        ]
+      },
+      {
+        "candidate_ref": "fresh-workflow-contract-archived-readiness-authority",
+        "disposition": "qualified_finding",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Durable workflow SSOT 曾把已从 compact schema 1.1 archive 删除的 pr-readiness.json 描述为 archived recovery authority。",
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "evidence_refs": [
+          ".trellis/spec/workflow/workflow-contract.md:391",
+          ".trellis/spec/workflow/workflow-contract.md:394",
+          ".trellis/spec/workflow/workflow-contract.md:862",
+          "commit:72bf89a789d25598a95944dfe9af8735b4a92a10"
+        ],
+        "requirement_refs": [
+          "Issue #119 compact archived recovery",
+          "prd.md §3.8",
+          "Docs SSOT Plan"
+        ],
+        "scope_basis": "Durable workflow contract 必须准确描述 active publication ownership 与 compact archived recovery 的不同证据来源。",
+        "qualification_reason": "旧文案会让正常恢复流程重新要求已按合同删除的 artifact；当前 SSOT 已明确 readiness 只属于 active pre-publication/evidence retry。",
+        "finding_ref": "F119-FRESH-002",
+        "severity": "P3",
+        "introduced_head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
+        "resolved_at_head": "72bf89a789d25598a95944dfe9af8735b4a92a10",
+        "status": "resolved",
+        "closure_evidence": [
+          "Workflow SSOT 明确 compact schema 1.1 archive 不含 pr-readiness.json。",
+          "Archived/archive_pushed recovery 改为从 exact committed plan、finalization gate、evidence/archive commit、finish summary、remote branch 与 GitHub PR facts 恢复。",
+          "Active pre-publication 路径仍检查 current task-local publication owner artifact。",
+          "未改变 Skill id、public DTO、schema id、typed exit 或 #132 ownership。"
+        ]
+      }
+    ],
+    "scope_proposals": [],
+    "observations": [
+      {
+        "candidate_ref": "publication-metadata-refresh-pending",
+        "disposition": "observation",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "Committed issue-scope-ledger、pr-body、finish-summary-index 与旧 publication/finalizer artifacts 尚未成为 72bf89a 的 current publication pass evidence。",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json",
+        "evidence_refs": [
+          "issue-scope-ledger still names historical 57e7d0d/559-test recovery evidence",
+          "guru-review-task-publication metadata-only revision contract",
+          "current fresh-final review at 72bf89a"
+        ],
+        "requirement_refs": [
+          "Phase 3.6 publication owner ordering",
+          "user instruction to refresh only affected publication/finalizer evidence"
+        ],
+        "scope_basis": "这些是 Branch Review passed 之后由 guru-review-task-publication 拥有的下游 metadata-only authoring/revision，不是当前 task-work implementation finding。",
+        "qualification_reason": "旧文本未被本次 review 当作 pass 证据；close/related/follow-up identity 本身仍正确。Publication owner 必须在 Ready 前刷新其 current-HEAD claims、bindings 和 evidence。"
+      },
+      {
+        "candidate_ref": "remote-publication-not-yet-converged",
+        "disposition": "observation",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "Local reviewed HEAD 72bf89a 尚未 push，remote feature branch 与 Draft PR #166 当前仍指向 15d957b。",
+        "path": "",
+        "evidence_refs": [
+          "origin/main=7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
+          "origin/feat/119-finish-family-integration-main=15d957b9e998e3633948d1336c9f6e62db4b110e",
+          "PR #166 OPEN Draft headRefOid=15d957b9e998e3633948d1336c9f6e62db4b110e"
+        ],
+        "requirement_refs": [
+          "separate push authorization boundary",
+          "remote marketplace verification requirement"
+        ],
+        "scope_basis": "Remote convergence、verification 与 Ready 是本次 local Branch Review 之后的独立授权步骤。",
+        "qualification_reason": "Remote lag 是预期未执行副作用，不是 branch implementation defect；不得在未授权时 push 或修改 PR。"
+      }
+    ],
+    "followup_candidates": [
+      {
+        "candidate_ref": "issue-132-legacy-physical-removal",
+        "disposition": "followup_candidate",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "五个 upstream-namespace trellis-finish-work compatibility assets 的 physical removal 与全仓 overlay convergence 尚未执行。",
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "evidence_refs": [
+          "legacy finish entries blocking_issues=[]",
+          "legacy finish entries removal_issue=132",
+          "workflow compatibility-only wording"
+        ],
+        "requirement_refs": [
+          "Issue #132",
+          "prd.md §5"
+        ],
+        "scope_basis": "#119 只完成 Guru entry 迁移与 bounded compatibility；physical cleanup 明确归 #132。",
+        "qualification_reason": "当前实现正确保留 legacy payload 与 #132 removal ownership，不应在 #119 扩张或阻塞。"
+      }
+    ],
+    "rejected_candidates": [
+      {
+        "candidate_ref": "pr-head-bounded-convergence-regression",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "GitHub PR headRefOid 首次返回旧值时可能错误阻塞 Ready transition，或持续不一致时错误执行 gh pr ready。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          "ensure_closeout_pr_ready",
+          "CLOSEOUT_PR_HEAD_READ_ATTEMPTS=6",
+          "test_draft_to_ready_waits_for_transient_pr_head_convergence",
+          "test_draft_to_ready_fails_after_bounded_pr_head_mismatch",
+          "test_selected_runtime_converges_pr_head_and_bounds_persistent_mismatch"
+        ],
+        "requirement_refs": [
+          "Issue #119 GitHub PR HEAD propagation delay",
+          "prd.md §3.8"
+        ],
+        "scope_basis": "正常 GitHub propagation delay 与真实 HEAD mismatch 均为当前明确验收范围。",
+        "qualification_reason": "当前 executor 在 local/remote 已一致且 PR identity/Draft 不变时执行首次读取加五次一秒重读；收敛后唯一调用一次 gh pr ready，预算耗尽、identity drift 或 remote divergence 均 fail closed。"
+      },
+      {
+        "candidate_ref": "active-and-resume-verification-owner-separation",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Fresh publication_ready 可能误用失败链历史 verification owner，而 verification_verified 或 same_plan_resume 可能错误放宽 plan/owner freshness。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          "finalization_preview_context",
+          "test_publication_preview_ignores_historical_verification_owner",
+          "test_same_plan_preview_keeps_historical_verification_fail_closed"
+        ],
+        "requirement_refs": [
+          "Issue #119 AI-first recovery contract",
+          "prd.md §4"
+        ],
+        "scope_basis": "三个 finalizer public profiles 的正常 owner/freshness 分工属于当前集成交付。",
+        "qualification_reason": "publication_ready 禁止机会式复用历史 owner；verification_verified 使用显式 owner result，same_plan_resume 仍执行严格 current plan/owner 校验。"
+      },
+      {
+        "candidate_ref": "existing-draft-pr-166-idempotent-reuse",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Archived recovery 可能创建重复 PR、archive commit、evidence commit 或其它 side effect，而不是唯一复用 Draft PR #166。",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "evidence_refs": [
+          "resume_archived_closeout",
+          "cmd_execute_finalization_transition",
+          "test_selected_runtime_recovers_compact_archive_before_readiness_check",
+          "test_selected_runtime_archived_transition_skips_gate_and_verifier_mutation",
+          "test_archived_same_plan_transition_uses_committed_gate_and_only_marks_ready",
+          "live-pr:166"
+        ],
+        "requirement_refs": [
+          "Issue #119 existing Draft PR #166 reuse",
+          "prd.md §3.8"
+        ],
+        "scope_basis": "用户明确要求恢复不得重建事务或创建重复 publication identity。",
+        "qualification_reason": "Committed archived recovery 使用 plan-bound summary PR 与 committed gate；finalizer recovery 不调用 push-if-needed、create_pull_request、archive transaction、evidence commit 或 gate rewrite，唯一剩余动作是同一 PR 的 Ready transition。Live PR #166 仍是 OPEN Draft、同 repo/head/base 的唯一既有身份。"
+      },
+      {
+        "candidate_ref": "finish-family-public-contract-or-routing-drift",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Combined integration 可能扩张三个 Finish Skills 的 public DTO、复制 Skill 内部步骤、增加 routine confirmation 或产生无人消费的 handoff artifact。",
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "evidence_refs": [
+          "origin/main...72bf89a complete diff",
+          "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/guru/finish-work.md",
+          "no changed Finish public schema or Skill contract paths"
+        ],
+        "requirement_refs": [
+          "PR #165 AI-first contract",
+          "prd.md §3.1",
+          "prd.md §3.2",
+          "prd.md §4"
+        ],
+        "scope_basis": "Global routing、Guru namespace entry 与最小 public I/O 是 #119 当前集成范围。",
+        "qualification_reason": "完整 diff 未修改三个 Finish Skill 的 public schema/SKILL contract；workflow 与三个 byte-identical Guru entries 只加载 stable owners、映射 typed exits、禁止通用继续确认、直接 deterministic script 与 handoff artifact。"
+      },
+      {
+        "candidate_ref": "distribution-preset-and-installed-drift",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Canonical runtime、installed runtime、eval corpus、platform entries 或 preset ownership 可能发生分发漂移。",
+        "path": "trellis/presets/guru-team",
+        "evidence_refs": [
+          "canonical-installed runtime cmp passed",
+          "canonical-installed integration cmp passed",
+          "canonical-dogfood workflow cmp passed",
+          "six finalizer eval corpora sha256=d158543a6a2f8de129a72de243d62a7a46b705e357ff6a6810b771257f7064f4",
+          "three Guru entry sha256=c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+          "Phase 2 preset 47 passed and dogfood drift passed"
+        ],
+        "requirement_refs": [
+          "prd.md §3.4",
+          "prd.md §3.6",
+          "prd.md §3.7"
+        ],
+        "scope_basis": "Combined Finish-family 的 canonical、installed、preset 与多平台一致性属于当前验收。",
+        "qualification_reason": "Current HEAD 的 canonical/installed runtime、integration tests、workflow、platform entries、adapter 与六份 eval corpus 保持一致；legacy finish entries 的 blocking_issues 已清空且 removal_issue 仍为 #132。"
+      },
+      {
+        "candidate_ref": "phase2-post-commit-freshness",
+        "disposition": "rejected_candidate",
+        "scenario_class": "normal_required_behavior",
+        "affected_behavior": "Phase 2 记录于 pre-commit HEAD 时可能无法覆盖最终 72bf89a commit，或最终 worktree 仍含未审查改动。",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
+        "evidence_refs": [
+          "validate_phase2_check allow_committed_head=true returned []",
+          "validate_planning_approval returned []",
+          "git status clean",
+          "HEAD=72bf89a789d25598a95944dfe9af8735b4a92a10"
+        ],
+        "requirement_refs": [
+          "guru-review-branch entry preconditions",
+          "Phase 2 post-commit ancestry contract"
+        ],
+        "scope_basis": "Branch Review 必须验证最终 commit 是已审查 dirty snapshot 的精确提交结果。",
+        "qualification_reason": "Recorded d8664c8 是当前 HEAD ancestor，72bf89a 的提交路径由 Phase 2 dirty snapshot 覆盖，当前 worktree clean；objective planning 与 Phase 2 validators 均无错误。Phase 2 仅作为验证记录，不替代本次 semantic review。"
+      },
+      {
+        "candidate_ref": "excluded-hardening-expansion",
+        "disposition": "rejected_candidate",
+        "scenario_class": "out_of_scope",
+        "affected_behavior": "可能要求额外实现恶意 actor、伪造、并发竞态、锁、TOCTOU、fault injection 或跨 OS crash consistency 防御。",
+        "path": "",
+        "evidence_refs": [
+          "AGENTS.md honest-but-fallible boundary",
+          "prd.md §5",
+          "design.md §9"
+        ],
+        "requirement_refs": [
+          "Issue #119 exclusions"
+        ],
+        "scope_basis": "这些场景已被当前 authority 明确排除。",
+        "qualification_reason": "完整 diff 未引入这些扩展；它们不能成为 #119 finding、阻塞项或自动 follow-up。"
+      }
+    ],
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "Distinct fresh-final review 独立覆盖 origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...HEAD@72bf89a789d25598a95944dfe9af8735b4a92a10 的完整 12 commits、74 net paths（排序路径集合 SHA-256 ede0754e259229c04ebf8bac7463cf09811b333796768729f4af100a4dbe62ae），并复核 current prd/design/implement、planning approval、Phase 2 记录、issue ledger、Docs SSOT、runtime、tests、preset、ownership、eval corpus、public-contract边界和 canonical-installed parity。工作树 clean，git diff --check 通过；planning 与 post-commit Phase 2 objective validators 无错误。F119-FRESH-001(P1) 与 F119-FRESH-002(P3) 均在 72bf89a 取得具体 closure：archived recovery 从 exact commit blob 读取 immutable plan，不再依赖工作树 closeout-plan/pr-readiness；durable SSOT 明确 readiness 仅属于 active pre-publication，并以 committed transaction 与 Git/GitHub facts 恢复 compact archive。GitHub PR HEAD 使用六次有界读取，短暂旧值收敛后自动继续，持续不一致、identity drift 或 remote divergence 均 fail closed；archived finalizer 唯一复用 Draft PR #166，不创建重复 PR、archive/evidence commit 或 recovery artifact。未发现新的 current-scope P0-P3 defect。旧 publication metadata 与尚未 push 的 remote HEAD 明确不作为 pass 证据，必须由后续 publication/finalizer owners 在各自授权边界内刷新并继续复用同一 PR #166；#132 与所有排除加固范围保持不变。"
+    }
+  },
+  "verification_evidence": {
+    "reviewer": "codex-independent-agent:issue119_fresh_branch_review",
+    "review_source": "independent-agent",
+    "evidence": [
+      "Distinct fresh-final reviewer independently covered origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...72bf89a789d25598a95944dfe9af8735b4a92a10 across 12 commits and 74 net paths; no new current-scope P0-P3 findings remained.",
+      "Finding owner separately closed F119-FRESH-001 and F119-FRESH-002 at 72bf89a789d25598a95944dfe9af8735b4a92a10 before this distinct fresh-final review."
+    ]
+  },
+  "facts_sha256": "f674f5f04eed621e5fa9161b4cc7b6356a7fa1ea3643e0488685e3cebd98bf47"
+}

@@ -248,13 +248,15 @@ pre-task stdout mode does not run that target gate.
 When workflow behavior changes, update the docs that users actually read:
 
 Public docs describing Phase 2 must name active semantic Skill
-`guru-check-task`, its single `phase2-check.json` / `guru-phase2-check-2.0`
-artifact, scope-before-severity rule, full-rerun finding loop, four exits, and
-official unchanged `trellis-check` evidence-only role. They must not claim that
-coverage flags, successful commands, worker output, or deterministic scripts
-can produce Guru pass. Install/update docs must describe additive registry
-distribution to shared/Codex/Cursor/Claude roots and explicitly preserve the
-upstream ownership inventory.
+`guru-check-task`, its single `phase2-check.json` artifact, active
+`guru-phase2-check-2.1` schema for new records, read-only compatibility for
+existing `guru-phase2-check-2.0` artifacts, scope-before-severity rule,
+full-rerun finding loop, four exits, and official unchanged `trellis-check`
+evidence-only role. They must not claim that coverage flags, successful
+commands, worker output, or deterministic scripts can produce Guru pass.
+Install/update docs must describe additive registry distribution to
+shared/Codex/Cursor/Claude roots and explicitly preserve the upstream ownership
+inventory.
 
 - `README.md` for install/upgrade and daily operation
 - `trellis/workflows/guru-team/README.md` for marketplace workflow behavior
@@ -429,7 +431,9 @@ findings, and route. Changed paths, successful commands, checker pass, and
 production eval are facts only. A workflow-required target cannot silently
 return `not_required`; an applicability conflict blocks. #117 owns the target
 input contract, and active finalizer producer/consumer edges bind it without
-activating the #119 global Finish route.
+expanding either public DTO. The #119 combined route carries the checker-passed
+owner evidence only as a private in-memory finalizer projection through retry,
+final projection, normal archive, and active-completed recovery.
 
 The READMEs distinguish task-bearing
 `marketplace-verification.json` from taskless session-only owner state, name the
@@ -442,15 +446,19 @@ and redaction.
 Public validation text treats package-local real-wrapper production eval and
 real pushed-remote clean installation as independent acceptance surfaces. It
 must not claim the remote-ref gate passed when only local or public stable
-marketplace sampling ran, and must not imply that #119 global integration or
-#132 upstream overlay cleanup was implemented.
+marketplace sampling ran. It identifies #119 combined local/install integration
+separately from the pushed-remote gate and must not imply that #132 upstream
+overlay cleanup was implemented.
 
 Install/update text requires canonical/installed/shared/Codex/Cursor/Claude
 byte identity, source and installed validation, real-wrapper eval, workflow
 consumer uniqueness, preset reapply after `trellis update`, dogfood drift, and
-zero unresolved `.new`/`.bak`. It explicitly leaves remote branch marketplace
-verification to finish-work and does not claim #119 integration or #132 cleanup
-completion.
+zero unresolved `.new`/`.bak`. It names the three canonical
+`guru-finish-work` platform entries, executes the installed combined integration
+suite before and after update/reapply, explicitly leaves pushed-remote branch
+verification to the finalization gate, and does not claim #132 cleanup
+completion. The five `trellis-finish-work` entries are described only as
+byte-pinned compatibility routers until that cleanup.
 
 ## Task Finalization Documentation
 
@@ -470,5 +478,8 @@ and does not expose plan identity in the producer handoff.
 The READMEs describe the current package graph as thirteen active Skills and 52
 external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
 They identify the integrated global workflow projection as 13 invokes, 52 exits,
-and 29 targets. This does not claim #119 combined acceptance or #115 closure;
-#132 owns physical upstream overlay cleanup.
+and 29 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
+Cursor finish entry; document the two terminal `published` evals and the private
+checked-verification projection; and keep every public DTO unchanged. The five
+legacy finish payloads remain byte-pinned compatibility routers with no #119
+blocker, while #132 owns their physical upstream-overlay cleanup.

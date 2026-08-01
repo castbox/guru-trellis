@@ -428,11 +428,17 @@ or disposable copy and verify:
 - existing `.trellis/guru-team/config.yml` remains unchanged
 - `config-template.yml` remains managed while user-owned `config.yml` is not
   listed in `install.managed_assets`; fresh and repeated apply report the same
-  deterministic managed asset set
+  deterministic 103-file managed asset set, including the three Guru-owned
+  Finish platform entries
 - managed companion assets update and produce `.bak`
 - unknown overlay edits produce `.new`
 - known upstream Trellis-generated entries are replaced
 - scripts remain executable
+- `.codex/prompts/guru-finish-work.md`,
+  `.claude/commands/guru/finish-work.md`, and
+  `.cursor/commands/guru-finish-work.md` are installed from canonical bytes,
+  remain outside the transitional legacy inventory, and route only through the
+  live workflow and three stable Finish Skill ids
 - `language_guidance` reports checked/updated `.trellis/spec/**` and bootstrap
   paths without modifying business `docs/**` or `.trellis/workspace/**`
 - throwaway validation fails if `.trellis/spec/**` or
@@ -442,6 +448,9 @@ or disposable copy and verify:
   binding, official archive, local/remote/PR HEAD equality, ready transition,
   and clean-tree assertions both before and after update/reapply; the verifier
   must not copy canonical workflow/scripts/schemas into the target fixture
+- the installed `test_finish_family_integration.py` passes before and after
+  update/reapply, including 13 Finish exits, six route groups, platform entry
+  bytes, terminal eval execution, and private/public boundary assertions
 
 ## Common Mistakes
 
@@ -540,8 +549,9 @@ Review `passed` through the five continue entries to the active publication
 owner. The finalizer package is directly discoverable, globally invoked after
 publication `ready`, and reached through the five thin finish entries. Internal
 verification and recovery exits are automatically consumed rather than exposed
-as user continuation gates. This integration does not claim #119 combined
-acceptance.
+as user continuation gates. The combined layer adds the canonical
+`guru-finish-work` platform entries and installed integration regression without
+changing any package-local public contract.
 
 ## Task Publication Package Activation
 
@@ -586,7 +596,9 @@ six-Skill/24-exit identity or the production three-Skill/11-exit membership.
 Its workflow `verified` and reachable task-bearing standalone `not_required`
 producer edges now target active `guru-finalize-task`; the workflow-shaped
 not-required branch remains compatible but cannot be emitted by a workflow
-applicability conflict. Global Finish routing remains deferred to #119.
+applicability conflict. The combined Finish route now returns checker-passed
+owner evidence to the finalizer through a private in-memory compatibility
+projection; it does not add fields to either Skill's public DTO.
 
 Managed executable companion assets include
 `execute-extension-verification.sh`,
@@ -627,7 +639,9 @@ the existing workflow-shaped compatibility profile.
 
 The current source/installed package graph contains thirteen active Skills and
 52 external exits. The global workflow projection is 13 invokes, 52 exits, and
-29 targets. This integration does not claim #119 combined acceptance or #115
-closure. The preset must not modify
-upstream `trellis-finish-work` Skill/Command/Prompt overlays; #132 remains the
-owner of their physical cleanup.
+29 targets. The preset additionally installs the three Guru-owned
+`guru-finish-work` entries and the combined integration suite. The five frozen
+upstream `trellis-finish-work` Skill/Command/Prompt payloads remain unchanged
+with no #119 blocker; #132 remains the owner of their physical cleanup. This
+activation does not expand public Skill I/O or rewrite either migration
+manifest.
