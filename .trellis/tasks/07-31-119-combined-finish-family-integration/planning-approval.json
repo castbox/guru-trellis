@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "skill_id": "guru-approve-task-plan",
-  "generated_at": "2026-07-31T18:06:35Z",
+  "generated_at": "2026-08-01T05:54:22Z",
   "mode": "workflow",
   "task": {
     "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
@@ -18,14 +18,18 @@
     "selected_base": "main",
     "base_ref": "refs/remotes/origin/main",
     "base_head": "7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
-    "head": "57e7d0d4e350ac892ed599d20db67d2a99d8c38d",
+    "head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
     "dirty_paths": [
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md"
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
     ],
-    "captured_at": "2026-07-31T18:06:35Z"
+    "captured_at": "2026-08-01T05:54:22Z"
   },
   "requirement_authorities": [
     {
@@ -67,7 +71,7 @@
       "id": "repo:workflow-contract",
       "kind": "repository_document",
       "locator": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "fbac5bc6e14bca4436929fe1c3ce9aafac685c564aa5fe7d9ce13dd540b767e7",
+      "sha256": "2fb09b325b26c7c3efecf7c332370f18a599160f24b76fdfbbe9de2034f2e449",
       "updated_at": null
     },
     {
@@ -530,8 +534,8 @@
     "ai_review_gate": {
       "status": "passed",
       "reviewer": "Codex primary agent /root",
-      "summary": "Current 三份规划完整保留 #119 原 scope，只增加两项同一 finalizer 交付链 correctness 修复；实现路径、六项回归、受影响验证、Docs checkpoint 与授权边界明确，可进入实现。",
-      "reviewed_at": "2026-07-31T18:03:38Z",
+      "summary": "The unchanged approved #119 planning set remains adequate after resolving F119-FRESH-001 and F119-FRESH-002: archived recovery now reads the exact committed plan before task-local ownership checks, the durable workflow SSOT matches compact schema 1.1, public contracts and scope remain unchanged, and the authorized validation/commit boundaries remain intact.",
+      "reviewed_at": "2026-08-01T05:54:15Z",
       "findings": [],
       "revision_actions": [],
       "scope_proposals": [],
@@ -550,7 +554,7 @@
     "kind": "workflow",
     "id": "phase-1-task-activation"
   },
-  "reason": "Current recovery plan 通过 semantic gate、wording pass 与专用 post-planning confirmation。",
-  "supersedes_facts_sha256": "87ef69a587a72889cdae0d607cee1862ed1478d0baaaf206fcb66f3689cb92d3",
-  "facts_sha256": "952b98e2033aa808a0c5c9c76359cb488967132d88566e8289f3660f863f33ef"
+  "reason": "The unchanged current recovery plan passes fresh semantic reapproval after its workflow-contract authority was corrected; no planning document or scope changed.",
+  "supersedes_facts_sha256": "952b98e2033aa808a0c5c9c76359cb488967132d88566e8289f3660f863f33ef",
+  "facts_sha256": "01ea6947267442ab6b62db22986f87c680bf03f1277163ea8beac02292833002"
 }

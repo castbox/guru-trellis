@@ -1,7 +1,7 @@
 {
   "mode": "workflow",
   "requirement_provenance": {
-    "summary": "Live Issue #119 authority, approved recovery planning, Issue #105 transaction requirements, PR #162/#165 contracts, Draft PR #166 identity and repository contracts were reviewed with the current fresh-publication correctness fix. All earlier finalizer plans, gates and publication evidence remain historical failure evidence only.",
+    "summary": "Live Issue #119 authority, Issue #105 transaction/recovery requirements, PR #162/#165 contracts, the existing Draft PR #166 identity, approved recovery planning, and the fresh Branch Review findings were reviewed as one unchanged delivery scope. Earlier plans, gates and publication evidence remain failure history only.",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/context-discovery.json",
@@ -24,7 +24,7 @@
         "size_bytes": 13165
       }
     ],
-    "facts_sha256": "744d124d85545271f2a7b6dac0d3c40015a1e1fb9a47e548688d8aa05ab808ae"
+    "facts_sha256": "774c7e7e6c3d7df73004a2ee4a9326b8e30c5682a9c4451ca51f387ad7c1328b"
   },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
@@ -101,11 +101,11 @@
       },
       {
         "path": ".trellis/spec/workflow/workflow-contract.md",
-        "sha256": "fbac5bc6e14bca4436929fe1c3ce9aafac685c564aa5fe7d9ce13dd540b767e7",
-        "size_bytes": 66714
+        "sha256": "2fb09b325b26c7c3efecf7c332370f18a599160f24b76fdfbbe9de2034f2e449",
+        "size_bytes": 67040
       }
     ],
-    "sync_result": "Durable workflow, Skill I/O, companion-script, preset and public documentation SSOT remains consistent. The correction changes only private finalizer profile-sensitive evidence reuse and its tests, so no durable public contract update is required.",
+    "sync_result": "The durable workflow SSOT now distinguishes active task-local pr-readiness ownership from compact archived/archive_pushed recovery. Archived recovery reads the exact committed plan, gate, evidence/archive commit and summary before validating remote and GitHub PR facts; no public Skill I/O, schema id, platform entry or #132 ownership changed.",
     "task_delta_merged": true,
     "task_history_only": [
       "The failed 3fe71d7 evidence commit, 15d957b compact archive commit and Draft PR #166 recovery chronology",
@@ -115,10 +115,10 @@
     ],
     "no_update_reason": null,
     "followup_or_pr_limit": "Issue #132 remains the sole owner of physical legacy overlay removal; current publication evidence must continue to reuse Draft PR #166.",
-    "facts_sha256": "b28231124d012ae22e31b15afb1e4dae6f2ab68a1ce982b18beadb3a41fbb481"
+    "facts_sha256": "aa9629fa42bd5b1d65f383ef1aa3d1da3dc1bfce30e3cea28f2f9aef97b88517"
   },
   "implementation_handoff": {
-    "summary": "The complete Issue #119 integration through local HEAD 01e6cd1 remains intact. The current candidate prevents fresh publication_ready from consuming a historical task-local verification owner, preserves strict verified/same-plan recovery, and synchronizes only canonical runtime/tests plus installed runtime/manifest. No public I/O, task identity, PR identity or transaction history changed.",
+    "summary": "The two fresh Branch Review findings are resolved in the current uncommitted candidate: archived plan recovery no longer depends on a working-tree closeout-plan.json, unit and source integration regressions exercise the exact committed blob path, the durable workflow contract no longer names archived pr-readiness.json as recovery authority, and preset reapply synchronized canonical and installed copies without sidecars. No commit, push, PR mutation, Issue mutation or frozen-donor mutation occurred.",
     "artifacts": [
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
@@ -127,18 +127,18 @@
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "b5aa5e990e9c344b9bb77303030569f905e880b080b6fde231477694654da07c",
-        "size_bytes": 1693681
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
+        "size_bytes": 1693689
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-        "sha256": "e05fca9154ca09b3703c8cc7b893c4540acd3e822f0890fea417cfca2a484d1c",
-        "size_bytes": 1231524
+        "sha256": "33e83e0ee42c7586a567c896104d14f0be26444186b2489dd94153551610e546",
+        "size_bytes": 1231518
       },
       {
         "path": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "207d7b0b1372865afb58d6bdf22792bf6fea9868d44a22201b2bcc5d354cd443",
-        "size_bytes": 31979
+        "sha256": "a7ca75e5cb292340eb4ece0ea4d3cd60235a96803925cce35b1f1ecda1be7458",
+        "size_bytes": 32905
       },
       {
         "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
@@ -222,18 +222,18 @@
       },
       {
         "path": ".trellis/guru-team/extension.json",
-        "sha256": "ff398b41eaab1483d274a19c743c8f200a483a9cfb1815a6d3032759b4007435",
+        "sha256": "f4e831a79800a2e34517436d9cef8a9396de60964cff4f30bc7c9cc8c68128d0",
         "size_bytes": 1045117
       },
       {
         "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "b5aa5e990e9c344b9bb77303030569f905e880b080b6fde231477694654da07c",
-        "size_bytes": 1693681
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
+        "size_bytes": 1693689
       },
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
-        "sha256": "207d7b0b1372865afb58d6bdf22792bf6fea9868d44a22201b2bcc5d354cd443",
-        "size_bytes": 31979
+        "sha256": "a7ca75e5cb292340eb4ece0ea4d3cd60235a96803925cce35b1f1ecda1be7458",
+        "size_bytes": 32905
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
@@ -252,8 +252,8 @@
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
-        "sha256": "5ef4be0729ca385464f703f07b45e9651e5ddd11720a43e02a2a4daec6489e5a",
-        "size_bytes": 23815
+        "sha256": "039779012fe6236b072dffe40506886052ad940813b944051a6dad9480fd4d53",
+        "size_bytes": 24229
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/contract-wording-review.json",
@@ -261,20 +261,21 @@
         "size_bytes": 3202
       }
     ],
-    "facts_sha256": "a5797d536ac2d00fb90d4c2b55a4e8f898dacb53933f26c7dcd99b9829dfc8fc"
+    "facts_sha256": "d4d9784a9e80576c7a3beb1b70b3d9c137024bac0702cc1924e11d7a01a4020a"
   },
   "repository_snapshot": {
     "base_ref": "refs/remotes/origin/main",
     "base_head": "7ca1a0b96492cbb265bcd7715d14ac93c897fc98",
-    "head": "01e6cd1d2b1cfefdb7aed82181f50ee3582267ae",
+    "head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
     "diff_range": "origin/main...HEAD",
     "dirty_paths": [
       ".trellis/guru-team/extension.json",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
-      ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
       ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
       "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
       "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
     ],
@@ -356,13 +357,13 @@
       },
       {
         "path": ".trellis/guru-team/extension.json",
-        "sha256": "ff398b41eaab1483d274a19c743c8f200a483a9cfb1815a6d3032759b4007435",
+        "sha256": "f4e831a79800a2e34517436d9cef8a9396de60964cff4f30bc7c9cc8c68128d0",
         "size_bytes": 1045117
       },
       {
         "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "b5aa5e990e9c344b9bb77303030569f905e880b080b6fde231477694654da07c",
-        "size_bytes": 1693681
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
+        "size_bytes": 1693689
       },
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
@@ -386,8 +387,8 @@
       },
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
-        "sha256": "207d7b0b1372865afb58d6bdf22792bf6fea9868d44a22201b2bcc5d354cd443",
-        "size_bytes": 31979
+        "sha256": "a7ca75e5cb292340eb4ece0ea4d3cd60235a96803925cce35b1f1ecda1be7458",
+        "size_bytes": 32905
       },
       {
         "path": ".trellis/spec/docs/public-docs.md",
@@ -436,8 +437,8 @@
       },
       {
         "path": ".trellis/spec/workflow/workflow-contract.md",
-        "sha256": "fbac5bc6e14bca4436929fe1c3ce9aafac685c564aa5fe7d9ce13dd540b767e7",
-        "size_bytes": 66714
+        "sha256": "2fb09b325b26c7c3efecf7c332370f18a599160f24b76fdfbbe9de2034f2e449",
+        "size_bytes": 67040
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/check.jsonl",
@@ -461,8 +462,8 @@
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/finish-summary-index.json",
-        "sha256": "b716f60dc2f0e30f88ef2f263a8bacd60fc411bca4675efd866f8180f85fef38",
-        "size_bytes": 7387
+        "sha256": "4cdfc0655064fb229590f17a71c2ffd266969944cdfba2fe8592cdbceccbe895",
+        "size_bytes": 6258
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.jsonl",
@@ -491,18 +492,18 @@
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
-        "sha256": "5ef4be0729ca385464f703f07b45e9651e5ddd11720a43e02a2a4daec6489e5a",
-        "size_bytes": 23815
+        "sha256": "039779012fe6236b072dffe40506886052ad940813b944051a6dad9480fd4d53",
+        "size_bytes": 24229
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-body.md",
-        "sha256": "1b97fdcd13142bd0be47aa43d6ab6c30d1eed6111d3d894fe4244ca57bd119ba",
-        "size_bytes": 8474
+        "sha256": "85f6dd9f728776e0363be490130f1e7bae8f17f7504b40a0b3ab16f6b800d0e7",
+        "size_bytes": 7231
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/pr-readiness.json",
-        "sha256": "9fd8317e25f864eeaf05d2d51476cd3127a7f42477dd0bd1341b6f7cffeb3a41",
-        "size_bytes": 23106
+        "sha256": "db221ef9a6b5c5f442f0f9a831549803e6564fc21d942e6bea12f3c2f10069b5",
+        "size_bytes": 27122
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md",
@@ -511,8 +512,8 @@
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/review-gate.json",
-        "sha256": "3e86081ebad911d61cb408e24aa0f310c12e90a250968f6188f2927555f29b9b",
-        "size_bytes": 11489
+        "sha256": "5683a9b87a18a49a4304286071243fed324f13e643a4014b6cc995a59305cfd7",
+        "size_bytes": 5870
       },
       {
         "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/task-start-context.json",
@@ -616,8 +617,8 @@
       },
       {
         "path": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "207d7b0b1372865afb58d6bdf22792bf6fea9868d44a22201b2bcc5d354cd443",
-        "size_bytes": 31979
+        "sha256": "a7ca75e5cb292340eb4ece0ea4d3cd60235a96803925cce35b1f1ecda1be7458",
+        "size_bytes": 32905
       },
       {
         "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
@@ -631,13 +632,13 @@
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "sha256": "b5aa5e990e9c344b9bb77303030569f905e880b080b6fde231477694654da07c",
-        "size_bytes": 1693681
+        "sha256": "163f33d4cc92605beb14d61427ec5626421cd161770834f80b6492334aa10083",
+        "size_bytes": 1693689
       },
       {
         "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-        "sha256": "e05fca9154ca09b3703c8cc7b893c4540acd3e822f0890fea417cfca2a484d1c",
-        "size_bytes": 1231524
+        "sha256": "33e83e0ee42c7586a567c896104d14f0be26444186b2489dd94153551610e546",
+        "size_bytes": 1231518
       },
       {
         "path": "trellis/workflows/guru-team/workflow.md",
@@ -645,122 +646,12 @@
         "size_bytes": 86087
       }
     ],
-    "snapshot_sha256": "671b76d039ec5d108849475e0a48af6049e3f0478b1c0ce9bec281b5611be597"
+    "snapshot_sha256": "10e1c42db550e4fd7b7ed9681f6f1d1c89c0ec0747e50405d566490101b0c69d"
   },
   "check_execution": {
     "commands": [
       {
-        "id": "current-head",
-        "argv": [
-          "git",
-          "rev-parse",
-          "HEAD"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "9aa5f85fe396c026880bd1f13bdc61818af1b86db32f267a31fc0edc25b40e02",
-        "stdout_size_bytes": 41,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "The current local task-work HEAD is 01e6cd1d2b1cfefdb7aed82181f50ee3582267ae; the correctness fix remains an uncommitted reviewed candidate."
-      },
-      {
-        "id": "live-main",
-        "argv": [
-          "git",
-          "ls-remote",
-          "origin",
-          "refs/heads/main"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "1746acbba82f97ba41716bdff280a67965521d7e280a69eb2b65595d02925aff",
-        "stdout_size_bytes": 57,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Live origin/main remains 7ca1a0b96492cbb265bcd7715d14ac93c897fc98."
-      },
-      {
-        "id": "remote-feature",
-        "argv": [
-          "git",
-          "ls-remote",
-          "origin",
-          "refs/heads/feat/119-finish-family-integration-main"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "f5eedc126f6d6dcbf9bc80805472fe6d51247b5414aaa83d6e5c98ca97d821b6",
-        "stdout_size_bytes": 92,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "The remote feature ref remains at failed-chain archive commit 15d957b9e998e3633948d1336c9f6e62db4b110e; no current fix was pushed."
-      },
-      {
-        "id": "draft-pr-166",
-        "argv": [
-          "gh",
-          "pr",
-          "view",
-          "166",
-          "--repo",
-          "castbox/guru-trellis",
-          "--json",
-          "number,url,state,isDraft,headRefName,headRefOid,baseRefName"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "6df9bea83e5900d92f5d6c9acb55526dfb7d39b4769e5b5199f8d2cc3e0efa7d",
-        "stdout_size_bytes": 235,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "PR #166 remains the unique open Draft for main, the existing feature branch and remote HEAD 15d957b9; no PR mutation occurred."
-      },
-      {
-        "id": "planning-approval",
-        "argv": [
-          ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
-          "--json",
-          "--task",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "7b7dd01a62daaec5e38688ad850557ee8272756189f6b0462672dc74cade7184",
-        "stdout_size_bytes": 794,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "The approved #119 recovery planning remains current for the active task."
-      },
-      {
-        "id": "contract-wording",
-        "argv": [
-          ".agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh",
-          "--root",
-          ".",
-          "--task",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration",
-          "--json"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "9da2a425d1fc8c61c6c821716b4e739af887495b560779208c54ea1d8c3d7d1f",
-        "stdout_size_bytes": 387,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "The unchanged recovery planning wording continues to pass its public checker."
-      },
-      {
-        "id": "task-validate",
-        "argv": [
-          "python3",
-          "./.trellis/scripts/task.py",
-          "validate",
-          "07-31-119-combined-finish-family-integration"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "a157477363785d12da28862a4a1d66007e09536bde221792c386544e487573f1",
-        "stdout_size_bytes": 339,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "The existing active #119 task and JSONL journals remain structurally valid; no duplicate task was created."
-      },
-      {
-        "id": "runtime-full",
+        "id": "recovery-final-runtime-full",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
@@ -770,14 +661,14 @@
           "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
         ],
         "exit_code": 0,
-        "stdout_sha256": "c37923c34aeae18603a5d02681f526470b8eab0fa6681f1e5d139d3856cc8d23",
+        "stdout_sha256": "41cf6a21ee8f29db89dc45b5e13f1ac022fcd31622d6043f481165e0ccb15817",
         "stdout_size_bytes": 2548,
-        "stderr_sha256": "713af5d0325a7754f6611a700bfb295dd357345fb65ec3c23a11f1d14d8d2584",
+        "stderr_sha256": "2298f3b0555f169c3cd99ca489845b165ed6034f9bfa7e9b155d6a737b0b988e",
         "stderr_size_bytes": 3944,
-        "summary": "The complete runtime suite passed 561 tests with 13 declared skips, including fresh-publication owner isolation and strict same-plan recovery."
+        "summary": "The complete affected canonical runtime suite passed 561 tests with 13 existing conditional skips."
       },
       {
-        "id": "finalizer-contract",
+        "id": "recovery-final-finalizer-contract",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
@@ -789,12 +680,12 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "c31d67bbe5ced73119be7455ebd984c98849bcce69a0191f0d519eb62419714b",
+        "stderr_sha256": "8be0320742bab1b4bfc39ff6df95d39ff0ff4fe8d43acee82020c4e42fdb11f0",
         "stderr_size_bytes": 104,
-        "summary": "The six public finalizer package contract tests passed without a public I/O or typed-exit change."
+        "summary": "The public finalizer contract suite passed all six tests."
       },
       {
-        "id": "finish-source",
+        "id": "recovery-final-source-integration",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
@@ -805,12 +696,12 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "8d741603105b0da1aded7ddde31e6d603e3f8028013db4a919e627dacb072115",
+        "stderr_sha256": "a01c84bfa650f2d765ffbc4f6bd74da78fc77dc139b1b11d96827551868ff7ad",
         "stderr_size_bytes": 98,
-        "summary": "The nine source Finish-family integration tests passed."
+        "summary": "The source Finish-family integration suite passed all nine tests, including committed-plan recovery with the working-tree plan absent."
       },
       {
-        "id": "finish-installed",
+        "id": "recovery-final-installed-integration",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
@@ -823,12 +714,12 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "4740da4911e27b566f99f79cf82360c5c21585f829bb6ee6f75711d00a91acf4",
+        "stderr_sha256": "232e6aac903d66a34e1f98e5bd1ce4be944b588ef1e1ec2fd1ecc305983912c2",
         "stderr_size_bytes": 109,
-        "summary": "The installed Finish-family integration passed nine tests with one declared unavailable-platform skip."
+        "summary": "The installed Finish-family integration suite passed all nine tests with one existing environment-dependent skip."
       },
       {
-        "id": "preset-tests",
+        "id": "recovery-final-preset-full",
         "argv": [
           "env",
           "PYTHONDONTWRITEBYTECODE=1",
@@ -840,12 +731,12 @@
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
-        "stderr_sha256": "1ddfc396e668bb3ecdedf3f9652bb383175f9491e15b0a75c5ce55d7b8cda062",
+        "stderr_sha256": "c53dad869c8c1b5cdb409bc283ca65192dd8823faf251018913f6e55bd4c793f",
         "stderr_size_bytes": 811,
-        "summary": "All 47 preset installer and reapply contract tests passed."
+        "summary": "The affected preset apply suite passed all 47 tests."
       },
       {
-        "id": "dogfood-drift",
+        "id": "recovery-final-dogfood-drift",
         "argv": [
           "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
           "--repo",
@@ -856,27 +747,78 @@
         "stdout_size_bytes": 2070,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "Canonical and dogfood overlays have no drift after the already completed all-platform apply."
+        "summary": "Dogfood overlay ownership and canonical-installed drift validation passed."
       },
       {
-        "id": "ownership-live",
+        "id": "recovery-final-python-compile",
         "argv": [
-          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
-          "--repo",
-          ".",
-          "--json"
+          "env",
+          "PYTHONPYCACHEPREFIX=.trellis/.runtime/guru-team/issue-119/phase2-rerun-logs/recovery-final-pycache",
+          "python3",
+          "-m",
+          "py_compile",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
         ],
         "exit_code": 0,
-        "stdout_sha256": "3c596b7c614742ac902c0fc6dcccb805a5d2b5d0ec9f00c1ff52474e894870de",
-        "stdout_size_bytes": 2011,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "The live upstream ownership inventory and managed-file contracts pass."
+        "summary": "All affected canonical and installed Python files compile successfully."
       },
       {
-        "id": "runtime-cmp",
+        "id": "recovery-final-diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The current candidate has no whitespace errors."
+      },
+      {
+        "id": "recovery-final-workspace-boundary",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "015cb008b1386e8673980e1cb8bb6e96de85f8b7fc985b2d4073c3518e56c1d6",
+        "stdout_size_bytes": 1274,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The active task remains bound to the approved worktree and branch."
+      },
+      {
+        "id": "recovery-final-task-validate",
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-31-119-combined-finish-family-integration"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a157477363785d12da28862a4a1d66007e09536bde221792c386544e487573f1",
+        "stdout_size_bytes": 339,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "The active task structure and JSONL journals validate."
+      },
+      {
+        "id": "recovery-final-runtime-parity",
         "argv": [
           "cmp",
+          "-s",
           "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
           ".trellis/guru-team/scripts/python/guru_team_trellis.py"
         ],
@@ -888,50 +830,36 @@
         "summary": "Canonical and installed finalizer runtime bytes are identical."
       },
       {
-        "id": "sidecars",
+        "id": "recovery-final-integration-parity",
+        "argv": [
+          "cmp",
+          "-s",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Canonical and installed Finish-family integration tests are identical."
+      },
+      {
+        "id": "recovery-final-sidecar-scan",
         "argv": [
           "zsh",
           "-lc",
-          "test -z \"$(find . -type f \\( -name '*.new' -o -name '*.bak' \\) -print -quit)\""
+          "! find . -type f \\( -name \"*.new\" -o -name \"*.bak\" \\) -print -quit | grep -q ."
         ],
         "exit_code": 0,
         "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stdout_size_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "No .new or .bak sidecar remains anywhere in the current worktree."
+        "summary": "Preset reapply completed with no .new or .bak sidecars."
       },
       {
-        "id": "diff-check",
-        "argv": [
-          "git",
-          "diff",
-          "--check",
-          "origin/main"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stdout_size_bytes": 0,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "The complete origin/main-to-working-tree candidate has no whitespace errors."
-      },
-      {
-        "id": "status",
-        "argv": [
-          "git",
-          "status",
-          "--short"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "2acc96a87cea8fbc2519f015a7445949ccbe54b30e9882039a2c2f43bad6041f",
-        "stdout_size_bytes": 558,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "Before the recorder, dirty state contains exactly four implementation paths and four stale downstream publication artifacts; no unrelated tracked path is present."
-      },
-      {
-        "id": "donor-head",
+        "id": "recovery-final-frozen-donor-head",
         "argv": [
           "git",
           "-C",
@@ -947,77 +875,64 @@
         "summary": "The frozen donor HEAD remains d01111b3628c2a4b00b99ee098703acefe8620c9."
       },
       {
-        "id": "donor-status",
+        "id": "recovery-final-frozen-donor-status",
         "argv": [
           "git",
           "-C",
           "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/119-combined-finish-family-integration",
           "status",
-          "--short",
+          "--porcelain=v2",
+          "--branch",
           "--untracked-files=all"
         ],
         "exit_code": 0,
-        "stdout_sha256": "0e13f7aae76989220b03c5bd9e15dfd18dc55488ed8dd70765016b6e99aa89f6",
-        "stdout_size_bytes": 640,
+        "stdout_sha256": "af214cf781f99548b31a5bed6241d848e5c1476e37ed24be2f4b23b141faa426",
+        "stdout_size_bytes": 1276,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "stderr_size_bytes": 0,
-        "summary": "The frozen donor retains its tracked dirty files and three untracked review reports; only the separately authorized .DS_Store deletion is absent."
-      },
-      {
-        "id": "donor-runtime",
-        "argv": [
-          "zsh",
-          "-lc",
-          "git -C /Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/119-combined-finish-family-integration ls-files --others --ignored --exclude-standard .trellis/.runtime/guru-team | shasum -a 256"
-        ],
-        "exit_code": 0,
-        "stdout_sha256": "1eb7d4847e1a167a86d384e921a936bfd3a0144880ea8a48bc3a42ac047c2a9e",
-        "stdout_size_bytes": 68,
-        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "stderr_size_bytes": 0,
-        "summary": "The frozen donor gitignored runtime path-set digest remains unchanged."
+        "summary": "The frozen donor retains its original branch, tracked dirty files and untracked evidence set without mutation."
       }
     ],
     "worker_evidence": [
       {
-        "source": "official_trellis_check",
-        "agent_id": "codex-issue119-current-finalizer-fix",
-        "summary": "Fresh Phase 2 reviewed the complete origin/main-to-working-tree #119 candidate, verified the profile-sensitive finalizer fix and its negative recovery boundary, bound all affected test and current-state evidence, and found no remaining current-scope defect.",
+        "source": "declared_platform_alternative",
+        "agent_id": "codex-root-issue119-final-recovery",
+        "summary": "A fresh complete Phase 2 semantic round reviewed the approved #119 scope, the full origin/main-to-working-tree candidate, both fresh Branch Review findings, current canonical/installed runtime and tests, affected command evidence, Docs SSOT, exclusions and frozen-donor boundary. No remaining current-scope defect was found.",
         "evidence_only": true,
-        "facts_sha256": "04a334807b292bf0bdd9c5ed82324cd2bac6051a4f082ef0924a15a48eeef21a"
+        "facts_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966"
       }
     ],
     "unverified_items": [
       {
         "id": "current-head-remote-publication",
-        "command_or_area": "Commit and push the reviewed fix, then converge the same remote branch and Draft PR #166",
+        "command_or_area": "Create and push the current task work commit, then converge the existing remote branch and Draft PR #166",
         "reason": "Commit, push and PR mutation remain separately authorized downstream actions.",
-        "impact": "Local Phase 2 can pass, but remote installation verification and Draft-to-Ready remain mandatory before publication completes.",
+        "impact": "Local Phase 2 can pass, but remote verification and the unique Draft-to-Ready transition remain mandatory before publication completes.",
         "blocking": false
       },
       {
         "id": "current-head-branch-review",
-        "command_or_area": "Run one fresh full origin/main...HEAD Branch Review after the current task-work commit",
-        "reason": "The commit does not yet exist, and old Branch Review evidence cannot bind the future HEAD.",
-        "impact": "guru-create-task-commit is the immediate consumer; fresh Branch Review remains the next mandatory semantic gate.",
+        "command_or_area": "Run one fresh full origin/main...HEAD Branch Review after the current task work commit",
+        "reason": "The new commit does not yet exist, so the current implementation-required review gate cannot bind the future HEAD.",
+        "impact": "guru-create-task-commit is the immediate mapped consumer; fresh Branch Review remains the next mandatory semantic gate.",
         "blocking": false
       },
       {
         "id": "current-head-plan-generation",
         "command_or_area": "Generate a new immutable finalizer plan after refreshed Branch Review and publication review",
         "reason": "Generating it before the reviewed commit would bind stale HEAD and evidence digests.",
-        "impact": "The public finalizer must generate and execute the new plan later, uniquely reusing Draft PR #166.",
+        "impact": "The public finalizer must later generate and execute a new plan that uniquely reuses Draft PR #166.",
         "blocking": false
       },
       {
-        "id": "preset-apply-command-replay",
-        "command_or_area": "Replay apply.sh solely to capture another command log after the already completed all-platform apply",
-        "reason": "A replay would only rewrite installation provenance time. Current preset tests, drift, ownership, installed integration and byte comparison objectively validate the applied state.",
-        "impact": "No installation acceptance is missing; clean install, upgrade/update and unrelated Skill suites remain intentionally outside this bounded rerun per user instruction.",
+        "id": "bounded-validation-exclusions",
+        "command_or_area": "Replay clean install, upgrade/update, unrelated Skill suites or prior Phase 2 solely because the finalizer runtime and workflow wording changed",
+        "reason": "The user explicitly limited this recovery round to affected finalizer/runtime/preset validation and the current mandatory gate. Source/installed integration, preset reapply, drift and the complete affected runtime suite passed.",
+        "impact": "No current acceptance claim relies on an unrun affected check; broader historical #119 evidence remains unchanged and is not being regenerated.",
         "blocking": false
       }
     ],
-    "execution_sha256": "0f97f185f1cf4b696a5ed059171ef97fef550fddaac289afcfb83ea705642e5a"
+    "execution_sha256": "f42ab9bd13137b6f656e31a3ff38dcda26419c8b160920811d6b690faded6fc0"
   },
   "scope_qualification": {
     "candidates": [
@@ -1237,111 +1152,149 @@
         "route_basis": "Issue #119 requires mapped fresh publication to proceed automatically to the current verifier while exact recovery remains plan-bound and fail closed.",
         "severity": "P1",
         "finding_id": "P1-initial-publication-stale-verification-consumption"
+      },
+      {
+        "id": "fresh-archived-plan-working-tree-dependency",
+        "summary": "Archived verification augmentation returned before reading the exact commit plan whenever the archived working-tree closeout-plan.json was missing.",
+        "trigger_refs": [
+          "review-gate.json#F119-FRESH-001",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py#finalization_verification_augmentation_plan",
+          "Issue #119 compact recovery acceptance"
+        ],
+        "normal_path_reproduction": "A normal same-plan archived recovery can retain an exact committed transaction while a local archived file is absent. Before the fix, the helper checked the working-tree plan before classifying the task as archived and returned None instead of reading the immutable commit blob.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 and Issue #105 require exact-commit archived recovery without rebuilding the transaction or requiring removed task-local artifacts.",
+        "severity": "P1",
+        "finding_id": "F119-FRESH-001"
+      },
+      {
+        "id": "fresh-workflow-contract-archived-readiness-authority",
+        "summary": "The durable workflow contract still described archived pr-readiness.json as recovery authority after compact schema 1.1 removed it.",
+        "trigger_refs": [
+          "review-gate.json#F119-FRESH-002",
+          ".trellis/spec/workflow/workflow-contract.md#User-Facing-Entrypoints",
+          "guru-finalize-task compact archive contract"
+        ],
+        "normal_path_reproduction": "A normal maintainer following the durable workflow SSOT could reintroduce the deleted readiness dependency because active and archived recovery authority were not distinguished.",
+        "disposition": "current_scope",
+        "route_basis": "Issue #119 combined acceptance requires the runtime and durable recovery SSOT to agree on the compact archive contract.",
+        "severity": "P3",
+        "finding_id": "F119-FRESH-002"
       }
     ],
-    "scope_sha256": "3fbda4455c98e111da164d7c8b4beee6cc1cf2d794eed97548d92dd0b4534b83"
+    "scope_sha256": "9afa0a3205c62f595324bcd4f5ac6f3152bcdad8d21880749fac9a867dfc2e41"
   },
   "semantic_review": {
     "adequacy_dimensions": [
       {
         "id": "requirements",
         "status": "passed",
-        "summary": "The complete #119 combined acceptance plus the bounded fresh-publication correctness fix is satisfied without reopening #116/#117/#118 internals, implementing #132, adding a task/PR, changing public DTOs or introducing routine confirmation.",
+        "summary": "The complete #119 combined acceptance and both fresh recovery correctness findings are satisfied without reopening #116/#117/#118 internals, implementing #132, creating a task/PR, changing public DTOs or adding routine confirmation.",
         "evidence_refs": [
           "planning",
           "requirement_provenance"
         ],
-        "affected_sha256": "862b622a6d7d93183580f82197042f765e005e5d096e66d677d746f2a84b4201",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
+          "F119-FRESH-001",
+          "F119-FRESH-002",
           "P1-archived-recovery-owner-projection-reopen",
           "P1-compact-archive-readiness-dependency",
           "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
           "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
           "P2-archived-recovery-gate-mutation",
-          "P2-stale-closure-ledger",
-          "P1-initial-publication-stale-verification-consumption"
+          "P2-stale-closure-ledger"
         ],
         "unverified_ids": []
       },
       {
         "id": "design",
         "status": "passed",
-        "summary": "Fresh publication starts without opportunistic historical verification, while mapped verified and same-plan recovery continue to consume the strict owner/plan result; validator single-read behavior and immutable transaction ownership remain unchanged.",
+        "summary": "Active paths retain task-local publication ownership checks, while archived paths classify locator and transaction state first and read immutable plan evidence from the exact commit. Validator single-read behavior and AI-first public contracts remain unchanged.",
         "evidence_refs": [
           "planning",
           "docs_ssot_plan"
         ],
-        "affected_sha256": "bd118bb398e85ab963efcf12cbb5dad2e013c7301b3cc12e924ba61d6b2ddceb",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
+          "F119-FRESH-001",
+          "F119-FRESH-002",
           "P1-archived-recovery-owner-projection-reopen",
           "P1-compact-archive-readiness-dependency",
           "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
           "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
           "P2-archived-recovery-gate-mutation",
-          "P2-stale-closure-ledger",
-          "P1-initial-publication-stale-verification-consumption"
+          "P2-stale-closure-ledger"
         ],
         "unverified_ids": []
       },
       {
         "id": "implementation",
         "status": "passed",
-        "summary": "Canonical and installed runtime gate task-local verification reuse by profile: publication_ready leaves it unset for the current plan, and verification_verified/same_plan_resume continue through finalization_current_verification_owner_result and fail closed on stale ownership.",
+        "summary": "Canonical runtime contains the minimal ordering correction, preset reapply produced the byte-identical installed runtime, and no duplicate wrapper, recovery artifact, transaction or public I/O was introduced.",
         "evidence_refs": [
           "implementation_handoff",
           "repository_snapshot"
         ],
-        "affected_sha256": "03a09d2f8566bebe1df6b93cbd58a11185dc3cc2a47bc889bf24716ca9c26551",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
           "BR-119-01",
           "BR-119-02",
+          "F119-FRESH-001",
+          "F119-FRESH-002",
           "P1-archived-recovery-owner-projection-reopen",
           "P1-compact-archive-readiness-dependency",
           "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
           "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
           "P2-archived-recovery-gate-mutation",
           "P2-finalizer-same-month-owner-projection",
           "P2-finish-work-prepare-projection-threading",
           "P2-stale-closure-ledger",
-          "P3-phase2-compact-reviewed-path-count",
-          "P1-initial-publication-stale-verification-consumption"
+          "P3-phase2-compact-reviewed-path-count"
         ],
         "unverified_ids": []
       },
       {
         "id": "tests",
         "status": "passed",
-        "summary": "Fresh validation passed 561 runtime tests, six finalizer contract tests, nine source and nine installed integration tests, 47 preset tests, drift/ownership checks and exact canonical-installed runtime comparison.",
+        "summary": "Fresh affected validation passed 561 runtime tests, six finalizer contract tests, nine source and nine installed integration tests, 47 preset tests, compile, drift, parity, workspace, task and sidecar checks.",
         "evidence_refs": [
           "check_execution"
         ],
-        "affected_sha256": "706cbb8f6cf5b0d29c8afec4941eabd4dd9af5ed1cd352cd4184f3657439a341",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
           "BR-119-01",
+          "F119-FRESH-001",
+          "F119-FRESH-002",
           "P1-archived-recovery-owner-projection-reopen",
           "P1-compact-archive-readiness-dependency",
           "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
           "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
           "P2-archived-recovery-gate-mutation",
           "P2-finalizer-same-month-owner-projection",
           "P2-finish-work-prepare-projection-threading",
-          "P2-stale-closure-ledger",
-          "P1-initial-publication-stale-verification-consumption"
+          "P2-stale-closure-ledger"
         ],
         "unverified_ids": []
       },
       {
         "id": "docs_ssot",
         "status": "passed",
-        "summary": "The correction changes private finalizer evidence selection only. Existing workflow, Skill I/O, recovery and preset SSOT remains accurate, while task-local recovery planning already owns this bounded finalizer correction.",
+        "summary": "The durable workflow contract now matches compact schema 1.1: active readiness remains task-local, while archived/archive_pushed recovery uses exact committed plan/gate/evidence/summary plus remote and GitHub PR facts.",
         "evidence_refs": [
           "docs_ssot_plan",
           "repository_snapshot"
         ],
-        "affected_sha256": "ab83047cd10e1489045f008e039797d7b18cfa61dc6328e0d3cdb8a393fc297d",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
-          "P2-docs-ssot-finish-route",
           "BR-119-02",
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P2-docs-ssot-finish-route",
           "P2-phase2-schema-contract-version"
         ],
         "unverified_ids": []
@@ -1349,34 +1302,38 @@
       {
         "id": "cross_layer",
         "status": "passed",
-        "summary": "The same profile-sensitive behavior is present byte-for-byte in canonical and installed runtime, and source/installed Finish-family integration plus preset drift checks agree end to end.",
+        "summary": "The exact committed-plan recovery path is covered in canonical source and installed integration, and canonical/installed runtime plus integration bytes match after preset reapply.",
         "evidence_refs": [
           "implementation_handoff",
           "check_execution"
         ],
-        "affected_sha256": "1e74e826e61b6fe6dbdedf7842448aa13540e095772f082179049977495b36cc",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
+          "F119-FRESH-001",
+          "F119-FRESH-002",
+          "P1-archived-recovery-owner-projection-reopen",
+          "P1-compact-archive-readiness-dependency",
+          "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
+          "P2-archived-recovery-gate-mutation",
           "P2-finalizer-same-month-owner-projection",
           "P2-finish-work-prepare-projection-threading",
-          "P1-finalizer-pr-head-propagation-delay",
-          "P1-compact-archive-readiness-dependency",
-          "P1-archived-recovery-owner-projection-reopen",
-          "P2-archived-recovery-gate-mutation",
-          "P2-stale-closure-ledger",
-          "P1-initial-publication-stale-verification-consumption"
+          "P2-stale-closure-ledger"
         ],
         "unverified_ids": []
       },
       {
         "id": "compatibility",
         "status": "passed",
-        "summary": "Public interfaces, schema ids and typed exits remain unchanged. Active pre-publication readiness still stales correctly, and exact verification/same-plan recovery still rejects a stale owner rather than silently continuing.",
+        "summary": "Public Skill ids, schema ids, DTO fields, typed exits, Draft PR identity and active pre-publication stale behavior remain unchanged; missing/invalid committed plan blobs still fail closed.",
         "evidence_refs": [
           "repository_snapshot",
           "check_execution"
         ],
-        "affected_sha256": "3bc36835c5fa93936201456fb5f480120e1d3ddd152ad23cfd483c5945f842c8",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
+          "F119-FRESH-001",
+          "F119-FRESH-002",
           "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
           "P1-initial-publication-stale-verification-consumption"
         ],
@@ -1385,12 +1342,12 @@
       {
         "id": "deployment_and_operations",
         "status": "passed",
-        "summary": "The already applied all-platform installed copy is current: runtime bytes match, preset tests, drift and ownership pass, and no sidecar exists. Push, refreshed Branch Review/publication and new finalizer plan remain downstream.",
+        "summary": "Preset reapply completed with installed validation status ok, no .new/.bak sidecars and zero drift. Commit, push, fresh Branch Review and current-HEAD finalizer plan remain downstream authorized actions.",
         "evidence_refs": [
           "docs_ssot_plan",
           "check_execution"
         ],
-        "affected_sha256": "3d4ccb42048b5b90d4d65d75539ea92a8ebbc0e1c46736f13064fd80c3cef9c2",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
           "P1-finalizer-pr-head-propagation-delay",
           "P1-compact-archive-readiness-dependency",
@@ -1401,39 +1358,40 @@
         "unverified_ids": [
           "current-head-remote-publication",
           "current-head-branch-review",
-          "current-head-plan-generation",
-          "preset-apply-command-replay"
+          "current-head-plan-generation"
         ]
       },
       {
         "id": "verification_completeness",
         "status": "passed",
-        "summary": "The complete scope received a fresh semantic review and every affected runtime/finalizer/integration/preset/static check. Unrelated clean-install, upgrade/update and other Skill suites were intentionally not replayed; remote convergence and fresh post-commit gates remain downstream.",
+        "summary": "The complete current candidate received a fresh semantic review and every user-authorized affected finalizer/runtime/preset/static validation. Broader clean install, upgrade/update and unrelated Skill replay were intentionally excluded without weakening current evidence.",
         "evidence_refs": [
           "requirement_provenance",
           "check_execution"
         ],
-        "affected_sha256": "77ad8ab654d63103dbe983c66e3e04e5f12393ca11d790614cefc3eca5b15b8e",
+        "affected_sha256": "8e628749f7b9fdb9bee596e5e8a55dbdd3719decb3ede9033c1fbce66d605966",
         "finding_ids": [
           "BR-119-01",
           "BR-119-02",
+          "F119-FRESH-001",
+          "F119-FRESH-002",
           "P1-archived-recovery-owner-projection-reopen",
           "P1-compact-archive-readiness-dependency",
           "P1-current-stale-closeout-plan-blocks-new-finalizer-plan",
           "P1-finalizer-pr-head-propagation-delay",
+          "P1-initial-publication-stale-verification-consumption",
           "P2-archived-recovery-gate-mutation",
           "P2-finalizer-same-month-owner-projection",
           "P2-finish-work-prepare-projection-threading",
           "P2-phase2-schema-contract-version",
           "P2-stale-closure-ledger",
-          "P3-phase2-compact-reviewed-path-count",
-          "P1-initial-publication-stale-verification-consumption"
+          "P3-phase2-compact-reviewed-path-count"
         ],
         "unverified_ids": [
           "current-head-remote-publication",
           "current-head-branch-review",
           "current-head-plan-generation",
-          "preset-apply-command-replay"
+          "bounded-validation-exclusions"
         ]
       }
     ],
@@ -1563,37 +1521,55 @@
         "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
         "blocking": true,
         "status": "resolved"
+      },
+      {
+        "id": "F119-FRESH-001",
+        "candidate_id": "fresh-archived-plan-working-tree-dependency",
+        "severity": "P1",
+        "summary": "Moved the active working-tree plan presence check behind archived classification, so archived recovery reads and validates the exact current commit plan blob even when the local archived plan is absent. Unit and source integration regressions cover the path.",
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "blocking": true,
+        "status": "resolved"
+      },
+      {
+        "id": "F119-FRESH-002",
+        "candidate_id": "fresh-workflow-contract-archived-readiness-authority",
+        "severity": "P3",
+        "summary": "Updated the durable workflow SSOT to require pr-readiness.json only on active pre-publication/evidence retry paths and to recover compact archived/archive_pushed state from exact committed transaction and live Git/GitHub facts.",
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "blocking": true,
+        "status": "resolved"
       }
     ],
     "ai_review_gate": {
       "status": "passed",
-      "summary": "All nine adequacy dimensions pass for the complete current #119 candidate. The fresh-publication stale-verification P1 is resolved, all affected validations pass, stale downstream evidence is excluded, and only separately authorized commit/push/review/finalizer publication actions remain.",
+      "summary": "All nine Phase 2 adequacy dimensions pass for the complete current #119 candidate. F119-FRESH-001 and F119-FRESH-002 are resolved with current source, installed, test, preset and Docs SSOT evidence; no open current-scope finding or blocking unverified item remains.",
       "full_rerun": true,
-      "planning_facts_sha256": "952b98e2033aa808a0c5c9c76359cb488967132d88566e8289f3660f863f33ef",
-      "snapshot_sha256": "671b76d039ec5d108849475e0a48af6049e3f0478b1c0ce9bec281b5611be597",
-      "scope_sha256": "3fbda4455c98e111da164d7c8b4beee6cc1cf2d794eed97548d92dd0b4534b83",
-      "adequacy_sha256": "ffb2f87ec72a0e246ea8b0ac4f327894ccf5855ecde308a3bef48979e7494c13",
-      "findings_count": 14,
-      "full_round_sha256": "1f85e3625f621a859ea562f66c8552d89e36d5194652e0392a1e4072fbc72283"
+      "planning_facts_sha256": "01ea6947267442ab6b62db22986f87c680bf03f1277163ea8beac02292833002",
+      "snapshot_sha256": "10e1c42db550e4fd7b7ed9681f6f1d1c89c0ec0747e50405d566490101b0c69d",
+      "scope_sha256": "9afa0a3205c62f595324bcd4f5ac6f3152bcdad8d21880749fac9a867dfc2e41",
+      "adequacy_sha256": "18767ae585c416199368a640a45fdbc1f16d421ed16fa74829f87f84f32b4fc3",
+      "findings_count": 16,
+      "full_round_sha256": "c9b167ce1daa555ee0041eccc0f7101f950fd47b400d84464c97bde53b68ca52"
     },
-    "adequacy_sha256": "ffb2f87ec72a0e246ea8b0ac4f327894ccf5855ecde308a3bef48979e7494c13"
+    "adequacy_sha256": "18767ae585c416199368a640a45fdbc1f16d421ed16fa74829f87f84f32b4fc3"
   },
   "human_confirmation": {
     "kind": "not-required",
     "status": "not_required",
-    "summary": "guru-check-task has no routine confirmation gate. The user approved the current affected validation and mandatory gate; commit, push and PR/finalizer mutations remain separate authorization boundaries.",
+    "summary": "guru-check-task has no unconditional human confirmation; the approved implementation and validation scope is unchanged.",
     "confirmed_at": null
   },
   "typed_exit": "passed",
   "route": null,
-  "reason": "The complete current #119 candidate passes a fresh full semantic round after resolving historical verification consumption on initial publication. The unique mapped consumer is guru-create-task-commit; push, PR mutation and finalizer execution remain separately gated.",
+  "reason": "The complete current Issue #119 candidate passes the mandatory Phase 2 gate after resolving both fresh Branch Review findings. The next mapped consumer is guru-create-task-commit, which remains separately authorized.",
   "consumer": {
     "kind": "skill",
     "id": "guru-create-task-commit"
   },
   "schema_version": "2.1",
   "skill_id": "guru-check-task",
-  "generated_at": "2026-07-31T21:42:04Z",
+  "generated_at": "2026-08-01T05:57:09Z",
   "task": {
     "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
     "task_id": "119-combined-finish-family-integration",
@@ -1610,8 +1586,8 @@
     "typed_exit": "approved",
     "artifact": {
       "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/planning-approval.json",
-      "sha256": "5ef4be0729ca385464f703f07b45e9651e5ddd11720a43e02a2a4daec6489e5a",
-      "size_bytes": 23815
+      "sha256": "039779012fe6236b072dffe40506886052ad940813b944051a6dad9480fd4d53",
+      "size_bytes": 24229
     },
     "reviewed_artifacts": [
       {
@@ -1630,7 +1606,7 @@
         "size_bytes": 11726
       }
     ],
-    "facts_sha256": "952b98e2033aa808a0c5c9c76359cb488967132d88566e8289f3660f863f33ef"
+    "facts_sha256": "01ea6947267442ab6b62db22986f87c680bf03f1277163ea8beac02292833002"
   },
-  "facts_sha256": "088eb72c7a845b03496e3501d205ee1ab3d939f6d37d7c28712579eda570b07a"
+  "facts_sha256": "6d9f7a6f864143dba4d35e6a4e7141c56583e71ef3632e2ffe6bd0dea9633abc"
 }

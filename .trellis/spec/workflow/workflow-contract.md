@@ -389,10 +389,15 @@ Guru Team does not call upstream `add_session.py` and does not use
 Shared `trellis-start` and canonical Codex/Cursor SessionStart overlays load
 phase/packages/task/Git facts without journal helper imports or workspace
 enumeration. Formal finish commits `pr-readiness.json.publish_inputs` before
-the first PR create; recovery accepts only that archived immutable snapshot and
-validates its Git blob/history, body/snapshot digests, gate, and branch identity
-before the 0/1/>1 PR state machine. Git path snapshot command failure produces
-empty path arrays and one fixed non-disclosing unavailable fact.
+the first PR create. Active pre-publication and evidence retry paths validate
+that current task-local publication owner artifact before the 0/1/>1 PR state
+machine. Compact schema 1.1 archives intentionally omit `pr-readiness.json`;
+archived and `archive_pushed` same-plan recovery instead reads the immutable
+plan, finalization gate, evidence/archive commit and summary from the exact
+committed transaction, then validates remote branch and GitHub PR facts. It
+does not require or recreate the removed readiness artifact. Git path snapshot
+command failure produces empty path arrays and one fixed non-disclosing
+unavailable fact.
 
 Reference files:
 

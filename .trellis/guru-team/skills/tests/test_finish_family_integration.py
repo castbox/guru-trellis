@@ -346,7 +346,21 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("committed fixture\n", encoding="utf-8")
             self.assertEqual(len(retained), runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS)
+            (archived / runtime.CLOSEOUT_PLAN_ARTIFACT).unlink()
+            self.assertFalse((archived / runtime.CLOSEOUT_PLAN_ARTIFACT).exists())
             self.assertFalse((archived / runtime.PR_READINESS_ARTIFACT).exists())
+
+            def committed_blob(
+                _root: Path,
+                commit: str,
+                locator: str,
+            ) -> bytes | None:
+                self.assertEqual(commit, transaction["commit"])
+                self.assertEqual(
+                    locator,
+                    f"{archive}/{runtime.CLOSEOUT_PLAN_ARTIFACT}",
+                )
+                return json.dumps(plan).encode("utf-8")
 
             with (
                 mock.patch.object(
@@ -358,8 +372,18 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 mock.patch.object(runtime, "load_config", return_value={}),
                 mock.patch.object(
                     runtime,
-                    "finalization_verification_augmentation_plan",
-                    return_value=plan,
+                    "current_head",
+                    return_value=transaction["commit"],
+                ),
+                mock.patch.object(
+                    runtime,
+                    "closeout_optional_commit_blob_bytes",
+                    side_effect=committed_blob,
+                ),
+                mock.patch.object(
+                    runtime,
+                    "validate_closeout_plan",
+                    side_effect=lambda value: value,
                 ),
                 mock.patch.object(
                     runtime,

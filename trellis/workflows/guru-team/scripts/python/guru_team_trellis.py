@@ -29958,9 +29958,9 @@ def finalization_verification_augmentation_plan(
     task_dir: Path,
 ) -> dict[str, Any] | None:
     plan_path = closeout_plan_path(task_dir)
-    if not plan_path.is_file() or plan_path.is_symlink():
-        return None
     if not task_dir_is_archived(root, task_dir):
+        if not plan_path.is_file() or plan_path.is_symlink():
+            return None
         return validate_closeout_plan(read_json(plan_path))
     locator = repo_relative(root, task_dir)
     content = closeout_optional_commit_blob_bytes(

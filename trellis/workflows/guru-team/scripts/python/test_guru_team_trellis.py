@@ -15169,11 +15169,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         archive_ref = ".trellis/tasks/archive/2026-07/07-11-closeout"
         archive_dir = self.root / archive_ref
         archive_dir.mkdir(parents=True)
-        gtt.write_json(archive_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, {"working": True})
         gtt.write_json(
             archive_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
             {"working": True},
         )
+        self.assertFalse((archive_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).exists())
         committed_plan = {"committed": "plan"}
         committed_evidence = {"committed": "evidence"}
         head = "d" * 40

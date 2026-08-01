@@ -1,216 +1,96 @@
 {
   "schema_version": "2.1",
   "skill_id": "guru-review-branch",
-  "generated_at": "2026-07-31T16:27:27Z",
+  "generated_at": "2026-08-01T05:23:46Z",
   "task_dir": ".trellis/tasks/07-31-119-combined-finish-family-integration",
   "mode": "workflow",
   "review_intent": "fresh_final_review",
-  "typed_exit": "passed",
-  "head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
+  "typed_exit": "implementation_required",
+  "head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
   "base_ref": "origin/main",
   "semantic_review": {
     "qualified_findings": [
       {
-        "candidate_ref": "BR-CAND-119-01",
+        "candidate_ref": "C119-FINAL-001",
         "disposition": "qualified_finding",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "首个提交中的六份 Guru Finish 入口带有额外 EOF 空行，曾导致完整 committed range 的 git diff --check 失败。",
-        "path": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "affected_behavior": "An archived recovery whose exact archive commit exists cannot continue when the working-tree archived closeout-plan.json is absent, because the finalizer fails before reading the immutable plan blob from the committed transaction.",
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
         "evidence_refs": [
-          "introduced HEAD 8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
-          "fix commit c8c84ab21fc80cd2e72017e293f2aba38e00150c",
-          "current origin/main...95379d6b498edcd7f0362d10ba20009f84a55d41 git diff --check passes",
-          "三份 canonical 与三份 dogfood Guru entry 保持精确受管字节"
+          "independent fresh review of origin/main...d8664c83: finalization_task_dir active-to-archive mapping",
+          "finalization_verification_augmentation_plan requires plan_path.is_file before committed-plan recovery",
+          ".trellis/spec/workflow/workflow-contract.md archived recovery contract"
         ],
         "requirement_refs": [
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:140",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/implement.md:78"
+          "Issue #119 and Issue #105 active/archived exact-commit recovery acceptance",
+          "Current recovery requirement to resolve locator, immutable plan and transaction state before task-local publication ownership"
         ],
-        "scope_basis": "Issue #119 要求 canonical/dogfood 入口内容干净且完整 range whitespace check 通过。",
-        "qualification_reason": "该问题曾在正常 committed path 中真实存在，当前完整范围与修复 lineage 证明其已经闭环。",
-        "finding_ref": "BR-119-01",
-        "severity": "P2",
-        "introduced_head": "8905260e9c22887f7cc95d3bed38d1b8ed2097b0",
-        "resolved_at_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
-        "status": "resolved",
-        "closure_evidence": [
-          "当前六份入口无 whitespace error，canonical 与 dogfood payload 保持一致。",
-          "修复提交是当前 reviewed HEAD 的祖先，完整 73-path range 的 git diff --check 通过。"
-        ]
+        "scope_basis": "This is a normal required archived recovery path explicitly owned by Issue #119, without malicious input, concurrency, or additional fault injection.",
+        "qualification_reason": "The current call order returns None on a missing working-tree plan and therefore cannot reach the committed archive plan reader even though the exact archive transaction exists.",
+        "finding_ref": "F119-FRESH-001",
+        "severity": "P1",
+        "introduced_head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
+        "resolved_at_head": null,
+        "status": "open",
+        "closure_evidence": []
       },
       {
-        "candidate_ref": "BR-CAND-119-07",
+        "candidate_ref": "C119-FINAL-002",
         "disposition": "qualified_finding",
         "scenario_class": "normal_required_behavior",
-        "affected_behavior": "durable Skill package contract 曾错误声明 global Finish routing 仍延后到 #119，与本分支已经完成的 combined integration 冲突。",
-        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "affected_behavior": "The durable workflow SSOT still describes archived immutable pr-readiness.json as recovery authority even though compact archive schema 1.1 removes that artifact and current recovery is committed-plan based.",
+        "path": ".trellis/spec/workflow/workflow-contract.md",
         "evidence_refs": [
-          "introduced HEAD bc3b3aec6962769f1cf610aba668fdc9a1db8c55",
-          "fix commit e7079961de0428e3492dfd0e26ac8c9f7ad7aa36",
-          "current contract 明确 integrated global Finish route、唯一 consumers、standalone not_required edge、verifier sole ownership 与零 public I/O 扩张"
+          ".trellis/spec/workflow/workflow-contract.md archived recovery wording",
+          ".agents/skills/guru-finalize-task/references/contract.md compact archive contract",
+          "independent fresh review of origin/main...d8664c83"
         ],
         "requirement_refs": [
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md:214",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:104",
-          "AGENTS.md:10"
+          "Issue #119 compact archive recovery acceptance",
+          "Current requirement that a compact 12-file archive without pr-readiness.json can recover from committed plan, gate, evidence commit, remote branch and GitHub PR facts"
         ],
-        "scope_basis": "已批准的 ssot_first 方案要求 durable owners 与实际 Finish-family route 一致。",
-        "qualification_reason": "该矛盾位于正常 durable documentation path，当前精确修复提交与 fresh-final review 已消除它。",
-        "finding_ref": "BR-119-02",
-        "severity": "P2",
-        "introduced_head": "bc3b3aec6962769f1cf610aba668fdc9a1db8c55",
-        "resolved_at_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
-        "status": "resolved",
-        "closure_evidence": [
-          "不同 finding owner 已完成 transient closure，并绑定 exact parent、tree 与 5-path fix。",
-          "fresh-final reviewer 独立复核 current contract、完整 range 和 commit lineage，未发现残留冲突。",
-          "Branch Review committed-head profile 下 planning 与 Phase 2 validators 均返回零 errors，Phase 2 typed exit 为 passed。"
-        ]
-      },
-      {
-        "candidate_ref": "BR-CAND-119-PUBLICATION-ORDER",
-        "disposition": "qualified_finding",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "正常 closeout 先完成 publication review，再由 content push 写入 plan-owned marketplace machine evidence；旧 freshness 校验会把该合法顺序误判为 publication_review_stale。",
-        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-        "evidence_refs": [
-          "Phase 2 finding P2-publication-ledger-closeout-order",
-          "fix commit 95379d6b498edcd7f0362d10ba20009f84a55d41",
-          "runtime 553 passed with 13 declared skips",
-          "exact positive and negative publication-ledger augmentation regressions passed",
-          "independent closure and fresh-final reviewers found no residual ledger, artifact, entry, repository, status-path, public-I/O or Docs SSOT conflict"
-        ],
-        "requirement_refs": [
-          "Issue #119",
-          "Issue #105",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md:214",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json"
-        ],
-        "scope_basis": "Issue #119 必须在不扩大 public DTO 的前提下承接 Issue #105 的实际事务顺序、publication binding 与 recovery contract。",
-        "qualification_reason": "该问题可在诚实的正常 extension closeout 顺序中复现；当前修复只允许 immutable plan 的精确 pending/passed machine evidence 与枚举的派生 binding 变化，其余漂移继续 fail closed。",
-        "finding_ref": "P2-publication-ledger-closeout-order",
-        "severity": "P2",
-        "introduced_head": "e7079961de0428e3492dfd0e26ac8c9f7ad7aa36",
-        "resolved_at_head": "95379d6b498edcd7f0362d10ba20009f84a55d41",
-        "status": "resolved",
-        "closure_evidence": [
-          "95379d6 以单一 exact augmentation contract 修复正常 publication-before-content-push 顺序。",
-          "Phase 2 全量 rerun、serial throwaway lifecycle、事务与 recovery matrix、source/installed integration 均通过。",
-          "distinct fresh-final reviewer 覆盖 5 commits 和 73 paths，确认该 finding resolved 且无当前 P0-P3 finding。"
-        ]
+        "scope_basis": "The durable workflow contract is part of Issue #119 combined acceptance and must agree with the implemented compact recovery authority.",
+        "qualification_reason": "The stale wording can direct future implementations back to the deleted readiness dependency and contradicts the schema 1.1 archive contract.",
+        "finding_ref": "F119-FRESH-002",
+        "severity": "P3",
+        "introduced_head": "d8664c83b2ad3ff14e001d071e66d31e6e1dab49",
+        "resolved_at_head": null,
+        "status": "open",
+        "closure_evidence": []
       }
     ],
     "scope_proposals": [],
     "observations": [
       {
-        "candidate_ref": "BR-CAND-119-REMOTE-01",
+        "candidate_ref": "C119-WORKTREE-001",
         "disposition": "observation",
         "scenario_class": "out_of_scope",
-        "affected_behavior": "当前尚未执行 exact remote feature-ref marketplace installation。",
-        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "affected_behavior": "Three stale publication-owned task artifacts remain dirty beside the review gate and may block the Branch Review recorder entry precondition.",
+        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration",
         "evidence_refs": [
-          "remote feature ref 仍指向 e7079961de0428e3492dfd0e26ac8c9f7ad7aa36",
-          "local clean install、update、workflow reselect、preset reapply 与 transaction/recovery evidence 已通过",
-          "workflow 将 exact remote-ref verification 定义为 push 后、Draft PR 前 gate"
+          "git status --short at d8664c83",
+          "finish-summary-index.json, pr-body.md and pr-readiness.json are publication/finalizer-owned stale evidence"
         ],
         "requirement_refs": [
-          ".trellis/spec/preset/installer.md",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json"
+          "guru-review-branch working-tree entry precondition"
         ],
-        "scope_basis": "该验证需要已发布 remote feature ref，当前没有 push 授权。",
-        "qualification_reason": "分支未把该项声明为已完成；它是唯一保留的 post-push observation，不是当前 Branch Review finding。"
+        "scope_basis": "This is current workspace bookkeeping rather than a committed implementation defect.",
+        "qualification_reason": "The artifacts require owner-driven refresh or explicit stale cleanup and cannot serve as current-HEAD pass evidence."
       }
     ],
-    "followup_candidates": [
-      {
-        "candidate_ref": "BR-CAND-119-FOLLOWUP-132",
-        "disposition": "followup_candidate",
-        "scenario_class": "out_of_scope",
-        "affected_behavior": "五个 legacy trellis-finish-work compatibility assets 仍保留物理文件。",
-        "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
-        "evidence_refs": [
-          "五个 legacy payload 与 origin/main 字节一致",
-          "blocking_issues 已清空",
-          "removal_issue 保持 132"
-        ],
-        "requirement_refs": [
-          "Issue #132",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/issue-scope-ledger.json"
-        ],
-        "scope_basis": "#132 独占 legacy physical removal 与全仓 upstream overlay convergence。",
-        "qualification_reason": "当前兼容保留符合 #119 边界，不构成本次缺陷。"
-      }
-    ],
-    "rejected_candidates": [
-      {
-        "candidate_ref": "BR-CAND-119-PHASE2-STALE",
-        "disposition": "rejected_candidate",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "直接以 pre-commit checker profile 检查 committed HEAD 时可能将 Phase 2 报告识别为 stale。",
-        "path": ".trellis/tasks/07-31-119-combined-finish-family-integration/phase2-check.json",
-        "evidence_refs": [
-          "普通 checker profile 返回 head/dirty/repository stale",
-          "Branch Review 合同明确使用 allow_committed_head=true",
-          "正式 committed-head profile 对 planning 与 Phase 2 均返回空 errors",
-          "review_branch_entry_precondition_errors invokes validate_phase2_check with allow_committed_head=True"
-        ],
-        "requirement_refs": [
-          "guru-review-branch references/contract.md",
-          "guru_team_trellis.py review_branch_entry preconditions"
-        ],
-        "scope_basis": "fresh-final entry 必须按正式 committed-head transition profile 验证，而不是使用实现前的普通 working-tree profile。",
-        "qualification_reason": "正式 Branch Review validator 接受 recorded HEAD 到当前 HEAD 的 ancestor/committed-path transition，并证明所有 Phase 2 dirty paths 均由提交覆盖。"
-      },
-      {
-        "candidate_ref": "BR-CAND-119-PUBLIC-CONTRACT",
-        "disposition": "rejected_candidate",
-        "scenario_class": "normal_required_behavior",
-        "affected_behavior": "combined integration 可能扩大三个 Finish Skills 的 public I/O 或改变 legacy compatibility payload。",
-        "path": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
-        "evidence_refs": [
-          "三个 Finish Skill interface/schema tree 相对 origin/main 零 diff",
-          "五个 legacy payload 与 origin/main 字节一致",
-          "13 exits、唯一 consumers 与 private-field exclusion 由 source/installed integration evidence 覆盖"
-        ],
-        "requirement_refs": [
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:113",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/design.md:144"
-        ],
-        "scope_basis": "Issue #119 只允许 additive integration，并要求维持 PR #165 的最小 DTO 与兼容合同。",
-        "qualification_reason": "当前 bytes、route graph 和 evidence 共同排除了 public-contract drift。"
-      },
-      {
-        "candidate_ref": "BR-CAND-119-SCOPE-EXPANSION",
-        "disposition": "rejected_candidate",
-        "scenario_class": "out_of_scope",
-        "affected_behavior": "可进一步提出恶意伪造、并发竞态、锁、TOCTOU、额外 fault injection 或跨 OS crash-consistency 加固。",
-        "path": "AGENTS.md",
-        "evidence_refs": [
-          "AGENTS.md honest-but-fallible 边界",
-          "prd.md 明确排除项",
-          "完整 range 未显示需要这些扩展才能复现的正常路径缺陷"
-        ],
-        "requirement_refs": [
-          "AGENTS.md:2.1",
-          ".trellis/tasks/07-31-119-combined-finish-family-integration/prd.md:121"
-        ],
-        "scope_basis": "用户和仓库合同明确排除这些扩展。",
-        "qualification_reason": "不存在可在当前支持的正常路径中成立的 current-scope finding。"
-      }
-    ],
+    "followup_candidates": [],
+    "rejected_candidates": [],
     "ai_review_gate": {
-      "status": "passed",
-      "summary": "Distinct fresh-final review 覆盖 origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...95379d6b498edcd7f0362d10ba20009f84a55d41 的全部 73 paths、5 commits，以及 current planning、Phase 2、ledger、Docs SSOT、finding lifecycle、public contract、platform entry、installation/upgrade/reapply、Issue #105 transaction/recovery 与 frozen donor boundary。BR-119-01、BR-119-02 和 P2-publication-ledger-closeout-order 均绑定当前 HEAD 并已关闭；无 open P0-P3 finding、scope proposal 或 blocker。Ledger 将 #119/#115 置于 close、#105/#116/#117/#118 置于 related、#132 置于 follow-up，语义正确。三个 Finish Skill public I/O、13 exits、唯一 consumers、standalone not_required compatibility edge 与 legacy payload 保持兼容。唯一剩余项是获得 push 授权后执行 exact remote feature-ref marketplace verification。"
+      "status": "implementation_required",
+      "summary": "The independent fresh-final review covered the complete origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...d8664c83b2ad3ff14e001d071e66d31e6e1dab49 range across 11 commits and 74 net paths. It found one P1 normal archived-recovery ordering defect and one P3 durable Docs SSOT contradiction. Current HEAD cannot pass Branch Review; no scope proposal, Issue #132 expansion, public DTO change, remote mutation or frozen-donor mutation is authorized."
     }
   },
   "verification_evidence": {
-    "reviewer": "codex-session:019fb8f2-4b52-7820-896b-12af7292433c",
+    "reviewer": "codex-independent-agent:issue119_d866_fresh_review",
     "review_source": "independent-agent",
     "evidence": [
-      "Independent reviewer covered origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...95379d6b498edcd7f0362d10ba20009f84a55d41 across all 5 commits and 73 paths.",
-      "No current P0-P3 finding, scope proposal, public-I/O drift, compatibility regression, or Docs SSOT conflict remains; three finding lifecycles are resolved at current HEAD.",
-      "Post-push exact remote feature-ref installation remains an observation and Issue #132 remains the physical-removal follow-up."
+      "Independent fresh-final review covered origin/main@7ca1a0b96492cbb265bcd7715d14ac93c897fc98...d8664c83b2ad3ff14e001d071e66d31e6e1dab49 across 11 commits and 74 net paths and qualified F119-FRESH-001 (P1) plus F119-FRESH-002 (P3)."
     ]
   },
-  "facts_sha256": "0144f97927b3d16d16dcd7b7ae009b186bf00e37a49d50a91482967f8287f70d"
+  "facts_sha256": "7cc8b121474d1087eec4b627583d5c34c174a417671879a712bea030c8958c9f"
 }
